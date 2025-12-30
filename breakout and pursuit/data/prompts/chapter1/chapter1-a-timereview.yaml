@@ -1,0 +1,22 @@
+BeforeProcessing:
+  - Note any missing files
+
+Content:
+  - chapter1a-content.md
+  - Be complete, do not short cut for brevity
+
+JSONRequirements:
+  - json-structure.yaml
+
+JSONToReview:
+  - chapter1a.json
+
+Output:
+  - modify the JSON to comply
+
+Review Times and dates:
+  - Does content comply with the requirements of:
+      - timedate.yaml
+  - Are time and dates correctly identified form content in the JSON?
+      - As described in Event.Sub-event.Dates
+  - Are the requirements identified in timedate.yaml fully satisfied.

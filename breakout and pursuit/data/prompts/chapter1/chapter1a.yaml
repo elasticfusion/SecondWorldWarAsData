@@ -146,29 +146,6 @@ Specifications:
 	- Create as many unique entries as there are events and sub-events
 	- [ISO 3166 Alpha-2] = ISO 3166 Alpha-2 code
 	- When incorporating links to non-'https://www.ibiblio.org/' sites include current date/time of the inclusion.
-TOE:
-	- Unit(s) 
-	- Unit_Nationality
-	- Commander_Name
-	- Commander_Rank
-	- TOE.Commmand Structure.Commander.End_Status = Relieved, WIA or KIA:
-		  -If the the commander status did not change during the event, ignore the field
-		  - TOE.Commmand Structure.Commander.End_Date = last day of command
-		  - List multiple commanders, if a commander is relieved, wounded or killed.
-		  - Attempt to ascertain what the the unit be being discussed is attached to.  For example, a battalion might be attached to a division.  A division to a Corp.
-		  - A feature of European Theater is that sub-units might be shifted around.  So they are date sensitive.
-		  - Include the commander of higher unit if it can be determined.
-		Biographical_reference:
-			- Add a link to Grokipedia if it exists
-		  	- If not add a link to Wikipedia if it exists
-	- Equipment Example:
-		Name:
-			- Sherman
-		Identifier:
-		- M4
-	- Personnel: Was the unit fully staffed?
-	- Supply:
-		- Were there supply shortages?
 Events:
 	- Evaluate every paragraph, group paragraphs together as an event.
 	- 'Event' is a mandatory field
@@ -196,6 +173,29 @@ Weather:
 		- South: -90.0
 		- North: 90.0
 	- A Spatial Bounding Box Coordinates should be created using the Place.Place_GPS_coordinate as the center point and going outwards 100 kilometers.
+TOE:
+	- Unit(s)
+	- Unit_Nationality
+	- Commander_Name
+	- Commander_Rank
+	- TOE.Commmand Structure.Commander.End_Status = Relieved, WIA or KIA:
+		  -If the the commander status did not change during the event, ignore the field
+		  - TOE.Commmand Structure.Commander.End_Date = last day of command
+		  - List multiple commanders, if a commander is relieved, wounded or killed.
+		  - Attempt to ascertain what the the unit be being discussed is attached to.  For example, a battalion might be attached to a division.  A division to a Corp.
+		  - A feature of European Theater is that sub-units might be shifted around.  So they are date sensitive.
+		  - Include the commander of higher unit if it can be determined.
+		Biographical_reference:
+			- Add a link to Grokipedia if it exists
+		  	- If not add a link to Wikipedia if it exists
+	- Equipment Example:
+		Name:
+			- Sherman
+		Identifier:
+		- M4
+	- Personnel: Was the unit fully staffed?
+	- Supply:
+		- "Were there supply shortages?"
 Time and Date:
 	- The "Date_group_of_event" is always as published in the text.
 	- For date keep a consistent format:

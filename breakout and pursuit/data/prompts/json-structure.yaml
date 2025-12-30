@@ -6,74 +6,74 @@ Create JSON file that contains the following fields:
 Events:
 	- Event:
 	- Sub-event:
-	- Sub-event_summary:
-	- Sub-event_fulltext:
-		  - Paragraph_[19]
-		  - Paragraph_[20]
-		  - Paragraph_[nn]
+		- Sub-event_summary:
+			- Sub-event_fulltext:
+				  - Paragraph_[19]
+				  - Paragraph_[20]
+				  - Paragraph_[nn]
 		- Footnote_References:
 		- Place_Name
 		- Dates:
 			- Date_group_of_event
 			- Source_date_group_of_event
 			- Zulu_date_group_of_event
-		TOE:
+		- TOE:
 			- Unit:
 			- Unit_Nationality: [ ISO 3166 Alpha-2 ]
 			- Command_Structure:
-				  - Unit
-				  - Commander
-				  - Name
-				  - Rank
-				  - End_Date
-				  - End_Status
-				  - Biographical_reference
-				  - Biographical_reference_Capture_Date
-			- Subordinates:
-				  - Unit
-				  - Name
-				  - Rank
-				  - Date
-				  - End_Date_of_command
-				  - End_Status
-				  - Biographical_reference
-				  - Biographical_reference_Capture_Date
-			- Personnel:
-			- Equipments:
-				- Supply
-				- Allied_Employed:
-					- Origination_Country: [ ISO 3166 Alpha-2 ]
-						- Name
-						- Identifier
-						- Quantity
-						- Web_Reference
-						- Web_Image_Reference
-						- Web_Reference_Capture_Date
-				- Allied_Destroyed:
-					- Origination_Country: [ ISO 3166 Alpha-2 ]
-						- Name
-						- Identifier
-						- Quantity
-						- Web_Reference
-						- Web_Image_Reference
-						- Web_Reference_Capture_Date
-				- Axis_Employed
-					- Origination_Country: [ ISO 3166 Alpha-2 ]
-						- Name
-						- Identifier
-						- Quantity
-						- Web_Reference
-						- Web_Image_Reference
-						- Web_Image_License
-						- Web_Reference_Capture_Date
-				- Axis_Destroyed:
-					- Origination_Country: [ ISO 3166 Alpha-2 ]
-						- Name
-						- Identifier
-						- Quantity
-						- Web_Reference
-						- Web_Image_Reference
-						- Web_Reference_Capture_Date
+				- Unit
+				- Commander
+				- Name
+				- Rank
+				- End_Date
+				- End_Status
+				- Biographical_reference
+				- Biographical_reference_Capture_Date
+					- Subordinates:
+						  - Unit
+						  - Name
+						  - Rank
+						  - Date
+						  - End_Date_of_command
+						  - End_Status
+						  - Biographical_reference
+						  - Biographical_reference_Capture_Date
+				- Personnel:
+				- Equipments:
+					- Supply
+					- Allied_Employed:
+						- Origination_Country: [ ISO 3166 Alpha-2 ]
+							- Name
+							- Identifier
+							- Quantity
+							- Web_Reference
+							- Web_Image_Reference
+							- Web_Reference_Capture_Date
+					- Allied_Destroyed:
+						- Origination_Country: [ ISO 3166 Alpha-2 ]
+							- Name
+							- Identifier
+							- Quantity
+							- Web_Reference
+							- Web_Image_Reference
+							- Web_Reference_Capture_Date
+					- Axis_Employed
+						- Origination_Country: [ ISO 3166 Alpha-2 ]
+							- Name
+							- Identifier
+							- Quantity
+							- Web_Reference
+							- Web_Image_Reference
+							- Web_Image_License
+							- Web_Reference_Capture_Date
+					- Axis_Destroyed:
+						- Origination_Country: [ ISO 3166 Alpha-2 ]
+							- Name
+							- Identifier
+							- Quantity
+							- Web_Reference
+							- Web_Image_Reference
+							- Web_Reference_Capture_Date
 		Casualties:
 			- Allied:
 				- Allied_[ISO 3166 Alpha-2]_KIA
