@@ -1,0 +1,2073 @@
+{
+  "Events": [
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Seventh Army Overview",
+      "Sub-event_summary": "The German Seventh Army, commanded by Generaloberst Friedrich Dollman since September 1939, controlled Normandy and Brittany from the Orne River to the Loire. Its headquarters at le Mans was criticized for bureaucracy and lack of initiative after long occupation duty.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "While the higher commands were preoccupied with offensive planning, the tactical units facing the Allies were occupied with the practical necessity of fighting a defensive war. When the Allies landed in France, the German Seventh Army controlled Normandy and Brittany from the Orne River to the Loire. Commanded since September 1939 by Generaloberst Friedrich Dollman, who had led it to victory over the French in 1940, the army had its headquarters in comfortable buildings at le Mans. The long peacetime occupation duty had apparently dulled the headquarters' capacities, for even after the invasion it seemed to carry on business as usual. Subordinate commands complained of its bureaucracy in handling supplies, while higher headquarters sometimes felt a lack of personal initiative among its members."
+      },
+      "Footnote_References": [],
+      "Place_Name": "le Mans",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Friedrich Dollman",
+          "Name": "Friedrich Dollman",
+          "Rank": "Generaloberst",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Friedrich_Dollmann",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Dulled by long peacetime occupation",
+        "Equipments": {
+          "Supply": "Bureaucracy in handling supplies"
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "le Mans",
+        "Place_GPS_coordinate": "48.0061, 0.1996",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Le_Mans_map_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "le Mans",
+        "Place_GPS_coordinate": "48.0061, 0.1996",
+        "Weather_text": "Mild conditions in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1804",
+          "East": "1.5796",
+          "South": "47.1052",
+          "North": "48.907"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Doubts and Proposed Changes",
+      "Sub-event_summary": "Doubts about Seventh Army efficiency led to discussions of relieving it of Normandy responsibility and relegating it to Brittany. Attempts to replace it with Panzer Group West and upgraded corps failed due to Allied bombings.",
+      "Sub-event_fulltext": {
+        "Paragraph_2": "Doubts as to the efficiency of the Seventh Army headquarters had led to discussion of relieving the army of responsibility for the Normandy battlefield and of relegating it to Brittany. The commitment of Panzer Group West and the plan to upgrade a corps were attempts to replace the Seventh Army command, but because of the destruction of the Panzer Group West headquarters and the death of General Marcks, both by Allied bombings, the Seventh Army at the end of June still directed combat operations."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "END JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "END JUN44"
+      },
+      "TOE": {
+        "Unit": "Panzer Group West",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Headquarters destroyed by Allied bombing",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {
+          "Axis_DE_KIA": "General Marcks"
+        },
+        "Civilian": {}
+      },
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "Map I",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_dispositions_1944_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy with grey skies in late June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Increase in Subordinate Corps",
+      "Sub-event_summary": "From one corps (LXXXIV) at invasion, subordinate corps under Seventh Army increased to six by end of June: LXXXIV, I SS Panzer, II Parachute, XLVII Panzer, LXXXVI, II SS Panzer.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "By then the task had become exceedingly complicated. From one corps in contact with the Allies at the time of the invasion, the subordinate headquarters in contact and under the Seventh Army had increased to six. Initially, the LXXXIV Corps, commanded by Marcks, had met the Allies. The I SS Panzer Corps, under General der Panzertruppen Josef Dietrich, had moved forward from the OKW reserve to assume on 8 June a portion of the front near Caen. Several days later the II Parachute Corps, under General der Fallschirmtruppen Eugen Meindl, had traveled from Brittany to the St. Lô sector. On 13 June the XLVII Panzer Corps, commanded by General der Panzertruppen Hans Freiherr von Funck, had come forward from the Army Group B reserve to the vicinity of Caumont."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "080000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "072200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "I SS Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Josef Dietrich",
+          "Name": "Josef Dietrich",
+          "Rank": "General der Panzertruppen",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Sepp_Dietrich",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Weather_text": "Conditions in early June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7418",
+          "East": "1.0146",
+          "South": "48.2805",
+          "North": "50.0823"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "II Parachute Corps Deployment",
+      "Sub-event_summary": "II Parachute Corps under Eugen Meindl moved from Brittany to St. Lô sector several days after I SS Panzer Corps.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "Several days later the II Parachute Corps, under General der Fallschirmtruppen Eugen Meindl, had traveled from Brittany to the St. Lô sector."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "APPROX 100000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "092200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "II Parachute Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Eugen Meindl",
+          "Name": "Eugen Meindl",
+          "Rank": "General der Fallschirmtruppen",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Eugen_Meindl",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1167, -1.0903",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:St_Lo_map_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1167, -1.0903",
+        "Weather_text": "Conditions in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4703",
+          "East": "0.2897",
+          "South": "48.2158",
+          "North": "50.0176"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "XLVII Panzer Corps Deployment",
+      "Sub-event_summary": "XLVII Panzer Corps under Hans Freiherr von Funck came from Army Group B reserve to Caumont on 13 June.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "On 13 June the XLVII Panzer Corps, commanded by General der Panzertruppen Hans Freiherr von Funck, had come forward from the Army Group B reserve to the vicinity of Caumont."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caumont",
+      "Dates": {
+        "Date_group_of_event": "130000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "122200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "XLVII Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Hans Freiherr von Funck",
+          "Name": "Hans Freiherr von Funck",
+          "Rank": "General der Panzertruppen",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_von_Funck",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Caumont",
+        "Place_GPS_coordinate": "49.05, -0.6667",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Caumont",
+        "Place_GPS_coordinate": "49.05, -0.6667",
+        "Weather_text": "Conditions in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0467",
+          "East": "0.7133",
+          "South": "48.1491",
+          "North": "49.9509"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "LXXXVI Corps Deployment",
+      "Sub-event_summary": "LXXXVI Corps under Hans von Obstfelder moved from Bay of Biscay to front between Caen and Seine in midmonth.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "In midmonth, General der Infanterie Hans von Obstfelder had moved his LXXX VI Corps from the Bay of Biscay to take the front between Caen and the Seine River."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "MID JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "MID JUN44"
+      },
+      "TOE": {
+        "Unit": "LXXXVI Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Hans von Obstfelder",
+          "Name": "Hans von Obstfelder",
+          "Rank": "General der Infanterie",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_von_Obstfelder",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Bay of Biscay",
+        "Place_GPS_coordinate": "44.0, -4.0",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Weather_text": "Conditions in mid-June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7418",
+          "East": "1.0146",
+          "South": "48.2805",
+          "North": "50.0823"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "II SS Panzer Corps Arrival",
+      "Sub-event_summary": "II SS Panzer Corps under Paul Hausser arrived in Caen sector near end of month from Eastern Front.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "The II SS Panzer Corps, commanded by Generaloberst Paul Hausser, had arrived in the Caen sector near the end of the month after having been recalled from the Eastern Front."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "END JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "END JUN44"
+      },
+      "TOE": {
+        "Unit": "II SS Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "Generaloberst",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Eastern Front",
+        "Place_GPS_coordinate": "55.7558, 37.6173",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Weather_text": "Conditions in late June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7418",
+          "East": "1.0146",
+          "South": "48.2805",
+          "North": "50.0823"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Division of Normandy Front",
+      "Sub-event_summary": "On 28 June, Normandy front divided into two sectors: Panzer Group West controlling four corps on the right, Seventh Army two on the left. Boundary west of Caumont, corresponding to British-American fronts.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "These seemed too many corps for one army to handle. Consequently, on 28 June the Germans divided the Normandy front into what amounted to two army sectors. On that date Panzer Group West took control of the four corps on the right, while Seventh Army retained control of the two on the left."
+      },
+      "Footnote_References": "38",
+      "Place_Name": "Caumont",
+      "Dates": {
+        "Date_group_of_event": "280000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "272200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "Panzer Group West",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [
+          {
+            "Unit": "Four Corps",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Caumont",
+        "Place_GPS_coordinate": "49.05, -0.6667",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Caumont",
+        "Place_GPS_coordinate": "49.05, -0.6667",
+        "Weather_text": "Conditions in late June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0467",
+          "East": "0.7133",
+          "South": "48.1491",
+          "North": "49.9509"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Corps Lineup",
+      "Sub-event_summary": "Corps lined up east to west: LXXXVI, I SS Panzer, II SS Panzer, XLVII Panzer, II Parachute, LXXXIV.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "The boundary lay just west of Caumont and almost corresponded with the boundary that separated the British and American fronts. On 1 July the corps that faced the Allies lined up from east to west in the following order: LXXXVI, I SS Panzer, II SS Panzer, XLVII Panzer, II Parachute, and LXXXIV."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caumont",
+      "Dates": {
+        "Date_group_of_event": "010000B JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "302200Z JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Caumont",
+        "Place_GPS_coordinate": "49.05, -0.6667",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Caumont",
+        "Place_GPS_coordinate": "49.05, -0.6667",
+        "Weather_text": "Gloomy in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0467",
+          "East": "0.7133",
+          "South": "48.1491",
+          "North": "49.9509"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Combat Troops Strength",
+      "Sub-event_summary": "Each sector had about 35,000 combat troops, but Panzer Group West had superior armament.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Each of the two sectors facing the Allies at the beginning of July had about 35,000 combat troops in the line, but there was a great difference in tactical strength because of armament."
+      },
+      "Footnote_References": "39",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy with grey skies in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Panzer Group West Armament",
+      "Sub-event_summary": "Panzer Group West, opposite British, had 250 medium and 150 heavy tanks, including Tigers and King Tigers.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "Panzer Group West, opposite the British, had approximately 250 medium and 150 heavy serviceable tanks, the latter including quite a few Tigers and King Tigers."
+      },
+      "Footnote_References": "40",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Seventh Army Armament",
+      "Sub-event_summary": "Seventh Army, opposite Americans, had only 50 medium and 26 heavy Panthers.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "Opposite the Americans the Seventh Army, in contrast, had only 50 mediums and 26 heavy Panthers."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Antiaircraft and Artillery Imbalance",
+      "Sub-event_summary": "Panzer Group West controlled III Flak Corps dual-purpose guns, three times more antiaircraft weapons, all rocket projector brigades (Nebelwerfer), and preponderance of artillery.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "Of antiaircraft artillery in Normandy, Panzer Group West controlled the deadly dual-purpose guns of the III Flak Corps and had at least three times the quantity of the other antiaircraft weapons possessed by the Seventh Army. It had all three rocket projector brigades available in the west--the Nebelwerfer, which fired the \"screaming meemies.\" It also had the preponderance of artillery."
+      },
+      "Footnote_References": "41,42",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "III Flak Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Panzer Group West",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Dual-purpose guns",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Imbalance Due to Terrain",
+      "Sub-event_summary": "Imbalance evolved from terrain: hedgerowed lowlands in west inhibited armor, ideal for defense; eastern sector favorable for armored maneuver. Concentrated offensive power in east for planned counterattack.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "The imbalance of strength evolved from the nature of the battlefield terrain. In the western sector, where the Americans operated, the hedgerowed lowlands inhibited massed armor action and were ideal for defense. In the eastern sector, facing the British, the terrain was favorable for armored maneuver. Having hoped to launch a major counterattack in June, the Germans had concentrated the bulk of their offensive power there. At the end of the month, when the Germans were passing from an offensive to a defensive concept in Normandy, the presence of Stronger forces on the eastern sector seemed fortuitous to them since Caen blocked the route to Paris."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "END JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "END JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Weather_text": "Conditions in late June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7418",
+          "East": "1.0146",
+          "South": "48.2805",
+          "North": "50.0823"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Hitler's Expectations of Allied Attack",
+      "Sub-event_summary": "Hitler expected Allies to capture Paris as main objective, with British Second Army carrying main weight, striking from Orne toward Paris with 20-22 divisions.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "Hitler expected the Allies to make the capture of Paris their principal objective. He figured that the British Second Army would carry the main weight of the attack, while the U.S. First Army would protect the open flank. In this belief, he anticipated that the Allies would try to gain control of the middle reaches of the Orne River as a line of departure. From there he expected British forces totaling twenty or twenty-two divisions to strike toward Paris and to seek to meet and defeat the German Army in open battle west of the Seine."
+      },
+      "Footnote_References": "44",
+      "Place_Name": "Paris",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Paris",
+        "Place_GPS_coordinate": "48.8566, 2.3522",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Paris",
+        "Place_GPS_coordinate": "48.8566, 2.3522",
+        "Weather_text": "Mild in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "0.9723",
+          "East": "3.7321",
+          "South": "47.9557",
+          "North": "49.7575"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Plan to Withdraw Armored Divisions",
+      "Sub-event_summary": "To forestall anticipated Allied action, Germans planned to withdraw armored divisions from front-line, replace with infantry. On 1 July, 35,000 infantrymen moving to front.",
+      "Sub-event_fulltext": {
+        "Paragraph_14": "In order to forestall the anticipated action, the Germans planned to withdraw the armored divisions-all of which were under Panzer Group West--from front-line commitment and replace them with infantry. On 1 July some 35,000 combat infantrymen were moving toward the front to make this substitution. When the infantrymen eventually supplanted the armor in defensive positions during the month of July, Army Group B hoped to have two army sectors nearly equally manned. Nine armored divisions, most relieved by the infantry, would be in immediate reserve."
+      },
+      "Footnote_References": "45",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "010000B JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "302200Z JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Depletion of Reserves",
+      "Sub-event_summary": "To obtain disposition, Germans depleted reserves in west by 1 July. First Parachute Army small headquarters, OKW one parachute regiment, OB WEST none, Army Group B one armored division and regiment, Seventh Army one SS panzer and one parachute division uncommitted, Panzer Group West nothing.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "To obtain this hoped-for disposition, the Germans had reinforced the battle area in Normandy by virtually depleting by 1 July their reserves in the west. The First Parachute Army, under OKL control, was only a small headquarters theoretically performing an infantry training mission in the interior of France and could, in extreme emergency, be counted as a reserve force. OKW controlled only one parachute regiment; OB WEST had no units in reserve. Army Group B had an armored division and an armored regiment still uncommitted. The Seventh Army had not yet committed one SS panzer division and one parachute division. Panzer Group West had nothing in reserve."
+      },
+      "Footnote_References": "46",
+      "Place_Name": "France",
+      "Dates": {
+        "Date_group_of_event": "010000B JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "302200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "First Parachute Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKL",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Small headquarters",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "France",
+        "Place_GPS_coordinate": "48.8566, 2.3522",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "France",
+        "Place_GPS_coordinate": "48.8566, 2.3522",
+        "Weather_text": "Varied in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "0.9723",
+          "East": "3.7321",
+          "South": "47.9557",
+          "North": "49.7575"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Reinforcements from Brittany",
+      "Sub-event_summary": "Seventh Army stripped Brittany of four divisions and two regiments, with fifth coming in July.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "To get troops to the battlefield in Normandy, the Seventh Army had stripped its forces in Brittany of four divisions and two regiments, and a fifth division was to come forward early in July."
+      },
+      "Footnote_References": "47",
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.00, -3.00",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.00, -3.00",
+        "Weather_text": "Gloomy in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.3464",
+          "East": "-1.6536",
+          "South": "47.0991",
+          "North": "48.9009"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Reinforcements from Other Areas",
+      "Sub-event_summary": "Netherlands commander furnished one division. Army Group G contributed six divisions from southern France.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "The commander of the Netherlands forces had furnished one division. Army Group G had contributed from its relatively meager forces in southern France six divisions--four infantry, one panzer grenadier, and one armored--all under orders or marching toward Normandy at the end of June."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Netherlands",
+      "Dates": {
+        "Date_group_of_event": "END JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "END JUN44"
+      },
+      "TOE": {
+        "Unit": "Army Group G",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Relatively meager forces",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Netherlands",
+        "Place_GPS_coordinate": "52.1326, 5.2913",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Netherlands",
+        "Place_GPS_coordinate": "52.1326, 5.2913",
+        "Weather_text": "Mild in late June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "3.9113",
+          "East": "6.6713",
+          "South": "51.2317",
+          "North": "53.0335"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Fifteenth Army Untouched",
+      "Sub-event_summary": "Fifteenth Army remained untouched, with divisions replaced from Norway and Denmark. At beginning of July, had seven divisions direct control, four subordinate corps controlling eleven more.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "Only the Fifteenth Army remained untouched. The few divisions it had sent to Normandy had been replaced by units brought from Norway and Denmark. At the beginning of July the Fifteenth Army, deployed between the Seine and the Schelde, still had seven divisions under direct control and directed four subordinate corps that controlled eleven additional divisions. The Germans had refused to divert this strong force into Normandy because they expected a second Allied invasion of the Continent in that area. German estimates throughout June had considered an Allied invasion of the Pas-de-Calais--the Kanalkueste--a strong possibility."
+      },
+      "Footnote_References": "48",
+      "Place_Name": "Seine",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Fifteenth Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [
+          {
+            "Unit": "Four subordinate corps",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "Seven divisions direct, eleven additional",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Pas-de-Calais",
+        "Place_GPS_coordinate": "50.95, 1.85",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Pas_de_Calais_map_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Seine",
+        "Place_GPS_coordinate": "49.44278, 1.08861",
+        "Weather_text": "Conditions in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-0.2969",
+          "East": "2.4742",
+          "South": "48.5419",
+          "North": "50.3437"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Expectations of Pas-de-Calais Invasion",
+      "Sub-event_summary": "Germans expected second invasion at Pas-de-Calais due to V-1 sites, shortest route to England, supply ease, air support, route to Rhine and Ruhr.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "They were convinced that launching sites of a new weapon--the V-1--on the coast of northern France and Belgium constituted a challenge the Allies could not ignore. The Pas-de-Calais was the section of continental Europe nearest to England, and an Allied assault there could be supplied most easily and supported by air without interruption. The fact that this Channel coast area also offered the shortest route to the Rhine and the Ruhr was not ignored."
+      },
+      "Footnote_References": "49",
+      "Place_Name": "Pas-de-Calais",
+      "Dates": {
+        "Date_group_of_event": "THROUGHOUT JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "THROUGHOUT JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Pas-de-Calais",
+        "Place_GPS_coordinate": "50.95, 1.85",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Pas-de-Calais",
+        "Place_GPS_coordinate": "50.95, 1.85",
+        "Weather_text": "Channel coast conditions in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "0.47",
+          "East": "3.23",
+          "South": "50.0491",
+          "North": "51.8509"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Deception by 'Army Group Patton'",
+      "Sub-event_summary": "Germans believed Allied divisions in UK belonged to 'Army Group Patton', expected to invade Pas-de-Calais, despite rating as diversionary.",
+      "Sub-event_fulltext": {
+        "Paragraph_20": "The Germans expected an Allied invasion of the Pas-de-Calais because they believed that the Allied divisions still in the United Kingdom belonged to \"Army Group Patton.\" They speculated that the future mission of these troops was an invasion of the Continent in the Pas-de-Calais area, this despite the fact that German intelligence rated the troops as capable of only a diversionary effort."
+      },
+      "Footnote_References": "50",
+      "Place_Name": "United Kingdom",
+      "Dates": {
+        "Date_group_of_event": "THROUGHOUT JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "THROUGHOUT JUN44"
+      },
+      "TOE": {
+        "Unit": "Army Group Patton (deception)",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Rated as diversionary",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Pas-de-Calais",
+        "Place_GPS_coordinate": "50.95, 1.85",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "United Kingdom",
+        "Place_GPS_coordinate": "51.5074, -0.1278",
+        "Weather_text": "Conditions in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5057",
+          "East": "1.25",
+          "South": "50.6065",
+          "North": "52.4083"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Operation Fortitude Effectiveness",
+      "Sub-event_summary": "Operation Fortitude deception effective through June and July, with naval demonstrations, false messages, keeping Germans in alert, immobilizing Fifteenth Army.",
+      "Sub-event_fulltext": {
+        "Paragraph_21": "\"Army Group Patton\" was in reality an Allied decoy, a gigantic hoax designed to convince the Germans that OVERLORD was only part of a larger invasion effort. Practiced under the provisions of Operation Fortitude, the Allied deception was effective throughout June and most of July. Naval demonstrations off the Channel coast, false messages intercepted and reported by German intelligence, and other signs of impending coastal assault kept the Germans in a continual state of alert and alarm and immobilized the considerable force of the Fifteenth Army."
+      },
+      "Footnote_References": "51",
+      "Place_Name": "Channel coast",
+      "Dates": {
+        "Date_group_of_event": "THROUGHOUT JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "THROUGHOUT JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Channel coast",
+        "Place_GPS_coordinate": "50.0, 1.0",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Channel coast",
+        "Place_GPS_coordinate": "50.0, 1.0",
+        "Weather_text": "Stormy in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-0.38",
+          "East": "2.38",
+          "South": "49.0991",
+          "North": "50.9009"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Casualties and Replacements",
+      "Sub-event_summary": "Operation Fortitude deterred committing Fifteenth Army. Casualties outnumbering replacements due to system, transportation difficulties.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "That Operation Fortitude was a powerful deterrent to committing the Fifteenth Army in Normandy was clearly illustrated by the fact that casualties among troops in contact with the Allies, which mounted alarmingly, were not promptly replaced. By the beginning of July, casualties were outnumbering individual replacements. Yet other factors also accounted for the growing shortage of manpower on the Western Front, among them a complicated replacement system and difficulties of transportation."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {},
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": "Casualties mounting, outnumbering replacements"
+        },
+        "Civilian": {}
+      },
+      "Media": {},
+      "Place": {
+        "Place_Name": "Western Front",
+        "Place_GPS_coordinate": "49.0, 0.0",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "German Unit Types",
+      "Sub-event_summary": "German units varied: regular infantry (10,000-12,500 men, 6 battalions), static (10,000 men, fixed weapons), panzer grenadier (14,000, motorized), armored (14,000, tanks), SS panzer (17,000), parachute (16,000), Luftwaffe field (12,500).",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "German ground units on the Western Front consisted of a variety of types. The regular Infantry division, with between 10,000 and 12,500 men, had six battalions of infantry organized into either two or three regiments. The specialized static division of about 10,000 men, basically a fortress unit designed to defend specific coastal sectors, had a large proportion of fixed weapons, little organic transportation, no reconnaissance elements, and few engineers. The panzer grenadier division, 14,000 strong, was a motorized unit with one tank battalion and two infantry regiments of three battalions each. The armored division, with 14,000 troops, had two tank battalions; its armored infantrymen were organized into two regiments of two battalions each. The SS panzer division, with 17,000 men, had two tank battalions and two regiments of armored infantry of three battalions each. The Luftwaffe also had ground units because German industry could not manufacture enough planes for the manpower allocated and because Goering had ambitions to have a land army of his own. There were two types of Luftwaffe ground units, both somewhat weaker in fire power than the regular Infantry division. The parachute division had 16,000 paratroopers who were in reality infantrymen; the units accepted only volunteers who received thorough infantry training. The Luftwaffe field division, about 12,500 men, contained miscellaneous surplus personnel from the antiaircraft artillery, from air signal units, from aircraft maintenance crews, from administrative units, and a certain number of recruits and foreigners."
+      },
+      "Footnote_References": "52,53",
+      "Place_Name": "Western Front",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Infantry Division (regular)",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {},
+        "Subordinates": {
+          "Unit": "Two or three regiments",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "10,000-12,500 men, 6 battalions",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Western Front",
+        "Place_GPS_coordinate": "49.0, 0.0",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Western Front",
+        "Place_GPS_coordinate": "49.0, 0.0",
+        "Weather_text": "Varied in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.38",
+          "East": "1.38",
+          "South": "48.0991",
+          "North": "49.9009"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Static Division",
+      "Sub-event_summary": "Specialized static division: 10,000 men, fortress unit for coastal sectors, fixed weapons, little transportation, no reconnaissance, few engineers.",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "The specialized static division of about 10,000 men, basically a fortress unit designed to defend specific coastal sectors, had a large proportion of fixed weapons, little organic transportation, no reconnaissance elements, and few engineers."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Western Front",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Static Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {},
+        "Subordinates": {},
+        "Personnel": "About 10,000 men",
+        "Equipments": {
+          "Supply": "Large proportion of fixed weapons, little organic transportation"
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Western Front",
+        "Place_GPS_coordinate": "49.0, 0.0",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Western Front",
+        "Place_GPS_coordinate": "49.0, 0.0",
+        "Weather_text": "Varied in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.38",
+          "East": "1.38",
+          "South": "48.0991",
+          "North": "49.9009"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Panzer Grenadier Division",
+      "Sub-event_summary": "Panzer grenadier division: 14,000 strong, motorized, one tank battalion, two infantry regiments of three battalions each.",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "The panzer grenadier division, 14,000 strong, was a motorized unit with one tank battalion and two infantry regiments of three battalions each."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Western Front",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Grenadier Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {},
+        "Subordinates": {
+          "Unit": "Two infantry regiments",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "14,000 strong",
+        "Equipments": {
+          "Supply": "Motorized, one tank battalion"
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Western Front",
+        "Place_GPS_coordinate": "49.0, 0.0",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Western Front",
+        "Place_GPS_coordinate": "49.0, 0.0",
+        "Weather_text": "Varied in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.38",
+          "East": "1.38",
+          "South": "48.0991",
+          "North": "49.9009"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Armored Division",
+      "Sub-event_summary": "Armored division: 14,000 troops, two tank battalions, armored infantrymen in two regiments of two battalions each.",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "The armored division, with 14,000 troops, had two tank battalions; its armored infantrymen were organized into two regiments of two battalions each."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Western Front",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Armored Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {},
+        "Subordinates": {
+          "Unit": "Two regiments of armored infantry",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "14,000 troops",
+        "Equipments": {
+          "Supply": "Two tank battalions"
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Western Front",
+        "Place_GPS_coordinate": "49.0, 0.0",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Western Front",
+        "Place_GPS_coordinate": "49.0, 0.0",
+        "Weather_text": "Varied in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.38",
+          "East": "1.38",
+          "South": "48.0991",
+          "North": "49.9009"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "SS Panzer Division",
+      "Sub-event_summary": "SS panzer division: 17,000 men, two tank battalions, two regiments of armored infantry of three battalions each.",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "The SS panzer division, with 17,000 men, had two tank battalions and two regiments of armored infantry of three battalions each."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Western Front",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "SS Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {},
+        "Subordinates": {
+          "Unit": "Two regiments of armored infantry",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "17,000 men",
+        "Equipments": {
+          "Supply": "Two tank battalions"
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Western Front",
+        "Place_GPS_coordinate": "49.0, 0.0",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Western Front",
+        "Place_GPS_coordinate": "49.0, 0.0",
+        "Weather_text": "Varied in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.38",
+          "East": "1.38",
+          "South": "48.0991",
+          "North": "49.9009"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Luftwaffe Ground Units",
+      "Sub-event_summary": "Luftwaffe ground units due to plane shortage and Goering's ambitions: parachute division (16,000 paratroopers as infantrymen, volunteers), Luftwaffe field division (12,500 surplus personnel, weaker fire power).",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "The Luftwaffe also had ground units because German industry could not manufacture enough planes for the manpower allocated and because Goering had ambitions to have a land army of his own. There were two types of Luftwaffe ground units, both somewhat weaker in fire power than the regular Infantry division. The parachute division had 16,000 paratroopers who were in reality infantrymen; the units accepted only volunteers who received thorough infantry training. The Luftwaffe field division, about 12,500 men, contained miscellaneous surplus personnel from the antiaircraft artillery, from air signal units, from aircraft maintenance crews, from administrative units, and a certain number of recruits and foreigners."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Western Front",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Parachute Division (Luftwaffe)",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {},
+        "Subordinates": {},
+        "Personnel": "16,000 paratroopers (infantrymen), volunteers",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Western Front",
+        "Place_GPS_coordinate": "49.0, 0.0",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Western Front",
+        "Place_GPS_coordinate": "49.0, 0.0",
+        "Weather_text": "Varied in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.38",
+          "East": "1.38",
+          "South": "48.0991",
+          "North": "49.9009"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Replacement System",
+      "Sub-event_summary": "Replacement divisions set up in 1942 for replacements, but became garrison/field divisions, needing replacements themselves.",
+      "Sub-event_fulltext": {
+        "Paragraph_24": "To replace combat losses in the various units in the face of competition between Himmler and Goering for the limited German manpower was no easy task. In late 1942 the Germans had set up training, or reserve, divisions designed to furnish replacements for units in combat. Originally these divisions had had an occupation role, which had not impaired their training function, but later they became garrison troops, and when occupying coastal sectors they were upgraded to field divisions. Thus, instead of existing for the purpose of supplying replacements to the combat forces, they were themselves eventually in need of replacements."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Germany",
+      "Dates": {
+        "Date_group_of_event": "LATE 1942",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "LATE 1942"
+      },
+      "TOE": {
+        "Unit": "Replacement Divisions",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {},
+        "Subordinates": {},
+        "Personnel": "Training/reserve, became field divisions",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Germany",
+        "Place_GPS_coordinate": "52.52, 13.405",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Germany",
+        "Place_GPS_coordinate": "52.52, 13.405",
+        "Weather_text": "Conditions in late 1942.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "12.0251",
+          "East": "14.7849",
+          "South": "51.6191",
+          "North": "53.4209"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Transportation Difficulties",
+      "Sub-event_summary": "Transportation main reason for shortages: railroads damaged, Seine bridges destroyed except Paris. Supply via barges on Seine to Elbeuf, then 80-mile overland to Caen.",
+      "Sub-event_fulltext": {
+        "Paragraph_25": "Although diversity of units, competition between services, and a defective replacement system prevented the Germans from maintaining combat formations at authorized strengths, the difficulties of transportation comprised the most important reason for manpower shortages on the front. By the end of June, when the railroads were badly damaged by Allied air attack and all the Seine River bridges except those at Paris hadbeen destroyed, barges moving on the Seine from Paris to Elbeuf and an eighty-mile overland route for trucks and horse-drawn wagons from Elbeuf to Caen formed perhaps the most dependable line of communications. All highways and other supply routes were overcrowded and in constant danger of Allied air attacks during daylight hours. Units traveling to reinforce the front had to move in several echelons, reload several times en route, and march a good part of the way on foot, mostly at night."
+      },
+      "Footnote_References": "54,55",
+      "Place_Name": "Seine River",
+      "Dates": {
+        "Date_group_of_event": "END JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "END JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Elbeuf",
+        "Place_GPS_coordinate": "49.2867, 1.0067",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Seine River",
+        "Place_GPS_coordinate": "49.44278, 1.08861",
+        "Weather_text": "Conditions in late June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-0.2969",
+          "East": "2.4742",
+          "South": "48.5419",
+          "North": "50.3437"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Supply Shortages",
+      "Sub-event_summary": "Transportation caused supply shortages: fuel deficit 200,000 gallons/day, only 400 tons of 2,250 daily requirements brought to front.",
+      "Sub-event_fulltext": {
+        "Paragraph_26": "Transportation difficulties also created supply and equipment shortages. At the beginning of July, the deficit in fuel amounted to over 200,000 gallons per day. Of daily requirements figured at 1,000 tons of ammunition, 1,000 tons of fuel, and 250 tons of rations, only about 400 tons of all classes of supply could be brought to the front."
+      },
+      "Footnote_References": "56",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Equipment Borrowing Example",
+      "Sub-event_summary": "Quartermaster general borrowed 15 machine guns from military governor of France for Cherbourg garrison, illustrating supply straits.",
+      "Sub-event_fulltext": {
+        "Paragraph_27": "That the quartermaster general of the west had to borrow fifteen machine guns from the military governor of France in order to fill a request from the Cherbourg garrison illustrated into what straits German supply had fallen."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Cherbourg",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.63, -1.62",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.63, -1.62",
+        "Weather_text": "Conditions in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0109",
+          "East": "-0.2291",
+          "South": "48.7291",
+          "North": "50.5309"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Armored Wear and Movement Issues",
+      "Sub-event_summary": "Armored divisions wore out equipment on highways. Highways littered with wrecked vehicles. Movement only at night, slow pace.",
+      "Sub-event_fulltext": {
+        "Paragraph_28": "For lack of dependable and long-distance railroad routes, armored divisions wore out valuable equipment on the highways before getting to the combat area. The major highways to Normandy were littered with wrecked vehicles. Movement was possible only during darkness, and that at a snail's pace."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Night movements in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Lack of Air Support",
+      "Sub-event_summary": "Third Air Fleet absent: 500 authorized aircraft, 300 available, only 90 bombers and 70 fighters serviceable due to parts/fuel shortages. Could not challenge Allied air supremacy.",
+      "Sub-event_fulltext": {
+        "Paragraph_29": "Conspicuous by their absence from the battlefield were the planes of the Third Air Fleet. German ground troops grimly joked that Allied aircraft were painted silver, while German planes in contrast were colorless and invisible: \"In the West they say the planes are in the East, in the East they say they're in the West, and at home they say they're at the front.\" Of an authorized 500 aircraft in the west, the Germans had about 300 planes, of which only about 90 bombers and 70 fighters could get off the ground at any one time because of shortages of spare parts and fuel. This small number could not challenge the Allied air supremacy."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Third Air Fleet",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKL",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "Shortages of spare parts and fuel",
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Aircraft",
+            "Identifier": "",
+            "Quantity": "300 available, 160 serviceable",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "V-1 Weapon",
+      "Sub-event_summary": "V-1 missiles launched from 13 June, lasting 80 days, peaking 820 in week ending 8 July. Some from bombers. V-2 coming in September.",
+      "Sub-event_fulltext": {
+        "Paragraph_30": "By July there was, however, a new weapon in operation that gave the Germans hope of redressing their discouraging situation. Air missiles called the V-1 (originally after Versuchmuster, meaning experimental model, later Vergeltungswaffe, translated vengeance weapon) and launched for the most part from the Pas-de-Calais area had on 13 June begun to fall on England in a campaign that was to last eighty days. Admittedly a terror agent directed at the civilian population, the V-1s were intended as a reprisal for Allied air attacks on German cities. The campaign reached its greatest intensity during the seven-day period ending 8 July, when a total of 820 missiles were counted approaching the English coast. The Germans soon began to launch some V-1s from medium bombers. Though they were not to appear until early September, the Allies learned in July that V-2 weapons, supersonic rockets deadlier than the V-1s, were almost ready for operational use."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Pas-de-Calais",
+      "Dates": {
+        "Date_group_of_event": "130000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "122200Z JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Pas-de-Calais",
+        "Place_GPS_coordinate": "50.95, 1.85",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Pas-de-Calais",
+        "Place_GPS_coordinate": "50.95, 1.85",
+        "Weather_text": "Conditions in June-July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "0.47",
+          "East": "3.23",
+          "South": "50.0491",
+          "North": "51.8509"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Allied Attacks on V-Sites",
+      "Sub-event_summary": "Allied bombers attacked V-weapon installations since 1943, particularly ground launching sites.",
+      "Sub-event_fulltext": {
+        "Paragraph_31": "Allied bombers had since 1943 been attacking V-weapon installations, particularly those diagnosed as ground launching sites. Despite air"
+      },
+      "Footnote_References": "57,58",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING 1943",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING 1943"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions since 1943.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "",
+      "Footnote_Number": "29",
+      "Footnote_Text": "OB WEST Ia KTB, 1 Jul.",
+      "Footnote_Referenced_Source": "OB WEST Ia KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OB WEST Operations War Diary",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "OB WEST Ia KTB, 1 Jul"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "30",
+      "Footnote_Text": "\"Ia Notitz fuer Chef,\" 1 Jul, OB WEST KTB, Anlage 415.",
+      "Footnote_Referenced_Source": "Ia Notitz fuer Chef",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OB WEST KTB, Anlage 415",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "OB WEST War Diary Annex 415"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "38",
+      "Footnote_Text": "Seventh Army exercised operational control over Panzer Group West until 1 July, when Panzer Group West came directly under OB WEST. Until 5 July Panzer Group West depended on the Seventh Army for supply; on 6 August Panzer Group West became the Fifth Panzer Army.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "39",
+      "Footnote_Text": "See detailed estimated totals in Hodgson, R-49.",
+      "Footnote_Referenced_Source": "Hodgson, R-49",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "James B. Hodgson, The Germans on the Normandy Front, 1 July 1944, OCMH MS R-49",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "MS R-49"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "40",
+      "Footnote_Text": "For the characteristics of the German tanks, see below, Chapter III .",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "41",
+      "Footnote_Text": "OKH Generalinspekteur der Panzertruppen Zustandsberichte, SS-Verbaende, XII.43-VII.44.",
+      "Footnote_Referenced_Source": "OKH Generalinspekteur der Panzertruppen Zustandsberichte",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OKH Inspector General of Panzer Troops Status Reports, SS Units, Dec 43-Jul 44",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "OKH Generalinspekteur der Panzertruppen Zustandsberichte"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "42",
+      "Footnote_Text": "Ltr, I6/Stoart/Ia #3748/44, 21 Jun, AGp B la Opns. Befehle; MS # B-597 (Pickert); see Hodgson, R-24.",
+      "Footnote_Referenced_Source": "Ltr, I6/Stoart/Ia #3748/44",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AGp B Ia Operationsbefehle, MS # B-597 (Pickert), Hodgson, R-24",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "MS # B-597, MS R-24"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "44",
+      "Footnote_Text": "Estimate of Allied Capabilities and Intentions, Sitrep for 30 Jun, dated 1 Jul, OKW/WFSt, Lageberichte, 1-7.VII.44; Hitler Ltr of Instr, 8 Jul, quoted in full in OB WEST Ltr of Instr, 8 Jul, AGp B Fuehrerbefehle; OB WEST, a Study in Command, I, 38.",
+      "Footnote_Referenced_Source": "Estimate of Allied Capabilities and Intentions",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OKW/WFSt Lageberichte, AGp B Fuehrerbefehle, OB WEST, a Study in Command",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "OKW/WFSt Situation Reports, 1-7 Jul 44"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "45",
+      "Footnote_Text": "See James B. Hodgson, \"Counting Combat Noses,\" Combat Forces Journal (September, 1954), pp. 45-46, for a definition and explanation of German combat effectives.",
+      "Footnote_Referenced_Source": "Counting Combat Noses",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Combat Forces Journal (September, 1954)",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "James B. Hodgson article"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "46",
+      "Footnote_Text": "Hodgson, R-24, Order of Battle, 6 Jun and 3 Jul, Apps. D and F; MS # P-154.",
+      "Footnote_Referenced_Source": "Hodgson, R-24",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "James B. Hodgson, Command and Staff Roster, Western Command, June to September 1944, MS R-24a; MS # P-154",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "MS R-24, MS # P-154"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "47",
+      "Footnote_Text": "James B. Hodgson, German Troops Withdrawn from Brittany, 6 June to 15 July 1944, OCMH MS R-34.",
+      "Footnote_Referenced_Source": "German Troops Withdrawn from Brittany",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH MS R-34",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "MS R-34"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "48",
+      "Footnote_Text": "The term Pas-de-Calais is here and hereafter used in the loose sense as designating the coast line between the Somme River and Gravelines (near Dunkerque). See Harrison, Cross-Channel Attack, p. 450 .",
+      "Footnote_Referenced_Source": "Cross-Channel Attack",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "49",
+      "Footnote_Text": "Hitler Ltr of Instr, 8 Jul, cited n. 44; OB WEST, a Study in Command, I 37; JIC (44) 276 (O) (Final) and JIC (44) 287 (O) (Final), German Appreciation of Allied Intentions in the West, 26 Jun and 3 Jul, Pogue Files. For the V-1, see below, p. 34.",
+      "Footnote_Referenced_Source": "Hitler Ltr of Instr",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Pogue Files, OB WEST, a Study in Command",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "JIC Reports, 26 Jun and 3 Jul"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "50",
+      "Footnote_Text": "OKW/WFSt Sitreps. 1-7 Jul; Harrison, Cross-Channel Attack, pp. 464-67 ; see Lt. David Garth, The Battle for Normandy, pp. 10-12, MS, OCMH; Lagebeurteilung OB WEST to OKW/WFSt, 1600, 3 Jul, OB WEST KTB and Anlage 452.",
+      "Footnote_Referenced_Source": "OKW/WFSt Sitreps",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OKW/WFSt Situation Reports, OB WEST KTB, Lt. David Garth MS",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "OKW/WFSt Sitreps 1-7 Jul, Lagebeurteilung 3 Jul"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "51",
+      "Footnote_Text": "\"Der Westen (Schramm), 48-49; OKW/WFSt Sitrep, 30 Jun; OB WEST KTB, 2, 5, 7, and 8 Jul, and Anlage 423; Pogue, Supreme Command, p. 180 .",
+      "Footnote_Referenced_Source": "Der Westen",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Der Westen (Schramm), OKW/WFSt Sitrep, OB WEST KTB",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Der Westen (Schramm), OKW/WFSt Sitrep 30 Jun"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "52",
+      "Footnote_Text": "Behind the front the Organization Todt, a paramilitary formation of German and foreign laborers, both hired and impressed, was an auxiliary construction force. Formed in 1938 to build the West Wall, Todt helped Army engineers repair roads, build bridges, and construct fortifications. Order of Battle Annex 9, Semi-Mil Servs, XV Corps G-2 Per Rpt 25, 28 Aug.",
+      "Footnote_Referenced_Source": "Order of Battle Annex 9",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "XV Corps G-2 Per Rpt 25",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "XV Corps G-2 Periodic Report 25, 28 Aug"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "53",
+      "Footnote_Text": "WD TM-E 30-451, Handbook on German Military Forces (Washington, 15 March 1945); SHAEF Intel Notes of 24 Aug 44, German Replacements to the Normandy Battle Area, FUSA G-2 Jnl and File; Order of Battle Annex 2, 17 Luftwaffen Feld Division (Air Force Field Div), 18 Aug, XV Corps G-2 Per Rpt 16, 19 Aug.",
+      "Footnote_Referenced_Source": "Handbook on German Military Forces",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/Germany/HB/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "SHAEF Intel Notes, FUSA G-2 Jnl, Order of Battle Annex 2",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "WD TM-E 30-451"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "54",
+      "Footnote_Text": "Hodgson, R-24.",
+      "Footnote_Referenced_Source": "Hodgson, R-24",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "James B. Hodgson, Command and Staff Roster, Western Command, June to September 1944, MS R-24a",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "MS R-24"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "55",
+      "Footnote_Text": "OB WEST OQu WEST KTB, 21 and 24 Jun.",
+      "Footnote_Referenced_Source": "OB WEST OQu WEST KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OB WEST Quartermaster War Diary",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "OB WEST OQu WEST KTB, 21 and 24 Jun"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "56",
+      "Footnote_Text": "OB WEST, A Study in Command, I, 91ff.",
+      "Footnote_Referenced_Source": "OB WEST, A Study in Command",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OB WEST, a Study in Command",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "MS # B-308 etc."
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "57",
+      "Footnote_Text": "Royce L. Thompson, Military Impact of the German V-weapons, 1943-1945, MS, OCMH; Lt Col Melvin C. Heifers, The Employment of V-weapons by the Germans during World War II, OCMH Monograph; Magna Bauer, The German Withdrawal From the Ardennes (May 1955), R-59; Wesley Frank Craven and James Lea Cate, eds., The Army Air Forces in World War II, Vol. III, Europe: Argument to V-E Day (Chicago: The University of Chicago Press, 1951) (hereafter cited as AAF III), p. XXV , Chs. IV and XV ; Eisenhower, Crusade in Europe, pp. 259-60; SGS SHAEF File 381, C ROSSBOW . Allied concern over German jet-propelled planes, another new development, prompted warnings to the ground forces that any jet aircraft that were shot down were to be guarded so that AEAF personnel could make a technical examination of the remains. VII Corps Opns Memo 36, 13 Jul.",
+      "Footnote_Referenced_Source": "Military Impact of the German V-weapons",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH MS, OCMH Monograph, R-59, AAF III, Crusade in Europe, SGS SHAEF File 381, VII Corps Opns Memo 36",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Royce L. Thompson MS, Lt Col Melvin C. Heifers Monograph"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "58",
+      "Footnote_Text": "For a discussion of the Allied reaction to the V-weapons, see Pogue, Supreme Command, pp. 199-201 , 224-25 ; see also below, Chapter XXIX .",
+      "Footnote_Referenced_Source": "Supreme Command",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Supreme/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn2.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

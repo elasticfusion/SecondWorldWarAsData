@@ -1,9 +1,0 @@
-BeforeProcessing:
-  - Note any missing files
-
-JSONToReview:
-  - chapter1a.json
-
-Output:
-  - modify the JSON to comply
-

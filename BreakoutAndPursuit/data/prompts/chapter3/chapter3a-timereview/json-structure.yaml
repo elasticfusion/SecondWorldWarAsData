@@ -1,0 +1,125 @@
+Refer to $SourceLink for absolute paragraph identification.
+
+JSON should always be outputted to a markdown code box.
+Create JSON file that contains the following fields:
+
+Events:
+	- Event:
+	- Sub-event:
+		- Sub-event_summary:
+			- Sub-event_fulltext:
+				  - Paragraph_[19]
+				  - Paragraph_[20]
+				  - Paragraph_[nn]
+		- Footnote_References:
+		- Place_Name
+		- Dates:
+			- Date_group_of_event
+			- Source_date_group_of_event
+			- Zulu_date_group_of_event
+		- TOE:
+			- Unit:
+			- Unit_Nationality: [ ISO 3166 Alpha-2 ]
+			- Command_Structure:
+				- Unit
+				- Commander
+				- Name
+				- Rank
+				- End_Date
+				- End_Status
+				- Biographical_reference
+				- Biographical_reference_Capture_Date
+					- Subordinates:
+						  - Unit
+						  - Name
+						  - Rank
+						  - Date
+						  - End_Date_of_command
+						  - End_Status
+						  - Biographical_reference
+						  - Biographical_reference_Capture_Date
+				- Personnel:
+				- Equipments:
+					- Supply
+					- Allied_Employed:
+						- Origination_Country: [ ISO 3166 Alpha-2 ]
+							- Name
+							- Identifier
+							- Quantity
+							- Web_Reference
+							- Web_Image_Reference
+							- Web_Reference_Capture_Date
+					- Allied_Destroyed:
+						- Origination_Country: [ ISO 3166 Alpha-2 ]
+							- Name
+							- Identifier
+							- Quantity
+							- Web_Reference
+							- Web_Image_Reference
+							- Web_Reference_Capture_Date
+					- Axis_Employed
+						- Origination_Country: [ ISO 3166 Alpha-2 ]
+							- Name
+							- Identifier
+							- Quantity
+							- Web_Reference
+							- Web_Image_Reference
+							- Web_Image_License
+							- Web_Reference_Capture_Date
+					- Axis_Destroyed:
+						- Origination_Country: [ ISO 3166 Alpha-2 ]
+							- Name
+							- Identifier
+							- Quantity
+							- Web_Reference
+							- Web_Image_Reference
+							- Web_Reference_Capture_Date
+		Casualties:
+			- Allied:
+				- Allied_[ISO 3166 Alpha-2]_KIA
+				- Allied_[ISO 3166 Alpha-2]_WIA
+				- Allied_[ISO 3166 Alpha-2]_Missing
+				- Allied_[ISO 3166 Alpha-2]_Unspecified_Casualties
+				- Allied_[ISO 3166 Alpha-2]_Prisoner_of_War
+			- Axis:
+				- Axis_[ISO 3166 Alpha-2]_KIA
+				- Axis_[ISO 3166 Alpha-2]_WIA
+				- Axis_[ISO 3166 Alpha-2]_Missing
+				- Axis_[ISO 3166 Alpha-2]_Unspecified_Casualties
+				- Axis_[ISO 3166 Alpha-2]_Prisoner_of_War
+			- Civilian:
+				- Civilian_[ISO 3166 Alpha-2]_Killed
+				- Civilian_[ISO 3166 Alpha-2]_Wounded
+				- Civilian_[ISO 3166 Alpha-2]_Unspecified_Casualties
+		Media:
+			- Link
+			- Description
+			- License
+		Place:
+			- Place_Name
+			- Place_GPS_coordinate
+			- Map_Reference
+			- Map_Link
+			- ExternalMapLink
+			- ExternalMapLinkLicence
+			- ExternalMapLinkCaptureDate
+		Weather:
+			- Place_Name
+			- Place_GPS_coordinate
+			- Weather_text
+			- Spatial_Bounding_Box Coordinates
+Footnotes:
+	Footnote:
+		- Footnote_Number
+		- Footnote_Text
+		- Footnote_Referenced_Source
+		- Web_Link
+		- Web_Link_Capture_Date
+		- NonDigital_Library_Source
+		- NonDigital_Library_Address
+		- NonDigital_Library_References
+		- Source_Type: [ISO 3166 Alpha-2]
+Source_Footnote_Link: $Footnotelink
+Source_Footnote_Link_Capture_Date:
+Source_Link: $SourceLink
+Source_Link_Capture_Date:
