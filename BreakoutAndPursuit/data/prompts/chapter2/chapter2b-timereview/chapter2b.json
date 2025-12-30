@@ -1,0 +1,1064 @@
+{
+  "Events": [
+    {
+      "Event": "The Enemy's Changing Strategy in the European Theater of Operations",
+      "Sub-event": "Initial Disagreement on Defense Strategy",
+      "Sub-event_summary": "German strategy in July was rooted in June events. Rundstedt favored a strong strategic reserve for mobile defense, while Rommel advocated static defense on the beaches due to Allied air superiority, leading to the Atlantic Wall construction.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "German strategy in July was rooted in the events of June. When the Allies landed on the Normandy beaches on 6 June 1944, the Germans were without a firmly enunciated policy of defense.⁴ The OB WEST commander, Generalfeldmarschall Gerd von Rundstedt, and the Army Group B commander, Generalfeldmarschall Erwin Rommel, were in vague but basic disagreement on how best to meet the expected Allied invasion. Rundstedt tended to favor maintaining a strong strategic reserve centrally located, so that after he determined the main invasion effort he could mass the reserve and destroy the Allies before they could reinforce their beachhead. Sometimes called the concept of mobile defense, this was a normal operational technique. Rommel presupposed Allied air superiority, and he argued that the Germans would be unable to move a centrally located reserve to the battlefield since the Allies would control the air in that area; he believed it necessary to defeat the Allied invaders on the beaches. Sometimes called the concept of static defense, this theory gave impetus to the construction of the Atlantic Wall.⁵"
+      },
+      "Footnote_References": "4,5",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "060000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "052200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "OB WEST",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Gerd von Rundstedt",
+          "Name": "Gerd von Rundstedt",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Gerd_von_Rundstedt",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Army Group B",
+          "Name": "Erwin Rommel",
+          "Rank": "Generalfeldmarschall",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Erwin_Rommel",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Atlantic_Wall_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Stormy conditions on 6 June 1944, with rough seas.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Changing Strategy in the European Theater of Operations",
+      "Sub-event": "Hitler's Indecision and Command Issues",
+      "Sub-event_summary": "Hitler never decided between mobile and static defense, favoring Rommel's approach, which undermined the chain of command as Rommel had direct access to Hitler.",
+      "Sub-event_fulltext": {
+        "Paragraph_2": "Hitler never made a final decision on which method of defense he preferred. Consequently, neither method was established as a distinct course of action. By inference, it appeared that Hitler favored defense on the beaches since he had charged Rommel with specific responsibility for coastal defense even though the task might logically have belonged to the theater commander, Rundstedt. Although Rommel was subordinate to Rundstedt, he thus had a certain favored status that tended to undermine the chain of command. This was emphasized by the fact that he had direct access to Hitler, a privilege of all field marshals."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Berlin",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUN44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Erwin Rommel",
+          "Name": "Erwin Rommel",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Erwin_Rommel",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Berlin",
+        "Place_GPS_coordinate": "52.52, 13.405",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Berlin",
+        "Place_GPS_coordinate": "52.52, 13.405",
+        "Weather_text": "Warm summer weather in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "12.0251",
+          "East": "14.7849",
+          "South": "51.6191",
+          "North": "53.4209"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Changing Strategy in the European Theater of Operations",
+      "Sub-event": "Response to Allied Landing",
+      "Sub-event_summary": "Despite disagreements, commanders acted in unison: Rommel fought on beaches, Rundstedt prepared counterattack, Hitler approved reserves. Panzer Group West planned decisive counterattack.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "Despite a lack of cohesion in the command structure and an absence of coherence in defensive planning, the three commanders acted in unison when the Allies assaulted the beaches. Rommel gave battle on the coast, Rundstedt began to prepare a counterattack, and Hitler approved the commitment of theater reserves. Their actions stemmed from traditional German military thought and training, which stressed the ideal of defeating an enemy by a decisive act rather than by a strategy of gradual and cumulative attrition.⁶ As a consequence, the German military leaders, although fighting essentially a defensive battle, searched for a bold counterattack that would destroy the Normandy beachhead and drive the Allies back into the sea. While Rommel fought the tactical battle of the beaches, Rundstedt designated a special headquarters (which he had organized in 1943 to train armored units) to plan and launch a counterattack of decisive proportions. Under the command of the OB WEST armor specialist, General der Panzertruppen Leo Freiherr Geyr von Schweppenburg, Panzer Group West assumed this function.⁷"
+      },
+      "Footnote_References": "6,7",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "060000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "052200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "Panzer Group West",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Leo Freiherr Geyr von Schweppenburg",
+          "Name": "Leo Freiherr Geyr von Schweppenburg",
+          "Rank": "General der Panzertruppen",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leo_Geyr_von_Schweppenburg",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Armored units",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Rough seas and overcast on 6 June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Changing Strategy in the European Theater of Operations",
+      "Sub-event": "Setbacks to Counterattack Plans",
+      "Sub-event_summary": "Allied bomber struck Panzer Group West headquarters on 10 June, killing staff. LXXXIV Corps commander Erich Marcks killed on 12 June, delaying plans.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "An Allied bomber struck Geyr's headquarters on 10 June, killed several key members of the staff, and obliterated immediate German hopes of regaining the initiative. To take the place of Panzer Group West, which could not be reorganized quickly after the bombing, the Germans planned to upgrade the LXXXIV Corps headquarters to an intermediate status pending its eventual elevation to an army headquarters. On 12 June, however, its commander, General der Artillerie Erich Marcks, was also killed by an Allied bomb.⁸"
+      },
+      "Footnote_References": "8",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "100000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "092200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "LXXXIV Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Erich Marcks",
+          "Name": "Erich Marcks",
+          "Rank": "General der Artillerie",
+          "End_Date": "12 JUN44",
+          "End_Status": "KIA",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Erich_Marcks",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {
+          "Axis_DE_KIA": "Several key staff members, Erich Marcks"
+        },
+        "Civilian": {}
+      },
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions allowing Allied bombing in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Changing Strategy in the European Theater of Operations",
+      "Sub-event": "Rommel's Assessment",
+      "Sub-event_summary": "By mid-June, Rommel believed Allies had firm foothold, drawing from Sicily and Italy experiences.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "By mid-June Rommel was inclined to believe that the Allies had gained a firm foothold in France.⁹ Experience in Sicily and Italy seemed to indicate that when Allied assault troops succeeded in digging in on shore, it was very difficult to dislodge them. On 12 June Hitler appeared to accept the validity of the danger, for on that date he recalled an SS panzer corps of two SS armored divisions--about 35,000 men--from the Eastern Front and dispatched them with highest transportation priority to the west. The mission of these units was to take part in the vital counterattack that was to destroy the Allied beachhead."
+      },
+      "Footnote_References": "9",
+      "Place_Name": "France",
+      "Dates": {
+        "Date_group_of_event": "MID JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "MID JUN44"
+      },
+      "TOE": {
+        "Unit": "SS Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "About 35,000 men",
+        "Equipments": {
+          "Supply": "Highest transportation priority",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Armored divisions",
+            "Identifier": "SS",
+            "Quantity": "2",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Eastern Front",
+        "Place_GPS_coordinate": "55.7558, 37.6173",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Eastern_Front_1944_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Eastern Front",
+        "Place_GPS_coordinate": "55.7558, 37.6173",
+        "Weather_text": "Varied front conditions in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "36.2374",
+          "East": "38.9972",
+          "South": "54.8549",
+          "North": "56.6567"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Changing Strategy in the European Theater of Operations",
+      "Sub-event": "German Losses and Supply Issues",
+      "Sub-event_summary": "German troops sustaining serious losses, Allied air superiority hampering reinforcements, discussions on Cherbourg loss as early as 9 June.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "While the SS panzer corps and other reinforcements hurried toward Normandy, German troops on the Western Front were sustaining serious losses. Allied air superiority was hampering and delaying the movement of German men and supplies to the battle area, and Allied ground troops were swarming ashore with increasing amounts of equipment. As early as three days after the invasion, officers of the OKH intelligence section and of the OKW operations staff discussed the probable loss of Cherbourg.¹⁰ Five days later, on 14 June, Rundstedt and Rommel agreed to leave only light German forces in defense of the port if the Americans should cut the Cherbourg peninsula and isolate the northern portion of it. Thus, only a few troops would be sacrificed in the north while the bulk of the German forces on the peninsula would withdraw and form a defensive line near its base to oppose an expected American attack toward the south. Two days later, on 16 June, as the field commanders, upon learning that the Americans were about to cut the peninsula, prepared to put the withdrawal plan from Cherbourg into effect, OKW transmitted Hitler's refusal to permit them to evacuate the port.¹¹"
+      },
+      "Footnote_References": "10,11",
+      "Place_Name": "Cherbourg",
+      "Dates": {
+        "Date_group_of_event": "090000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "082200Z JUN44"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {},
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": "Serious losses"
+        },
+        "Civilian": {}
+      },
+      "Media": {},
+      "Place": {
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.63, -1.62",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.63, -1.62",
+        "Weather_text": "Conditions allowing Allied air operations in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0109",
+          "East": "-0.2291",
+          "South": "48.7291",
+          "North": "50.5309"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Changing Strategy in the European Theater of Operations",
+      "Sub-event": "Hitler's Refusal to Evacuate Cherbourg",
+      "Sub-event_summary": "Rundstedt and Rommel considered strong defense of Cherbourg useless, but Hitler refused evacuation to deny Allies a major port until counterstroke.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "Although Field Marshals Rundstedt and Rommel considered a strong and costly defense of Cherbourg useless, Hitler was not interested in conserving several thousand soldiers when he could expend them and perhaps keep the Allies from gaining a major port, at least until the counterstroke, now planned for 25 June, was launched. While the master counterattack was being prepared to oust the Allies from Normandy, Hitler was unwilling to yield cheaply what he correctly judged to be an important link in the projected chain of Allied logistics."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Cherbourg",
+      "Dates": {
+        "Date_group_of_event": "160000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "152200Z JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.63, -1.62",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.63, -1.62",
+        "Weather_text": "Pre-storm conditions in mid-June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0109",
+          "East": "-0.2291",
+          "South": "48.7291",
+          "North": "50.5309"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Changing Strategy in the European Theater of Operations",
+      "Sub-event": "Disappointing Defense of Cherbourg",
+      "Sub-event_summary": "Defense of Cherbourg was disappointing due to troop confusion, inadequate provisioning, and American vigor.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Despite Hitler's wishes, the defense of Cherbourg was disappointing.¹² German troop confusion, inadequate provisioning of the fortress, and the vigor of the American attack were disheartening to the Germans. The field marshals concentrated their efforts on mounting the still pending major counterattack, even though Hitler continued to recommend counterattacks designed to aid the Cherbourg defenders.¹³"
+      },
+      "Footnote_References": "12,13",
+      "Place_Name": "Cherbourg",
+      "Dates": {
+        "Date_group_of_event": "END JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "END JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.63, -1.62",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.63, -1.62",
+        "Weather_text": "Post-storm in late June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0109",
+          "East": "-0.2291",
+          "South": "48.7291",
+          "North": "50.5309"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Changing Strategy in the European Theater of Operations",
+      "Sub-event": "Conference at Soissons",
+      "Sub-event_summary": "Field commanders conferred with Hitler at Soissons on 17 June, agreeing on Bayeux counterattack, with Panzer Group West directing.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "Conferring with Hitler at Soissons on 17 June, the field commanders agreed to launch through Bayeux what they all hoped would be the decisive counterattack.¹⁴ A reorganized Panzer Group West, under the control of Army Group B, was to direct the tactical operation, which would now be launched no earlier than 5 July. The purpose of the attack was to split the Allies on the coast and dispose of each separately."
+      },
+      "Footnote_References": "14",
+      "Place_Name": "Soissons",
+      "Dates": {
+        "Date_group_of_event": "170000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "162200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "Panzer Group West",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Soissons",
+        "Place_GPS_coordinate": "49.3817, 3.3236",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Soissons",
+        "Place_GPS_coordinate": "49.3817, 3.3236",
+        "Weather_text": "Mild conditions in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "1.9437",
+          "East": "4.7035",
+          "South": "48.4808",
+          "North": "50.2826"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Changing Strategy in the European Theater of Operations",
+      "Sub-event": "British Attack and German Response",
+      "Sub-event_summary": "British attack toward Caen on 25 June prompted Germans to use Bayeux offensive troops defensively. Situation eased but apprehension remained.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "As tactical plans for the Bayeux offensive were being readied and troops and supplies assembled, the British launched their attack toward Caen on 25 June.¹⁵ Almost at once the local commander defending Caen judged that he would have to evacuate the city. To retain Caen the Seventh Army on 26 June prepared to employ the troops assembling for the Bayeux offensive, not in the planned offensive mission but for defensive reasons, to counterattack the British. Before the commitment of this force, however, the situation eased and became somewhat stable. Nevertheless, German apprehension over the possibility of continued British attacks in the Caen sector did not vanish."
+      },
+      "Footnote_References": "15",
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "250000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "242200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Weather_text": "Rainy weather on 25 June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7418",
+          "East": "1.0146",
+          "South": "48.2805",
+          "North": "50.0823"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Changing Strategy in the European Theater of Operations",
+      "Sub-event": "Shift to Defensive Role",
+      "Sub-event_summary": "By late June, commanders and OKW shifted from offensive to defensive thinking, committing new forces to stop British attacks.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "At this time not only the commanders in the west but also OKW passed from thinking in terms of offensive action to an acceptance of a defensive role.¹⁶ \"No matter how undesirable this may be,\" Rundstedt informed OKW, \"it may become necessary to commit all the new forces presently moving up--in an effort to stop and smash . . . the British attack expected to start shortly southeast from Caen.\"¹⁷ So serious had the British threat appeared on 25 June that Rundstedt and Rommel fleetingly considered withdrawing to a line between Avranches and Caen.¹⁸ By withdrawing to an Avranches-Caen line the Germans would have good positions from which to hold the Allies in Normandy. Yet such an act might also be interpreted by higher headquarters as the first step in a complete withdrawal from France. Keitel and Jodl had agreed soon after the invasion that if the Germans could not prevent the Allies from breaking out of their beachhead, the war in the west was lost.¹⁹ The point in question was a definition of the term beachhead. Would not a withdrawal from the lines already established give the Allies the space and maneuver room to launch a breakout attempt?"
+      },
+      "Footnote_References": "16,17,18,19",
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "LATE JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "LATE JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3569",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Weather_text": "Conditions in late June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7418",
+          "East": "1.0146",
+          "South": "48.2805",
+          "North": "50.0823"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Changing Strategy in the European Theater of Operations",
+      "Sub-event": "Alternatives and Pessimism",
+      "Sub-event_summary": "Alternatives: decisive Bayeux offensive or defensive counterattacks near Caen. British action nullified offensive. Pessimism grew among commanders, with Rundstedt and Rommel seeing slim chances of victory.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "The alternatives facing the German field commanders late in June seemed clear: either the Germans should mount the Bayeux offensive and attempt to destroy the Allied beachhead in a single blow, or they should abandon hope of offensive action and defend aggressively by counterattacking the British near Caen.²⁰ The British, by acting first, had temporarily nullified the possibility of offensive action, and this seemed to crystallize a growing pessimism among the German commanders in the west. Rundstedt had long been convinced that if only a defensive attitude were possible, it would be hopeless to expect ultimate success in the war.²¹ Rommel, too, became persuaded that the German chance of victory was slim.²² More than Rundstedt perhaps, Rommel felt that the Allied naval guns employed as long-range artillery would prevent the Germans from ever regaining the invasion beaches, and significantly he had plotted the first objectives of the Bayeux attack just outside the range of Allied naval gun fire.²³ By 15 June Rommel had admitted that the front would probably have to be \"bent out\" and Normandy given up because the danger of an Allied attack toward Paris from Caen was worse than a possible threat to Brittany.²⁴"
+      },
+      "Footnote_References": "20,21,22,23,24",
+      "Place_Name": "Bayeux",
+      "Dates": {
+        "Date_group_of_event": "LATE JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "LATE JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Bayeux",
+        "Place_GPS_coordinate": "49.2765, -0.7025",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Bayeux",
+        "Place_GPS_coordinate": "49.2765, -0.7025",
+        "Weather_text": "Conditions in late June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0825",
+          "East": "0.6775",
+          "South": "48.3756",
+          "North": "50.1774"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Changing Strategy in the European Theater of Operations",
+      "Sub-event": "Hitler's Strategy at Berchtesgaden",
+      "Sub-event_summary": "At Berchtesgaden on 29 June, Hitler enunciated strategy: defensive until air/navy disrupt Allied logistics, then launch offensive.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "Hitler nevertheless remained firm in his resolve. Even though Rundstedt insisted that the focal point was Caen, Hitler kept thinking in terms of an attack west of the Vire River to save or regain Cherbourg. He cared little whether the reserves gathered near Caen were used for offensive or defensive purposes. Tactical developments in the Caen sector bore out the apprehensions of the field marshals. There seemed to be no alternative but to commit additional reserves against the doggedly persistent British. The only troops available were those of the II SS Panzer Corps withdrawn from the Eastern Front and slated to initiate the Bayeux offensive. The corps jumped off on 29 June in an attack that, if successful, would disrupt the British beachhead, but it was in no sense the contemplated decisive master blow.",
+        "Paragraph_14": "On that day, 29 June, Rundstedt and Rommel were at Berchtesgaden, where they listened as Hitler enunciated his strategy.²⁵ Acknowledging that Allied air and naval supremacy prevented a large-scale German attack for the moment, Hitler deemed that, until an attack could be launched, the Germans had to prevent the development of mobile warfare because of the greater mobility of the Allied forces and their supremacy in the air. The German ground troops must endeavor to build up a front designed to seal off the beachhead and confine the Allies to Normandy. Tactics were to consist of small unit actions to exhaust the Allies and force them back. In the meantime, the German Air Force and Navy were to disrupt Allied logistics by laying mines and attacking shipping. More antiaircraft protection against Allied strafing and bombing was to permit the German Army to regain a freedom of movement for troops and supplies that would enable the field forces to launch a decisive offensive sometime in the future. Thus, the ground troops in Normandy were to assume a defensive role temporarily, while the Air Force and Navy tackled the important problems of logistics and mobility. Goering and Doenitz were to hamper Allied logistics and deny the Allies mobility; they were to give the German ground forces a measure of protection for their supply system, thereby assuring them a certain degree of mobility. Until these missions were executed, the ground forces had to hold every inch of ground in a stubborn defense."
+      },
+      "Footnote_References": "25",
+      "Place_Name": "Berchtesgaden",
+      "Dates": {
+        "Date_group_of_event": "290000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "282200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "II SS Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Berchtesgaden",
+        "Place_GPS_coordinate": "47.6311, 13.0019",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Berchtesgaden_map_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Berchtesgaden",
+        "Place_GPS_coordinate": "47.6311, 13.0019",
+        "Weather_text": "Mountainous conditions in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "11.6219",
+          "East": "14.3819",
+          "South": "46.7302",
+          "North": "48.5320"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Changing Strategy in the European Theater of Operations",
+      "Sub-event": "Post-Berchtesgaden Developments",
+      "Sub-event_summary": "Upon return, counterattack bogged down. Recommended limited withdrawal, but Hitler refused, seeing it as admitting defeat.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "Unless Hitler could insure for his troops at least temporary protection from Allied planes, offensive maneuvers on a large scale were out of the question. Until he could secure a more favorable balance of supply, he could not launch the decisive action designed to gain a conclusive victory. Whether or not Hitler believed that Goering and Doenitz with the obviously inadequate forces at their disposal could give him what he wanted, he proceeded on the assumption that they might.",
+        "Paragraph_16": "When Rundstedt and Rommel returned to the west on 30 June, they learned that the German counterattack north of Caen had bogged down. The brief presence, for once, of German planes over the battlefield, until dispersed by Allied air forces, had been ineffective. The larger situation in Normandy resembled an intolerable impasse. While the Allied build-up proceeded smoothly, the Germans were having great difficulty reinforcing the battlefield; destroyed bridges and railroads and Allied air strafing during daylight hours made this task nearly impossible. With the balance of force in Normandy swinging in favor of the Allies, continued German defense seemed a precarious course of action. Such was the basis on which the field marshals now formally recommended a limited withdrawal in the Caen area.²⁶ Hitler refused. To withdraw, even in limited fashion, seemed to him to admit defeat in Normandy, acknowledgment that the Germans had failed against what he estimated to be only one third of the strength that the Allies would eventually be able to put on the Continent. He saw that because there were no prepared defensive lines in the interior of France, no fortified positions that could be occupied by withdrawing troops, defeat in Normandy meant eventual evacuation of France. The only possible place where the Germans could resume a defensive effort would be at the German border, and this made necessary rehabilitating and manning the unoccupied West Wall, the Siegfried Line. Hitler had prohibited the erection of fortified lines of defense in France because he believed that their presence would tend to weaken the front by acting as a magnet for weary combat troops and for what he termed \"defeatist\" commanders. Furthermore, Hitler appreciated that, when troops withdrew, personnel tended to straggle and abandon equipment, actions Germany could ill afford. He was also aware that the Allies, with their superior mobility, would be able to advance more rapidly than the Germans could withdraw. Finally, he underestimated neither the damage to morale a withdrawal would occasion nor the ability to harass that the FFI and a hostile French population possessed.²⁷"
+      },
+      "Footnote_References": "26,27",
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "300000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "292200Z JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy conditions in late June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Changing Strategy in the European Theater of Operations",
+      "Sub-event": "Risks of Defensive Strategy",
+      "Sub-event_summary": "Staying in Normandy risked losing committed force if Allies broke through, leading to blitzkrieg to German border. Occupying favorable positions for potential decisive action.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "On the other hand, the German troops in Normandy occupied excellent and extremely favorable positions for defense. If the Germans contained the Allies and prevented the expansion of the beachhead, they would retain advantageous ground from which Hitler could launch the decisive action that could turn the course of the war. And yet to remain in Normandy and seek the decision there meant the acceptance of the risk of losing the entire committed force. If the Allies broke through the German defenses and developed a war of movement, the result would bring catastrophe to German hopes. Air power and mobility would enable the Allies to institute a blitzkrieg. Unlike that on the Eastern Front, where tremendous space cushioned the effect of breakthrough, mobile warfare on the Western Front was sure to bring the Allies quickly to the border of Germany.²⁸"
+      },
+      "Footnote_References": "28",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Germany",
+        "Place_GPS_coordinate": "52.52, 13.405",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Siegfried_Line_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "",
+      "Footnote_Number": "4",
+      "Footnote_Text": "See Harrison, Cross-Channel Attack, pages 151-57 and 243-58 for a detailed discussion of the changes in German strategic concepts.",
+      "Footnote_Referenced_Source": "Cross-Channel Attack",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "5",
+      "Footnote_Text": "See OB WEST, a Study in Command, pages 49ff. for a description of the divergence in the operational views of Rundstedt and Rommel.",
+      "Footnote_Referenced_Source": "OB WEST, a Study in Command",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OB WEST, a Study in Command",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "Manuscript # B-308"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "6",
+      "Footnote_Text": "Herbert Rosinski, The German Army (Washington: Infantry Journal, Inc., 1944), 185ff; Fuehrer Dir 40, quoted in translation in Harrison, Cross-Channel Attack, App. A.",
+      "Footnote_Referenced_Source": "The German Army",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "The German Army (1944)",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "Herbert Rosinski"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "7",
+      "Footnote_Text": "See Harrison, Cross-Channel Attack, pp. 247, 348-49, 373-74. The commander of Panzer Group West is hereafter referred to as Geyr.",
+      "Footnote_Referenced_Source": "Cross-Channel Attack",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "8",
+      "Footnote_Text": "AGp B Telecon, 2115, 11 Jun. There was some talk of having the upgraded corps take responsibility for the entire active front. OB WEST KTB, 12 Jun and Anlagen for period.",
+      "Footnote_Referenced_Source": "AGp B Telecon",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AGp B KTB, OB WEST KTB",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Army Group B War Diary, OB WEST War Diary"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "9",
+      "Footnote_Text": "Rommel to Keitel, Beurteilung der Lage am 11.6.1944, 12 Jun, AGp B KTB Ia Tagesmeldungen; OB WEST, a Study in Command, I, 3.",
+      "Footnote_Referenced_Source": "Beurteilung der Lage am 11.6.1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AGp B KTB Ia Tagesmeldungen",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Army Group B War Diary Daily Reports"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "10",
+      "Footnote_Text": "Telecon, 1105, 9 Jun, Handakte, Chef Abt. Fremde Heere West; see MS # B-784 (Criegern).",
+      "Footnote_Referenced_Source": "Telecon, 1105, 9 Jun",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Handakte, Chef Abt. Fremde Heere West, MS # B-784",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "Manuscript # B-784 (Criegern)"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "11",
+      "Footnote_Text": "Seventh Army KTB, 14 and 16 Jun; AGp B KTB, Annex 52a to Anlage 52; Harrison, Cross-Channel Attack, pp. 413-14.",
+      "Footnote_Referenced_Source": "Seventh Army KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Seventh Army War Diary, AGp B KTB",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Seventh Army War Diary, June 1944"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "12",
+      "Footnote_Text": "After capture of the city, the American corps commander asked, but the German commander (who had been taken prisoner) refused to answer, why he had defended the high ground around Cherbourg, good outer defensive positions, instead of retreating to the better inner ring of forts to make his stand. Maj William C. Sylvan, former senior aide to Lt Gen Courtney H. Hodges, Deputy Comdr, First Army, Personal Diary (hereafter cited as Sylvan Diary), entry of 27 Jun. Major Sylvan kept his diary, dealing primarily with General Hodges' activities, with the approval of General Hodges. A copy is on file in OCMH through courtesy of Major Sylvan.",
+      "Footnote_Referenced_Source": "Sylvan Diary",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Sylvan Diary",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Major William C. Sylvan Personal Diary"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "13",
+      "Footnote_Text": "Harrison, Cross-Channel Attack, pp. 411-12, 442; AGp B KTB, 17 Jun; OB WEST KTB, 24 Jun, Anlage 295, 27 Jun, Anlage 355, and 28 Jun, Anlage 575; Der Westen (Schramm); for a more detailed explanation, see Martin Blumenson and James B. Hodgson, \"Hitler versus his Generals in the West,\" United States Naval Institute Proceedings (December, 1956).",
+      "Footnote_Referenced_Source": "Cross-Channel Attack",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "United States Naval Institute Proceedings (December, 1956)",
+      "NonDigital_Library_Address": "U.S. Naval Institute, 291 Wood Road, Annapolis, MD 21402",
+      "NonDigital_Library_References": "Hitler versus his Generals in the West"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "14",
+      "Footnote_Text": "Ecksparre Min, AGp B KTB, Anlagen, Fall 1940-Sep 1944, Annex 17; Notes in the Jodl Diary, 17 Jun; Der Westen (Schramm); Hans Speidel, Invasion 1944 (Chicago: Henry Regnery Company, 1950), pp. 92-99.",
+      "Footnote_Referenced_Source": "Ecksparre Min",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AGp B KTB, Anlagen; Jodl Diary; Der Westen (Schramm); Invasion 1944",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Army Group B War Diary Annexes"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "15",
+      "Footnote_Text": "Ltrs, Rommel to Rundstedt, and Speidel to OQu West, 21 Jun, AGp B Ia Operationsbefehle; see above, Ch. I.",
+      "Footnote_Referenced_Source": "Ltrs, Rommel to Rundstedt",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AGp B Ia Operationsbefehle",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Army Group B Operations Orders"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "16",
+      "Footnote_Text": "OB WEST KTB, 25 Jun, Anlage 306. The best evidence of the changing attitude is found in OB WEST KTB, 26 Jun.",
+      "Footnote_Referenced_Source": "OB WEST KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OB WEST War Diary",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "OB WEST KTB, June 1944"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "17",
+      "Footnote_Text": "Rundstedt to Jodl, 1800, 26 Jun, OB WEST KTB, Anlage 340.",
+      "Footnote_Referenced_Source": "Rundstedt to Jodl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OB WEST KTB, Anlage 340",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "OB WEST War Diary Annex 340"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "18",
+      "Footnote_Text": "Telecon, Blumentritt to Speidel, 1610, 25 Jun, AGp B KTB.",
+      "Footnote_Referenced_Source": "Telecon, Blumentritt to Speidel",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AGp B KTB",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Army Group B War Diary"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "19",
+      "Footnote_Text": "ONI Fuehrer Conferences on Matters Dealing With the German Navy (Washington, 1947), 12 Jun (also published as Doc 175-C, Trial of the Major War Criminals Before the International Military Tribunal (Nuremberg, 1949), XXXIV.",
+      "Footnote_Referenced_Source": "ONI Fuehrer Conferences",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "ONI Fuehrer Conferences (1947)",
+      "NonDigital_Library_Address": "U.S. Naval Institute, 291 Wood Road, Annapolis, MD 21402",
+      "NonDigital_Library_References": "ONI Fuehrer Conferences on Matters Dealing With the German Navy"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "20",
+      "Footnote_Text": "Der Westen (Schramm).",
+      "Footnote_Referenced_Source": "Der Westen",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Der Westen (Schramm)",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "Manuscript by Percy E. Schramm"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "21",
+      "Footnote_Text": "Guenther Blumentritt, Von Rundstedt, the Soldier and the Man (London: Odhams Press Limited, 1952), pp. 184, 198; Harrison, Cross-Channel Attack, p. 443.",
+      "Footnote_Referenced_Source": "Von Rundstedt, the Soldier and the Man",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Von Rundstedt (1952)",
+      "NonDigital_Library_Address": "British Library, 96 Euston Road, London NW1 2DB",
+      "NonDigital_Library_References": "Guenther Blumentritt"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "22",
+      "Footnote_Text": "See B. H. Liddell Hart, ed., The Rommel Papers (London: Collins, 1953).",
+      "Footnote_Referenced_Source": "The Rommel Papers",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "The Rommel Papers (1953)",
+      "NonDigital_Library_Address": "British Library, 96 Euston Road, London NW1 2DB",
+      "NonDigital_Library_References": "B. H. Liddell Hart, ed."
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "23",
+      "Footnote_Text": "Pz Gp W KTB, Anlagen 10.VI.-9.VIII.44, Annexes 6, 7, and 8.",
+      "Footnote_Referenced_Source": "Pz Gp W KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Pz Gp W War Diary Annexes",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Panzer Group West War Diary, Annexes 10 Jun-9 Aug 44"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "24",
+      "Footnote_Text": "Telecon, Rommel to Pemsel, 2150, 15 Jun, Seventh Army KTB, Anlagen Ferngespraeche und Besprechungen, 6.—30. VI. 44.",
+      "Footnote_Referenced_Source": "Telecon, Rommel to Pemsel",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Seventh Army KTB, Anlagen",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Seventh Army War Diary Annexes, Telephone Conversations and Discussions, 6-30 Jun 44"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "25",
+      "Footnote_Text": "Wolfram's Min, 1 Jul, in AGp B KTB, Annex 33; Jodl Diary, 29 Jun; ONI Fuehrer Confs; Der Westen (Schramm); Harrison, Cross-Channel Attack, pp. 445ff.",
+      "Footnote_Referenced_Source": "Wolfram's Min",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AGp B KTB, Annex 33; Jodl Diary; ONI Fuehrer Confs; Der Westen (Schramm)",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Army Group B War Diary Annex 33"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "26",
+      "Footnote_Text": "AGp B KTB, 1830, 29 and 30 Jun; Harrison, Cross-Channel Attack, p. 446.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Army Group B War Diary",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "AGp B KTB, 29-30 Jun"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "27",
+      "Footnote_Text": "ONI Fuehrer Confs, 12 Jun; Harrison, Cross-Channel Attack, pp. 411, 412, 447; OB WEST, a Study in Command, I, 46-47; Der Westen (Schramm).",
+      "Footnote_Referenced_Source": "ONI Fuehrer Confs",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "ONI Fuehrer Confs; OB WEST, a Study in Command; Der Westen (Schramm)",
+      "NonDigital_Library_Address": "U.S. Naval Institute, 291 Wood Road, Annapolis, MD 21402",
+      "NonDigital_Library_References": "ONI Fuehrer Conferences, 12 Jun"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "28",
+      "Footnote_Text": "Der Westen (Schramm).",
+      "Footnote_Referenced_Source": "Der Westen",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Der Westen (Schramm)",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "Manuscript by Percy E. Schramm"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn2.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

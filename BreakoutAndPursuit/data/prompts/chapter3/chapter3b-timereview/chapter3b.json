@@ -1,0 +1,813 @@
+{
+  "Events": [
+    {
+      "Event": "The German Situation in Normandy (July 1944)",
+      "Sub-event": "Rundstedt's Pessimism and Replacement",
+      "Sub-event_summary": "Field Marshal von Rundstedt, OB WEST commander, expressed pessimism about holding Normandy, suggesting a withdrawal. Hitler replaced him with Field Marshal von Kluge on 2 July, who initially criticized Rundstedt but soon shared his views after visiting the front.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "In the German command structure, the commander of OB WEST was in the best position to perceive the true state of affairs in Normandy. Field Marshal von Rundstedt had long felt that the Germans could not win a war of attrition in a confined beachhead area.¹ On 1 July he telephoned OKW and told Keitel that the only course of action possible was to make peace. Keitel asked Rundstedt what to say to Hitler. \"Make peace, you fools,\" Rundstedt replied. \"What else can you do?\"²",
+        "Paragraph_2": "On the following day, 2 July, Hitler replaced Rundstedt with Generalfeldmarschall Guenther von Kluge.³ Kluge, who had commanded an army group on the Eastern Front, had recently recovered from an automobile accident. He had spent several weeks at Berchtesgaden in close association with Hitler, and he came to the west with optimism and confidence, convinced that Rundstedt's pessimism was unjustified. Before assuming command, Kluge talked with Rommel, who agreed with Rundstedt that the situation was critical but who, unlike Rundstedt, was determined to fight to the last.⁴ Kluge also talked with Keitel and Jodl, who advised him to study the situation before making judgments. Kluge's first act as commander of OB WEST was to criticize Rundstedt's conduct of operations. After visiting the front, however, Kluge changed his mind. \"I have arrived here full of enthusiasm,\" he wrote to Hitler on 5 July, \"and I must admit the sight of the Atlantic Wall and the forces behind it gave me a feeling of oppression. . . . [The enemy] has complete mastery of the air. . . . It is a wonder that our troops are fighting as they are. . . . The enemy artillery is laying down a terrific barrage. . . . The enemy has a tremendous superiority in matériel. . . .\"⁵"
+      },
+      "Footnote_References": "1,2,3,4,5",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "010000B JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "302200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "OB WEST",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Gerd von Rundstedt",
+          "Name": "Gerd von Rundstedt",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "020000B JUL44",
+          "End_Status": "Relieved",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Gerd_von_Rundstedt",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Army Group B",
+          "Name": "Erwin Rommel",
+          "Rank": "Generalfeldmarschall",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Erwin_Rommel",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {},
+        "Civilian": {}
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_1944_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy with grey skies in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The German Situation in Normandy (July 1944)",
+      "Sub-event": "Kluge's Arrival and Initial Optimism",
+      "Sub-event_summary": "Kluge arrived with optimism from Eastern Front, criticized Rundstedt, but after visiting front shared pessimism, writing to Hitler on 5 July about Allied superiority in air, artillery, matériel.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "Kluge, who had commanded an army group on the Eastern Front, had recently recovered from an automobile accident. He had spent several weeks at Berchtesgaden in close association with Hitler, and he came to the west with optimism and confidence, convinced that Rundstedt's pessimism was unjustified. Before assuming command, Kluge talked with Rommel, who agreed with Rundstedt that the situation was critical but who, unlike Rundstedt, was determined to fight to the last. Kluge also talked with Keitel and Jodl, who advised him to study the situation before making judgments. Kluge's first act as commander of OB WEST was to criticize Rundstedt's conduct of operations. After visiting the front, however, Kluge changed his mind. \"I have arrived here full of enthusiasm,\" he wrote to Hitler on 5 July, \"and I must admit the sight of the Atlantic Wall and the forces behind it gave me a feeling of oppression. . . . [The enemy] has complete mastery of the air. . . . It is a wonder that our troops are fighting as they are. . . . The enemy artillery is laying down a terrific barrage. . . . The enemy has a tremendous superiority in matériel. . . .\""
+      },
+      "Footnote_References": "4,5",
+      "Place_Name": "Berchtesgaden",
+      "Dates": {
+        "Date_group_of_event": "020000B JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "012200Z JUL44"
+      },
+      "TOE": {
+        "Unit": "OB WEST",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Guenther von Kluge",
+          "Name": "Guenther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Berchtesgaden",
+        "Place_GPS_coordinate": "47.6311, 13.0019",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Berchtesgaden_1944_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Berchtesgaden",
+        "Place_GPS_coordinate": "47.6311, 13.0019",
+        "Weather_text": "Mountainous conditions in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "11.6219",
+          "East": "14.3819",
+          "South": "46.7302",
+          "North": "48.5320"
+        }
+      }
+    },
+    {
+      "Event": "The German Situation in Normandy (July 1944)",
+      "Sub-event": "Rommel's Command and Role",
+      "Sub-event_summary": "Rommel commanded Army Group B, directing Seventh Army and Panzer Group West. Known for Africa and Italy, he was energetic, inspiring, and respected, but his direct access to Hitler sometimes bypassed Rundstedt.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "The commander of Army Group B, Rommel, directed the tactical operations of the Seventh Army and Panzer Group West, the two sectors facing the Allies. Famous for his campaigns in Africa and Italy, Rommel was energetic and inspiring. He was respected by the troops and popular with the German public. He had been in Hitler's favor since the Polish campaign of 1939, and his special status in the command structure of the west--his responsibility for coastal defense and his direct access to Hitler--sometimes enabled him to bypass Rundstedt. When Kluge replaced Rundstedt, Rommel was momentarily apprehensive that Kluge's presence would impair his freedom of action. But Kluge soon assured him that he had no intention of directing operations from the rear but rather would exercise his influence at OKW to obtain for Rommel the men and matériel needed to wage the battle.⁶"
+      },
+      "Footnote_References": "6",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Erwin Rommel",
+          "Name": "Erwin Rommel",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Erwin_Rommel",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Seventh Army",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "Panzer Group West",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "Energetic and inspiring commander",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy with grey skies in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The German Situation in Normandy (July 1944)",
+      "Sub-event": "Panzer Group West Command",
+      "Sub-event_summary": "Geyr von Schweppenburg commanded Panzer Group West, the eastern sector opposite the British. His headquarters had been destroyed by Allied air attack on 10 June, and he was replaced by Eberbach on 3 July due to disagreement with Hitler's defensive policy.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "The commander of Panzer Group West, Geyr von Schweppenburg, directed the operations of the eastern sector, that opposite the British. Geyr had been the OB WEST armor specialist and the commander of Panzer Group West when its headquarters had been destroyed by an Allied air attack on 10 June. After a brief period of convalescence, he had returned to his post on 21 June. But Geyr disagreed with Hitler's defensive policy. He felt that the Germans should withdraw from Caen and establish a strong defensive line between the Orne and the Vire Rivers.⁷ Hitler consequently relieved him on 3 July and replaced him with General der Panzertruppen Heinrich Eberbach. Eberbach had commanded the Fifth Panzer Army in Russia and had come to the west in November 1943 to command a panzer corps. A small, wiry man with a quick mind, he had a talent for improvisation and for the unorthodox. Although he had no experience in combat against the Americans and the British, he was to learn quickly."
+      },
+      "Footnote_References": "7",
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "100000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "092200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "Panzer Group West",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Leo Freiherr Geyr von Schweppenburg",
+          "Name": "Leo Freiherr Geyr von Schweppenburg",
+          "Rank": "General der Panzertruppen",
+          "End_Date": "030000B JUL44",
+          "End_Status": "Relieved",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leo_Geyr_von_Schweppenburg",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": "Headquarters destroyed by air attack",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Weather_text": "Conditions in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7418",
+          "East": "1.0146",
+          "South": "48.2805",
+          "North": "50.0823"
+        }
+      }
+    },
+    {
+      "Event": "The German Situation in Normandy (July 1944)",
+      "Sub-event": "Eberbach's Appointment",
+      "Sub-event_summary": "Heinrich Eberbach replaced Geyr on 3 July. Experienced from Russia, commanded panzer corps in west since November 1943. Quick mind, talent for improvisation, no prior experience against Americans/British but learned quickly.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "Hitler consequently relieved him on 3 July and replaced him with General der Panzertruppen Heinrich Eberbach. Eberbach had commanded the Fifth Panzer Army in Russia and had come to the west in November 1943 to command a panzer corps. A small, wiry man with a quick mind, he had a talent for improvisation and for the unorthodox. Although he had no experience in combat against the Americans and the British, he was to learn quickly."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "030000B JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "022200Z JUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Group West",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Heinrich Eberbach",
+          "Name": "Heinrich Eberbach",
+          "Rank": "General der Panzertruppen",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Heinrich_Eberbach",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": "Small, wiry man with quick mind",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Russia (Eastern Front)",
+        "Place_GPS_coordinate": "55.7558, 37.6173",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Eastern_Front_1943_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy with grey skies in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The German Situation in Normandy (July 1944)",
+      "Sub-event": "Seventh Army Command",
+      "Sub-event_summary": "Paul Hausser commanded Seventh Army, western sector opposite Americans, since 28 June after Dollmann's death. Experienced SS general from Eastern Front, respected, but not as popular as Rommel.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "The commander of the Seventh Army, the western sector opposite the Americans, was SS-Oberstgruppenfuehrer Paul Hausser. He had assumed command on 28 June upon the death of Dollmann, who had died of a heart attack, reportedly as a result of the shock of losing Cherbourg.⁸ A veteran of World War I, Hausser had been one of the first Regular Army officers to join the SS. He had commanded an SS division and an SS corps on the Eastern Front, and in 1943 he had led an SS corps in the successful counterattack at Kharkov. In the summer of 1943 he had commanded an SS army in Italy. A quiet, taciturn man, Hausser was respected by the troops but was not as popular as Rommel."
+      },
+      "Footnote_References": "8",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "280000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "272200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberstgruppenfuehrer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": "Quiet, taciturn man, respected",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": "General Dollmann died of heart attack"
+        },
+        "Civilian": {}
+      },
+      "Media": {},
+      "Place": {
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.63, -1.62",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy with grey skies in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The German Situation in Normandy (July 1944)",
+      "Sub-event": "Rommel and Kluge's Meeting with Hitler",
+      "Sub-event_summary": "Rommel and Kluge met Hitler at Berchtesgaden on 9 July to discuss critical situation. Rommel suggested political solution, but Hitler evaded. Kluge urged withdrawing armored units, but Hitler insisted on holding every inch of ground.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Rommel and Kluge were both convinced that the situation was critical. On 9 July they went to Berchtesgaden to discuss it with Hitler. Rommel had prepared a memorandum, but Kluge advised him not to present it because it contained a suggestion that a political solution be found for the war. Hitler, Kluge felt, would not accept this. Kluge himself urged Hitler to withdraw the armored units from the front and to reconstitute a mobile reserve. Hitler refused. He would not even consider permitting a withdrawal to a new line behind the Orne and Dives Rivers. Hitler insisted on holding every inch of ground.⁹"
+      },
+      "Footnote_References": "9",
+      "Place_Name": "Berchtesgaden",
+      "Dates": {
+        "Date_group_of_event": "090000B JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "082200Z JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Berchtesgaden",
+        "Place_GPS_coordinate": "47.6311, 13.0019",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Berchtesgaden",
+        "Place_GPS_coordinate": "47.6311, 13.0019",
+        "Weather_text": "Conditions in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "11.6219",
+          "East": "14.3819",
+          "South": "46.7302",
+          "North": "48.5320"
+        }
+      }
+    },
+    {
+      "Event": "The German Situation in Normandy (July 1944)",
+      "Sub-event": "Rommel's Memorandum to Hitler",
+      "Sub-event_summary": "Rommel sent memorandum on 15 July predicting collapse of front within 1-2 weeks without reinforcements/withdrawals, suggesting political decisions. Kluge endorsed it, but Hitler did not respond.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "Rommel nevertheless sent his memorandum to Hitler on 15 July. He predicted that the front would collapse within one or two weeks if no reinforcements arrived or if no withdrawals were permitted. He suggested that Hitler draw \"the political conclusions from this situation.\" Kluge endorsed the memorandum and sent it on to Hitler.¹⁰ Hitler did not respond."
+      },
+      "Footnote_References": "10",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "150000B JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "142200Z JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy with grey skies in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The German Situation in Normandy (July 1944)",
+      "Sub-event": "Rommel's Injury",
+      "Sub-event_summary": "Rommel injured on 17 July by Allied air attack, replaced by Kluge who assumed dual command of OB WEST and Army Group B.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "Two days later, on 17 July, Rommel was injured by an Allied air attack. Kluge replaced him, assuming personal command of Army Group B while retaining his position as commander of OB WEST.¹¹"
+      },
+      "Footnote_References": "11",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "170000B JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "162200Z JUL44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Guenther von Kluge",
+          "Name": "Guenther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {
+          "Axis_DE_WIA": "Erwin Rommel"
+        },
+        "Civilian": {}
+      },
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions allowing Allied air attack in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The German Situation in Normandy (July 1944)",
+      "Sub-event": "Kluge's Dual Command",
+      "Sub-event_summary": "Kluge's dual role as OB WEST and Army Group B commander centralized authority, facilitating quick decisions but overloading him.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "Kluge's dual role as commander of OB WEST and Army Group B centralized authority and facilitated quick decisions but overloaded him."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "170000B JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "162200Z JUL44"
+      },
+      "TOE": {
+        "Unit": "OB WEST",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Guenther von Kluge",
+          "Name": "Guenther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Army Group B",
+          "Name": "Guenther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Date": "170000B JUL44",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "Overloaded with dual role",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy with grey skies in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The German Situation in Normandy (July 1944)",
+      "Sub-event": "Panzer Group West Renamed",
+      "Sub-event_summary": "Panzer Group West renamed Fifth Panzer Army on 5 August, Hausser's Seventh Army remained the same. Kluge relied on Eberbach and Hausser for tactical operations.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "On 5 August Panzer Group West was renamed the Fifth Panzer Army. Hausser's Seventh Army remained the same. Kluge relied on Eberbach and Hausser to direct the tactical operations in their respective sectors."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "050000B AUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "042200Z AUG44"
+      },
+      "TOE": {
+        "Unit": "Fifth Panzer Army (formerly Panzer Group West)",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Heinrich Eberbach",
+          "Name": "Heinrich Eberbach",
+          "Rank": "General der Panzertruppen",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Heinrich_Eberbach",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy with grey skies in July 1944, continuing into August.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The German Situation in Normandy (July 1944)",
+      "Sub-event": "Seventh Army Command",
+      "Sub-event_summary": "Hausser's Seventh Army remained the same. Kluge relied on Eberbach and Hausser for tactical operations in their respective sectors.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "Hausser's Seventh Army remained the same. Kluge relied on Eberbach and Hausser to direct the tactical operations in their respective sectors."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberstgruppenfuehrer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy with grey skies in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "",
+      "Footnote_Number": "1",
+      "Footnote_Text": "Blumentritt, Von Rundstedt, p. 200.",
+      "Footnote_Referenced_Source": "Von Rundstedt, p. 200",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Von Rundstedt, the Soldier and the Man",
+      "NonDigital_Library_Address": "British Library, 96 Euston Road, London NW1 2DB",
+      "NonDigital_Library_References": "Guenther Blumentritt (1952), p. 200"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "2",
+      "Footnote_Text": "Speidel, Invasion 1944, pp. 100-101; Harrison, Cross-Channel Attack, p. 444.",
+      "Footnote_Referenced_Source": "Speidel, Invasion 1944, pp. 100-101; Harrison, Cross-Channel Attack, p. 444",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "Invasion 1944",
+      "NonDigital_Library_Address": "Library of Congress, 101 Independence Ave SE, Washington, DC 20540",
+      "NonDigital_Library_References": "Hans Speidel (1950), pp. 100-101"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "3",
+      "Footnote_Text": "OB WEST KTB, 2 Jul.",
+      "Footnote_Referenced_Source": "OB WEST KTB, 2 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OB WEST War Diary",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "OB WEST KTB, 2 Jul"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Speidel, Invasion 1944, p. 103.",
+      "Footnote_Referenced_Source": "Speidel, Invasion 1944, p. 103",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Invasion 1944",
+      "NonDigital_Library_Address": "Library of Congress, 101 Independence Ave SE, Washington, DC 20540",
+      "NonDigital_Library_References": "Hans Speidel (1950), p. 103"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Kluge to Hitler, 5 Jul, AGp B Fuehrerberichte.",
+      "Footnote_Referenced_Source": "Kluge to Hitler, 5 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AGp B Fuehrerberichte",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Army Group B Reports to the Fuehrer"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "6",
+      "Footnote_Text": "Speidel, Invasion 1944, p. 104.",
+      "Footnote_Referenced_Source": "Speidel, Invasion 1944, p. 104",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Invasion 1944",
+      "NonDigital_Library_Address": "Library of Congress, 101 Independence Ave SE, Washington, DC 20540",
+      "NonDigital_Library_References": "Hans Speidel (1950), p. 104"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "7",
+      "Footnote_Text": "Geyr MS cited n. 32; Speidel, Invasion 1944, pp. 105-07; Harrison, Cross-Channel Attack, p. 447; see Hodgson, R-24.",
+      "Footnote_Referenced_Source": "Geyr MS cited n. 32; Speidel, Invasion 1944, pp. 105-07; Harrison, Cross-Channel Attack, p. 447; Hodgson, R-24",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "Invasion 1944, Hodgson, R-24",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "MS as cited, Invasion 1944 (1950), MS R-24"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "8",
+      "Footnote_Text": "Speidel, Invasion 1944, p. 97; Harrison, Cross-Channel Attack, p. 442n; Liddell Hart, The Rommel Papers, p. 475.",
+      "Footnote_Referenced_Source": "Speidel, Invasion 1944, p. 97; Harrison, Cross-Channel Attack, p. 442n; Liddell Hart, The Rommel Papers, p. 475",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "The Rommel Papers",
+      "NonDigital_Library_Address": "British Library, 96 Euston Road, London NW1 2DB",
+      "NonDigital_Library_References": "B. H. Liddell Hart, ed. (1953), p. 475"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "9",
+      "Footnote_Text": "Speidel, Invasion 1944, pp. 110-11; Harrison, Cross-Channel Attack, p. 448; Liddell Hart, The Rommel Papers, p. 479.",
+      "Footnote_Referenced_Source": "Speidel, Invasion 1944, pp. 110-11; Harrison, Cross-Channel Attack, p. 448; Liddell Hart, The Rommel Papers, p. 479",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "The Rommel Papers",
+      "NonDigital_Library_Address": "British Library, 96 Euston Road, London NW1 2DB",
+      "NonDigital_Library_References": "B. H. Liddell Hart, ed. (1953), p. 479"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "10",
+      "Footnote_Text": "Speidel, Invasion 1944, pp. 111-12; Liddell Hart, The Rommel Papers, pp. 480-81; Hodgson, R-24.",
+      "Footnote_Referenced_Source": "Speidel, Invasion 1944, pp. 111-12; Liddell Hart, The Rommel Papers, pp. 480-81; Hodgson, R-24",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "The Rommel Papers, Hodgson, R-24",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "B. H. Liddell Hart, ed. (1953), pp. 480-81; MS R-24"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "11",
+      "Footnote_Text": "Speidel, Invasion 1944, p. 119; Hodgson, R-24.",
+      "Footnote_Referenced_Source": "Speidel, Invasion 1944, p. 119; Hodgson, R-24",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Invasion 1944, Hodgson, R-24",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Hans Speidel (1950), p. 119; MS R-24"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn3.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

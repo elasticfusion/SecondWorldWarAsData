@@ -1,0 +1,1580 @@
+{
+  "Events": [
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "General Bradley's Command and Background",
+      "Sub-event_summary": "General Omar N. Bradley commanded U.S. operations in Normandy with qualities of leadership and understanding of modern battle. He had extensive training and combat experience, overseeing planning for U.S. ground units in OVERLORD and directing the invasion assault.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "General Bradley was responsible for the conduct of American operations in Normandy. His mild and modest manner might easily have led those who did not know him to underestimate his qualities as a commander in combat. But General Eisenhower judged that he had \"brains, a fine capacity for leadership, and a thorough understanding of the requirements of modern battle.\"¹ General Bradley was to prove more than equal to his tasks. During most of his early career General Bradley had alternated between assignments at the U.S. Military Academy and the Infantry School, both as student and instructor. After Pearl Harbor, as a division commander, he directed in turn the training activities of two divisions. He received his first overseas assignment as deputy commander of General Patton's II Corps, in North Africa. When General Patton relinquished the corps command in order to form the Seventh U.S. Army headquarters for the invasion of Sicily, General Bradley became the corps commander for the remainder of the North African campaign and the operations in Sicily. In the fall of 1943 he was called to England to command both the U.S. 1st Army Group and U.S. First Army. As commander of the 1st Army Group, General Bradley supervised the planning of the U.S. ground units that were to participate in OVERLORD.² As commander of the First Army, he directed the American elements in the invasion assault.³ Under the control of General Montgomery, temporarily the Allied ground commander, General Bradley, as the senior American field commander on the Continent, enjoyed a far wider latitude of action than would normally have been granted him had he been directly under an American commander.⁴"
+      },
+      "Footnote_References": "1,2,3,4",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "U.S. First Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "21 Army Group",
+          "Commander": "Omar N. Bradley",
+          "Name": "Omar N. Bradley",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "U.S. 1st Army Group",
+          "Name": "Omar N. Bradley",
+          "Rank": "Lieutenant General",
+          "Date": "Fall 1943",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "Veteran staff with Mediterranean combat experience",
+        "Equipments": {
+          "Supply": ""
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_1944_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy with grey skies in July 1944, with only a few bright warm spells in August.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Composition of U.S. Forces",
+      "Sub-event_summary": "U.S. First Army consisted of four corps headquarters and thirteen divisions (nine infantry, two armored, two airborne), with most having battle experience in June. Expected to lose airborne divisions soon but gain more infantry and armored divisions.",
+      "Sub-event_fulltext": {
+        "Paragraph_2": "The land force that General Bradley commanded at the beginning of July consisted of four corps headquarters and thirteen divisions--nine infantry, two armored, and two airborne. Not all the units had been tested and proved by combat, but except for one armored and two infantry divisions all had had some battle experience during June. Scheduled to lose both airborne divisions in the near future, General Bradley momentarily expected the arrival of two additional infantry divisions and soon thereafter several armored divisions."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "U.S. First Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "21 Army Group",
+          "Commander": "Omar N. Bradley",
+          "Name": "Omar N. Bradley",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Four Corps Headquarters",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "Nine Infantry Divisions",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "Two Armored Divisions",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "Two Airborne Divisions",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "Near future",
+            "End_Status": "Scheduled to lose",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "Most units had battle experience in June, except one armored and two infantry",
+        "Equipments": {
+          "Supply": ""
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy with grey skies in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Plans for Southern Attack and Delays",
+      "Sub-event_summary": "While focusing on Cherbourg in June, Bradley attempted to start southern attack, urged by Montgomery and Eisenhower. Delays due to storm, ammunition shortage, logistical arrangements. Final order on 30 June from Montgomery for wheeling movement.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "Even while the focus of the U.S. First Army effort had been directed north toward Cherbourg in June, General Bradley had tried to get an American attack to the south started. General Montgomery had urged him not to wait until Cherbourg fell before extending his operations southward toward la Haye-du-Puits and Coutances. General Eisenhower had reminded Bradley to \"rush the preparations for the attack to the south with all possible speed,\" before the Germans could rally and seal off the First Army in the Cotentin.⁵ The attack had depended on the arrival in France of the VIII Corps, a headquarters assigned to the U.S. Third Army but attached temporarily to the First. Operational on the Continent on 15 June, the VIII Corps had assumed control of those forces holding a line across the base of the Cotentin Peninsula and had protected the rear area of the troops driving toward Cherbourg. General Bradley had instructed the VIII Corps commander to attack to the south on 22 June, but the Channel storm of 19-21 June disrupted logistical operations and caused a temporary shortage of artillery ammunition. Because the Cherbourg operation and the attack to the south could not be supported simultaneously, the VIII Corps offensive was postponed.⁶ On the day that Cherbourg fell--26 June--General Bradley had again directed the advance south toward Coutances, this time to begin on or about 1 July, VIII Corps moving out first and the other corps following on army order. Once more the operation had to be delayed because tactical regrouping and logistical arrangements were not completed in time.⁷"
+      },
+      "Footnote_References": "5,6,7",
+      "Place_Name": "Cherbourg",
+      "Dates": {
+        "Date_group_of_event": "260000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "252200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "U.S. First Army",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "Temporary shortage of artillery ammunition due to storm"
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Cotentin Peninsula",
+        "Place_GPS_coordinate": "49.5, -1.5",
+        "Map_Reference": "Map I",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Cotentin_Peninsula_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cotentin Peninsula",
+        "Place_GPS_coordinate": "49.5, -1.5",
+        "Weather_text": "Channel storm from 19-21 June 1944 disrupted operations.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.8818",
+          "East": "-0.1182",
+          "South": "48.5991",
+          "North": "50.4009"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Montgomery's Directive and Bradley's Plan",
+      "Sub-event_summary": "Montgomery's directive on 30 June instructed First Army to pivot on left at Caumont, wheel south and east to Caumont-Vire-Mortain-Fougeres line. Bradley's revised order set Coutances-Caumont line as immediate objective, attack starting 3 July with main effort on coastal road.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "On the last day of June General Bradley received from General Montgomery the formal instructions that were to govern his action in July. Montgomery took his cue from the NEPTUNE plan, which had projected a wheeling movement, as opposed to a north-south axis of advance in the OVERLORD plan, and directed the U.S. First Army to pivot on its left in the Caumont area. Wheeling south and east in a wide turn, the First Army was to find itself, upon completion of the maneuver, facing east along a north--south line from Caumont, through Vire and Mortain, to Fougeres, its right flank near the entrance into Brittany. At this point in the operations General Patton's Third U.S. Army was to become operational and move south and west to seize Brittany, while the First Army, in conjunction with the British and Canadian forces on the left, was to advance east toward the Seine and Paris. Desiring \"drive and energy,\" General Montgomery wanted General Bradley, once started, to continue without pause.⁸ General Bradley's revised and final order disclosed his intention to accomplish his mission in several phases. He named the Coutances-Caumont line as the immediate objective of the First Army attack that was to start on 3 July. The main effort was to be made in the Cotentin.⁹"
+      },
+      "Footnote_References": "8,9",
+      "Place_Name": "Caumont",
+      "Dates": {
+        "Date_group_of_event": "300000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "292200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "U.S. Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group (future)",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Caumont",
+        "Place_GPS_coordinate": "49.05, -0.6667",
+        "Map_Reference": "Map I",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Caumont",
+        "Place_GPS_coordinate": "49.05, -0.6667",
+        "Weather_text": "Conditions in late June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0467",
+          "East": "0.7133",
+          "South": "48.1491",
+          "North": "49.9509"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Terrain East of Vire River",
+      "Sub-event_summary": "East of Vire River, Americans held salient in bocage terrain, small hills not favorable for offense but not discouraging. Troops inactive in June to avoid resource diversion and gap with British.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "Not all of the U.S. troops were in the Cotentin. In the left portion of the army sector, east of the Vire River, Americans lightly held a salient in bo-cage terrain, where the small hills, while not particularly favorable for offensive action, were not discouragingly adverse. Since the middle of June, while the major portion of the American strength had been operating against Cherbourg on the army right, the troops near St. Lô and Caumont had remained inactive because General Bradley had been unwilling to divert to them resources needed for the drive on Cherbourg, and because offensive activity on the left could have extended the salient and perhaps opened a gap between the American and the British forces.¹⁰ It was this latter factor that prompted General Bradley to initiate the attack to the south across the damp spongy ground of the Carentan plain. (See Map I.) At the conclusion of the attack on the right, and with his troops holding the Coutances-St. Lô-Caumont line, General Bradley would have his entire army on firm dry ground, terrain suitable for offense by mechanized forces. At that time, as the elements on both sides of the Vire River would be on similar terrain, he would be able to deliver an attack with equal effectiveness from either his left or his right. Then he would be ready to begin another operation in further compliance with General Montgomery's directive to wheel on his left to the Fougeres-Mortain-Vire-Caumont line. But first Bradley had to move the forces on his right across the waterlogged area west of Carentan."
+      },
+      "Footnote_References": "10",
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "MID JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "MID JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {
+        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "Description": "Map I",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1167, -1.0903",
+        "Map_Reference": "Map I",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1167, -1.0903",
+        "Weather_text": "Damp and spongy ground in Carentan plain in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4703",
+          "East": "0.2897",
+          "South": "48.2158",
+          "North": "50.0176"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Terrain of Carentan Plain",
+      "Sub-event_summary": "Carentan plain features prairies marécageuses, ancient sea arms, flat marshes with peat base, impassable in winter, forage in summer. Five major swamps along rivers, nearly half the area water-covered.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "This swampy terrain was a natural position for defense. There, in 1940, the French had established a line and had endeavored to prevent the Germans from capturing Cherbourg. In 1944 the Germans were holding approximately the same positions they had occupied four years earlier, but this time they were on the defensive.¹¹ The area was excellent for defense because of the prairies marécageuses. Large marshes sometimes below sea level, the prairies appear to be ancient arms of the sea, land partially reclaimed from the ocean. Open spaces that seem absolutely flat, they are breaks in the hedgerow country providing long vistas across desolate bogs. There are five of these large swamps on the Carentan plain. Four are located along rivers draining into the Carentan bay--the Merderet, the Douve, the Taute, and the Vire. The river beds are so close to sea level that the water does not flow at a discernible rate of speed but rather oozes toward the ocean; often the streams appear stagnant. The fifth marsh or bog, called the Prairies Marécageuses de Gorges, is about twelve square miles in size and lies southwest of Carentan. These major swamps and many smaller marshes comprise nearly half the area of the Carentan plain."
+      },
+      "Footnote_References": "11",
+      "Place_Name": "Carentan plain",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Carentan plain",
+        "Place_GPS_coordinate": "49.3, -1.25",
+        "Map_Reference": "Map I",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Carentan_plain_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Carentan plain",
+        "Place_GPS_coordinate": "49.3, -1.25",
+        "Weather_text": "Moist and soft ground, hazardous for vehicles in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.6315",
+          "East": "0.1315",
+          "South": "48.3991",
+          "North": "50.2009"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Characteristics of Prairies Marécageuses",
+      "Sub-event_summary": "Prairies appear as pastureland but with peat base, impassable for vehicles, crossed only on foot hazardously. Network of canals, ditches, streams keep earth soggy. Adjacent lowland divided into tiny fields with thicker hedgerows due to moisture.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "From the height of an adjacent hill the prairies seem at first glance to be pastureland, though the grass is neither bright nor lush. A base of brown dims the lustre of the vegetation like a blight. This is peat, semicarbonized vegetable tissue formed by partial decomposition in water, plant masses varying in consistency from turf to slime. Impassable in the winter when rain and snow turn them into shallow ponds, the prairies in the summer are forage ground for cattle. Because the land is treacherously moist and soft, crossing the bogs on foot is hazardous, passage by vehicle impossible. In addition to numerous streams and springs that keep the earth soggy, mudholes and stagnant pools, as well as a network of canals and ditches, some intended for drainage and others originally primitive routes of transportation, close the marshland to wheeled traffic except over tarred causeways that link settlements together. Adjacent to the marshes and comprising the other half of the Carentan plain is hedgerowed lowland suitable for farming. Barely above the level of the swamps, the lowland frequently appears to consist of \"islands\" or \"peninsulas,\" wholly or partially surrounded by marshland. Because swamps comprise so much of the region, the arable land is divided into tiny fragments of ownership. Since the fields are smaller than those in the bocage, the hedgerows are more numerous. The excessive moisture of the lowlands stimulates growth to the point where the luxuriant vegetation is almost tropical in richness, and the hedgerows are higher and thicker. The ground is hardly less soft than the neighboring marshes because of a high water table."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Carentan plain",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Carentan plain",
+        "Place_GPS_coordinate": "49.3, -1.25",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Carentan plain",
+        "Place_GPS_coordinate": "49.3, -1.25",
+        "Weather_text": "Excessive moisture stimulating tropical-like growth in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.6315",
+          "East": "0.1315",
+          "South": "48.3991",
+          "North": "50.2009"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Defensive Advantages and German Flooding",
+      "Sub-event_summary": "Swamps impassable for mechanized army, forcing advance through limited corridors blocked by hedgerows. Germans flooded swampland, intensifying insular character. U.S. positions obvious to Germans with superior observation from bocage hills.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Since the swamps are impassable to a modern mechanized army, the hedgerowed lowland of the Carentan plain, even though of precarious consistency, had to sustain General Bradley's projected operations in July. But the co-existence of lowland and marsh presented him with strictly limited avenues of advance. To proceed through the Cotentin, U.S. troops had to advance within well-defined corridors blocked by huge hedgerows. The Germans had emphasized this natural condition by flooding much of the moist swampland and transforming it into lakes. They had constructed concrete dams to keep fresh-water streams from reaching the sea and had reversed the automatic locks of the dams originally constructed to hold back the sea at high tide. In the summer of 1944 the marshland was covered with water.¹² The insular or peninsular character of the corridors of advance was thereby intensified. The U.S. forces by the beginning of July had secured jump-off positions on the dry land of the Carentan plain. These were obvious to the Germans, who held superior ground on the bocage hills that ring the Cotentin marshes. With excellent observation of American movements, the Germans were able to mass their fires with such accuracy that American commanders warned drivers against halting their vehicles at crossroads, near bridges, or in towns; drivers were to proceed briskly through intersections, to take cover during a forced halt, and, if not able to camouflage their vehicles when stopped, to get clear without delay.¹³ Even far behind the front, care had to be exercised. When a tank destroyer unit disregarded the warnings of military police and crossed a bridge on a main route three miles behind the front line, a division provost marshal renounced his \"responsibility\" for the safety of that unit.¹⁴"
+      },
+      "Footnote_References": "12,13,14",
+      "Place_Name": "Cotentin marshes",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Cotentin marshes",
+        "Place_GPS_coordinate": "49.3, -1.25",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Cotentin marshes",
+        "Place_GPS_coordinate": "49.3, -1.25",
+        "Weather_text": "Water-covered marshland in summer 1944 due to flooding.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.6315",
+          "East": "0.1315",
+          "South": "48.3991",
+          "North": "50.2009"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Corridors of Advance",
+      "Sub-event_summary": "Three corridors marked by roads: west coast from la Haye-du-Puits to Coutances (main effort, widest/firmest ground), Carentan to Périers, Carentan to St. Lô. VIII Corps starts first for simultaneous arrival at objective.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "Three corridors of advance lead through the Carentan plain, each marked by a road. One goes along the west coast of the Cotentin from la Haye-du-Puits to Coutances. Another runs from Carentan southwest to Périers. The third goes south from Carentan to St. Lô. General Bradley decided to make his main effort along the coastal road, for that corridor is the widest and the ground the most firm. Along this axis, but in reverse, the Germans had broken through the French defenses in 1940 and gained Cherbourg. The VIII Corps, which comprised the army right flank on the west coast of the Cotentin, was to advance through la Haye-du-Puits to Coutances, a longer distance than that down the corridors leading south from Carentan to Périers and St. Lô. By having VIII Corps begin its advance first, General Bradley expected all the army elements to reach the objective line at the same time. The VII Corps, alerted to advance along the Carentan-Périers axis, and that part of the XIX Corps west of the Vire River, positioned for an advance from Carentan toward St. Lô, were to go into action in turn, from right (west) to left (east). Although General Bradley thus exposed himself to criticism for piecemeal commitment, he had no other logical choice.¹⁵ The VII Corps headquarters, which had hurried south from Cherbourg to take a sector at Carentan, needed time for orientation. The XIX Corps required troops that were in the process of arriving from the landing beaches. But with higher headquarters impatiently demanding that the offensive to the south get underway at once, and with the attack having been postponed twice before, General Bradley felt that he could not delay. Furthermore, waiting until all units could attack simultaneously would give the enemy more opportunity to prepare his defenses, an opportunity the Germans had certainly exploited during the previous two-week period of inactivity."
+      },
+      "Footnote_References": "15",
+      "Place_Name": "la Haye-du-Puits",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "U.S. First Army",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Needed time for orientation after Cherbourg",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.3, -1.55",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.3, -1.55",
+        "Weather_text": "Conditions in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.9318",
+          "East": "-0.1682",
+          "South": "48.3991",
+          "North": "50.2009"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Lack of Preparation for Hedgerow Fighting",
+      "Sub-event_summary": "American officers and soldiers knew little of hedgerow country before invasion. Air photos didn't convey reality. Not until entering hedgerows in June did they understand defensive effectiveness.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "Although most of the Americans facing the hedgerow and marshy terrain of the Cotentin were aware of the difficulties to come, the opposite had been true before the invasion. American officers for the most part had known little of the hedgerow country. Few had seen the hedgerows, and air photos gave no real appreciation of what they were like. If most American commanders had not been able to visualize hedgerow fighting, most of the soldiers had not even been able to imagine a hedgerow. Not until the U.S. troops entered the hedgerows in June had they begun to have an idea of how effectively the terrain could be used for defense.¹⁶ The hedgerow fighting in June had been so difficult that many units made special studies of the problem. Most concluded that the principles of tactics taught at The Infantry School at Fort Benning, Georgia, applied in this terrain as elsewhere. The task was to pin the enemy down with a base of fire and maneuver an element along a covered approach to assault from the flank. In Normandy the lateral hedgerows marked not only the successive lines of advance and the positions for a base of fire but also the enemy defensive positions; hedges parallel to the line of advance could be made to serve as covered approach routes. As this technique developed in June, a refinement emerged. The tank-infantry team operating"
+      },
+      "Footnote_References": "16",
+      "Place_Name": "Cotentin",
+      "Dates": {
+        "Date_group_of_event": "JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5, -1.5",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5, -1.5",
+        "Weather_text": "Hedgerow and marshy terrain conditions in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.8818",
+          "East": "-0.1182",
+          "South": "48.5991",
+          "North": "50.4009"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Development of Hedgerow Tactics",
+      "Sub-event_summary": "Hedgerow fighting studies concluded standard tactics applied: pin enemy with fire, maneuver to flank. Lateral hedgerows as lines of advance/fire positions, parallel as routes. Tank-infantry team refinement.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "The hedgerow fighting in June had been so difficult that many units made special studies of the problem. Most concluded that the principles of tactics taught at The Infantry School at Fort Benning, Georgia, applied in this terrain as elsewhere. The task was to pin the enemy down with a base of fire and maneuver an element along a covered approach to assault from the flank. In Normandy the lateral hedgerows marked not only the successive lines of advance and the positions for a base of fire but also the enemy defensive positions; hedges parallel to the line of advance could be made to serve as covered approach routes. As this technique developed in June, a refinement emerged. The tank-infantry team operating"
+      },
+      "Footnote_References": "",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions for hedgerow fighting in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Tank-Infantry Team",
+      "Sub-event_summary": "Tank-infantry team: tanks provide fire support, infantry assaults. Tanks use machine guns, cannons against hedgerows. Mortars, artillery, white phosphorus used effectively.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "XIX Corps, The Tk-Inf Team, 24 Jun, VIII Corps G-3 Jnl File, Jul; 507th Parachute Inf AAR, Jun and Jul."
+      },
+      "Footnote_References": "17",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "240000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "232200Z JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Lessons from Combat",
+      "Sub-event_summary": "Armored section memo on lessons: tanks leading in defiles, use of machine guns, cannons on hedgerows, white phosphorus, infantry-tank communication.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "FUSA Armd Sec Memo 1, Lessons from Combat in Normandy, 19 Jun, 30th Div G-3 Jnl File."
+      },
+      "Footnote_References": "18",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "190000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "182200Z JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Development of Infantry Support Tank",
+      "Sub-event_summary": "Lack of preinvasion emphasis on hedgerows prevented heavily armed infantry support tank development.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "There was feeling in some quarters that the lack of emphasis on hedgerow operations during the preinvasion period had prevented the development of an infantry support tank heavily armed in front and in the bowels. Interv, Col C. H. Bonesteel, III (formerly in the 12th AGp G-3 Plans Sec), 18 Jun 47, Washington, Pogue Files."
+      },
+      "Footnote_References": "19",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "PRE JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "PRE JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Pre-invasion conditions.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Infantry Combat in Hedgerows",
+      "Sub-event_summary": "Infantry combat in hedgerows involved squads or platoons, using grenades, mortars, machine guns. Fighting resembled Indian warfare, with close-quarters combat.",
+      "Sub-event_fulltext": {
+        "Paragraph_20": "314th Infantry Regiment, Through Combat (Germany, n.d.), an unofficial history, p. 18."
+      },
+      "Footnote_References": "20",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "JUN44"
+      },
+      "TOE": {
+        "Unit": "314th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {},
+        "Subordinates": {},
+        "Personnel": "Squads or platoons",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Grenades",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Use of White Phosphorus",
+      "Sub-event_summary": "White phosphorus shells for howitzers supplied, effective in hedgerow combat.",
+      "Sub-event_fulltext": {
+        "Paragraph_21": "First U.S. Army, Report of Operations, I, 80; FUSA (Ord) Ltr, Supply of WP for 105-mm. and 155-mm. howitzers, 1 Jul, FUSA G-3 Jnl File."
+      },
+      "Footnote_References": "21",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "010000B JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "302200Z JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Communication and Coordination Issues",
+      "Sub-event_summary": "Communication between tanks and infantry difficult, leading to suggestions for external telephones on tanks.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "Maj Gen Leonard T. Gerow to Gen Bradley, 0905, 27 Jun, and 90th Div Operational Memo 8, 2 Jul, FUSA G-3 Jnl File."
+      },
+      "Footnote_References": "22",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "270905B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "270705Z JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Engineering Solutions for Hedgerows",
+      "Sub-event_summary": "Engineers experimented with explosives to blast holes in hedgerows, using shaped charges for efficiency.",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "First U.S. Army, Report of Operations, I, 121-22."
+      },
+      "Footnote_References": "23",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Comparison to Pacific 'Island Hopping'",
+      "Sub-event_summary": "Hedgerow combat compared to Pacific 'island hopping', but fields instead of islands.",
+      "Sub-event_fulltext": {
+        "Paragraph_24": "See John Miller, jr., CARTWHEEL: The Reduction of Rabaul, UNITED STATES ARMY IN WORLD WAR II (Washington, 1959)."
+      },
+      "Footnote_References": "24",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Infantry Regiment Combat",
+      "Sub-event_summary": "314th Infantry Regiment history describes hedgerow combat as small unit actions with grenades, mortars, machine guns, resembling Indian warfare.",
+      "Sub-event_fulltext": {
+        "Paragraph_25": "See CI 47 (8th Div)."
+      },
+      "Footnote_References": "25",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "JUN44"
+      },
+      "TOE": {
+        "Unit": "314th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "79th Infantry Division",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {},
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "30th Division Tactics",
+      "Sub-event_summary": "30th Division used three-man teams: two riflemen and BAR man for base fire, demolition man blasting hole, two riflemen throwing grenades, assault team entering field.",
+      "Sub-event_fulltext": {
+        "Paragraph_26": "First U.S. Army, Report of Operations, I, 121-22; see Robert L. Hewitt, Work Horse of the Western Front, the Story of the 30th Infantry Division (Washington: Infantry Journal, Inc., 1946) (hereafter cited as Hewitt, Story of 30th Division), pp. 21-22."
+      },
+      "Footnote_References": "26",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "JUN44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "U.S. First Army",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {},
+        "Personnel": "Three-man teams for hedgerow assault",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "BAR",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions in June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Weapon Comparisons",
+      "Sub-event_summary": "Allied and German tanks, guns, mortars compared. Germans had superior tanks like Panther, Tiger; Allies relied on numbers, air support. Mortars and artillery comparable, but Germans had Nebelwerfer advantage.",
+      "Sub-event_fulltext": {
+        "Paragraph_27": "The following is based on Colonel C. P. Stacey, The Canadian Army, 1930-1945 (Ottawa: King's Printer, 1948), p. 183n.; G. M. Barnes, Major General, United States Army (Ret.), Weapons of World War II (New York: D. Van Nostrand Company, Inc., 1947), passim; Constance McLaughlin Green, Harry C. Thomson, and Peter C. Roots, The Ordnance Department: Planning Munitions for War, UNITED STATES ARMY IN WORLD WAR II (Washington, 1955), Chs. X-XIII; Wilmot, The Struggle for Europe, pp. 294, 309; Ruppenthal, Logistical Support, I, p. 443; WD TM-E 30451, Handbook of German Military Forces (Washington, 15 March 1945); OKH Generalinspekteur der Panzertruppen Fuehrervortragsnotzigen, Band II, VI.-IX.44."
+      },
+      "Footnote_References": "27",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Enemy Armor Identification",
+      "Sub-event_summary": "XIX Corps sheet described enemy armor with photos, noting no Tiger met yet.",
+      "Sub-event_fulltext": {
+        "Paragraph_28": "See XIX Corps AAR, Jul, for a descriptive sheet on enemy armor circulated to the troops. This sheet lists the dimensions of the enemy tanks and has photographs of the Mark IV and V. Opposite the Mark VI listing there is a large question mark and the inscription: \"None met yet--will YOU get the first?\""
+      },
+      "Footnote_References": "28",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Eisenhower's Letter on Armor",
+      "Sub-event_summary": "Eisenhower wrote Marshall on 5 July about German armor superiority, but Allied numbers and air/artillery support compensated.",
+      "Sub-event_fulltext": {
+        "Paragraph_29": "Ltr, Eisenhower to Marshall, 5 Jul, Pogue Files."
+      },
+      "Footnote_References": "29",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "050000B JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "042200Z JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Bradley to Collins on Tank Superiority",
+      "Sub-event_summary": "Bradley wrote Collins on 6 July, noting German tank superiority but Allied advantages in numbers, air, artillery.",
+      "Sub-event_fulltext": {
+        "Paragraph_30": "Ltr, Gen Bradley to Maj Gen J. Lawton Collins, 6 Jul, FUSA G-3 Jnl File."
+      },
+      "Footnote_References": "30",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "060000B JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "052200Z JUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "U.S. First Army",
+          "Commander": "J. Lawton Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Conditions in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    },
+    {
+      "Event": "The American Situation in Normandy (July 1944)",
+      "Sub-event": "Optimism for July Operations",
+      "Sub-event_summary": "Despite challenges, optimism for July operations due to developed tactics, equipment superiority in some areas, air/naval support.",
+      "Sub-event_fulltext": {
+        "Paragraph_31": "see Lt Col Melvin C. Heifers, The Employment of V-weapons by the Germans during World War II, OCMH Monograph; Magna Bauer, The German Withdrawal From the Ardennes (May 1955), R-59; Wesley Frank Craven and James Lea Cate, eds., The Army Air Forces in World War II, Vol. III, Europe: Argument to V-E Day (Chicago: The University of Chicago Press, 1951) (hereafter cited as AAF III), p. XXV , Chs. IV and XV ; Eisenhower, Crusade in Europe, pp. 259-60; SGS SHAEF File 381, C ROSSBOW . Allied concern over German jet-propelled planes, another new development, prompted warnings to the ground forces that any jet aircraft that were shot down were to be guarded so that AEAF personnel could make a technical examination of the remains. VII Corps Opns Memo 36, 13 Jul."
+      },
+      "Footnote_References": "31",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+        "Zulu_date_group_of_event": "JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "48.88, 0.17",
+        "Weather_text": "Gloomy in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1999",
+          "East": "1.5399",
+          "South": "47.9791",
+          "North": "49.7809"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "",
+      "Footnote_Number": "1",
+      "Footnote_Text": "Ltr, Gen Eisenhower to General George C. Marshall, 24 Aug 43, as quoted in parchmented MS by Forrest C. Pogue, The Supreme Command, Ch. I, p. 73, OCMH Files.",
+      "Footnote_Referenced_Source": "The Supreme Command, Ch. I, p. 73, OCMH Files.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH Files",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Parchmented MS by Forrest C. Pogue"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "2",
+      "Footnote_Text": "12th AGp AAR, I, 5.",
+      "Footnote_Referenced_Source": "12th AGp AAR, I, 5.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "12th Army Group After Action Report",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "12th AGp AAR, Vol I"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "3",
+      "Footnote_Text": "The First Army staff assisting General Bradley on the Continent was formed about a nucleus of veterans. One tenth of the headquarters officers, over 30 individuals, had had combat experience in the Mediterranean. Maj. Gen. William B. Kean, the chief of staff, Col. Joseph J. O'Hare, the G-1, Col. Benjamin A. Dickson, the G-2, Col. Truman C. Thorson, the G-3, and Col. Robert W. Wilson, the G-4, belonged in this category.",
+      "Footnote_Referenced_Source": "First U.S. Army, Report of Operations, I 14-15.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "First U.S. Army Report of Operations",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "First U.S. Army, Report of Operations, Vol I, pp. 14-15"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Bradley, A Soldier's Story, pp. 209-10, 350.",
+      "Footnote_Referenced_Source": "A Soldier's Story, pp. 209-10, 350.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "A Soldier's Story",
+      "NonDigital_Library_Address": "Library of Congress, 101 Independence Ave SE, Washington, DC 20540",
+      "NonDigital_Library_References": "Omar Bradley, A Soldier's Story (1951)"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "5",
+      "Footnote_Text": "21 AGp Dir, M-504, 19 Jun, Pogue Files; Ltr, Eisenhower to Bradley, 25 Jun, FUSA G-3 Jnl File.",
+      "Footnote_Referenced_Source": "21 AGp Dir, M-504, 19 Jun; Ltr, Eisenhower to Bradley, 25 Jun.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Pogue Files, FUSA G-3 Jnl File",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "21 Army Group Directive M-504, First U.S. Army G-3 Journal File"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "6",
+      "Footnote_Text": "First U.S. Army, Report of Operations, I, 82; VIII Corps AAR, Jul; Montgomery to Eisenhower, M-30, 25 Jun, SGS SHAEF File 381, Opn OVERLORD, I (a); Bradley, A Soldier's Story, pp. 303-04.",
+      "Footnote_Referenced_Source": "First U.S. Army, Report of Operations, I, 82; VIII Corps AAR, Jul; Montgomery to Eisenhower, M-30, 25 Jun; Bradley, A Soldier's Story, pp. 303-04.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "SGS SHAEF File 381, Opn OVERLORD, I (a)",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "SHAEF SGS File 381"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "7",
+      "Footnote_Text": "FUSA FO 1, 26 Jun; First U.S. Army, Report of Operations I, 82.",
+      "Footnote_Referenced_Source": "FUSA FO 1, 26 Jun; First U.S. Army, Report of Operations I, 82.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "First U.S. Army Field Order 1",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "FUSA FO 1, 26 Jun"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "8",
+      "Footnote_Text": "21 AGp Dir, M-505, 30 Jun, Pogue Files.",
+      "Footnote_Referenced_Source": "21 AGp Dir, M-505, 30 Jun.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Pogue Files",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "21 Army Group Directive M-505"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "9",
+      "Footnote_Text": "FUSA FO 1 (rev), 1 Jul.",
+      "Footnote_Referenced_Source": "FUSA FO 1 (rev), 1 Jul.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "First U.S. Army Field Order 1 (revised)",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "FUSA FO 1 (rev), 1 Jul"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "10",
+      "Footnote_Text": "See Harrison, Cross-Channel Attack, pp. 374, 376-77; First U.S. Army Report of Operations, I, 72-73.",
+      "Footnote_Referenced_Source": "Cross-Channel Attack, pp. 374, 376-77; First U.S. Army Report of Operations, I, 72-73.",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "11",
+      "Footnote_Text": "See Jacques Mordal, \"La Defense de Cherbourg,\" La Revue Maritime, New Series No. 76 (August, 1952), 963-80.",
+      "Footnote_Referenced_Source": "La Defense de Cherbourg, La Revue Maritime, New Series No. 76 (August, 1952), 963-80.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "La Revue Maritime",
+      "NonDigital_Library_Address": "Bibliothèque nationale de France, Quai François Mauriac, 75706 Paris Cedex 13, France",
+      "NonDigital_Library_References": "La Revue Maritime, New Series No. 76 (August, 1952)"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "12",
+      "Footnote_Text": "VIII Corps AAR, Jul; (British) Inter-Service Information Series (I.S.I.S.), Report on France, Vol. II, Normandy, West of the Seine, Pt. III (C), \"Waterways\" (Inter-Serv Topographical Dept Jan, 43); Abbe Paul Levert, \"Le Front Allemand est Brise,\" in Rene Herval, ed., Bataille de Normandie, 2 vols. (Paris: Editions de \"Notre Temps, \" 1947), Vol. I, p. 159n; Le Capitaine de Vaisseau Delpeuch, Le Mur de l'Atlantique, 10 vols., Vol. III La Côte de la Manche, de la Seine au Mont St. Michel (Bordeaux, 1952) (MS in possession of the Hist Sec, Ministry of the Navy, Republic of France), p. 95; Robert Bethegnies, Le Sacrifice de Dunkerque (1940) (Lille, 1947), pp. 225-26. I am indebted to Médecin en Chef Hervé Cras of the Historical Section, Ministry of the Navy, Republic of France, for the two latter references.",
+      "Footnote_Referenced_Source": "VIII Corps AAR, Jul; Report on France, Vol. II, Normandy, West of the Seine, Pt. III (C), \"Waterways\"; Bataille de Normandie, Vol. I, p. 159n; Le Mur de l'Atlantique, Vol. III, p. 95; Le Sacrifice de Dunkerque (1940), pp. 225-26.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Inter-Service Information Series (I.S.I.S.), Bataille de Normandie, Le Mur de l'Atlantique, Le Sacrifice de Dunkerque",
+      "NonDigital_Library_Address": "Bibliothèque nationale de France, Quai François Mauriac, 75706 Paris Cedex 13, France",
+      "NonDigital_Library_References": "Various volumes as cited"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "13",
+      "Footnote_Text": "1st AGp Observers Gp Ltr, 1 Jul, VIII Corps G-3 Jnl File.",
+      "Footnote_Referenced_Source": "1st AGp Observers Gp Ltr, 1 Jul.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "VIII Corps G-3 Jnl File",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal File"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "14",
+      "Footnote_Text": "82d Abn Div G-3 Jnl, 0130, 2 Jul.",
+      "Footnote_Referenced_Source": "82d Abn Div G-3 Jnl, 0130, 2 Jul.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "82d Airborne Division G-3 Journal",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "82d Abn Div G-3 Jnl, entry 0130, 2 Jul"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "15",
+      "Footnote_Text": "See VIII Corps AAR, Jul.",
+      "Footnote_Referenced_Source": "VIII Corps AAR, Jul.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "VIII Corps After Action Report, July",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "VIII Corps AAR, Jul"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "16",
+      "Footnote_Text": "Answers by Gens Smith and Bull, 14-15 Sep 45.",
+      "Footnote_Referenced_Source": "Answers by Gens Smith and Bull, 14-15 Sep 45.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Interviews with Gens Walter Bedell Smith and James A. Bull",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Interviews dated 14-15 Sep 45"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "17",
+      "Footnote_Text": "XIX Corps, The Tk-Inf Team, 24 Jun, VIII Corps G-3 Jnl File, Jul; 507th Parachute Inf AAR, Jun and Jul.",
+      "Footnote_Referenced_Source": "XIX Corps, The Tk-Inf Team, 24 Jun; 507th Parachute Inf AAR, Jun and Jul.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "VIII Corps G-3 Jnl File, Jul; 507th Parachute Inf AAR",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "XIX Corps document, 507th Parachute Infantry After Action Report"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "18",
+      "Footnote_Text": "FUSA Armd Sec Memo 1, Lessons from Combat in Normandy, 19 Jun, 30th Div G-3 Jnl File.",
+      "Footnote_Referenced_Source": "FUSA Armd Sec Memo 1, Lessons from Combat in Normandy, 19 Jun.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "30th Div G-3 Jnl File",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "First U.S. Army Armored Section Memo 1"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "19",
+      "Footnote_Text": "There was feeling in some quarters that the lack of emphasis on hedgerow operations during the preinvasion period had prevented the development of an infantry support tank heavily armed in front and in the bowels. Interv, Col C. H. Bonesteel, III (formerly in the 12th AGp G-3 Plans Sec), 18 Jun 47, Washington, Pogue Files.",
+      "Footnote_Referenced_Source": "Interv, Col C. H. Bonesteel, III, 18 Jun 47.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Pogue Files",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Interview with Col C. H. Bonesteel, III"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "20",
+      "Footnote_Text": "314th Infantry Regiment, Through Combat (Germany, n.d.), an unofficial history, p. 18.",
+      "Footnote_Referenced_Source": "Through Combat (Germany, n.d.), p. 18.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "314th Infantry Regiment unofficial history",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "Through Combat (Germany, n.d.)"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "21",
+      "Footnote_Text": "First U.S. Army, Report of Operations, I, 80; FUSA (Ord) Ltr, Supply of WP for 105-mm. and 155-mm. howitzers, 1 Jul, FUSA G-3 Jnl File.",
+      "Footnote_Referenced_Source": "First U.S. Army, Report of Operations, I, 80; FUSA (Ord) Ltr, Supply of WP for 105-mm. and 155-mm. howitzers, 1 Jul.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "FUSA G-3 Jnl File",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "First U.S. Army Ordnance Letter, 1 Jul"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "22",
+      "Footnote_Text": "Maj Gen Leonard T. Gerow to Gen Bradley, 0905, 27 Jun, and 90th Div Operational Memo 8, 2 Jul, FUSA G-3 Jnl File.",
+      "Footnote_Referenced_Source": "Maj Gen Leonard T. Gerow to Gen Bradley, 0905, 27 Jun; 90th Div Operational Memo 8, 2 Jul.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "FUSA G-3 Jnl File",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "First U.S. Army G-3 Journal File"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "23",
+      "Footnote_Text": "First U.S. Army, Report of Operations, I, 121-22.",
+      "Footnote_Referenced_Source": "First U.S. Army, Report of Operations, I, 121-22.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "First U.S. Army Report of Operations",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "First U.S. Army, Report of Operations, Vol I, pp. 121-22"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "24",
+      "Footnote_Text": "See John Miller, jr., CARTWHEEL: The Reduction of Rabaul, UNITED STATES ARMY IN WORLD WAR II (Washington, 1959).",
+      "Footnote_Referenced_Source": "CARTWHEEL: The Reduction of Rabaul, UNITED STATES ARMY IN WORLD WAR II (Washington, 1959).",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-P-Rabaul/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "25",
+      "Footnote_Text": "See CI 47 (8th Div).",
+      "Footnote_Referenced_Source": "CI 47 (8th Div).",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Combat Interview 47 (8th Division)",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "CI 47"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "26",
+      "Footnote_Text": "First U.S. Army, Report of Operations, I, 121-22; see Robert L. Hewitt, Work Horse of the Western Front, the Story of the 30th Infantry Division (Washington: Infantry Journal, Inc., 1946) (hereafter cited as Hewitt, Story of 30th Division), pp. 21-22.",
+      "Footnote_Referenced_Source": "First U.S. Army, Report of Operations, I, 121-22; Work Horse of the Western Front, the Story of the 30th Infantry Division (Washington: Infantry Journal, Inc., 1946), pp. 21-22.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Hewitt, Story of 30th Division",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "Robert L. Hewitt (1946)"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "27",
+      "Footnote_Text": "The following is based on Colonel C. P. Stacey, The Canadian Army, 1930-1945 (Ottawa: King's Printer, 1948), p. 183n.; G. M. Barnes, Major General, United States Army (Ret.), Weapons of World War II (New York: D. Van Nostrand Company, Inc., 1947), passim; Constance McLaughlin Green, Harry C. Thomson, and Peter C. Roots, The Ordnance Department: Planning Munitions for War, UNITED STATES ARMY IN WORLD WAR II (Washington, 1955), Chs. X-XIII; Wilmot, The Struggle for Europe, pp. 294, 309; Ruppenthal, Logistical Support, I, p. 443; WD TM-E 30451, Handbook of German Military Forces (Washington, 15 March 1945); OKH Generalinspekteur der Panzertruppen Fuehrervortragsnotzigen, Band II, VI.-IX.44.",
+      "Footnote_Referenced_Source": "The Canadian Army, 1930-1945, p. 183n.; Weapons of World War II, passim; The Ordnance Department: Planning Munitions for War, Chs. X-XIII; The Struggle for Europe, pp. 294, 309; Logistical Support, I, p. 443; Handbook of German Military Forces; OKH Generalinspekteur der Panzertruppen Fuehrervortragsnotzigen, Band II, VI.-IX.44.",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Logistics1/index.html (for Logistical Support)",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "The Canadian Army (1948), Weapons of World War II (1947), The Ordnance Department (1955), The Struggle for Europe, Handbook of German Military Forces (1945), OKH Reports",
+      "NonDigital_Library_Address": "Library of Congress, 101 Independence Ave SE, Washington, DC 20540",
+      "NonDigital_Library_References": "Various titles as cited"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "28",
+      "Footnote_Text": "See XIX Corps AAR, Jul, for a descriptive sheet on enemy armor circulated to the troops. This sheet lists the dimensions of the enemy tanks and has photographs of the Mark IV and V. Opposite the Mark VI listing there is a large question mark and the inscription: \"None met yet--will YOU get the first?\"",
+      "Footnote_Referenced_Source": "XIX Corps AAR, Jul.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "XIX Corps After Action Report, July",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "XIX Corps AAR, Jul"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "29",
+      "Footnote_Text": "Ltr, Eisenhower to Marshall, 5 Jul, Pogue Files.",
+      "Footnote_Referenced_Source": "Ltr, Eisenhower to Marshall, 5 Jul.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Pogue Files",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Letter, Eisenhower to Marshall, 5 Jul"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "30",
+      "Footnote_Text": "Ltr, Gen Bradley to Maj Gen J. Lawton Collins, 6 Jul, FUSA G-3 Jnl File.",
+      "Footnote_Referenced_Source": "Ltr, Gen Bradley to Maj Gen J. Lawton Collins, 6 Jul.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "FUSA G-3 Jnl File",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "First U.S. Army G-3 Journal File"
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "31",
+      "Footnote_Text": "see Lt Col Melvin C. Heifers, The Employment of V-weapons by the Germans during World War II, OCMH Monograph; Magna Bauer, The German Withdrawal From the Ardennes (May 1955), R-59; Wesley Frank Craven and James Lea Cate, eds., The Army Air Forces in World War II, Vol. III, Europe: Argument to V-E Day (Chicago: The University of Chicago Press, 1951) (hereafter cited as AAF III), p. XXV , Chs. IV and XV ; Eisenhower, Crusade in Europe, pp. 259-60; SGS SHAEF File 381, C ROSSBOW . Allied concern over German jet-propelled planes, another new development, prompted warnings to the ground forces that any jet aircraft that were shot down were to be guarded so that AEAF personnel could make a technical examination of the remains. VII Corps Opns Memo 36, 13 Jul.",
+      "Footnote_Referenced_Source": "The Employment of V-weapons by the Germans during World War II, OCMH Monograph; The German Withdrawal From the Ardennes (May 1955), R-59; The Army Air Forces in World War II, Vol. III (AAF III), p. XXV, Chs. IV and XV; Crusade in Europe, pp. 259-60; SGS SHAEF File 381, C ROSSBOW; VII Corps Opns Memo 36, 13 Jul.",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Supreme/index.html (for Supreme Command, related)",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "OCMH Monograph, R-59, AAF III, Crusade in Europe, SGS SHAEF File 381, VII Corps Opns Memo",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Building 35, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Various monographs and files as cited"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn3.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

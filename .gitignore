@@ -205,3 +205,110 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ┌──────────────────────────────────────────────────────────────┐
+# │                    PyCharm / IntelliJ IDEA                   │
+# └──────────────────────────────────────────────────────────────┘
+
+# User-specific/workspace-specific settings
+.idea/
+!.idea/.gitignore               # keep if you version-control shared run configs
+!.idea/misc.xml                 # sometimes useful (project encoding, etc.)
+!.idea/modules.xml              # sometimes versioned in monorepos
+!.idea/vcs.xml                  # git integration settings
+!.idea/workspace.xml            # ← almost never commit
+!.idea/tasks.xml
+!.idea/dataSources/
+!.idea/dataSources.local.xml
+!.idea/shelf/
+!.idea/content.xml
+!.idea/dictionaries/
+!.idea/inspectionProfiles/
+!.idea/copyright/
+!.idea/libraries/
+!.idea/uiDesigner.xml
+*.iml                           # module files – very rarely versioned nowadays
+
+# Editor-based temporary files
+*.class
+*.py~
+*.pyc
+*$py.class
+__pycache__/
+.python-version                 # pyenv / asdf / mise local version file
+
+# Virtual environments (common names)
+venv/
+env/
+.venv/
+.venv-*/
+.env/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing / coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+coverage.*
+*.cover
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Packaging & distribution
+dist/
+build/
+*.egg
+*.egg-info/
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Dependency management extras
+Pipfile.lock
+poetry.lock                     # ← usually committed, remove if you don't want it
+pdm.lock
+uv.lock
+requirements.txt                # ← usually committed, remove if you don't want it
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux / cross-platform
+*~
+.~*
+*.swp
+*.swo
+*.bak
+*.tmp
+*.temp
+
+# Logs & databases (local)
+*.log
+*.logs
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+
+# Common local experiment folders
+notebooks/
+experiments/
+scratch/
+playground/
+tmp/
+temp/

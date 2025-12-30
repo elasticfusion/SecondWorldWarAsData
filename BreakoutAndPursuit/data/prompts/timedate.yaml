@@ -1,0 +1,18 @@
+Time and Date:
+	- The "Date_group_of_event" is always as published in the text.
+	- For date keep a consistent format:
+		- DDHHMMZmmmYY, using the Date-time group as specified in: https://web.archive.org/web/20170321080040/http://www.gwg.nga.mil/ntb/baseline/docs/2500a/2500a.pdf
+	Assumptions about Dates and Times:
+		- All date times in the text are British Double Summer Time (BDST) until 15 Jul 1944
+		- From 15 Jul 1944 and forward, assume British Summer Time (BST)
+		- For German sourced events:
+			  - Check the footnote source as to whether the source is a german document or a german post-ware interview
+			  - Assume GMT+2, Central European Time (CET)
+		- 'Zulu_date_group_of_event' is a conversion from BDST, BST and CET to Universal Time
+	For imprecise dates and times use:
+		- For imprecise dates use: "BEGINNING mmmYY" or "END mmmYY"
+		- Imprecise times, use  "APPROX 240900Z mmmYY"
+	For "Source_of_date_group_of_event":
+		- Default to use of "Source Link: $SourceLink if it exists.
+		- Use Grok to search the web for Date.Date_group_of_event if the value is empty.
+		- Populate Date.Source_date_group_of_event with the source link that Grok found.
