@@ -1,0 +1,987 @@
+{
+  "Events": [
+    {
+      "Event": "The Carentan--Périers Isthmus",
+      "Sub-event": "Redeployment and Planning",
+      "Sub-event_summary": "General Bradley redeployed VII Corps to Carentan to secure the isthmus and launch an offensive towards the Coutances-St. Lô highway. The area was vulnerable to German attacks, and the plan involved three divisions with artillery support, postponed to 4 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "In keeping with the desire of Generals Eisenhower and Montgomery to get the American offensive to the south under way, General Bradley had lost no time in redeploying the VII Corps from Cherbourg. As the Cherbourg operation was ending on the last day of June, Bradley ordered the VII Corps headquarters to move to Carentan immediately to assume responsibility for an area on the left (east) of the VIII Corps.",
+        "Paragraph_2": "The new VII Corps sector, between the Prairies Marécageuses de Gorges and the flooded Taute River, covered the shallowest part of the Allied beachhead. Through Carentan passed the only highway linking the U.S. troops in the Cotentin with the Allied forces east of the Taute River. The area was considered the weakest and most sensitive part of the entire First Army front. (Map 4)",
+        "Paragraph_3": "A road center and small seaport, Carentan was extremely vulnerable to German attack. The VII Corps positions, facing southwest toward Périers, were only three and a half miles from the center of Carentan. A German counterattack in mid-June had come to within 500 yards of retaking the town, and German field artillery continued to interdict the town and the highway bridge across the Taute River. [2]",
+        "Paragraph_4": "The First Army staff did not rule out the possibility that a determined German attack might overrun Carentan, cut the Allied beachhead in two, and deny the Allies lateral communication by land. [3] Advancing the front line south of Carentan would eliminate these dangers and the nuisance of German shelling.",
+        "Paragraph_5": "More important than these defensive considerations was the offensive motivation. The VII Corps objective was a portion of the Coutances-St. Lô highway. To reach the objective the corps had to pass through a narrow and well-defined corridor constricted by adjacent marshes. Resembling an isthmus two to three miles wide, the corridor between Carentan and Périers severely limited the amount of strength that corps could bring to bear. Only after reaching the Périers-St. Lô highway would VII Corps have adequate room for deploying its forces, and there, south of the Prairies Marécageuses de Gorges, the VII Corps",
+        "Paragraph_6": "Map 4. Attack of VII Corps 4-7 July 1944 would be at a juncture with the VIII Corps. Continuing south, the two corps would come abreast at the Coutances-St. Lô highway, the final army objective. Should resistance disintegrate before the final objective was reached, General Bradley could use an armored division that he had in the army reserve to exploit the American success. [4]",
+        "Paragraph_7": "General Bradley had thought of launching the VII Corps attack on 3 July, at the same time the VIII Corps jumped off, but he had decided to help VIII Corps on its first day of operations by giving it temporary control of the VII Corps Artillery. He therefore postponed the VII Corps effort until 4 July, when VII Corps was to regain control of its own artillery support. A battalion of 8-inch howitzers and several battalions of medium artillery from army were to reinforce the fires of the corps pieces. [5]",
+        "Paragraph_8": "The VII Corps commander was Maj. Gen. J. Lawton Collins, who as a lieutenant colonel three years earlier had been the corps chief of staff. In the Pacific he had commanded the 25th Division on Guadalcanal and New Georgia. The division code name, Lightning, seemed to describe General Collins' method of operation. As VII Corps commander, his direction of the invasion landings on U TAH Beach and his vigorous prosecution of the Cherbourg campaign had reinforced the suitability of his nickname, \"Lightning Joe.\" Flushed with success and generating unbounded confidence, General Collins and his staff enthusiastically accepted the challenge presented by the new task assigned to the VII Corps."
+      },
+      "Footnote_References": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "Place_Name": "Carentan",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Nelson Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "4th Infantry Division",
+            "Name": "Raymond O. Barton",
+            "Rank": "Major General",
+            "Date": "July 1942",
+            "End_Date": "December 1944",
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Raymond_O._Barton",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "9th Infantry Division",
+            "Name": "Manton S. Eddy",
+            "Rank": "Major General",
+            "Date": "1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "83d Infantry Division",
+            "Name": "Robert C. Macon",
+            "Rank": "Major General",
+            "Date": "June 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_C._Macon",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "Experienced corps headquarters, divisions with varying experience",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "8-inch howitzer",
+              "Identifier": "M1",
+              "Quantity": "battalion",
+              "Web_Reference": "https://en.wikipedia.org/wiki/240_mm_howitzer_M1",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/240mm_Howitzer_Fort_Lee_VA.JPG/800px-240mm_Howitzer_Fort_Lee_VA.JPG",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": null,
+          "Allied_US_WIA": null,
+          "Allied_US_Missing": null,
+          "Allied_US_Unspecified_Casualties": null,
+          "Allied_US_Prisoner_of_War": null
+        },
+        "Axis": {
+          "Axis_DE_KIA": null,
+          "Axis_DE_WIA": null,
+          "Axis_DE_Missing": null,
+          "Axis_DE_Unspecified_Casualties": null,
+          "Axis_DE_Prisoner_of_War": null
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": null,
+          "Civilian_FR_Wounded": null,
+          "Civilian_FR_Unspecified_Casualties": null
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/maps/USA-A-StLo-III.jpg",
+          "Description": "Map of Attack of VII Corps 4-7 July 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Carentan",
+        "Place_GPS_coordinate": "49.30, -1.25",
+        "Map_Reference": "Map 4",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map4.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Battle_for_Carentan_-_Map.jpg/1100px-Battle_for_Carentan_-_Map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Carentan",
+        "Place_GPS_coordinate": "49.30, -1.25",
+        "Weather_text": "Incessant rain in previous weeks, marsh mist, promise of continuing rain",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.35,
+          "East": -0.15,
+          "South": 48.4,
+          "North": 50.2
+        }
+      }
+    },
+    {
+      "Event": "The Carentan--Périers Isthmus",
+      "Sub-event": "83d Division Deployment and Terrain Challenges",
+      "Sub-event_summary": "The 83d Division, a new unit, was to advance to Sainteny, with other divisions in reserve. The terrain was difficult with hedgerows and mud, and German forces were strong. The division attacked with two regiments abreast.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "The first problem that General Collins faced was how to use to best advantage in the constricted corps zone the three infantry divisions available to him. Retaining the 4th and 9th Infantry Divisions, which had participated in the Cherbourg operation, Collins on 2 July took control of the 83d Infantry Division, which was manning the Carentan sector. Little more than three miles from Carentan, one fourth of the way to Périers, the 83d Division held defensive positions across the narrow isthmus. Directing the 83d to advance a little over two miles to Sainteny, which was half way to Périers, Collins set the stage for committing at least part of another division. Hoping that the 83d Division would reach Sainteny in one day, he planned to have elements of the 4th Division go on to Périers on the second day. If on reaching Sainteny the 83d did not make contact with the VIII Corps attacking along the western edge of the Prairies Marécageuses de Gorges, surely the 4th Division would meet the VIII Corps near Périers.",
+        "Paragraph_10": "At that point, if the 83d Division made a similar advance, crossed the Taute River, and gained its assigned portion of the Périers-St. Lô highway, enough terrain would be available to employ the 9th Division. Though General Collins wanted the 83d Division to reach Sainteny in a day, he nevertheless recognized that the width of the Carentan-Périers isthmus might enable comparatively few enemy troops to hold up forces of superior numbers. To reach Sainteny, the 83d Division had to squeeze through the narrowest part, a neck scarcely two miles wide. Hedgerows restricted mechanized units to well-defined channels and gave",
+        "Paragraph_11": "the enemy ideal cover and concealment for delaying action. Except for the tarred highway to Périers and a lateral route between causeways, the roads on the isthmus were little better than wagon trails. American observers had detected neither antitank ditches nor permanent fortifications, but they felt sure that the Germans had organized their positions to a depth of several miles and were covering all road junctions with machine guns. [6]",
+        "Paragraph_12": "The Germans in the Périers sector, comprising part of the right (east) wing of the LXXXIV Corps, were under the local operational control of the headquarters of the 17th SS Panzer Grenadier Division, a tough, well-trained unit. The division had one of its two regiments holding positions below Carentan. Attached to it was the separate 6th Parachute Regiment, a veteran though somewhat depleted unit. The leadership of these forces was especially strong and experienced. [7]",
+        "Paragraph_13": "Aware of the German units that faced the 83d Division, General Collins did not underestimate their fighting ability. He also realized that early morning marsh mist and the promise of continuing rain would reduce the effectiveness of artillery support and diminish the help offered by tactical air. But he had no alternative to striking the Germans frontally--terrain, unit boundaries, and the First Army plan made a frontal attack by the 83d Division inevitable.",
+        "Paragraph_14": "Though the primary aim was a short advance to allow the commitment of a second division, Collins, with characteristic confidence, ordered the 83d to maintain the momentum of its attack; if the division destroyed the German defenses at once, it was to advance as far as the Taute River in the left (east) portion of the corps zone.",
+        "Paragraph_15": "The 83d Division had arrived in Normandy in the latter part of June and under VIII Corps control had relieved the 101st Airborne Division (Maj. Gen. Maxwell D. Taylor) at Carentan. The airborne troops had moved into the army reserve to prepare for their return to England, but not before boasting of their accomplishments and exaggerating the toughness of the Germans to the novice infantrymen who replaced them. Some members of the new division became jittery. [8] Highly conscious of the division's inexperience, General Collins was to supervise its activities closely.",
+        "Paragraph_16": "The 83d Division commander, Maj. Gen. Robert C. Macon, who had commanded a regiment in North Africa, had the problem of advancing units in terrain that could hardly have been less favorable for offensive action. The almost incessant rain of the previous weeks had soaked the isthmus beyond saturation. As the drainage ditches swelled into streams and the swamps turned into ponds, the surface of the fields became a potential sheet of mud. Progress for foot troops would be difficult; cross-country movement by vehicles virtually impossible; movement of armor in close support most difficult; good direct fire support by tanks and tank destroyers",
+        "Paragraph_17": "a noteworthy accomplishment; supply hazardous. To gain the greatest shock effect commensurate with his constricted zone, General Macon decided to commit two regiments abreast in columns of battalions. To advance down the Carentan-Périers road, the 331st Infantry (Col. Martin D. Barndollar, Jr.) was to attack along the right of the highway, while the 330th Infantry (Col. Ernest L. McLendon) attacked on the left. Col. Edwin B. Crabill's 329th Infantry (minus one battalion) was to constitute the division reserve. One battalion of the 329th was to clear a small area on the right flank at the edge of the Prairies Marécageuses de Gorges."
+      },
+      "Footnote_References": [
+        "6",
+        "7",
+        "8"
+      ],
+      "Place_Name": "Carentan--Périers Isthmus",
+      "Dates": {
+        "Date_group_of_event": "020000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "012200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "J. Lawton Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "331st Infantry Regiment",
+            "Name": "Martin D. Barndollar, Jr.",
+            "Rank": "Colonel",
+            "Date": "July 1944",
+            "End_Date": "04 July 1944",
+            "End_Status": "KIA",
+            "Biographical_reference": "https://www.findagrave.com/memorial/34962844/martin-dunlap-barndollar",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "330th Infantry Regiment",
+            "Name": "Ernest L. McLendon",
+            "Rank": "Colonel",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "329th Infantry Regiment",
+            "Name": "Edwin B. Crabill",
+            "Rank": "Colonel",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://www.findagrave.com/memorial/196649206/col_edwin-blake-crabill",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "Inexperienced division, jittery from airborne stories, fully staffed",
+        "Equipments": {
+          "Supply": "Hazardous due to terrain",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "M4 Sherman",
+              "Identifier": "M4",
+              "Quantity": "battalion",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/M4_Sherman_tank_-_Flickr_-_Joost_J_Bakker_IJmuiden.jpg/800px-M4_Sherman_tank_-_Flickr_-_Joost_J_Bakker_IJmuiden.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [
+            {
+              "Origination_Country": "US",
+              "Name": "M4 Sherman",
+              "Identifier": "M4",
+              "Quantity": "several isolated, not destroyed",
+              "Web_Reference": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Machine gun",
+              "Identifier": "MG42",
+              "Quantity": "covering road junctions",
+              "Web_Reference": "https://en.wikipedia.org/wiki/MG_42",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/MG42_-_7.92x57mm_Mauser.jpg/800px-MG42_-_7.92x57mm_Mauser.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": null,
+          "Allied_US_WIA": null,
+          "Allied_US_Missing": null,
+          "Allied_US_Unspecified_Casualties": null,
+          "Allied_US_Prisoner_of_War": null
+        },
+        "Axis": {
+          "Axis_DE_KIA": null,
+          "Axis_DE_WIA": null,
+          "Axis_DE_Missing": null,
+          "Axis_DE_Unspecified_Casualties": null,
+          "Axis_DE_Prisoner_of_War": null
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": null,
+          "Civilian_FR_Wounded": null,
+          "Civilian_FR_Unspecified_Casualties": null
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://media.gettyimages.com/id/1347279097/photo/world-war-two-europe-1944.jpg?s=1024x1024&w=gi&k=20&c=pdLoNiVRdnXadVMs9bCPUHiedEXkBxozqD4vyndMexU=",
+          "Description": "Soldiers from the 331st Infantry Regiment, 83rd Infantry Division, advance through a French village in Normandy, July 1944.",
+          "License": "Getty Images"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Sainteny",
+        "Place_GPS_coordinate": "49.2389, -1.3128",
+        "Map_Reference": "Map 4",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map4.jpg",
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/maps/USA-A-StLo-III.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Sainteny",
+        "Place_GPS_coordinate": "49.2389, -1.3128",
+        "Weather_text": "Incessant rain, mud, swampy terrain",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.41,
+          "East": -0.21,
+          "South": 48.33,
+          "North": 50.14
+        }
+      }
+    },
+    {
+      "Event": "The Carentan--Périers Isthmus",
+      "Sub-event": "Attack on 4 July 1944",
+      "Sub-event_summary": "The 83d Division launched its attack on 4 July with artillery preparation, but encountered mishaps, including loss of communication and casualties, including the death of Colonel Barndollar. The advance was halted by German fire, with minor gains and heavy losses.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "Division fire power was to be augmented by the 9th Division Artillery, the 746th Tank and the 802d Tank Destroyer Battalions, the 4.2-inch mortars of two companies of the 87th Chemical Battalion, and the quadruple .50-caliber machine guns of the 453d Antiaircraft Artillery Automatic Weapons Battalion. Eager to prove its competence and nervous about its impending trial in battle, the 83d Division celebrated the Fourth of July by firing a ten-minute artillery preparation and then jumping off at daybreak. [9]",
+        "Paragraph_19": "Mishaps plagued the division from the start. Tanks in close support immediately \"messed up\" wires, and General Macon lost touch with his assault formations soon after they crossed the line of departure. Two hours later, the commander of the 331st, Colonel Barndollar, was dead with a bullet below his heart. Soon afterwards, engineers attempting to clear paths through enemy mine fields were being picked off by enemy rifle fire. At midmorning, enemy infantrymen on the division right flank temporarily surrounded several tanks that were trying to advance over soft and muddy marshland. The division moved but a short distance toward Sainteny, 200 yards at most, before German mortar and machine gun fire, from hedgerows and from log pillboxes reinforced by sandbags, halted the attack.",
+        "Paragraph_20": "Following the action of the division from his corps command post, General Collins in midmorning became impatient with the slow progress. He had assured General Macon that he would not interfere with the conduct of operations, but when one infantry battalion waited for others to come abreast, Collins phoned the division headquarters and informed the chief of staff, \"That's exactly what I don't want.\" What he did want was the battalion in the lead to cut behind the Germans who would then be forced to withdraw. \"Don't ever let me hear of that again,\" General Collins warned, \"and get that down to the regimental and battalion commanders and tell Macon about it.\" But telephonic exhortation, no matter how pertinent, could not blow down the defended hedgerows--nor, apparently, could the personal endeavors of General Macon and his assistant division commander, Brig. Gen. Claude B. Ferenbaugh, who had gone down to the regiments to press the attack.",
+        "Paragraph_21": "On the division right flank the battalion of the 329th Infantry attempting to clear the small area near the Prairies Marécageuses de Gorges had managed to advance about 1,000 yards. Two rifle companies had crossed a stream swollen by rain and overflowing its banks. The adjacent terrain had become virtual swamp, with some mud-holes waist deep. When the battalion commander tried to get his heavy weapons company across the stream just before noon, enemy mortars and machine gun fire forced the men to hug the ground. Commitment of the reserve rifle company produced no effect since the riflemen could do no better than the machine gunners of the weapons company in the face of the enemy fire. Taking heavy casualties, unable to maneuver in the swampy terrain, and fearing attack from the rear by the same infiltrating Germans who had earlier isolated several tanks, the battalion commander ordered a withdrawal.",
+        "Paragraph_22": "The men moved back to their original line of departure. Upon reorganization, the battalion discovered that one rifle company was almost a total loss; another could muster only one third of its strength. [10] Large numbers of stragglers intensified the impression of extreme losses. About fifty men of the battalion entered the division artillery positions during the afternoon and caused shortlived consternation by claiming to be the only survivors. Having lost most of its equipment in the swamp, the battalion remained on its line of departure to protect the division right flank. That evening it arranged a truce with the enemy, without authorization from higher headquarters, to collect its dead and wounded.",
+        "Paragraph_23": "Impatient over the division's lack of progress, General Collins was infuriated when he learned of the battalion withdrawal on the division right. \"Tell the CG,\" he informed the division chief of staff by telephone, \"that I want the withdrawal investigated.\" Why make it necessary, he demanded, to lose more lives in forcing a crossing of the stream a second time? And when, he wanted to know, was the division going to launch a co-ordinated attack down the corridor?",
+        "Paragraph_24": "For all the strenuous efforts of the division and assistant division commanders, the regiments were not ready for a concerted attack until late afternoon. After two postponements, General Macon finally got it started. The division artillery fired a preparation, and the two regiments attacked again down the Carentan-Périers road. They had made only minor advances before heavy artillery fire forced one regiment to pull back; a counterattack just before dark pushed back the other.",
+        "Paragraph_25": "The terrain and stubborn resistance had soured the Fourth of July celebration and had thwarted the 83d Division in its attempt to advance beyond its outpost lines. \"If the going is good, and it should be,\" General Macon had said, \"we will have them rocked back, and will go right on.\" The going had not been good. Prepared defenses, active mortar fire, and extensive use of automatic weapons had been too effective. Only six German prisoners had been taken."
+      },
+      "Footnote_References": [
+        "9",
+        "10"
+      ],
+      "Place_Name": "Carentan--Périers Isthmus",
+      "Dates": {
+        "Date_group_of_event": "040600ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "040400ZJUL44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "J. Lawton Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "331st Infantry Regiment",
+            "Name": "Martin D. Barndollar, Jr.",
+            "Rank": "Colonel",
+            "Date": "July 1944",
+            "End_Date": "04 July 1944",
+            "End_Status": "KIA",
+            "Biographical_reference": "https://www.findagrave.com/memorial/34962844/martin-dunlap-barndollar",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "Inexperienced, jittery, fully staffed",
+        "Equipments": {
+          "Supply": "Hazardous",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "M4 Sherman",
+              "Identifier": "M4",
+              "Quantity": "battalion",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/M4_Sherman_tank_-_Flickr_-_Joost_J_Bakker_IJmuiden.jpg/800px-M4_Sherman_tank_-_Flickr_-_Joost_J_Bakker_IJmuiden.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "47",
+          "Allied_US_WIA": "815",
+          "Allied_US_Missing": "530",
+          "Allied_US_Unspecified_Casualties": "1400",
+          "Allied_US_Prisoner_of_War": null
+        },
+        "Axis": {
+          "Axis_DE_KIA": null,
+          "Axis_DE_WIA": null,
+          "Axis_DE_Missing": null,
+          "Axis_DE_Unspecified_Casualties": null,
+          "Axis_DE_Prisoner_of_War": "6"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": null,
+          "Civilian_FR_Wounded": null,
+          "Civilian_FR_Unspecified_Casualties": null
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://media.gettyimages.com/id/1347279097/photo/world-war-two-europe-1944.jpg?s=1024x1024&w=gi&k=20&c=pdLoNiVRdnXadVMs9bCPUHiedEXkBxozqD4vyndMexU=",
+          "Description": "Soldiers from the 331st Infantry Regiment, 83rd Infantry Division, advance through a French village in Normandy, July 1944.",
+          "License": "Getty Images"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Sainteny",
+        "Place_GPS_coordinate": "49.2389, -1.3128",
+        "Map_Reference": "Map 4",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map4.jpg",
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/maps/USA-A-StLo-III.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Carentan--Périers Isthmus",
+        "Place_GPS_coordinate": "49.30, -1.25",
+        "Weather_text": "Fair, but marsh mist and rain",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.35,
+          "East": -0.15,
+          "South": 48.4,
+          "North": 50.2
+        }
+      }
+    },
+    {
+      "Event": "The Carentan--Périers Isthmus",
+      "Sub-event": "Casualties and German Response on 4 July 1944",
+      "Sub-event_summary": "The 83d Division suffered heavy casualties on 4 July, with nearly 1,400 losses. The German commander von der Heydte returned captured medical personnel with a note. The division failed to achieve its mission.",
+      "Sub-event_fulltext": {
+        "Paragraph_26": "A count of personnel in the front-line positions of the 331st Infantry revealed only 300 men. The commander of the German parachute regiment in opposition, Col. Friedrich A. Freiherr von der Heydte, returned medical personnel his forces had captured, with a note stating that he thought General Macon needed them. 11 He was right. In its first day of combat the 83d Division had lost almost 1,400 men. An accurate breakdown of casualty figures was impossible. One regiment reported a total of 867 casualties without attempting further classification. On the basis of such incomplete information, the division arbitrarily categorized the total casualties and reported 47 killed, 815 wounded, and a surprising 530 missing in action. Many of the missing were stragglers and isolated troops who were later to rejoin the division, but at the end of the first day the division had suffered a more than 10 percent loss. 12"
+      },
+      "Footnote_References": [
+        "11",
+        "12"
+      ],
+      "Place_Name": "Carentan--Périers Isthmus",
+      "Dates": {
+        "Date_group_of_event": "042400ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "042200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "6th Parachute Regiment",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "17th SS Panzer Grenadier Division",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": null,
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/17th_SS_Panzergrenadier_Division_G%C3%B6tz_von_Berlichingen",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Veteran, depleted",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "47",
+          "Allied_US_WIA": "815",
+          "Allied_US_Missing": "530",
+          "Allied_US_Unspecified_Casualties": "1400",
+          "Allied_US_Prisoner_of_War": null
+        },
+        "Axis": {
+          "Axis_DE_KIA": null,
+          "Axis_DE_WIA": null,
+          "Axis_DE_Missing": null,
+          "Axis_DE_Unspecified_Casualties": null,
+          "Axis_DE_Prisoner_of_War": "6"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": null,
+          "Civilian_FR_Wounded": null,
+          "Civilian_FR_Unspecified_Casualties": null
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Carentan",
+        "Place_GPS_coordinate": "49.30, -1.25",
+        "Map_Reference": "Map 4",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map4.jpg",
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/maps/USA-A-StLo-III.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Carentan",
+        "Place_GPS_coordinate": "49.30, -1.25",
+        "Weather_text": "Fair",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.35,
+          "East": -0.15,
+          "South": 48.4,
+          "North": 50.2
+        }
+      }
+    },
+    {
+      "Event": "The Carentan--Périers Isthmus",
+      "Sub-event": "Attack on 5 July 1944",
+      "Sub-event_summary": "The 83d Division continued the attack on 5 July, making minor progress but suffering additional 750 casualties. The division displayed weaknesses in coordination and tank-infantry cooperation.",
+      "Sub-event_fulltext": {
+        "Paragraph_27": "Although the 83d Division had failed to achieve its mission of allowing the VII Corps to commit a second division in the isthmus after the first day's action, General Collins had no alternative but to keep pushing. He ordered the attack to secure Sainteny to continue on 5 July. General Macon changed his dispositions but slightly. The 331st Infantry, now commanded by Lt. Col. William E. Long, was to try again on the right of the Carentan-Périers road. Colonel McLendon's 330th Infantry, which had sustained the highest number of casualties, was to relinquish part of its zone to two battalions of Colonel Crabill's 329th Infantry. The third battalion of the 329th would remain on the division's extreme right as flank protection.",
+        "Paragraph_28": "The attack on 5 July began on a disheartening, if exaggerated, note. During the ten-minute artillery preparation, the executive officer of one of the regiments phoned division headquarters that the division artillery was \"slaughtering our 3d Battalion.\" In reality, the regiment had received only a few short rounds. The division jumped off on schedule. Unfortunately, the attack that morning repeated the unsuccessful pattern of the previous day. The troops made little progress. Restless and impatient in a situation that denied use of available strength, General Collins ordered General Macon to make room \"or else.\" Since there was no place to go except forward, Macon had to insist on continuation of a costly frontal attack. That afternoon he began to apply more pressure on his subordinate commanders. \"You tell him,\" General Macon ordered, \"that he must take that objective and go right on down regardless of his flank; pay attention to nothing, not even communication.\" An hour later he instructed a regimental commander, \"Never mind about the gap; keep that leading battalion going.\" When a battalion commander protested that he had only about 400 men, General Macon assured him, \"That is just what I need, 400 men; keep driving.\" In midafternoon a regimental commander reported infiltrating enemy. \"They won't hurt you any,\" Macon promised. \"They shoot us,\" the regimental commander explained. When he protested that one of his battalions consisted of only one and a half rifle companies and the heavy weapons company, or about 300 men, the general sent the assistant division commander and two platoons of tanks to help the regiment clear the area. When another battalion commander reported what looked like a counterattack, the general ordered, \"Do not pay any attention to it; you must go on down [in attack.]\" To a third battalion commander's protest that he had no reserve left, General Macon answered, \"You go on down there and they [the enemy] will have to get out of your way.\" By evening the general was shouting. \"To hell with the [enemy] fire, to hell with what's on your flank, get down there and take the area. You don't need any recon. You have got to go ahead. You have got to take that objective if you have to go all night.\" All seemed in vain when General Collins telephoned that evening. \"What has been the trouble?\" he asked. \"[You] haven't moved an inch.\" The trouble was the same: mud, canalized routes of advance, and strong resistance. Just before dark the division did succeed in reaching a hamlet half way to Sainteny, but the Germans would permit no celebration of the achievement. When accurate mortar and artillery fire battered the troops after dark, each of the two regiments lost contact with one of its battalions for several hours. When finally located during the early morning hours of 6 July, the battalions needed water, food, ammunition, litters, ambulances, and reinforcements. Nevertheless, the troops held on to their hard-won gains.",
+        "Paragraph_29": "In two days the 83d Division had displayed almost all the weaknesses and made virtually all the mistakes of a unit new to combat. Poor reports from subordinate units, incorrect map locations, and weak communications made accurate artillery support almost impossible and effective aid from the few tactical planes in the air on the second day difficult. Lax command control and discipline resulted in an inordinately large number of stragglers. Regimental and battalion commanders did not seem able to coordinate their attached units, institute reconnaissance in time, or press their attacks with vigor. Tank-infantry cooperation was especially bad, and mutual complaint and recrimination resulted. Infantrymen accused tankers of refusing to work at night and of disobeying orders with the excuse that they were only attached units, and at least one infantry commander threatened to shoot a tank officer for declining to advance in support. On the other hand, the tankers had little confidence in the ability of the infantry to protect them from close-range counterattack, and at least one tank commander threatened to shoot infantrymen who seemed on the verge of running to the rear and abandoning the tanks. The inexperience of the division was apparent on all echelons. When General Macon remarked that the commander of another division used his antiaircraft guns to mow down the hedges facing him, the artillery commander of the 83d Division asked, \"How does he get them into position?\" \"I don't know,\" General Macon answered. Despite its deficiencies, the division had managed by sheer persistence to advance over a mile down the Carentan-Périers road. As a result, the division was at the southern end of the narrow neck and was ready to debouch into wider terrain just north of Sainteny. But in making the advance, it had suffered an additional 750 casualties. With these losses, many among key personnel, the future effectiveness of the division had been seriously impaired.",
+        "Paragraph_30": "Although the advance of the 83d still did not permit commitment of a second division, General Collins, already delayed one day, decided to wait no longer. The depletion and exhaustion of the 83d must have been a factor in his decision. He ordered General Macon to confine his efforts to the left of the Carentan-Périers road and to shift his direction from the southwest toward Périers to the south toward the bank of the Taute River. Collins then instructed the 4th Division commander to take temporary control of the battered and depleted 331st Infantry on the right of the Carentan-Périers road, commit one of his own regiments through it, and drive toward Périers. Responsibility for the isthmus on the right of the road passed to the 4th Division."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Carentan--Périers Isthmus",
+      "Dates": {
+        "Date_group_of_event": "050600ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "050400ZJUL44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "J. Lawton Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "331st Infantry Regiment",
+            "Name": "William E. Long",
+            "Rank": "Lieutenant Colonel",
+            "Date": "5 July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "Inexperienced, high stragglers, impaired effectiveness",
+        "Equipments": {
+          "Supply": "Shortages in forward units after dark",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": null,
+          "Allied_US_WIA": null,
+          "Allied_US_Missing": null,
+          "Allied_US_Unspecified_Casualties": "750",
+          "Allied_US_Prisoner_of_War": null
+        },
+        "Axis": {
+          "Axis_DE_KIA": null,
+          "Axis_DE_WIA": null,
+          "Axis_DE_Missing": null,
+          "Axis_DE_Unspecified_Casualties": null,
+          "Axis_DE_Prisoner_of_War": null
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": null,
+          "Civilian_FR_Wounded": null,
+          "Civilian_FR_Unspecified_Casualties": null
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Sainteny",
+        "Place_GPS_coordinate": "49.2389, -1.3128",
+        "Map_Reference": "Map 4",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map4.jpg",
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/maps/USA-A-StLo-III.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Carentan--Périers Isthmus",
+        "Place_GPS_coordinate": "49.30, -1.25",
+        "Weather_text": "Fair, but muddy from previous rain",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.35,
+          "East": -0.15,
+          "South": 48.4,
+          "North": 50.2
+        }
+      }
+    },
+    {
+      "Event": "The Carentan--Périers Isthmus",
+      "Sub-event": "Commitment of 4th Division and Attack on 6 July 1944",
+      "Sub-event_summary": "The 4th Division, an experienced unit, was committed on 6 July, relieving the 331st Infantry. The division met firm resistance and made little progress. The 83d Division sustained 700 additional casualties while holding positions.",
+      "Sub-event_fulltext": {
+        "Paragraph_31": "The 4th Division was an experienced unit. It had taken part in the D-Day invasion of the Continent and had participated effectively in the Cherbourg operation. In the process, however, the division had lost about 5,400 men. Only five of the rifle company commanders who had made the D-Day landing were with the division three weeks later. Though many key individuals remained to steady the 4,400 replacements who partially refilled the division's ranks, Maj. Gen. Raymond O. Barton, who had commanded the unit since 1942, remarked with regret, \"We no longer have the division we brought ashore.\" [13]",
+        "Paragraph_32": "General Barton planned to commit the 12th Infantry (Col. James S. Luckett), with a company each of the 87th Chemical, the 70th Tank, and the 801st Tank Destroyer Battalions, and a platoon of the 377th Antiaircraft Artillery Automatic Weapons Battalion. To support the attack, Barton regained control of his division artillery and an additional battalion of medium field artillery, which for three days had been operating with the 90th Division. At the same time that the 12th Infantry moved into position to make the main division effort toward Périers, elements of Col. James S. Rodwell's 8th Infantry were to relieve the battalion of the 329th Infantry still on the extreme right flank of the corps.",
+        "Paragraph_33": "Early on 6 July the 12th Infantry began to relieve the 331st. It was a difficult relief since strong enemy fire and local counterattack harassed the troops. When the 12th Infantry had finally passed through and attacked to gain a favorable line of departure for the coordinated effort planned with the 83d Division, the regiment met firm resistance that halted the advance at once. Further attack for that day was canceled.",
+        "Paragraph_34": "In the meantime, the enemy maintained heavy fire on the 83d Division and launched minor counterattacks, inflicting about 700 additional casualties. Under punishing pressure, the division nevertheless held its positions.",
+        "Paragraph_35": "The lack of success during the third day of action along the Carentan-Périers axis, this time involving a veteran unit, must have confirmed General Collins' suspicions that the inexperience of the 83d Division had not been the principal factor in holding back its advance. He concluded that the cost of bulldozing through the lowlands with conventional tactics was too high and turned to an ally, the IX Tactical Air Command. During the previous few days, as the weather had permitted, fighter-bombers of the IX TAC had attacked targets of opportunity and struck enemy positions located by ground observers. General Collins now asked for more. He wanted a mass dive-bombing effort by more than a hundred planes to pummel the enemy in front of the 4th and 83d Divisions for forty-five minutes before renewal of the ground attack on 7 July. [14]",
+        "Paragraph_36": "With this assistance and a co-ordinated attack by the two divisions, General Collins hoped that the 83d Division would reach Sainteny by dark on 7 July and that the 4th Division would move far enough forward toward Périers to allow the 9th Division to be committed. Expecting this to be fulfilled, General Collins alerted the 9th Division for a move to an assembly area near Carentan. [15]"
+      },
+      "Footnote_References": [
+        "13",
+        "14",
+        "15"
+      ],
+      "Place_Name": "Carentan--Périers Isthmus",
+      "Dates": {
+        "Date_group_of_event": "060600ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "060400ZJUL44"
+      },
+      "TOE": {
+        "Unit": "4th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "J. Lawton Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "12th Infantry Regiment",
+            "Name": "James S. Luckett",
+            "Rank": "Colonel",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://valor.militarytimes.com/recipient/recipient-22398/",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "8th Infantry Regiment",
+            "Name": "James S. Rodwell",
+            "Rank": "Colonel",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://generals.dk/general/Rodwell/James_Stevenson/USA.html",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "Experienced, but lost 5,400 men, 4,400 replacements",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": null,
+          "Allied_US_WIA": null,
+          "Allied_US_Missing": null,
+          "Allied_US_Unspecified_Casualties": "700",
+          "Allied_US_Prisoner_of_War": null
+        },
+        "Axis": {
+          "Axis_DE_KIA": null,
+          "Axis_DE_WIA": null,
+          "Axis_DE_Missing": null,
+          "Axis_DE_Unspecified_Casualties": null,
+          "Axis_DE_Prisoner_of_War": null
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": null,
+          "Civilian_FR_Wounded": null,
+          "Civilian_FR_Unspecified_Casualties": null
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Carentan--Périers Isthmus",
+        "Place_GPS_coordinate": "49.30, -1.25",
+        "Map_Reference": "Map 4",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map4.jpg",
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/maps/USA-A-StLo-III.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Carentan",
+        "Place_GPS_coordinate": "49.30, -1.25",
+        "Weather_text": "Windy and cool",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.35,
+          "East": -0.15,
+          "South": 48.4,
+          "North": 50.2
+        }
+      }
+    },
+    {
+      "Event": "The Carentan--Périers Isthmus",
+      "Sub-event": "Attack on 7 July 1944",
+      "Sub-event_summary": "On 7 July, air support was canceled due to rain. The 83d Division repelled counterattacks and gained some ground, capturing 17 prisoners. The 4th Division sustained 600 casualties with little gain. The swamps and German resistance proved formidable.",
+      "Sub-event_fulltext": {
+        "Paragraph_37": "Two events marred the beginning of the attack on 7 July. The first occurred after General Barton had decided to obliterate the resistance in the small area on the right near the Prairies Marécageuses de Gorges. The area had bothered the 83d Division, which had made an unsuccessful effort to clear it on the first day of its attack. The main obstacle to success was the stream, which was difficult to cross. Deciding that it could best be crossed during darkness, General Barton had instructed the commander of the 8th Infantry to make a surprise move during the night of 6 July. By sending two battalions over the stream at night, the units would be in position to clear the area at daylight, 7 July, thus eradicating a potential nuisance to the division rear that might hold up the advance should the division break through to Périers. Though the regimental commander complied with instructions, one of his battalions could not cross the stream even at night because of enemy fire. The other battalion, after having picked its way through the marsh during the night and made the crossing, found itself in an untenable position at daybreak and was forced to withdraw after taking more than a hundred casualties. [16]",
+        "Paragraph_38": "The second disappointment was a drizzling rain on the morning of 7 July that resulted in cancellation of the strong air support. \"Disappointing news,\" General Collins reported to the divisions prepared to jump off. \"But go right ahead with your attack.\"",
+        "Paragraph_39": "General Macon attempted to swing his 83d Division gradually southward to the bank of the Taute River. His new axis of advance was the secondary road that crossed the Carentan-Périers isthmus laterally and led to the causeway over the flooded Taute. Despite the new direction of advance, the right flank elements of the division were still to take Sainteny. As the division endeavored to move forward during the morning of 7 July, it repelled five counterattacks, local in nature but fierce in intensity. Strong fire from the division artillery, effective use of bazooka teams, and direct fire from tanks and tank destroyers finally defeated the enemy efforts, though one battalion, isolated by German infiltrators, had to hold out until jeeps escorted by light tanks brought ammunition and food and restored communications. In the late afternoon Colonel McLendon's 330th Infantry made effective use of the division artillery, chiseled a narrow penetration through the enemy positions, and gained several hundred yards on the east flank. The achievement was hailed as substantial, raising hopes that the enemy defense was deteriorating, but the enemy quickly recovered as the reconnaissance battalion of the SS panzer grenadiers sealed off the penetration. [17]",
+        "Paragraph_40": "The 83d Division captured only seventeen prisoners that day. The German paratroopers and SS soldiers fought stubbornly, refusing to surrender when outnumbered and overpowered and giving ground only with desperate reluctance. The 83d Division failed to reach either Sainteny or the bank of the Taute River during the day.",
+        "Paragraph_41": "The 12th Infantry of General Barton's 4th Division had even less success. Improved weather conditions during the afternoon permitted several fighter-bombers to operate over the VII Corps front, where they bombed enemy positions opposing the regiment. The 4th Division Artillery followed the bombardment with a preparation, and the regiment jumped off once more. Unfortunately, the strenuous efforts resulted in hardly any gain.",
+        "Paragraph_42": "In their attack on 7 July the two committed regiments of the 4th Division sustained almost 600 casualties. The 12th Infantry moved forward but slightly; the 8th, on the right flank, advanced not at all. Even for an experienced division, the stubborn and skillful resistance of the Germans in the Cotentin was proving too much. The swamps and the mud were themselves formidable enemies, but the"
+      },
+      "Footnote_References": [
+        "16",
+        "17"
+      ],
+      "Place_Name": "Carentan--Périers Isthmus",
+      "Dates": {
+        "Date_group_of_event": "070600ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070400ZJUL44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "J. Lawton Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Depleted, exhausted",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": null,
+          "Allied_US_WIA": null,
+          "Allied_US_Missing": null,
+          "Allied_US_Unspecified_Casualties": "600",
+          "Allied_US_Prisoner_of_War": null
+        },
+        "Axis": {
+          "Axis_DE_KIA": null,
+          "Axis_DE_WIA": null,
+          "Axis_DE_Missing": null,
+          "Axis_DE_Unspecified_Casualties": null,
+          "Axis_DE_Prisoner_of_War": "17"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": null,
+          "Civilian_FR_Wounded": null,
+          "Civilian_FR_Unspecified_Casualties": null
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Prairies Marécageuses de Gorges",
+        "Place_GPS_coordinate": "49.28, -1.38",
+        "Map_Reference": "Map 4",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map4.jpg",
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/maps/USA-A-StLo-III.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Carentan--Périers Isthmus",
+        "Place_GPS_coordinate": "49.30, -1.25",
+        "Weather_text": "Drizzling rain in the morning, improved in afternoon",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.35,
+          "East": -0.15,
+          "South": 48.4,
+          "North": 50.2
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "2",
+      "Footnote_Number": "2",
+      "Footnote_Text": "Ruppenthal, Utah Beach to Cherbourg, pp. 90-93.",
+      "Footnote_Referenced_Source": "Ruppenthal, Utah Beach to Cherbourg, pp. 90-93.",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Utah/USA-E-Utah.html",
+      "Web_Link_Capture_Date": "December 20, 2025"
+    },
+    {
+      "Footnote": "3",
+      "Footnote_Number": "3",
+      "Footnote_Text": "German action would also threaten to bring unloading operations to a halt at Isigny, a minor port receiving supplies seven miles east of Carentan. FUSA G-2 Est 7, 29 Jun.",
+      "Footnote_Referenced_Source": "FUSA G-2 Est 7, 29 Jun.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "FUSA G-2 Est 7, 29 Jun."
+    },
+    {
+      "Footnote": "4",
+      "Footnote_Number": "4",
+      "Footnote_Text": "2d Lt. David Garth, St.-Lô, AFA Series (Washington, 1946), p. 5.",
+      "Footnote_Referenced_Source": "2d Lt. David Garth, St.-Lô, AFA Series (Washington, 1946), p. 5.",
+      "Web_Link": "https://openlibrary.org/books/OL25899340M/St-Lo%25CC%2582_%25287_July_-_19_July_1944%2529",
+      "Web_Link_Capture_Date": "December 20, 2025"
+    },
+    {
+      "Footnote": "5",
+      "Footnote_Number": "5",
+      "Footnote_Text": "VII Corps AAR, Jul; 83d Div AAR, Jul.",
+      "Footnote_Referenced_Source": "VII Corps AAR, Jul; 83d Div AAR, Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "VII Corps AAR, Jul; 83d Div AAR, Jul."
+    },
+    {
+      "Footnote": "6",
+      "Footnote_Number": "6",
+      "Footnote_Text": "VII Corps AAR, Jul, and FO 4, 3 Jul, with Intel Annex, 2 Jul.",
+      "Footnote_Referenced_Source": "VII Corps AAR, Jul, and FO 4, 3 Jul, with Intel Annex, 2 Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "VII Corps AAR, Jul, and FO 4, 3 Jul, with Intel Annex, 2 Jul."
+    },
+    {
+      "Footnote": "7a",
+      "Footnote_Number": "7a",
+      "Footnote_Text": "OKH Generalinspekteur der Panzertruppen, Zustandberichte, SS Divisiones, Jun 43-Jul 44",
+      "Footnote_Referenced_Source": "OKH Generalinspekteur der Panzertruppen, Zustandberichte, SS Divisiones, Jun 43-Jul 44",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives and Records Administration, College Park, MD",
+      "NonDigital_Library_References": "OKH Generalinspekteur der Panzertruppen, Zustandberichte, SS Divisiones, Jun 43-Jul 44"
+    },
+    {
+      "Footnote": "7b",
+      "Footnote_Number": "7b",
+      "Footnote_Text": "MS # B-839 (von der Heydte)",
+      "Footnote_Referenced_Source": "MS # B-839 (von der Heydte)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # B-839 (von der Heydte)"
+    },
+    {
+      "Footnote": "7c",
+      "Footnote_Number": "7c",
+      "Footnote_Text": "Harrison, Cross-Channel Attack, pp. 356-65.",
+      "Footnote_Referenced_Source": "Harrison, Cross-Channel Attack, pp. 356-65.",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025"
+    },
+    {
+      "Footnote": "8",
+      "Footnote_Number": "8",
+      "Footnote_Text": "Lt Col Henry Neilson, Hosp Intervs, III, GL-93 (238).",
+      "Footnote_Referenced_Source": "Lt Col Henry Neilson, Hosp Intervs, III, GL-93 (238).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Lt Col Henry Neilson, Hosp Intervs, III, GL-93 (238)"
+    },
+    {
+      "Footnote": "9",
+      "Footnote_Number": "9",
+      "Footnote_Text": "The following account is taken from official unit records. All quotations, unless otherwise noted, are from the valuable record of telephone conversations in the division G-2, G-3 Journal.",
+      "Footnote_Referenced_Source": "Official unit records and telephone conversations in the division G-2, G-3 Journal.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "83d Div G-2, G-3 Journal"
+    },
+    {
+      "Footnote": "10",
+      "Footnote_Number": "10",
+      "Footnote_Text": "2d Battalion, 329th Infantry, Combat Digest (Germany, n.d.), p. 15.",
+      "Footnote_Referenced_Source": "2d Battalion, 329th Infantry, Combat Digest (Germany, n.d.), p. 15.",
+      "Web_Link": "https://83rdinfdivdocs.org/documents/329th/various/Combat_Digest_2nd_Battalion_329th_Infantry_Regiment_color.pdf",
+      "Web_Link_Capture_Date": "December 20, 2025"
+    },
+    {
+      "Footnote": "11",
+      "Footnote_Number": "11",
+      "Footnote_Text": "With caution, von der Heydte added that if the situation were ever reversed in the future, he hoped that General Macon would return the favor. Ltr, Ferenbaugh to OCMH, 20 May 53; MS # B-839 (Heydte).",
+      "Footnote_Referenced_Source": "Ltr, Ferenbaugh to OCMH, 20 May 53; MS # B-839 (Heydte).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Ltr, Ferenbaugh to OCMH, 20 May 53; MS # B-839 (Heydte)"
+    },
+    {
+      "Footnote": "12",
+      "Footnote_Number": "12",
+      "Footnote_Text": "By 7 July the consolidated figure of those missing in action declined to 243 (83d Div G-2, G-3 Jnl). Casualty figures in the sources available (FUSA Daily Estimated Loss Rpts, Jul; the 83d Div G-2, G-3 Jnl; the 83d Div G-4 Daily Rpts, G-4 Jnl; and the 83d Div G-1 AAR, Jul) are constantly at variance. Figures chosen for the text represent an estimate compiled from all sources. Discussions recorded in the telephone journal are valuable contemporary estimates.",
+      "Footnote_Referenced_Source": "83d Div G-2, G-3 Jnl; FUSA Daily Estimated Loss Rpts, Jul; etc.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "83d Div G-2, G-3 Jnl; FUSA Daily Estimated Loss Rpts, Jul"
+    },
+    {
+      "Footnote": "13",
+      "Footnote_Number": "13",
+      "Footnote_Text": "CI 30 (4th Div).",
+      "Footnote_Referenced_Source": "CI 30 (4th Div).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "CI 30 (4th Div)"
+    },
+    {
+      "Footnote": "14",
+      "Footnote_Number": "14",
+      "Footnote_Text": "VII Corps Opns Memo 30, 6 Jul.",
+      "Footnote_Referenced_Source": "VII Corps Opns Memo 30, 6 Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "VII Corps Opns Memo 30, 6 Jul"
+    },
+    {
+      "Footnote": "15",
+      "Footnote_Number": "15",
+      "Footnote_Text": "VII Corps. Notes for the CofS, 7 Jul, VII Corps G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "VII Corps. Notes for the CofS, 7 Jul, VII Corps G-3 Jnl and File.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "VII Corps G-3 Jnl and File"
+    },
+    {
+      "Footnote": "16",
+      "Footnote_Number": "16",
+      "Footnote_Text": "4th Div and VII Corps AAR's, Jul; Telecon Seventh Army to AGp B, 1050, 7 Jul, AGp B KTB.",
+      "Footnote_Referenced_Source": "4th Div and VII Corps AAR's, Jul; Telecon Seventh Army to AGp B, 1050, 7 Jul, AGp B KTB.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "4th Div and VII Corps AAR's, Jul; AGp B KTB"
+    },
+    {
+      "Footnote": "17",
+      "Footnote_Number": "17",
+      "Footnote_Text": "Seventh Army KTB (Draft), 7 Jul.",
+      "Footnote_Referenced_Source": "Seventh Army KTB (Draft), 7 Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Seventh Army KTB (Draft), 7 Jul"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn5.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

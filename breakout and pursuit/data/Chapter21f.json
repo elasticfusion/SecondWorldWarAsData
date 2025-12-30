@@ -1,0 +1,1502 @@
+{
+  "Events": [
+    {
+      "Event": "The Citadel",
+      "Sub-event": "Description and Construction of the Citadel",
+      "Sub-event_summary": "The Citadel was a deeply dug casemated strongpoint built on historical fortifications, constructed by Todt workers in 1942; effective against approaches, with mutual supporting weapons and abundant supplies.",
+      "Sub-event_fulltext": {
+        "Paragraph_76": "Since reduction of Cézembre required an amphibious landing and naval support, the immediate problem facing General Macon was how to take the Citadel. Dug deeply into the ground, the Citadel was the heart of the fortress complex. The rocky promontory where it was located was a natural defensive position, as indicated by remaining vestiges of fortifications built by the Gauls to protect the long since vanished village of Aleth. A French fort erected there in the mid-eighteenth century provided the foundation for extensive construction undertaken by the Germans in 1942 with Polish, Belgian, Czech, French, Dutch, Algerian, and Spanish workers laboring voluntarily or otherwise for Todt.",
+        "Paragraph_77": "A casemated strongpoint of connected blockhouses, the Citadel was effective against an approach from almost any direction. Where the guns of the Citadel could not fire, pieces at Dinard and Cézembre could. Although the fire power that the fort could deliver was not overwhelmingly impressive--half a dozen field pieces (the largest of 105-mm. caliber), several mortars, and perhaps eighteen or twenty machine guns comprised the armament--the weapons were mutually supporting. In the event that invaders would manage somehow to scale the walls, weapons were fixed to cover the interior court. The walls shielding the defenders were of concrete, stone, and steel, so thick that they were virtually impervious to artillery and air bombardment. Inside the fort, aeration and heat ducts, a vast reservoir of water, a large amount of food and supplies, and a subterranean railroad to transport ammunition and heavy equipment facilitated the ability to withstand siege. Blocking the landward approaches were barbed wire, four lines of steel rails placed vertically in cement, and an antitank ditch. Periscopes emerging from the ground level roof of the interior fort provided observation. To improve visibility and fields of fire, the Germans had knocked down several houses in St. Servan, and only the pleading of the mayor had saved a twelfth century church from a similar fate. Personifying the strength of the Citadel was the commander, Aulock, who was determined to bring credit to himself and his forces. According to prisoners, resistance continued \"only because of Colonel von Aulock.\""
+      },
+      "Footnote_References": [
+        49,
+        50
+      ],
+      "Place_Name": "Citadel",
+      "Dates": {
+        "Date_group_of_event": "1942-1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "BEGINNING JAN42"
+      },
+      "TOE": {
+        "Unit": "Citadel Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "St. Malo Fortress",
+          "Commander": "Andreas von Aulock",
+          "Name": "Andreas von Aulock",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Andreas_von_Aulock",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown, but fully staffed for defense",
+        "Equipments": {
+          "Supply": "Abundant food, water, air, ammunition",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Field Pieces",
+            "Identifier": "105-mm",
+            "Quantity": "6",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Image_License": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p410.jpg",
+          "Description": "The Citadel After it was Taken by U.S. Troops",
+          "License": "Public Domain"
+        },
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p411.jpg",
+          "Description": "Interior of the Citadel After the Surrender",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Weather_text": "N/A for construction period; during battle August 1944: mild 14-21°C, cloudy, moderate rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0236",
+          "East": "-1.0236",
+          "South": "47.7392",
+          "North": "49.5392"
+        }
+      }
+    },
+    {
+      "Event": "The Citadel",
+      "Sub-event": "Aulock's Determination",
+      "Sub-event_summary": "Aulock determined to defend; prisoners said resistance due to him; early awareness of difficulty in taking Citadel.",
+      "Sub-event_fulltext": {
+        "Paragraph_78": "As early as 5 August, General Macon was aware that it would be difficult to take the Citadel. When the corps G-3 suggested \"Why don't you take 155's and blow it off the map?\" the division G-3 answered, \"I don't believe we can.\" He was speaking with more truth than he perhaps realized."
+      },
+      "Footnote_References": [
+        51
+      ],
+      "Place_Name": "Citadel",
+      "Dates": {
+        "Date_group_of_event": "5 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "050000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Citadel Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "St. Malo Fortress",
+          "Commander": "Andreas von Aulock",
+          "Name": "Andreas von Aulock",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Andreas_von_Aulock",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Weather_text": "Historical weather in St. Malo on 5 August 1944: Mild 14-21°C, cloudy, moderate rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0236",
+          "East": "-1.0236",
+          "South": "47.7392",
+          "North": "49.5392"
+        }
+      }
+    },
+    {
+      "Event": "The Citadel",
+      "Sub-event": "Artillery Efforts and Shortages",
+      "Sub-event_summary": "Middleton moved heavy artillery (10 battalions up to 240-mm howitzers); ammunition shortages curtailed plans, some days only 4 rounds per gun.",
+      "Sub-event_fulltext": {
+        "Paragraph_79": "The obvious strength of the St. Malo fortress, and particularly of the Citadel, prompted General Middleton to move heavy artillery of the corps into position to support the 83d Division attack. Before the battle ended, ten artillery battalions, including 8-inch guns, 8-inch howitzers, and 240-mm. howitzers, were pounding the St. Malo defenses. Yet the uncertainty of ammunition hampered operations. Fire plans were often curtailed. No artillery preceded an infantry attack launched on 9 August, for example, and on the following day the stockpiles of shells were so low that only five rounds per piece were available. For several days, some of the battalions fired four rounds per gun per day. Though ammunition shortages were troublesome, the lack of apparent effect against the enemy position was depressing. The walls of the Citadel were too thick to be breached by fire, the enemy pieces too well protected by casemates to be knocked out."
+      },
+      "Footnote_References": [
+        52,
+        53
+      ],
+      "Place_Name": "Citadel",
+      "Dates": {
+        "Date_group_of_event": "August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps Artillery",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "10 battalions",
+        "Equipments": {
+          "Supply": "Ammunition shortages",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "8-inch Gun",
+            "Identifier": "M1",
+            "Quantity": "Unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/8-inch_gun_M1",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Weather_text": "Historical weather in St. Malo during August 1944: Mild 14-21°C, cloudy, moderate rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0236",
+          "East": "-1.0236",
+          "South": "47.7392",
+          "North": "49.5392"
+        }
+      }
+    },
+    {
+      "Event": "The Citadel",
+      "Sub-event": "Air Attacks on Citadel",
+      "Sub-event_summary": "Fighter-bombers assisted infantry on smaller points but ineffective on Citadel; medium bombers attacked with little effect; Middleton requested heavy bombers but denied.",
+      "Sub-event_fulltext": {
+        "Paragraph_80": "Air attack was similarly ineffective. Fighter-bombers gave excellent assistance when the infantry attacked smaller strongpoints, but they were unable to make an impression on the Citadel. Though two groups of medium bombers attacked the Citadel with 1,000-pound general purpose bombs, these, too, seemed to have no effect. Assured by personal inspection that drastic measures were necessary to reduce the Citadel, General Middleton requested a high-level bombardment by heavy bombers in a mass attack. Unfortunately for Middleton, higher headquarters deemed objectives elsewhere of more importance."
+      },
+      "Footnote_References": [
+        54,
+        55
+      ],
+      "Place_Name": "Citadel",
+      "Dates": {
+        "Date_group_of_event": "August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "IX Bomber Command",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Ninth Air Force",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": null,
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Ninth_Air_Force",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Medium Bombers",
+            "Identifier": "B-26 Marauder",
+            "Quantity": "Two groups",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Martin_B-26_Marauder",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Weather_text": "Historical weather in St. Malo during August 1944: Mild 14-21°C, cloudy, moderate rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0236",
+          "East": "-1.0236",
+          "South": "47.7392",
+          "North": "49.5392"
+        }
+      }
+    },
+    {
+      "Event": "The Citadel",
+      "Sub-event": "Attempts to Induce Surrender",
+      "Sub-event_summary": "Loudspeaker, sewage exploration, chaplain visit, phone call by French lady all failed to persuade surrender.",
+      "Sub-event_fulltext": {
+        "Paragraph_81": "Since direct measures to reduce the Citadel seemed to have failed and since an all-out infantry attack would be costly, the 83d Division turned to subterfuge. A loudspeaker manned by the corps Psychological Warfare Service unit attempted without success to persuade the Germans to lay down their arms. Engineers explored the sewage system of St. Malo in the vain hope of discovering at least one conduit close enough to the Citadel to place a decisive demolition charge. A captured German chaplain was permitted to visit the Citadel to ask Aulock to give up. The chaplain returned with the report that Aulock refused to surrender because he was \"a German soldier, and a German soldier does not surrender.\"",
+        "Paragraph_82": "The mayor of St. Servan-sur-Mer suggested confidentially that a French lady who knew Aulock rather well might persuade him to lay down his arms and come out. Contact would not be difficult, he revealed, because a line still connected the Citadel and the St. Servan telephone office. Although the unorthodox nature of this suggestion at first prompted hesitation on the part of U.S. commanders, the lady rang up the Citadel anyway. Though Aulock would not come to the phone in person, he informed the lady through a subordinate that he had other things on his mind."
+      },
+      "Footnote_References": [
+        56
+      ],
+      "Place_Name": "Citadel",
+      "Dates": {
+        "Date_group_of_event": "August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Robert C. Macon",
+          "Name": "Robert C. Macon",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_C._Macon",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Weather_text": "Historical weather in St. Malo during August 1944: Mild 14-21°C, cloudy, moderate rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0236",
+          "East": "-1.0236",
+          "South": "47.7392",
+          "North": "49.5392"
+        }
+      }
+    },
+    {
+      "Event": "The Citadel",
+      "Sub-event": "Impact of Mortain Counterattack News",
+      "Sub-event_summary": "Aulock announced Mortain counterattack to troops, promising rescue; when stalled, resistance continued but morale affected.",
+      "Sub-event_fulltext": {
+        "Paragraph_83": "Reinforcing Aulock's indomitable will was information he had received of a major German counterattack directed through Mortain toward Avranches. If this effort succeeded, it would isolate the Americans besieging St. Malo and eventually make them loosen their grip on the city. He announced the news of the counterattack to his soldiers with enthusiasm and promised that the garrison would be rescued---\"if everyone discharges his duty and we hold out just a little longer. . . . Anyone deserting or surrendering,\" he warned, \"is a common dog!\" When he learned that the German counterattack had stalled, he still clung to his hope of eventual relief, but his declaration to his soldiers then appeared empty. The 83d Division had by then begun to assault the Citadel."
+      },
+      "Footnote_References": [
+        57
+      ],
+      "Place_Name": "Citadel",
+      "Dates": {
+        "Date_group_of_event": "7-9 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "070000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Citadel Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "St. Malo Fortress",
+          "Commander": "Andreas von Aulock",
+          "Name": "Andreas von Aulock",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Andreas_von_Aulock",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Weather_text": "Historical weather in St. Malo on 7-9 August 1944: Mild 14-21°C, cloudy, moderate rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0236",
+          "East": "-1.0236",
+          "South": "47.7392",
+          "North": "49.5392"
+        }
+      }
+    },
+    {
+      "Event": "The Citadel",
+      "Sub-event": "Assault on 11 August",
+      "Sub-event_summary": "After air strike, rifle company with engineers and FFI approached, scaled wall; saw no damage, dropped charges; withdrew under crossfire.",
+      "Sub-event_fulltext": {
+        "Paragraph_84": "Having cleared St. Servan and reached the immediate approaches to the Citadel by 9 August, the 329th Infantry prepared an attack as follow-up to an air strike on 11 August that was \"going to bomb hell out of the place.\" Medium bombers appeared over the Citadel on the evening of 11 August and dropped 500-pound general purpose bombs, 100-pound incendiaries, and 1,000-pound semi-armor-piercing bombs. Immediately after the air attack, a rifle company of the 329th Infantry, reinforced by several engineers and three men of the FFI, moved toward the fort to exploit breaches in the defensive works caused by the bombardment. Using Bangalore torpedoes to open passageways through the barbed wire entanglements and the antitank obstacles, the men approached the fort. While a flame-thrower team sprayed a nearby bunker and the company established security positions, about thirty men, including the three Frenchmen, scaled the wall and reached the interior court. They saw no damage that could have been caused by the air attack, no broken concrete, no flames. Engineers dropped several pole charges through several air vents and portholes without apparent effect and set off several demolition charges without evident result. Suddenly the Germans opened a deadly cross fire with machine guns. Mortar shells began to drop around the walls and artillery shells from Cézembre fell near the fort. Having seen no real breach in the defenses, the assault group departed the fort and the rifle company withdrew."
+      },
+      "Footnote_References": [
+        58
+      ],
+      "Place_Name": "Citadel",
+      "Dates": {
+        "Date_group_of_event": "11 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "111800ZAUG44"
+      },
+      "TOE": {
+        "Unit": "329th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "George W. Crabill",
+          "Name": "George W. Crabill",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [
+          {
+            "Unit": "Rifle Company",
+            "Name": null,
+            "Rank": null,
+            "Date": "11 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Company reinforced with engineers and 3 FFI",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Bangalore Torpedoes",
+            "Identifier": "Unknown",
+            "Quantity": "Unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Bangalore_torpedo",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Weather_text": "Historical weather in St. Malo on 11 August 1944: Mild 14-21°C, cloudy, moderate rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0236",
+          "East": "-1.0236",
+          "South": "47.7392",
+          "North": "49.5392"
+        }
+      }
+    },
+    {
+      "Event": "The Citadel",
+      "Sub-event": "Preparation for Special Assault",
+      "Sub-event_summary": "Colonel Crabill formed two special assault teams (96 infantrymen each with demolition/security groups); TDs positioned for direct fire.",
+      "Sub-event_fulltext": {
+        "Paragraph_85": "Colonel Crabill, the regimental commander who had the immediate responsibility for capture of the Citadel, next decided to form two special assault teams for close-in action against the fort. Each team was to have ninety-six infantrymen augmented by demolition groups, security groups, and a special heavy demolition group. While the teams were formed and rehearsed for action, tank destroyers assumed positions from which to deliver direct fire against the fort in the hope of demolishing enemy gun emplacements."
+      },
+      "Footnote_References": [
+        59
+      ],
+      "Place_Name": "Citadel",
+      "Dates": {
+        "Date_group_of_event": "11-13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "110000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "329th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "George W. Crabill",
+          "Name": "George W. Crabill",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [
+          {
+            "Unit": "Special Assault Teams",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "96 infantrymen per team plus groups",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Weather_text": "Historical weather in St. Malo on 11-13 August 1944: Mild 14-21°C, cloudy, moderate rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0236",
+          "East": "-1.0236",
+          "South": "47.7392",
+          "North": "49.5392"
+        }
+      }
+    },
+    {
+      "Event": "The Citadel",
+      "Sub-event": "Continued Bombardment and Truce",
+      "Sub-event_summary": "TDs and bombers pounded 13-15 August; white flag on 13 for truce extension; assault teams attacked 15 August but driven back.",
+      "Sub-event_fulltext": {
+        "Paragraph_86": "The tank destroyers, assisted by artillery, pounded the Citadel for two days, and on 13 August medium bombers again struck the fort. Soon after the air bombardment a white flag appeared, producing a short-lived jubilation. Aulock wanted only to conclude the truce that had permitted the French civilians to depart the burning town of St. Malo.",
+        "Paragraph_87": "After the armistice, the artillery and tank destroyer shelling continued. Rounds expended during one 24-hour period totaled 4,103, despite threatened shortages of ammunition. Again on 15 August medium bombers plastered the Citadel for thirty minutes. At the conclusion of the bomb strike, Colonel Crabill's special assault teams launched an attack, but intense machine gun fire soon drove them back."
+      },
+      "Footnote_References": [
+        60,
+        61
+      ],
+      "Place_Name": "Citadel",
+      "Dates": {
+        "Date_group_of_event": "13-15 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "130000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "329th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "George W. Crabill",
+          "Name": "George W. Crabill",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": "4,103 rounds in 24 hours",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Weather_text": "Historical weather in St. Malo on 13-15 August 1944: Mild 14-21°C, cloudy, moderate rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0236",
+          "East": "-1.0236",
+          "South": "47.7392",
+          "North": "49.5392"
+        }
+      }
+    },
+    {
+      "Event": "The Citadel",
+      "Sub-event": "Intensified Siege and Final Surrender",
+      "Sub-event_summary": "Intensified siege with 8-inch guns at close range, WP mortars; planned napalm attack; white flag on 17 August, Aulock surrendered 400 defenders.",
+      "Sub-event_fulltext": {
+        "Paragraph_88": "Given no apparent alternative but to intensify the siege tactics, General Macon directed that the shelling of the Citadel continue. Two 8-inch guns of the corps artillery came to within 1,500 yards of the fort to deliver direct fire on portholes and vents. Two companies of 4.2-inch mortars that had been firing on the fort intermittently increased the proportion of white phosphorus to high explosive. Air liaison personnel at the 12th Army Group planned a bombing mission employing \"gasoline jell\" bombs, not only to eliminate resistance but also to experiment on the effectiveness of what later came to be known as napalm. The climax of these efforts was to be an air attack projected for the afternoon of 17 August.",
+        "Paragraph_89": "Forty minutes before the scheduled arrival of the planes, a white flag appeared over the Citadel. When several German soldiers emerged from the fort, an American officer went to meet them, though wary that this might be another false alarm. It was not. Aulock was indeed ready to surrender. Diverting the bombers to Cézembre, which manifested no sign of imminent capitulation, the 83d Division began to accept the surrender of four hundred Citadel defenders who emerged. Among them was Aulock, freshly-shaved, dress-uniformed, and insolent."
+      },
+      "Footnote_References": [
+        62,
+        63
+      ],
+      "Place_Name": "Citadel",
+      "Dates": {
+        "Date_group_of_event": "17 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "171200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Citadel Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "St. Malo Fortress",
+          "Commander": "Andreas von Aulock",
+          "Name": "Andreas von Aulock",
+          "Rank": "Colonel",
+          "End_Date": "17 August 1944",
+          "End_Status": "Surrendered",
+          "Biographical_reference": "https://grokipedia.com/page/Andreas_von_Aulock",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "400 defenders",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 400
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Weather_text": "Historical weather in St. Malo on 17 August 1944: Mild 14-21°C, cloudy, moderate rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0236",
+          "East": "-1.0236",
+          "South": "47.7392",
+          "North": "49.5392"
+        }
+      }
+    },
+    {
+      "Event": "The Citadel",
+      "Sub-event": "Reasons for Surrender",
+      "Sub-event_summary": "Direct hits by 8-inch guns destroyed pieces; psychological malaise from isolation and hopelessness led to deteriorated morale.",
+      "Sub-event_fulltext": {
+        "Paragraph_90": "Why had he surrendered--this commander who had sworn to defend to the last man, the last cartridge, the last stone? Still with men and cartridges, Aulock was far from having to resort to stones. His supply of food, water, and air was abundant. Allied plane attacks had hardly been felt inside the fort. The shock of impact from artillery shells had been slight. The Americans were no closer to the Citadel than they had been eight days before.",
+        "Paragraph_91": "As the story emerged, it became clear that two factors had caused Aulock to renounce his vows. First, direct hits by 8-inch guns aimed singly and at specific targets at virtual point blank range had penetrated several firing apertures in the fort and had destroyed a few of the larger artillery pieces and machine gun emplacements. Second, Aulock's determination notwithstanding, American capture of the individual strongpoints of the St. Malo fortress had intensified a psychological malaise deriving from the sensation of being surrounded and trapped. Morale of the troops had deteriorated to the point where further resistance seemed senseless."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Citadel",
+      "Dates": {
+        "Date_group_of_event": "17 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "170000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Citadel Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "St. Malo Fortress",
+          "Commander": "Andreas von Aulock",
+          "Name": "Andreas von Aulock",
+          "Rank": "Colonel",
+          "End_Date": "17 August 1944",
+          "End_Status": "Surrendered",
+          "Biographical_reference": "https://grokipedia.com/page/Andreas_von_Aulock",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "400 men",
+        "Equipments": {
+          "Supply": "Abundant food, water, air",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Weather_text": "Historical weather in St. Malo on 17 August 1944: Mild 14-21°C, cloudy, moderate rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0236",
+          "East": "-1.0236",
+          "South": "47.7392",
+          "North": "49.5392"
+        }
+      }
+    },
+    {
+      "Event": "The Citadel",
+      "Sub-event": "Assessment of Aulock's Defense",
+      "Sub-event_summary": "Aulock rendered port useless, held up division for two weeks, preventing action against Lorient and Brest.",
+      "Sub-event_fulltext": {
+        "Paragraph_92": "Despite his capitulation, Aulock had done his duty well. He had rendered the port of St. Malo useless to the Americans. He had held up an entire division and substantial supporting forces for almost two weeks and thus had prevented the VIII Corps from taking decisive action against the fortress ports of Lorient and Brest."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "3-17 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "030000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Citadel Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "St. Malo Fortress",
+          "Commander": "Andreas von Aulock",
+          "Name": "Andreas von Aulock",
+          "Rank": "Colonel",
+          "End_Date": "17 August 1944",
+          "End_Status": "Surrendered",
+          "Biographical_reference": "https://grokipedia.com/page/Andreas_von_Aulock",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "Historical weather in St. Malo during 3-17 August 1944: Mild 14-21°C, cloudy, moderate rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "The Citadel",
+      "Sub-event": "83d Division's Achievements and New Mission",
+      "Sub-event_summary": "83d Division took 10k prisoners with light losses; cleared sector except Cézembre; assigned to patrol Rennes-Brest line, Loire, and police coast.",
+      "Sub-event_fulltext": {
+        "Paragraph_93": "The surrender of the Citadel cleared the St. Malo-Dinard sector with the exception of the garrison on the island of Cézembre. The 83d Division had completed an impressive action. As against comparatively light losses, the division had taken more than ten thousand prisoners.",
+        "Paragraph_94": "The efforts of the division during this period had nevertheless been strenuous and, as a measure of rest and rehabilitation, the troops received a different type of mission. Originally scheduled to help in the reduction of Brest as soon as St. Malo was captured, the 83d Division instead took responsibility for the \"back area\" of the Rennes-Brest supply line and eventually patrolled Brittany as far south as the Loire River. As the division dispersed throughout the area south of Rennes in a welcome respite after the close-in siege action, two infantry battalions of the 330th--one at Dinard and the other at St. Malo, both aided by the FFI--policed the coastline and guarded against German infiltration from Cézembre."
+      },
+      "Footnote_References": [
+        64,
+        65
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "17 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "170000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Robert C. Macon",
+          "Name": "Robert C. Macon",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_C._Macon",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Two Battalions of 330th Infantry",
+            "Name": null,
+            "Rank": null,
+            "Date": "After 17 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 10000
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "Historical weather in St. Malo on 17 August 1944: Mild 14-21°C, cloudy, moderate rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "49a",
+      "Footnote_Number": "49",
+      "Footnote_Text": "Fouque, pp. 42-43",
+      "Footnote_Referenced_Source": "R. Fouque, La CM, Bastion de la Forteresse de Saint-Malo, pages 42-43",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Fouque book"
+    },
+    {
+      "Footnote": "49b",
+      "Footnote_Number": "49",
+      "Footnote_Text": "83d Div G-2 Per Rpt 36, 1600, 8 Aug",
+      "Footnote_Referenced_Source": "83d Division G-2 Periodic Report 36, 1600, 8 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-2 report 36"
+    },
+    {
+      "Footnote": "49c",
+      "Footnote_Number": "49",
+      "Footnote_Text": "G-2 Per Rpt 40, 1600, 12 Aug",
+      "Footnote_Referenced_Source": "G-2 Periodic Report 40, 1600, 12 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request G-2 report 40"
+    },
+    {
+      "Footnote": "50",
+      "Footnote_Number": "50",
+      "Footnote_Text": "83d Div G-2 Per Rpt 38, 1600, 10 Aug.",
+      "Footnote_Referenced_Source": "83d Division G-2 Periodic Report 38, 1600, 10 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-2 report 38"
+    },
+    {
+      "Footnote": "51",
+      "Footnote_Number": "51",
+      "Footnote_Text": "83d Div G-3 Jnl, entry 1630, 5 Aug.",
+      "Footnote_Referenced_Source": "83d Division G-3 Journal, entry 1630, 5 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-3 journal"
+    },
+    {
+      "Footnote": "52",
+      "Footnote_Number": "52",
+      "Footnote_Text": "VIII Corps AAR, Aug.",
+      "Footnote_Referenced_Source": "VIII Corps After Action Report, August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps AAR August 1944"
+    },
+    {
+      "Footnote": "53a",
+      "Footnote_Number": "53",
+      "Footnote_Text": "329th Inf AAR, Aug",
+      "Footnote_Referenced_Source": "329th Infantry After Action Report, August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 329th Infantry AAR"
+    },
+    {
+      "Footnote": "53b",
+      "Footnote_Number": "53",
+      "Footnote_Text": "83d Div G-3 Jnl, entry 1900, 9 Aug",
+      "Footnote_Referenced_Source": "83d Division G-3 Journal, entry 1900, 9 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-3 journal"
+    },
+    {
+      "Footnote": "53c",
+      "Footnote_Number": "53",
+      "Footnote_Text": "VIII Corps G-3 Jnl, entries 1710, 1730, and 1735, 10 Aug",
+      "Footnote_Referenced_Source": "VIII Corps G-3 Journal, entries 1710, 1730, 1735, 10 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps G-3 journal"
+    },
+    {
+      "Footnote": "53d",
+      "Footnote_Number": "53",
+      "Footnote_Text": "G-3 Jnl, entry 1330, 12 Aug",
+      "Footnote_Referenced_Source": "G-3 Journal, entry 1330, 12 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request G-3 journal"
+    },
+    {
+      "Footnote": "53e",
+      "Footnote_Number": "53",
+      "Footnote_Text": "FO 25, 2100, 11 Aug",
+      "Footnote_Referenced_Source": "Field Order 25, 2100, 11 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request field order 25"
+    },
+    {
+      "Footnote": "54",
+      "Footnote_Number": "54",
+      "Footnote_Text": "IX BC Sum of Opns, Aug, and Msg, 1830, 9 Aug.",
+      "Footnote_Referenced_Source": "IX Bomber Command Summary of Operations, August; Message, 1830, 9 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request IX BC summary and message"
+    },
+    {
+      "Footnote": "55a",
+      "Footnote_Number": "55",
+      "Footnote_Text": "Msg, Middleton to Bradley, 1900, 14 Aug, 12th AGp File 371.3",
+      "Footnote_Referenced_Source": "Message, Middleton to Bradley, 1900, 14 August, 12th Army Group File 371.3",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 12th AGp file 371.3"
+    },
+    {
+      "Footnote": "55b",
+      "Footnote_Number": "55",
+      "Footnote_Text": "Msg, Bradley to Middleton, 15 Aug",
+      "Footnote_Referenced_Source": "Message, Bradley to Middleton, 15 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "55c",
+      "Footnote_Number": "55",
+      "Footnote_Text": "see Craven and Cate, AAF III, 254-56.",
+      "Footnote_Referenced_Source": "Wesley Frank Craven and James Lea Cate, The Army Air Forces in World War II, Volume III, pages 254-56",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/AAF/III/index.html",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "56",
+      "Footnote_Number": "56",
+      "Footnote_Text": "83d Div G-3 Jnl, entry 1630, 15 Aug.",
+      "Footnote_Referenced_Source": "83d Division G-3 Journal, entry 1630, 15 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-3 journal"
+    },
+    {
+      "Footnote": "57a",
+      "Footnote_Number": "57",
+      "Footnote_Text": "Msg, Middleton to Macon, 1200, 7 Aug",
+      "Footnote_Referenced_Source": "Message, Middleton to Macon, 1200, 7 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "57b",
+      "Footnote_Number": "57",
+      "Footnote_Text": "83d Div G-2 Per Rpt 36, 1600, 8 Aug",
+      "Footnote_Referenced_Source": "83d Division G-2 Periodic Report 36, 1600, 8 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-2 report 36"
+    },
+    {
+      "Footnote": "57c",
+      "Footnote_Number": "57",
+      "Footnote_Text": "Fouque, pp. 52-53.",
+      "Footnote_Referenced_Source": "R. Fouque, La CM, Bastion de la Forteresse de Saint-Malo, pages 52-53",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Fouque book"
+    },
+    {
+      "Footnote": "58a",
+      "Footnote_Number": "58",
+      "Footnote_Text": "329th Inf AAR, Aug",
+      "Footnote_Referenced_Source": "329th Infantry After Action Report, August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 329th Infantry AAR"
+    },
+    {
+      "Footnote": "58b",
+      "Footnote_Number": "58",
+      "Footnote_Text": "G-3 Per Rpt 17, 2400, 13 Aug",
+      "Footnote_Referenced_Source": "G-3 Periodic Report 17, 2400, 13 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request G-3 report 17"
+    },
+    {
+      "Footnote": "58c",
+      "Footnote_Number": "58",
+      "Footnote_Text": "Fouque, pp. 69-72.",
+      "Footnote_Referenced_Source": "R. Fouque, La CM, Bastion de la Forteresse de Saint-Malo, pages 69-72",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Fouque book"
+    },
+    {
+      "Footnote": "59",
+      "Footnote_Number": "59",
+      "Footnote_Text": "329th Inf FO 3, 1200, 13 Aug.",
+      "Footnote_Referenced_Source": "329th Infantry Field Order 3, 1200, 13 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 329th Infantry field order 3"
+    },
+    {
+      "Footnote": "60",
+      "Footnote_Number": "60",
+      "Footnote_Text": "329th Inf AAR, Aug.",
+      "Footnote_Referenced_Source": "329th Infantry After Action Report, August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 329th Infantry AAR"
+    },
+    {
+      "Footnote": "61",
+      "Footnote_Number": "61",
+      "Footnote_Text": "83d Div G-3 Per Rpt 20, 1200, 15 Aug.",
+      "Footnote_Referenced_Source": "83d Division G-3 Periodic Report 20, 1200, 15 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-3 report 20"
+    },
+    {
+      "Footnote": "62",
+      "Footnote_Number": "62",
+      "Footnote_Text": "Msg, Middleton to Bradley, 1900, 14 Aug, 12th AGp File 371.3.",
+      "Footnote_Referenced_Source": "Message, Middleton to Bradley, 1900, 14 August, 12th Army Group File 371.3",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 12th AGp file 371.3"
+    },
+    {
+      "Footnote": "63",
+      "Footnote_Number": "63",
+      "Footnote_Text": "83d Div G-3 Per Rpt 22, 1200, 17 Aug.",
+      "Footnote_Referenced_Source": "83d Division G-3 Periodic Report 22, 1200, 17 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-3 report 22"
+    },
+    {
+      "Footnote": "64",
+      "Footnote_Number": "64",
+      "Footnote_Text": "83d Div G-3 Per Rpt 23, 2400, 17 Aug.",
+      "Footnote_Referenced_Source": "83d Division G-3 Periodic Report 23, 2400, 17 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-3 report 23"
+    },
+    {
+      "Footnote": "65a",
+      "Footnote_Number": "65",
+      "Footnote_Text": "Msg, Middleton to Macon, 1200, 17 Aug",
+      "Footnote_Referenced_Source": "Message, Middleton to Macon, 1200, 17 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "65b",
+      "Footnote_Number": "65",
+      "Footnote_Text": "VIII Corps FO 11, 16 Aug",
+      "Footnote_Referenced_Source": "VIII Corps Field Order 11, 16 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps field order 11"
+    },
+    {
+      "Footnote": "65c",
+      "Footnote_Number": "65",
+      "Footnote_Text": "83d Div AAR, Aug.",
+      "Footnote_Referenced_Source": "83d Division After Action Report, August",
+      "Web_Link": "https://83rdinfdivdocs.org/documents/83rd/AAR/AAR_83_AUG1944.pdf",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

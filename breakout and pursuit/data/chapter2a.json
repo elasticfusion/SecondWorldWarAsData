@@ -1,0 +1,641 @@
+{
+  "Events": [
+    {
+      "Event": "The Enemy's Machinery of War in the European Theater of Operations",
+      "Sub-event": "Hitler's Direct Control",
+      "Sub-event_summary": "Adolf Hitler personally directed the war, exercising direct control over military operations, strategy, and tactics, often supervising minor problems due to the urgency of the struggle, which overworked him.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "Adolf Hitler was directing the war. In addition to the responsibility and the nominal command borne by all heads of states, Hitler exercised a direct control over military operations. He determined the military strategy on all fronts and supervised closely the formulation of plans and their execution. Increasingly, as the struggle continued, he controlled the tactical operations of the troops. This close control of the military was perhaps inevitable. The pyramidal hierarchy of command reached its ultimate in him.",
+        "Paragraph_2": "With an active and bold imagination, and often displaying an astute grasp of military matters, Hitler could coordinate his military objectives and his political goals far better than anyone else in Germany. Though by 1944 Hitler had delegated to others many of his governmental functions, he felt that he could not afford to do so in the military realm. The urgency of the life and death struggle with the Allies, he was convinced, compelled him to give his personal attention even to relatively minor problems, and his self-assumed commitments overworked him."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Germany",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Deutsche Wehrmacht",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Supreme Commander in Chief",
+          "Commander": "Adolf Hitler",
+          "Name": "Adolf Hitler",
+          "Rank": "Fuehrer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Adolf_Hitler",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {},
+        "Civilian": {}
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Germany",
+        "Place_GPS_coordinate": "52.52, 13.405",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Germany_1944_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Germany",
+        "Place_GPS_coordinate": "52.52, 13.405",
+        "Weather_text": "Varied across the country in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "12.0251",
+          "East": "14.7849",
+          "South": "51.6191",
+          "North": "53.4209"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Machinery of War in the European Theater of Operations",
+      "Sub-event": "High Command Structure",
+      "Sub-event_summary": "Hitler held multiple titles including Fuehrer and Supreme Commander in Chief, with OKW under Keitel, OKL under Goering, OKM under Doenitz, and OKH under Hitler himself. OKW directed non-Eastern fronts.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "As head of the state, Hitler bore the title of Fuehrer.¹ As such, he was also the Supreme Commander in Chief of the Armed Forces--the Oberster Befehlshaber der Deutschen Wehrmacht. His staff was the Armed Forces High Command, the Oberkommando der Wehrmacht (OKW), headed by Generalfeldmarschall Wilhelm Keitel. Theoretically, OKW was the highest military echelon under Hitler, and to it belonged the prerogatives of grand strategy and joint operations. On a lower echelon, Reichsmarschall Hermann Goering headed the Air Force High Command, the Oberkommando der Luftwaffe (OKL); Grossadmiral Karl Doenitz headed the Navy High Command, the Oberkommando der Kriegsmarine (OKM); while Hitler himself headed the Army High Command, the Oberkommando des Heeres (OKH).",
+        "Paragraph_4": "In theory, the chief of the OKW, Keitel, received the reports and co-ordinated the activities of the OKL, OKM, and OKH. But Goering outranked Keitel and therefore reported directly to Hitler. Doenitz felt that Keitel had little interest in and understanding of naval matters, and he also reported directly to Hitler. Since Hitler himself was chief of the OKH, there seemed to be no practical need for the OKW. Yet because the war against the Soviet Union required all the attention of the OKH, the OKW assumed the direction of the other theaters.² OKW and OKH were thus reduced to agencies directing the ground campaigns and, together with OKL and OKM, were directly subordinate to and dominated by Hitler, the Supreme Commander in Chief."
+      },
+      "Footnote_References": "1,2",
+      "Place_Name": "Berlin",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Oberkommando der Wehrmacht (OKW)",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Deutsche Wehrmacht",
+          "Commander": "Wilhelm Keitel",
+          "Name": "Wilhelm Keitel",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Wilhelm_Keitel",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Oberkommando der Luftwaffe (OKL)",
+            "Name": "Hermann Goering",
+            "Rank": "Reichsmarschall",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Hermann_G%C3%B6ring",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "Oberkommando der Kriegsmarine (OKM)",
+            "Name": "Karl Doenitz",
+            "Rank": "Grossadmiral",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Karl_D%C3%B6nitz",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "Oberkommando des Heeres (OKH)",
+            "Name": "Adolf Hitler",
+            "Rank": "Fuehrer",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Adolf_Hitler",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Berlin",
+        "Place_GPS_coordinate": "52.52, 13.405",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Berlin",
+        "Place_GPS_coordinate": "52.52, 13.405",
+        "Weather_text": "Warm summer weather in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "12.0251",
+          "East": "14.7849",
+          "South": "51.6191",
+          "North": "53.4209"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Machinery of War in the European Theater of Operations",
+      "Sub-event": "Inconsistencies and Frictions in Command",
+      "Sub-event_summary": "The command structure had confused staff functions, with OKW relying on OKH for intelligence and logistics. Competition for replacements caused friction, and Himmler's SS complicated the structure. Field inconsistencies allowed independent services, benefiting Hitler's control.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "Although the chain of command was unified at the top in the person of Hitler and although spheres of activity seemed clearly defined among the high commands, staff functions in actual practice were often confused. OKW, for example, had no intelligence section or logistical apparatus. For information about the enemy and for administration, including replacements, it relied on the OKH. OKL organized and controlled antiaircraft artillery units, Luftwaffe field divisions, and paratroopers, which in American doctrine were ground force units. Competition over such matters as replacements caused friction among the services. Goering exploited his political power, while Reichsfuehrer Heinrich Himmler complicated the command structure because he headed the Schutzstaffel (SS), an elite corps of infantry and armored units.³ Similar inconsistencies appeared in the field. Commanders exercised control over assigned troops but not over strictly defined geographical areas. Except in designated fortress cities, the three military services were independent branches, expected to co-operate but not functionally organized to insure complete co-ordination of effort. The result, perhaps not so surprisingly, redounded to Hitler's personal advantage."
+      },
+      "Footnote_References": "3",
+      "Place_Name": "Germany",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Schutzstaffel (SS)",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Deutsche Wehrmacht",
+          "Commander": "Heinrich Himmler",
+          "Name": "Heinrich Himmler",
+          "Rank": "Reichsfuehrer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Heinrich_Himmler",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Elite corps of infantry and armored units",
+        "Equipments": {
+          "Supply": "Competition over replacements",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Antiaircraft artillery",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Germany",
+        "Place_GPS_coordinate": "52.52, 13.405",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Germany",
+        "Place_GPS_coordinate": "52.52, 13.405",
+        "Weather_text": "Varied in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "12.0251",
+          "East": "14.7849",
+          "South": "51.6191",
+          "North": "53.4209"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Machinery of War in the European Theater of Operations",
+      "Sub-event": "Field Commands in Western Europe",
+      "Sub-event_summary": "In western Europe, Navy Group West under OKM, Third Air Fleet under OKL, and OB WEST under OKW functioned as theater headquarters. OB WEST controlled tactical operations but not naval/air or geographical areas fully.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "In western Europe, Navy Group West was the field command of the OKM, and the Third Air Fleet was the field command under OKL. The ground force field command under the OKW was Oberbefehlshaber West (OB WEST), and within the limits of the German command system it functioned as the theater headquarters. Unlike General Eisenhower, who in comparison had virtual carte blanche for the conduct of the war, the German theater commander operated under the close personal supervision of Hitler, who directly or through the Operations Staff of OKW, the Wehrmachtfuehrungsstab (WFSt), a planning section directed by Generaloberst Alfred Jodl, did not hesitate to point out what he deemed errors of judgment and maneuver.",
+        "Paragraph_7": "General Jodl"
+      },
+      "Footnote_References": [],
+      "Place_Name": "Western Europe",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Oberbefehlshaber West (OB WEST)",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [
+          {
+            "Unit": "Navy Group West",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "Third Air Fleet",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "Wehrmachtfuehrungsstab (WFSt)",
+            "Name": "Alfred Jodl",
+            "Rank": "Generaloberst",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Alfred_Jodl",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {
+        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.jpg",
+        "Description": "General Jodl",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Western Europe",
+        "Place_GPS_coordinate": "48.8566, 2.3522",
+        "Map_Reference": "Map 2",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-2.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Western_Europe_1944_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Western Europe",
+        "Place_GPS_coordinate": "48.8566, 2.3522",
+        "Weather_text": "Varied, with rainy conditions in Normandy in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "0.9723",
+          "East": "3.7321",
+          "South": "47.9557",
+          "North": "49.7575"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Machinery of War in the European Theater of Operations",
+      "Sub-event": "OB WEST Limitations and Structure",
+      "Sub-event_summary": "OB WEST did not control naval and air forces; military governors in France, Belgium, Netherlands handled security but OB WEST had operational control for invasions. OKW supervised supply and maintained direct contact with governors.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "The theater commander did not control the naval and air force contingents in his sector. France, Belgium, and the Netherlands, though under the nominal control of OB WEST, each had a military governor who exercised responsibility for internal security of the occupied territory; yet for tactical action against an invading enemy, OB WEST had operational control over the troops assigned to the military governors. OKW maintained direct contact with each military governor and supervised OB WEST supply and administration."
+      },
+      "Footnote_References": [],
+      "Place_Name": "France",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Military Governor France",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "France",
+        "Place_GPS_coordinate": "48.8566, 2.3522",
+        "Map_Reference": "Map 2",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-2.jpg",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "France",
+        "Place_GPS_coordinate": "48.8566, 2.3522",
+        "Weather_text": "Gloomy in Normandy in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "0.9723",
+          "East": "3.7321",
+          "South": "47.9557",
+          "North": "49.7575"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Machinery of War in the European Theater of Operations",
+      "Sub-event": "Army Groups under OB WEST",
+      "Sub-event_summary": "OB WEST controlled Army Group G (south of Loire-Geneva line, defending Atlantic and Mediterranean coasts) and Army Group B (north, defending Netherlands, Belgium, northern France). Replacement Army handled training and security in interior France.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "For tactical operations OB WEST controlled two army groups. These had the mission of defending the Channel and Atlantic and the Mediterranean coast lines of the OB WEST area. Their zones of operations were the Netherlands and Belgium and those French administrative and political departments touching the sea. The boundary between the army groups was an east--west line across France from the Loire River to the Swiss border near Lake Geneva, although there was always a lack of clarity as to whether OB WEST or the military governor exercised authority over tactical troops in central France.",
+        "Paragraph_10": "(Map 2)",
+        "Paragraph_11": "South of the boundary was the sector of Army Group G, a headquarters that controlled the First Army, which defended the Atlantic coast of France south of the Loire, and Nineteenth Army, which held the Mediterranean shores of France. The Replacement Army, which trained units in the interior of France, furnished troops for security duties against the FFI and was ready to undertake operations against airborne landings.",
+        "Paragraph_12": "North of the Loire-Geneva boundary line was Army Group B. Under this headquarters, LXXXVIII Corps occupied the Netherlands, Fifteenth Army defended the coast of Belgium and of northern France to the Seine River, and Seventh Army had responsibility for that part of northwest France between the Seine and the Loire Rivers."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Loire River",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Army Group G",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [
+          {
+            "Unit": "First Army",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "Nineteenth Army",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "Replacement Army",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "Troops for security against FFI",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {
+        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-2.jpg",
+        "Description": "Map 2",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Loire River",
+        "Place_GPS_coordinate": "47.283, 0.017",
+        "Map_Reference": "Map 2",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-2.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Loire_River_map_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Loire River",
+        "Place_GPS_coordinate": "47.283, 0.017",
+        "Weather_text": "Mild conditions in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.363",
+          "East": "1.397",
+          "South": "46.3821",
+          "North": "48.1839"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Machinery of War in the European Theater of Operations",
+      "Sub-event": "Army Group B Structure",
+      "Sub-event_summary": "Army Group B controlled LXXXVIII Corps in Netherlands, Fifteenth Army in Belgium and northern France to Seine, and Seventh Army in northwest France between Seine and Loire.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "North of the Loire-Geneva boundary line was Army Group B. Under this headquarters, LXXXVIII Corps occupied the Netherlands, Fifteenth Army defended the coast of Belgium and of northern France to the Seine River, and Seventh Army had responsibility for that part of northwest France between the Seine and the Loire Rivers."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Seine River",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [
+          {
+            "Unit": "LXXXVIII Corps",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "Fifteenth Army",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "Seventh Army",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Seine River",
+        "Place_GPS_coordinate": "49.44278, 1.08861",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Seine River",
+        "Place_GPS_coordinate": "49.44278, 1.08861",
+        "Weather_text": "Conditions along the river in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-0.2969",
+          "East": "2.4742",
+          "South": "48.5419",
+          "North": "50.3437"
+        }
+      }
+    },
+    {
+      "Event": "The Enemy's Machinery of War in the European Theater of Operations",
+      "Sub-event": "Chain of Command for Invasion Response",
+      "Sub-event_summary": "The chain responding to the Allied invasion included Hitler, OKW, OB WEST, Army Group B, and Seventh Army in the invaded area.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "The chain of command, then, that had functioned to meet the Allied invasion of western Europe consisted of Hitler; the OKW, which transmitted Hitler's orders; OB WEST, the ground force headquarters in the west that operated as the theater command; Army Group B, which had tactical control of the troops along the Channel coast; and Seventh Army, which had found itself responsible for the area invaded."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Western Europe",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Western Europe",
+        "Place_GPS_coordinate": "48.8566, 2.3522",
+        "Map_Reference": "Map 2",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-2.jpg",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Western Europe",
+        "Place_GPS_coordinate": "48.8566, 2.3522",
+        "Weather_text": "Varied in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "0.9723",
+          "East": "3.7321",
+          "South": "47.9557",
+          "North": "49.7575"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "",
+      "Footnote_Number": "1",
+      "Footnote_Text": "As head of the state, Hitler bore the title of Fuehrer.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "2",
+      "Footnote_Text": "OKW and OKH were thus reduced to agencies directing the ground campaigns and, together with OKL and OKM, were directly subordinate to and dominated by Hitler, the Supreme Commander in Chief.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "",
+      "Footnote_Number": "3",
+      "Footnote_Text": "Similar inconsistencies appeared in the field. Commanders exercised control over assigned troops but not over strictly defined geographical areas. Except in designated fortress cities, the three military services were independent branches, expected to co-operate but not functionally organized to insure complete co-ordination of effort. The result, perhaps not so surprisingly, redounded to Hitler's personal advantage.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn2.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

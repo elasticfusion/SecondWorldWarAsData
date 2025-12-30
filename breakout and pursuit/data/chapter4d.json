@@ -1,0 +1,1558 @@
+{
+  "Events": [
+    {
+      "Event": "The Offensive Launched - Mont Castre",
+      "Sub-event": "90th Division Preparation and Leadership",
+      "Sub-event_summary": "The 90th Division, making the main effort, had a new commander, Maj. Gen. Eugene M. Landrum, who reorganized the division after poor performance in June.",
+      "Sub-event_fulltext": {
+        "Paragraph_2": "The ability of the 90th Division, which was making the corps main effort on the left (east), was an unknown quantity before the July attack. The performance of the division during a few days of offensive action in June had been disappointing. The division had lacked cohesion and vigor, and its commanding general and two regimental commanders had been relieved. Maj. Gen. Eugene M. Landrum, with experience in the Aleutian Islands Campaign the preceding year, had assumed command on 12 June and had attempted in the three weeks before the army offensive to reorganize the command and instill it with aggressiveness."
+      },
+      "Footnote_References": [],
+      "Place_Name": "",
+      "Dates": {
+        "Date_group_of_event": "12 June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "120000Zjun44"
+      },
+      "TOE": {
+        "Unit": "90th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Eugene M. Landrum",
+          "Name": "Eugene M. Landrum",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Eugene_M._Landrum",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "359th Infantry Regiment",
+            "Name": "Clark K. Fales",
+            "Rank": "Colonel",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "358th Infantry Regiment",
+            "Name": "Richard C. Partridge",
+            "Rank": "Colonel",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "357th Infantry Regiment",
+            "Name": "George H. Barth",
+            "Rank": "Colonel",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "Reorganized, attempting to instill aggressiveness",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {}
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Mont Castre",
+      "Sub-event": "Terrain of Mont Castre",
+      "Sub-event_summary": "Description of Mont Castre terrain, its dominance, and necessity for the 90th Division advance.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "To reach his assigned portion of the corps intermediate objective, General Landrum had to funnel troops through a corridor a little over a mile wide--a corridor between Mont Castre on the west and the Prairies Marécageuses de Gorges on the east. His troops in the corridor would have to skirt the edge of the swampland and operate in the shadow of Mont Castre, a ridge about 300 feet high extending three miles in an east-west direction. The western half of Mont Castre, near la Haye-du-Puits, was bare, with two stone houses standing bleakly in ruins on the north slope. The eastern half, densely wooded and the site of an ancient Roman encampment, offered cover and concealment on a height that commanded the neighboring flatland for miles. No roads mounted to the ridge line, only trails and sunken wagon traces--a maze of alleys through the somber tangle of trees and brush. If the Germans could hold the hill mass, they could deny movement to the south through the corridor along the base of the eastern slope. Possession of Mont Castre was thus a prerequisite for the 90th Division advance toward Périers."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Mont Castre, Prairies Marécageuses de Gorges, la Haye-du-Puits, Périers",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING jul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jul44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/1/1e/Allied_Invasion_Force.jpg",
+          "Description": "Allied Invasion Force map including Normandy",
+          "License": "Public domain"
+        },
+        {
+          "Link": "https://c8.alamy.com/comp/GC5YRD/cartography-historical-maps-second-world-warwwii-france-battle-of-GC5YRD.jpg",
+          "Description": "Historical map of Battle of Normandy 1944",
+          "License": "Alamy Stock Photo"
+        },
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Normandy_Front%2C_2_July_1944.jpg/250px-Normandy_Front%2C_2_July_1944.jpg",
+          "Description": "Normandy Front, 2 July 1944 map",
+          "License": "Public domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Map_Reference": "Map 3",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-3.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Battle_of_La_Haye-du-Puits#/media/File:Normandy_Front,_2_July_1944.jpg",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Weather_text": "Drenching rain on 3 July, good weather on 4 and 5 July permitting air support",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.366,
+          "East": -0.566,
+          "South": 48.387,
+          "North": 50.187
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Mont Castre",
+      "Sub-event": "Attack Plan for 90th Division",
+      "Sub-event_summary": "Plan to attack with two regiments, 359th on Mont Castre, 358th in corridor, then commit 357th; supported by artillery and tanks.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "Reflecting both an anxiety to make good and the general underestimation of German strength, General Landrum planned to start his forces south through the corridor at the same time he engaged the Germans on Mont Castre. The division was to attack with two simultaneous regimental thrusts. The 359th Infantry (Col. Clark K. Fales), on the right, was to advance about four miles through the hedgerows to the thickly wooded slopes of Mont Castre, take the height, and meet the 79th Division south of la Haye-du-Puits. The 358th Infantry (Col. Richard C. Partridge), on the left, was to force the corridor between Mont Castre and the prairies. In possession of the high ground, in contact with the 79th Division, and holding the corridor east of Mont Castre open, General Land-rum would then commit the 357th Infantry (Col. George H. Barth) through the corridor to the initial corps objective.",
+        "Paragraph_5": "To provide impetus across the hedge-rowed lowlands, General Landrum ordered the 357th, his reserve regiment, to mass its heavy weapons in support and the attached tanks and tank destroyers also to assist by fire. In addition to the organic artillery battalions, General Landrum had a battalion of the corps artillery and the entire 4th Division Artillery attached; the 9th Division Artillery had been alerted to furnish fires upon request."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Mont Castre",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING jul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jul44"
+      },
+      "TOE": {
+        "Unit": "90th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Eugene M. Landrum",
+          "Name": "Eugene M. Landrum",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Eugene_M._Landrum",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "359th Infantry Regiment",
+            "Name": "Clark K. Fales",
+            "Rank": "Colonel",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "358th Infantry Regiment",
+            "Name": "Richard C. Partridge",
+            "Rank": "Colonel",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "357th Infantry Regiment",
+            "Name": "George H. Barth",
+            "Rank": "Colonel",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://www.tracesofwar.com/persons/29143/Barth-George-H.htm",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Tanks",
+              "Identifier": "M4 Sherman",
+              "Quantity": "Attached",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Tank Destroyers",
+              "Identifier": "M10",
+              "Quantity": "Attached",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M10_tank_destroyer",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.366,
+          "East": -0.566,
+          "South": 48.387,
+          "North": 50.187
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Mont Castre",
+      "Sub-event": "Initial Attack 3 July",
+      "Sub-event_summary": "Attack started in rain at 0530, initial progress but stiffened resistance, advance less than a mile, 600 casualties.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "The driving, drenching rain, which had begun early on 3 July, was still pouring down when the attack got under way at 0530. At first it seemed that progress would be rapid. Two hours later resistance stiffened. By the end of the day, although American troops had forced the Germans out of some positions, the Seventh Army commander, Hausser, was well satisfied. His principal concern was his supply of artillery ammunition.",
+        "Paragraph_7": "The 90th Division advanced less than a mile on 3 July, the first day of attack, at a cost of over 600 casualties.",
+        "Paragraph_8": "The Germans demonstrated convincingly, contrary to general expectation, that they intended and were able to make a stand. The 90th Division dented only the outpost line of resistance and had yet to make contact with the main defenses. \"The Germans haven't much left,\" an observer wrote, \"but they sure as hell know how to use it.\"",
+        "Paragraph_9": "If the Germans had defended with skill, the 90th Division had not attacked with equal competence. Tankers and infantrymen did not work closely together; commanders had difficulty keeping their troops moving forward; jumpy riflemen fired at the slightest movement or sound."
+      },
+      "Footnote_References": [22, 23],
+      "Place_Name": "Mont Castre",
+      "Dates": {
+        "Date_group_of_event": "3 July 0530 BDST 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030330Zjul44"
+      },
+      "TOE": {
+        "Unit": "90th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 600,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Weather_text": "Driving, drenching rain",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.366,
+          "East": -0.566,
+          "South": 48.387,
+          "North": 50.187
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Mont Castre",
+      "Sub-event": "358th Infantry at les Sablons",
+      "Sub-event_summary": "358th Infantry's attack on les Sablons, initial difficulties, artillery support, enemy vehicles, eventual clearance in evening.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "The experience of Colonel Partridge's 358th Infantry exemplified the action along the division front for the day. One of the two assault battalions of the regiment remained immobile all day long not far from the line of departure because of flanking fire from several German self-propelled guns. The other battalion moved with extreme caution toward the hamlet of les Sablons, a half-dozen stone farmhouses in a gloomy tree-shaded hollow where patrols on preceding days had reported strong resistance. As infantry scouts approached the village, enemy machine gun and artillery fire struck the battalion command post and killed or wounded all the wire communications personnel. Unable to repair wire damaged by shellbursts, the unit commanders were without telephones for the rest of the day.",
+        "Paragraph_11": "Judging the enemy fire to be in large volume, Colonel Partridge withdrew the infantry a few hundred yards and requested that division artillery \"demolish the place\" with white phosphorus and high-explosive shells. The artillery complied literally, and at noon riflemen were moving cautiously through the village. Ten minutes later several enemy tracked vehicles appeared as if by magic from behind nearby hedgerows. A near panic ensued as the infantrymen fled the town. About twelve engineers who were searching for mines and booby traps were unable to follow and sought shelter in the damaged houses.",
+        "Paragraph_12": "To prevent a complete rout, Partridge committed his reserve battalion. Unfortunately, several light tanks following the infantry became entangled in concertina wire and caused a traffic jam. Anticipating that the Germans would take advantage of the confusion by counterattacking with tanks, Partridge ordered a platoon of tank destroyers to bypass les Sablons in order to fire into the flank of any hostile force. He also called three assault guns and three platoons of the regimental antitank company forward to guard against enemy tanks. The 315th Engineer Combat Bn contributed a bazooka team to help rescue the men trapped in the village.",
+        "Paragraph_13": "The Germans did not attack, and in midafternoon Partridge learned that only one assault gun and two half-tracked vehicles were holding up his advance. It was late afternoon before he could act, however, for German shells continued to fall in good volume, the soft lowland impeded the movement of antitank weapons, and the presence of the American engineers in les Sablons inhibited the use of artillery fire. After the engineers had worked their way to safety, Partridge at last brought coordinated and concentrated tank, artillery, and infantry fire on the area, and a rifle company finally managed to push through les Sablons that evening. Colonel Partridge wanted to continue his attack through the night, but an enemy counterthrust at nightfall, even though quickly contained, convinced General Landrum that the regiment had gone far enough."
+      },
+      "Footnote_References": [],
+      "Place_Name": "les Sablons",
+      "Dates": {
+        "Date_group_of_event": "3 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "358th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "90th Infantry Division",
+          "Commander": "Richard C. Partridge",
+          "Name": "Richard C. Partridge",
+          "Rank": "Colonel",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [
+          {
+            "Unit": "315th Engineer Combat Battalion",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Light Tanks",
+              "Identifier": "M5 Stuart",
+              "Quantity": "Several",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M5_Stuart",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Tank Destroyers",
+              "Identifier": "M10",
+              "Quantity": "Platoon",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Assault Guns",
+              "Identifier": "",
+              "Quantity": "3",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Self-Propelled Guns",
+              "Identifier": "",
+              "Quantity": "Several",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": ""
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Assault Gun",
+              "Identifier": "StuG III",
+              "Quantity": "1",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Sturmgeschütz_III",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Half-Tracked Vehicles",
+              "Identifier": "Sd.Kfz. 251",
+              "Quantity": "2",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Sd.Kfz._251",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 125,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "les Sablons",
+        "Place_GPS_coordinate": "49.28, -1.52",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "les Sablons",
+        "Place_GPS_coordinate": "49.28, -1.52",
+        "Weather_text": "Drenching rain",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.42,
+          "East": -0.62,
+          "South": 48.38,
+          "North": 50.18
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Mont Castre",
+      "Sub-event": "Night Harassment 3-4 July",
+      "Sub-event_summary": "German observed fire harassed the division through the night, making reorganization difficult.",
+      "Sub-event_fulltext": {
+        "Paragraph_14": "The excellent observation that had enabled the Germans to pinpoint 90th Division activity during the day allowed them to note the American dispositions at dusk. Through the night accurate fire harassed the division, rendering reorganization and resupply difficult and dangerous."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Mont Castre",
+      "Dates": {
+        "Date_group_of_event": "Night 3 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "032200Zjul44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "Resupply difficult",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.366,
+          "East": -0.566,
+          "South": 48.387,
+          "North": 50.187
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Mont Castre",
+      "Sub-event": "Attack on 4 July",
+      "Sub-event_summary": "Resumed attack with artillery preparation, heavy counter-battery fire, delayed advances, 359th gained 2 miles by dusk.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "Resuming the attack on 4 July, the 90th Division fired a ten-minute artillery preparation shortly after daybreak. The German reaction was immediate: counter-battery fire so intense that subordinate commanders of the 90th Division looked for a counterattack. Not wishing to move until the direction of the German thrust was determined, the regimental commanders delayed their attacks. It took vociferous insistence by General Landrum to get even a part of the division moving. No German counterattack materialized.",
+        "Paragraph_16": "Colonel Fales got his 359th Infantry moving forty-five minutes after the scheduled jump-off time as a surprising lull in the German fire occurred. Heading for Mont Castre, the infantry advanced several hundred yards before the enemy suddenly opened fire and halted further progress. Uneasy speculation among American riflemen that German tanks might be hiding nearby preceded the appearance of three armored vehicles that emerged from hedgerows and began to fire. The infantrymen withdrew in haste and some confusion.",
+        "Paragraph_17": "Through most of the day, all attempts to advance brought only disappointment. Then, at dusk, unit commanders rallied their men. Unexpectedly the regiment began to roll. The advance did not stop until it had carried almost two miles."
+      },
+      "Footnote_References": [24],
+      "Place_Name": "Mont Castre",
+      "Dates": {
+        "Date_group_of_event": "4 July 1944 daybreak",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "040430Zjul44"
+      },
+      "TOE": {
+        "Unit": "359th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "90th Infantry Division",
+          "Commander": "Clark K. Fales",
+          "Name": "Clark K. Fales",
+          "Rank": "Colonel",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Armored Vehicles",
+              "Identifier": "",
+              "Quantity": "3",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 549,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Weather_text": "Good weather permitting tactical air support",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.366,
+          "East": -0.566,
+          "South": 48.387,
+          "North": 50.187
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Mont Castre",
+      "Sub-event": "German Response 4 July",
+      "Sub-event_summary": "German artillery stopped attack morning, desperate battle by noon, no reserves, OKW released 15th Parachute Regiment.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "The sudden slackening of opposition could perhaps be explained by several factors: the penetration of the airborne troops to the Poterie ridge, which menaced the German left; the heavy losses sustained mostly from the devastating fire of American artillery; and the lack of reserves, which compelled regrouping on a shorter front.",
+        "Paragraph_19": "With great satisfaction the Germans had reported that their own artillery had stopped the 90th Division attack during the morning of 4 July, but by noon the LXXXIV Corps was battling desperately. Although two battalions of the 265th Division (of Group Koenig), the 77th Division remnants, and a battalion of the 353d Division succeeded in denying the approaches to Mont Castre throughout 4 July, the units had no local reserves to seal off three small penetrations that occurred during the evening. Only by getting OKW to release control of the 15th Parachute Regiment and by committing that regiment at once was the Seventh Army able to permit the LXXXIV Corps to refashion its defensive line that night."
+      },
+      "Footnote_References": [25, 26],
+      "Place_Name": "Mont Castre, Poterie ridge",
+      "Dates": {
+        "Date_group_of_event": "4 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "040000Zjul44"
+      },
+      "TOE": {
+        "Unit": "LXXXIV Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Dietrich von Choltitz",
+          "Name": "Dietrich von Choltitz",
+          "Rank": "General der Infanterie",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dietrich_von_Choltitz",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "265th Infantry Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/265th_Infantry_Division_(Wehrmacht)",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "77th Infantry Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "353d Infantry Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "15th Parachute Regiment",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "No local reserves",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": "Heavy losses",
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.366,
+          "East": -0.566,
+          "South": 48.387,
+          "North": 50.187
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Mont Castre",
+      "Sub-event": "358th on 4 July",
+      "Sub-event_summary": "358th faced impediments, heavy casualties from artillery, advanced several hundred yards late afternoon.",
+      "Sub-event_fulltext": {
+        "Paragraph_20": "Despite their difficulties, the Germans continued to deny the 90th Division entrance into the corridor between Mont Castre and the swamp. German fire, infiltrating riflemen, and the hedgerows were such impediments to offensive action that Colonel Partridge postponed his attack several times on 4 July. Most of his troops seemed primarily concerned with taking cover in their slit trenches, and American counterbattery fire seemed to have little effect on the enemy weapons.",
+        "Paragraph_21": "When part of the 358th Infantry was pinned down by enemy artillery for twenty minutes, the division artillery investigated. It discovered that only one enemy gun had fired and that it had fired no more than ten rounds. Despite this relatively light rate of fire, one rifle company had lost 60 men, many of them noncommissioned officers. The commanding officer and less than 65 men remained of another rifle company. Only 18 men, less than half, were left of a heavy weapons company mortar platoon. A total of 125 casualties from a single battalion had passed through the regimental aid station by midafternoon, 90 percent of them casualties from artillery and mortar shelling. Tired and soaking wet from the rain, the riflemen were reluctant to advance in the face of enemy fire that might not be delivered in great volume but that was nonetheless terribly accurate.",
+        "Paragraph_22": "Although German fire continued, the 358th Infantry got an attack going late in the afternoon toward the corridor. With the aid of strong artillery support and led by Capt. Phillip H. Carroll, who was wounded in one eye, the infantry moved forward several hundred yards to clear a strongpoint."
+      },
+      "Footnote_References": [27],
+      "Place_Name": "Mont Castre",
+      "Dates": {
+        "Date_group_of_event": "4 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "040000Zjul44"
+      },
+      "TOE": {
+        "Unit": "358th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "90th Infantry Division",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 125,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Weather_text": "Soaking wet from the rain",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.366,
+          "East": -0.566,
+          "South": 48.387,
+          "North": 50.187
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Mont Castre",
+      "Sub-event": "Award to Capt. Phillip H. Carroll",
+      "Sub-event_summary": "Capt. Phillip H. Carroll awarded DSC for leading attack despite wound, clearing strongpoint.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "Although German fire continued, the 358th Infantry got an attack going late in the afternoon toward the corridor. With the aid of strong artillery support and led by Capt. Phillip H. Carroll, who was wounded in one eye, the infantry moved forward several hundred yards to clear a strongpoint."
+      },
+      "Footnote_References": [27],
+      "Place_Name": "Mont Castre",
+      "Dates": {
+        "Date_group_of_event": "4 July 1944 afternoon",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "041200Zjul44"
+      },
+      "TOE": {
+        "Unit": "Company K, 358th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "358th Infantry Regiment",
+          "Commander": "Phillip H. Carroll",
+          "Name": "Phillip H. Carroll",
+          "Rank": "Captain",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://homeofheroes.com/distinguished-service-cross/world-war-ii/distinguished-service-cross/army-c/",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 1,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.366,
+          "East": -0.566,
+          "South": 48.387,
+          "North": 50.187
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Mont Castre",
+      "Sub-event": "End of 4 July",
+      "Sub-event_summary": "Halt at midnight due to scattered units and exhaustion, casualties higher than first day.",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "By then it was almost midnight. Because the units were badly scattered and the men completely exhausted, Colonel Partridge halted the attack. Long after midnight some companies were still organizing their positions.",
+        "Paragraph_24": "On its second day of attack, 4 July, the 90th Division sustained an even higher number of casualties than the 600 lost on the first day."
+      },
+      "Footnote_References": [28],
+      "Place_Name": "Mont Castre",
+      "Dates": {
+        "Date_group_of_event": "4 July 1944 midnight",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "042300Zjul44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Exhausted men",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 549,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.366,
+          "East": -0.566,
+          "South": 48.387,
+          "North": 50.187
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Mont Castre",
+      "Sub-event": "Importance of Mont Castre",
+      "Sub-event_summary": "Mont Castre loomed increasingly important for observation.",
+      "Sub-event_fulltext": {
+        "Paragraph_25": "Mont Castre, dominating the countryside, \"loomed increasingly important.\" Without it, the division \"had no observation; with it the Boche had too much.\""
+      },
+      "Footnote_References": [29],
+      "Place_Name": "Mont Castre",
+      "Dates": {
+        "Date_group_of_event": "4 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "040000Zjul44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.366,
+          "East": -0.566,
+          "South": 48.387,
+          "North": 50.187
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Mont Castre",
+      "Sub-event": "Attack on 5 July",
+      "Sub-event_summary": "Committed 357th in corridor, slight success; 359th substantial gain with air and artillery support.",
+      "Sub-event_fulltext": {
+        "Paragraph_26": "More aware than ever of the need for Mont Castre as a prerequisite for an advance through the corridor, General Landrum nevertheless persisted with his original plan, perhaps because he felt that the Germans were weakening. Judging the 358th Infantry too depleted and weary for further offensive action, he committed his reserve regiment, the 357th, on 5 July in the hope that fresh troops in the corridor could outflank Mont Castre.",
+        "Paragraph_27": "The 357th Infantry had only slight success in the corridor on 5 July, the third day of the attack, but on the right the 359th registered a substantial gain. Good weather permitted tactical air support and observed artillery fires, and with fighter-bombers striking enemy supply and reinforcement routes and artillery rendering effective support, the regiment fought to the north and northeast slopes of Mont Castre in a series of separate, close-range company and platoon actions. Still the Germans continued to resist aggressively, launching repeated local counterattacks."
+      },
+      "Footnote_References": [30],
+      "Place_Name": "Mont Castre",
+      "Dates": {
+        "Date_group_of_event": "5 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "050000Zjul44"
+      },
+      "TOE": {
+        "Unit": "357th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "90th Infantry Division",
+          "Commander": "George H. Barth",
+          "Name": "George H. Barth",
+          "Rank": "Colonel",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Fresh troops",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Fighter-Bombers",
+              "Identifier": "P-47 Thunderbolt",
+              "Quantity": "",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Republic_P-47_Thunderbolt",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Weather_text": "Good weather permitting tactical air support",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.366,
+          "East": -0.566,
+          "South": 48.387,
+          "North": 50.187
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Mont Castre",
+      "Sub-event": "Reinforcement on Mont Castre 5 July",
+      "Sub-event_summary": "Shifted battalion from 358th to reinforce on Mont Castre.",
+      "Sub-event_fulltext": {
+        "Paragraph_28": "The failure of the 357th Infantry to force the corridor on the left and the precarious positions of the 359th on the slopes of Mont Castre at last compelled General Landrum to move a battalion of the 358th Infantry to reinforce his troops on Mont Castre, the beginning of a gradual shift of division strength to the right."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Mont Castre",
+      "Dates": {
+        "Date_group_of_event": "5 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "050000Zjul44"
+      },
+      "TOE": {
+        "Unit": "358th Infantry Regiment (battalion)",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "90th Infantry Division",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.366,
+          "East": -0.566,
+          "South": 48.387,
+          "North": 50.187
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Mont Castre",
+      "Sub-event": "Envelopment 6 July",
+      "Sub-event_summary": "Wide envelopment by 359th battalion, other battalions advanced, resulting in four battalions on Mont Castre by nightfall.",
+      "Sub-event_fulltext": {
+        "Paragraph_29": "Colonel Fales on 6 July sent a battalion of his 359th Infantry in a wide envelopment to the right. Covered by a tactical air strike and artillery fire and hidden by hedgerows on the valley floor, the infantry mounted the northern slope of Mont Castre. At the same time, the other two battalions of the 359th and a battalion of the 358th advanced toward the northeastern part of the hill mass. Diverted by the wide envelopment that threatened to encircle their left and forced to broaden their active front, the Germans fell back. The result was that by nightfall four battalions of U.S. infantry were perched somewhat precariously on Mont Castre. Not only did General Landrum"
+      },
+      "Footnote_References": [31],
+      "Place_Name": "Mont Castre",
+      "Dates": {
+        "Date_group_of_event": "6 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "060000Zjul44"
+      },
+      "TOE": {
+        "Unit": "359th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "90th Infantry Division",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.366,
+          "East": -0.566,
+          "South": 48.387,
+          "North": 50.187
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "Footnote_22",
+      "Footnote_Number": "22",
+      "Footnote_Text": "Seventh Army and AGp B KTB's, 3 Jul.",
+      "Footnote_Referenced_Source": "Seventh Army and Army Group B War Diaries",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "KTB, 3 Jul"
+    },
+    {
+      "Footnote": "Footnote_23",
+      "Footnote_Number": "23",
+      "Footnote_Text": "The account of tactical operations is based upon the official records (the After Action Reports, operations orders, periodic reports, and journals) of the units involved.",
+      "Footnote_Referenced_Source": "Official records",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "AARs, ops orders, per rpts, jnls"
+    },
+    {
+      "Footnote": "Footnote_24",
+      "Footnote_Number": "24",
+      "Footnote_Text": "Penciled ltr to Brig Gen Claude B. Ferenbaugh (n.d.), 83d Div G-2, G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "Letter to Brig Gen Claude B. Ferenbaugh",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "83d Div G-2, G-3 Jnl and File"
+    },
+    {
+      "Footnote": "Footnote_25",
+      "Footnote_Number": "25",
+      "Footnote_Text": "Capt. Leroy R. Pond, a battalion commander, and Pvt. Barney H. Prosser, who assumed command of a rifle company (upon the loss of all the officers) and two leaderless platoons of another company, were key figures in the advance. Both were awarded the DSC.",
+      "Footnote_Referenced_Source": "DSC award",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "Footnote_26",
+      "Footnote_Number": "26",
+      "Footnote_Text": "OB WEST KTB, 1330, 4 Jul; Seventh Army KTB, 4 Jul, and Tagesmeldungen, 5 Jul.",
+      "Footnote_Referenced_Source": "OB West and Seventh Army War Diaries",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "KTB, Tagesmeldungen"
+    },
+    {
+      "Footnote": "Footnote_27",
+      "Footnote_Number": "27",
+      "Footnote_Text": "Captain Carroll was awarded the DSC.",
+      "Footnote_Referenced_Source": "DSC award",
+      "Web_Link": "https://homeofheroes.com/distinguished-service-cross/world-war-ii/distinguished-service-cross/army-c/",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "Footnote_28",
+      "Footnote_Number": "28",
+      "Footnote_Text": "90th Div AAR, Jul. FUSA Daily Estimated Loss Reports, July, gives 549 casualties sustained by the organic units on 4 July as contrasted with 382 reported for the previous day, but the figures for both days were incomplete.",
+      "Footnote_Referenced_Source": "90th Div After Action Report, First U.S. Army Daily Estimated Loss Reports",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "90th Div AAR, Jul; FUSA Daily Estimated Loss Rpt, Jul"
+    },
+    {
+      "Footnote": "Footnote_29",
+      "Footnote_Number": "29",
+      "Footnote_Text": "90th Div AAR, Jul.",
+      "Footnote_Referenced_Source": "90th Div After Action Report",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "90th Div AAR, Jul"
+    },
+    {
+      "Footnote": "Footnote_30",
+      "Footnote_Number": "30",
+      "Footnote_Text": "Seventh Army KTB (Draft), 5 Jul.",
+      "Footnote_Referenced_Source": "Seventh Army War Diary (Draft)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "KTB (Draft), 5 Jul"
+    },
+    {
+      "Footnote": "Footnote_31",
+      "Footnote_Number": "31",
+      "Footnote_Text": "90th Div G-3 Jnl, 0255, 7 Jul.",
+      "Footnote_Referenced_Source": "90th Div G-3 Journal",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "G-3 Jnl, 0255, 7 Jul"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn4.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

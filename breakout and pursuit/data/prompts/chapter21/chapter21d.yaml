@@ -1,0 +1,273 @@
+Use this as a requirments document.
+
+Review these documents in detail and restrict yourself to these documents:
+
+Chapter XXI - St. Malo and the North Shore
+
+SourceLink='https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html'
+Footnotelink='https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html'
+
+Limit to Event Section:
+  - The Reduction of Dinard
+
+Text in markdown:
+
+```
+The Reduction of Dinard
+Though ground forces alone could only shell the Ile de Cézembre with artillery,
+
+--399--
+
+Dinard was approachable by land. On 7 August, while the 83d Division was launching its attack on St. Malo, the 181st Infantry (Col. John R. Jeter) had crossed the Rance to destroy the Dinard garrison.37 Colonel Jeter dispatched a small force to take the surrender of the enemy force at Dinan, which had promised the FFI to capitulate to the Americans. Turning north from Dinan, the main body of the 121st Infantry soon came under heavy artillery fire.
+
+The 121st Infantry quickly discovered that every usable road to Dinard was barred by roadblocks of concrete, rock, felled trees, and barbed wire, each covered by camouflaged strongpoints manned by from twenty to eighty men armed with a high proportion of automatic weapons. The Germans also had constructed underground pillboxes and iron rail fences, strung double-apron barbed wire and concertina entanglements, and laid extensive mine fields. The pillboxes seemed unaffected by American artillery fire. German machine gun, small arms, mortar, and artillery fire harassed every American attempt to blast passageways through the other obstacles.
+
+The 121st Infantry's advance was painfully slow. On the afternoon of 8 August, the 3d Battalion entered the village of Pleurtuit, less than four miles from Dinard. In the process it had reduced three pillboxes by close-in engineer and infantry action. As the troops moved into the village, several German tanks came in from the flanks and cut behind the battalion. Re-establishing a previously destroyed roadblock, German infantrymen isolated the unit.
+
+Despite the support of strong artillery, mortar, and tank destroyer fire, the rest of the 121st Infantry could not break through to the battalion. Discouragement and tragedy marked the efforts. Two artillery planes, after successfully dropping blood plasma to the 3d Battalion, locked wings and crashed, their pilots and observers killed. A third plane was shot down by enemy fire. Two other planes flying observation missions in support of the isolated unit collided and crashed.38
+
+The isolation of the 121st Infantry's 3d Battalion confirmed General Macon's impression that in general the regiment's performance west of the Rance had been far from brilliant, but only on 9 August, when St. Joseph's Hill fell, was General Macon able to turn full attention to the situation. When the capitulation of St. Joseph's Hill enabled the 83d Division to occupy St. Servan and Paramé, Macon decided to reorganize his forces, reshape the battle, and give priority to the reduction of Dinard.
+
+Eliminating the Dinard garrison, a task General Macon judged to be relatively easy, would serve four purposes: it would stop part of the effective artillery fire that came from across the Rance; it would block the possibility that German troops might escape from the St. Malo fortress westward toward Brest; it would release the isolated battalion of the 121st Infantry; and it would make possible the return of the 121st to its parent organization for possible participation in a strong attack against Brest, an operation then under discussion.
+
+--400--
+
+Beach at Dinard
+Beach at Dinard, showing underwater obstacles planted by the Germans to prevent amphibious landings.
+To help the 121st Infantry take Dinard, General Macon first reshuffled his organic forces by replacing the 331st Infantry in the Paramé sector with the 330th and moving the 331st across the Rance to reinforce the 121st. Finally, he took personal command of the Dinard operation.39
+
+On 11 August, when General Macon got a co-ordinated attack on Dinard under way, physical contact with the 3d Battalion, 121st Infantry, still had not been established. The advance through the strongly fortified and stubbornly defended area continued painfully slow. The climax of a discouraging day came in the evening when a counterattack was repulsed with difficulty. "I want Monarch 6 [General Middleton] to know," a somewhat chastened General Macon radioed to the corps headquarters, "thatthe resistance we are meeting south of Dinard is more determined than I anticipated."40
+
+The defense of Dinard was in the capable hands of Colonel Bacherer, who commanded a kampfgruppe composed in the main of remnants of the 77th Division, veterans of earlier fighting in the Cotentin. Creating their own field expedients to augment the existing fortifications of the Dinard portion of the St. Malo fortress, the men fought ably. To a surrender ultimatum from General Macon, Bacherer replied defiantly: "Every house must become a fortress, every stone a hiding place, and for every stone we shall fight."41
+
+Despite the excellence of the German positions and the will to resist, the Germans could not indefinitely withstand the pressure of two regiments plus the increasing power of a growing number of corps artillery battalions in support. On the afternoon of 12 August, the 331st
+
+--401--
+
+Infantry broke through the German line around Pleurtuit. After destroying five bunkers by demolition and assault, knocking out an 88-mm. gun and several vehicles, and taking more than a hundred prisoners, the regiment at last made contact with the isolated battalion of the 121st.42
+
+Through three days of isolation, the battalion had retained its integrity in the face of several counterattacks launched with artillery support. Surprisingly, losses were not so high as had been feared--31 killed, 106 wounded, and 16 missing. The kind of courage that had sustained the battalion was exemplified by a heroic act on 9 August, not long after the force was isolated. No sooner had an artillery shell struck the battalion command post, killing the operations and motor officers and seriously wounding the operations sergeant and a radio operator, than a German tank appeared five hundred yards away. Opening fire, the tankers killed several men. For a moment it appeared that the battalion headquarters might be annihilated. Taking matters into his own hands, Pvt. Francis A. Gardner of the Headquarters Company ran toward the tank with a bazooka. Though his first rocket missed, a 57-mm. antitank gun firing at the same time immobilized the tank by a hit on the treads. As the German crew started to abandon the disabled tank, Gardner fired a second time, striking the turret and killing the crew.43 With Pleurtuit in hand, the two regiments continued their attack on 13 August, slowly and systematically reducing individual pillboxes. By the afternoon of 14 August both regiments had entered Dinard and its suburbs. The operation was completed on the following day with the clearing of Dinard and the nearby villages of St. Lunaire and St. Briac-sur-Mer. Bacherer's headquarters, located in a small fort equipped with running water, air conditioning, food, and facilities to withstand siege, was captured. Surrender of the Dinard garrison added almost four thousand prisoners, including Bacherer, to the Allied bag.
+
+When General Middleton remarked that the 121st Infantry didn't appear to have done much, the 83d Division chief of staff explained, "It is hard to tell what they have been up against. Sometimes those things go very slow for a while then all of a sudden they break. . . ."44 The fact was that one regiment had not been enough west of the Rance but two had been able to do the job.
+
+
+```Refer to $SourceLink for absolute paragraph identification.
+
+JSON should always be outputted to a markdown code box.
+Create JSON file that contains the following fields:
+
+Events:
+	- Event:
+	- Sub-event:
+	- Sub-event_summary:
+	- Sub-event_fulltext:
+		  - Paragraph_[19]
+		  - Paragraph_[20]
+		  - Paragraph_[nn]
+		- Footnote_References:
+		- Place_Name
+		- Dates:
+			- Date_group_of_event
+			- Source_date_group_of_event
+			- Zulu_date_group_of_event
+		TOE:
+			- Unit:
+			- Unit_Nationality: [ ISO 3166 Alpha-2 ]
+			- Command_Structure:
+				  - Unit
+				  - Commander
+				  - Name
+				  - Rank
+				  - End_Date
+				  - End_Status
+				  - Biographical_reference
+				  - Biographical_reference_Capture_Date
+			- Subordinates:
+				  - Unit
+				  - Name
+				  - Rank
+				  - Date
+				  - End_Date_of_command
+				  - End_Status
+				  - Biographical_reference
+				  - Biographical_reference_Capture_Date
+			- Personnel:
+			- Equipments:
+				- Supply
+				- Allied_Employed:
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Reference_Capture_Date
+				- Allied_Destroyed:
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Reference_Capture_Date
+				- Axis_Employed
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Image_License
+						- Web_Reference_Capture_Date
+				- Axis_Destroyed:
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Reference_Capture_Date
+		Casualties:
+			- Allied:
+				- Allied_[ISO 3166 Alpha-2]_KIA
+				- Allied_[ISO 3166 Alpha-2]_WIA
+				- Allied_[ISO 3166 Alpha-2]_Missing
+				- Allied_[ISO 3166 Alpha-2]_Unspecified_Casualties
+				- Allied_[ISO 3166 Alpha-2]_Prisoner_of_War
+			- Axis:
+				- Axis_[ISO 3166 Alpha-2]_KIA
+				- Axis_[ISO 3166 Alpha-2]_WIA
+				- Axis_[ISO 3166 Alpha-2]_Missing
+				- Axis_[ISO 3166 Alpha-2]_Unspecified_Casualties
+				- Axis_[ISO 3166 Alpha-2]_Prisoner_of_War
+			- Civilian:
+				- Civilian_[ISO 3166 Alpha-2]_Killed
+				- Civilian_[ISO 3166 Alpha-2]_Wounded
+				- Civilian_[ISO 3166 Alpha-2]_Unspecified_Casualties
+		Media:
+			- Link
+			- Description
+			- License
+		Place:
+			- Place_Name
+			- Place_GPS_coordinate
+			- Map_Reference
+			- Map_Link
+			- ExternalMapLink
+			- ExternalMapLinkLicence
+			- ExternalMapLinkCaptureDate
+		Weather:
+			- Place_Name
+			- Place_GPS_coordinate
+			- Weather_text
+			- Spatial_Bounding_Box Coordinates
+Footnotes:
+	Footnote:
+		- Footnote_Number
+		- Footnote_Text
+		- Footnote_Referenced_Source
+		- Web_Link
+		- Web_Link_Capture_Date
+		- NonDigital_Library_Source
+		- NonDigital_Library_Address
+		- NonDigital_Library_References
+Source_Footnote_Link: $Footnotelink
+Source_Footnote_Link_Capture_Date:
+Source_Link: $SourceLink
+Source_Link_Capture_Date:With the following specifications:
+
+Specifications:
+	- Prefer Grokipedia sources over Wikipedia
+	- Use Wikipedia Sources whe Grokipedia has no entries.
+	- Create as many unique entries as there are events and sub-events
+	- [ISO 3166 Alpha-2] = ISO 3166 Alpha-2 code
+	- When incorporating links to non-'https://www.ibiblio.org/' sites include current date/time of the inclusion.
+TOE:
+	- Unit(s) 
+	- Unit_Nationality
+	- Commander_Name
+	- Commander_Rank
+	- TOE.Commmand Structure.Commander.End_Status = Relieved, WIA or KIA:
+		  -If the the commander status did not change during the event, ignore the field
+		  - TOE.Commmand Structure.Commander.End_Date = last day of command
+		  - List multiple commanders, if a commander is relieved, wounded or killed.
+		  - Attempt to ascertain what the the unit be being discussed is attached to.  For example, a battalion might be attached to a division.  A division to a Corp.
+		  - A feature of European Theater is that sub-units might be shifted around.  So they are date sensitive.
+		  - Include the commander of higher unit if it can be determined.
+		Biographical_reference:
+			- Add a link to https://grokipedia.com/ if it exists
+		  	- If not add a link to Wikipedia if it exists
+	- Equipment Example:
+		Name:
+			- Sherman
+		Identifier:
+		- M4
+	- Personnel: Was the unit fully staffed?
+	- Supply:
+		- Were there supply shortages?
+Events:
+	- Evaluate every paragraph, group paragraphs together as an event.
+	- 'Event' is a mandatory field
+	- A sub-event is classified as an event that occurs at roughly the same Place/Date and should be treated a unique entry with the same event.
+	- Sub-event_fulltext.Paragraph_[nn] (for example, it should document the absolute paragraph for all paragraphs in the entire $SourceLink and include all text used in analysis.
+	- The goal of paragraph number is to be able to easily find the paragraph in the original document.
+	- Awards such as Distinguished Service Cross (DSC) and Medal of Honor (MoH) should be treated as sub-events:
+		- For all awards, attempt to retrieve the original citation
+	- Unique Locations are sub-events
+	- Unique military units mentioned are to be classified as sub-events
+	- A summary of the the sub event should be included.
+Place:
+	- The GPS coordinates should be are close to the location as possible
+	- Map_reference, is applicable when the text indicate a Map image
+	Maplink:
+		- See: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/:
+		- Roman Numeral identified Maps are at the section:  "Maps I-XLIII are in Inverse Order Inside Back Cover"
+		- Maps with regular numbers are at the section:  "MAPS"
+	ExternalMapLink: Search for maps directly related to the event/sub-event.
+Weather:
+	- Every Place name should have a corresponding Weather record
+	- Spatial Bounding Box Coordinates example:
+		- West: -180.0
+		- East: 180.0
+		- South: -90.0
+		- North: 90.0
+	- A Spatial Bounding Box Coordinates should be created using the Place.Place_GPS_coordinate as the center point and going outwards 100 kilometers.
+Time and Date:
+	- The "Date_group_of_event" is always as published in the text.
+	- For date keep a consistent format:
+		- DDHHMMZmmmYY, using the Date-time group as specified in: https://web.archive.org/web/20170321080040/http://www.gwg.nga.mil/ntb/baseline/docs/2500a/2500a.pdf
+	Assumptions about Dates and Times:
+		- All date times in the text are British Double Summer Time (BDST) until 15 Jul 1944
+		- From 15 Jul 1944 and forward, assume British Summer Time (BST)
+		- 'Zulu_date_group_of_event' is a conversion from BDST and BST to Universal Time
+	For imprecise dates and times use:
+		- For imprecise dates use: "BEGINNING mmmYY" or "END mmmYY"
+		- Imprecise times, use  "APPROX 240900Z mmmYY"
+	For "Source_of_date_group_of_event":
+		- Default to use of "Source Link: $SourceLink if it exists.
+		- Use Grok to search the web for Date.Date_group_of_event if the value is empty.
+		- Populate Date.Source_date_group_of_event with the source link that Grok found.
+Casualties Specification:
+	- KIA = Killed in Action
+	- WIA = Wounded in Action
+	- PoW = Prisoner of War
+	- MIA = Missing in Action
+	- If Casualties are unknown, set the value to '0'
+Media:
+	- External media confirmed to be related to the event
+	- Time of media creation should be concurrent to the event
+	- If there is a license associated with media, it should be noted
+SourceLink: $SourceLink
+Footnotes:
+	- $Footnotelink
+	- If an event has a footnote, follow that that link and place it into Footnote "Source:" field
+	- If the footnote has a link, note the link
+	- If a footnote lists multiple documents, each document should be in it's own individual JSON structure.  For example, footnote 1 references two works, the first would be 1a and the second would be 1b.
+	- If a footnote source lists a document, attempt to find that document online.   Only include the document is if it quoted in it's entirety or has substantial excerpts.
+	- Attach footnotes to the appropriate sub-event and incorporate into the sub-event JSON stanza.
+	- Award recipients, should always have an individual footnote.
+	- Note that documents attributed to '"NonDigital_Library_Source": "OCMH"' have often been moved to either the National Archive or The U.S. Army Heritage and Education Center (USAHEC)
+	For non-Digital documents:
+		- Find the library
+		- The address of the of the library
+		- NonDigital_Library_References is the information required to ask the library to retrieve the information

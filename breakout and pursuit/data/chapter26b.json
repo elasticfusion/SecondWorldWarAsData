@@ -1,0 +1,529 @@
+{
+  "Events": [
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Delay in Canadian Advance and Diversionary Action",
+      "Sub-event_summary": "Despite Montgomery's directive for a swift advance to Falaise, General Crerar's First Canadian Army, halted by 9 August, required time to regroup and arrange air support, launching a diversionary attack on 12 August while preparing the main effort.",
+      "Sub-event_fulltext": {
+        "Paragraph_19]": "Despite Montgomery's injunction for speed in getting to Falaise and beyond from the north, General Crerar, whose Canadian army had been stopped in the Caen-Falaise corridor by 9 August, was unable to mount a full-scale operation at once.",
+        "Paragraph_20]": "While Crerar regrouped his forces and arranged for air support, he launched a diversionary action on his right on 12 August in division strength, hoping thereby to outflank German positions along the Caen-Falaise road. On 14 August, as the diversion continued into its third day of difficult fighting without substantial advance, he kicked off his main effort."
+      },
+      "Footnote_References": [
+        "12"
+      ],
+      "Place_Name": "Caen-Falaise corridor",
+      "Dates": {
+        "Date_group_of_event": "12 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "120000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "First Canadian Army",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "21 Army Group",
+          "Commander": "Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "First Canadian Army",
+          "Name": "Harry Crerar",
+          "Rank": "General",
+          "Date": "August 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_Crerar",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Caen-Falaise corridor",
+        "Place_GPS_coordinate": "48.8922 N, -0.1953 E",
+        "Map_Reference": "Argentan-Falaise Pocket, 12-16 August 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:FalaisePocket.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen-Falaise corridor",
+        "Place_GPS_coordinate": "48.8922 N, -0.1953 E",
+        "Weather_text": "Variable weather in Normandy during August 1944, with conditions suitable for air operations but some dust and smoke affecting visibility.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.5",
+          "South": "47.8",
+          "North": "49.6"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Launch of Operation Tractable",
+      "Sub-event_summary": "On 14 August, the main Canadian effort, Operation Tractable, commenced without artillery preparation for surprise, using smoke for cover and a bomber strike, with armored columns bypassing resistance.",
+      "Sub-event_fulltext": {
+        "Paragraph_21": "The main effort was \"a concentrated, very heavy blow on a decidedly narrow front,\" much like the first attack seven days earlier, but it dispensed with artillery preparation to gain surprise, used smoke to provide cover, and employed a \"short fierce stroke by medium bombers.\" Smoke and dust made it difficult for armor and infantry to maintain proper orientation toward the objective, but two armored columns bypassed the resistance astride the main road and approached the objective from the northeast. More than 800 heavy bombers of the RAF and RCAF then dropped 3,700 tons of bombs in the area."
+      },
+      "Footnote_References": [
+        "13",
+        "14"
+      ],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "14 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "140000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "RAF and RCAF bombers",
+        "Unit_Nationality": "GB",
+        "Command_Structure": null,
+        "Subordinates": null,
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [
+            {
+              "Origination_Country": "GB",
+              "Name": "Heavy bombers",
+              "Identifier": "Lancaster",
+              "Quantity": 800,
+              "Web_Reference": "https://en.wikipedia.org/wiki/Avro_Lancaster",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922 N, -0.1953 E",
+        "Map_Reference": "Closing the Argentan-Falaise Pocket, 17-19 August 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/2/22/Falaise_Pocket_German_Counterattack.png",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922 N, -0.1953 E",
+        "Weather_text": "Clear conditions suitable for air operations, with some dust and smoke affecting visibility.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.5",
+          "South": "47.8",
+          "North": "49.6"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Friendly Fire Incident and Initial Advance",
+      "Sub-event_summary": "During the bombing on 14 August, some bombs fell short, causing nearly 400 casualties and heavy equipment losses among Canadian and Polish units, yet the attack advanced to within three miles of Falaise.",
+      "Sub-event_fulltext": {
+        "Paragraph_22]": "Although several bomb loads fell short of their targets and inflicted almost 400 casualties and heavy equipment losses on Canadian and Polish units, the attack advanced to within three miles of Falaise on the first day."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "14 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "140000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "Polish units",
+        "Unit_Nationality": "PL",
+        "Command_Structure": {
+          "Unit": "First Canadian Army",
+          "Commander": "Harry Crerar",
+          "Name": "Harry Crerar",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_Crerar",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": null,
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [
+            {
+              "Origination_Country": "CA",
+              "Name": "Equipment losses",
+              "Identifier": "Various",
+              "Quantity": null,
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 400,
+          "Allied_CA_Prisoner_of_War": 0,
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922 N, -0.1953 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Tractable#/media/File:Operation_Tractable_14_August_1944.png",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922 N, -0.1953 E",
+        "Weather_text": "Clear conditions suitable for air operations, with some dust and smoke affecting visibility.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.5",
+          "South": "47.8",
+          "North": "49.6"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Capture of Falaise",
+      "Sub-event_summary": "Canadian troops entered Falaise on 16 August and cleared it by 17 August, finding the town reduced to rubble by artillery and air bombardment.",
+      "Sub-event_fulltext": {
+        "Paragraph_23]": "With the Germans off balance, Canadian troops entered Falaise from the northwest on 16 August and cleared the town by the end of the following day. Artillery shells and air bombardment had transformed the town of William the Conqueror into a pile of rubble. Bulldozer operators, trying to open routes for traffic, could hardly determine where the streets had been."
+      },
+      "Footnote_References": [
+        "15a",
+        "15b"
+      ],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "16-17 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "160000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "Canadian troops",
+        "Unit_Nationality": "CA",
+        "Command_Structure": null,
+        "Subordinates": null,
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Bulldozer",
+              "Identifier": "Caterpillar D7",
+              "Quantity": null,
+              "Web_Reference": "https://en.wikipedia.org/wiki/Caterpillar_D7",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": "https://i.ytimg.com/vi/R2C0OtHeDBo/sddefault.jpg",
+        "Description": "Fall Of Falaise (1944)",
+        "License": "Fair Use"
+      },
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922 N, -0.1953 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.alamy.com/stock-photo/falaise-1944.html",
+        "ExternalMapLinkLicence": "Rights Managed",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922 N, -0.1953 E",
+        "Weather_text": "Clear conditions suitable for air operations, with some dust and smoke affecting visibility.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.5",
+          "South": "47.8",
+          "North": "49.6"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Narrowing of the Gap",
+      "Sub-event_summary": "With Falaise captured, the gap between Canadian and U.S. forces narrowed to fifteen miles, though extraordinary German measures north of Falaise potentially reduced the anticipated prisoner count.",
+      "Sub-event_fulltext": {
+        "Paragraph_24": "Though the Canadians had finally reached Falaise, U.S. troops were still just south of Argentan. The gap had been narrowed, but fifteen miles still separated the Allies. \"Due to the extraordinary measures taken by the enemy north of Falaise,\" General Eisenhower wrote to Marshall, \". . . it is possible that our total bag of prisoners will not be so great as I first anticipated.\""
+      },
+      "Footnote_References": [
+        "16"
+      ],
+      "Place_Name": "Argentan-Falaise Gap",
+      "Dates": {
+        "Date_group_of_event": "17 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "170000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "U.S. troops",
+        "Unit_Nationality": "US",
+        "Command_Structure": null,
+        "Subordinates": null,
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan-Falaise Gap",
+        "Place_GPS_coordinate": "48.8922 N, -0.1953 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.reddit.com/r/WorldWar2/comments/ma7zxc/map_of_the_germans_being_crushed_in_the_falaise/",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan-Falaise Gap",
+        "Place_GPS_coordinate": "48.8922 N, -0.1953 E",
+        "Weather_text": "Clear conditions suitable for air operations, with some dust and smoke affecting visibility.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.5",
+          "South": "47.8",
+          "North": "49.6"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "12",
+      "Footnote_Number": "12",
+      "Footnote_Text": "Wilmot (Struggle for Europe, pp. 424-25) notes, \"the evidence suggests that the thrust from the north was not pressed with sufficient speed and strength.\"",
+      "Footnote_Referenced_Source": "Wilmot, Struggle for Europe",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "The Struggle for Europe by Chester Wilmot, pp. 424-25"
+    },
+    {
+      "Footnote": "13",
+      "Footnote_Number": "13",
+      "Footnote_Text": "Stacey, Canadian Army, p. 201.",
+      "Footnote_Referenced_Source": "Stacey, Canadian Army",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "The Victory Campaign: The Operations in North-West Europe, 1944-1945 by C.P. Stacey, p. 201"
+    },
+    {
+      "Footnote": "14",
+      "Footnote_Number": "14",
+      "Footnote_Text": "Leigh-Mallory, \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946, p. 65.",
+      "Footnote_Referenced_Source": "Leigh-Mallory Despatch, London Gazette",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": "Fourth Supplement to the London Gazette of December 31, 1946, p. 65"
+    },
+    {
+      "Footnote": "15a",
+      "Footnote_Number": "15",
+      "Footnote_Text": "Stacey, Canadian Army, pp. 201-03",
+      "Footnote_Referenced_Source": "Stacey, Canadian Army",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "The Victory Campaign: The Operations in North-West Europe, 1944-1945 by C.P. Stacey, pp. 201-03"
+    },
+    {
+      "Footnote": "15b",
+      "Footnote_Number": "15",
+      "Footnote_Text": "Jean Boulle and Leonce Macary, \"Falaise n'est Plus,\" in Herval. Bataille de Normandie, I, 368-95.",
+      "Footnote_Referenced_Source": "Herval, Bataille de Normandie",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Bataille de Normandie by Herval, Volume I, pp. 368-95, article by Jean Boulle and Leonce Macary"
+    },
+    {
+      "Footnote": "16",
+      "Footnote_Number": "16",
+      "Footnote_Text": "Msg, Eisenhower to Marshall, CPA 9-0228, 17 Aug, Pogue Files.",
+      "Footnote_Referenced_Source": "Msg, Eisenhower to Marshall, CPA 9-0228, 17 Aug, Pogue Files",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives or U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Pogue Files, Message CPA 9-0228, 17 August 1944"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn26.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

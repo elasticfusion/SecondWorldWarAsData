@@ -1,0 +1,2975 @@
+{
+  "Events": [
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Withdrawal of German Armored Divisions from Mortain",
+      "Sub-event_summary": "The removal of German armored divisions from Mortain to reinforce Panzer Group Eberbach near Argentan weakened the Seventh Army, forcing a continued withdrawal due to U.S. Corps attacks on 12 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "Pulling the German armored divisions out of the Mortain sector to augment *Panzer Group Eberbach*near Argentan left the *Seventh Army*in a drastically weakened condition. Corps strove to maintain more than precarious contact with adjacent units, plugging holes in the line with scanty local reserves from splinter divisions. Despite desperate efforts to hold the line, the \"undiminished violence\" of the V and XIX U.S. Corps attacks on 12 August forced the *Seventh Army* to continue the withdrawal it had started from Mortain the previous night."
+      },
+      "Footnote_References": [
+        "33"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "12 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "120000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Seventh Army",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "Date": "August 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": "Drastically weakened",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6478 N, -0.9417 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Battle_of_Mortain#/media/File:Mortain_counteroffensive_map_6-13_August_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6478 N, -0.9417 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.2",
+          "East": "0.3",
+          "South": "47.6",
+          "North": "49.7"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Hitler's Obsession with Avranches Attack",
+      "Sub-event_summary": "Hitler's fixation on attacking Avranches prevented Kluge from ordering a clear withdrawal eastward to escape Allied encirclement.",
+      "Sub-event_fulltext": {
+        "Paragraph_2": "Yet since Hitler was still obsessed with the thought of attacking again toward Avranches, Kluge could not order an unequivocal withdrawal eastward to escape the threatening Allied encirclement."
+      },
+      "Footnote_References": [
+        "33"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "12 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "120000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "OKW",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Adolf Hitler",
+          "Name": "Adolf Hitler",
+          "Rank": "Führer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Adolf_Hitler",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Army Group B",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Date": "August 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844 N, -1.3569 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_L%C3%BCttich#/media/File:Operation_Luttich_map_7-13_August_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844 N, -1.3569 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7",
+          "East": "0.0",
+          "South": "47.7",
+          "North": "49.7"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Seventh Army Delaying Action",
+      "Sub-event_summary": "The Seventh Army conducted delaying actions to gain time, withdrawing through shrinking fronts; on 13 August, communication loss with Panzer Group Eberbach heightened isolation fears.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "Combat on the *Seventh Army*front assumed the character of delaying action. The units fought only to gain time and avoid annihilation. By their tactics they sought to lure the Allies into time-consuming reconnaissance and deployment for attack, then they retired to the next position, usually during the night. The *Seventh Army*continued to resist in this way, withdrawing rapidly weakening units slowly but steadily through successively shrinking fronts. On 13 August the destruction of telephone wires by bombs and artillery intensified feelings of insecurity, for throughout the day the *Seventh Army* was out of communication with *Panzer Group Eberbach.* For twenty-four hours personnel at the *Seventh Army* headquarters wondered whether they were already cut off and isolated."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "130000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": null,
+        "Personnel": "Rapidly weakening",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.7444 N, -0.0202 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.7444 N, -0.0202 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.3",
+          "East": "1.3",
+          "South": "47.7",
+          "North": "49.8"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Panzer Group Eberbach Reduced Strength",
+      "Sub-event_summary": "By 13 August, Panzer Group Eberbach was drastically reduced, with specific low strengths in 9th Panzer, 1st SS Panzer, and 2d Panzer Divisions.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "*Panzer Group Eberbach* was also drastically reduced in strength by 13 August. The *9th Panzer Division* had only 260 men, 12 tanks, and a few artillery pieces. The *1st SS Panzer Division* had 352 men, 8 self-propelled assault guns, and 14 Mark IV and 7 Mark V tanks. The *2d Panzer Division,* which had had 2,220 men, 5 self-propelled assault guns, and 9 Mark IV and 3 Mark V tanks on 11 September, was considerably diminished two days later."
+      },
+      "Footnote_References": [
+        "34"
+      ],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "130000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "Panzer Group Eberbach",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Panzer Group Eberbach",
+          "Name": "Joachim Eberbach",
+          "Rank": "General der Panzertruppe",
+          "Date": "August 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Joachim_Eberbach",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": "Drastically reduced",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Mark IV tank",
+              "Identifier": "Panzer IV",
+              "Quantity": 14,
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/8/80/PzIV.Saumur.0008h842.jpg",
+              "Web_Image_License": "CC BY-SA 3.0",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Mark V tank",
+              "Identifier": "Panther",
+              "Quantity": 7,
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panther_tank",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/5/5a/Panther_tank_at_Museum_of_Technology_in_Sinsheim.jpg",
+              "Web_Image_License": "CC BY-SA 3.0",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Self-propelled assault guns",
+              "Identifier": "StuG",
+              "Quantity": 8,
+              "Web_Reference": "https://en.wikipedia.org/wiki/Sturmgesch%C3%BCtz_III",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/0/0b/StuG_III_Ausf._G_-_Sinsheim.jpg",
+              "Web_Image_License": "CC BY-SA 3.0",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.7444 N, -0.0202 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.7444 N, -0.0202 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.3",
+          "East": "1.3",
+          "South": "47.7",
+          "North": "49.8"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Army Group B Overall Losses",
+      "Sub-event_summary": "By 14 August, Army Group B had lost nearly 160,000 troops since the Allied invasion, with minimal replacements, compared to Allied casualties of 180,000 but with increasing Allied reinforcements.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "While these were extreme cases, the over-all strength of *Army Group B* had declined markedly during the two months following the Allied invasion. By 14 August the Germans in the west had lost 3,630 officers, more than 151,000 enlisted men, and 3,800 *Osttruppen*--a total of almost 160,000 troops. On the surface, this compared favorably with the Allied battle casualties of approximately 180,000 by that date. The difference, however, was more than offset by the increasing number of Allied units arriving on the Continent and by the constant influx of Allied replacements. For the Germans, only 30,000 men had arrived to replace losses in the west; only 10,000 more were on their way to the front. On the basis of this alone, the German situation was hardly promising. Added to this was the increasing threat of Allied encirclement."
+      },
+      "Footnote_References": [
+        "35"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "14 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "140000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": null,
+        "Personnel": "Declined markedly; replacements only 30,000 arrived, 10,000 more en route",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 180000,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 160000,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3707 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Normandy_landings#/media/File:Map_of_Normandy_D-Day_landing_beaches.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3707 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7",
+          "East": "1.0",
+          "South": "48.2",
+          "North": "50.2"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Hitler's Order on 14 August",
+      "Sub-event_summary": "Hitler blamed the situation on the failed Avranches attack, ordered an attack in the Alençon-Carrouges area using specific panzer divisions, allowing contraction west of Flers but warning of pressure on the south flank, prioritizing destruction near Alençon.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "An order from Hitler arrived in the west early on 14 August, and according to him, \"The present situation in the rear of the army group is the result of the failure of the first attack on Avranches.\" Alluding to what seemed to the Germans to be a change in the direction of the XV U.S. Corps thrust from the north to the west, Hitler advised of the \"danger that Panzer Group Eberbach, which was committed much too far to the north, will again become involved in a sterile frontal fight.\" What he wanted was an attack in Eberbach's sector, \"in the Alençon-Carrouges area,\" in order to destroy the great part of the XV U.S. Corps. The *9th* and *10th SS Panzer Divisions* and the *21st Panzer Division,* he instructed, \"can and must be employed for this purpose.\" This time the reinforced *Panzer Group Eberbach* had to be committed far enough to the south to strike the deep left flank of the enemy and thus deny him the possibility of launching a counterthrust into the right flank of the panzer group as he had done before. In order to free the three designated panzer divisions for the attack, Hitler admitted that contraction of the salient west of Flers could not be avoided. Yet he warned Kluge that as the front west of Flers was withdrawn to a shorter line, the enemy would bring strong pressure to bear against the south flank between Domfront and Alençon. The speed and the extent of the withdrawal to the shorter line near Flers, therefore, should depend on the amount of Allied pressure. Concerned also by \"anticipated landings\" on the coast of southern France (actually to take place on the following day), Hitler advised Kluge that \"destruction of the enemy near Alençon\" was the immediate *OB WEST* mission and that all further directives from Hitler would depend on the course of the battle there."
+      },
+      "Footnote_References": [
+        "36"
+      ],
+      "Place_Name": "Alençon-Carrouges",
+      "Dates": {
+        "Date_group_of_event": "14 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "140000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "OKW",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Adolf Hitler",
+          "Name": "Adolf Hitler",
+          "Rank": "Führer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Adolf_Hitler",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": null,
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4306 N, 0.0931 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4306 N, 0.0931 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.2",
+          "East": "1.4",
+          "South": "47.4",
+          "North": "49.5"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Kluge's Response to Hitler's Order",
+      "Sub-event_summary": "Kluge authorized withdrawal to a shorter line through Flers in two stages, transferring II SS Panzer Corps to Eberbach; Kluge departed for the front on 14 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "If Hitler's order failed to bring comfort, it at least had the virtue of being positive. It authorized further withdrawal, and Kluge ordered the westernmost forces to start a retrograde movement that was to take place in two stages (two nights) to a shorter line roughly through Flers. Kluge instructed Dietrich to disengage the *II SS Panzer Corps,* with the *9th SS* and *21st Panzer Divisions,* in the course of the withdrawal and to transfer those forces to Eberbach. Then, during the evening of 14 August, Kluge departed his *Army Group B* command post and went forward to see how further compliance with Hitler's order could best be carried out."
+      },
+      "Footnote_References": [
+        "37"
+      ],
+      "Place_Name": "Flers",
+      "Dates": {
+        "Date_group_of_event": "14 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "140000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "II SS Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Fifth Panzer Army",
+          "Commander": "Sepp Dietrich",
+          "Name": "Sepp Dietrich",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Sepp_Dietrich",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": null,
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Flers",
+        "Place_GPS_coordinate": "48.7489 N, -0.5686 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Flers",
+        "Place_GPS_coordinate": "48.7489 N, -0.5686 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9",
+          "East": "0.8",
+          "South": "47.7",
+          "North": "49.7"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Deterioration on 14 August",
+      "Sub-event_summary": "Situation deteriorated with Canadian offensive breaching defenses, penetrations including U.S. pressure around Domfront, and increasing ammunition and gasoline shortages.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Meanwhile, what had seemed like the beginning of stabilization on 13 August had deteriorated by the end of the next day. The \"great offensive\" the Germans had expected on the Canadian front materialized. On a nine-mile front the Canadians made a breach in the German defenses astride the Caen-Falaise road for a depth of five to six miles. On other parts of the front other penetrations occurred, the \"most unpleasant\" being the pressure of American forces around Domfront. Ammunition and gasoline shortages were getting more critical by the hour."
+      },
+      "Footnote_References": [
+        "38"
+      ],
+      "Place_Name": "Caen-Falaise road",
+      "Dates": {
+        "Date_group_of_event": "14 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "140000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "Fifth Panzer Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Fifth Panzer Army",
+          "Name": "Sepp Dietrich",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "Date": "August 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Sepp_Dietrich",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": "Ammunition and gasoline shortages critical",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, -0.3721 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Battle_for_Caen#/media/File:Battle_for_Caen_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, -0.3721 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7",
+          "East": "0.9",
+          "South": "48.2",
+          "North": "50.2"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Kluge's Journey to Fifth Panzer Army",
+      "Sub-event_summary": "Kluge drove to Dietrich's Fifth Panzer Army headquarters on 14 August, finding roads clogged with traffic and dispirited troops.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "As Kluge drove toward Dietrich's *Fifth Panzer Army* headquarters on the evening of 14 August, he found the roads clogged with traffic and dispirited troops. When he reached Dietrich's command post, he learned firsthand that the depleted divisions of the panzer army were too weak to react effectively to the second Canadian attack toward Falaise. In view of the gravity of the situation on the *I SS Panzer Corps* front, the *21st Panzer Division* had to be diverted to"
+      },
+      "Footnote_References": [],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "14 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "140000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "Fifth Panzer Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Fifth Panzer Army",
+          "Name": "Sepp Dietrich",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "Date": "August 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Sepp_Dietrich",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": "Depleted divisions",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.1",
+          "South": "47.9",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Diversion of 21st Panzer Division",
+      "Sub-event_summary": "Due to the situation on I SS Panzer Corps front, the 21st Panzer Division was diverted to Falaise to prevent collapse.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "Falaise in order to prevent a complete collapse of the German defenses in that critical sector. Word from the southern sector was scarcely better. Having judged it impossible to attack because of a shortage of tanks, gasoline, and ammunition and because of the constant activity of Allied planes over the battlefield, Eberbach had ordered all his troops to \"pass to the defensive.\" The *10th SS Panzer Division* had become involved with hard-pressing American forces who were endangering the *Seventh Army* left flank north of Domfront. Thus, of the three panzer divisions designated by Hitler to reinforce Eberbach, only the *9th SS* for the moment was available."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "14 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "140000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "21st Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Fifth Panzer Army",
+          "Commander": "Sepp Dietrich",
+          "Name": "Sepp Dietrich",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Sepp_Dietrich",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": null,
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.1",
+          "South": "47.9",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Situation in Southern Sector",
+      "Sub-event_summary": "Eberbach judged attack impossible due to shortages and Allied air activity, ordered defensive; 10th SS Panzer involved near Domfront; only 9th SS available for reinforcement.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "Falaise in order to prevent a complete collapse of the German defenses in that critical sector. Word from the southern sector was scarcely better. Having judged it impossible to attack because of a shortage of tanks, gasoline, and ammunition and because of the constant activity of Allied planes over the battlefield, Eberbach had ordered all his troops to \"pass to the defensive.\" The *10th SS Panzer Division* had become involved with hard-pressing American forces who were endangering the *Seventh Army* left flank north of Domfront. Thus, of the three panzer divisions designated by Hitler to reinforce Eberbach, only the *9th SS* for the moment was available."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Domfront",
+      "Dates": {
+        "Date_group_of_event": "14 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "140000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "10th SS Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Panzer Group Eberbach",
+          "Commander": "Joachim Eberbach",
+          "Name": "Joachim Eberbach",
+          "Rank": "General der Panzertruppe",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Joachim_Eberbach",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": null,
+        "Personnel": null,
+        "Equipments": {
+          "Supply": "Shortage of tanks, gasoline, ammunition",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p518.jpg",
+        "Description": "Signal Corps Troops in Domfront repair wires cut by the Germans.",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Domfront",
+        "Place_GPS_coordinate": "48.5931 N, -0.6475 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Domfront",
+        "Place_GPS_coordinate": "48.5931 N, -0.6475 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9",
+          "East": "0.6",
+          "South": "47.5",
+          "North": "49.7"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Grim Prospect and Breakout Alternative",
+      "Sub-event_summary": "Without holding Canadians or attacking south of Argentan, the only alternative was to break out eastward through the Argentan-Falaise gap to avoid loss of all forces in the pocket.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "The prospect was grim. If Dietrich could not hold the Canadians, and if Eberbach could not launch a strong attack in the very near future south of Argentan, the only alternative would be to break out as quickly as possible from the threatened encirclement by moving east and northeast through the Argentan-Falaise gap. Delay could very well mean the loss of all the forces in the pocket."
+      },
+      "Footnote_References": [
+        "39"
+      ],
+      "Place_Name": "Argentan-Falaise gap",
+      "Dates": {
+        "Date_group_of_event": "14 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "140000Z AUG 44"
+      },
+      "TOE": null,
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan-Falaise gap",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan-Falaise gap",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.1",
+          "South": "47.9",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Kluge's Disappearance",
+      "Sub-event_summary": "Kluge left for Nécy on 15 August to confer with Hausser and Eberbach, but vanished after four hours, prompting a frantic search.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "Kluge left Dietrich's headquarters early on 15 August to confer with Hausser and Eberbach at the village of Nécy. Four hours later Kluge and his small party had vanished from sight and sound. When radio contact could not be re-established, a frantic search to find Kluge ensued."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Nécy",
+      "Dates": {
+        "Date_group_of_event": "15 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "150000Z AUG 44"
+      },
+      "TOE": null,
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Nécy",
+        "Place_GPS_coordinate": "48.8761 N, -0.1083 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://mapcarta.com/18478898",
+        "ExternalMapLinkLicence": "OpenStreetMap",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Nécy",
+        "Place_GPS_coordinate": "48.8761 N, -0.1083 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.4",
+          "East": "1.2",
+          "South": "47.9",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Worsening Situation in the Pocket",
+      "Sub-event_summary": "Allied attacks continued on Falaise, Domfront, Argentan; 12th SS met Canadian attacks, 21st Panzer sealed penetration near Condé-sur-Noireau; U.S. threatened rear-guard near Domfront; Eberbach lost Ecouché.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "While the search proceeded, the situation in the pocket worsened. Allied attacks continued, with Falaise, Domfront, and Argentan the critical points of pressure. Astride the Caen-Falaise road, the *12th SS Panzer Division* met the continued Canadian attacks with its last strength, while several miles to the west (near Condé-sur-Noireau) the *21st Panzer Division* had to be committed to seal off a penetration. Near Domfront, as the *Seventh Army* executed the second stage of its withdrawal to Flers, American troops threatened to overrun the thin rear-guard line of resistance. Near Argentan, *Panzer Group Eberbach* lost possession of Ecouché."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "15 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "150000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "12th SS Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Fifth Panzer Army",
+          "Commander": "Sepp Dietrich",
+          "Name": "Sepp Dietrich",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Sepp_Dietrich",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": null,
+        "Personnel": "Last strength",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.1",
+          "South": "47.9",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Allied Attack Outside the Pocket",
+      "Sub-event_summary": "Allied attack broke through between I SS Panzer and LXXXVI Corps, reaching Dives River; Dietrich ordered withdrawal behind Dives.",
+      "Sub-event_fulltext": {
+        "Paragraph_14": "In addition to these developments, a new difficulty arose, this one outside the pocket. On the *Army Group B* right, in the *Fifth Panzer Army* sector, an Allied attack launched along the boundary line between the *I SS Panzer* and *LXXXVI Corps* broke through the German defenses, and Allied spearheads reached the Dives River near Mézidon and St. Pierre. An immediate decision was required, and with Kluge still missing Dietrich ordered a withdrawal to positions behind the Dives River."
+      },
+      "Footnote_References": [
+        "40"
+      ],
+      "Place_Name": "Dives River",
+      "Dates": {
+        "Date_group_of_event": "15 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "150000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "I SS Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Fifth Panzer Army",
+          "Commander": "Sepp Dietrich",
+          "Name": "Sepp Dietrich",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Sepp_Dietrich",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": null,
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Dives River",
+        "Place_GPS_coordinate": "49.0167 N, -0.0333 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Dives_(river)#/media/File:Dives_river_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Dives River",
+        "Place_GPS_coordinate": "49.0167 N, -0.0333 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.3",
+          "East": "1.3",
+          "South": "48.0",
+          "North": "50.0"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Blumentritt-Jodl Conversation",
+      "Sub-event_summary": "Blumentritt reported worsening situation to Jodl at 1830, requesting decision and temporary commander; Jodl insisted on attack to gain room.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "Meanwhile, there was still no word on Kluge's whereabouts by 1830, when Blumentritt, Kluge's chief of staff at *OB WEST,* was talking to Jodl on the telephone. \"The situation west of Argentan,\" Blumentritt declared, \"is worsening by the hour.\" Implying that withdrawal from the pocket was becoming increasingly necessary, Blumentritt passed on the insistence of Dietrich, Hausser, and Eberbach that \"an over-all decision has to be made.\"",
+        "Paragraph_16": "\"If such a decision has to be made as a last resort,\" Jodl replied, \"it could only be to attack toward Sées to gain room so that other intentions can be carried out.\"",
+        "Paragraph_17": "\"I am duty bound,\" Blumentritt said, \"to point out the state of the armored units.\" All suffered from a great shortage of gasoline because of the difficulty of transporting supplies westward into the pocket.",
+        "Paragraph_18": "Jodl did not see the logic of this thinking. In order to break out of the encircling Allied forces, one had to attack.",
+        "Paragraph_19": "\"We must speak frankly,\" Blumentritt said. If Jodl had in mind an attack with all available forces in order to bring out of the pocket--if at all possible--at least part of the forces, this was a sound decision. But if the intention was to carry out some other operation, such was no longer feasible.",
+        "Paragraph_20": "Jodl was not convinced.",
+        "Paragraph_21": "\"I must emphatically state,\" Blumentritt said, \"that I am in a difficult position as chief of staff when Kluge is not here. I have the most urgent request. As long as Kluge is absent, someone must be appointed by the Fuehrer to take charge. It could only be Hausser, Dietrich, or Eberbach.\"",
+        "Paragraph_22": "Jodl seemed to incline toward Hausser.",
+        "Paragraph_23": "\"I'll be most grateful,\" Blumentritt said, \"for the quickest possible decision. As far as I am concerned, I am cool as a cucumber. But I must say that the responsible people on the front contemplate the situation as being extremely tense.\"",
+        "Paragraph_24": "Jodl stressed once more the essential prerequisite for any possible action in the future: an attack by Eberbach. \"But,\" he added with a touch of sarcasm, \"the only reports we receive are that he is unable to do anything.\"",
+        "Paragraph_25": "Blumentritt overlooked the remark. \"If a new commander in the field is appointed by the Fuehrer,\" he reminded Jodl, \"he must be given a clearly stated limited mission without any strings attached.\" Only then would he be able to estimate reasonably how he could expect to come out of the situation. Otherwise, the Germans would probably lose the best divisions they had. Time was short--\"it is five minutes before twelve.\""
+      },
+      "Footnote_References": [
+        "41"
+      ],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "15 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "151830Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "OB WEST",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Adolf Hitler",
+          "Name": "Adolf Hitler",
+          "Rank": "Führer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Adolf_Hitler",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "OB WEST",
+          "Name": "Gerd von Rundstedt",
+          "Rank": "Generalfeldmarschall",
+          "Date": "1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Gerd_von_Rundstedt",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": "Great shortage of gasoline",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.7444 N, -0.0202 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.7444 N, -0.0202 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.3",
+          "East": "1.3",
+          "South": "47.7",
+          "North": "49.8"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Hitler Appoints Hausser Temporary Command",
+      "Sub-event_summary": "Hitler placed Hausser in temporary command of Army Group B forces an hour later.",
+      "Sub-event_fulltext": {
+        "Paragraph_26": "An hour later Hitler placed Hausser in temporary command of the forces under *Army Group B.*"
+      },
+      "Footnote_References": [
+        "42"
+      ],
+      "Place_Name": null,
+      "Dates": {
+        "Date_group_of_event": "15 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "150000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Adolf Hitler",
+          "Name": "Adolf Hitler",
+          "Rank": "Führer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Adolf_Hitler",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Army Group B",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "Date": "15 August 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": null,
+        "Place_GPS_coordinate": null,
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": null,
+        "Place_GPS_coordinate": null,
+        "Weather_text": null,
+        "Spatial_Bounding_Box Coordinates": null
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Hitler Consults Model and Kesselring",
+      "Sub-event_summary": "Later that night, Hitler telephoned Model and Kesselring for advice on a successor to Kluge.",
+      "Sub-event_fulltext": {
+        "Paragraph_27": "Later that night Hitler telephoned Generalfeldmarschall Walter Model and Generalfeldmarschall Albert Kesselring for advice on a successor to Kluge should such an appointment become necessary."
+      },
+      "Footnote_References": [
+        "43"
+      ],
+      "Place_Name": null,
+      "Dates": {
+        "Date_group_of_event": "15 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "150000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "OKW",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Adolf Hitler",
+          "Name": "Adolf Hitler",
+          "Rank": "Führer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Adolf_Hitler",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": null,
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": null,
+        "Place_GPS_coordinate": null,
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": null,
+        "Place_GPS_coordinate": null,
+        "Weather_text": null,
+        "Spatial_Bounding_Box Coordinates": null
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Hausser's Mission as Acting Commander",
+      "Sub-event_summary": "Hausser's mission was to destroy U.S. forces near Sées with Eberbach attacking from west, LXXXI Corps from northeast, Fifth Panzer Army holding north of Falaise, Seventh Army protecting rear.",
+      "Sub-event_fulltext": {
+        "Paragraph_28": "Hausser's immediate mission as acting commander of *Army Group B* was to destroy the American forces near Sées \"which threaten all three armies with encirclement.\" To achieve this, he was to attack with *Panzer Group Eberbach* from the west. The *LXXXI Corps,* stretched on a 70-mile front from Gacé to Chartres, was to lend its dubious support from the northeast. The *Fifth Panzer Army* was to stand fast north of Falaise, and the *Seventh Army* was to protect Eberbach's rear."
+      },
+      "Footnote_References": [
+        "44"
+      ],
+      "Place_Name": "Sées",
+      "Dates": {
+        "Date_group_of_event": "15 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "150000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "LXXXI Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": null,
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Sées",
+        "Place_GPS_coordinate": "48.6059 N, 0.1726 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Sées",
+        "Place_GPS_coordinate": "48.6059 N, 0.1726 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1",
+          "East": "1.5",
+          "South": "47.6",
+          "North": "49.6"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Kluge Reappears",
+      "Sub-event_summary": "Kluge reappeared on the evening of 15 August, explaining his disappearance due to an Allied plane strafing his party and knocking out his radio.",
+      "Sub-event_fulltext": {
+        "Paragraph_29": "Before Hitler's order reached Hausser on the evening of 15 August, Kluge turned up. What had caused him to vanish was not in the least mysterious. An Allied plane had strafed his party and knocked out his radio. The presence of Allied aircraft overhead had prevented him from reaching his rendezvous point until late in the day."
+      },
+      "Footnote_References": [
+        "45"
+      ],
+      "Place_Name": null,
+      "Dates": {
+        "Date_group_of_event": "15 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "150000Z AUG 44"
+      },
+      "TOE": null,
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": null,
+        "Place_GPS_coordinate": null,
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": null,
+        "Place_GPS_coordinate": null,
+        "Weather_text": null,
+        "Spatial_Bounding_Box Coordinates": null
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Discouraging Situation in Southern Sector",
+      "Sub-event_summary": "On 15 August, Seventh Army withdrawing east of Flers; 10th SS unable to disengage due to battle and fuel shortage; Eberbach front hammered; LVIII Panzer Corps squeezed; only 2d SS ready, 9th SS delayed; LXXXI Corps weakly held extended sector.",
+      "Sub-event_fulltext": {
+        "Paragraph_30": "Whether Hitler's order could be carried out was a moot point because the situation in the southern sector on the evening of 15 August was discouraging. Furthermore, in the west the *Seventh Army* was in the process of withdrawing to a line east of Flers. The *10th SS Panzer Division* was unable to disengage, not only because of its involvement in battle near Domfront but also because it lacked fuel to move anywhere else for offensive commitment. The long *Panzer Group Eberbach* front from Briouze through Rânes and Ecouché to east of Argentan, with the *1st SS, 2d,* and *116th Panzer Divisions* on line facing south, was being hammered. Though the Rânes, Carrouges, and Ecouché areas seemed to the Allies to be \"crawling\" with Germans, the fact was that the *LVIII Panzer Corps* was being squeezed and this in turn was endangering the *LXXXIV Corps.* Of the two panzer divisions earmarked for Eberbach's attack, the *2d SS* was in assembly area northeast of Argentan and ready for employment, but the *9th SS,* delayed in its relief by a shortage of gasoline, was still west of the Orne River. Not much could be expected from the *LXXXI Corps,* which held its overextended sector with an equivalent of about two divisions--the newly arrived *331st Division* and a regimental-sized kampfgruppe of the *6th Parachute Division* on the right from Gacé to Verneuil, remnants of the *352d Division* with some security elements attached on the left from Dreux to Chartres. An improvised kampfgruppe under a Captain Wahl covered the twenty-mile gap in the middle--two understrength battalions of the *2d SS Panzer Division* and twenty Panther tanks of the *9th SS Panzer Division,* which had been moving behind the front toward the east before being intercepted by the *331st Division* and put to use by the corps. Despite these discouraging conditions, Jodl, who telephoned shortly before midnight to inquire about Kluge's whereabouts, held the opinion that no matter how bad the situation seemed, it was necessary to attack to the east to broaden the open end of the pocket--\"because it is impossible to get two armies out the end of an intestine.\""
+      },
+      "Footnote_References": [
+        "46"
+      ],
+      "Place_Name": "Flers",
+      "Dates": {
+        "Date_group_of_event": "15 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "150000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "LVIII Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": null,
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Flers",
+        "Place_GPS_coordinate": "48.7489 N, -0.5686 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Flers",
+        "Place_GPS_coordinate": "48.7489 N, -0.5686 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9",
+          "East": "0.8",
+          "South": "47.7",
+          "North": "49.7"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Conditions in Eberbach Sector",
+      "Sub-event_summary": "Roads impassable, units intermingled, movements under Allied artillery, tanks immobilized by fuel shortage, supplies erratic, troops hungry and exhausted, communication limited, signs of disintegration.",
+      "Sub-event_fulltext": {
+        "Paragraph_31": "Jodl could not see what was happening in the *Panzer Group Eberbach* sector. The roads were virtually impassable; units were intermingled; movements were frequently made under the muzzles of long-range Allied artillery pieces; tanks were repeatedly immobilized for lack of fuel; ammunition supplies arrived erratically; the troops were hungry and exhausted; communication was almost nonexistent, except by radio. Signs of disintegration appeared in certain formations, and straggler lines picked up many more than the usual number of men. Divisions consisted of \"a miserable handful of troops\" that \"never before fought so miserably.\" An *Army Group B* staff officer, alluding to the retreat from Moscow in 1812, described the situation on the roads as having \"a Napoleonic aspect\"; since the army group had no means with which to bring matters under control, could *OB WEST* help?"
+      },
+      "Footnote_References": [
+        "48",
+        "49"
+      ],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "15 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "150000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "Panzer Group Eberbach",
+        "Unit_Nationality": "DE",
+        "Command_Structure": null,
+        "Subordinates": null,
+        "Personnel": "Hungry and exhausted; signs of disintegration",
+        "Equipments": {
+          "Supply": "Ammunition supplies erratic; fuel shortage",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tanks",
+              "Identifier": "Various",
+              "Quantity": null,
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Artillery",
+              "Identifier": "Various",
+              "Quantity": null,
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.7444 N, -0.0202 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.7444 N, -0.0202 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.3",
+          "East": "1.3",
+          "South": "47.7",
+          "North": "49.8"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Kluge's Reappearance and Actions",
+      "Sub-event_summary": "Kluge reappeared on 15 August, conferred with Hausser and Eberbach, returned to Dietrich's CP; sent message to Jodl at 0200, 16 August, recommending evacuation due to insufficient forces and supplies.",
+      "Sub-event_fulltext": {
+        "Paragraph_32": "Kluge's reappearance on the evening of 15 August brought hope that a weighty decision would be made. After conferring with Hausser and Eberbach, Kluge returned to Dietrich's command post where telephone communication was better. There he remained during the night and the next day, in touch with Jodl, Blumentritt, and Speidel.",
+        "Paragraph_33": "His first act was to send a message to Jodl. At 0200, 16 August, Kluge informed Jodl that in his judgment--and he was supported by the army commanders--all the available armored forces together were insufficient for a large-scale attack to improve the situation in the army group rear. He felt that scanty POL supplies were a \"decisive\" factor. He was discouraged by the \"increasingly critical\" south flank. He therefore recommended immediate evacuation of the western salient through the still existing Argentan-Falaise gap. Hesitation in accepting his recommendation, Kluge warned Jodl, would result in \"unforeseeable developments.\""
+      },
+      "Footnote_References": [
+        "50"
+      ],
+      "Place_Name": "Argentan-Falaise gap",
+      "Dates": {
+        "Date_group_of_event": "15 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "150000Z AUG 44"
+      },
+      "TOE": null,
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan-Falaise gap",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan-Falaise gap",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.1",
+          "South": "47.9",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Kluge Waits for Decision",
+      "Sub-event_summary": "Kluge waited for Hitler's decision; at 1135, 16 August, talked to Speidel; Blumentritt informed of southern France landings and suggested requesting free hand for withdrawal.",
+      "Sub-event_fulltext": {
+        "Paragraph_34": "Kluge then waited for the decision from Hitler on whether or not to withdraw. At 1135, 16 August, he telephoned Generalleutnant Hans Speidel, his chief of staff at *Army Group B,* to be brought up to date on messages received by the headquarters. Not long afterwards he talked on the telephone with Blumentritt, who informed him of the Allied landings in southern France. Blumentritt suggested that Kluge request OKW for a free hand in directing the withdrawal operation out of the pocket that had obviously become necessary."
+      },
+      "Footnote_References": [
+        "51"
+      ],
+      "Place_Name": "southern France",
+      "Dates": {
+        "Date_group_of_event": "16 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "161135Z AUG 44"
+      },
+      "TOE": null,
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "southern France",
+        "Place_GPS_coordinate": "43.2965 N, 5.3698 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Dragoon#/media/File:Operation_Dragoon_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "southern France",
+        "Place_GPS_coordinate": "43.2965 N, 5.3698 E",
+        "Weather_text": "Mediterranean climate with warm temperatures in August 1944, suitable for amphibious landings.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "4.1",
+          "East": "6.7",
+          "South": "42.3",
+          "North": "44.3"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Kluge-Jodl Conversation at 1245",
+      "Sub-event_summary": "Kluge reiterated impossibility of attack; Jodl agreed withdrawal necessary but insisted on enlarging opening by southeast attack; promised directive soon.",
+      "Sub-event_fulltext": {
+        "Paragraph_35": "At 1245 Kluge telephoned Jodl and again set forth his estimate of the situation. Unquestionably, Jodl admitted, the armies had to be withdrawn eastward. But it seemed to him that a withdrawal was feasible only if the escape opening were enlarged, and this could be done only by an attack to the southeast.",
+        "Paragraph_36": "Kluge was direct and to the point. He believed it impossible to comply with Hitler's wish as expressed in Hitler's directive to Hausser. An attack southeastward through Argentan and Sées was out of the question. \"No matter how many orders are issued,\" Kluge said, \"the troops cannot, are not able to, are not strong enough to defeat the enemy. It would be a fateful error to succumb to a hope that cannot be fulfilled, and no power in this world [can accomplish its will simply] through an order it may give. That is the situation.\"",
+        "Paragraph_37": "Jodl assured Kluge that he understood perfectly. A concise and clear directive from the Fuehrer, he said, would be sent to Kluge in the shortest possible time."
+      },
+      "Footnote_References": [
+        "52"
+      ],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "16 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "161245Z AUG 44"
+      },
+      "TOE": null,
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.7444 N, -0.0202 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.7444 N, -0.0202 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.3",
+          "East": "1.3",
+          "South": "47.7",
+          "North": "49.8"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Kluge Directs Withdrawal Draft",
+      "Sub-event_summary": "Twenty minutes later, Speidel reported Hitler's directive incoming; Kluge directed draft withdrawal order for Seventh Army, details on disengaging divisions, subordinating corps, traffic control.",
+      "Sub-event_fulltext": {
+        "Paragraph_38": "Twenty minutes later Speidel telephoned Kluge to report information to the effect that a directive from Hitler would shortly arrive in the field. Presumably it would give Kluge full freedom of action. Since Jodl had agreed that withdrawal was necessary, Kluge directed Speidel to prepare immediately the draft of a withdrawal order for *Seventh Army.* The *Seventh Army* was to begin withdrawing on the following morning. Hausser was to pull two divisions out of the front at once and dispatch them to the *Fifth Panzer Army,* which had lost two divisions in two days of fierce combat. The *II SS Panzer Corps* headquarters was to be made subordinate to *Panzer Group Eberbach* so that Eberbach could exercise better control over the many splinter units assigned to him. How to get the *Seventh Army* back across the Orne was the most troublesome problem of the withdrawal. The movement of supplies westward into the pocket was already virtually impossible. Tanks were being abandoned for lack of fuel. The bridges over the Orne were not suitable for heavy traffic. Because antiaircraft protection was generally inadequate, Allied air attacks on massed vehicles at the Orne River crossing sites could create insurmountable difficulties. For these reasons it was necessary to provide for the strict regulation of traffic during the withdrawal. The *Seventh Army* was to be charged with this job. Since the most difficult part of the withdrawal would be across the Orne River itself, Kluge wanted a corps headquarters that had no other assignment to take charge of traffic control over the Orne; he designated the *LVIII Panzer Corps* for the task."
+      },
+      "Footnote_References": [
+        "53"
+      ],
+      "Place_Name": "Orne River",
+      "Dates": {
+        "Date_group_of_event": "16 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "160000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "LVIII Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": null,
+        "Personnel": null,
+        "Equipments": {
+          "Supply": "Movement of supplies impossible; tanks abandoned for lack of fuel",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Orne River",
+        "Place_GPS_coordinate": "48.8472 N, -0.0528 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Orne_(river)#/media/File:Orne_river_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Orne River",
+        "Place_GPS_coordinate": "48.8472 N, -0.0528 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.3",
+          "East": "1.2",
+          "South": "47.8",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Kluge Issues Withdrawal Order",
+      "Sub-event_summary": "At 1439, 16 August, Kluge issued withdrawal order for armies to withdraw behind Orne River in two nights; disengage divisions for Fifth Panzer Army; Eberbach to cover with attacks; prepare to send panzer divisions east.",
+      "Sub-event_fulltext": {
+        "Paragraph_39": "An hour and a half later, at 1439, though Hitler's directive had still not arrived in the west, Kluge issued his withdrawal order. The armies were to withdraw behind the Orne River during two successive nights, starting that night. Two divisions of the *Seventh Army* were to be disengaged and dispatched to the *Fifth Panzer Army* as rapidly as possible to assist in the Falaise area. *Panzer Group Eberbach* was to cover the withdrawal by launching attacks in the Argentan area. Eberbach was to be ready to send two panzer divisions under *II SS Panzer Corps* eastward to the Vimoutiers area, where it was to remain at the disposal of the army group."
+      },
+      "Footnote_References": [
+        "54"
+      ],
+      "Place_Name": "Orne River",
+      "Dates": {
+        "Date_group_of_event": "16 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "161439Z AUG 44"
+      },
+      "TOE": null,
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Orne River",
+        "Place_GPS_coordinate": "48.8472 N, -0.0528 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Orne_(river)#/media/File:Orne_river_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Orne River",
+        "Place_GPS_coordinate": "48.8472 N, -0.0528 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.3",
+          "East": "1.2",
+          "South": "47.8",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Hitler's Withdrawal Order",
+      "Sub-event_summary": "Two hours later, Hitler's order arrived, authorizing withdrawal west of Dives River in two stages, emphasizing holding Falaise and enlarging gap by Eberbach attack southeast.",
+      "Sub-event_fulltext": {
+        "Paragraph_40": "Two hours afterwards, Hitler's order arrived. It authorized *Army Group B* to withdraw its forces that were west of the Dives River. The movement eastward was to be made in two stages: across the Orne River, then across the Dives. Junction with the *LXXXI Corps* was to be made near Gacé. Hitler emphasized two requirements: Falaise had to be strongly held as a \"corner pillar,\" and the Argentan-Falaise gap had to be enlarged by an attack launched by *Panzer Group Eberbach* toward the southeast."
+      },
+      "Footnote_References": [
+        "55"
+      ],
+      "Place_Name": "Dives River",
+      "Dates": {
+        "Date_group_of_event": "16 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "160000Z AUG 44"
+      },
+      "TOE": null,
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Dives River",
+        "Place_GPS_coordinate": "49.0167 N, -0.0333 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Dives_(river)#/media/File:Dives_river_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Dives River",
+        "Place_GPS_coordinate": "49.0167 N, -0.0333 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.3",
+          "East": "1.3",
+          "South": "48.0",
+          "North": "50.0"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Analysis of Hitler's Order and German Difficulties",
+      "Sub-event_summary": "Hitler's order repeated discussed ideas; withdrawal behind Dives contemplated, holding Falaise evident; enlarging gap theoretically sound but impossible; by 16 August, pocket shrinking with Falaise loss, escape route threatened.",
+      "Sub-event_fulltext": {
+        "Paragraph_41": "There was nothing in Hitler's order that had not previously been considered and discussed more than once in the headquarters along the chain of command. Withdrawal behind the Dives River had been contemplated, and the necessity of holding the Falaise shoulder of the gap was self-evident. While Jodl's concept of enlarging the escape corridor by Eberbach's attack to the southeast was theoretically sound, no means existed to carry out the attack. Yet Hitler and Jodl both refused to accept this hard fact despite irrefutable evidence presented by the commanders in the field. By 16 August, with the loss of Falaise that day the most dramatic illustration of the shrinking pocket, the commanders found themselves not only virtually surrounded by a contracting enclosure but also threatened with being engulfed by crumbling walls. Furthermore, their only escape route was in imminent danger of being blocked."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "16 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "160000Z AUG 44"
+      },
+      "TOE": null,
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.1",
+          "South": "47.9",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "German Pull Out Begins",
+      "Sub-event_summary": "With decision made, Germans began withdrawing from the pocket after dark on 16 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_42": "The decision to withdraw having finally been made, the Germans began to pull out of the pocket after dark on 16 August."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Argentan-Falaise Pocket",
+      "Dates": {
+        "Date_group_of_event": "16 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "160000Z AUG 44"
+      },
+      "TOE": null,
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan-Falaise Pocket",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan-Falaise Pocket",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Weather_text": "Generally fair weather in Normandy during August 1944, with conditions supporting military operations and air support.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.1",
+          "South": "47.9",
+          "North": "49.9"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "33a",
+      "Footnote_Number": "33",
+      "Footnote_Text": "Telecon, Tempelhof and Zimmermann, 0100, 12 Aug, AGp B KTB, Letzte Meldung",
+      "Footnote_Referenced_Source": "AGp B KTB, Letzte Meldung",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Last Entry, Telecon, Tempelhof and Zimmermann, 0100, 12 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "33b",
+      "Footnote_Number": "33",
+      "Footnote_Text": "Telecon, Kluge and Zimmermann, 0930, 12 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Zimmermann, 0930, 12 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "33d",
+      "Footnote_Number": "33",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 1955, 12 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Eberbach, 1955, 12 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "34a",
+      "Footnote_Number": "34",
+      "Footnote_Text": "Telecon, Kluge and Zimmermann, 1230, 13 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Zimmermann, 1230, 13 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "34b",
+      "Footnote_Number": "34",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 1900, 13 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Eberbach, 1900, 13 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "34c",
+      "Footnote_Number": "34",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 1900, 11 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Eberbach, 1900, 11 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "35a",
+      "Footnote_Number": "35",
+      "Footnote_Text": "Telecon, Kluge and Jodl, 1310, 14 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Jodl, 1310, 14 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "35b",
+      "Footnote_Number": "35",
+      "Footnote_Text": "Telecon, Kluge and Zimmermann, 1230, 14 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Zimmermann, 1230, 14 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "35c",
+      "Footnote_Number": "35",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 1900, 14 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Eberbach, 1900, 14 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "35d",
+      "Footnote_Number": "35",
+      "Footnote_Text": "Telecon, Kluge and Jodl, 1310, 15 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Jodl, 1310, 15 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "35e",
+      "Footnote_Number": "35",
+      "Footnote_Text": "Telecon, Kluge and Zimmermann, 1230, 15 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Zimmermann, 1230, 15 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "35f",
+      "Footnote_Number": "35",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 1900, 15 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Eberbach, 1900, 15 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "35g",
+      "Footnote_Number": "35",
+      "Footnote_Text": "Telecon, Kluge and Jodl, 1310, 16 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Jodl, 1310, 16 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "35h",
+      "Footnote_Number": "35",
+      "Footnote_Text": "Telecon, Kluge and Zimmermann, 1230, 16 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Zimmermann, 1230, 16 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "35i",
+      "Footnote_Number": "35",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 1900, 16 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Eberbach, 1900, 16 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "36",
+      "Footnote_Number": "36",
+      "Footnote_Text": "Hitler Order, 14 Aug, quoted in Telecon, Kluge and Jodl, 1310, 14 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Jodl, 1310, 14 Aug, quoting Hitler Order, 14 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "37",
+      "Footnote_Number": "37",
+      "Footnote_Text": "Telecon, Kluge and Zimmermann, 1230, 14 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Zimmermann, 1230, 14 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "38a",
+      "Footnote_Number": "38",
+      "Footnote_Text": "Telecon, Kluge and Zimmermann, 1230, 14 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Zimmermann, 1230, 14 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "38b",
+      "Footnote_Number": "38",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 1900, 14 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Eberbach, 1900, 14 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "39a",
+      "Footnote_Number": "39",
+      "Footnote_Text": "Telecon, Kluge and Zimmermann, 1230, 15 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Zimmermann, 1230, 15 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "39b",
+      "Footnote_Number": "39",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 1900, 15 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Eberbach, 1900, 15 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "40a",
+      "Footnote_Number": "40",
+      "Footnote_Text": "Telecon, Kluge and Zimmermann, 1230, 15 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Zimmermann, 1230, 15 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "40b",
+      "Footnote_Number": "40",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 1900, 15 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Eberbach, 1900, 15 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "41",
+      "Footnote_Number": "41",
+      "Footnote_Text": "Telecon, Blumentritt and Jodl, 1830, 15 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Blumentritt and Jodl, 1830, 15 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "42",
+      "Footnote_Number": "42",
+      "Footnote_Text": "Telecon, Blumentritt and Jodl, 1930, 15 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Blumentritt and Jodl, 1930, 15 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "43",
+      "Footnote_Number": "43",
+      "Footnote_Text": "Telecon, Hitler and Model, 2200, 15 Aug, and Telecon, Hitler and Kesselring, 2230, 15 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Hitler and Model, 2200, 15 Aug, and Telecon, Hitler and Kesselring, 2230, 15 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "44",
+      "Footnote_Number": "44",
+      "Footnote_Text": "Hausser Order, 15 Aug, quoted in Telecon, Kluge and Jodl, 1310, 16 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Jodl, 1310, 16 Aug, quoting Hausser Order, 15 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "45",
+      "Footnote_Number": "45",
+      "Footnote_Text": "Telecon, Kluge and Zimmermann, 1230, 16 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Zimmermann, 1230, 16 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "46a",
+      "Footnote_Number": "46",
+      "Footnote_Text": "Telecon, Kluge and Zimmermann, 1230, 15 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Zimmermann, 1230, 15 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "46b",
+      "Footnote_Number": "46",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 1900, 15 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Eberbach, 1900, 15 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "46c",
+      "Footnote_Number": "46",
+      "Footnote_Text": "Telecon, Kluge and Jodl, 1310, 15 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Jodl, 1310, 15 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "46d",
+      "Footnote_Number": "46",
+      "Footnote_Text": "Telecon, Kluge and Zimmermann, 1230, 16 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Zimmermann, 1230, 16 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "46e",
+      "Footnote_Number": "46",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 1900, 16 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Eberbach, 1900, 16 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "47",
+      "Footnote_Number": "47",
+      "Footnote_Text": "Telecon, Kluge and Jodl, 2345, 15 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Jodl, 2345, 15 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "48a",
+      "Footnote_Number": "48",
+      "Footnote_Text": "Telecon, Kluge and Zimmermann, 1230, 16 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Zimmermann, 1230, 16 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "48b",
+      "Footnote_Number": "48",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 1900, 16 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Eberbach, 1900, 16 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "49",
+      "Footnote_Number": "49",
+      "Footnote_Text": "Telecon, Zimmermann and Blumentritt, 1315, 16 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Zimmermann and Blumentritt, 1315, 16 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "50",
+      "Footnote_Number": "50",
+      "Footnote_Text": "Telecon, Kluge and Jodl, 0200, 16 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Jodl, 0200, 16 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "51",
+      "Footnote_Number": "51",
+      "Footnote_Text": "Telecon, Kluge and Blumentritt, 1135, 16 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Blumentritt, 1135, 16 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "52",
+      "Footnote_Number": "52",
+      "Footnote_Text": "Telecon, Kluge and Jodl, 1245, 16 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Jodl, 1245, 16 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "53",
+      "Footnote_Number": "53",
+      "Footnote_Text": "Telecon, Kluge and Speidel, 1305, 16 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Speidel, 1305, 16 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "54",
+      "Footnote_Number": "54",
+      "Footnote_Text": "Kluge Order, 1439, 16 Aug, quoted in Telecon, Kluge and Jodl, 1310, 17 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Jodl, 1310, 17 Aug, quoting Kluge Order, 1439, 16 Aug",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "55",
+      "Footnote_Number": "55",
+      "Footnote_Text": "Hitler Order, 16 Aug, quoted in Telecon, Kluge and Jodl, 1310, 17 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Army Group B War Diary (KTB), Telecon, Kluge and Jodl, 1310, 17 Aug, quoting Hitler Order, 16 Aug",
+      "Source_Type": "DE"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn26.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

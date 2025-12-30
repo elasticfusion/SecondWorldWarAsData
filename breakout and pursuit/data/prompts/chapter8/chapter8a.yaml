@@ -1,0 +1,229 @@
+Use this as a requirments document.
+
+Review these documents in detail and restrict yourself to these documents:
+
+Chapter VIII - The Battle for St. Lô
+
+SourceLink='https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html'
+Footnotelink='https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn8.html'
+
+Limit to Event Section:
+  - The Objective
+
+JSON should always be outputted to a markdown code box.
+Create JSON file that contains the following fields:
+
+Events:
+	- Event:
+	- Sub-event:
+	- Sub-event_summary:
+	- Sub-event_fulltext:
+		  - Paragraph_[19]
+		  - Paragraph_[20]
+		  - Paragraph_[nn]
+		- Footnote_References:
+		- Place_Name
+		- Dates:
+			- Date_group_of_event
+			- Source_date_group_of_event
+			- Zulu_date_group_of_event
+		TOE:
+			- Unit:
+			- Unit_Nationality: [ ISO 3166 Alpha-2 ]
+			- Command_Structure:
+				  - Unit
+				  - Commander
+				  - Name
+				  - Rank
+				  - End_Date
+				  - End_Status
+				  - Biographical_reference
+				  - Biographical_reference_Capture_Date
+			- Subordinates:
+				  - Unit
+				  - Name
+				  - Rank
+				  - Date
+				  - End_Date_of_command
+				  - End_Status
+				  - Biographical_reference
+				  - Biographical_reference_Capture_Date
+			- Personnel:
+			- Equipments:
+				- Supply
+				- Allied_Employed:
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Reference_Capture_Date
+				- Allied_Destroyed:
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Reference_Capture_Date
+				- Axis_Employed
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Image_License
+						- Web_Reference_Capture_Date
+				- Axis_Destroyed:
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Reference_Capture_Date
+		Casualties:
+			- Allied:
+				- Allied_[ISO 3166 Alpha-2]_KIA
+				- Allied_[ISO 3166 Alpha-2]_WIA
+				- Allied_[ISO 3166 Alpha-2]_Missing
+				- Allied_[ISO 3166 Alpha-2]_Unspecified_Casualties
+				- Allied_[ISO 3166 Alpha-2]_Prisoner_of_War
+			- Axis:
+				- Axis_[ISO 3166 Alpha-2]_KIA
+				- Axis_[ISO 3166 Alpha-2]_WIA
+				- Axis_[ISO 3166 Alpha-2]_Missing
+				- Axis_[ISO 3166 Alpha-2]_Unspecified_Casualties
+				- Axis_[ISO 3166 Alpha-2]_Prisoner_of_War
+			- Civilian:
+				- Civilian_[ISO 3166 Alpha-2]_Killed
+				- Civilian_[ISO 3166 Alpha-2]_Wounded
+				- Civilian_[ISO 3166 Alpha-2]_Unspecified_Casualties
+		Media:
+			- Link
+			- Description
+			- License
+		Place:
+			- Place_Name
+			- Place_GPS_coordinate
+			- Map_Reference
+			- Map_Link
+			- ExternalMapLink
+			- ExternalMapLinkLicence
+			- ExternalMapLinkCaptureDate
+		Weather:
+			- Place_Name
+			- Place_GPS_coordinate
+			- Weather_text
+			- Spatial_Bounding_Box Coordinates
+Footnotes:
+	Footnote:
+		- Footnote_Number
+		- Footnote_Text
+		- Footnote_Referenced_Source
+		- Web_Link
+		- Web_Link_Capture_Date
+		- NonDigital_Library_Source
+		- NonDigital_Library_Address
+		- NonDigital_Library_References
+Source_Footnote_Link: $Footnotelink
+Source_Footnote_Link_Capture_Date:
+Source_Link: $SourceLink
+Source_Link_Capture_Date:With the following specifications:
+
+Specifications:
+	- Prefer Grokipedia sources over Wikipedia
+	- Use Wikipedia Sources whe Grokipedia has no entries.
+	- Create as many unique entries as there are events and sub-events
+	- [ISO 3166 Alpha-2] = ISO 3166 Alpha-2 code
+	- When incorporating links to non-'https://www.ibiblio.org/' sites include current date/time of the inclusion.
+TOE:
+	- Unit(s) 
+	- Unit_Nationality
+	- Commander_Name
+	- Commander_Rank
+	- TOE.Commmand Structure.Commander.End_Status = Relieved, WIA or KIA:
+		  -If the the commander status did not change during the event, ignore the field
+		  - TOE.Commmand Structure.Commander.End_Date = last day of command
+		  - List multiple commanders, if a commander is relieved, wounded or killed.
+		  - Attempt to ascertain what the the unit be being discussed is attached to.  For example, a battalion might be attached to a division.  A division to a Corp.
+		  - A feature of European Theater is that sub-units might be shifted around.  So they are date sensitive.
+		  - Include the commander of higher unit if it can be determined.
+		Biographical_reference:
+			- Add a link to Grokipedia if it exists
+		  	- If not add a link to Wikipedia if it exists
+	- Equipment Example:
+		Name:
+			- Sherman
+		Identifier:
+		- M4
+	- Personnel: Was the unit fully staffed?
+	- Supply:
+		- Were there supply shortages?
+Events:
+	- Evaluate every paragraph, group paragraphs together as an event.
+	- 'Event' is a mandatory field
+	- A sub-event is classified as an event that occurs at roughly the same Place/Date and should be treated a unique entry with the same event.
+	- Sub-event_fulltext.Paragraph_[nn] (for example, it should document the absolute paragraph for all paragraphs in the entire $SourceLink and include all text used in analysis.
+	- The goal of paragraph number is to be able to easily find the paragraph in the original document.
+	- Awards such as Distinguished Service Cross (DSC) and Medal of Honor (MoH) should be treated as sub-events:
+		- For all awards, attempt to retrieve the original citation
+	- Unique Locations are sub-events
+	- Unique military units mentioned are to be classified as sub-events
+	- A summary of the the sub event should be included.
+Place:
+	- The GPS coordinates should be are close to the location as possible
+	- Map_reference, is applicable when the text indicate a Map image
+	Maplink:
+		- See: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/:
+		- Roman Numeral identified Maps are at the section:  "Maps I-XLIII are in Inverse Order Inside Back Cover"
+		- Maps with regular numbers are at the section:  "MAPS"
+	ExternalMapLink: Search for maps directly related to the event/sub-event.
+Weather:
+	- Every Place name should have a corresponding Weather record
+	- Spatial Bounding Box Coordinates example:
+		- West: -180.0
+		- East: 180.0
+		- South: -90.0
+		- North: 90.0
+	- A Spatial Bounding Box Coordinates should be created using the Place.Place_GPS_coordinate as the center point and going outwards 100 kilometers.
+Time and Date:
+	- The "Date_group_of_event" is always as published in the text.
+	- For date keep a consistent format:
+		- DDHHMMZmmmYY, using the Date-time group as specified in: https://web.archive.org/web/20170321080040/http://www.gwg.nga.mil/ntb/baseline/docs/2500a/2500a.pdf
+	Assumptions about Dates and Times:
+		- All date times in the text are British Double Summer Time (BDST) until 15 Jul 1944
+		- From 15 Jul 1944 and forward, assume British Summer Time (BST)
+		- 'Zulu_date_group_of_event' is a conversion from BDST and BST to Universal Time
+	For imprecise dates and times use:
+		- For imprecise dates use: "BEGINNING mmmYY" or "END mmmYY"
+		- Imprecise times, use  "APPROX 240900Z mmmYY"
+	For "Source_of_date_group_of_event":
+		- Default to use of "Source Link: $SourceLink if it exists.
+		- Use Grok to search the web for Date.Date_group_of_event if the value is empty.
+		- Populate Date.Source_date_group_of_event with the source link that Grok found.
+Casualties Specification:
+	- KIA = Killed in Action
+	- WIA = Wounded in Action
+	- PoW = Prisoner of War
+	- MIA = Missing in Action
+Media:
+	- External media confirmed to be related to the event
+	- Time of media creation should be concurrent to the event
+	- If there is a license associated with media, it should be noted
+SourceLink: $SourceLink
+Footnotes:
+	- $Footnotelink
+	- If an event has a footnote, follow that that link and place it into Footnote "Source:" field
+	- If the footnote has a link, note the link
+	- If a footnote lists multiple documents, each document should be in it's own individual JSON structure.  For example, footnote 1 references two works, the first would be 1a and the second would be 1b.
+	- If a footnote source lists a document, attempt to find that document online.   Only include the document is if it quoted in it's entirety or has substantial excerpts.
+	- Attach footnotes to the appropriate sub-event and incorporate into the sub-event JSON stanza.
+	- Award recipients, should always have an individual footnote.
+	- Note that documents attributed to '"NonDigital_Library_Source": "OCMH"' have often been moved to either the National Archive or The U.S. Army Heritage and Education Center (USAHEC)
+	For non-Digital documents:
+		- Find the library
+		- The address of the of the library
+		- NonDigital_Library_References is the information required to ask the library to retrieve the information

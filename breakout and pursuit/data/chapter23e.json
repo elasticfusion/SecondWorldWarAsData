@@ -1,0 +1,1317 @@
+{
+  "Events": [
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "British Threat to Vire",
+      "Sub-event_summary": "British troops of the 8 Corps threatened Vire in early August 1944, with patrols of the 11th Armoured Division reaching near Vire on 2 August, facing counterattacks on 3 August by the 3d Parachute Division and SS Panzer Divisions, then advancing to threaten Tinchebray and Flers by 6 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_52": "British troops had also threatened the town of Vire during the first week in August as the 8 Corps of the Second British Army right flank continued the drive south begun from Caumont on 30 July. Although patrols of the 11th Armoured Division had reached a point a little more than a mile north of Vire on 2 August, antitank fire by the 3d Parachute Division forced a withdrawal. On the following day paratroopers, aided by parts of the 9th and 10th SS Panzer Divisions under II SS Panzer Corps control, counterattacked exposed British flanks and encircled a small armored force, causing the armor to halt temporarily.43 The 11th Armoured then resumed the attack toward the southeast and advanced through le Bény-Bocage, across the Vire-Condé-sur-Noireau road, and into position to threaten Tinchebray and Flers by 6 August. (See Map IX.)"
+      },
+      "Footnote_References": [
+        "43"
+      ],
+      "Place_Name": "Vire",
+      "Dates": {
+        "Date_group_of_event": "020000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "012300Zaug44"
+      },
+      "TOE": {
+        "Unit": "11th Armoured Division",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "8 Corps",
+          "Commander": "George Philip Bradley Roberts",
+          "Name": "George Philip Bradley Roberts",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Pip_Roberts",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.837781, -0.888482",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_Breakout_Map,_operations_25_July_to_15_August_1944.svg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.837781, -0.888482",
+        "Weather_text": "Warm summer weather with occasional rain and mild temperatures typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.25,
+          "East": 0.47,
+          "South": 47.94,
+          "North": 49.74
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "3d Parachute Division",
+      "Sub-event_summary": "The German 3d Parachute Division used antitank fire to force British withdrawal from near Vire on 2 August 1944.",
+      "Sub-event_fulltext": {
+        "Paragraph_52": "British troops had also threatened the town of Vire during the first week in August as the 8 Corps of the Second British Army right flank continued the drive south begun from Caumont on 30 July. Although patrols of the 11th Armoured Division had reached a point a little more than a mile north of Vire on 2 August, antitank fire by the 3d Parachute Division forced a withdrawal. On the following day paratroopers, aided by parts of the 9th and 10th SS Panzer Divisions under II SS Panzer Corps control, counterattacked exposed British flanks and encircled a small armored force, causing the armor to halt temporarily.43 The 11th Armoured then resumed the attack toward the southeast and advanced through le Bény-Bocage, across the Vire-Condé-sur-Noireau road, and into position to threaten Tinchebray and Flers by 6 August. (See Map IX.)"
+      },
+      "Footnote_References": [
+        "43"
+      ],
+      "Place_Name": "Vire",
+      "Dates": {
+        "Date_group_of_event": "020000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "012300Zaug44"
+      },
+      "TOE": {
+        "Unit": "3d Parachute Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "II Parachute Corps",
+          "Commander": "Richard Schimpf",
+          "Name": "Richard Schimpf",
+          "Rank": "Generalleutnant",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Richard_Schimpf",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Antitank guns",
+              "Identifier": "",
+              "Quantity": "",
+              "Web_Reference": "https://en.wikipedia.org/wiki/7.5_cm_Pak_40",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Bundesarchiv_Bild_101I-300-1865-10,_Nordfrankreich,_Panzerabwehrkanone.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.837781, -0.888482",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_Breakout_Map,_operations_25_July_to_15_August_1944.svg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.837781, -0.888482",
+        "Weather_text": "Warm summer weather with occasional rain and mild temperatures typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.25,
+          "East": 0.47,
+          "South": 47.94,
+          "North": 49.74
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "German Counterattack on British Flanks",
+      "Sub-event_summary": "On 3 August 1944, paratroopers of the 3d Parachute Division, aided by parts of the 9th and 10th SS Panzer Divisions under II SS Panzer Corps, counterattacked British flanks, encircling a small armored force and halting the armor temporarily.",
+      "Sub-event_fulltext": {
+        "Paragraph_52": "British troops had also threatened the town of Vire during the first week in August as the 8 Corps of the Second British Army right flank continued the drive south begun from Caumont on 30 July. Although patrols of the 11th Armoured Division had reached a point a little more than a mile north of Vire on 2 August, antitank fire by the 3d Parachute Division forced a withdrawal. On the following day paratroopers, aided by parts of the 9th and 10th SS Panzer Divisions under II SS Panzer Corps control, counterattacked exposed British flanks and encircled a small armored force, causing the armor to halt temporarily.43 The 11th Armoured then resumed the attack toward the southeast and advanced through le Bény-Bocage, across the Vire-Condé-sur-Noireau road, and into position to threaten Tinchebray and Flers by 6 August. (See Map IX.)"
+      },
+      "Footnote_References": [
+        "43"
+      ],
+      "Place_Name": "Vire",
+      "Dates": {
+        "Date_group_of_event": "030000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "022300Zaug44"
+      },
+      "TOE": {
+        "Unit": "II SS Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Fifth Panzer Army",
+          "Commander": "Wilhelm Bittrich",
+          "Name": "Wilhelm Bittrich",
+          "Rank": "SS-Obergruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Wilhelm_Bittrich",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "9th SS Panzer Division",
+            "Name": "Sylvester Stadler",
+            "Rank": "SS-Brigadeführer",
+            "Date": "030000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Sylvester_Stadler",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "10th SS Panzer Division",
+            "Name": "Heinz Harmel",
+            "Rank": "SS-Brigadeführer",
+            "Date": "030000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Heinz_Harmel",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.837781, -0.888482",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_Breakout_Map,_operations_25_July_to_15_August_1944.svg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.837781, -0.888482",
+        "Weather_text": "Warm summer weather with occasional rain and mild temperatures typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.25,
+          "East": 0.47,
+          "South": 47.94,
+          "North": 49.74
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "British Advance to Tinchebray and Flers",
+      "Sub-event_summary": "The 11th Armoured Division resumed attack southeast, advancing through le Bény-Bocage, across Vire-Condé-sur-Noireau road, threatening Tinchebray and Flers by 6 August 1944.",
+      "Sub-event_fulltext": {
+        "Paragraph_52": "British troops had also threatened the town of Vire during the first week in August as the 8 Corps of the Second British Army right flank continued the drive south begun from Caumont on 30 July. Although patrols of the 11th Armoured Division had reached a point a little more than a mile north of Vire on 2 August, antitank fire by the 3d Parachute Division forced a withdrawal. On the following day paratroopers, aided by parts of the 9th and 10th SS Panzer Divisions under II SS Panzer Corps control, counterattacked exposed British flanks and encircled a small armored force, causing the armor to halt temporarily.43 The 11th Armoured then resumed the attack toward the southeast and advanced through le Bény-Bocage, across the Vire-Condé-sur-Noireau road, and into position to threaten Tinchebray and Flers by 6 August. (See Map IX.)"
+      },
+      "Footnote_References": [
+        "43"
+      ],
+      "Place_Name": "le Bény-Bocage",
+      "Dates": {
+        "Date_group_of_event": "060000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "052300Zaug44"
+      },
+      "TOE": {
+        "Unit": "11th Armoured Division",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "8 Corps",
+          "Commander": "George Philip Bradley Roberts",
+          "Name": "George Philip Bradley Roberts",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Pip_Roberts",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "le Bény-Bocage",
+        "Place_GPS_coordinate": "48.9381, -0.6297",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_Breakout_Map,_operations_25_July_to_15_August_1944.svg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "le Bény-Bocage",
+        "Place_GPS_coordinate": "48.9381, -0.6297",
+        "Weather_text": "Warm summer weather with occasional rain and mild temperatures typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.99,
+          "East": 0.73,
+          "South": 48.04,
+          "North": 49.84
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "30 British Corps Advance",
+      "Sub-event_summary": "The 30 British Corps struck southeast on 30 July 1944, securing slopes of Mt. Pinçon despite stubborn resistance and rugged terrain.",
+      "Sub-event_fulltext": {
+        "Paragraph_53": "The 30 British Corps, in the center of General Dempsey's army, had struck southeast on 30 July from the vicinity of Villers-Bocage toward Thury-Harcourt and the Orne River. Stubborn resistance and rugged terrain centering on the thousand-foot height of Mt. Pinçon denied rapid advance, but the British nevertheless secured a foothold on the slopes of the high ground. On 5 August Dempsey broadened his attack, and two days later the 12 Corps crossed the Orne River between Mt. Pinçon and Caen, securing a shallow bridgehead."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Mt. Pinçon",
+      "Dates": {
+        "Date_group_of_event": "300000BSTjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "292300Zjul44"
+      },
+      "TOE": {
+        "Unit": "30 Corps",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Second British Army",
+          "Commander": "Brian Horrocks",
+          "Name": "Brian Horrocks",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Brian_Horrocks",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mt. Pinçon",
+        "Place_GPS_coordinate": "48.9667, -0.4667",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Battle_of_Mont_Pin%C3%A7on#/media/File:Mont_Pin%C3%A7on_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mt. Pinçon",
+        "Place_GPS_coordinate": "48.9667, -0.4667",
+        "Weather_text": "Warm summer weather with occasional rain and mild temperatures typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.83,
+          "East": 0.9,
+          "South": 48.07,
+          "North": 49.87
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "12 Corps Crosses Orne River",
+      "Sub-event_summary": "On 7 August 1944, the 12 Corps crossed the Orne River between Mt. Pinçon and Caen, securing a shallow bridgehead.",
+      "Sub-event_fulltext": {
+        "Paragraph_53": "The 30 British Corps, in the center of General Dempsey's army, had struck southeast on 30 July from the vicinity of Villers-Bocage toward Thury-Harcourt and the Orne River. Stubborn resistance and rugged terrain centering on the thousand-foot height of Mt. Pinçon denied rapid advance, but the British nevertheless secured a foothold on the slopes of the high ground. On 5 August Dempsey broadened his attack, and two days later the 12 Corps crossed the Orne River between Mt. Pinçon and Caen, securing a shallow bridgehead."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Orne River",
+      "Dates": {
+        "Date_group_of_event": "070000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "062300Zaug44"
+      },
+      "TOE": {
+        "Unit": "12 Corps",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Second British Army",
+          "Commander": "James Noel Tetley",
+          "Name": "James Noel Tetley",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Neil_Ritchie",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Orne River",
+        "Place_GPS_coordinate": "48.85, -0.4",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_Breakout_Map,_operations_25_July_to_15_August_1944.svg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Orne River",
+        "Place_GPS_coordinate": "48.85, -0.4",
+        "Weather_text": "Warm summer weather with occasional rain and mild temperatures typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.76,
+          "East": 0.96,
+          "South": 47.95,
+          "North": 49.75
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "2d Canadian Corps Holding Attacks",
+      "Sub-event_summary": "The 2d Canadian Corps mounted holding attacks in the Caen sector to prevent German reinforcements shifts, preparing a major effort south toward Falaise.",
+      "Sub-event_fulltext": {
+        "Paragraph_54": "Meanwhile, the 2d Canadian Corps of the First Canadian Army had mounted several holding attacks in the Caen sector to prevent the Germans from shifting reinforcements to other sectors under Allied attack. Even as General Crerar thus sought to divert the Germans, his main concern was to prepare a major effort to be launched south of Caen toward Falaise.44"
+      },
+      "Footnote_References": [
+        "44"
+      ],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING aug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "BEGINNING aug44"
+      },
+      "TOE": {
+        "Unit": "2d Canadian Corps",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "First Canadian Army",
+          "Commander": "Guy Simonds",
+          "Name": "Guy Simonds",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Guy_Simonds",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1833, -0.3667",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_Breakout_Map,_operations_25_July_to_15_August_1944.svg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1833, -0.3667",
+        "Weather_text": "Warm summer weather with occasional rain and mild temperatures typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.73,
+          "East": 1.0,
+          "South": 48.28,
+          "North": 50.08
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "Montgomery's Strategic Assessment",
+      "Sub-event_summary": "By 4 August 1944, Montgomery assessed the enemy front could disintegrate, predicting German withdrawal to the Seine, and planned to disrupt it by swinging the Allied right flank toward Paris.",
+      "Sub-event_fulltext": {
+        "Paragraph_55": "Plans for a major attack from Caen toward Falaise revealed the development of General Montgomery's intentions. The strategic decision reached by the Allies early in August involved a drive to the Seine, but the first step toward the Seine was the clearance of the area west of the Orne. General Eisenhower had pointed this out as early as 31 July when he wrote: \"With the Canadian Army fighting intensively to prevent enemy movement away from the Caen area, Dempsey's attack coupled with Bradley's will clean up the area west of the Orne once and for all.\"45",
+        "Paragraph_56": "Several days later, General Montgomery was thinking beyond the Orne. By 4 August he felt that the enemy front was \"in such a state that it could be made to disintegrate completely.\" He had concluded that \"the only hope\" the Germans had of saving their armies was a \"staged withdrawal to the Seine.\" By swinging the Allied right flank \"round toward Paris,\" Montgomery could hasten and disrupt the withdrawal and force the Germans back against the Seine and its destroyed bridges.",
+        "Paragraph_57": "If the Germans withdrew to the Seine, as Montgomery thought they must, their immediate move logically would be to positions east of the Orne River, generally along a line between Caen and Flers. If Montgomery could act quickly enough, a drive to the south from Caen to Falaise would place troops behind the preliminary German withdrawal to the Orne. If Crerar's troops secured Falaise, if Dempsey's troops reached Condé-sur-Noireau, and if enemy forces remained in between, the Germans would be \"in a very awkward situation.\""
+      },
+      "Footnote_References": [
+        "45"
+      ],
+      "Place_Name": "Seine River",
+      "Dates": {
+        "Date_group_of_event": "040000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "032300Zaug44"
+      },
+      "TOE": {
+        "Unit": "21 Army Group",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Supreme Headquarters Allied Expeditionary Force",
+          "Commander": "Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "Field Marshal",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Seine River",
+        "Place_GPS_coordinate": "49.4333, 0.1",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Seine_river_map.png",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Seine River",
+        "Place_GPS_coordinate": "49.4333, 0.1",
+        "Weather_text": "Warm summer weather with occasional rain and mild temperatures typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.26,
+          "East": 1.46,
+          "South": 48.53,
+          "North": 50.33
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "Montgomery's Plan to Unhinge German Withdrawal",
+      "Sub-event_summary": "Montgomery planned to unhinge German withdrawal by robbing them of Caen pivot, with Crerar driving to Falaise, Dempsey to Condé-sur-Noireau, to cut off enemy west of Orne.",
+      "Sub-event_fulltext": {
+        "Paragraph_57": "If the Germans withdrew to the Seine, as Montgomery thought they must, their immediate move logically would be to positions east of the Orne River, generally along a line between Caen and Flers. If Montgomery could act quickly enough, a drive to the south from Caen to Falaise would place troops behind the preliminary German withdrawal to the Orne. If Crerar's troops secured Falaise, if Dempsey's troops reached Condé-sur-Noireau, and if enemy forces remained in between, the Germans would be \"in a very awkward situation.\"",
+        "Paragraph_58": "Thus, although the broader Allied strategy was an intent to pin the Germans back against the Seine, the immediate opportunity was present to \"cut off the enemy now facing Second Army and render their withdrawing east difficult--if not impossible.\" Destroying enemy personnel and equipment would be but the beginning of a \"wide exploitation of success,\" presumably meaning exploitation on a wide front toward the Seine. The main instrument of destruction was to be the First Canadian Army making ready to attack toward Falaise \"as early as possible and in any case not later than 8 August.\"46"
+      },
+      "Footnote_References": [
+        "46"
+      ],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "040000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "032300Zaug44"
+      },
+      "TOE": {
+        "Unit": "First Canadian Army",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "21 Army Group",
+          "Commander": "Harry Crerar",
+          "Name": "Harry Crerar",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_Crerar",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8933, -0.2",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Falaise_pocket-en.svg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8933, -0.2",
+        "Weather_text": "Warm summer weather with occasional rain and mild temperatures typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.56,
+          "East": 1.16,
+          "South": 47.99,
+          "North": 49.79
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "Montgomery's Intentions on 6 August",
+      "Sub-event_summary": "On 6 August 1944, Montgomery saw German alternatives as dismal, planning to pivot on left, swing right hard toward Paris, drive Germans against Seine, with Crerar to Falaise and Rouen, Dempsey to Dreux-Evreux, Bradley main effort to Paris.",
+      "Sub-event_fulltext": {
+        "Paragraph_59": "Two days after stating these plans, General Montgomery explained his intentions more specifically. As Montgomery saw the situation on 6 August, the Germans faced dismal alternatives in making the withdrawal that seemed to Montgomery the only course open to them. If they tried to utilize a series of delaying positions between the Caen-Vire line and the Seine, they would be unable to hold any long front in strength. With relatively few troops available, it would be impossible for the Germans to retain a pivot point at Caen for the withdrawal and simultaneously to restore the crumbled left flank. In the absence of established alternate lines in the rear, the Germans could not let go both ends of the line. If the Germans persisted in holding Caen, they offered the Allies the opportunity of swinging completely around their left and cutting off their escape. If they endeavored to buttress their encircled left flank and thereby weakened their pivot point, they gave the Allies access to the shortest route to the Seine. In either case, the Germans invited destruction of their forces west of the Seine River.",
+        "Paragraph_60": "General Montgomery accepted the invitation with alacrity, announcing his intention to destroy the enemy forces within the boundaries of the OVERLORD lodgment area. He planned to pivot the Allied armies on the left, swing hard with the right toward Paris, drive the Germans against the Seine, and crush them before they could repair the destroyed bridges to evacuate their retreating forces.",
+        "Paragraph_61": "Judging that the Germans would try to escape the COBRA consequences by accepting the lesser evil and pivoting on the Caen area as they fell back, Montgomery planned to unhinge the Germans' withdrawal by robbing them of their pivot point, Caen. General Crerar was to accomplish this by driving to Falaise, then attacking to the Seine along the Lisieux-Rouen axis. As a complementary maneuver, General Dempsey was to push out in an arc, swinging southeast and then east, putting the main weight on the right flank. After moving through Argentan and Laigle, the British were to drive through the Dreux-Evreux area and prepare to cross the Seine between Mantes-Gassicourt and les Andelys. On the right, General Bradley's 12th Army Group was to make the main effort on the right flank, thrusting rapidly east and northeast toward Paris."
+      },
+      "Footnote_References": [
+        "47"
+      ],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "060000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "052300Zaug44"
+      },
+      "TOE": {
+        "Unit": "21 Army Group",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Supreme Headquarters Allied Expeditionary Force",
+          "Commander": "Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "Field Marshal",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Second British Army",
+            "Name": "Miles Dempsey",
+            "Rank": "General",
+            "Date": "060000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Miles_Dempsey",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "First Canadian Army",
+            "Name": "Harry Crerar",
+            "Rank": "General",
+            "Date": "060000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_Crerar",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "12th Army Group",
+            "Name": "Omar Bradley",
+            "Rank": "General",
+            "Date": "060000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1833, -0.3667",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_Breakout_Map,_operations_25_July_to_15_August_1944.svg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1833, -0.3667",
+        "Weather_text": "Warm summer weather with occasional rain and mild temperatures typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.73,
+          "East": 1.0,
+          "South": 48.28,
+          "North": 50.08
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "Emphasis on Speed and Risks",
+      "Sub-event_summary": "Montgomery emphasized speed as essential, instructing commanders to press forward boldly and take great risks to destroy enemy forces west of Seine, potentially hastening the end of the war.",
+      "Sub-event_fulltext": {
+        "Paragraph_62": "Speed, General Montgomery indicated, was the overwhelming requisite for success. Commanders were therefore to press forward boldly and take great risks. Destroying the enemy forces west of the Seine might be so damaging a blow, he thought, as to hasten the end of the war.47"
+      },
+      "Footnote_References": [
+        "47"
+      ],
+      "Place_Name": "Seine River",
+      "Dates": {
+        "Date_group_of_event": "060000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "052300Zaug44"
+      },
+      "TOE": {
+        "Unit": "21 Army Group",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Supreme Headquarters Allied Expeditionary Force",
+          "Commander": "Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "Field Marshal",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Seine River",
+        "Place_GPS_coordinate": "49.4333, 0.1",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Seine_river_map.png",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Seine River",
+        "Place_GPS_coordinate": "49.4333, 0.1",
+        "Weather_text": "Warm summer weather with occasional rain and mild temperatures typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.26,
+          "East": 1.46,
+          "South": 48.53,
+          "North": 50.33
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "Bradley and Hodges' Concerns",
+      "Sub-event_summary": "Bradley and Hodges were concerned about potential German counterattack from Domfront toward Avranches, with Haislip noting it as a distinct capability, while Allies pursued offensive plans.",
+      "Sub-event_fulltext": {
+        "Paragraph_63": "In brief, General Montgomery's intentions were postulated on the belief that the Germans had no alternative but to withdraw to and across the Seine. On this premise he sought to disorganize, harass, and pursue them, transform their retreat into a rout, and destroy their forces in detail. The maneuver he ordered would swing three Allied armies into the German forces while the fourth Allied army would catapult forward to outrun them.48",
+        "Paragraph_64": "General Bradley was not entirely convinced of the irresistible logic of Montgomery's interpretation. He ordered Patton to move toward le Mans and eventually toward the Paris-Orléans gap, and he ordered Hodges to seize the Domfront-Ambrières-le-Grand area as a preliminary for a drive toward Alençon. But he was concerned by the fact that the Germans might turn and leap. They were capable, Bradley judged, of assembling strong armored forces in the vicinity of Domfront, and from there they might attack westward toward Avranches.49",
+        "Paragraph_65": "Like Bradley, Hodges felt that because the German left flank was still \"floating,\" it was reasonable to expect a German counterattack aimed at arresting American momentum.50 Similarly, but more specifically, Haislip had pointed out that a German counterattack toward Avranches with the purpose of separating American forces north and south of the Sée and Sélune Rivers was \"a distinct capability.\"51",
+        "Paragraph_66": "Despite these warnings, commanders were in no mood to listen to what seemed to be prophets of gloom. Without worrying about what the Germans might do, the Allies pursued their own offensive plans. While Crerar prepared to jump off toward Falaise, while Dempsey made ready to push southeast toward Argentan, while Hodges displaced part of his forces southward to take up the pursuit toward Alençon, and while Patton was sending the XV Corps eastward toward le Mans, the Germans disregarded Montgomery's logic. In their first large-scale counterattack since the invasion two months earlier, the Germans turned and sprang westward toward Avranches."
+      },
+      "Footnote_References": [
+        "48",
+        "49",
+        "50",
+        "51"
+      ],
+      "Place_Name": "Domfront",
+      "Dates": {
+        "Date_group_of_event": "060000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "052300Zaug44"
+      },
+      "TOE": {
+        "Unit": "12th Army Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Supreme Headquarters Allied Expeditionary Force",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "First Army",
+            "Name": "Courtney Hodges",
+            "Rank": "Lieutenant General",
+            "Date": "060000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://grokipedia.com/page/Courtney_Hodges",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "Third Army",
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General",
+            "Date": "060000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "XV Corps",
+            "Name": "Wade H. Haislip",
+            "Rank": "Major General",
+            "Date": "060000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Wade_H._Haislip",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Domfront",
+        "Place_GPS_coordinate": "48.5925, -0.6514",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_Breakout_Map,_operations_25_July_to_15_August_1944.svg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Domfront",
+        "Place_GPS_coordinate": "48.5925, -0.6514",
+        "Weather_text": "Warm summer weather with occasional rain and mild temperatures typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.01,
+          "East": 0.71,
+          "South": 47.69,
+          "North": 49.49
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "German Counterattack Toward Avranches",
+      "Sub-event_summary": "Disregarding Montgomery's logic, the Germans launched their first large-scale counterattack since the invasion on or around 6-7 August 1944, turning westward toward Avranches.",
+      "Sub-event_fulltext": {
+        "Paragraph_66": "Despite these warnings, commanders were in no mood to listen to what seemed to be prophets of gloom. Without worrying about what the Germans might do, the Allies pursued their own offensive plans. While Crerar prepared to jump off toward Falaise, while Dempsey made ready to push southeast toward Argentan, while Hodges displaced part of his forces southward to take up the pursuit toward Alençon, and while Patton was sending the XV Corps eastward toward le Mans, the Germans disregarded Montgomery's logic. In their first large-scale counterattack since the invasion two months earlier, the Germans turned and sprang westward toward Avranches."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "APPROX 070000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "APPROX 062300Zaug44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "200000BSTaug44",
+          "End_Status": "WIA",
+          "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3569",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_L%C3%BCttich#/media/File:Operation_Luttich_1944_en.svg",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3569",
+        "Weather_text": "Warm summer weather with occasional rain and mild temperatures typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.72,
+          "East": -0.0,
+          "South": 47.78,
+          "North": 49.58
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "43a",
+      "Footnote_Number": "43",
+      "Footnote_Text": "Ellis, Victory in the West, I, 414-15",
+      "Footnote_Referenced_Source": "Ellis, Victory in the West",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Non-digital book",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Victory in the West, I"
+    },
+    {
+      "Footnote": "43b",
+      "Footnote_Number": "43",
+      "Footnote_Text": "MS # B-725 (Gersdorff).",
+      "Footnote_Referenced_Source": "MS # B-725",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "MS # B-725 (Gersdorff)"
+    },
+    {
+      "Footnote": "44a",
+      "Footnote_Number": "44",
+      "Footnote_Text": "Stacey, Canadian Army, pp. 201-02",
+      "Footnote_Referenced_Source": "Stacey, Canadian Army",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Non-digital book",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Canadian Army"
+    },
+    {
+      "Footnote": "44b",
+      "Footnote_Number": "44",
+      "Footnote_Text": "Eisenhower, Crusade in Europe, pp. 273-74.",
+      "Footnote_Referenced_Source": "Eisenhower, Crusade in Europe",
+      "Web_Link": "https://archive.org/details/in.ernet.dli.2015.109554",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "45",
+      "Footnote_Number": "45",
+      "Footnote_Text": "Ltr, Eisenhower to Montgomery, 31 Jul, SGS SHAEF File 381, OVERLORD, I (a).",
+      "Footnote_Referenced_Source": "Ltr, Eisenhower to Montgomery",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "SGS SHAEF File 381, OVERLORD, I (a)",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Ltr, Eisenhower to Montgomery, 31 Jul"
+    },
+    {
+      "Footnote": "46",
+      "Footnote_Number": "46",
+      "Footnote_Text": "21 AGp Dir, M-519, 4 Aug.",
+      "Footnote_Referenced_Source": "21 AGp Dir, M-519",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "21 AGp Dir, M-519, 4 Aug"
+    },
+    {
+      "Footnote": "47",
+      "Footnote_Number": "47",
+      "Footnote_Text": "21 AGp Dir, M-520, 6 Aug.",
+      "Footnote_Referenced_Source": "21 AGp Dir, M-520",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "21 AGp Dir, M-520, 6 Aug"
+    },
+    {
+      "Footnote": "48",
+      "Footnote_Number": "48",
+      "Footnote_Text": "21 AGp Dir, M-520, 6 Aug.",
+      "Footnote_Referenced_Source": "21 AGp Dir, M-520",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "21 AGp Dir, M-520, 6 Aug"
+    },
+    {
+      "Footnote": "49a",
+      "Footnote_Number": "49",
+      "Footnote_Text": "12th AGp Ltr of Instrs 2, 5 Aug",
+      "Footnote_Referenced_Source": "12th AGp Ltr of Instrs 2",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "12th AGp Ltr of Instrs 2, 5 Aug"
+    },
+    {
+      "Footnote": "49b",
+      "Footnote_Number": "49",
+      "Footnote_Text": "Bradley, Soldier's Story, pp. 373-74.",
+      "Footnote_Referenced_Source": "Bradley, Soldier's Story",
+      "Web_Link": "https://archive.org/details/soldiersstory0000brad",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "50",
+      "Footnote_Number": "50",
+      "Footnote_Text": "FUSA AAR, Aug.",
+      "Footnote_Referenced_Source": "FUSA AAR",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "FUSA AAR, Aug"
+    },
+    {
+      "Footnote": "51",
+      "Footnote_Number": "51",
+      "Footnote_Text": "XV Corps AAR, Aug.",
+      "Footnote_Referenced_Source": "XV Corps AAR",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "XV Corps AAR, Aug"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

@@ -1,0 +1,729 @@
+{
+  "Events": [
+    {
+      "Event": "Siege Operations",
+      "Sub-event": "Focus on St. Ideuc and la Varde",
+      "Sub-event_summary": "General Ferenbaugh concentrated on reducing St. Ideuc and la Varde; on 9 August, 329th Infantry prepared for Citadel while 330th attacked; after three days, St. Ideuc surrendered on 12 August (160 defenders), la Varde on 13 August (100 Germans).",
+      "Sub-event_fulltext": {
+        "Paragraph_66": "While General Macon had personally directed the attack on Dinard, the assistant division commander, General Ferenbaugh, had taken control of the two remaining regiments of the 83d Division. The objectives still to be reduced were the walled city of St. Malo, the Citadel, and the strongpoints of St. Ideuc and la Varde. Ferenbaugh concentrated first on the lesser strongholds, St. Ideuc and la Varde, which were small, mutually supporting forts. St. Ideuc in actuality was an outer defense position for la Varde, which was on the coast. German artillery at Dinard and Cézembre could fire in support.",
+        "Paragraph_67": "On 9 August, while the 329th Infantry patrolled and policed the towns of St. Servan and Paramé and prepared to attack the Citadel, the two battalions under the 330th Infantry headquarters attacked toward St. Malo and St. Ideuc. For three days artillery pounded St. Ideuc and infantry and engineers operated against individual pillboxes and bunkers. In the late afternoon of 12 August, after a final burst of concentrated artillery fire and an infantry assault, the 160 surviving defenders capitulated. Without pause the assault battalion moved toward la Varde, and on the following evening, 13 August, captured the fort. Little more than a hundred Germans filed out in surrender."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Ideuc",
+      "Dates": {
+        "Date_group_of_event": "9-13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "090000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Harry B. Ferenbaugh",
+          "Name": "Harry B. Ferenbaugh",
+          "Rank": "Brigadier General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_B._Ferenbaugh",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "329th Infantry Regiment",
+            "Name": "George W. Crabill",
+            "Rank": "Colonel",
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "330th Infantry Regiment",
+            "Name": "Robert T. Foster",
+            "Rank": "Colonel",
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Two regiments",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 260
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Ideuc",
+        "Place_GPS_coordinate": "48.6500, -1.9833",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Ideuc",
+        "Place_GPS_coordinate": "48.6500, -1.9833",
+        "Weather_text": "Historical weather near Saint-Malo on 9-13 August 1944: Temperatures 14-21°C, mostly cloudy, moderate precipitation.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.9833",
+          "East": "-0.9833",
+          "South": "47.7500",
+          "North": "49.5500"
+        }
+      }
+    },
+    {
+      "Event": "Siege Operations",
+      "Sub-event": "Attack Toward St. Malo Town",
+      "Sub-event_summary": "Battalion under 330th attacked St. Malo, securing Paramé-St. Malo causeway; supported by tanks and TDs, reduced pillboxes house to house; château manned with MGs and 20mm.",
+      "Sub-event_fulltext": {
+        "Paragraph_68": "Meanwhile, the other battalion under the 330th Infantry, with an additional rifle company, had been attacking toward the town of St. Malo. To gain entrance into the walled town, the troops had to secure the Paramé-St. Malo causeway. The attack thus took place across an area that funnelled the troops toward the narrow causeway strip. Supported by tanks and tank destroyers, the infantrymen systematically reduced pillboxes and bunkers, measuring their progress by streets. The avenues of Paramé became thoroughfares for bullets and shells, and engineers dynamited passageways from house to house to enable the infantrymen to fight forward from one building to another.",
+        "Paragraph_69": "Manned by a small garrison employing machine guns and 20-mm. pieces and overlooking the battle area was the château of St. Malo at the far end of the causeway. The thick walls of the château, designed to withstand medieval siege, proved effective.",
+        "Paragraph_70": "The immediate objective of the battalion attack was the Casino at the near end of the causeway. After two days of small unit action, the battalion in the late afternoon of 11 August took the blasted and tattered Casino. The château was less than a thousand yards away, but the intervening space was as exposed as a table top."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "9-11 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "090000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "330th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "Robert T. Foster",
+          "Name": "Robert T. Foster",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [
+          {
+            "Unit": "Battalion",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Battalion with additional rifle company",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Tanks",
+            "Identifier": "Unknown",
+            "Quantity": "Unknown",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p405.jpg",
+          "Description": "Street Fighting in St. Malo",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "Historical weather in St. Malo on 9-11 August 1944: Temperatures 14-21°C, mostly cloudy, moderate precipitation.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "Siege Operations",
+      "Sub-event": "Pounding the Château",
+      "Sub-event_summary": "Château pounded for two days with high velocity shells, 8-inch artillery, and air attacks, but little effect; MG fire and mines prevented advance.",
+      "Sub-event_fulltext": {
+        "Paragraph_71": "Although guns then pummelled the château for two days, even high velocity shells from 3-inch tank destroyer guns and 8-inch shells from artillery guns and howitzers seemed to have little effect. Neither did air attack by heavy and medium bombers produce any apparent result. German machine gun fire from the château walls remained too devastating for infantry alone to cross the causeway, and mine fields prevented tanks from approaching."
+      },
+      "Footnote_References": [
+        45
+      ],
+      "Place_Name": "St. Malo Château",
+      "Dates": {
+        "Date_group_of_event": "11-13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "110000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "330th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "Robert T. Foster",
+          "Name": "Robert T. Foster",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "3-inch Tank Destroyer Guns",
+            "Identifier": "M5",
+            "Quantity": "Unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/3-inch_gun_M5",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p404.jpg",
+          "Description": "Artillerymen Firing 3-inch Gun on German Defenses in St. Malo",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Malo Château",
+        "Place_GPS_coordinate": "48.6500, -2.0250",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo Château",
+        "Place_GPS_coordinate": "48.6500, -2.0250",
+        "Weather_text": "Historical weather in St. Malo on 11-13 August 1944: Temperatures 14-21°C, mostly cloudy, moderate precipitation.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0250",
+          "East": "-1.0250",
+          "South": "47.7500",
+          "North": "49.5500"
+        }
+      }
+    },
+    {
+      "Event": "Siege Operations",
+      "Sub-event": "Truce for Civilian Evacuation",
+      "Sub-event_summary": "Fires became inferno; truce on 13 August allowed 1000 civilians and 500 hostages/internees to escape; blaze no effect on château garrison.",
+      "Sub-event_fulltext": {
+        "Paragraph_72": "As the fighting had progressed, the fires within the St. Malo ramparts had become a raging inferno. Flame and smoke obscured many of the defensive positions. To allow about a thousand French civilians still inside the walls to escape the conflagration, a truce was concluded for several hours during the afternoon of 13 August. These and about five hundred hostages and internees, who had been held at a tiny French-built fort offshore, entered American lines. The blaze had no effect on the German garrison in the château, for the château had its own fireproof walls separating it from the burning town."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "131200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Robert C. Macon",
+          "Name": "Robert C. Macon",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_C._Macon",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "Historical weather in St. Malo on 13 August 1944: Temperatures 14-21°C, mostly cloudy, moderate precipitation.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "Siege Operations",
+      "Sub-event": "Final Assault on St. Malo",
+      "Sub-event_summary": "On 14 August, 330th Infantry assaulted; artillery fired smoke/HE, battalion crossed causeway into town, rounded up few enemy; château surrendered (150 prisoners).",
+      "Sub-event_fulltext": {
+        "Paragraph_73": "With St. Ideuc and la Varde reduced by 13 August, the entire 330th Infantry gathered to assault St. Malo on the morning of 14 August. As artillery intensified its shelling and fired smoke and high explosive against the château walls, an infantry battalion surged across the causeway, past the château and into the walled town. There were few enemy troops in the charred and still burning buildings, and these were quickly rounded up. The defenders in the château, however, still held out, and their machine guns continued to chatter, discouraging engineers from placing demolition charges against the walls. Despite their virtually impregnable position, the prodding of American artillery fire and the obvious hopelessness of continued resistance finally prompted surrender that afternoon. Prisoners totaled 150."
+      },
+      "Footnote_References": [
+        46
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "14 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "140000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "330th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "Robert T. Foster",
+          "Name": "Robert T. Foster",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Full regiment",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 150
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "Historical weather in St. Malo on 14 August 1944: Temperatures 14-21°C, mostly cloudy, moderate precipitation.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "Siege Operations",
+      "Sub-event": "Investigation of Offshore Forts",
+      "Sub-event_summary": "On 16 August, 329th Infantry company investigated Fort National (unoccupied) and assaulted Grand Bey, capturing 150 Germans.",
+      "Sub-event_fulltext": {
+        "Paragraph_74": "With this surrender, all organized resistance on the north shore of the St. Malo peninsula came to an end. On two small islands several hundred yards offshore, tiny forts, Fort National and Grand Bey, each comprising several blockhouses, had to be investigated. At low tide on 16 August a rifle company of the 329th Infantry marched across the sand to Fort National and found it unoccupied. The same company then assaulted Grand Bey. \"Went in under a smoke screen, took them by surprise, tossed a few hand grenades, and they gave up.\" About 150 Germans surrendered."
+      },
+      "Footnote_References": [
+        47
+      ],
+      "Place_Name": "Grand Bey",
+      "Dates": {
+        "Date_group_of_event": "16 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "160000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "329th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "George W. Crabill",
+          "Name": "George W. Crabill",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [
+          {
+            "Unit": "Rifle Company",
+            "Name": null,
+            "Rank": null,
+            "Date": "16 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Company strength",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 150
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Grand Bey",
+        "Place_GPS_coordinate": "48.6611, -2.0519",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Grand Bey",
+        "Place_GPS_coordinate": "48.6611, -2.0519",
+        "Weather_text": "Historical weather near St. Malo on 16 August 1944: Temperatures 14-21°C, mostly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0519",
+          "East": "-1.0519",
+          "South": "47.7611",
+          "North": "49.5611"
+        }
+      }
+    },
+    {
+      "Event": "Siege Operations",
+      "Sub-event": "Rationale for Reducing Citadel",
+      "Sub-event_summary": "Activity preliminary to Citadel reduction; eliminate to prevent interference with shipping, soften resistance at Lorient/Brest, free 83d Division.",
+      "Sub-event_fulltext": {
+        "Paragraph_75": "All this activity was either preliminary or tangential to the main task, reduction of the Citadel, which was supported by fire from the island of Cézembre. Although there was no longer any possibility of using the destroyed port of St. Malo, the resistance had to be eliminated to keep the Citadel and Cézembre garrisons from interfering by fire with Allied shipping to Granville and Cancale. Continued opposition from them would give courage to the small isolated German groups in Brittany that still refused to surrender, while capitulation might have the effect of softening the will to resist at Lorient and Brest. Also, complete reduction of the St. Malo complex would free the 83d Division for employment elsewhere."
+      },
+      "Footnote_References": [
+        48
+      ],
+      "Place_Name": "Citadel",
+      "Dates": {
+        "Date_group_of_event": "August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Robert C. Macon",
+          "Name": "Robert C. Macon",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_C._Macon",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Weather_text": "Historical weather in St. Malo during August 1944: Temperatures 14-21°C, mostly cloudy, moderate precipitation.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0236",
+          "East": "-1.0236",
+          "South": "47.7392",
+          "North": "49.5392"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "45a",
+      "Footnote_Number": "45",
+      "Footnote_Text": "83d Div FO 26, 0100, 11 Aug",
+      "Footnote_Referenced_Source": "83d Division Field Order 26, 0100, 11 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division field order 26"
+    },
+    {
+      "Footnote": "45b",
+      "Footnote_Number": "45",
+      "Footnote_Text": "FO 27, 1900, 13 Aug",
+      "Footnote_Referenced_Source": "Field Order 27, 1900, 13 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request field order 27"
+    },
+    {
+      "Footnote": "45c",
+      "Footnote_Number": "45",
+      "Footnote_Text": "G-3 Per Rpt 18, 1200, 14 Aug",
+      "Footnote_Referenced_Source": "G-3 Periodic Report 18, 1200, 14 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request G-3 periodic report 18"
+    },
+    {
+      "Footnote": "46a",
+      "Footnote_Number": "46",
+      "Footnote_Text": "83d Div G-3 Per Rpt 19, 2400, 14 Aug",
+      "Footnote_Referenced_Source": "83d Division G-3 Periodic Report 19, 2400, 14 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-3 report 19"
+    },
+    {
+      "Footnote": "46b",
+      "Footnote_Number": "46",
+      "Footnote_Text": "Fouque, pp. 82-85.",
+      "Footnote_Referenced_Source": "R. Fouque, La CM, Bastion de la Forteresse de Saint-Malo, pages 82-85",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Fouque book"
+    },
+    {
+      "Footnote": "47",
+      "Footnote_Number": "47",
+      "Footnote_Text": "83d Div G-3 Per Rpt 21, 2400, 16 Aug.",
+      "Footnote_Referenced_Source": "83d Division G-3 Periodic Report 21, 2400, 16 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-3 report 21"
+    },
+    {
+      "Footnote": "48",
+      "Footnote_Number": "48",
+      "Footnote_Text": "Eisenhower to CCS, FWD-13083, 13 Aug, SGS SHAEF File 381, Overlord, I (b).",
+      "Footnote_Referenced_Source": "Message, Eisenhower to CCS, FWD-13083, 13 August, SGS SHAEF File 381, Overlord, I (b)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request SHAEF files on Overlord"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

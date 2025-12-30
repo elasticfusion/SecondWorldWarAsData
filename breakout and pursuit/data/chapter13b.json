@@ -1,0 +1,1547 @@
+{
+  "Events": [
+    {
+      "Event": "Penetration",
+      "Sub-event": "330th Infantry actions on 26 July",
+      "Sub-event_summary": "The 330th Infantry, tasked with safeguarding the COBRA flank, faced determined German paratroopers. Tank destroyer fire ceased, but resistance delayed progress. The regiment crossed the Périers-St. Lô highway late in the evening but was denied the crossroads objective.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "On the morning of 26 July, the situation from the American point of view did not appear very bright. On the right of VII Corps, the 330th Infantry, which was to safeguard the flank of the COBRA main effort by cutting the Périers-St. Lô highway, securing a road intersection, and turning gradually westward, was hopeful of accomplishing its missions early on 26 July, for the tank destroyer fire that had been harassing the regiment from Marchésieux ceased. But it soon became evident that the German paratroopers in opposition were as determined as ever. Not until late in the evening was the 330th Infantry able to cross the Périers-St. Lô highway, and even then the Germans continued to deny the regiment its crossroads objective."
+      },
+      "Footnote_References": [
+        "6",
+        "7"
+      ],
+      "Place_Name": "Périers-St. Lô highway crossroads near Marchésieux",
+      "Dates": {
+        "Date_group_of_event": "26 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 260000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "330th Infantry Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "83d Infantry Division",
+              "Commander": "William C. McMahon",
+              "Name": "William C. McMahon",
+              "Rank": "Major General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/William_C._McMahon",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            },
+            {
+              "Unit": "VII Corps",
+              "Commander": "J. Lawton Collins",
+              "Name": "J. Lawton Collins",
+              "Rank": "Lieutenant General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/J._Lawton_Collins",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Fully staffed assumed",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [
+              {
+                "Origination_Country": "US",
+                "Name": "Tank Destroyer",
+                "Identifier": "M10 or M18",
+                "Quantity": "Unknown",
+                "Web_Reference": "https://en.wikipedia.org/wiki/M10_tank_destroyer",
+                "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/4/4f/M10_Wolverine.jpg",
+                "Web_Reference_Capture_Date": "22 Dec 2025"
+              }
+            ],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "5th Parachute Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "Panzer Lehr Division",
+              "Commander": "Fritz Bayerlein",
+              "Name": "Fritz Bayerlein",
+              "Rank": "Lieutenant General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Fritz_Bayerlein",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            },
+            {
+              "Unit": "LXXXIV Corps",
+              "Commander": "Dietrich von Choltitz",
+              "Name": "Dietrich von Choltitz",
+              "Rank": "General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Dietrich_von_Choltitz",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [
+              {
+                "Origination_Country": "DE",
+                "Name": "Paratrooper equipment",
+                "Identifier": "Standard infantry",
+                "Quantity": "Unknown",
+                "Web_Reference": "https://en.wikipedia.org/wiki/Fallschirmj%C3%A4ger_(World_War_II)",
+                "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/3/37/Fallschirmj%C3%A4ger.jpg",
+                "Web_Image_License": "Public domain",
+                "Web_Reference_Capture_Date": "22 Dec 2025"
+              }
+            ],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Cobra_Coutances.jpg/1200px-Cobra_Coutances.jpg",
+          "Description": "American soldiers advance during Operation Cobra",
+          "License": "Public domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway crossroads near Marchésieux",
+        "Place_GPS_coordinate": "49.1833°N 1.3°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "22 Dec 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Marchésieux",
+          "Place_GPS_coordinate": "49.1833°N 1.3°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.4",
+            "East": "-0.2",
+            "South": "48.2833",
+            "North": "50.0833"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Penetration",
+      "Sub-event": "9th Division actions on 26 July",
+      "Sub-event_summary": "General Eddy cleared the Marigny road for armored passage, maneuvered in a narrow zone against unharmed German forces, advancing 2.5 miles south and 2 miles west. Sustained 200 casualties, captured fewer prisoners, faced 353d Division threatening flank.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Instructed to permit the principal COBRA armored column to pass through his 9th Division zone, General Eddy on 26 July had to clear both enemy troops and his own from the Marigny road. He had to prevent the enemy from cutting the road and thereby blunting the main COBRA thrust. Restricted to a narrow zone of operations and facing German forces unharmed by the COBRA bombardment, General Eddy maneuvered his units so that the 9th Division by the end of the day was two and a half miles south of the Périers-St. Lô highway and almost two miles west of the Marigny road. The division had sustained almost 200 casualties and had captured somewhat fewer prisoners. Although General Eddy had prevented his own troops from hampering an armored column moving south and had kept the Marigny road clear of enemy fire to the extent of his penetration, he faced the opposition of the 353d Division, which, in trying to retake la Chapelle-en-Juger, threatened the VII Corps right flank."
+      },
+      "Footnote_References": [
+        "8"
+      ],
+      "Place_Name": "Marigny road",
+      "Dates": {
+        "Date_group_of_event": "26 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 260000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "9th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "VII Corps",
+              "Commander": "J. Lawton Collins",
+              "Name": "J. Lawton Collins",
+              "Rank": "Lieutenant General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/J._Lawton_Collins",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "39th Infantry Regiment",
+              "Name": "Unknown",
+              "Rank": "Colonel",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            }
+          ],
+          "Personnel": "14253 (standard triangular division)",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "353d Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "LXXXIV Corps",
+              "Commander": "Dietrich von Choltitz",
+              "Name": "Dietrich von Choltitz",
+              "Rank": "General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Dietrich_von_Choltitz",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 200,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 150
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Marigny road",
+        "Place_GPS_coordinate": "49.1°N 1.2333°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "22 Dec 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Marigny",
+          "Place_GPS_coordinate": "49.1°N 1.2333°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.3333",
+            "East": "-0.1333",
+            "South": "48.2",
+            "North": "50.0"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Penetration",
+      "Sub-event": "8th Infantry of the 4th Division actions on 26 July",
+      "Sub-event_summary": "The 8th Infantry took la Chapelle-en-Juger in the morning, advanced south, overran part of the 353d Division, put Panzer Lehr artillery to flight, captured a company of German troops, cut the Coutances-St. Lô highway, reaching five miles south of COBRA line.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "The 8th Infantry of the 4th Division took la Chapelle-en-Juger in the early morning of 26 July. Combat patrols had entered the village during the night, but the village crossroads was not secured until morning. Continuing south, the regiment moved slowly, clearing isolated enemy groups. Commitment of the reserve battalion in the afternoon provided enough added weight for a three-mile surge that overran part of the 353d Division and put Panzer Lehr artillery units to flight. Early that evening the leading troops engaged what seemed like the remnants of a German battalion, captured about a company of miscellaneous troops, and destroyed or dispersed the others. The regiment cut the Coutances--St. Lô highway and at the end of the day was about five miles south of the COBRA line of departure."
+      },
+      "Footnote_References": [
+        "9",
+        "10"
+      ],
+      "Place_Name": "la Chapelle-en-Juger",
+      "Dates": {
+        "Date_group_of_event": "26 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 260000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "8th Infantry Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "4th Infantry Division",
+              "Commander": "Raymond O. Barton",
+              "Name": "Raymond O. Barton",
+              "Rank": "Major General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Raymond_O._Barton",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            },
+            {
+              "Unit": "VII Corps",
+              "Commander": "J. Lawton Collins",
+              "Name": "J. Lawton Collins",
+              "Rank": "Lieutenant General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/J._Lawton_Collins",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": [
+              {
+                "Origination_Country": "DE",
+                "Name": "Artillery units",
+                "Identifier": "Various",
+                "Quantity": "Unknown",
+                "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_Lehr_Division",
+                "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/1/1f/Panzer_Lehr_Division_insignia.svg",
+                "Web_Reference_Capture_Date": "22 Dec 2025"
+              }
+            ]
+          }
+        },
+        {
+          "Unit": "Panzer Lehr Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "LXXXIV Corps",
+              "Commander": "Dietrich von Choltitz",
+              "Name": "Dietrich von Choltitz",
+              "Rank": "General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Dietrich_von_Choltitz",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [
+              {
+                "Origination_Country": "DE",
+                "Name": "Panther tank",
+                "Identifier": "PzKpfw V",
+                "Quantity": "45",
+                "Web_Reference": "https://en.wikipedia.org/wiki/Panther_tank",
+                "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/9/98/Panther_tank_2.jpg",
+                "Web_Image_License": "Public domain",
+                "Web_Reference_Capture_Date": "22 Dec 2025"
+              },
+              {
+                "Origination_Country": "DE",
+                "Name": "Pz IV tank",
+                "Identifier": "PzKpfw IV",
+                "Quantity": "40",
+                "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+                "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Panzer_IV_Ausf_H.jpg",
+                "Web_Image_License": "Public domain",
+                "Web_Reference_Capture_Date": "22 Dec 2025"
+              }
+            ],
+            "Axis_Destroyed": [
+              {
+                "Origination_Country": "DE",
+                "Name": "Tank",
+                "Identifier": "Various",
+                "Quantity": "10",
+                "Web_Reference": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                "Web_Image_Reference": null,
+                "Web_Reference_Capture_Date": "22 Dec 2025"
+              },
+              {
+                "Origination_Country": "DE",
+                "Name": "Assault gun",
+                "Identifier": "StuG",
+                "Quantity": "14",
+                "Web_Reference": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                "Web_Image_Reference": null,
+                "Web_Reference_Capture_Date": "22 Dec 2025"
+              }
+            ]
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 50,
+          "Axis_DE_Prisoner_of_War": 100
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.flamesofwar.com/Portals/0/all_images/Historical/Cobra/US-Sherman-03.jpg",
+          "Description": "US Sherman tanks during Operation COBRA",
+          "License": "Commercial"
+        }
+      ],
+      "Place": {
+        "Place_Name": "la Chapelle-en-Juger",
+        "Place_GPS_coordinate": "49.1333°N 1.2°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "22 Dec 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "la Chapelle-en-Juger",
+          "Place_GPS_coordinate": "49.1333°N 1.2°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.3",
+            "East": "-0.1",
+            "South": "48.2333",
+            "North": "50.0333"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Penetration",
+      "Sub-event": "30th Division actions on 26 July",
+      "Sub-event_summary": "The 30th Division protected the flank and allowed armored passage. Enemy artillery checked advance in morning, but counterbattery fire enabled progress in afternoon as armored column passed toward St. Gilles.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "On the corps left, the 30th Division had not only to protect the COBRA flank but also to permit an American armored column to pass through the division zone for exploitation beyond St. Gilles. Enemy artillery fire from what was estimated to be one medium and three light battalions, as well as from several 88-mm. guns, checked any real advance during the morning of 26 July; but counterbattery missions delivered by the artillery units of the 30th Division, the VII Corps, and the XIX Corps produced the desired effect early that afternoon. As the division began to advance against diminishing artillery and mortar fire, an armored column passed through the division zone and drove toward St. Gilles."
+      },
+      "Footnote_References": [
+        "11"
+      ],
+      "Place_Name": "St. Gilles",
+      "Dates": {
+        "Date_group_of_event": "26 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 260000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "30th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "VII Corps",
+              "Commander": "J. Lawton Collins",
+              "Name": "J. Lawton Collins",
+              "Rank": "Lieutenant General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/J._Lawton_Collins",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [
+              {
+                "Origination_Country": "US",
+                "Name": "Artillery",
+                "Identifier": "105mm howitzer",
+                "Quantity": "Unknown",
+                "Web_Reference": "https://en.wikipedia.org/wiki/M101_howitzer",
+                "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/2/2a/M101A1_howitzer_105mm.jpg",
+                "Web_Reference_Capture_Date": "22 Dec 2025"
+              }
+            ],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [
+              {
+                "Origination_Country": "DE",
+                "Name": "88-mm gun",
+                "Identifier": "8.8 cm Flak 18/36/37/41",
+                "Quantity": "Several",
+                "Web_Reference": "https://en.wikipedia.org/wiki/8.8_cm_Flak_18/36/37/41",
+                "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/5/59/8.8_cm_Flak_37.jpg",
+                "Web_Image_License": "Public domain",
+                "Web_Reference_Capture_Date": "22 Dec 2025"
+              }
+            ],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Gilles",
+        "Place_GPS_coordinate": "49.1°N 1.1667°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "22 Dec 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "St. Gilles",
+          "Place_GPS_coordinate": "49.1°N 1.1667°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.2667",
+            "East": "-0.0667",
+            "South": "48.2",
+            "North": "50.0"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Penetration",
+      "Sub-event": "117th Infantry actions on 26 July",
+      "Sub-event_summary": "The 117th Infantry was stopped at a steep ravine by a line held by part of the 352d Division supported by artillery. Five attempts failed; reluctant to request air support due to bombing errors. Advanced in evening after mortar preparation and German withdrawal.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "The 117th Infantry, attacking toward the loop of the Vire River, was stopped at a steep ravine where a well-positioned line held by part of the 352d Division was supported by II Parachute Corps artillery firing from the high ground south of St. Lô. The regiment made five different attempts to overcome the resistance, but without success. Though close support by fighter-bombers might have aided the attack, General Hobbs was reluctant to request it because he feared a repetition of bombing errors. Accepting the apprehension as valid, General Collins did not press for the employment of tactical air. Not until evening, after a heavy 4.2-inch mortar preparation that coincided with a German withdrawal, did the regiment cross the ravine and move quickly to the entrance of the loop, less than two miles west of St. Lô."
+      },
+      "Footnote_References": [
+        "12"
+      ],
+      "Place_Name": "Vire River loop",
+      "Dates": {
+        "Date_group_of_event": "26 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 260000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "117th Infantry Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "30th Infantry Division",
+              "Commander": "Leland S. Hobbs",
+              "Name": "Leland S. Hobbs",
+              "Rank": "Major General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [
+              {
+                "Origination_Country": "US",
+                "Name": "4.2-inch mortar",
+                "Identifier": "M2 4.2-inch mortar",
+                "Quantity": "Heavy preparation",
+                "Web_Reference": "https://en.wikipedia.org/wiki/M2_4.2-inch_mortar",
+                "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/5/5f/M2_4.2_inch_mortar.jpg",
+                "Web_Reference_Capture_Date": "22 Dec 2025"
+              }
+            ],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "352d Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "II Parachute Corps",
+              "Commander": "Eugen Meindl",
+              "Name": "Eugen Meindl",
+              "Rank": "General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Eugen_Meindl",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [
+              {
+                "Origination_Country": "DE",
+                "Name": "Artillery",
+                "Identifier": "Various",
+                "Quantity": "Unknown",
+                "Web_Reference": "https://en.wikipedia.org/wiki/352nd_Infantry_Division_(Wehrmacht)",
+                "Web_Image_Reference": null,
+                "Web_Image_License": null,
+                "Web_Reference_Capture_Date": "22 Dec 2025"
+              }
+            ],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River loop west of St. Lô",
+        "Place_GPS_coordinate": "49.1167°N 1.1333°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "22 Dec 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Vire River loop",
+          "Place_GPS_coordinate": "49.1167°N 1.1333°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.2333",
+            "East": "-0.0333",
+            "South": "48.2167",
+            "North": "50.0167"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Penetration",
+      "Sub-event": "119th Infantry actions on 26 July",
+      "Sub-event_summary": "The 119th Infantry advanced two miles south of Hébécrevon, cut the Coutances-St. Lô highway, then tasked with cutting Canisy-St. Lô highway, reaching halfway by nightfall, three miles south of pre-COBRA positions.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "The 119th Infantry, the other assault regiment, moved rapidly in the afternoon for two miles south of Hébécrevon and cut the Coutances-St. Lô highway. Given a new mission at once--cutting the Canisy-St. Lô highway two miles to the south--the regiment was half way to its objective by nightfall. At this point the leading troops of the 30th Division were more than three miles south of the pre-COBRA positions. By late afternoon of 26 July, General Collins no longer doubted that his forces had achieved a clear penetration of the enemy defenses. Deeming that the situation demanded speed rather than caution, he told the infantry divisions to continue their attacks through the night."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Hébécrevon",
+      "Dates": {
+        "Date_group_of_event": "26 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 260000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "119th Infantry Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "30th Infantry Division",
+              "Commander": "Leland S. Hobbs",
+              "Name": "Leland S. Hobbs",
+              "Rank": "Major General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hébécrevon",
+        "Place_GPS_coordinate": "49.1333°N 1.1667°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "22 Dec 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Hébécrevon",
+          "Place_GPS_coordinate": "49.1333°N 1.1667°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.2667",
+            "East": "-0.0667",
+            "South": "48.2333",
+            "North": "50.0333"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Penetration",
+      "Sub-event": "General Collins' directive and German withdrawal on 26 July",
+      "Sub-event_summary": "By late afternoon, Collins confirmed penetration and ordered night attacks. Coincided with German withdrawal west of Taute River to new line at Périers and Marchésieux, 6th Parachute Regiment to reserve, 352d Division withdrew to re-establish contact.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "By late afternoon of 26 July, General Collins no longer doubted that his forces had achieved a clear penetration of the enemy defenses. Deeming that the situation demanded speed rather than caution, he told the infantry divisions to continue their attacks through the night.",
+        "Paragraph_13": "General Collins' directive coincided with a German order to make a slight withdrawal. During the night of 26 July the German units west of the Taute River--those comprising the left of the LXXXIV Corps--withdrew slightly along the coast and took up a new line of defense anchored on Périers and Marchésieux. The 6th Parachute Regiment passed into the corps reserve at St. Sauveur-Lendelin. Just to the right of the corps boundary, the 352d Division of the II Parachute Corps, already outflanked, also withdrew from the loop of the Vire and along the west bank of the Vire River--in order to try to re-establish contact with Panzer Lehr."
+      },
+      "Footnote_References": [
+        "13",
+        "14"
+      ],
+      "Place_Name": "Taute River",
+      "Dates": {
+        "Date_group_of_event": "26 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 261500ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "VII Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "First US Army",
+              "Commander": "Omar Bradley",
+              "Name": "Omar Bradley",
+              "Rank": "Lieutenant General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "LXXXIV Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "Seventh Army",
+              "Commander": "Paul Hausser",
+              "Name": "Paul Hausser",
+              "Rank": "SS-Oberst-Gruppenführer",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "6th Parachute Regiment",
+              "Name": "Friedrich von der Heydte",
+              "Rank": "Oberst",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Friedrich_von_der_Heydte",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Taute River",
+        "Place_GPS_coordinate": "49.25°N 1.1667°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "22 Dec 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Taute River",
+          "Place_GPS_coordinate": "49.25°N 1.1667°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.2667",
+            "East": "-0.0667",
+            "South": "48.35",
+            "North": "50.15"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Penetration",
+      "Sub-event": "Night advances during 26-27 July",
+      "Sub-event_summary": "Except for 330th Infantry facing resistance, other units advanced. 9th Division secured road junction, 8th Infantry outflanked Panzer Lehr artillery and reserves, 30th Division moved into Vire loop and cut Canisy-St. Lô road.",
+      "Sub-event_fulltext": {
+        "Paragraph_14": "This could be no more than a hope, for by that time there was virtually no organized resistance between the 352d, and the 5th Parachute Divisions, though the German higher commands did not seem to know it. Although the 330th Infantry on the extreme right flank of the VII Corps again struck stonewall resistance, all the other infantry units advanced during the night of 26 July. The 9th Division secured a road junction of local importance. The 8th Infantry of the 4th Division, leaving its vehicles and antitank guns behind, moved unencumbered for several miles, outflanked both the Panzer Lehr artillery and the remaining reserves of the regiment of the 275th Division at Marigny, and, at dawn, hastened the flight of a withdrawing enemy column. Some troops of the 30th Division moved easily into the loop of the Vire River while others cut the Canisy--St. Lô road."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Marigny",
+      "Dates": {
+        "Date_group_of_event": "Night 26-27 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 262100ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "9th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "VII Corps",
+              "Commander": "J. Lawton Collins",
+              "Name": "J. Lawton Collins",
+              "Rank": "Lieutenant General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/J._Lawton_Collins",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.1°N 1.2333°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "22 Dec 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Marigny",
+          "Place_GPS_coordinate": "49.1°N 1.2333°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.3333",
+            "East": "-0.1333",
+            "South": "48.2",
+            "North": "50.0"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Penetration",
+      "Sub-event": "Infantry actions on 27 July",
+      "Sub-event_summary": "330th Infantry denied objective, but other units neared COBRA aims. 9th Division destroyed force of 200 Germans with tanks and guns. 4th Division advanced rapidly, cut Carantilly-Canisy road. 30th Division moved into Vire loop, secured bridges, 120th Inf drove six miles south.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "Except on the extreme right flank of the VII Corps where the 330th Infantry was denied for the third day the crossroads on the Périers-St. Lô highway that constituted its original objective, developments after daylight on 27 July indicated that the infantry was nearing fulfillment of its COBRA aims. The 9th Division, in a regimental attack against some 200 Germans, who were on a small ridge and were supported by four tanks and several antitank guns, destroyed the bulk of this force and dispersed the remainder. The 4th Division sent its reconnaissance troop ahead to screen a rapid advance. Strong resistance from enemy positions hastily erected during the night melted away. The 8th Infantry cut the Carantilly-Canisy road and proceeded to a point more than seven miles south of the Périers-St. Lô highway. To clear small pockets of bypassed Germans, General Barton committed portions of the 12th Infantry, which had been in division reserve since the commencement of COBRA.",
+        "Paragraph_16": "Contingents of the 30th Division moved all the way into the loop of the Vire River and established physical contact with the 35th Division at the St. Lô bridge. Other units secured the two Vire River bridges on the main roads south of St. Lô. General Hobbs committed his reserve regiment, the 120th, which drove south along the Vire River for almost six miles against little opposition. \"This thing has busted wide open,\" General Hobbs exulted. He was right. Evidence of German disintegration was plentiful. Some German soldiers were walking into command posts to surrender; other were fleeing south or across the Vire River."
+      },
+      "Footnote_References": [
+        "15",
+        "16",
+        "17"
+      ],
+      "Place_Name": "Carantilly",
+      "Dates": {
+        "Date_group_of_event": "27 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 270000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "4th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "VII Corps",
+              "Commander": "J. Lawton Collins",
+              "Name": "J. Lawton Collins",
+              "Rank": "Lieutenant General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/J._Lawton_Collins",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 100,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 100,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Carantilly",
+        "Place_GPS_coordinate": "49.0667°N 1.25°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "22 Dec 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Carantilly",
+          "Place_GPS_coordinate": "49.0667°N 1.25°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.35",
+            "East": "-0.15",
+            "South": "48.1667",
+            "North": "49.9667"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Penetration",
+      "Sub-event": "Final actions on 28 July and end of infantry COBRA",
+      "Sub-event_summary": "330th Infantry rejoined 83d Division without resistance. 9th Division ceased fire, passed to reserve. 4th Division mopped up for new operation. 30th Division advanced along Vire, passed from VII Corps control. Infantry COBRA ended.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "On the morning of 28 July, the 330th Infantry at last was able to move against virtually no resistance to rejoin its parent unit, the 83d Division. In the 9th Division sector, only an occasional round of artillery or mortar fire was falling by noon; small arms fire had ceased. Having fulfilled its COBRA assignment, the 9th Division passed into reserve for rest and reconstitution. The 4th Division mopped up isolated enemy remnants and prepared to move south in a new operation. The 30th Division, advancing south along the west bank of the Vire River, passed from control of the VII Corps. For the infantry units that had run interference, Operation COBRA had ended. General Hobbs perhaps typified infantry sentiment when he stated, \"We may be the spearhead that broke the camel's back.\""
+      },
+      "Footnote_References": [
+        "18"
+      ],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "28 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 280000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "83d Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "VII Corps",
+              "Commander": "J. Lawton Collins",
+              "Name": "J. Lawton Collins",
+              "Rank": "Lieutenant General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/J._Lawton_Collins",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.1167°N 1.1333°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "22 Dec 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Vire River",
+          "Place_GPS_coordinate": "49.1167°N 1.1333°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.2333",
+            "East": "-0.0333",
+            "South": "48.2167",
+            "North": "50.0167"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Penetration",
+      "Sub-event": "Award of Distinguished Service Cross to 2d Lt. Edward F. Koritzke",
+      "Sub-event_summary": "2d Lt. Koritzke led his platoon in an assault across open ground, inspiring his men to overrun enemy positions, but was killed in the action. Posthumously awarded the DSC.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "The 9th Division, in a regimental attack against some 200 Germans, who were on a small ridge and were supported by four tanks and several antitank guns, destroyed the bulk of this force and dispersed the remainder."
+      },
+      "Footnote_References": [
+        "15"
+      ],
+      "Place_Name": "Small ridge south of Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "27 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 270000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "9th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "VII Corps",
+              "Commander": "J. Lawton Collins",
+              "Name": "J. Lawton Collins",
+              "Rank": "Lieutenant General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/J._Lawton_Collins",
+              "Biographical_reference_Capture_Date": "22 Dec 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Edward F. Koritzke, 2d Lt.",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 1,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Small ridge south of Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167°N 1.0833°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "22 Dec 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Périers-St. Lô highway",
+          "Place_GPS_coordinate": "49.1167°N 1.0833°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.1833",
+            "East": "0.0167",
+            "South": "48.2167",
+            "North": "50.0167"
+          }
+        }
+      ]
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "6a",
+      "Footnote_Number": "6a",
+      "Footnote_Text": "Overlay to accompany 9th Div G-3 Per Rpt, 2400, 25 Jul",
+      "Footnote_Referenced_Source": "9th Div G-3 Per Rpt",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "6b",
+      "Footnote_Number": "6b",
+      "Footnote_Text": "83d Div G-2, G-3 Jnl, entry 0915, 26 Jul",
+      "Footnote_Referenced_Source": "83d Div G-2, G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "7a",
+      "Footnote_Number": "7a",
+      "Footnote_Text": "83d Div AAR, Jul, and G-3 Per Rpt 30, 26 Jul",
+      "Footnote_Referenced_Source": "83d Div AAR",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "7b",
+      "Footnote_Number": "7b",
+      "Footnote_Text": "9th Div G-3 Jnl, entries 1100, 1145, 2025, and 2100, 26 Jul",
+      "Footnote_Referenced_Source": "9th Div G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "8a",
+      "Footnote_Number": "8a",
+      "Footnote_Text": "9th Div G-3 Jnl, entries 1140, 1145, 1406, 1545, 2040, 26 Jul",
+      "Footnote_Referenced_Source": "9th Div G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "8b",
+      "Footnote_Number": "8b",
+      "Footnote_Text": "39th Inf S-3 Rpt, 26 Jul",
+      "Footnote_Referenced_Source": "39th Inf S-3 Rpt",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "8c",
+      "Footnote_Number": "8c",
+      "Footnote_Text": "VII Corps Sitreps 100 and 101, 26 Jul",
+      "Footnote_Referenced_Source": "VII Corps Sitreps",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "9a",
+      "Footnote_Number": "9a",
+      "Footnote_Text": "Telecon, Collins and Hobbs, 2215, 25 Jul, 30th Div G-3 Jnl and File",
+      "Footnote_Referenced_Source": "30th Div G-3 Jnl and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "9b",
+      "Footnote_Number": "9b",
+      "Footnote_Text": "8th Inf Msg, 1020, 26 Jul, 4th Div G-3 Jnl File",
+      "Footnote_Referenced_Source": "4th Div G-3 Jnl File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "10",
+      "Footnote_Number": "10",
+      "Footnote_Text": "4th Div AAR, Jul",
+      "Footnote_Referenced_Source": "4th Div AAR",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "11a",
+      "Footnote_Number": "11a",
+      "Footnote_Text": "30th Div G-2 Per Rpt, 26 Jul",
+      "Footnote_Referenced_Source": "30th Div G-2 Per Rpt",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "11b",
+      "Footnote_Number": "11b",
+      "Footnote_Text": "30th Div G-3 Jnl, 26 Jul",
+      "Footnote_Referenced_Source": "30th Div G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "12a",
+      "Footnote_Number": "12a",
+      "Footnote_Text": "Telecon, Hobbs and Kelly, 1535, 25 Jul, 30th Div G-3 Jnl and File",
+      "Footnote_Referenced_Source": "30th Div G-3 Jnl and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "12b",
+      "Footnote_Number": "12b",
+      "Footnote_Text": "30th Div FO 14, 25 Jul",
+      "Footnote_Referenced_Source": "30th Div FO 14",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "12c",
+      "Footnote_Number": "12c",
+      "Footnote_Text": "MS # B-489 (Ziegelmann)",
+      "Footnote_Referenced_Source": "MS # B-489 (Ziegelmann)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Foreign Military Studies, MS # B-489"
+    },
+    {
+      "Footnote": "13",
+      "Footnote_Number": "13",
+      "Footnote_Text": "VII Corps Opns Memo 49, 27 Jul (confirming oral orders, 26 Jul)",
+      "Footnote_Referenced_Source": "VII Corps Opns Memo 49",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "14a",
+      "Footnote_Number": "14a",
+      "Footnote_Text": "MS # P-159 (Stoeckler)",
+      "Footnote_Referenced_Source": "MS # P-159 (Stoeckler)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Foreign Military Studies, MS # P-159"
+    },
+    {
+      "Footnote": "14b",
+      "Footnote_Number": "14b",
+      "Footnote_Text": "MS # B-839 (Heydte)",
+      "Footnote_Referenced_Source": "MS # B-839 (Heydte)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Foreign Military Studies, MS # B-839"
+    },
+    {
+      "Footnote": "14c",
+      "Footnote_Number": "14c",
+      "Footnote_Text": "MS # B-439 (Ziegelmann)",
+      "Footnote_Referenced_Source": "MS # B-439 (Ziegelmann)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Foreign Military Studies, MS # B-439"
+    },
+    {
+      "Footnote": "15",
+      "Footnote_Number": "15",
+      "Footnote_Text": "Leading his platoon in an assault across open ground in view of the enemy, 2d Lt. Edward F. Koritzke was killed but inspired his men to overrun the hostile positions. Koritzke was posthumously awarded the DSC.",
+      "Footnote_Referenced_Source": "Citation text",
+      "Web_Link": "https://9thinfantrydivision.net/distinguished-service-cross/",
+      "Web_Link_Capture_Date": "22 Dec 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "16",
+      "Footnote_Number": "16",
+      "Footnote_Text": "4th Div Msg, 1015, 27 Jul, 30th Div G-3 Jnl and File",
+      "Footnote_Referenced_Source": "30th Div G-3 Jnl and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "17a",
+      "Footnote_Number": "17a",
+      "Footnote_Text": "Telecon, Hobbs and Birks, 2300, 27 Jul, 30th Div Jnl and File",
+      "Footnote_Referenced_Source": "30th Div Jnl and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "17b",
+      "Footnote_Number": "17b",
+      "Footnote_Text": "30th Div G-3 Jnl, entries 0725, 2033, and 2100, 27 Jul",
+      "Footnote_Referenced_Source": "30th Div G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "18",
+      "Footnote_Number": "18",
+      "Footnote_Text": "Telecon, Hobbs and Birks, 2300, 27 Jul, 30th Div Jnl and File",
+      "Footnote_Referenced_Source": "30th Div Jnl and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn13.html",
+  "Source_Footnote_Link_Capture_Date": "22 Dec 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+  "Source_Link_Capture_Date": "22 Dec 2025"
+}

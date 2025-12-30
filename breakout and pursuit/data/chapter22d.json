@@ -1,0 +1,1970 @@
+{
+  "Events": [
+    {
+      "Event": "Don't Be Surprised",
+      "Sub-event": "Mission for Third Army and Introduction",
+      "Sub-event_summary": "On 3 August, General Bradley outlined the Third Army's mission excluding Brittany, focusing on securing the Mayenne River and protecting the Loire flank. Patton introduced the XX Corps to assist, while contemplating further advances to le Mans, hinting at potential encirclement of German forces.",
+      "Sub-event_fulltext": {
+        "Paragraph_25": "Exclusive of Brittany, the mission outlined for the Third Army by General Bradley on 3 August had both offensive and defensive implications. General Patton was to secure a sixty-mile stretch of the north-south Mayenne River between Mayenne and Château-Gontier and to seize bridgeheads across the river. He also was to protect his right flank along the Loire River west of Angers, part of the southern flank of the OVERLORD lodgment area.",
+        "Paragraph_26": "Because this task was too great for the XV Corps alone, General Patton brought in the XX Corps to secure the Mayenne River south of Château-Gontier and to protect the Loire River flank. While the XV Corps was to drive about thirty miles southeast to the water line between Mayenne and Château-Gontier, the XX Corps was to move south toward the Loire. Although Patton assigned no further objectives, he was thinking of an eventual Third Army advance forty-five miles beyond Laval to le Mans--to the east. When, by which unit, and how this was to be done he did not say, but the obvious presumption that the XV Corps would continue eastward beyond the Mayenne River was not necessarily correct. \"Don't be surprised,\"",
+        "Paragraph_27": "Patton told Haislip, if orders were issued for movement to the northeast or even to the north. The implication was clear. Patton had sniffed the opportunity to encircle the Germans west of the Seine River, and he apparently liked what he smelled."
+      },
+      "Footnote_References": [
+        45,
+        46
+      ],
+      "Place_Name": "Mayenne River",
+      "Dates": {
+        "Date_group_of_event": "030000Zaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "022300Zaug44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "XV Corps",
+            "Name": "Wade H. Haislip",
+            "Rank": "Major General",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Wade_H._Haislip",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "XX Corps",
+            "Name": "Walton H. Walker",
+            "Rank": "Major General",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Walton_H._Walker",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "",
+          "Description": "",
+          "License": ""
+        }
+      ],
+      "Place": {
+        "Place_Name": "Mayenne River",
+        "Place_GPS_coordinate": "48.3000, -0.6167",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.historiascripta.org/wp-content/uploads/2024/04/unleashing-the-unstoppable-general-pattons-march-to-victory-map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mayenne River",
+        "Place_GPS_coordinate": "48.3000, -0.6167",
+        "Weather_text": "Mild temperatures with occasional rain, typical for western France in August 1944. Daily highs around 25°C (77°F), lows around 14°C (58°F).",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.6167,
+          "East": 0.6167,
+          "South": 47.3000,
+          "North": 49.3000
+        }
+      }
+    },
+    {
+      "Event": "Don't Be Surprised",
+      "Sub-event": "Planning the XV Corps Advance",
+      "Sub-event_summary": "General Haislip planned the advance using the 106th Cavalry Group to screen the 90th and 79th Divisions, with the 5th Armored Division extending the front. The Mayenne River posed a significant obstacle, with limited intelligence on enemy forces.",
+      "Sub-event_fulltext": {
+        "Paragraph_28": "General Haislip planned to use the 106th Cavalry Group to screen the advance of the 90th Division from St. Hilaire to Mayenne and that of the 79th Division from Fougères to Laval. While the infantry divisions secured bridgeheads across the Mayenne River, the 5th Armored Division was to move south and southeast from Avranches and extend the corps front to Château-Gontier. French Resistance groups near Mayenne and Laval, numbering about 2,500 organized members, were to help by harassing the German garrisons. If the American troops met pockets of resistance, they were to go around them. \"Don't stop,\" Patton ordered.",
+        "Paragraph_29": "Sweeping through enemy territory for thirty miles and crossing a river that was a serious military obstacle was an ambitious program. The Mayenne was a steep-banked stream about one hundred feet wide and five feet deep. All the bridges except one at the town of Mayenne had been destroyed. Enemy interference was conjectural. \"Nobody knows anything about the enemy,\" the corps G-2 stated, \"because nothing can be found out about them.\"",
+        "Paragraph_30": "Air reconnaissance helped little. The reports of air reconnaissance missions filtered down to corps level too late to be of assistance. \"Each day we would get a thick book from the air force,\" General Haislip recalled long afterwards, \"and we would have to try to figure out what if anything in it applied to our little spot on the map. By the time we could figure it out, we were far away from there.\""
+      },
+      "Footnote_References": [
+        47,
+        48
+      ],
+      "Place_Name": "Mayenne",
+      "Dates": {
+        "Date_group_of_event": "APPROX 050000Zaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "APPROX 042300Zaug44"
+      },
+      "TOE": {
+        "Unit": "XV Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "Wade H. Haislip",
+          "Name": "Wade H. Haislip",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Wade_H._Haislip",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "90th Division",
+            "Name": "Raymond S. McLain",
+            "Rank": "Major General",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Raymond_S._McLain",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "79th Division",
+            "Name": "Ira T. Wyche",
+            "Rank": "Major General",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Ira_T._Wyche",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "5th Armored Division",
+            "Name": "Lunsford E. Oliver",
+            "Rank": "Major General",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Lunsford_E._Oliver",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "106th Cavalry Group",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "",
+          "Description": "",
+          "License": ""
+        }
+      ],
+      "Place": {
+        "Place_Name": "Mayenne",
+        "Place_GPS_coordinate": "48.3000, -0.6167",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhl6JHPn1cNucCRIzh6zC3aeODmWynn1zICncUMW4gcIxJWa-Uy3ljBnv5laSAxBJ8i0Mek2U5vsECbitp4qyeBGUeJgVptoFEVJHuv8LvPojnqTPFk3Cvg63Gq9GOG5kgBn7MovtLIgw4/s1600/normandy.png",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mayenne",
+        "Place_GPS_coordinate": "48.3000, -0.6167",
+        "Weather_text": "Variable weather with strong winds and rough seas in early August, improving mid-month; typical temperatures around 20°C with rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.6167,
+          "East": 0.6167,
+          "South": 47.3000,
+          "North": 49.3000
+        }
+      }
+    },
+    {
+      "Event": "Don't Be Surprised",
+      "Sub-event": "German Preparations",
+      "Sub-event_summary": "German forces were sparse in the area, with only weak detachments in Mayenne and Laval. Efforts to reinforce with LXXXI Corps, 708th Infantry, and 9th Panzer Divisions were underway, but not in position by the American attack on 5 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_31": "Nothing could be found out about the Germans because there were hardly any Germans left. Only weak rear-echelon guard and supply detachments garrisoned Mayenne and Laval. Even though a captured American field order led the German command to expect the main American thrust to be made westward into Brittany, not eastward toward Laval and le Mans, the Germans considered that the lack of combat troops in the Laval-le Mans region still had to be remedied. The *LXXXI Corps* headquarters was moving from the Seine-Somme sector to assume responsibility for Laval and le Mans, and the *708th Infantry* and the *9th Panzer Divisions* were moving north f rom southern France. Because neither the corps headquarters nor the divisions had yet arrived (the leading units of the *708th* were across the Loire near Angers on 3 August), the *Seventh Army* operations officer was dispatched to the army rear command post at le Mans to organize a defense of the Mayenne-Loire area and to accelerate the movement of the arriving forces. Laval in particular was important, for its loss would threaten le Mans and Alençon, where vital German communications and supply centers were located. The army operations officer collected",
+        "Paragraph_32": "the troops he could find--remnants, stragglers, supply personnel--and as his first measure reinforced a two-battalion security regiment performing guard duty and a flak battalion with 88-mm. guns emplaced at Laval. Despite the fact that Laval could then be considered relatively strongly held, alarming reports of troop instability and the increasing possibility of an American thrust to the east led to frantic but generally unsuccessful efforts to speed up the commitment of the incoming divisions in the Mayenne-Alençon area.",
+        "Paragraph_33": "These forces were not in position when the XV U.S. Corps launched its attack on 5 August."
+      },
+      "Footnote_References": [
+        49
+      ],
+      "Place_Name": "Laval",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING aug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "BEGINNING aug44"
+      },
+      "TOE": {
+        "Unit": "LXXXI Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Adolf Kuntzen",
+          "Name": "Adolf Kuntzen",
+          "Rank": "General der Panzertruppe",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Adolf_Kuntzen",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "708th Infantry Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "9th Panzer Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "Weak rear-echelon guard and supply detachments, remnants, stragglers, supply personnel.",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "88-mm gun",
+            "Identifier": "Flak 88",
+            "Quantity": "battalion",
+            "Web_Reference": "https://en.wikipedia.org/wiki/8.8_cm_Flak_18/36/37/41",
+            "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Bundesarchiv_Bild_101I-635-3999-24%2C_Im_Westen%2C_Flak-Soldaten.jpg/800px-Bundesarchiv_Bild_101I-635-3999-24%2C_Im_Westen%2C_Flak-Soldaten.jpg",
+            "Web_Image_License": "CC BY-SA 3.0 de",
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "",
+          "Description": "",
+          "License": ""
+        }
+      ],
+      "Place": {
+        "Place_Name": "Laval",
+        "Place_GPS_coordinate": "48.07320, -0.76667",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.normandyamericanheroes.com/hs-fs/hubfs/US_advance_into_Brittany.jpg?width=1000&height=708&name=US_advance_into_Brittany.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Laval",
+        "Place_GPS_coordinate": "48.07320, -0.76667",
+        "Weather_text": "Mild with downpours and variable conditions, as reported in historical accounts for August 1944 in western France. Average highs 25°C, lows 14°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.76667,
+          "East": 0.76667,
+          "South": 47.07320,
+          "North": 49.07320
+        }
+      }
+    },
+    {
+      "Event": "Don't Be Surprised",
+      "Sub-event": "Advance of 90th Division to Mayenne",
+      "Sub-event_summary": "On 5 August, Task Force Weaver of the 90th Division advanced 30 miles to Mayenne, capturing the town and intact bridge despite defensive activity, allowing the division to secure the area.",
+      "Sub-event_fulltext": {
+        "Paragraph_34": "On the XV Corps left, General McLain entrusted the 90th Division advance to Mayenne to a task force under the assistant division commander, Brig. Gen. William G. Weaver. Proving that facile capture of St. Hilaire had been no fluke, Weaver's force reduced several roadblocks, overran or bypassed pockets of resistance, and covered the thirty miles to the west bank of the Mayenne River in less than half a day, before noon of 5 August. Finding the highway bridge leading into the town of Mayenne still intact, but discovering also that the arrival of American troops had stirred up frenzied defensive activity, Weaver dispatched two infantry battalions to outflank the town on the south. No sooner had he done so than he became impatient and ordered the remainder of his task force to make a frontal assault by way of the bridge. The frontal attack succeeded, and even before the outflanking force had arrived in position, Mayenne had fallen. Although the Germans had mined the bridge, the 90th Division attack had forestalled demolition. While Task Force Weaver occupied Mayenne, the remainder of the division moved forward from St. Hilaire on a broader front to the Mayenne River, where engineers constructed additional bridges."
+      },
+      "Footnote_References": [
+        50,
+        51
+      ],
+      "Place_Name": "Mayenne",
+      "Dates": {
+        "Date_group_of_event": "051100Zaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "051000Zaug44"
+      },
+      "TOE": {
+        "Unit": "90th Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XV Corps",
+          "Commander": "Raymond S. McLain",
+          "Name": "Raymond S. McLain",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Raymond_S._McLain",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Task Force Weaver",
+            "Name": "William G. Weaver",
+            "Rank": "Brigadier General",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "",
+          "Description": "",
+          "License": ""
+        }
+      ],
+      "Place": {
+        "Place_Name": "Mayenne",
+        "Place_GPS_coordinate": "48.3000, -0.6167",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Mayenne",
+        "Place_GPS_coordinate": "48.3000, -0.6167",
+        "Weather_text": "Mild temperatures with occasional rain, typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.6167,
+          "East": 0.6167,
+          "South": 47.3000,
+          "North": 49.3000
+        }
+      }
+    },
+    {
+      "Event": "Don't Be Surprised",
+      "Sub-event": "Advance of 79th Division to Laval",
+      "Sub-event_summary": "The 79th Division's task force advanced to Laval on 5-6 August, overcoming roadblocks and capturing prisoners. By 7 August, they crossed the river and entered the city unopposed after the Germans evacuated.",
+      "Sub-event_fulltext": {
+        "Paragraph_35": "To capture Laval, General Wyche built a 79th Division task force around Colonel Wood's motorized 313th Infantry and sent it along the main Fougères-Laval highway, which had previously been reconnoitred by a squadron of the 106th Cavalry Group. Half way to Laval, a strong roadblock halted progress for about two hours while the leading units reduced the resistance and captured about fifty prisoners and several field guns. Additional roadblocks held up the task force briefly, and it was midnight of 5 August before American troops reached a point about two miles northwest of Laval. During the night of 5-6 August, while the remainder of the 79th Division moved forward from Fougères, patrols discovered that the German garrison had thoroughly destroyed the Mayenne River bridges but had evacuated Laval. On the following",
+        "Paragraph_36": "morning, against no opposition, the division crossed the river and entered Laval in force--one infantry battalion being led across a dam by French policemen, two battalions crossing the river on an engineer footbridge, another paddling across on rafts and in boats found along the west bank, and two battalions being ferried across by engineers who had rushed up assault boats. A treadway bridge spanned the river shortly after midnight, and a floating Bailey bridge was opened to traffic at noon, 7 August."
+      },
+      "Footnote_References": [
+        52,
+        53
+      ],
+      "Place_Name": "Laval",
+      "Dates": {
+        "Date_group_of_event": "060000Zaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "052300Zaug44"
+      },
+      "TOE": {
+        "Unit": "79th Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XV Corps",
+          "Commander": "Ira T. Wyche",
+          "Name": "Ira T. Wyche",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Ira_T._Wyche",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "313th Infantry",
+            "Name": "Wood",
+            "Rank": "Colonel",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "field gun",
+            "Identifier": "",
+            "Quantity": "several",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 50
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "",
+          "Description": "",
+          "License": ""
+        }
+      ],
+      "Place": {
+        "Place_Name": "Laval",
+        "Place_GPS_coordinate": "48.07320, -0.76667",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Laval",
+        "Place_GPS_coordinate": "48.07320, -0.76667",
+        "Weather_text": "Mild temperatures with occasional rain, typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.76667,
+          "East": 0.76667,
+          "South": 47.07320,
+          "North": 49.07320
+        }
+      }
+    },
+    {
+      "Event": "Don't Be Surprised",
+      "Sub-event": "Change of Axis to le Mans",
+      "Sub-event_summary": "By 5 August, weak opposition allowed Patton to direct the XV Corps to le Mans, changing the axis eastward. Haislip urged maximum effort for the 45-mile advance over defensible terrain to capture the city.",
+      "Sub-event_fulltext": {
+        "Paragraph_37": "Even before the capture of Laval, it had become obvious that only insignificant and disorganized forces opposed the XV Corps. As soon as Mayenne fell on 5 August, Patton received permission to send the corps on to le Mans. The corps axis of advance thus changed from the southeast to the east.",
+        "Paragraph_38": "Emphasizing that action during the next few days might be decisive for the entire campaign in western Europe, Haislip urged his commanders \"to push all personnel to the limit of human endurance.\" This was not idle talk, for the corps had a large order to fill. To take le Mans the corps, with both flanks open, would have to advance across forty-five miles of highly defensible terrain, cross a major military obstacle in the form of the Sarthe River, and capture a city of 75,000 population that the Germans presumably not only intended to defend but also had had ample time to fortify.",
+        "Paragraph_39": "The presumption was not altogether wrong. By this time the reconnaissance battalion of the *9th Panzer Division* and parts of the leading regiment of the *708th Infantry Division* had reached the vicinity of le Mans. Instead of holding these units and allowing the remaining portions of both divisions to assemble, the *LXXXI Corps* committed the small forces at once. The premature and, in the opinion of the Germans, disgraceful capitulation at Laval made necessary the immediate evacuation of administrative personnel from le Mans, long the location of the *Seventh Army* headquarters. With Laval lost, the Germans had to expect an American thrust along the Laval-le Mans highway and a subsequent threat to *Seventh Army* and *Army Group B* rear installations and supply dumps. Hastily trying to build up a front to deny the important center of le Mans, the *LXXXI Corps* dispatched units of the *708th Division* (arriving on foot and with horse-drawn vehicles) and the *9th Panzer Division* reconnaissance battalion west toward the Mayenne River line as soon as they arrived. These advance components were to collide with American columns near Aron and Evron in true meeting engagements."
+      },
+      "Footnote_References": [
+        54,
+        55,
+        56,
+        57,
+        58
+      ],
+      "Place_Name": "le Mans",
+      "Dates": {
+        "Date_group_of_event": "050000Zaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "042300Zaug44"
+      },
+      "TOE": {
+        "Unit": "708th Infantry Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXI Corps",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [
+          {
+            "Unit": "",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "Arriving on foot and with horse-drawn vehicles.",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.historiascripta.org/wp-content/uploads/2024/04/unleashing-the-unstoppable-general-pattons-march-to-victory-map.jpg",
+          "Description": "Map of Patton's advance, including to le Mans",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "le Mans",
+        "Place_GPS_coordinate": "48.008224, 0.209856",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.historiascripta.org/wp-content/uploads/2024/04/unleashing-the-unstoppable-general-pattons-march-to-victory-map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "le Mans",
+        "Place_GPS_coordinate": "48.008224, 0.209856",
+        "Weather_text": "Daily high temperatures decrease by 4°F, from 78°F to 74°F, rarely falling below 66°F or exceeding 88°F. Daily low temperatures decrease by 3°F, from 58°F to 55°F, rarely falling below 48°F or exceeding 65°F.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -0.790144,
+          "East": 1.209856,
+          "South": 47.008224,
+          "North": 49.008224
+        }
+      }
+    },
+    {
+      "Event": "Don't Be Surprised",
+      "Sub-event": "90th Division Advance to le Mans",
+      "Sub-event_summary": "The 90th Division advanced toward le Mans from 6 to 9 August, overcoming resistance at Aron, Ste. Suzanne, and other points, capturing 1,200 prisoners and destroying German units. They entered le Mans on 9 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_40": "Since the 79th Division was still in the process of seizing Laval, the task of initiating the XV Corps attack to le Mans devolved upon the 90th. Accorded use of the main Laval--le Mans highway, General McLain planned to move the bulk of the division southeast from Mayenne to the highway, then eastward to le Mans behind Task Force Weaver, which was to drive along a",
+        "Paragraph_41": "more direct route southeast from Mayenne to the objective. General Weaver, again in command of the division spearhead, divided his force into two columns for an advance over parallel roads. One column, under his personal command, was to proceed on the left through the towns of Aron and Evron.",
+        "Paragraph_42": "The other column, commanded by Colonel Barth, was to move through Montsûrs, Ste. Suzanne, and Bernay.",
+        "Paragraph_43": "Barth's column on the right encountered only slight opposition on 6 August in moving southeast from Mayenne about twelve miles to Montsfirs, then turning east and proceeding ten miles farther to the hamlet of Ste. Suzanne. There, that evening, the column struck determined opposition and halted.",
+        "Paragraph_44": "In contrast with the excellent advance of Barth's force, Weaver's column had hardly departed Mayenne before meeting a strong German armored and infantry force at Aron. Engaging the enemy in a fire fight that lasted all day, Weaver's troops were unable to advance.",
+        "Paragraph_45": "Meanwhile, the remainder of the 90th Division was approaching or crossing the Mayenne River in two regimental columns--the 358th (Colonel Clarke) on the left and the 359th (under Col. Robert L. Bacon) on the right.",
+        "Paragraph_46": "Checked at Aron, Weaver on the morning of 7 August left contingents of the 106th Cavalry Group to contain the enemy in the Aron-Evron sector and to protect the division and corps left flank, reversed the direction of his column, and followed Barth's route of the previous day as far as Montsûrs. Instead of turning eastward at Montsûrs, Weaver continued to the south. Clarke's 358th Infantry, approaching Montsûrs in column from the west, waited for Weaver to clear the village before proceeding eastward toward Ste. Suzanne in support of Barth.",
+        "Paragraph_47": "Weaver, moving south, reached the village of Vaiges on the main Laval--le Mans highway. There he intended to turn east to parallel Barth's movement, not on Barth's left as originally planned, but on his right. Weaver had to change his plan when he discovered that Bacon's 359th Infantry had already entered Vaiges from the west and was proceeding along the Laval--le Mans highway toward the division objective, clearing opposition that had formed around roadblocks.",
+        "Paragraph_48": "Refusing to be shut out of the action, but unwilling to risk traffic congestion likely if his and Bacon's troops became intermingled, Weaver led his column northeast from Vaiges, aiming to insert his column between Barth's and Clarke's on the north and Bacon's on the south. Several miles northeast of Vaiges, however, at the hamlet of Chammes between Vaiges and Ste. Suzanne, Weaver again was thwarted, this time by the same enemy force opposing Barth at Ste. Suzanne.",
+        "Paragraph_49": "Barth, in the meantime, had sustained and repelled a tank-supported counterattack launched from St. Suzanne. American artillery fire effectively stopped",
+        "Paragraph_50": "the Germans, but in wooded terrain south of the Ste. Suzanne-Bernay road the enemy continued to resist. Soon after Weaver's arrival, however, the opposition slackened.",
+        "Paragraph_51": "As enemy fires diminished and American artillery shelled the Germans, Barth rushed his motorized column past the wooded area southeast of Ste. Suzanne, passed through Bernay that night without stopping, and on the morning of 8 August struck an enemy defensive position only a few miles west of le Mans. Weaver left a small containing force at Chammes, moved south to the Laval--le Mans highway, turned east, passed through Bacon's troops, and slammed down the road, reducing small roadblocks at virtually every hamlet. Early on 8 August, Weaver, too, was only a few miles from le Mans.",
+        "Paragraph_52": "As Barth and Weaver swept by the German forces in the forest southeast of Ste. Suzanne, Clarke on the north and Bacon on the south mopped up demoralized remnants and stragglers. Although the Americans had judged that only minor enemy forces had been present in the Evron area, the 90th Division took 1,200 prisoners and destroyed in large part the reconnaissance battalion of the *9th Panzer Division* and a regiment of the *708th Division.* The success of the approach march to le Mans was attributable in great measure to the aggressive persistence of General Weaver, who had not permitted his troops to be pinned down by opposition. The result left no doubt that the same 90th Division that had stumbled in the Cotentin was now a hard-hitting outfit."
+      },
+      "Footnote_References": [
+        59,
+        60,
+        61,
+        62
+      ],
+      "Place_Name": "Aron",
+      "Dates": {
+        "Date_group_of_event": "060000Zaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "052300Zaug44"
+      },
+      "TOE": {
+        "Unit": "90th Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XV Corps",
+          "Commander": "Raymond S. McLain",
+          "Name": "Raymond S. McLain",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Raymond_S._McLain",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "357th Infantry",
+            "Name": "Barth",
+            "Rank": "Colonel",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "358th Infantry",
+            "Name": "Clarke",
+            "Rank": "Colonel",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "359th Infantry",
+            "Name": "Robert L. Bacon",
+            "Rank": "Colonel",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "tank",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "tank",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 1200
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "",
+          "Description": "",
+          "License": ""
+        }
+      ],
+      "Place": {
+        "Place_Name": "Aron",
+        "Place_GPS_coordinate": "48.3000, -0.5600",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Aron",
+        "Place_GPS_coordinate": "48.3000, -0.5600",
+        "Weather_text": "Mild temperatures with occasional rain, typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.5600,
+          "East": 0.5600,
+          "South": 47.3000,
+          "North": 49.3000
+        }
+      }
+    },
+    {
+      "Event": "Don't Be Surprised",
+      "Sub-event": "Award to General McLain",
+      "Sub-event_summary": "General Raymond S. McLain was awarded the Bronze Oak Leaf Cluster to the DSC for his role in transforming the 90th Division and inspiring troops during the advance.",
+      "Sub-event_fulltext": {
+        "Paragraph_52": "As Barth and Weaver swept by the German forces in the forest southeast of Ste. Suzanne, Clarke on the north and Bacon on the south mopped up demoralized remnants and stragglers. Although the Americans had judged that only minor enemy forces had been present in the Evron area, the 90th Division took 1,200 prisoners and destroyed in large part the reconnaissance battalion of the *9th Panzer Division* and a regiment of the *708th Division.* The success of the approach march to le Mans was attributable in great measure to the aggressive persistence of General Weaver, who had not permitted his troops to be pinned down by opposition. The result left no doubt that the same 90th Division that had stumbled in the Cotentin was now a hard-hitting outfit."
+      },
+      "Footnote_References": [
+        62
+      ],
+      "Place_Name": "le Mans",
+      "Dates": {
+        "Date_group_of_event": "APPROX 080000Zaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "APPROX 072300Zaug44"
+      },
+      "TOE": {
+        "Unit": "90th Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XV Corps",
+          "Commander": "Raymond S. McLain",
+          "Name": "Raymond S. McLain",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Raymond_S._McLain",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "",
+          "Description": "",
+          "License": ""
+        }
+      ],
+      "Place": {
+        "Place_Name": "le Mans",
+        "Place_GPS_coordinate": "48.008224, 0.209856",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "le Mans",
+        "Place_GPS_coordinate": "48.008224, 0.209856",
+        "Weather_text": "Mild temperatures with occasional rain, typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -0.790144,
+          "East": 1.209856,
+          "South": 47.008224,
+          "North": 49.008224
+        }
+      }
+    },
+    {
+      "Event": "Don't Be Surprised",
+      "Sub-event": "79th Division Advance to le Mans",
+      "Sub-event_summary": "The 79th Division advanced east from Laval on 7-8 August, clearing German groups and entering le Mans by 8 August afternoon, concluding the exploitation.",
+      "Sub-event_fulltext": {
+        "Paragraph_53": "The 79th Division had started its drive east from Laval on the morning of 7 August as 106th Cavalry troops and Colonel Wood's motorized and reinforced 313th Infantry moved through the area immediately south of the main Laval-le Mans highway. Clearing small groups of Germans, the task force advanced more than half the distance to the objective. To give the attack added impetus on 8 August, General Wyche motorized Lt. Col. John A. McAleer's 315th Infantry and passed it through the 313th. The new spearhead unit surged forward, dispersing sporadic resistance, and the leading troops detrucked on the southwest outskirts of le Mans that afternoon. Concluding an outstanding exploitation effort, troops of the 79th Division",
+        "Paragraph_54": "crossed the Sarthe River and reached the center of le Mans, by 1700 on 8 August. The *Seventh Army* headquarters troops were gone."
+      },
+      "Footnote_References": [
+        64
+      ],
+      "Place_Name": "le Mans",
+      "Dates": {
+        "Date_group_of_event": "071700Zaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "071600Zaug44"
+      },
+      "TOE": {
+        "Unit": "79th Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XV Corps",
+          "Commander": "Ira T. Wyche",
+          "Name": "Ira T. Wyche",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Ira_T._Wyche",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "313th Infantry",
+            "Name": "Wood",
+            "Rank": "Colonel",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "315th Infantry",
+            "Name": "John A. McAleer",
+            "Rank": "Lieutenant Colonel",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "",
+          "Description": "",
+          "License": ""
+        }
+      ],
+      "Place": {
+        "Place_Name": "le Mans",
+        "Place_GPS_coordinate": "48.008224, 0.209856",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "le Mans",
+        "Place_GPS_coordinate": "48.008224, 0.209856",
+        "Weather_text": "Mild temperatures with occasional rain, typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -0.790144,
+          "East": 1.209856,
+          "South": 47.008224,
+          "North": 49.008224
+        }
+      }
+    },
+    {
+      "Event": "Don't Be Surprised",
+      "Sub-event": "5th Armored Division Advance and Supply Issues",
+      "Sub-event_summary": "The 5th Armored Division advanced south on 6-8 August, overcoming resistance and a gasoline shortage, crossing rivers and bypassing le Mans to close exits by 8 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_55": "The 5th Armored Division had also had a hand in the advance. Commanded by Maj. Gen. Lunsford E. Oliver, the 5th Armored Division on 6 August had moved south against light resistance past Avranches and through Fougères and Vitré. At the village of Craon, opposition at a destroyed bridge temporarily halted a combat command, but quick deployment dispersed the Germans and aggressive reconnaissance secured a bypass crossing site. By evening the division was at the Mayenne River at Château-Gontier on the corps right flank. There, the division faced the serious problem of how to cross the river in the face of an acute shortage of gasoline.",
+        "Paragraph_56": "Several days earlier, on 4 August, General Haislip, the corps commander, had directed the 5th Armored Division to unload fuel and lubricants from a hundred of its organic trucks so that the trucks might be used to motorize the two infantry divisions. Although Haislip had intended to return the vehicles before committing the armor, he had been compelled instead to replace them with a corps Quartermaster truck company on the night of 5 August. The division commander, General Oliver, instructed the truck company to draw gasoline at any army Class III truckhead north of Avranches and to join the armored division south of Avranches on the following morning. When the trucks failed to appear, Oliver sent an officer back to locate them. The officer found the Quartermaster company and had the trucks loaded, but traffic congestion prevented the vehicles from getting to the division that day. Not until the early morning hours of 7 August did they arrive. Uncertain whether the Third Army could establish and maintain supply points at reasonable distances behind armored forces in deep exploitation and unwilling to risk a recurrence of the gasoline shortage, Oliver provided the division with an operational fuel reserve by attaching a platoon of the Quartermaster company to each combat command.",
+        "Paragraph_57": "General Oliver need not have worried. The organic trucks of the division were released by the infantry and returned to the 5th Armored area early on 7 August. At the same time, the Third Army moved 100,000 gallons of gasoline to Cossé-le-Vivien, several miles south of Laval, whence 5th Armored Division trucks transported it across the Mayenne River to Villiers-Charlemagne. Here the division quartermaster established a Class III dump. A platoon of the division Engineer battalion protected the supply point until the division civil affairs section obtained sufficient numbers of the FFI for guard duty.",
+        "Paragraph_58": "Gassed up on the morning of 7 August, the 5th Armored Division crossed the Mayenne River after eliminating the Château-Gontier garrison (about a company strong), repairing the damaged bridge there, and constructing several bridges south of Château-Gontier. General Haislip had instructed General Oliver to advance on le Mans echeloned to the right rear of the 79th Division, but had also authorized him to use all possible routes in the corps zone, providing he did not interfere with the infantry",
+        "Paragraph_59": "divisions. If the infantry encountered opposition strong enough to retard progress seriously, the armor was to move to the head of the corps attack. This was not necessary. The 5th Armored Division reached the Sarthe River south of le Mans on the evening of 7 August and crossed during the night. Sweeping through some opposition on 8 August, the armor bypassed le Mans on the south, swung in a wide arc, and moved around the eastern outskirts of the city. By midnight of 8 August, the converging attacks of the three divisions had closed all exits from le Mans and infantrymen were clearing the streets of the city."
+      },
+      "Footnote_References": [
+        65
+      ],
+      "Place_Name": "Château-Gontier",
+      "Dates": {
+        "Date_group_of_event": "060000Zaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "052300Zaug44"
+      },
+      "TOE": {
+        "Unit": "5th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XV Corps",
+          "Commander": "Lunsford E. Oliver",
+          "Name": "Lunsford E. Oliver",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Lunsford_E._Oliver",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "Acute shortage of gasoline resolved by using Quartermaster trucks and establishing supply dumps.",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "",
+          "Description": "",
+          "License": ""
+        }
+      ],
+      "Place": {
+        "Place_Name": "Château-Gontier",
+        "Place_GPS_coordinate": "47.8267, -0.7025",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Château-Gontier",
+        "Place_GPS_coordinate": "47.8267, -0.7025",
+        "Weather_text": "Mild temperatures with occasional rain, typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.7025,
+          "East": 0.7025,
+          "South": 46.8267,
+          "North": 48.8267
+        }
+      }
+    },
+    {
+      "Event": "Don't Be Surprised",
+      "Sub-event": "Results of the Exploitation",
+      "Sub-event_summary": "From 5 to 9 August, the XV Corps advanced 75 miles at low cost, capturing several thousand prisoners and frustrating German defenses. This positioned them to outflank German armies, leading to a turn north toward Alençon.",
+      "Sub-event_fulltext": {
+        "Paragraph_60": "In four days, from 5 to 9 August, General Haislip's XV Corps had moved about seventy-five miles--from the St. Hilaire-Fougères line to le Mans--an extraordinarily aggressive advance at little cost. Extremely light casualties contrasted well with a total of several thousand prisoners.",
+        "Paragraph_61": "The immediately apparent achievement of Haislip's exploitation was that the XV Corps had frustrated German plans to organize strong defenses at Laval and le Mans. But soon an even more spectacular result would become obvious.",
+        "Paragraph_62": "During the first week of August the Third Army headquarters had been serving two bodies with one head. Two distinct fronts had been advancing in opposite directions, moving ever farther apart. By 8 August more than two hundred miles separated the 6th Armored Division of the VIII Corps at the gates of Brest and the XV Corps at le Mans.",
+        "Paragraph_63": "Less than one hundred miles east of le Mans lay the final 12th Army Group objective designated by the OVERLORD plan, the eastern edge of the OVERLORD lodgment area, an area roughly between Paris and Orléans. With le Mans occupied so easily there seemed to be few German forces to restrain further Third Army advance toward its part of the objective, the Paris-Orléans gap. Yet, this advance was not to be, for the moment at least; a new goal appeared more desirable.",
+        "Paragraph_64": "The XV Corps advance to le Mans had in one week moved an enveloping right flank eighty-five air miles southeast of Avranches and was well on its way to outflanking the German armies west of the Seine River, or had already done so. If the basic purpose of military operations was to close on advantageous terms with the enemy and destroy him, and if a favorable moment for a move of this kind appeared, purely geographical objectives receded in importance. The opportunity for a decisive victory seemed doubly propitious, for the Germans in making a bid to regain the initiative in the battle of France had played into American hands.",
+        "Paragraph_65": "General Bradley was ready to act, and in his new decision the XV Corps had an important role. \"Don't be surprised,\" Patton had earlier warned Haislip. Instead of going farther east from le Mans, the XV Corps turned north toward Alençon."
+      },
+      "Footnote_References": [
+        65,
+        66
+      ],
+      "Place_Name": "le Mans",
+      "Dates": {
+        "Date_group_of_event": "050000Zaug44 to 090000Zaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "042300Zaug44 to 082300Zaug44"
+      },
+      "TOE": {
+        "Unit": "XV Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "Wade H. Haislip",
+          "Name": "Wade H. Haislip",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Wade_H._Haislip",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 300,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 1500
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "",
+          "Description": "",
+          "License": ""
+        }
+      ],
+      "Place": {
+        "Place_Name": "le Mans",
+        "Place_GPS_coordinate": "48.008224, 0.209856",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "le Mans",
+        "Place_GPS_coordinate": "48.008224, 0.209856",
+        "Weather_text": "Mild temperatures with occasional rain, typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -0.790144,
+          "East": 1.209856,
+          "South": 47.008224,
+          "North": 49.008224
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "45",
+      "Footnote_Number": "45",
+      "Footnote_Text": "12th AGp Ltr of Instrs 2, 3 Aug.",
+      "Footnote_Referenced_Source": "12th Army Group Letter of Instructions 2, 3 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Letter of Instructions"
+    },
+    {
+      "Footnote": "46a",
+      "Footnote_Number": "46",
+      "Footnote_Text": "TUSA Ltr, Dir, 5 Aug (confirming fragmentary orders, 4 Aug)",
+      "Footnote_Referenced_Source": "Third U.S. Army Letter, Directive, 5 Aug 1944 (confirming fragmentary orders, 4 Aug 1944)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Letter Directive"
+    },
+    {
+      "Footnote": "46b",
+      "Footnote_Number": "46",
+      "Footnote_Text": "XV Corps Plng Paper, 2400, 4 Aug, XV Corps G-3 Jnl and File",
+      "Footnote_Referenced_Source": "XV Corps Planning Paper, 2400, 4 Aug 1944, XV Corps G-3 Journal and File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Planning Paper"
+    },
+    {
+      "Footnote": "46c",
+      "Footnote_Number": "46",
+      "Footnote_Text": "Unless otherwise noted, all documentary sources cited in this section are from this file.",
+      "Footnote_Referenced_Source": "Note on sources",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "47a",
+      "Footnote_Number": "47",
+      "Footnote_Text": "XV Corps FO 1, 4 Aug",
+      "Footnote_Referenced_Source": "XV Corps Field Order 1, 4 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Field Order"
+    },
+    {
+      "Footnote": "47b",
+      "Footnote_Number": "47",
+      "Footnote_Text": "Conf Notes, 1130, 5 Aug",
+      "Footnote_Referenced_Source": "Conference Notes, 1130, 5 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Conference Notes"
+    },
+    {
+      "Footnote": "48",
+      "Footnote_Number": "48",
+      "Footnote_Text": "Panel Conf Min, OCMH, 9 May 56",
+      "Footnote_Referenced_Source": "Panel Conference Minutes, OCMH, 9 May 1956",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Panel Conference Minutes"
+    },
+    {
+      "Footnote": "49a",
+      "Footnote_Number": "49",
+      "Footnote_Text": "Telecon, Kluge and Hausser, 2130, 1 Aug, OB WEST KTB, Anlage 1016",
+      "Footnote_Referenced_Source": "Telephone conversation, Kluge and Hausser, 2130, 1 Aug 1944, OB WEST KTB, Anlage 1016",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telephone conversation"
+    },
+    {
+      "Footnote": "49b",
+      "Footnote_Number": "49",
+      "Footnote_Text": "MS # B-807 (Kuntzen)",
+      "Footnote_Referenced_Source": "Manuscript # B-807 (Kuntzen)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Manuscript # B-807"
+    },
+    {
+      "Footnote": "49c",
+      "Footnote_Number": "49",
+      "Footnote_Text": "MS # A-918 (Gersdorff)",
+      "Footnote_Referenced_Source": "Manuscript # A-918 (Gersdorff)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Manuscript # A-918"
+    },
+    {
+      "Footnote": "49d",
+      "Footnote_Number": "49",
+      "Footnote_Text": "MS # B-725 (Gersdorff)",
+      "Footnote_Referenced_Source": "Manuscript # B-725 (Gersdorff)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Manuscript # B-725"
+    },
+    {
+      "Footnote": "49e",
+      "Footnote_Number": "49",
+      "Footnote_Text": "MS # B-179 (Hausser)",
+      "Footnote_Referenced_Source": "Manuscript # B-179 (Hausser)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Manuscript # B-179"
+    },
+    {
+      "Footnote": "50",
+      "Footnote_Number": "50",
+      "Footnote_Text": "Task Force Weaver consisted of the 90th Reconnaissance Troop, the 712th Tank Battalion, the 357th Infantry (motorized), the 343d Field Artillery Battalion, a company each of the 315th Engineer Combat Battalion and the 607th Tank Destroyer Battalion, a battery of antiaircraft artillery, and signal and military police detachments.",
+      "Footnote_Referenced_Source": "Descriptive text",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "51a",
+      "Footnote_Number": "51",
+      "Footnote_Text": "90th Div AAR, Aug",
+      "Footnote_Referenced_Source": "90th Division After Action Report, August 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Report"
+    },
+    {
+      "Footnote": "51b",
+      "Footnote_Number": "51",
+      "Footnote_Text": "see 12th AGp Immed Rpt 76, Aggressive Pursuit by a Task Force, 10 Oct.",
+      "Footnote_Referenced_Source": "12th Army Group Immediate Report 76, Aggressive Pursuit by a Task Force, 10 Oct 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Immediate Report"
+    },
+    {
+      "Footnote": "52",
+      "Footnote_Number": "52",
+      "Footnote_Text": "Attached to the infantry regiment were the division reconnaissance troop, the 310th and 312th Field Artillery Battalions, the 749th Tank Battalion, a company each of the tank destroyer, engineer, and medical battalions, and the division air support party.",
+      "Footnote_Referenced_Source": "Descriptive text",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "53",
+      "Footnote_Number": "53",
+      "Footnote_Text": "79th Div AAR, Aug.",
+      "Footnote_Referenced_Source": "79th Division After Action Report, August 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Report"
+    },
+    {
+      "Footnote": "54",
+      "Footnote_Number": "54",
+      "Footnote_Text": "See XV Corps Rpt, 1800, 5 Aug.",
+      "Footnote_Referenced_Source": "XV Corps Report, 1800, 5 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Report"
+    },
+    {
+      "Footnote": "55a",
+      "Footnote_Number": "55",
+      "Footnote_Text": "TUSA Dir, 5 Aug (confirming tel orders, 1640, 5 Aug)",
+      "Footnote_Referenced_Source": "Third U.S. Army Directive, 5 Aug 1944 (confirming telephone orders, 1640, 5 Aug 1944)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Directive"
+    },
+    {
+      "Footnote": "55b",
+      "Footnote_Number": "55",
+      "Footnote_Text": "12th AGp Ltr of Instrs 3, 6 Aug.",
+      "Footnote_Referenced_Source": "12th Army Group Letter of Instructions 3, 6 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Letter of Instructions"
+    },
+    {
+      "Footnote": "56",
+      "Footnote_Number": "56",
+      "Footnote_Text": "XV Corps Dir to Div Comdrs, 1045, 6 Aug.",
+      "Footnote_Referenced_Source": "XV Corps Directive to Division Commanders, 1045, 6 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Directive"
+    },
+    {
+      "Footnote": "57",
+      "Footnote_Number": "57",
+      "Footnote_Text": "XV Corps AAR, Aug.",
+      "Footnote_Referenced_Source": "XV Corps After Action Report, August 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Report"
+    },
+    {
+      "Footnote": "58a",
+      "Footnote_Number": "58",
+      "Footnote_Text": "MS # B-807 (Kuntzen)",
+      "Footnote_Referenced_Source": "Manuscript # B-807 (Kuntzen)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Manuscript # B-807"
+    },
+    {
+      "Footnote": "58b",
+      "Footnote_Number": "58",
+      "Footnote_Text": "MS # B-725 (Gersdorff).",
+      "Footnote_Referenced_Source": "Manuscript # B-725 (Gersdorff)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Manuscript # B-725"
+    },
+    {
+      "Footnote": "59",
+      "Footnote_Number": "59",
+      "Footnote_Text": "90th Div Mission Order, 1030, 6 Aug.",
+      "Footnote_Referenced_Source": "90th Division Mission Order, 1030, 6 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Mission Order"
+    },
+    {
+      "Footnote": "60",
+      "Footnote_Number": "60",
+      "Footnote_Text": "This column consisted of the Reconnaissance Troop (less a platoon), a platoon of medium tanks, a battalion of the motorized 357th Infantry, and an artillery battalion.",
+      "Footnote_Referenced_Source": "Descriptive text",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "61",
+      "Footnote_Number": "61",
+      "Footnote_Text": "Colonel Barth's column included the motorized 357th Infantry (less a battalion), two medium tank platoons, a reconnaissance platoon, two artillery battalions, a tank destroyer company, a platoon of antiaircraft automatic weapons, and, as rear guard, a battalion of the 359th Infantry.",
+      "Footnote_Referenced_Source": "Descriptive text",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "62a",
+      "Footnote_Number": "62",
+      "Footnote_Text": "For his part in transforming the division and inspiring the troops during the above action, General McLain was awarded the Bronze Oak Leaf Cluster to the DSC. General Eisenhower later credited General McLain with making the 90th a first-class fighting outfit. Eisenhower to Marshall, 25 Aug, cited in Cole, Lorraine Campaign, p. 278 .",
+      "Footnote_Referenced_Source": "Descriptive text with award and citation reference",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "62b",
+      "Footnote_Number": "62",
+      "Footnote_Text": "The President of the United States takes pleasure in presenting a Bronze Oak Leaf Cluster in lieu of a Second Award of the Distinguished Service Cross to Raymond S. McLain, Brigadier General, U.S. Army, for extraordinary heroism in connection with military operations against an armed enemy in action against enemy forces from 6 to 8 August 1944. Brigadier General McLain's intrepid actions, personal bravery and zealous devotion to duty exemplify the highest traditions of the military forces of the United States and reflect great credit upon himself, his unit, and the United States Army.",
+      "Footnote_Referenced_Source": "Headquarters, First U.S. Army, General Orders No. 37 (1944)",
+      "Web_Link": "https://homeofheroes.com/distinguished-service-cross/world-war-ii/distinguished-service-cross/army-m/",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "63a",
+      "Footnote_Number": "63",
+      "Footnote_Text": "90th Div AAR, Aug",
+      "Footnote_Referenced_Source": "90th Division After Action Report, August 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Report"
+    },
+    {
+      "Footnote": "63b",
+      "Footnote_Number": "63",
+      "Footnote_Text": "12th AGp Immed Rpt 76, Aggressive Pursuit by a Task Force, 10 Oct.",
+      "Footnote_Referenced_Source": "12th Army Group Immediate Report 76, Aggressive Pursuit by a Task Force, 10 Oct 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Immediate Report"
+    },
+    {
+      "Footnote": "64",
+      "Footnote_Number": "64",
+      "Footnote_Text": "79th Div AAR, Aug.",
+      "Footnote_Referenced_Source": "79th Division After Action Report, August 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Report"
+    },
+    {
+      "Footnote": "65",
+      "Footnote_Number": "65",
+      "Footnote_Text": "5th Armd Div AAR, Aug.",
+      "Footnote_Referenced_Source": "5th Armored Division After Action Report, August 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Report"
+    },
+    {
+      "Footnote": "66a",
+      "Footnote_Number": "66",
+      "Footnote_Text": "The 90th Division, for example, sustained less than 300 casualties during the first ten days of August and took more than 1,500 prisoners. 90th Div AAR, Aug.",
+      "Footnote_Referenced_Source": "Descriptive text with casualties",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "66b",
+      "Footnote_Number": "66",
+      "Footnote_Text": "90th Div AAR, Aug.",
+      "Footnote_Referenced_Source": "90th Division After Action Report, August 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Report"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

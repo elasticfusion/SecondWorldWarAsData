@@ -1,0 +1,2733 @@
+{
+  "Events": [
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Postponement of Bombardment on 24 July",
+      "Sub-event_summary": "Air Chief Marshal Leigh-Mallory postponed the bombardment due to poor visibility, but the decision came too late to recall all aircraft.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Air Chief Marshal Leigh-Mallory had set the C OBRA H Hour at 1300, 24 July, and on the morning of 24 July he went to Normandy to observe the operation. He found the sky overcast, the clouds thick. Deciding that visibility was inadequate for the air attack, he ordered a postponement. Unfortunately, he was too late. The message announcing his decision reached England only a few minutes before the actual bombing was to commence in France. Although the planes were ordered to return without making their bomb runs, it was impossible to get them all back. In accordance with the original planning, six groups of fighter-bombers of the IX TAC and three bombardment divisions (about 1,600 heavy bombers) of the Eighth U.S. Air Force had departed their bases in England and headed toward France. Only the medium bombers, scheduled to bomb last, had not left the ground when the postponement order came. Of the six groups of fighter-bombers in the air, three received the recall order before they dropped their bombs. The other three bombed the general target area, the narrow strip, and certain targets north of the Périers-St. Lô highway, with no observed results. The postponement message to the heavy bombers stayed only a few planes in the last formation. Ignorant that C OBRA had been postponed, pilots of the great majority of the heavy bombers guided their big craft on toward the target. Because no precise radio channels had been designated for emergency communication, there was no certain means of transmitting the news to the planes. While air force personnel in France attempted to get word to the craft aloft, the first formation of 500 planes arrived over the target area. Fortunately, they found visibility so poor that no attack was made. The second formation found cloud conditions so bad that only 35 aircraft, after making three bomb runs to identify the target, released their loads. Over 300 bombers of the third formation, with slightly improved weather conditions, dropped their bombs--about 550 tons of high explosive and 135 tons of fragmentation--before the postponement message finally got through to cancel the remainder of the strike."
+      },
+      "Footnote_References": [
+        "9"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "morning of 24 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "APPROX 240700ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Allied Expeditionary Air Force",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Supreme Headquarters Allied Expeditionary Force",
+          "Commander": "Trafford Leigh-Mallory",
+          "Name": "Trafford Leigh-Mallory",
+          "Rank": "Air Chief Marshal",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Trafford_Leigh-Mallory",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": "0",
+          "Allied_GB_WIA": "0",
+          "Allied_GB_Missing": "0",
+          "Allied_GB_Unspecified_Casualties": "0",
+          "Allied_GB_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Weather_text": "Overcast with thick clouds, inadequate visibility",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9",
+          "East": "-0.1",
+          "South": "48.1",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Departure of Aircraft on 24 July",
+      "Sub-event_summary": "Fighter-bombers from IX TAC and heavy bombers from Eighth Air Force departed, but medium bombers were halted by the postponement.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Air Chief Marshal Leigh-Mallory had set the C OBRA H Hour at 1300, 24 July, and on the morning of 24 July he went to Normandy to observe the operation. He found the sky overcast, the clouds thick. Deciding that visibility was inadequate for the air attack, he ordered a postponement. Unfortunately, he was too late. The message announcing his decision reached England only a few minutes before the actual bombing was to commence in France. Although the planes were ordered to return without making their bomb runs, it was impossible to get them all back. In accordance with the original planning, six groups of fighter-bombers of the IX TAC and three bombardment divisions (about 1,600 heavy bombers) of the Eighth U.S. Air Force had departed their bases in England and headed toward France. Only the medium bombers, scheduled to bomb last, had not left the ground when the postponement order came. Of the six groups of fighter-bombers in the air, three received the recall order before they dropped their bombs. The other three bombed the general target area, the narrow strip, and certain targets north of the Périers-St. Lô highway, with no observed results. The postponement message to the heavy bombers stayed only a few planes in the last formation. Ignorant that C OBRA had been postponed, pilots of the great majority of the heavy bombers guided their big craft on toward the target. Because no precise radio channels had been designated for emergency communication, there was no certain means of transmitting the news to the planes. While air force personnel in France attempted to get word to the craft aloft, the first formation of 500 planes arrived over the target area. Fortunately, they found visibility so poor that no attack was made. The second formation found cloud conditions so bad that only 35 aircraft, after making three bomb runs to identify the target, released their loads. Over 300 bombers of the third formation, with slightly improved weather conditions, dropped their bombs--about 550 tons of high explosive and 135 tons of fragmentation--before the postponement message finally got through to cancel the remainder of the strike."
+      },
+      "Footnote_References": [
+        "9"
+      ],
+      "Place_Name": "England",
+      "Dates": {
+        "Date_group_of_event": "24 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "240000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "IX Tactical Air Command",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Ninth Air Force",
+          "Commander": "Elwood R. Quesada",
+          "Name": "Elwood R. Quesada",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Elwood_Richard_Quesada",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Fighter-bomber",
+              "Identifier": "P-47 Thunderbolt",
+              "Quantity": "6 groups",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Republic_P-47_Thunderbolt",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/0/07/P-47_Thunderbolt_42-26760_328th_FS_352d_FG_8th_AF.jpg",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/0/07/P-47_Thunderbolt_42-26760_328th_FS_352d_FG_8th_AF.jpg",
+          "Description": "P-47 Thunderbolt of IX TAC",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "England",
+        "Place_GPS_coordinate": "52.3555 N, -1.1743 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "England",
+        "Place_GPS_coordinate": "52.3555 N, -1.1743 W",
+        "Weather_text": "Not specified, but overcast in Normandy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0743",
+          "East": "-0.2743",
+          "South": "51.4555",
+          "North": "53.2555"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Heavy Bombers Approach on 24 July",
+      "Sub-event_summary": "Heavy bombers proceeded to the target despite the postponement, with some dropping bombs due to poor visibility and communication issues.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Air Chief Marshal Leigh-Mallory had set the C OBRA H Hour at 1300, 24 July, and on the morning of 24 July he went to Normandy to observe the operation. He found the sky overcast, the clouds thick. Deciding that visibility was inadequate for the air attack, he ordered a postponement. Unfortunately, he was too late. The message announcing his decision reached England only a few minutes before the actual bombing was to commence in France. Although the planes were ordered to return without making their bomb runs, it was impossible to get them all back. In accordance with the original planning, six groups of fighter-bombers of the IX TAC and three bombardment divisions (about 1,600 heavy bombers) of the Eighth U.S. Air Force had departed their bases in England and headed toward France. Only the medium bombers, scheduled to bomb last, had not left the ground when the postponement order came. Of the six groups of fighter-bombers in the air, three received the recall order before they dropped their bombs. The other three bombed the general target area, the narrow strip, and certain targets north of the Périers-St. Lô highway, with no observed results. The postponement message to the heavy bombers stayed only a few planes in the last formation. Ignorant that C OBRA had been postponed, pilots of the great majority of the heavy bombers guided their big craft on toward the target. Because no precise radio channels had been designated for emergency communication, there was no certain means of transmitting the news to the planes. While air force personnel in France attempted to get word to the craft aloft, the first formation of 500 planes arrived over the target area. Fortunately, they found visibility so poor that no attack was made. The second formation found cloud conditions so bad that only 35 aircraft, after making three bomb runs to identify the target, released their loads. Over 300 bombers of the third formation, with slightly improved weather conditions, dropped their bombs--about 550 tons of high explosive and 135 tons of fragmentation--before the postponement message finally got through to cancel the remainder of the strike."
+      },
+      "Footnote_References": [
+        "9",
+        "11"
+      ],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "24 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "241300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Eighth U.S. Air Force",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "United States Strategic Air Forces in Europe",
+          "Commander": "James H. Doolittle",
+          "Name": "James H. Doolittle",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Jimmy_Doolittle",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Heavy bomber",
+              "Identifier": "B-17 Flying Fortress",
+              "Quantity": "1600",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Boeing_B-17_Flying_Fortress",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/1/1e/B-17G_070727-F-1234S-009.jpg",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Heavy bomber",
+              "Identifier": "B-17",
+              "Quantity": "3",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/1/1e/B-17G_070727-F-1234S-009.jpg",
+          "Description": "B-17 Flying Fortress",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Poor visibility, bad cloud conditions",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Short Bombing Incident on 24 July",
+      "Sub-event_summary": "Due to a bombardier's error, bombs fell on American positions, causing casualties in the 30th Division.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "The 24 July bombing was unfortunate, not only because of the likelihood of negating the surprise planned for C OBRA , but also because it killed 25 men and wounded 131 of the 30th Division.",
+        "Paragraph_10": "The tragedy was the result of one accident. The lead bombardier of a heavy bomber formation had had difficulty moving his bomb release mechanism and had inadvertently salvoed a portion of his load. The fifteen aircraft flying in the formation followed his example and released their bombs. The bomb load fell 2,000 yards north of the Périers-St. Lô highway."
+      },
+      "Footnote_References": [
+        "10"
+      ],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "24 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "241300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Leland Hobbs",
+          "Name": "Leland Hobbs",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "25",
+          "Allied_US_WIA": "131",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Poor visibility",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Ground Troops Preparation on 24 July",
+      "Sub-event_summary": "VII Corps withdrew front-line troops, with General Collins optimistic about the attack despite weather concerns.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "On the ground, VII Corps had executed the initial part of the C OBRA attack by withdrawing the front-line troops of the 9th and 30th Divisions several hundred yards to the north. The poor weather conditions had prompted commanders to wonder whether the lack of visibility would cancel the air bombardment, but General Collins was characteristically optimistic. He believed that the planes would get through the haze. Even if the heavy bombers were not able to take part in the air attack, he felt that the fighter-bombers would be on hand and that their bombardment would give sufficient impetus for the attack. He therefore told his subordinate commanders to go ahead. If the fighter-bomber effort proved insufficient, he expected the heavy bombers to return on the following day."
+      },
+      "Footnote_References": [
+        "12",
+        "13",
+        "14",
+        "15",
+        "16"
+      ],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "24 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "241300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "J. Lawton Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "9th Infantry Division",
+            "Name": "Manton S. Eddy",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          },
+          {
+            "Unit": "30th Infantry Division",
+            "Name": "Leland Hobbs",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Poor weather conditions, haze",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Decision to Attack on 24 July",
+      "Sub-event_summary": "General Collins decided to launch a limited attack to restore the front line and prevent German advance.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "Notice that the air bombardment had been postponed reached the ground troops a short time before the bombardment actually commenced. What then was the meaning of the bombs that were dropped? What was the mission of the ground troops? Was C OBRA delayed? Or were the ground troops to initiate C OBRA on the basis of the incomplete air effort? While discussion took place at higher headquarters, General Collins decided that the VII Corps had to attack. Withdrawal of the 9th and 30th Divisions had created a vacuum that the Germans would fill unless the infantry returned to the vicinity of the Périers-St. Lô highway. If C OBRA was to start without benefit of the full air preparation, the infantry could simply continue the attack, cross the line of departure at the highway, and attempt to pry open the Marigny--St. Gilles gap. If, on the other hand, postponement in the air meant postponement on the ground, then the same conditions on which the C OBRA plan was based had to be restored. General Collins therefore told the 9th, 4th, and 30th Divisions, the units scheduled to initiate the C OBRA offensive, to make a limited objective attack to the Périers-St. Lô highway. Maybe they would continue beyond the highway, maybe not.",
+        "Paragraph_13": "Half an hour later General Collins learned that C OBRA was postponed on the ground as well as in the air, but to prevent the enemy from moving north of the Périers-St. Lô highway, the three infantry divisions were to attack at 1300 as though C OBRA were going into effect. In reality, the divisions were to restore the front line that had existed before the air bombardment."
+      },
+      "Footnote_References": [
+        "12",
+        "13",
+        "14"
+      ],
+      "Place_Name": "Marigny--St. Gilles",
+      "Dates": {
+        "Date_group_of_event": "24 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "241300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "J. Lawton Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "4th Infantry Division",
+            "Name": "Raymond O. Barton",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Raymond_O._Barton",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Marigny--St. Gilles",
+        "Place_GPS_coordinate": "49.1 N, -1.2 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Marigny--St. Gilles",
+        "Place_GPS_coordinate": "49.1 N, -1.2 W",
+        "Weather_text": "Poor weather conditions",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.1",
+          "East": "-0.3",
+          "South": "48.2",
+          "North": "50.0"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Limited Objective Attack on 24 July",
+      "Sub-event_summary": "The divisions attacked to restore the front line, facing heavy enemy artillery and difficulties.",
+      "Sub-event_fulltext": {
+        "Paragraph_14": "If the incomplete air bombardment had not forewarned the Germans and destroyed the tactical surprise on which General Bradley counted so heavily, the German main line of resistance would be unchanged for another C OBRA effort on the following day. Until C OBRA kicked off as planned, the divisions in the VII Corps exploiting force were to remain in their concealed bivouacs.",
+        "Paragraph_15": "The abortive air bombardment on 24 July had obviously alerted the Germans to the American ground attack that followed. Enemy artillery fire began to fall in large volume. All three assault divisions had a difficult time that afternoon."
+      },
+      "Footnote_References": [
+        "15",
+        "38",
+        "39",
+        "40",
+        "41"
+      ],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "afternoon of 24 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "APPROX 241300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "9th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Manton S. Eddy",
+          "Name": "Manton S. Eddy",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Improved slightly but still poor",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "9th Division Attack on 24 July",
+      "Sub-event_summary": "The 9th Division committed its regiments, facing infiltration and heavy fighting for hedgerows.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "On the corps right, the 9th Division committed its three regiments: the 60th Infantry battled enemy troops that had infiltrated behind the withdrawal; a reinforced battalion of the 47 th Infantry struggled until dark to gain a single hedgerow; two battalions of the 39th Infantry fought eight hours to reduce a strongpoint and took 77 casualties, among them the regimental commander, Col. Harry A. Flint."
+      },
+      "Footnote_References": [
+        "15",
+        "16"
+      ],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "24 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "241300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "9th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Manton S. Eddy",
+          "Name": "Manton S. Eddy",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "60th Infantry Regiment",
+            "Name": "Unknown",
+            "Rank": "",
+            "Date": "",
+            "End_Date": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "47th Infantry Regiment",
+            "Name": "Unknown",
+            "Rank": "",
+            "Date": "",
+            "End_Date": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "39th Infantry Regiment",
+            "Name": "Harry A. Flint",
+            "Rank": "Colonel",
+            "Date": "July 1944",
+            "End_Date": "24 July 1944",
+            "End_Status": "KIA",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_A._%22Paddy%22_Flint",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "77",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Clouds numerous",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "4th Division Attack on 24 July",
+      "Sub-event_summary": "The 4th Division committed the 8th Infantry, facing heavy fighting with casualties.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "In the corps center, the 4th Division committed the 8th Infantry, which attacked in a column of battalions with tank support; after two hours of heavy fighting and a loss of 27 killed and 70 wounded, the regiment reached a point 100 yards north of the highway. On the corps left, the 30th Division did not advance at once because the assault elements were stunned and demoralized by the bombardment accident. It took almost an hour for the units to recover and reorganize, by which time enemy artillery fire had subsided. The division then advanced and reoccupied its original lines."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "24 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "241300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "4th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Raymond O. Barton",
+          "Name": "Raymond O. Barton",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Raymond_O._Barton",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "8th Infantry Regiment",
+            "Name": "Unknown",
+            "Rank": "",
+            "Date": "",
+            "End_Date": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Tank",
+              "Identifier": "M4 Sherman",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "27",
+          "Allied_US_WIA": "70",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Clouds numerous",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "30th Division Recovery on 24 July",
+      "Sub-event_summary": "The 30th Division recovered from the bombardment accident and reoccupied its lines.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "In the corps center, the 4th Division committed the 8th Infantry, which attacked in a column of battalions with tank support; after two hours of heavy fighting and a loss of 27 killed and 70 wounded, the regiment reached a point 100 yards north of the highway. On the corps left, the 30th Division did not advance at once because the assault elements were stunned and demoralized by the bombardment accident. It took almost an hour for the units to recover and reorganize, by which time enemy artillery fire had subsided. The division then advanced and reoccupied its original lines."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "24 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "241300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Leland Hobbs",
+          "Name": "Leland Hobbs",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Clouds numerous",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Controversy Over Bombardment Approach",
+      "Sub-event_summary": "Controversy arose over the perpendicular bomb run, leading to protests and discussions on planning.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "The bombardment accident released a flood of controversy. Having expected a lateral approach to the target area, General Bradley was astonished and shocked when he learned that the planes had made a perpendicular bomb run. Using a perpendicular approach, Bradley said later, was an act of perfidy on the part of the Air Forces, \"a serious breach of good faith in planning.\" Other ground commanders had also anticipated a lateral approach, and their surprise was deepened by the horror that the news of casualties brought. Even General Quesada, the commander of the IX TAC, dispatched a telegram of indignant protest on the direction of the heavy-bomber approach (his fighter-bombers had made a lateral approach). Quesada demanded whether \"another plan\" had actually been employed."
+      },
+      "Footnote_References": [
+        "18",
+        "19",
+        "20",
+        "21"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "24 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "241300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Weather_text": "Clouds numerous",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9",
+          "East": "-0.1",
+          "South": "48.1",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Planning Discrepancies",
+      "Sub-event_summary": "Discrepancies in planning regarding bomb run direction and bomb sizes led to misunderstandings.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "Obviously, something was wrong. Perhaps something was inexcusably wrong, since C OBRA had been conceived and planned, not hastily, but thoroughly over a period of almost two weeks. At the conference between General Bradley and air representatives on 19 July, when the C OBRA air arrangements were being worked out, the direction of the bombing approach had \"evoked considerable discussion.\" General Bradley had insisted on his parallel plan, while all the Air Forces representatives had argued that perpendicular runs were more suitable. At the end of the conference the question had not been settled formally, though General Bradley must have assumed that his recommendation for lateral bomb runs would be accepted. The Air Forces representatives had understood that General Bradley \"was aware of the possibility of gross [bombing] errors causing casualties\" among his troops, and they thought he had said \"that he was prepared to accept such casualties no matter which way the planes approached.\" Unaware of this conception, General Bradley had considered the conference \"very satisfactory.\" Even though Air Chief Marshal Leigh-Mallory had had to \"rush off\" before its conclusion, General Quesada had remained throughout. The result of what in reality had been an unsatisfactory conference was an absence of firm understanding and mutual agreement.",
+        "Paragraph_20": "The approach route was not the only difficulty. General Bradley recalled after the war that he had gained the impression that the air forces would use bombs no heavier than 100 pounds and was surprised when larger bombs were dropped. Yet during Bradley's conference at the First Army command post on 12 July, General Collins had asked, \"Do we get heavy or medium bombs or both?\" and Bradley had replied, \"Both.\" The 260-pound bomb in Bradley's estimation did not \"make too big a crater.\" Collins, who wanted to take a chance on the cratering, had voted for \"bigger and better bombs,\" even 500-pound bombs, while General Quesada had suggested that 260-pound bombs would be large enough. The discussion had not cleared up the matter, and when the conference ended the question was still not settled."
+      },
+      "Footnote_References": [
+        "22",
+        "23",
+        "24",
+        "25"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "19 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "191300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Weather_text": "Not specified for this date",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9",
+          "East": "-0.1",
+          "South": "48.1",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Bomb Planning Documents",
+      "Sub-event_summary": "Planning documents specified bomb types, but misunderstandings persisted.",
+      "Sub-event_fulltext": {
+        "Paragraph_21": "Despite the absence of agreement, the basic planning documents of the air strike plainly indicated that 450 fighter-bombers and medium bombers were each to carry two 500-pound general purpose bombs as well as 260-pound general purpose and fragmentation bombs. Although 70 percent of the heavy bombers were to carry 100-pound general purpose bombs, the remaining 30 percent were to use 260-pound fragmentation bombs to the extent of their availability and heavier bombs when no more 260-pound bombs could be had."
+      },
+      "Footnote_References": [
+        "26"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Allied Expeditionary Air Force",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Supreme Headquarters Allied Expeditionary Force",
+          "Commander": "Trafford Leigh-Mallory",
+          "Name": "Trafford Leigh-Mallory",
+          "Rank": "Air Chief Marshal",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Trafford_Leigh-Mallory",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Bomb",
+              "Identifier": "500-pound GP",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/General-purpose_bomb",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Bomb",
+              "Identifier": "260-pound GP/fragmentation",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/General-purpose_bomb",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Bomb",
+              "Identifier": "100-pound GP",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/General-purpose_bomb",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9",
+          "East": "-0.1",
+          "South": "48.1",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Decision for Second Bombardment",
+      "Sub-event_summary": "Bradley decided to proceed with another bombardment on 25 July despite risks.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "There was no time for recrimination on 24 July, for an immediate decision had to be made. Should General Bradley agree to another bombardment under the same terms and thereby indirectly condone the possibility of additional American casualties? Or should he insist on changing the pattern of air attack, which would mean postponing C OBRA for several days at least? With higher headquarters anxious for action, General Bradley had little choice. The ground attack on the afternoon of 24 July had re-established the necessary C OBRA conditions. Prospects for good weather on 25 July were improving. The question whether the premature bombing had lost the Americans tactical surprise was to be resolved at once: the Allies would launch C OBRA again at 1100, 25 July."
+      },
+      "Footnote_References": [
+        "27"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "24 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "241300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Weather_text": "Improving prospects for good weather",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9",
+          "East": "-0.1",
+          "South": "48.1",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Alterations for 25 July Bombardment",
+      "Sub-event_summary": "Changes were made to avoid errors, including reallocating targets and using reconnaissance for weather.",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "For the second C OBRA bombardment several alterations were made in an attempt to avoid a repetition of the bombing errors. Air bombardment targets north of the Périers--St. Lô highway--six in all--were relegated to the artillery. A special weather reconnaissance plane was to enter the assault area early in the morning to obtain exact atmospheric data and find out if there was adequate visibility for the bombardment. The heavy bombers were to fly as low as safety would permit, and, if possible, bomb visually."
+      },
+      "Footnote_References": [
+        "17",
+        "18",
+        "19",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27"
+      ],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "250000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Allied Expeditionary Air Force",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Supreme Headquarters Allied Expeditionary Force",
+          "Commander": "Trafford Leigh-Mallory",
+          "Name": "Trafford Leigh-Mallory",
+          "Rank": "Air Chief Marshal",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Trafford_Leigh-Mallory",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Reconnaissance plane",
+              "Identifier": "P-38 Lightning",
+              "Quantity": "1",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Lockheed_P-38_Lightning",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Improving, but with clouds",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Bombardment on 25 July",
+      "Sub-event_summary": "Massive air bombardment by heavy, medium, and fighter-bombers dropped thousands of tons of bombs on the target area.",
+      "Sub-event_fulltext": {
+        "Paragraph_24": "Again on the morning of 25 July the planes came. Flying in groups of twelve, over 1,500 B-17's and B-24's dropped more than 3,300 tons of bombs in the C OBRA area, and more than 380 medium bombers dropped over 650 tons of high explosives and fragmentation bombs. In groups of four, over 550 fighter-bombers dropped more than 200 tons of bombs and a large amount of napalm."
+      },
+      "Footnote_References": [
+        "28",
+        "29",
+        "30",
+        "44",
+        "45",
+        "46",
+        "47"
+      ],
+      "Place_Name": "COBRA area",
+      "Dates": {
+        "Date_group_of_event": "morning of 25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "APPROX 250800ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Eighth U.S. Air Force",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "United States Strategic Air Forces in Europe",
+          "Commander": "James H. Doolittle",
+          "Name": "James H. Doolittle",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Jimmy_Doolittle",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Heavy bomber",
+              "Identifier": "B-17 Flying Fortress",
+              "Quantity": "1500",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Boeing_B-17_Flying_Fortress",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Heavy bomber",
+              "Identifier": "B-24 Liberator",
+              "Quantity": "Included in 1500",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Consolidated_B-24_Liberator",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Medium bomber",
+              "Identifier": "B-26 Marauder",
+              "Quantity": "380",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Martin_B-26_Marauder",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Fighter-bomber",
+              "Identifier": "P-47 Thunderbolt",
+              "Quantity": "550",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Republic_P-47_Thunderbolt",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+          "Description": "Map V - Breakthrough, 25-27 July 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "COBRA area",
+        "Place_GPS_coordinate": "49.1 N, -1.1 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "COBRA area",
+        "Place_GPS_coordinate": "49.1 N, -1.1 W",
+        "Weather_text": "Bad weather, clouds, proximity issues",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0",
+          "East": "-0.2",
+          "South": "48.2",
+          "North": "50.0"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Bombing Conditions on 25 July",
+      "Sub-event_summary": "Bombing faced challenges from clouds, dust, and smoke, leading to some bombs missing the target.",
+      "Sub-event_fulltext": {
+        "Paragraph_25": "The earth shook. Bombing heights had been fixed around 15,000 feet, but the presence of clouds forced readjustment in flight. Most bombardiers had to recompute their figures en route. Some planes bombed from the relatively low altitude of 12,000 feet, which brought them closer to the enemy antiaircraft fire and thus added to pilot strain, loosened flight formations, and increased the hazards of crowded air over the target. Artillery smoke markers proved of little value because they were not visible until the smoke drifted to high altitudes, and by that time the wind had dispersed and displaced it. Once the attack began, great clouds of dust and smoke obscured not only markers but terrain features as well. Furthermore, the red smoke of artillery markers could hardly be distinguished from shell and bomb bursts and from muzzle flashes of American and German artillery. Because it was impossible to keep bomb formations tight and because the crew members had been impressed with the necessity of avoiding short bombing, a good portion of the bombs landed south of the target area or west and east of it. Some bombs, however, again fell north of the Périers-St. Lô highway and on American positions."
+      },
+      "Footnote_References": [
+        "31"
+      ],
+      "Place_Name": "COBRA area",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Eighth U.S. Air Force",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "United States Strategic Air Forces in Europe",
+          "Commander": "James H. Doolittle",
+          "Name": "James H. Doolittle",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Jimmy_Doolittle",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "COBRA area",
+        "Place_GPS_coordinate": "49.1 N, -1.1 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "COBRA area",
+        "Place_GPS_coordinate": "49.1 N, -1.1 W",
+        "Weather_text": "Presence of clouds, dust and smoke obscuring visibility",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0",
+          "East": "-0.2",
+          "South": "48.2",
+          "North": "50.0"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Short Bombing on 25 July",
+      "Sub-event_summary": "Human errors led to bombs falling on American positions again, from heavy and medium bombers.",
+      "Sub-event_fulltext": {
+        "Paragraph_26": "The bombs fell north of the highway because of human error. The lead bombardier of one heavy bomber formation had trouble with his bombsight and released visually with bad results. Another failed to identify landmarks properly. The lead pilot of a third formation prematurely ordered bombs away, and all the planes in his unit released their loads. Fragmentation bombs and high explosives from 35 heavy bombers and the bombs of 42 medium bombers dropped within American lines."
+      },
+      "Footnote_References": [
+        "21"
+      ],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Eighth U.S. Air Force",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "United States Strategic Air Forces in Europe",
+          "Commander": "James H. Doolittle",
+          "Name": "James H. Doolittle",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Jimmy_Doolittle",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Clouds forcing lower altitudes",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Short Bombing Casualties on 25 July",
+      "Sub-event_summary": "The short bombing caused 111 killed and 490 wounded among American troops, including spectators and reporters.",
+      "Sub-event_fulltext": {
+        "Paragraph_27": "This relatively light bombardment north of the road killed 111 of the American troops and wounded 490."
+      },
+      "Footnote_References": [
+        "32"
+      ],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "J. Lawton Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "111",
+          "Allied_US_WIA": "490",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Clouds and dust",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Death of Lt. Gen. Lesley J. McNair",
+      "Sub-event_summary": "Lt. Gen. Lesley J. McNair was killed in the short bombing, along with other observers; his death was kept secret for deception purposes.",
+      "Sub-event_fulltext": {
+        "Paragraph_28": "In addition some spectators, official observers, and newspaper reporters were hit. Lt. Gen. Lesley J. McNair, commanding general of the Army Ground Forces and pro tem commander of the 1st U.S. Army Group, was killed."
+      },
+      "Footnote_References": [
+        "33"
+      ],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "1st U.S. Army Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Army Ground Forces",
+          "Commander": "Lesley J. McNair",
+          "Name": "Lesley J. McNair",
+          "Rank": "Lieutenant General",
+          "End_Date": "25 July 1944",
+          "End_Status": "KIA",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Lesley_J._McNair",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "1",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Clouds and dust",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Bombardment in Operation COBRA",
+      "Sub-event": "Impact of Short Bombing on 25 July",
+      "Sub-event_summary": "The repeated short bombing caused resentment and grimness among American troops, leading Eisenhower to resolve against future tactical use of heavy bombers.",
+      "Sub-event_fulltext": {
+        "Paragraph_29": "As news of the second short bombing spread across the battle area on 25 July, the sense of elated anticipation that had come with the appearance of the C OBRA bombardment fleet vanished. Resentment that the air force \"had done it again\" and grimness over the prospects of successful ground action spread throughout American ranks. Dismayed and dejected over the nearly 900 U.S. casualties sustained from the bombings in the two days, General Eisenhower resolved that he would never again use heavy bombers in a tactical role."
+      },
+      "Footnote_References": [
+        "34",
+        "35"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Supreme Headquarters Allied Expeditionary Force",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Allied Expeditionary Force",
+          "Commander": "Dwight D. Eisenhower",
+          "Name": "Dwight D. Eisenhower",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "900",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Weather_text": "Clouds and dust from bombing",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9",
+          "East": "-0.1",
+          "South": "48.1",
+          "North": "49.9"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "9a",
+      "Footnote_Number": "9",
+      "Footnote_Text": "AAF III, 228-30",
+      "Footnote_Referenced_Source": "AAF III, 228-30",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "Air Force History Volume III"
+    },
+    {
+      "Footnote": "9b",
+      "Footnote_Number": "9",
+      "Footnote_Text": "Eighth AF Tactical Mission Rpt, Opn 492, 24 Jul, USAF Hist Sec Files",
+      "Footnote_Referenced_Source": "Eighth AF Tactical Mission Rpt, Opn 492, 24 Jul, USAF Hist Sec Files",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "USAF Historical Section Files"
+    },
+    {
+      "Footnote": "9c",
+      "Footnote_Number": "9",
+      "Footnote_Text": "FUSA AAR, Jul",
+      "Footnote_Referenced_Source": "FUSA AAR, Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "9d",
+      "Footnote_Number": "9",
+      "Footnote_Text": "Collins Talk",
+      "Footnote_Referenced_Source": "Collins Talk",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "10a",
+      "Footnote_Number": "10",
+      "Footnote_Text": "The death of a liaison officer who was sent from the 8th Infantry (4th Division) to the 120th Infantry (30th Division) is included in these figures, which are taken from F. P. Halas' Notes, ML-2244",
+      "Footnote_Referenced_Source": "The death of a liaison officer who was sent from the 8th Infantry (4th Division) to the 120th Infantry (30th Division) is included in these figures, which are taken from F. P. Halas' Notes, ML-2244",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "10b",
+      "Footnote_Number": "10",
+      "Footnote_Text": "General Collins' Talk cites the same figures",
+      "Footnote_Referenced_Source": "General Collins' Talk cites the same figures",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "10c",
+      "Footnote_Number": "10",
+      "Footnote_Text": "A RGUMENT to V-E Day, page 230, gives the casualty figures as 16 killed and 64 wounded",
+      "Footnote_Referenced_Source": "A RGUMENT to V-E Day, page 230, gives the casualty figures as 16 killed and 64 wounded",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "11a",
+      "Footnote_Number": "11",
+      "Footnote_Text": "AAF III, 230",
+      "Footnote_Referenced_Source": "AAF III, 230",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "Air Force History Volume III"
+    },
+    {
+      "Footnote": "11b",
+      "Footnote_Number": "11",
+      "Footnote_Text": "Other short bomb releases did not affect the ground troops: one fighter-bomber pilot made a mistake in landmark identification and dropped his bombs on an American ammunition dump",
+      "Footnote_Referenced_Source": "Other short bomb releases did not affect the ground troops: one fighter-bomber pilot made a mistake in landmark identification and dropped his bombs on an American ammunition dump",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "Air Force History Volume III"
+    },
+    {
+      "Footnote": "11c",
+      "Footnote_Number": "11",
+      "Footnote_Text": "when another plane was hit by enemy flak, a bombardier in a reflex action touched the toggle switch, released his load on an American airfield, and thereby destroyed two bomb-loaded and manned aircraft on the ground and damaged others",
+      "Footnote_Referenced_Source": "when another plane was hit by enemy flak, a bombardier in a reflex action touched the toggle switch, released his load on an American airfield, and thereby destroyed two bomb-loaded and manned aircraft on the ground and damaged others",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "Air Force History Volume III"
+    },
+    {
+      "Footnote": "11d",
+      "Footnote_Number": "11",
+      "Footnote_Text": "Enemy antiaircraft artillery fire destroyed three heavy bombers that participated in the attack",
+      "Footnote_Referenced_Source": "Enemy antiaircraft artillery fire destroyed three heavy bombers that participated in the attack",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "Air Force History Volume III"
+    },
+    {
+      "Footnote": "12a",
+      "Footnote_Number": "12",
+      "Footnote_Text": "Telecon, Collins and Hobbs, 1115, 24 Jul, 30th Div G-3 Jnl J File",
+      "Footnote_Referenced_Source": "Telecon, Collins and Hobbs, 1115, 24 Jul, 30th Div G-3 Jnl J File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "13a",
+      "Footnote_Number": "13",
+      "Footnote_Text": "Telecons, Collins and Hobbs, 1205, 24 Jul, and Stephens and Hassenfelt, 1207, 24 Jul, 30th Div G-3 Jnl J File",
+      "Footnote_Referenced_Source": "Telecons, Collins and Hobbs, 1205, 24 Jul, and Stephens and Hassenfelt, 1207, 24 Jul, 30th Div G-3 Jnl J File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "13b",
+      "Footnote_Number": "13",
+      "Footnote_Text": "4th Div Msg (Gen Barton), 1200, 24 Jul, 4th Div G-3 Jnl and File",
+      "Footnote_Referenced_Source": "4th Div Msg (Gen Barton), 1200, 24 Jul, 4th Div G-3 Jnl and File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "14a",
+      "Footnote_Number": "14",
+      "Footnote_Text": "Telecon, Collins and Hobbs, 1227, 24 Jul, 30th Div G-3 Jnl and File",
+      "Footnote_Referenced_Source": "Telecon, Collins and Hobbs, 1227, 24 Jul, 30th Div G-3 Jnl and File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "14b",
+      "Footnote_Number": "14",
+      "Footnote_Text": "Ltr, Collins to Hechler, 7 Jul 45, OCMH Files",
+      "Footnote_Referenced_Source": "Ltr, Collins to Hechler, 7 Jul 45, OCMH Files",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "14c",
+      "Footnote_Number": "14",
+      "Footnote_Text": "FUSA Msg, 1235, 24 Jul, FUSA G-3 Jnl",
+      "Footnote_Referenced_Source": "FUSA Msg, 1235, 24 Jul, FUSA G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "14d",
+      "Footnote_Number": "14",
+      "Footnote_Text": "4th Div Msg, 1315, 24 Jul, 4th Div G-3 Jnl and File",
+      "Footnote_Referenced_Source": "4th Div Msg, 1315, 24 Jul, 4th Div G-3 Jnl and File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "15a",
+      "Footnote_Number": "15",
+      "Footnote_Text": "VII Corps Opns Memo 47, 24 Jul",
+      "Footnote_Referenced_Source": "VII Corps Opns Memo 47, 24 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "16a",
+      "Footnote_Number": "16",
+      "Footnote_Text": "Colonel Flint was posthumously awarded the Bronze Oak Leaf Cluster to the DSC he had earlier received",
+      "Footnote_Referenced_Source": "Colonel Flint was posthumously awarded the Bronze Oak Leaf Cluster to the DSC he had earlier received",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "17a",
+      "Footnote_Number": "17",
+      "Footnote_Text": "Bradley, Soldier's Story, pp. 341, 346-48",
+      "Footnote_Referenced_Source": "Bradley, Soldier's Story, pp. 341, 346-48",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "18a",
+      "Footnote_Number": "18",
+      "Footnote_Text": "Hobbs Telecons, 1330 and 1412, 24 Jul, 30th Div G-3 Jnl and File",
+      "Footnote_Referenced_Source": "Hobbs Telecons, 1330 and 1412, 24 Jul, 30th Div G-3 Jnl and File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "18b",
+      "Footnote_Number": "18",
+      "Footnote_Text": "Sylvan Diary, 24 Jul",
+      "Footnote_Referenced_Source": "Sylvan Diary, 24 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "19a",
+      "Footnote_Number": "19",
+      "Footnote_Text": "Red Line Msg, Quesada to Brereton, 24 Jul, Rpts of Bombing Errors Made on 25 Jul, 8 Aug, USAF Hist Sec Files",
+      "Footnote_Referenced_Source": "Red Line Msg, Quesada to Brereton, 24 Jul, Rpts of Bombing Errors Made on 25 Jul, 8 Aug, USAF Hist Sec Files",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "USAF Historical Section Files"
+    },
+    {
+      "Footnote": "20a",
+      "Footnote_Number": "20",
+      "Footnote_Text": "Eighth AF Spec Rpt on Opns 24 and 25 Jul, n.d., USAF Hist Sec Files",
+      "Footnote_Referenced_Source": "Eighth AF Spec Rpt on Opns 24 and 25 Jul, n.d., USAF Hist Sec Files",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "USAF Historical Section Files"
+    },
+    {
+      "Footnote": "20b",
+      "Footnote_Number": "20",
+      "Footnote_Text": "Halas Notes, ML-2244",
+      "Footnote_Referenced_Source": "Halas Notes, ML-2244",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "21a",
+      "Footnote_Number": "21",
+      "Footnote_Text": "Eighth AF Draft Ltr, Summary of Plng and Execution of Missions 24 and 25 Jul, n.d., Rpts of Bombing Errors Made on 25 Jul, 8 Aug, USAF Hist Sec Files",
+      "Footnote_Referenced_Source": "Eighth AF Draft Ltr, Summary of Plng and Execution of Missions 24 and 25 Jul, n.d., Rpts of Bombing Errors Made on 25 Jul, 8 Aug, USAF Hist Sec Files",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "USAF Historical Section Files"
+    },
+    {
+      "Footnote": "22a",
+      "Footnote_Number": "22",
+      "Footnote_Text": "Ltrs, Leigh-Mallory to Bradley, 19 Jul, and Bradley to Leigh-Mallory, 23 Jul, OCMH Files",
+      "Footnote_Referenced_Source": "Ltrs, Leigh-Mallory to Bradley, 19 Jul, and Bradley to Leigh-Mallory, 23 Jul, OCMH Files",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "23a",
+      "Footnote_Number": "23",
+      "Footnote_Text": "Bradley, Soldier's Story, p. 341",
+      "Footnote_Referenced_Source": "Bradley, Soldier's Story, p. 341",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "24a",
+      "Footnote_Number": "24",
+      "Footnote_Text": "FUSA Conf Notes, 12 Jul, FUSA G-3 Misc File",
+      "Footnote_Referenced_Source": "FUSA Conf Notes, 12 Jul, FUSA G-3 Misc File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "24b",
+      "Footnote_Number": "24",
+      "Footnote_Text": "Halas Notes, ML-2244",
+      "Footnote_Referenced_Source": "Halas Notes, ML-2244",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "25a",
+      "Footnote_Number": "25",
+      "Footnote_Text": "IX TAC Opns Order 88, 19 Jul",
+      "Footnote_Referenced_Source": "IX TAC Opns Order 88, 19 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "Air Force History Files"
+    },
+    {
+      "Footnote": "25b",
+      "Footnote_Number": "25",
+      "Footnote_Text": "[George], Ninth Air Force, p. 124",
+      "Footnote_Referenced_Source": "[George], Ninth Air Force, p. 124",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "Air Force History Files"
+    },
+    {
+      "Footnote": "26a",
+      "Footnote_Number": "26",
+      "Footnote_Text": "Eighth AF FOs 913 and 917, 23 and 24 Jul, Eighth AF Spec Rpt on Opns 24 and 25, n.d., USAF Hist Sec Files",
+      "Footnote_Referenced_Source": "Eighth AF FOs 913 and 917, 23 and 24 Jul, Eighth AF Spec Rpt on Opns 24 and 25, n.d., USAF Hist Sec Files",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "USAF Historical Section Files"
+    },
+    {
+      "Footnote": "27a",
+      "Footnote_Number": "27",
+      "Footnote_Text": "Lt. Col. Orlando C. Troxel, Jr., Telecon, 2257, 24 Jul, and vii Corps Msg, 0155, 25 Jul, 30th Div G-3 Jnl",
+      "Footnote_Referenced_Source": "Lt. Col. Orlando C. Troxel, Jr., Telecon, 2257, 24 Jul, and vii Corps Msg, 0155, 25 Jul, 30th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "28a",
+      "Footnote_Number": "28",
+      "Footnote_Text": "AAF III, 232",
+      "Footnote_Referenced_Source": "AAF III, 232",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "Air Force History Volume III"
+    },
+    {
+      "Footnote": "29a",
+      "Footnote_Number": "29",
+      "Footnote_Text": "AAF III, 232-33",
+      "Footnote_Referenced_Source": "AAF III, 232-33",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "Air Force History Volume III"
+    },
+    {
+      "Footnote": "29b",
+      "Footnote_Number": "29",
+      "Footnote_Text": "Eighth AF Tactical Mission Rpt Opn 494, 25 Jul, USAF Hist Sec Files",
+      "Footnote_Referenced_Source": "Eighth AF Tactical Mission Rpt Opn 494, 25 Jul, USAF Hist Sec Files",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "USAF Historical Section Files"
+    },
+    {
+      "Footnote": "29c",
+      "Footnote_Number": "29",
+      "Footnote_Text": "Leigh-Mallory, \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946, p. 65",
+      "Footnote_Referenced_Source": "Leigh-Mallory, \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946, p. 65",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "29d",
+      "Footnote_Number": "29",
+      "Footnote_Text": "Sylvan Diary, 25 Jul",
+      "Footnote_Referenced_Source": "Sylvan Diary, 25 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "30a",
+      "Footnote_Number": "30",
+      "Footnote_Text": "AAF III, 232-34",
+      "Footnote_Referenced_Source": "AAF III, 232-34",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "Air Force History Volume III"
+    },
+    {
+      "Footnote": "30b",
+      "Footnote_Number": "30",
+      "Footnote_Text": "First U.S. Army, Report of Operations, I, 121",
+      "Footnote_Referenced_Source": "First U.S. Army, Report of Operations, I, 121",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "31a",
+      "Footnote_Number": "31",
+      "Footnote_Text": "AAF III, 232-34",
+      "Footnote_Referenced_Source": "AAF III, 232-34",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "Air Force History Volume III"
+    },
+    {
+      "Footnote": "31b",
+      "Footnote_Number": "31",
+      "Footnote_Text": "On the problems of direct support bombing, see Roswell Wing's pertinent Comment on the Medium Bombardment Effort to Support the 30th Division's West Wall Assault, MacDonald Files, OCMH, and Harris, Bomber Offensive, p. 213",
+      "Footnote_Referenced_Source": "On the problems of direct support bombing, see Roswell Wing's pertinent Comment on the Medium Bombardment Effort to Support the 30th Division's West Wall Assault, MacDonald Files, OCMH, and Harris, Bomber Offensive, p. 213",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "32a",
+      "Footnote_Number": "32",
+      "Footnote_Text": "USSTAF In Europe, Report of Investigation, 14 Aug, USAF Hist Sec Files, lists the following casualties: 47th Infantry, 9th Division: 14 killed, 33 wounded",
+      "Footnote_Referenced_Source": "USSTAF In Europe, Report of Investigation, 14 Aug, USAF Hist Sec Files, lists the following casualties: 47th Infantry, 9th Division: 14 killed, 33 wounded",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "USAF Historical Section Files"
+    },
+    {
+      "Footnote": "32b",
+      "Footnote_Number": "32",
+      "Footnote_Text": "15th Engineer Battalion: 15 killed, 23 wounded",
+      "Footnote_Referenced_Source": "15th Engineer Battalion: 15 killed, 23 wounded",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "USAF Historical Section Files"
+    },
+    {
+      "Footnote": "32c",
+      "Footnote_Number": "32",
+      "Footnote_Text": "60th Field Artillery Battalion: 4 wounded",
+      "Footnote_Referenced_Source": "60th Field Artillery Battalion: 4 wounded",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "USAF Historical Section Files"
+    },
+    {
+      "Footnote": "32d",
+      "Footnote_Number": "32",
+      "Footnote_Text": "84th Field Artillery Battalion: 1 killed, 2 wounded",
+      "Footnote_Referenced_Source": "84th Field Artillery Battalion: 1 killed, 2 wounded",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "USAF Historical Section Files"
+    },
+    {
+      "Footnote": "32e",
+      "Footnote_Number": "32",
+      "Footnote_Text": "4th Division: 10 killed, 27 wounded",
+      "Footnote_Referenced_Source": "4th Division: 10 killed, 27 wounded",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "USAF Historical Section Files"
+    },
+    {
+      "Footnote": "32f",
+      "Footnote_Number": "32",
+      "Footnote_Text": "30th Division: 61 killed, 374 wounded",
+      "Footnote_Referenced_Source": "30th Division: 61 killed, 374 wounded",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "USAF Historical Section Files"
+    },
+    {
+      "Footnote": "32g",
+      "Footnote_Number": "32",
+      "Footnote_Text": "In addition, the 39th Infantry of the 9th Division lost 16 wounded, and the 957th Field Artillery Battalion lost 10 killed and 11 wounded. (See 9th Div G-3 Jnl, 25 Jul)",
+      "Footnote_Referenced_Source": "In addition, the 39th Infantry of the 9th Division lost 16 wounded, and the 957th Field Artillery Battalion lost 10 killed and 11 wounded. (See 9th Div G-3 Jnl, 25 Jul)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "32h",
+      "Footnote_Number": "32",
+      "Footnote_Text": "General Collins in his Talk agreed with the figures of in killed and 490 wounded",
+      "Footnote_Referenced_Source": "General Collins in his Talk agreed with the figures of in killed and 490 wounded",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "32i",
+      "Footnote_Number": "32",
+      "Footnote_Text": "AAF III, page 234, states that a total of 102 were killed and 380 were wounded",
+      "Footnote_Referenced_Source": "AAF III, page 234, states that a total of 102 were killed and 380 were wounded",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "Air Force History Volume III"
+    },
+    {
+      "Footnote": "32j",
+      "Footnote_Number": "32",
+      "Footnote_Text": "Eighth Air Force Special Report on Operations 24 and 25 July, USAF Hist Sec Files, gives a very complete report including plans, maps, photos, bomb damage assessment, and prisoner of war interrogations on the effect of the bombing",
+      "Footnote_Referenced_Source": "Eighth Air Force Special Report on Operations 24 and 25 July, USAF Hist Sec Files, gives a very complete report including plans, maps, photos, bomb damage assessment, and prisoner of war interrogations on the effect of the bombing",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "USAF Historical Section Files"
+    },
+    {
+      "Footnote": "32k",
+      "Footnote_Number": "32",
+      "Footnote_Text": "[Ackerman], Employment of Strategic Bombers in a Tactical Role, pp. 89ff, does not give a particularly good account",
+      "Footnote_Referenced_Source": "[Ackerman], Employment of Strategic Bombers in a Tactical Role, pp. 89ff, does not give a particularly good account",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "33a",
+      "Footnote_Number": "33",
+      "Footnote_Text": "Bradley, Soldier's Story, p. 349",
+      "Footnote_Referenced_Source": "Bradley, Soldier's Story, p. 349",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "33b",
+      "Footnote_Number": "33",
+      "Footnote_Text": "Brereton, Diaries, pp. 313-15",
+      "Footnote_Referenced_Source": "Brereton, Diaries, pp. 313-15",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "33c",
+      "Footnote_Number": "33",
+      "Footnote_Text": "Ltrs, Eisenhower to Marshall, 26 and 27 Jul, Pogue Files",
+      "Footnote_Referenced_Source": "Ltrs, Eisenhower to Marshall, 26 and 27 Jul, Pogue Files",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "33d",
+      "Footnote_Number": "33",
+      "Footnote_Text": "ETOUSA Ltr, Assignment of Comd, 21 Jul, AG 322/011 MPM, and SHAEF Ltr, Orders, 9 Aug, AG 211-3 (Generals), SHAEF AG File 322-3 (FUSAG)",
+      "Footnote_Referenced_Source": "ETOUSA Ltr, Assignment of Comd, 21 Jul, AG 322/011 MPM, and SHAEF Ltr, Orders, 9 Aug, AG 211-3 (Generals), SHAEF AG File 322-3 (FUSAG)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "34a",
+      "Footnote_Number": "34",
+      "Footnote_Text": "AAF III, 234",
+      "Footnote_Referenced_Source": "AAF III, 234",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "Air Force History Volume III"
+    },
+    {
+      "Footnote": "35a",
+      "Footnote_Number": "35",
+      "Footnote_Text": "Bradley, Soldier's Story, p. 349. He later changed his mind",
+      "Footnote_Referenced_Source": "Bradley, Soldier's Story, p. 349. He later changed his mind",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "38a",
+      "Footnote_Number": "38",
+      "Footnote_Text": "30th Div G-3 Jnl and File, 25 Jul",
+      "Footnote_Referenced_Source": "30th Div G-3 Jnl and File, 25 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "39a",
+      "Footnote_Number": "39",
+      "Footnote_Text": "VII Corps G-3 Jnl and File, 25 Jul",
+      "Footnote_Referenced_Source": "VII Corps G-3 Jnl and File, 25 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "40a",
+      "Footnote_Number": "40",
+      "Footnote_Text": "FUSA AAR, Jul",
+      "Footnote_Referenced_Source": "FUSA AAR, Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "41a",
+      "Footnote_Number": "41",
+      "Footnote_Text": "Collins Talk",
+      "Footnote_Referenced_Source": "Collins Talk",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "44a",
+      "Footnote_Number": "44",
+      "Footnote_Text": "AAF III, 232-34",
+      "Footnote_Referenced_Source": "AAF III, 232-34",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "Air Force History Volume III"
+    },
+    {
+      "Footnote": "45a",
+      "Footnote_Number": "45",
+      "Footnote_Text": "Eighth AF Tactical Mission Rpt Opn 494, 25 Jul, USAF Hist Sec Files",
+      "Footnote_Referenced_Source": "Eighth AF Tactical Mission Rpt Opn 494, 25 Jul, USAF Hist Sec Files",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "AFHRA",
+      "NonDigital_Library_Address": "600 Chennault Circle, Maxwell AFB, AL 36112-6424",
+      "NonDigital_Library_References": "USAF Historical Section Files"
+    },
+    {
+      "Footnote": "46a",
+      "Footnote_Number": "46",
+      "Footnote_Text": "Leigh-Mallory, \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946, p. 65",
+      "Footnote_Referenced_Source": "Leigh-Mallory, \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946, p. 65",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "47a",
+      "Footnote_Number": "47",
+      "Footnote_Text": "Sylvan Diary, 25 Jul",
+      "Footnote_Referenced_Source": "Sylvan Diary, 25 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn12.html",
+  "Source_Footnote_Link_Capture_Date": "December 21, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+  "Source_Link_Capture_Date": "December 21, 2025"
+}

@@ -1,0 +1,1150 @@
+{
+  "Events": [
+    {
+      "Event": "Effect on the Enemy in Operation COBRA",
+      "Sub-event": "Bombardment Impact on 24 July",
+      "Sub-event_summary": "The premature bombardment on 24 July terrified Germans and civilians, creating an awesome effect and disrupting communications.",
+      "Sub-event_fulltext": {
+        "Paragraph_37": "Not only the main bombardment on 25 July but also the premature bombing on 24 July terrified the Germans and civilians on the other side of the Périers-St. Lô highway. Around noon of 24 July, it must have seemed that the motors of the approaching C OBRA armada were like an orchestra of bass viols tuning up. The crash of bombs announced the overture, the premature bombardment. Even the relatively few bombs that were released were enough to create an awesome effect. At least one person believed that the end of the world had come. Others thought that the Allies had developed a new weapon of overwhelming power. 38"
+      },
+      "Footnote_References": [
+        "38"
+      ],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "noon of 24 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "APPROX 241200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "Fritz Bayerlein",
+          "Name": "Fritz Bayerlein",
+          "Rank": "Generalleutnant",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Disrupted",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Not specified, but bombardment occurred around noon",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Effect on the Enemy in Operation COBRA",
+      "Sub-event": "Bayerlein's Response on 24 July",
+      "Sub-event_summary": "Bayerlein interpreted the bombardment as signaling a major attack, but was gratified by his troops' performance, suffering losses but maintaining the line.",
+      "Sub-event_fulltext": {
+        "Paragraph_38": "To Bayerlein, commander of Panzer Lehr, the bombardment on 24 July obviously signaled the beginning of a major American ground attack. Yet Bayerlein was able to influence the battle little. The disruption of his communications to forward units and the confusion that resulted made it difficult to organize a co-ordinated defense against the ground attack that followed the bombing. Consequently, Bayerlein was more than gratified by the situation at the end of the day. Ignorant of the fact that Allied plans had gone awry and that the Americans had mounted only a limited objective attack, Bayerlein congratulated himself on the achievement of his troops. Bayerlein congratulated himself on the achievement of his troops. They had apparently repelled a major American effort and prevented the troops from crossing the Périers-St. Lô highway. Bayerlein congratulated himself on the achievement of his troops. Panzer Lehr had flinched under the weight of the bombardment, but it had not given way; the front line remained intact and neither corps nor army reserves had been committed. However, losses from the bombing and the ground attack numbered about 350 men and perhaps 10 tanks and tank destroyers. Ammunition had been expended liberally, and stocks at firing batteries were rather low. Expecting a renewed attack on the following day, Bayerlein requested and received 200 replacements from the regiments of the 275th Division assembled behind him. He also withdrew the bulk of his outpost line to locations south of the Périers-St. Lô highway, leaving only very lightly manned positions north of the road, where he anticipated strong American artillery fire. 39"
+      },
+      "Footnote_References": [
+        "39"
+      ],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "24 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "241300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "Fritz Bayerlein",
+          "Name": "Fritz Bayerlein",
+          "Rank": "Generalleutnant",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "275th Division",
+            "Name": "Hans Schmidt",
+            "Rank": "Generalleutnant",
+            "Date": "July 1944",
+            "End_Date": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Schmidt_(general)",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": "Reduced, received 200 replacements",
+        "Equipments": {
+          "Supply": "Low ammunition stocks",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank/Tank Destroyer",
+              "Identifier": "Panther/Panzer IV/Jagdpanzer",
+              "Quantity": "10",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_Lehr_Division",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "350",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Effect on the Enemy in Operation COBRA",
+      "Sub-event": "Bayerlein's Self-Confidence",
+      "Sub-event_summary": "Bayerlein's self-confidence was shared by Hausser but not by Kluge, who was concerned about the air activity.",
+      "Sub-event_fulltext": {
+        "Paragraph_39": "Bayerlein's self-confidence was shared by Hausser, the Seventh Army commander, but not by Kluge. When Kluge learned the Allies had bombed front-line positions, he thought immediately the strike must have occurred in the Panzer Group West sector, for that was the area he considered of primary importance to the integrity of the entire Normandy front. He lost no time in telephoning Eberbach and asking in alarm what had happened. Nothing new, Eberbach replied; everything very quiet. 40 Discovering that it was Panzer Lehr in the Seventh Army sector that had been bombed, Kluge telephoned Hausser and asked for \"a quick run-down on the situation.\" Hausser complied. He began a calm recital of facts. \"Strong fire and patrol activity on the right wing; artillery fire on the Vire bridges; reorganization of the [American] army front.\" \"Reorganization for what?\" Kluge interrupted. \"To insert another corps,\" Hausser explained. Then after waiting a moment, he continued. \"On the left flank very strong air activity; attacks in the form of bomb carpets three kilometers behind the MLR. Attack against the middle of the left sector. Only limited attacks; no concerted assault recognizable.\" \"In other words,\" Kluge pressed for an interpretation, \"as weather improves we can expect increasingly severe fighting around St. Lô and westward. Isn't that about it?\" Hausser agreed. \"On the extreme left wing also,\" he added. \"I'd like to ask you again,\" Kluge insisted, \"do you get the impression that you're heading for heavy fighting?\" \"We've got to expect it somewhere,\" Hausser allowed. He revealed little concern or worry. \"Have you created appropriate reserves?\" Kluge asked. Hausser reminded him that the 353d Division had been pulled out of the line. But Kluge seemed already to be thinking of something else. \"Without any doubt,\" he said, as though talking to himself, \"there's something new in all this air activity. We have got to expect a heavy enemy offensive somewhere.\" 41"
+      },
+      "Footnote_References": [
+        "40",
+        "41"
+      ],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "24 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "241300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "353d Division",
+            "Name": "Paul Mahlmann",
+            "Rank": "Generalleutnant",
+            "Date": "July 1944",
+            "End_Date": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Mahlmann",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Improving weather",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Effect on the Enemy in Operation COBRA",
+      "Sub-event": "Kluge's Inspection on 25 July",
+      "Sub-event_summary": "Kluge inspected Panzer Group West, witnessing a Canadian attack stopped by 9th SS Panzer Division.",
+      "Sub-event_fulltext": {
+        "Paragraph_40": "Kluge's hunch was right, but his guess was wrong. Still assuming that the Allies would make their main effort against the eastern sector, Kluge spent the following day, 25 July, inspecting the forward positions of Panzer Group West. 42 He was on hand to witness the reaction to an attack near Tilly launched by the 2d Canadian Corps. The Canadians gained a mile or two until the 9th SS Panzer Division was committed to stop the advance. 43 But there was no real cause for concern on the Panzer Group West front. The dangerous sector was across the Vire in the Seventh Army area, where C OBRA had struck again."
+      },
+      "Footnote_References": [
+        "42",
+        "43"
+      ],
+      "Place_Name": "Tilly",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Group West",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Hans Eberbach",
+          "Name": "Hans Eberbach",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Heinrich_Eberbach",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "9th SS Panzer Division",
+            "Name": "Theodor Wisch",
+            "Rank": "SS-Brigadeführer",
+            "Date": "July 1944",
+            "End_Date": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Theodor_Wisch",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0",
+          "Allied_CA_KIA": "0",
+          "Allied_CA_WIA": "0",
+          "Allied_CA_Missing": "0",
+          "Allied_CA_Unspecified_Casualties": "0",
+          "Allied_CA_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Tilly",
+        "Place_GPS_coordinate": "49.1333 N, -0.6333 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Tilly",
+        "Place_GPS_coordinate": "49.1333 N, -0.6333 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5333",
+          "East": "0.2667",
+          "South": "48.2333",
+          "North": "50.0333"
+        }
+      }
+    },
+    {
+      "Event": "Effect on the Enemy in Operation COBRA",
+      "Sub-event": "2d Canadian Corps Attack",
+      "Sub-event_summary": "The 2d Canadian Corps launched an attack near Tilly, gaining ground until stopped by the 9th SS Panzer Division.",
+      "Sub-event_fulltext": {
+        "Paragraph_40": "Kluge's hunch was right, but his guess was wrong. Still assuming that the Allies would make their main effort against the eastern sector, Kluge spent the following day, 25 July, inspecting the forward positions of Panzer Group West. 42 He was on hand to witness the reaction to an attack near Tilly launched by the 2d Canadian Corps. The Canadians gained a mile or two until the 9th SS Panzer Division was committed to stop the advance. 43 But there was no real cause for concern on the Panzer Group West front. The dangerous sector was across the Vire in the Seventh Army area, where C OBRA had struck again."
+      },
+      "Footnote_References": [
+        "42",
+        "43"
+      ],
+      "Place_Name": "Tilly",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "2d Canadian Corps",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "First Canadian Army",
+          "Commander": "Guy Simonds",
+          "Name": "Guy Simonds",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Guy_Simonds",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": "0",
+          "Allied_CA_WIA": "0",
+          "Allied_CA_Missing": "0",
+          "Allied_CA_Unspecified_Casualties": "0",
+          "Allied_CA_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Tilly",
+        "Place_GPS_coordinate": "49.1333 N, -0.6333 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Tilly",
+        "Place_GPS_coordinate": "49.1333 N, -0.6333 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5333",
+          "East": "0.2667",
+          "South": "48.2333",
+          "North": "50.0333"
+        }
+      }
+    },
+    {
+      "Event": "Effect on the Enemy in Operation COBRA",
+      "Sub-event": "Bombardment on 25 July",
+      "Sub-event_summary": "The bombardment on 25 July caused massive destruction, burying men and equipment, and transforming the landscape.",
+      "Sub-event_fulltext": {
+        "Paragraph_41": "If the previous day's commotion had seemed like Armageddon, the bombardment of 25 July was even worse. 44 Bombs buried men and equipment, overturned tanks, cut telephone wires, broke radio antennas, sent messengers fleeing for foxholes or the nearest crater. Communications with forward echelons were completely disrupted. The bombardment transformed the main line of resistance from a familiar pastoral paysage into a frightening landscape of the moon. Several hours after the bombing, the village priest of la Chapelle-en-Juger, near the center of the target area, walked through the fields and thought he was in a strange world. 45"
+      },
+      "Footnote_References": [
+        "44",
+        "45"
+      ],
+      "Place_Name": "la Chapelle-en-Juger",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "Fritz Bayerlein",
+          "Name": "Fritz Bayerlein",
+          "Rank": "Generalleutnant",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Heavily reduced",
+        "Equipments": {
+          "Supply": "Disrupted",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "Panther",
+              "Quantity": "Several",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panther_tank",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "la Chapelle-en-Juger",
+        "Place_GPS_coordinate": "49.1167 N, -1.1833 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "la Chapelle-en-Juger",
+        "Place_GPS_coordinate": "49.1167 N, -1.1833 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0833",
+          "East": "-0.2833",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Effect on the Enemy in Operation COBRA",
+      "Sub-event": "Casualties and Destruction on 25 July",
+      "Sub-event_summary": "Approximately 1000 German men perished, with units like the parachute regiment vanishing and only a dozen tanks remaining operational.",
+      "Sub-event_fulltext": {
+        "Paragraph_42": "No less than a thousand men must have perished in the C OBRA bombardment. About one third of the total number of combat effectives manning the main line of defense and assembled on the immediate reserve line were probably killed or wounded, the survivors dazed. Perhaps only a dozen tanks or tank destroyers remained in operation. Three battalion command posts of Panzer Lehr were demolished. The attached parachute regiment virtually vanished. Only local and feeble resistance was possible against attacking American infantrymen. 46"
+      },
+      "Footnote_References": [
+        "46"
+      ],
+      "Place_Name": "COBRA area",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "Fritz Bayerlein",
+          "Name": "Fritz Bayerlein",
+          "Rank": "Generalleutnant",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Attached Parachute Regiment",
+            "Name": "Unknown",
+            "Rank": "",
+            "Date": "",
+            "End_Date": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "One third killed or wounded",
+        "Equipments": {
+          "Supply": "Disrupted",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank/Tank Destroyer",
+              "Identifier": "Panther/Jagdpanzer",
+              "Quantity": "Most destroyed, 12 remaining",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_Lehr_Division",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "1000",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "COBRA area",
+        "Place_GPS_coordinate": "49.1 N, -1.1 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "COBRA area",
+        "Place_GPS_coordinate": "49.1 N, -1.1 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0",
+          "East": "-0.2",
+          "South": "48.2",
+          "North": "50.0"
+        }
+      }
+    },
+    {
+      "Event": "Effect on the Enemy in Operation COBRA",
+      "Sub-event": "Annihilation of Kampfgruppe Heinz",
+      "Sub-event_summary": "Kampfgruppe Heinz was annihilated, and efforts to reorganize were thwarted by continued air activity.",
+      "Sub-event_fulltext": {
+        "Paragraph_43": "Kamfgruppe Heinz on the Panzer Lehr right was the sole unit larger than a battalion that was capable of effective combat. By the end of 25 July that kampfgruppe no longer existed--it had apparently been annihilated in ground action near Hébécrevon. The II Parachute Corps, trying to re-establish contact with Panzer Lehr that evening, dispatched an infantry battalion to the sector previously occupied by the kampfgruppe. The battalion found only Americans. Continued Allied air activity in Panzer Lehr rear areas during the afternoon of 25 July thwarted efforts to reorganize and build up a new line of defense. One regiment of the 275th Division, ordered to move up from Marigny and counterattack through la Chapelle-en-Juger, lost all semblance of organization and counted only 200 survivors at the end of the day."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Hébécrevon",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Kampfgruppe Heinz",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Panzer Lehr Division",
+          "Commander": "Heinz",
+          "Name": "Heinz",
+          "Rank": "Unknown",
+          "End_Date": "25 July 1944",
+          "End_Status": "Annihilated",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Annihilated",
+        "Equipments": {
+          "Supply": "Disrupted",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "Annihilated",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hébécrevon",
+        "Place_GPS_coordinate": "49.1167 N, -1.1667 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hébécrevon",
+        "Place_GPS_coordinate": "49.1167 N, -1.1667 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0667",
+          "East": "-0.2667",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Effect on the Enemy in Operation COBRA",
+      "Sub-event": "Failure of 275th Division Regiment",
+      "Sub-event_summary": "A regiment of the 275th Division lost organization and had only 200 survivors after attempting a counterattack.",
+      "Sub-event_fulltext": {
+        "Paragraph_43": "Kamfgruppe Heinz on the Panzer Lehr right was the sole unit larger than a battalion that was capable of effective combat. By the end of 25 July that kampfgruppe no longer existed--it had apparently been annihilated in ground action near Hébécrevon. The II Parachute Corps, trying to re-establish contact with Panzer Lehr that evening, dispatched an infantry battalion to the sector previously occupied by the kampfgruppe. The battalion found only Americans. Continued Allied air activity in Panzer Lehr rear areas during the afternoon of 25 July thwarted efforts to reorganize and build up a new line of defense. One regiment of the 275th Division, ordered to move up from Marigny and counterattack through la Chapelle-en-Juger, lost all semblance of organization and counted only 200 survivors at the end of the day."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Marigny",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "275th Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Hans Schmidt",
+          "Name": "Hans Schmidt",
+          "Rank": "Generalleutnant",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Schmidt_(general)",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Reduced to 200 survivors in one regiment",
+        "Equipments": {
+          "Supply": "Disrupted",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "Heavy, only 200 survivors",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.1 N, -1.25 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.1 N, -1.25 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.15",
+          "East": "-0.35",
+          "South": "48.2",
+          "North": "50.0"
+        }
+      }
+    },
+    {
+      "Event": "Effect on the Enemy in Operation COBRA",
+      "Sub-event": "Kluge's Report on 25 July",
+      "Sub-event_summary": "Kluge reported the front had burst, with a penetration by Americans, and sought freedom of movement.",
+      "Sub-event_fulltext": {
+        "Paragraph_44": "\"As of this moment,\" Kluge reported that evening, \"the front has . . . burst.\" The Americans had made a penetration three miles in width and from one to three miles in depth. Not yet sealed off, the hole was inhabited by isolated units, by bewildered individuals, and by departed souls. The 353d Division and the remainder of the 275th Division had been committed, but it was highly questionable whether they could restore the front or even re-establish a defensive line. Kluge nevertheless felt there was still hope of stopping the Americans. Although \"we must fight for every yard on the right wing [Panzer Group West sector],\" Kluge stated, he had freedom of movement and of withdrawal on the left, west of the Vire. If he could decrease the length of his line west of St. Lô by withdrawal and thereby extricate the 2d SS Panzer Division and use it as a mobile reserve, he might salvage something from the discouraging situation, but he needed \"a free hand in his decisions about Seventh Army.\" Would Hitler give him a free hand? Shortly after midnight, Hitler said he would. 47"
+      },
+      "Footnote_References": [
+        "47"
+      ],
+      "Place_Name": "west of the Vire",
+      "Dates": {
+        "Date_group_of_event": "evening of 25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "APPROX 251800ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB West",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "353d Division",
+            "Name": "Paul Mahlmann",
+            "Rank": "Generalleutnant",
+            "Date": "July 1944",
+            "End_Date": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Mahlmann",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          },
+          {
+            "Unit": "275th Division",
+            "Name": "Hans Schmidt",
+            "Rank": "Generalleutnant",
+            "Date": "July 1944",
+            "End_Date": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Schmidt_(general)",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          },
+          {
+            "Unit": "2d SS Panzer Division",
+            "Name": "Heinz Lammerding",
+            "Rank": "SS-Gruppenführer",
+            "Date": "July 1944",
+            "End_Date": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Heinz_Lammerding",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "west of the Vire",
+        "Place_GPS_coordinate": "49.0 N, -1.0 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "west of the Vire",
+        "Place_GPS_coordinate": "49.0 N, -1.0 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9",
+          "East": "-0.1",
+          "South": "48.1",
+          "North": "49.9"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "38a",
+      "Footnote_Number": "38",
+      "Footnote_Text": "Toussaint, La Percee Americaine a l'Ouest de Saint-Lô, p. 77n",
+      "Footnote_Referenced_Source": "Toussaint, La Percee Americaine a l'Ouest de Saint-Lô, p. 77n",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "38b",
+      "Footnote_Number": "38",
+      "Footnote_Text": "\"The bombardment of 24 July,\" Toussaint, who observed it, later wrote, \"was hardly noted in the official reports. However, if its volume did not equal the infernal agitation of the following day, it was nevertheless terrifying.\"",
+      "Footnote_Referenced_Source": "\"The bombardment of 24 July,\" Toussaint, who observed it, later wrote, \"was hardly noted in the official reports. However, if its volume did not equal the infernal agitation of the following day, it was nevertheless terrifying.\"",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "38c",
+      "Footnote_Number": "38",
+      "Footnote_Text": "See also J. de Saint-Jorre, \"Journal d'un Saint-Lois pendant la Bataille de Normandie,\" Memoires de la Societe d' Archeologie de la Manche, LV, 47",
+      "Footnote_Referenced_Source": "See also J. de Saint-Jorre, \"Journal d'un Saint-Lois pendant la Bataille de Normandie,\" Memoires de la Societe d' Archeologie de la Manche, LV, 47",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "38d",
+      "Footnote_Number": "38",
+      "Footnote_Text": "and Saint-Jorre, \"Saint-Lô sous les Bombes,\" in Herval, Bataille de Normandie, I, 85ff",
+      "Footnote_Referenced_Source": "and Saint-Jorre, \"Saint-Lô sous les Bombes,\" in Herval, Bataille de Normandie, I, 85ff",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "39a",
+      "Footnote_Number": "39",
+      "Footnote_Text": "Telecon, Tempelhoff and Helmdach, 1320, 24 July, AGp B KTB",
+      "Footnote_Referenced_Source": "Telecon, Tempelhoff and Helmdach, 1320, 24 July, AGp B KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "39b",
+      "Footnote_Number": "39",
+      "Footnote_Text": "James B. Hodgson, Thrust-Counterthrust, the Battle of France, R-58",
+      "Footnote_Referenced_Source": "James B. Hodgson, Thrust-Counterthrust, the Battle of France, R-58",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "40a",
+      "Footnote_Number": "40",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 1800, 24 Jul, OB WEST KTB, Anlage 828",
+      "Footnote_Referenced_Source": "Telecon, Kluge and Eberbach, 1800, 24 Jul, OB WEST KTB, Anlage 828",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "41a",
+      "Footnote_Number": "41",
+      "Footnote_Text": "Telecon, Kluge and Hausser, 1810, 24 Jul, OB WEST KTB, Anlage 829",
+      "Footnote_Referenced_Source": "Telecon, Kluge and Hausser, 1810, 24 Jul, OB WEST KTB, Anlage 829",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "42a",
+      "Footnote_Number": "42",
+      "Footnote_Text": "AGp B KTB, Anlagen, Fall, 40-X.44, Annex 40",
+      "Footnote_Referenced_Source": "AGp B KTB, Anlagen, Fall, 40-X.44, Annex 40",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "43a",
+      "Footnote_Number": "43",
+      "Footnote_Text": "21 AGp Msg, 25 Jul, FUSA G-3 Jnl",
+      "Footnote_Referenced_Source": "21 AGp Msg, 25 Jul, FUSA G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "43b",
+      "Footnote_Number": "43",
+      "Footnote_Text": "Telecons, Speidel to Zimmerman and Zimmerman to Friedel, 2315 and 2335, 25 Jul, OB WEST KTB, Anlage 849",
+      "Footnote_Referenced_Source": "Telecons, Speidel to Zimmerman and Zimmerman to Friedel, 2315 and 2335, 25 Jul, OB WEST KTB, Anlage 849",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "44a",
+      "Footnote_Number": "44",
+      "Footnote_Text": "An observer called it \"the most imposing aerial parade I have seen since the beginning of this long war.\" Saint-Jorre, \"Saint-Lô sous les Bombes,\" in Herval, Bataille de Normandie, I, 97",
+      "Footnote_Referenced_Source": "An observer called it \"the most imposing aerial parade I have seen since the beginning of this long war.\" Saint-Jorre, \"Saint-Lô sous les Bombes,\" in Herval, Bataille de Normandie, I, 97",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "45a",
+      "Footnote_Number": "45",
+      "Footnote_Text": "MS # A-902 (Bayerlein)",
+      "Footnote_Referenced_Source": "MS # A-902 (Bayerlein)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "45b",
+      "Footnote_Number": "45",
+      "Footnote_Text": "Toussaint, La Percee Americaine a l'Ouest de Saint-Lô, p. 144",
+      "Footnote_Referenced_Source": "Toussaint, La Percee Americaine a l'Ouest de Saint-Lô, p. 144",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "46a",
+      "Footnote_Number": "46",
+      "Footnote_Text": "Seventh Army KTB, 25 Jul",
+      "Footnote_Referenced_Source": "Seventh Army KTB, 25 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "46b",
+      "Footnote_Number": "46",
+      "Footnote_Text": "Liddell Hart, The Rommel Papers, pp. 489-90",
+      "Footnote_Referenced_Source": "Liddell Hart, The Rommel Papers, pp. 489-90",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "46c",
+      "Footnote_Number": "46",
+      "Footnote_Text": "Pz Lehr Div Ib KTB, Annex 247",
+      "Footnote_Referenced_Source": "Pz Lehr Div Ib KTB, Annex 247",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "46d",
+      "Footnote_Number": "46",
+      "Footnote_Text": "MS # B-489 (Ziegelmann)",
+      "Footnote_Referenced_Source": "MS # B-489 (Ziegelmann)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "47a",
+      "Footnote_Number": "47",
+      "Footnote_Text": "Telecons, Speidel to Zimmerman, Zimmerman to Friedel, Friedel to Zimmerman, 2315, 2335, 25 Jul, and 0045, 26 Jul, OB WEST KTB, Anlage 849",
+      "Footnote_Referenced_Source": "Telecons, Speidel to Zimmerman, Zimmerman to Friedel, Friedel to Zimmerman, 2315, 2335, 25 Jul, and 0045, 26 Jul, OB WEST KTB, Anlage 849",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn12.html",
+  "Source_Footnote_Link_Capture_Date": "December 21, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+  "Source_Link_Capture_Date": "December 21, 2025"
+}

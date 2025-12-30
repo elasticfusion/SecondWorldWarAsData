@@ -1,0 +1,220 @@
+{
+  "Events": [
+    {
+      "Event": "Allied Plans for the Liberation of Paris",
+      "Sub-event": "Pre-Invasion Planning and Tactical Considerations",
+      "Sub-event_summary": "Allied planners anticipated strong German defense of Paris with switch lines along Marne and Oise Rivers, suitable for counteroffensive. Direct attack risked prolonged street fighting, delaying operations toward Germany and potential destruction of the capital. Preferred strategy was to bypass and encircle Paris, forcing capitulation of isolated garrison.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "As American troops neared Paris, soldiers recalled the \"fanciful tales of their fathers in the AEF\" and began to dream of entering the city themselves. Despite their hopes, despite the political, psychological, and military significance of the city, and even though any one of three corps had been capable of liberating Paris since mid-August, the Allied command had long before decided to defer liberation on the basis of tactics, logistics, and politics.",
+        "Paragraph_2": "Before the cross-Channel attack, Allied planners had thought it likely that the Germans would hold on firmly to Paris. With two potential switch lines in the Marne and Oise Rivers, the Germans would possess not only favorable defensive positions but also a most suitable base for a counteroffensive. To attack Paris directly would therefore probably involve the Allies in prolonged street fighting, undesirable both because of the delay imposed on operations toward Germany and because of the possibility of destroying the French capital. Yet the Allies would need to reduce the German defenses at Paris before they could initiate action beyond the Seine River. The best way to take the capital, the planners indicated, would be to by-pass and encircle it, then await the inevitable capitulation of the isolated garrison."
+      },
+      "Footnote_References": [1, 2],
+      "Place_Name": ["Paris", "Marne River", "Oise River", "Seine River"],
+      "Dates": {
+        "Date_group_of_event": "Pre-Jun 1944 - mid-Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "Pre-Jun 1944 - mid-Aug 1944 (BST)"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "Allied Plans for the Liberation of Paris",
+      "Sub-event": "Logistical and Supply Considerations Against Immediate Liberation",
+      "Sub-event_summary": "Logisticians viewed Paris as a liability due to civil affairs commitment draining supplies from combat units. Combined Chiefs of Staff directive prioritized logistical support for defeat of Germany over relief supplies. Estimated 4,000 tons per day required for Paris; diversion from gasoline would hinder motor march toward German border. Rapid German disintegration in Normandy favored immediate pursuit rather than supply commitment to Paris.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "Staff officers responsible for supply favored this course. Because the Combined Chiefs of Staff had advised the Supreme Commander that he was to distribute relief supplies to liberated areas if he could do so \"without hindrance . . . to the logistical administrative support required to sustain the forces allocated . . . for the defeat of Germany,\" the logisticians saw Paris in terms of a liability. The Allied civil affairs commitment there could not help but drain supplies from the combat units and adversely affect military operations.",
+        "Paragraph_4": "The civil affairs commitment seemed particularly large in August because Allied bombing and French sabotage directed against German transport had virtually isolated the capital from the provinces. A famine of food, coal, gas, and electricity threatened the city. Planners estimated that four thousand tons of supplies per day would be required, which, if converted to gasoline for the combat troops, was \"enough for a three days' motor march toward the German border.\" In view of the disintegration of the German forces in Normandy, which invited immediate Allied pursuit operations toward Germany, the necessity of diverting troops and supplies to Paris on humanitarian grounds, though difficult to reject, seemed unwarranted, particularly since the military supply lines were already strained and since continued military pressure east of Paris might bring the war to a quick end. The Allies felt that the Germans in Paris could only delay the Allied advance, and because the Allies would soon have other crossing sites over the Seine, an unnecessary challenge might provoke the Germans into destroying the city."
+      },
+      "Footnote_References": [3, 4],
+      "Place_Name": ["Paris", "Normandy", "Seine River"],
+      "Dates": {
+        "Date_group_of_event": "Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "Aug 1944 (BST)"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "Allied Plans for the Liberation of Paris",
+      "Sub-event": "Political Considerations Involving General de Gaulle",
+      "Sub-event_summary": "Political factor against immediate liberation stemmed from General de Gaulle's aspirations. De Gaulle proclaimed his National Committee of Liberation the provisional government before invasion. Eisenhower foresaw potential embarrassment from enabling de Gaulle's entry into Paris, possibly imposing a government not desired by French people.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "The political factor working against immediate liberation stemmed from the aspirations of General Charles de Gaulle, chief of the Free French movement. Though Marshal Henri Pétain headed the government in France, de Gaulle several days before the invasion had proclaimed his own National Committee of Liberation the provisional government of the French Republic. By making possible de Gaulle's entry into Paris and thus unavoidably intervening in the internal affairs of France, General Eisenhower \"foresaw possible embarrassment.\" The result might be the imposition of a government on France that the French people might not want."
+      },
+      "Footnote_References": [5],
+      "Place_Name": ["Paris", "France"],
+      "Dates": {
+        "Date_group_of_event": "Pre-Jun 1944 - Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "Pre-Jun 1944 - Aug 1944 (BST)"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "Allied Plans for the Liberation of Paris",
+      "Sub-event": "Decision to Defer Liberation and Protect the City",
+      "Sub-event_summary": "Logistical, political, and humanitarian factors led to deferring liberation despite strong pressure to capture Paris early. Allies aimed to spare Paris and inhabitants devastation. Bombing targeted railroad yards outside rather than terminals inside city; ground troops directed around capital rather than through it.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "These logistical and political factors played a part in the Allied decision to postpone the liberation, despite recognition that \"Paris will be tempting bait, and for political and morale reasons strong pressure will doubtless be exerted to capture it early.\" The circumstances were such as to give full play to the desire to spare Paris and its two million inhabitants devastation and injury. Ever since the preliminary phases of Operation OVERLORD when Allied planes had attempted to destroy the German communications network in France, pilots had attacked railroad marshaling yards outside Paris rather than terminals inside the city, and in August the same motivation applied in the decision to swing ground troops around the capital rather than through it."
+      },
+      "Footnote_References": [6],
+      "Place_Name": ["Paris"],
+      "Dates": {
+        "Date_group_of_event": "Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "Aug 1944 (BST)"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    }
+  ],
+  "Footnotes": {
+    "Footnote": [
+      {
+        "Footnote": "1",
+        "Footnote_Number": 1,
+        "Footnote_Text": "See, for example, Pyle, Brave Men, p. 404.",
+        "Footnote_Referenced_Source": "Ernie Pyle, Brave Men (New York: Henry Holt and Company, 1944), p. 404",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "2",
+        "Footnote_Number": 2,
+        "Footnote_Text": "SHAEF Planning Draft, 13 May 44.",
+        "Footnote_Referenced_Source": "SHAEF Planning Draft, 13 May 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "3",
+        "Footnote_Number": 3,
+        "Footnote_Text": "CCS 426/1, 28 Jul 44.",
+        "Footnote_Referenced_Source": "Combined Chiefs of Staff 426/1, 28 July 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "4",
+        "Footnote_Number": 4,
+        "Footnote_Text": "SHAEF G-4, Logistic Factors Affecting Operations, 13 Aug 44.",
+        "Footnote_Referenced_Source": "SHAEF G-4, Logistic Factors Affecting Operations, 13 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "5",
+        "Footnote_Number": 5,
+        "Footnote_Text": "Eisenhower, Crusade in Europe, p. 279.",
+        "Footnote_Referenced_Source": "Dwight D. Eisenhower, Crusade in Europe (Garden City, N.Y.: Doubleday & Company, Inc., 1948), p. 279",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "6",
+        "Footnote_Number": 6,
+        "Footnote_Text": "SHAEF Planning Draft, 13 May 44.",
+        "Footnote_Referenced_Source": "SHAEF Planning Draft, 13 May 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      }
+    ]
+  },
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn29.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-29",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+  "Source_Link_Capture_Date": "2025-12-29"
+}

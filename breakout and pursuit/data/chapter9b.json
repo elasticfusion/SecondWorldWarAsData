@@ -1,0 +1,835 @@
+{
+  "Events": [
+    {
+      "Event": "The German Point of View on the July Offensive in Normandy",
+      "Sub-event": "German Defensive Tactics and Unit Flexibility",
+      "Sub-event_summary": "The Germans managed to hold their defenses through skillful tactics in hedgerow terrain and by shifting units in response to successive American corps attacks, exemplified by the flexible deployment of the 2d SS Panzer Division.",
+      "Sub-event_fulltext": {
+        "Paragraph_46": "To the Germans, even more than to the Americans, the July operations had been hard. Only the skillful defensive tactics in the hedgerow terrain plus the pattern of the American offensive had averted complete disintegration of the German defenses in Normandy. The successive nature of the American corps attacks had enabled the Germans to shift units from one threatened portion of the front to another, a course of action perhaps impossible had the First Army been able to launch simultaneous attacks all across the front.",
+        "Paragraph_47": "The activity of the 2d SS Panzer Division, located south of St. Lô and constituting the entire Seventh Army reserve, exemplified German flexibility. The division had on 5 July dispatched a kampfgruppe to la Haye-du-Puits and a battalion of tanks to St. Lô while the main body of troops moved toward Périers. The tank battalion near St. Lô marched onto the Carentan-Périers isthmus on 7 July. Two days later a regiment entered the battle between the Taute and the Vire. The regiment fought there until relieved by Panzer Lehr, and then, together with the kampfgruppe near la Haye-du-Puits, helped the 17th SS Panzer Grenadier Division in defense of Périers.[22]"
+      },
+      "Footnote_References": "22",
+      "Place_Name": "la Haye-du-Puits",
+      "Dates": {
+        "Date_group_of_event": "5 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-9.html",
+        "Zulu_date_group_of_event": "050000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "2d SS Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Heinz Lammerding",
+          "Name": "Heinz Lammerding",
+          "Rank": "SS-Brigadeführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Heinz_Lammerding",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "17th SS Panzer Grenadier Division",
+            "Name": "Otto Baum",
+            "Rank": "SS-Obersturmbannführer",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Otto_Baum",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": "Dispersed and committed piecemeal, not fully staffed due to ongoing engagements",
+        "Equipments": {
+          "Supply": "Supply shortages due to Allied bombing and sabotage",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Panther tank",
+            "Identifier": "Panzer V",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Panther_tank",
+            "Web_Image_Reference": "https://collection.nam.ac.uk/images/960/100000-100999/100722.jpg",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "https://normandy-victory-museum.fr/wp-content/uploads/2025/10/Soldats-pendant-La-bataille-des-haies.webp",
+        "Description": "Soldiers during the battle of the hedges",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.2908 N, -1.5411 W",
+        "Map_Reference": "Map II: First Army Front West of the Vire River, 8-15 July 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://www.loc.gov/resource/g5701sm.gct00021/?sp=30",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.2908 N, -1.5411 W",
+        "Weather_text": "Greater amount of cloud, wind, and rain than recorded since 1900, nullifying Allied air superiority on many days.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.92,
+          "East": -0.16,
+          "South": 48.39,
+          "North": 50.19
+        }
+      }
+    },
+    {
+      "Event": "The German Point of View on the July Offensive in Normandy",
+      "Sub-event": "Commitment of Reserves and Piecemeal Deployment",
+      "Sub-event_summary": "German reserves like the 5th Parachute Division and 275th Division were committed piecemeal to reinforce threatened sectors, leading to dispersal and inefficiency, with concerns from higher command about unit cohesion.",
+      "Sub-event_fulltext": {
+        "Paragraph_48": "The units rushed to Normandy had performed a similar function. By the time the 5th Parachute Division arrived from Brittany, on 12 July, the 15th Regiment, which had earlier been detached, was already fighting on Mont Castre. Seventh Army plans to commit the entire division in the la Haye-du-Puits sector were abandoned when the Panzer Lehr attack miscarried, and one of the new regiments was immediately committed between the Taute and the Vire.[23]",
+        "Paragraph_49": "On the other hand, such fragmentary commitment led to the dispersal of German units. Goering, whose headquarters had administrative control of Luftwaffe ground forces, soon threatened to stop the flow of replacements to the 5th Parachute Division if the scattered elements were not immediately reassembled and the division used as a unit.[24]",
+        "Paragraph_50": "The 275th Division, which had arrived in the Cotentin by mid-July, could not be employed in toto because one of its regiments was already battered by the fighting near la Haye-du-Puits. Thus the strength of three divisions--each of which, if employed as a powerful unified force, might have turned the course of the battle in any one sector--had been dissipated by the more urgent need to hold back the American pressure."
+      },
+      "Footnote_References": "23,24",
+      "Place_Name": "Mont Castre",
+      "Dates": {
+        "Date_group_of_event": "12 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-9.html",
+        "Zulu_date_group_of_event": "120000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "5th Parachute Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Gustav Wilke",
+          "Name": "Gustav Wilke",
+          "Rank": "Generalleutnant",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/5th_Parachute_Division_(Germany)",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "275th Infantry Division",
+            "Name": "Hans Schmidt",
+            "Rank": "Generalleutnant",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/275th_Infantry_Division_(Wehrmacht)",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": "Dispersed elements, not reassembled, facing replacement stoppage",
+        "Equipments": {
+          "Supply": "Threatened stoppage of replacements",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {}
+      },
+      "Media": {
+        "Link": "https://collection.nam.ac.uk/images/960/100000-100999/100722.jpg",
+        "Description": "Knocked out German Panther tank, Normandy, 1944",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.288 N, -1.467 W",
+        "Map_Reference": "Map I: Normandy Front, 2 July 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.288 N, -1.467 W",
+        "Weather_text": "Greater amount of cloud, wind, and rain than recorded since 1900, nullifying Allied air superiority on many days.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.84,
+          "East": -0.09,
+          "South": 48.39,
+          "North": 50.19
+        }
+      }
+    },
+    {
+      "Event": "The German Point of View on the July Offensive in Normandy",
+      "Sub-event": "Decline in Troop Aggressiveness",
+      "Sub-event_summary": "There was a noted decline in aggressiveness among German armored divisions, with dissatisfaction over their performance and a subsiding spirit among troops.",
+      "Sub-event_fulltext": {
+        "Paragraph_51": "Plagued by the necessity of committing their reserves piecemeal, the Germans were also concerned by the decline of aggressiveness among their troops. The mounting reluctance of armored divisions to make a wholehearted effort seemed particularly serious. The classic example of too little too late, at least in Rommel's opinion, had been the Panzer Lehr attack on 11 July. Even in the earlier fighting about Caen, there was dissatisfaction at the higher command echelons with panzer effectiveness. Spirit was a vital prerequisite for success, and signs that spirit was subsiding on the troop level were evident.[25]"
+      },
+      "Footnote_References": "25",
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "11 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-9.html",
+        "Zulu_date_group_of_event": "110000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Fritz Bayerlein",
+          "Name": "Fritz Bayerlein",
+          "Rank": "Generalleutnant",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Declining aggressiveness and spirit",
+        "Equipments": {
+          "Supply": "Shortages in munitions",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Panther tank",
+            "Identifier": "Panzer V",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Panther_tank",
+            "Web_Image_Reference": "https://49fe30bb3aa7406c16dc-5c968119d095dc32d807923c59347cc2.ssl.cf1.rackcdn.com/2011.403.241_1.jpg",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {},
+        "Civilian": {}
+      },
+      "Media": {
+        "Link": "https://warfarehistorynetwork.com/wp-content/uploads/2022/11/W-Feb23-Villers-2.jpg",
+        "Description": "The Battle of Villers-Bocage: Tigers Triumphant",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1829 N, -0.3707 W",
+        "Map_Reference": "Map IV: The British Front, 18 July 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV.jpg",
+        "ExternalMapLink": "https://www.loc.gov/resource/g5701sm.gct00021/?sp=30",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3707 W",
+        "Weather_text": "Greater amount of cloud, wind, and rain than recorded since 1900, nullifying Allied air superiority on many days.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.74,
+          "East": 1.0,
+          "South": 48.28,
+          "North": 50.08
+        }
+      }
+    },
+    {
+      "Event": "The German Point of View on the July Offensive in Normandy",
+      "Sub-event": "Shortages in Men and Munitions",
+      "Sub-event_summary": "The Germans faced critical shortages in munitions due to Allied bombing and sabotage, unable to match Allied artillery fire, with efforts to use Seine River barges failing to meet demands.",
+      "Sub-event_fulltext": {
+        "Paragraph_52": "The Germans faced shortages in both men and munitions, but the latter was the more significant. Against an estimated British expenditure of 80,000 artillery rounds around Caen on 10 July, the Germans had been able to fire a scant 4,500 shells in return. \"Although our troop morale is good,\" a German officer protested, \"we cannot meet the enemy matériel with courage alone.\" The Germans could not meet the Allied rate of fire because their transportation network had been systematically bombed by Allied planes and sabotaged by the French Resistance. Efforts to expedite the flow of supplies by increasing the use of the Seine River barges failed to meet the battlefield demands.[26]"
+      },
+      "Footnote_References": "26",
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "10 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-9.html",
+        "Zulu_date_group_of_event": "100000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB West",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Shortages in men",
+        "Equipments": {
+          "Supply": "Severe munitions shortages due to disrupted transportation",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {},
+        "Civilian": {}
+      },
+      "Media": {
+        "Link": "https://www.historynet.com/wp-content/uploads/2021/09/Infantrymen-Normandy-hedgerows.jpg",
+        "Description": "Infantrymen in Normandy hedgerows",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Seine River",
+        "Place_GPS_coordinate": "49.4333 N, 0.3667 E",
+        "Map_Reference": "Map I: Normandy Front, 2 July 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.4333 N, 0.3667 E",
+        "Weather_text": "Greater amount of cloud, wind, and rain than recorded since 1900, nullifying Allied air superiority on many days.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.0,
+          "East": 1.73,
+          "South": 48.53,
+          "North": 50.33
+        }
+      }
+    },
+    {
+      "Event": "The German Point of View on the July Offensive in Normandy",
+      "Sub-event": "Material Losses",
+      "Sub-event_summary": "Between 6 June and 9 July, the Germans suffered significant material losses, including tanks and guns, equivalent to equipping an entire SS armored division.",
+      "Sub-event_fulltext": {
+        "Paragraph_53": "That much needed to be replaced and resupplied was obvious from the matériel losses sustained in Normandy. Between 6 June and 9 July, the Germans had lost 150 Mark IV tanks, 85 Panthers, and 15 Tigers, 167 75-mm. assault and antitank guns, and almost 30 88-mm. pieces--more than enough to equip an entire SS armored division.[27]"
+      },
+      "Footnote_References": "27",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "6 June - 9 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-9.html",
+        "Zulu_date_group_of_event": "060000ZJUN44 to 090000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "OB West",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "Significant losses requiring resupply",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Panzer IV",
+            "Identifier": "Mark IV",
+            "Quantity": "150",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+            "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Bundesarchiv_Bild_101I-721-0359-35%2C_Paris%2C_Panzer_IV.jpg/800px-Bundesarchiv_Bild_101I-721-0359-35%2C_Paris%2C_Panzer_IV.jpg",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Origination_Country": "DE",
+          "Name": "Panther",
+          "Identifier": "Panzer V",
+          "Quantity": "85",
+          "Web_Reference": "https://en.wikipedia.org/wiki/Panther_tank",
+          "Web_Image_Reference": "https://collection.nam.ac.uk/images/960/100000-100999/100724.jpg",
+          "Web_Reference_Capture_Date": "December 21, 2025"
+        }
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {},
+        "Civilian": {}
+      },
+      "Media": {
+        "Link": "https://49fe30bb3aa7406c16dc-5c968119d095dc32d807923c59347cc2.ssl.cf1.rackcdn.com/2011.403.241_1.jpg",
+        "Description": "Panther tank",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "Map I: Normandy Front, 2 July 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Greater amount of cloud, wind, and rain than recorded since 1900, nullifying Allied air superiority on many days.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.47,
+          "East": 0.29,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The German Point of View on the July Offensive in Normandy",
+      "Sub-event": "Casualties and Replacements",
+      "Sub-event_summary": "German casualties in the west from 6 June to 11 July totaled nearly 87,000, with only 6 percent replaced, rising to 100,000 by 17 July with 12 percent replacements promised.",
+      "Sub-event_fulltext": {
+        "Paragraph_54": "Casualty figures were even more depressing. Between 6 June and 11 July the losses in the west totaled almost 2,000 officers and 85,000 men. The 243d Division had lost over 8,000 men in the Cotentin, the 352d Division almost 8,000 men in the Cotentin and St. Lô sectors, the 716th Division more than 6,000 near Caen. The 12th SS Panzer Division, with casualties numbering 4,485, had seen its infantry components reduced to the strength of a single battalion--one sixth of its authorized strength. The 21st Panzer Division had taken 3,411 casualties; Panzer Lehr 3,140.[28]",
+        "Paragraph_55": "To replace these losses, only 5,210 replacements, or 6 percent of the casualties, had arrived at the front, though another 7,500 or 9 percent were promised or on the way. By 17 July German casualties in Normandy had risen to about 100,000, of which 2,360 were officers. Replacements promised to fill the depleted ranks would total about 12 percent of the losses.[29]"
+      },
+      "Footnote_References": "28,29",
+      "Place_Name": "Cotentin",
+      "Dates": {
+        "Date_group_of_event": "6 June - 17 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-9.html",
+        "Zulu_date_group_of_event": "060000ZJUN44 to 170000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "12th SS Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Panzer Group West",
+          "Commander": "Kurt Meyer",
+          "Name": "Kurt Meyer",
+          "Rank": "SS-Brigadeführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Kurt_Meyer",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "21st Panzer Division",
+            "Name": "Edgar Feuchtinger",
+            "Rank": "Generalleutnant",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Edgar_Feuchtinger",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          },
+          {
+            "Unit": "243d Division",
+            "Name": "Bernhard Klosterkemper",
+            "Rank": "Oberst",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/243rd_Static_Infantry_Division",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          },
+          {
+            "Unit": "352d Division",
+            "Name": "Dietrich Kraiss",
+            "Rank": "Generalleutnant",
+            "Date": "",
+            "End_Date_of_command": "6 August 1944",
+            "End_Status": "KIA",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/352nd_Infantry_Division",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          },
+          {
+            "Unit": "716th Division",
+            "Name": "Wilhelm Richter",
+            "Rank": "Generalleutnant",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Wilhelm_Richter",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": "Severely depleted, infantry reduced to one-sixth strength",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "100000",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {}
+      },
+      "Media": {
+        "Link": "http://tank-photographs.s3-website-eu-west-1.amazonaws.com/vimoutiers-tiger-tank-1944-ww2.jpg",
+        "Description": "Vimoutiers Tiger Tank - Surviving Normandy 1944 D-Day Tank",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5 N, -1.5 W",
+        "Map_Reference": "Map I: Normandy Front, 2 July 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5 N, -1.5 W",
+        "Weather_text": "Greater amount of cloud, wind, and rain than recorded since 1900, nullifying Allied air superiority on many days.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.87,
+          "East": -0.13,
+          "South": 48.6,
+          "North": 50.4
+        }
+      }
+    },
+    {
+      "Event": "The German Point of View on the July Offensive in Normandy",
+      "Sub-event": "Commanders' Concerns and Assessments",
+      "Sub-event_summary": "German commanders like Choltitz, Eberbach, and Kluge expressed grave concerns about the sustainability of the defense, with calls for more tanks and warnings of an impending collapse.",
+      "Sub-event_fulltext": {
+        "Paragraph_56": "To Choltitz, who commanded the LXXXIV Corps, it seemed that the battle of the hedgerows was \"a monstrous blood-bath,\" the like of which he had not seen in eleven years of war.[30]",
+        "Paragraph_57": "Yet there seemed to be no way of stopping it except to commit units arriving from quiet sectors in the west to reinforce the sagging Normandy defense. The suggestion by Eberbach, who commanded Panzer Group West, that it was time to close most military specialist schools and send the students to the battlefield at once bespoke an impending bankruptcy of manpower resources.[31]",
+        "Paragraph_58": "To Kluge, the OB WEST commander, the Normandy front was on the verge of developing into an ungeheures Kladderadatsch --an awful mess--and he wondered whether OKW appreciated \"the tremendous consumption of forces on big battle days.\" In view of the heavy losses, he told Jodl, Hitler's order for inflexible defense necessitated an expenditure of troops the Germans could no longer afford. Because Kluge believed that the infantry would not hold much longer, he wanted tanks, more tanks, \"to act as corset stays behind the troops.\" He also wanted Hitler to know that the Normandy situation was \"very serious.\" \"If a hole breaks open, I have to patch it,\" he said. \"Tell this to Hitler.\"[32]"
+      },
+      "Footnote_References": "30,31,32",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-9.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "LXXXIV Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Dietrich von Choltitz",
+          "Name": "Dietrich von Choltitz",
+          "Rank": "General",
+          "End_Date": "30 July 1944",
+          "End_Status": "Relieved",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dietrich_von_Choltitz",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Panzer Group West",
+            "Name": "Heinrich Eberbach",
+            "Rank": "General",
+            "Date": "3 July 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Heinrich_Eberbach",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          },
+          {
+            "Unit": "OB West",
+            "Name": "Günther von Kluge",
+            "Rank": "Generalfeldmarschall",
+            "Date": "3 July 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          },
+          {
+            "Unit": "Army Group B",
+            "Name": "Erwin Rommel",
+            "Rank": "Generalfeldmarschall",
+            "Date": "",
+            "End_Date_of_command": "19 July 1944",
+            "End_Status": "WIA",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Erwin_Rommel",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": "Impending bankruptcy of manpower resources",
+        "Equipments": {
+          "Supply": "Need for more tanks",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {},
+        "Civilian": {}
+      },
+      "Media": {
+        "Link": "https://collection.nam.ac.uk/images/960/100000-100999/100724.jpg",
+        "Description": "Side view of German Panther tank, Normandy, 1944",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "Map I: Normandy Front, 2 July 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Greater amount of cloud, wind, and rain than recorded since 1900, nullifying Allied air superiority on many days.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.47,
+          "East": 0.29,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The German Point of View on the July Offensive in Normandy",
+      "Sub-event": "Impending Allied Breakthrough",
+      "Sub-event_summary": "Allied leaders were planning an operation that would reveal the severity of the German situation in Normandy.",
+      "Sub-event_fulltext": {
+        "Paragraph_59": "Whether Jodl told Hitler or not, Allied leaders were conceiving an operation that would soon make strikingly evident exactly how serious the situation in Normandy actually was."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-9.html",
+        "Zulu_date_group_of_event": "END JUL44"
+      },
+      "TOE": {
+        "Unit": "OB West",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {},
+        "Civilian": {}
+      },
+      "Media": {
+        "Link": "https://warfarehistorynetwork.com/wp-content/uploads/2020/04/Hedgerows-111-SC-341804.jpg",
+        "Description": "Combat in Normandy's Hedgerows",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "Map V: Breakthrough, 25-27 July 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Greater amount of cloud, wind, and rain than recorded since 1900, nullifying Allied air superiority on many days.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.47,
+          "East": 0.29,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "22",
+      "Footnote_Number": "22",
+      "Footnote_Text": "Seventh Army KTB (Draft), 5-10 Jul.",
+      "Footnote_Referenced_Source": "Seventh Army KTB (Draft), 5-10 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Kriegstagebuch, Seventh Army, Draft, 5-10 July 1944"
+    },
+    {
+      "Footnote": "23",
+      "Footnote_Number": "23",
+      "Footnote_Text": "Seventh Army KTB, 12 Jul.",
+      "Footnote_Referenced_Source": "Seventh Army KTB, 12 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Kriegstagebuch, Seventh Army, 12 July 1944"
+    },
+    {
+      "Footnote": "24",
+      "Footnote_Number": "24",
+      "Footnote_Text": "Report of Kluge-Jodl Telecon in Zimmerman Telecon, 1245, 16 Jul, Agp B KTB.",
+      "Footnote_Referenced_Source": "Report of Kluge-Jodl Telecon in Zimmerman Telecon, 1245, 16 Jul, Agp B KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Army Group B Kriegstagebuch, Telephone Conversation, 16 July 1944"
+    },
+    {
+      "Footnote": "25",
+      "Footnote_Number": "25",
+      "Footnote_Text": "Report of Rommel's inspecton of the front (signed Ecksparre), 16 Jul, Agp B Ktb, Anlagen, Fall 40-Sep 44.",
+      "Footnote_Referenced_Source": "Report of Rommel's inspecton of the front (signed Ecksparre), 16 Jul, Agp B Ktb, Anlagen, Fall 40-Sep 44",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Army Group B Kriegstagebuch, Anlagen, Fall 40-Sep 44, Fall 16 July 1944"
+    },
+    {
+      "Footnote": "26",
+      "Footnote_Number": "26",
+      "Footnote_Text": "Conference, Rommel and Gause, 10 Jul. Agp B KTB, Anlagen , Fall 40-Sep 44.",
+      "Footnote_Referenced_Source": "Conference, Rommel and Gause, 10 Jul. Agp B KTB, Anlagen , Fall 40-Sep 44",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Army Group B Kriegstagebuch, Anlagen, Fall 40-Sep 44, 10 July 1944"
+    },
+    {
+      "Footnote": "27",
+      "Footnote_Number": "27",
+      "Footnote_Text": "OB WEST KTB 10 Jul.",
+      "Footnote_Referenced_Source": "OB WEST KTB 10 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "OB West Kriegstagebuch, 10 July 1944"
+    },
+    {
+      "Footnote": "28",
+      "Footnote_Number": "28",
+      "Footnote_Text": "OB WEST KTB , 12 Jul.",
+      "Footnote_Referenced_Source": "OB WEST KTB , 12 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "OB West Kriegstagebuch, 12 July 1944"
+    },
+    {
+      "Footnote": "29a",
+      "Footnote_Number": "29a",
+      "Footnote_Text": "OB WEST KTB , 11 Jul.",
+      "Footnote_Referenced_Source": "OB WEST KTB , 11 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "OB West Kriegstagebuch, 11 July 1944"
+    },
+    {
+      "Footnote": "29b",
+      "Footnote_Number": "29b",
+      "Footnote_Text": "OB WEST KTB , 17 Jul.",
+      "Footnote_Referenced_Source": "OB WEST KTB , 17 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "OB West Kriegstagebuch, 17 July 1944"
+    },
+    {
+      "Footnote": "30",
+      "Footnote_Number": "30",
+      "Footnote_Text": "Telecon, Choltitz to Pemsel, 2350, 15 Jul, Seventh Army Tel Msgs.",
+      "Footnote_Referenced_Source": "Telecon, Choltitz to Pemsel, 2350, 15 Jul, Seventh Army Tel Msgs",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Seventh Army Telephone Messages, 15 July 1944"
+    },
+    {
+      "Footnote": "31",
+      "Footnote_Number": "31",
+      "Footnote_Text": "Telecon, Eberbach and Rommel, 1225, 11 Jul, AGp B KTB .",
+      "Footnote_Referenced_Source": "Telecon, Eberbach and Rommel, 1225, 11 Jul, AGp B KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Army Group B Kriegstagebuch, 11 July 1944"
+    },
+    {
+      "Footnote": "32",
+      "Footnote_Number": "32",
+      "Footnote_Text": "Telecon, Kluge and Jodl, 1828, 13 Jul, OB WEST KTB, Anlage 615 .",
+      "Footnote_Referenced_Source": "Telecon, Kluge and Jodl, 1828, 13 Jul, OB WEST KTB, Anlage 615",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "OB West Kriegstagebuch, Anlage 615, 13 July 1944"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn9.html",
+  "Source_Footnote_Link_Capture_Date": "December 21, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-9.html",
+  "Source_Link_Capture_Date": "December 21, 2025"
+}

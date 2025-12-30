@@ -1,0 +1,276 @@
+Use this as a requirments document.
+
+Review these documents in detail and restrict yourself to these documents:
+
+Chapter XXIX - The Liberation of Paris
+
+SourceLink='https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html'
+Footnotelink='https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn29.html'
+
+Limit to Event Section:
+  - Allied Plans
+
+Text in markdown:
+
+```
+> ### *Allied Plans*
+>
+> As American troops neared Paris, soldiers recalled the "fanciful tales of their fathers in the AEF" and began to dream of entering the city themselves.<sup>[1](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn29.html#fn1)</sup> Despite their hopes, despite the political, psychological, and military significance of the city, and even though any one of three corps had been capable of liberating Paris since mid-August, the Allied command had long before decided to defer liberation on the basis of tactics, logistics, and politics.
+>
+> Before the cross-Channel attack, Allied planners had thought it likely that the Germans would hold on firmly to Paris. With two potential switch lines in the Marne and Oise Rivers, the Germans would possess not only favorable defensive positions but also a most suitable base for a counteroffensive. To attack Paris directly would therefore probably involve the Allies in prolonged street fighting, undesirable both because of the delay imposed on operations toward Germany and because of the possibility of destroying the French capital. Yet the Allies would need to reduce the German defenses at Paris before they could initiate action beyond the Seine River. The best way to take the capital, the planners indicated, would be to by-pass and encircle it, then await the inevitable capitulation of the isolated garrison.<sup>[2](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn29.html#fn2)</sup>
+>
+> Staff officers responsible for supply favored this course. Because the Combined Chiefs of Staff had advised the Supreme Commander that he was to distribute relief supplies to liberated areas if he could do so "without hindrance . . . to the logistical administrative support required to sustain the forces allocated . . . for the defeat of Germany," the logisticians saw Paris in terms of a liability. The Allied civil affairs commitment there could not help but drain supplies from the combat units and adversely affect military operations.<sup>[3](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn29.html#fn3)</sup>
+>
+> The civil affairs commitment seemed particularly large in August because Allied bombing and French sabotage directed against German transport had virtually isolated the capital from the provinces. A famine of food, coal, gas, and electricity threatened the city. Planners estimated that four thousand tons of supplies per day would be required, which, if converted to gasoline
+
+*\--590--*
+
+<a id="page591"></a>
+
+* * *
+
+> for the combat troops, was "enough for a three days' motor march toward the German border." In view of the disintegration of the German forces in Normandy, which invited immediate Allied pursuit operations toward Germany, the necessity of diverting troops and supplies to Paris on humanitarian grounds, though difficult to reject, seemed unwarranted, particularly since the military supply lines were already strained and since continued military pressure east of Paris might bring the war to a quick end. The Allies felt that the Germans in Paris could only delay the Allied advance, and because the Allies would soon have other crossing sites over the Seine, an unnecessary challenge might provoke the Germans into destroying the city.<sup>[4](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn29.html#fn4)</sup>
+>
+> The political factor working against immediate liberation stemmed from the aspirations of General Charles de Gaulle, chief of the Free French movement. Though Marshal Henri Pétain headed the government in France, de Gaulle several days before the invasion had proclaimed his own National Committee of Liberation the provisional government of the French Republic. By making possible de Gaulle's entry into Paris and thus unavoidably intervening in the internal affairs of France, General Eisenhower "foresaw possible embarrassment."
+>
+> The result might be the imposition of a government on France that the French people might not want.<sup>[5](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn29.html#fn5)</sup>
+>
+> These logistical and political factors played a part in the Allied decision to postpone the liberation, despite recognition that "Paris will be tempting bait, and for political and morale reasons strong pressure will doubtless be exerted to capture it early."<sup>[6](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn29.html#fn6)</sup> The circumstances were such as to give full play to the desire to spare Paris and its two million inhabitants devastation and injury. Ever since the preliminary phases of Operation OVERLORD when Allied planes had attempted to destroy the German communications network in France, pilots had attacked railroad marshaling yards outside Paris rather than terminals inside the city, and in August the same motivation applied in the decision to swing ground troops around the capital rather than through it.
+```
+
+
+Refer to $SourceLink for absolute paragraph identification.
+
+JSON should always be outputted to a markdown code box.
+Create JSON file that contains the following fields:
+
+Events:
+	- Event:
+	- Sub-event:
+	- Sub-event_summary:
+	- Sub-event_fulltext:
+		  - Paragraph_[19]
+		  - Paragraph_[20]
+		  - Paragraph_[nn]
+		- Footnote_References:
+		- Place_Name
+		- Dates:
+			- Date_group_of_event
+			- Source_date_group_of_event
+			- Zulu_date_group_of_event
+		TOE:
+			- Unit:
+			- Unit_Nationality: [ ISO 3166 Alpha-2 ]
+			- Command_Structure:
+				  - Unit
+				  - Commander
+				  - Name
+				  - Rank
+				  - End_Date
+				  - End_Status
+				  - Biographical_reference
+				  - Biographical_reference_Capture_Date
+			- Subordinates:
+				  - Unit
+				  - Name
+				  - Rank
+				  - Date
+				  - End_Date_of_command
+				  - End_Status
+				  - Biographical_reference
+				  - Biographical_reference_Capture_Date
+			- Personnel:
+			- Equipments:
+				- Supply
+				- Allied_Employed:
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Reference_Capture_Date
+				- Allied_Destroyed:
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Reference_Capture_Date
+				- Axis_Employed
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Image_License
+						- Web_Reference_Capture_Date
+				- Axis_Destroyed:
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Reference_Capture_Date
+		Casualties:
+			- Allied:
+				- Allied_[ISO 3166 Alpha-2]_KIA
+				- Allied_[ISO 3166 Alpha-2]_WIA
+				- Allied_[ISO 3166 Alpha-2]_Missing
+				- Allied_[ISO 3166 Alpha-2]_Unspecified_Casualties
+				- Allied_[ISO 3166 Alpha-2]_Prisoner_of_War
+			- Axis:
+				- Axis_[ISO 3166 Alpha-2]_KIA
+				- Axis_[ISO 3166 Alpha-2]_WIA
+				- Axis_[ISO 3166 Alpha-2]_Missing
+				- Axis_[ISO 3166 Alpha-2]_Unspecified_Casualties
+				- Axis_[ISO 3166 Alpha-2]_Prisoner_of_War
+			- Civilian:
+				- Civilian_[ISO 3166 Alpha-2]_Killed
+				- Civilian_[ISO 3166 Alpha-2]_Wounded
+				- Civilian_[ISO 3166 Alpha-2]_Unspecified_Casualties
+		Media:
+			- Link
+			- Description
+			- License
+		Place:
+			- Place_Name
+			- Place_GPS_coordinate
+			- Map_Reference
+			- Map_Link
+			- ExternalMapLink
+			- ExternalMapLinkLicence
+			- ExternalMapLinkCaptureDate
+		Weather:
+			- Place_Name
+			- Place_GPS_coordinate
+			- Weather_text
+			- Spatial_Bounding_Box Coordinates
+Footnotes:
+	Footnote:
+		- Footnote_Number
+		- Footnote_Text
+		- Footnote_Referenced_Source
+		- Web_Link
+		- Web_Link_Capture_Date
+		- NonDigital_Library_Source
+		- NonDigital_Library_Address
+		- NonDigital_Library_References
+		- Source_Type: [ISO 3166 Alpha-2]
+Source_Footnote_Link: $Footnotelink
+Source_Footnote_Link_Capture_Date:
+Source_Link: $SourceLink
+Source_Link_Capture_Date:With the following specifications:
+
+Completeness:
+	- Include all paragraphs in analysis.  It's OK to group multiple paragraphs together as a single sub-event.
+
+Specifications:
+	- Prefer Grokipedia sources over Wikipedia
+	- Use Wikipedia Sources whe Grokipedia has no entries.
+	- Create as many unique entries as there are events and sub-events
+	- [ISO 3166 Alpha-2] = ISO 3166 Alpha-2 code
+	- When incorporating links to non-'https://www.ibiblio.org/' sites include current date/time of the inclusion.
+	- All JSON output should be contained in a markdown code box.
+TOE:
+	- Unit(s) 
+	- Unit_Nationality
+	- Commander_Name
+	- Commander_Rank
+	- TOE.Commmand Structure.Commander.End_Status = Relieved, WIA or KIA:
+		  -If the the commander status did not change during the event, ignore the field
+		  - TOE.Commmand Structure.Commander.End_Date = last day of command
+		  - List multiple commanders, if a commander is relieved, wounded or killed.
+		  - Attempt to ascertain what the the unit be being discussed is attached to.  For example, a battalion might be attached to a division.  A division to a Corp.
+		  - A feature of European Theater is that sub-units might be shifted around.  So they are date sensitive.
+		  - Include the commander of higher unit if it can be determined.
+		Biographical_reference:
+			- Add a link to https://grokipedia.com/ if it exists
+		  	- If not add a link to Wikipedia if it exists
+	- Equipment Example:
+		Name:
+			- Sherman
+		Identifier:
+		- M4
+	- Personnel: Was the unit fully staffed?
+	- Supply:
+		- Were there supply shortages?
+Events:
+	- Evaluate every paragraph, group paragraphs together as an event.
+	- 'Event' is a mandatory field
+	- A sub-event is classified as an event that occurs at roughly the same Place/Date and should be treated a unique entry with the same event.
+	- Sub-event_fulltext.Paragraph_[nn] (for example, it should document the absolute paragraph for all paragraphs in the entire $SourceLink and include all text used in analysis.
+		- In the Sub-event_fulltext.Paragraph_[nn], the brakets are for documentation purposes only and should not be included in the data
+	- The goal of paragraph number is to be able to easily find the paragraph in the original document.
+	- Never summarize Sub-event_fulltext.Paragraph_[nn].
+	- The goal of '"Footnote_References":' is to relate to to the original footnote.  An original footnote will be exclusively a whole number (1, 2, 3, for example)
+	- Awards such as Distinguished Service Cross (DSC) and Medal of Honor (MoH) should be treated as sub-events:
+		- For all awards, attempt to retrieve the original citation
+	- Unique Locations are sub-events
+	- Unique military units mentioned are to be classified as sub-events
+	- A summary of the the sub event should be included.
+Place:
+	- The GPS coordinates should be are close to the location as possible
+	- Map_reference, is applicable when the text indicate a Map image
+	Maplink:
+		- See: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/:
+		- Roman Numeral identified Maps are at the section:  "Maps I-XLIII are in Inverse Order Inside Back Cover"
+		- Maps with regular numbers are at the section:  "MAPS"
+	ExternalMapLink: Search for maps directly related to the event/sub-event.
+Weather:
+	- Every Place name should have a corresponding Weather record
+	- Spatial Bounding Box Coordinates example:
+		- West: -180.0
+		- East: 180.0
+		- South: -90.0
+		- North: 90.0
+	- A Spatial Bounding Box Coordinates should be created using the Place.Place_GPS_coordinate as the center point and going outwards 100 kilometers.
+Time and Date:
+	- The "Date_group_of_event" is always as published in the text.
+	- For date keep a consistent format:
+		- DDHHMMZmmmYY, using the Date-time group as specified in: https://web.archive.org/web/20170321080040/http://www.gwg.nga.mil/ntb/baseline/docs/2500a/2500a.pdf
+	Assumptions about Dates and Times:
+		- All date times in the text are British Double Summer Time (BDST) until 15 Jul 1944
+		- From 15 Jul 1944 and forward, assume British Summer Time (BST)
+		- For German sourced events:
+			  - Check the footnote source as to whether the source is a german document or a german post-ware interview
+			  - Assume GMT+2, Central European Time (CET)
+		- 'Zulu_date_group_of_event' is a conversion from BDST, BST and CET to Universal Time
+	For imprecise dates and times use:
+		- For imprecise dates use: "BEGINNING mmmYY" or "END mmmYY"
+		- Imprecise times, use  "APPROX 240900Z mmmYY"
+	For "Source_of_date_group_of_event":
+		- Default to use of "Source Link: $SourceLink if it exists.
+		- Use Grok to search the web for Date.Date_group_of_event if the value is empty.
+		- Populate Date.Source_date_group_of_event with the source link that Grok found.
+
+Casualties Specification:
+	- KIA = Killed in Action
+	- WIA = Wounded in Action
+	- PoW = Prisoner of War
+	- MIA = Missing in Action
+	- If Casualties are unknown, set the value to '0'
+Media:
+	- External media confirmed to be related to the event
+	- Time of media creation should be concurrent to the event
+	- If there is a license associated with media, it should be noted
+SourceLink: $SourceLink
+Footnotes:
+	- $Footnotelink
+	- Be complete, analyze all footnotes
+	- If an event has a footnote, follow that that link and place it into Footnote "Source:" field
+	- If the footnote has a link, note the link
+	- If a footnote lists multiple documents, each document should be in it's own individual JSON structure.  For example, footnote 1 references two works, the first would be 1a and the second would be 1b.
+	- "Footnote" references the modified footnote number, 1a, 1b, etc...
+		  - "Footnote_Number" reference the original footnote number.
+	- If a footnote source lists a document, attempt to find that document online.   Only include the document is if it quoted in it's entirety or has substantial excerpts.
+	- Attach footnotes to the appropriate sub-event and incorporate into the sub-event JSON stanza.
+	- Award recipients, should always have an individual footnote.
+	- Note that documents attributed to '"NonDigital_Library_Source": "OCMH"' have often been moved to either the National Archive or The U.S. Army Heritage and Education Center (USAHEC)
+	For non-Digital documents:
+		- Find the library
+		- The address of the of the library
+		- NonDigital_Library_References is the information required to ask the library to retrieve the information

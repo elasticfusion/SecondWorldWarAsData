@@ -1,0 +1,545 @@
+{
+  "Events": [
+    {
+      "Event": "Overview of Third Army Southern Drive and Prophecy Fulfillment",
+      "Sub-event": "Broader Context of Advance to Seine and Normandy to Western France Transition",
+      "Sub-event_summary": "XV Corps elements remain at Argentan while others drive to Seine; Third Army southern forces clear area north of Loire, fulfilling earlier prediction of battle expansion.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "While the XV Corps left part of its forces at Argentan and started the wider envelopment to the Seine on 15 August, other components of the Third Army farther to the south were also driving to the Seine, sweeping clear the vast area north of the Loire River. The advance to the Seine fulfilled a prophecy made a week earlier--that \"the battle of Normandy is rapidly developing into the Battle of Western France.\" [Footnote 1]"
+      },
+      "Footnote_References": ["1"],
+      "Place_Name": ["Argentan", "Seine River", "Loire River"],
+      "Dates": {
+        "Date_group_of_event": "APPROX 08 Aug 1944 - 15 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "APPROX 08 Aug 1944 - 15 Aug 1944 (BST)"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Loire River, France",
+          "Place_GPS_coordinate": "47.25 N, 0.0833 W",
+          "Map_Reference": null,
+          "Map_Link": null
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Loire River area, France",
+          "Place_GPS_coordinate": "47.25 N, 0.0833 W",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approx. 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -1.0833, "East": 0.9167, "South": 46.25, "North": 48.25}
+        }
+      ]
+    },
+    {
+      "Event": "Initial Directives and XX Corps Orientation Southward",
+      "Sub-event": "Bradley Instructions on 3 August; Patton Orients XX Corps; Bradley Approves Eastward Shift with Flank Protection Requirement",
+      "Sub-event_summary": "Drive to Seine begins 3 August with Bradley directing Patton to secure Mayenne line, clear to Loire, protect south flank minimally. Patton orients XX Corps south to Nantes/Angers; Bradley approves Paris-Orléans objective but mandates Angers/Nantes capture for Loire security.",
+      "Sub-event_fulltext": {
+        "Paragraph_2": "The drive to the Seine had actually begun on 3 August, when General Bradley instructed General Patton to secure the north-south line of the Mayenne River, clear the area west of the Mayenne River as far south as the Loire, and protect the 12th Army Group south flank with minimum forces. [Footnote 2]",
+        "Paragraph_3": "Since the VIII Corps was driving southwest toward Rennes and the XV Corps was about to move southeast toward Mayenne, Patton oriented the XX Corps south toward Nantes and Angers. As the main American effort veered eastward in accordance with the modified OVERLORD plan and the XV Corps drove toward Laval and le Mans, Patton ordered the XX Corps to cross the Mayenne River in a parallel drive to protect the XV Corps south flank. [Footnote 3]",
+        "Paragraph_4": "Bradley approved Patton's eastward orientation and even furthered it by designating the Paris-Orléans gap as the ultimate Third Army objective. Yet he specified once more the additional mission of protecting the south flank along the Loire River to guard against possible German incursion from the south. Angers and Nantes would therefore have to be captured. (See Maps 12 and 17.) [Footnote 4]"
+      },
+      "Footnote_References": ["2", "3", "4a", "4b"],
+      "Place_Name": ["Mayenne River", "Loire River", "Nantes", "Angers", "Paris-Orléans gap", "Rennes", "Laval", "le Mans"],
+      "Dates": {
+        "Date_group_of_event": "03 Aug 1944 - APPROX 06 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "03 Aug 1944 APPROX (BST) - APPROX 06 Aug 1944"
+      },
+      "TOE": {
+        "Unit": "XX Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": {
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General",
+            "End_Date": null,
+            "End_Status": null
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "XX Corps",
+            "Name": "Walton H. Walker",
+            "Rank": "Major General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Walton_Walker"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_Unspecified_Casualties": 0}
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-12.jpg",
+          "Description": "Map 12 showing operational area including Mayenne and Loire regions.",
+          "License": "Public domain (US Government publication)"
+        },
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA-E-Breakout/maps/USA-E-Breakout-17.jpg",
+          "Description": "Map 17 referenced for Loire flank and Angers/Nantes objectives.",
+          "License": "Public domain (US Government publication)"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Angers, France",
+          "Place_GPS_coordinate": "47.4784 N, 0.5634 W",
+          "Map_Reference": "Maps 12 and 17",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-12.jpg"
+        },
+        {
+          "Place_Name": "Nantes, France",
+          "Place_GPS_coordinate": "47.2184 N, 1.5536 W",
+          "Map_Reference": "Maps 12 and 17"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Angers, France",
+          "Place_GPS_coordinate": "47.4784 N, 0.5634 W",
+          "Weather_text": "Not specified in source; regional August 1944 conditions likely warm (20-25°C) with possible variable weather.",
+          "Spatial_Bounding_Box Coordinates": {"West": -1.5634, "East": 0.4366, "South": 46.4784, "North": 48.4784}
+        }
+      ]
+    },
+    {
+      "Event": "Assignment and Initial Movement of 5th Infantry Division to XX Corps",
+      "Sub-event": "5th Division Transfer, March to Vitré, and Command Background",
+      "Sub-event_summary": "Maj. Gen. Walton H. Walker commands XX Corps; initial plans shift as 35th Division engages Mortain and 2d French Armored joins XV Corps, leaving 5th Division sole initial asset. 5th Division (Maj. Gen. Stafford LeRoy Irwin) moves from V Corps area near Vire through Avranches to Vitré assembly by 7 August, hindered by traffic.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "The demands of this dual mission became the responsibility of Maj. Gen. Walton H. Walker, a West Pointer who had served in France during World War I, who had been an infantryman and artilleryman before turning to armor, and who had commanded the IV Armored Corps, later redesignated the XX Corps, in training.",
+        "Paragraph_6": "Early plans for XX Corps to control the 2d French Armored and the 5th and 35th Infantry Divisions went awry when the 35th became involved in the Mortain counterattack and when the French division, after a brief alert for possible action at Mortain, joined the XV Corps. The 5th Division thus remained the sole instrument available for the XX Corps initial commitment.",
+        "Paragraph_7": "Having fought with the V Corps before being pinched out on the First Army left flank near Vire, General Irwin's 5th Division received instructions an hour before dawn on 4 August to join the XX Corps by moving immediately through Villedieu and Avranches to an assembly area near Vitré, forty miles south of Avranches. The suddenness of the call precluded advance planning, and General Irwin felt handicapped by a lack of definite knowledge of his next combat mission and the terrain in which he would fight. With no inkling that this manner of operating would soon be normal, General Irwin began at once to march from one American flank to the other. [Footnote 5]",
+        "Paragraph_8": "On the road for three days in a march hampered by traffic congestion, the 5th Division reached Vitré on 7 August."
+      },
+      "Footnote_References": ["5"],
+      "Place_Name": ["Vitré", "Avranches", "Villedieu", "Vire"],
+      "Dates": {
+        "Date_group_of_event": "04 Aug 1944 - 07 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "04 Aug 1944 - 07 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "5th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XX Corps",
+          "Commander": {
+            "Name": "Walton H. Walker",
+            "Rank": "Major General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "5th Infantry Division",
+            "Name": "Stafford LeRoy Irwin",
+            "Rank": "Major General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Stafford_LeRoy_Irwin"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_Unspecified_Casualties": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Vitré, France",
+          "Place_GPS_coordinate": "48.1241 N, 1.2086 W"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Vitré, France",
+          "Weather_text": "Not specified in source.",
+          "Spatial_Bounding_Box Coordinates": {"West": -2.2086, "East": -0.2086, "South": 47.1241, "North": 49.1241}
+        }
+      ]
+    },
+    {
+      "Event": "Patton Orders for Angers and Nantes; 5th Division Advance",
+      "Sub-event": "7-8 August Orders and Initial Movements to Angers/Nantes",
+      "Sub-event_summary": "On 7 August Patton orders regiment to Angers, battalion to Nantes, rest to Segré. Irwin prioritizes Angers due to distances/information gaps. Minimal German presence presumed; actual German 16th Division defends Loire from Nantes to Orléans. 11th Infantry advances via Cande; task force attempts outflank but finds bridges destroyed and rejoins.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "On that day Patton orally instructed Walker to move a regiment of the 5th Division to seize Angers, fifty-five miles southeast of Vitré; an infantry battalion to capture Nantes, sixty-five miles southwest of Vitré; and the rest of the division to Segré, twenty-two miles northwest of Angers. Gaffey, Third Army chief of staff, arrived at Irwin's command post at noon that day to transmit the mission for quick compliance. Though tired from their long hours on the road, the 5th was to move at once. Perhaps Gaffey was not explicit, perhaps Irwin misinterpreted. In any event, Irwin felt that the fifty-mile distance between Nantes and Angers, as well as the distance of both towns from Vitré, made it impractical for him to take both objectives at the same time. The development of the major operations to the east and Patton's instructions for Walker to reach the Mayenne River south of Château-Gontier seemed to give Angers priority over Nantes. [Footnote 6]",
+        "Paragraph_10": "Information on the enemy in the area south and east of Vitré was scant, but \"a general withdrawal by the Germans, extent and destination not yet clear,\" was presumed. Actually, there were scarcely any Germans between Vitré and the Loire River. The First Army in southwest France had been charged on 2 August with protecting the crossing sites along the Loire River, its northern boundary. Two days later the LXXX Corps artillery commander brought a measure of unified leadership to the troops along the river line from St. Nazaire to Saumur--security formations, naval personnel, antiaircraft units, and the like. On 8 August, the 16th Division (formed by consolidating the 158th Reserve Division--which was intended originally to furnish replacements to the units committed in Normandy--and the 16th Luftwaffe Field Division) assumed responsibility for defending the Loire along a front that eventually extended from Nantes to Orléans. The 16th Division was short of equipment but was well trained and well led. [Footnote 7]",
+        "Paragraph_11": "Part of this force, with some few elements that had come from Normandy, met the 5th U.S. Division at Angers, a city of 95,000 inhabitants located just south of the point where the Mayenne and Sarthe merge to become the Maine River. The Maine, only six miles long, flows through Angers before joining the Loire. Three miles south of Angers, a highway bridge crosses the Loire at les Ponts-de-Cé.",
+        "Paragraph_12": "From Vitré, General Irwin dispatched Col. Charles W. Yuill's 11th Infantry through Cande in a direct approach to Angers from the west. He sent a company-sized task force on a more devious route to cross the Mayenne and Sarthe Rivers, outflank Angers on the east, cut the main highway south of the city, and capture the bridge across the Loire. [Footnote 8]",
+        "Paragraph_13": "The small task force soon discovered that all bridges across the Sarthe and Mayenne in the division zone were demolished and that few Germans were between Château-Gontier and the Loire. The force then retraced its steps and rejoined the division, which in the meantime had displaced to Angers behind the 11th Infantry. The 11th had encountered no serious resistance until reaching a point two miles west of Angers on the evening of 7 August. General Irwin had then moved the remainder of the division south from Vitré."
+      },
+      "Footnote_References": ["6a", "6b", "7a", "7b", "8a", "8b"],
+      "Place_Name": ["Angers", "Nantes", "Segré", "Château-Gontier", "Cande", "les Ponts-de-Cé"],
+      "Dates": {
+        "Date_group_of_event": "07 Aug 1944 - 08 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "07 Aug 1944 - 08 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "11th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Subordinates": [
+          {
+            "Unit": "11th Infantry Regiment",
+            "Name": "Charles W. Yuill",
+            "Rank": "Colonel"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_Unspecified_Casualties": 0},
+        "Axis": {"Axis_DE_Unspecified_Casualties": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Angers, France",
+          "Place_GPS_coordinate": "47.4784 N, 0.5634 W"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Angers, France",
+          "Weather_text": "Not specified in source.",
+          "Spatial_Bounding_Box Coordinates": {"West": -1.5634, "East": 0.4366, "South": 46.4784, "North": 48.4784}
+        }
+      ]
+    },
+    {
+      "Event": "Capture of Angers and Token Force to Nantes",
+      "Sub-event": "Angers Assault, Bridge Capture, City Seizure; Battalion to Nantes",
+      "Sub-event_summary": "Walker presses for speed. 11th Infantry captures railroad bridge (8 Aug); 10th Infantry crosses (9 Aug); coordinated attack (10 Aug) secures Angers by 11 Aug with ~2,000 prisoners. Aircraft destroy Loire highway bridge. Battalion sent to Nantes (9 Aug) blocks northern exits after light opposition.",
+      "Sub-event_fulltext": {
+        "Paragraph_14": "Impatient, General Walker phoned Irwin at noon, 8 August. Walker wanted Angers quickly, but he also wanted a reinforced infantry battalion sent to Nantes. If German activity at Lorient, Brest, and St. Malo indicated a pattern of behavior likely to be encountered at all the ports, it was reasonable to assume that strong and determined German forces held Nantes. Although his available troops permitted him only to contain the enemy in the area, Walker desired at least a token force to block the northern exits of Nantes and prevent the Germans from sallying forth unnoticed against American communications.",
+        "Paragraph_15": "Irwin, who was already involved at Angers, his major objective, wanted to keep his units well consolidated so he could deal with any emergencies. Operating in what he considered a vacuum of information, he was uneasy because his \"mission, zone of action, and adjacent forces [were] not clear,\" even though he was \"using every agency\" to find out what his neighbors were doing. Nevertheless, when he learned at the end of the afternoon of 8 August that Walker was \"much exercised\" because no troops were on the way to Nantes, Irwin sent out a call for trucks. They arrived early on 9 August, and a reinforced infantry battalion motored to Nantes. Encountering no opposition until reaching the outskirts of the city, the battalion destroyed a telephone center and a radio station, then set up blocking positions along the city's northern exits.",
+        "Paragraph_16": "Meanwhile, the 11th Infantry on 8 August had captured intact a railroad bridge southwest of Angers, and this gave direct access into the city. General Irwin funnelled Col. Robert P. Bell's 10th Infantry across the bridge on 9 August and prepared a co-ordinated two-regiment attack for the following day.",
+        "Paragraph_17": "General Walker visited the division and was satisfied with the preparations, but he characteristically \"urged more speed in attack.\" Launched on 10 August, the drive carried American troops into the city, and, by the morning of 11 August, the 5th Division had almost two thousand prisoners and was in control of Angers. American aircraft destroyed the highway bridge south of the city by bombardment, thus isolating Angers from the south. [Footnote 9]"
+      },
+      "Footnote_References": ["9"],
+      "Place_Name": ["Angers", "Nantes"],
+      "Dates": {
+        "Date_group_of_event": "08 Aug 1944 - 11 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "08 Aug 1944 - 11 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "10th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Subordinates": [
+          {
+            "Unit": "10th Infantry Regiment",
+            "Name": "Robert P. Bell",
+            "Rank": "Colonel"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_Unspecified_Casualties": 0},
+        "Axis": {"Axis_DE_Prisoner_of_War": 2000, "Axis_DE_Unspecified_Casualties": 0}
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p560.jpg",
+          "Description": "11th Infantrymen meet resistance in the drive to Angers.",
+          "License": "Public domain (US Government publication)"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Angers, France",
+          "Place_GPS_coordinate": "47.4784 N, 0.5634 W"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Angers, France",
+          "Weather_text": "Not specified in source.",
+          "Spatial_Bounding_Box Coordinates": {"West": -1.5634, "East": 0.4366, "South": 46.4784, "North": 48.4784}
+        }
+      ]
+    },
+    {
+      "Event": "Shift in XX Corps Missions and 5th Division Redeployment",
+      "Sub-event": "11-16 August Reorientations; 5th Division Moves Northeast; Relief at Nantes/Angers",
+      "Sub-event_summary": "Due to German movements near le Mans-Alencon-Sées, Third Army directs XX Corps assembly on Mayenne-le Mans line (7th Armored, 35th, 80th Divisions) for northeast attack to Carrouges-Sées; 5th Division (less regiment at Angers) moves northeast along Loir to le Mans-Tours line for flank guard. 80th Division attacks 13 August but collides with XV Corps. 5th Division receives conflicting orders, moves variably, ends south of Chartres. 4th Armored relieves Nantes; 319th Infantry relieves Angers regiment.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "Developments elsewhere had their effect on the XX Corps. On the basis of information that German reinforcements were moving into the le Mans-Alencon-Sées area, Third Army on 11 August directed Walker to assemble on the Mayenne-le Mans line three of the four divisions then assigned to him. With the 7th Armored, 35th, and 80th Divisions, he was to attack promptly from the Mayenne-le Mans line to the northeast to secure the Carrouges--Sées line. The intention apparently was to eliminate a potential German threat from the west against the exposed left and rear of the XV Corps, which was driving north toward Argentan. In addition, Walker was directed to move the 5th Division, less a regiment to be left at Angers, northeast along the Loir River about fifty miles from Angers to a line generally between le Mans and Tours, there, as Patton put it, \"to guard against a very doubtful attack on our [south] flank.\" [Footnote 10]",
+        "Paragraph_19": "The 7th Armored Division, which had recently landed at Omaha Beach and was hurrying toward le Mans, was not immediately available, nor was the 35th Division, engaged at Mortain. But so urgent was the need to cover the exposed left flank of the XV Corps that Walker, directed again on 12 August to attack, initiated action on the 13th with the two regiments of the 80th Division at hand. Though the attack made good progress and swept away scattered German resistance, it ended in embarrassment as the 80th Division troops collided with XV Corps units moving across their attack zone. [Footnote 11]",
+        "Paragraph_20": "Meanwhile, the 5th Division was moving northeast from Angers. To General Irwin, who was less than fully informed on the big picture, \"sudden and unexpected changes cause[d] considerable confusion in arrangements, transportation, and plans,\" particularly since there was \"no indication of reasons for orders.\" His bewilderment increased during the next few days when orders \"made no sense at all\" and prompted \"great confusion.\"",
+        "Paragraph_21": "Between 12 and 16 August, Irwin received conflicting orders that indicated not much more than changing directions of march. Strained communications, sketchy information, and a surprising absence of German opposition characterized his division's movements, and he could only guess that his ultimate objective might be Dreux, Châteaudun, or Orléans. In time, General Walker told him to remain south of the Chartres-Etampes highway. Finally Walker advised him to stand fast just south of Chartres. Irwin then assumed that he was \"heading south of Paris to the east,\" but he hoped for a few days rest so that his troops could take care of long-needed mechanical maintenance.",
+        "Paragraph_22": "Meanwhile, a 4th Armored Division combat command had relieved the battalion of the 5th Division at Nantes, and the 319th Infantry of the 80th Division had replaced Colonel Roffe's 2d Infantry, which Irwin had temporarily left at Angers. As these components joined the division near Chartres, Irwin again had a complete unit, and he would soon get a definite mission. [Footnote 12]"
+      },
+      "Footnote_References": ["10a", "10b", "11", "12a", "12b", "12c"],
+      "Place_Name": ["le Mans", "Angers", "Nantes", "Chartres", "Dreux", "Châteaudun", "Orléans", "Loir River"],
+      "Dates": {
+        "Date_group_of_event": "11 Aug 1944 - 16 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "11 Aug 1944 - 16 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "80th Infantry Division",
+        "Unit_Nationality": "US",
+        "Subordinates": [
+          {
+            "Unit": "319th Infantry Regiment",
+            "Name": null,
+            "Rank": null
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_Unspecified_Casualties": 0},
+        "Axis": {"Axis_DE_Unspecified_Casualties": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Chartres, France",
+          "Place_GPS_coordinate": "48.4439 N, 1.4893 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Chartres, France",
+          "Weather_text": "Not specified in source.",
+          "Spatial_Bounding_Box Coordinates": {"West": -0.5107, "East": 2.4893, "South": 47.4439, "North": 49.4439}
+        }
+      ]
+    }
+  ],
+  "Footnotes": {
+    "Footnote": [
+      {
+        "Footnote": "1",
+        "Footnote_Number": 1,
+        "Footnote_Text": "30th Div G-2 Notes for Unit Comdrs, 8 Aug.",
+        "Footnote_Referenced_Source": "30th Division G-2 Notes for Unit Commanders, 8 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_Address": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "2",
+        "Footnote_Number": 2,
+        "Footnote_Text": "12th AGp Ltr of Instrs 2, 3 Aug.",
+        "Footnote_Referenced_Source": "12th Army Group Letter of Instructions 2, 3 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "3",
+        "Footnote_Number": 3,
+        "Footnote_Text": "TUSA Dir, 5 Aug (confirming fragmentary orders, 4 Aug).",
+        "Footnote_Referenced_Source": "Third US Army Directive, 5 August 1944 (confirming fragmentary orders, 4 August 1944)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "4a",
+        "Footnote_Number": 4,
+        "Footnote_Text": "12th AGp Ltr of Instrs 3, 6 Aug.",
+        "Footnote_Referenced_Source": "12th Army Group Letter of Instructions 3, 6 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "4b",
+        "Footnote_Number": 4,
+        "Footnote_Text": "21 AGp Operational Situation and Dir, M-517, 6 Aug.",
+        "Footnote_Referenced_Source": "21st Army Group Operational Situation and Directive, M-517, 6 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "GB"
+      },
+      {
+        "Footnote": "5",
+        "Footnote_Number": 5,
+        "Footnote_Text": "General Irwin's Official Diary of the Div Comdr; XV Corps G-3 Memo, Conflict with XX Corps, 5 Aug, XV Corps G-3 Jnl and File. The quotations in this section, unless otherwise noted, are from General Irwin's diary.",
+        "Footnote_Referenced_Source": "Official Diary of the Division Commander (Maj. Gen. Stafford LeRoy Irwin); XV Corps G-3 Memorandum, Conflict with XX Corps, 5 August 1944; XV Corps G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "6a",
+        "Footnote_Number": 6,
+        "Footnote_Text": "TUSA AAR, I, p. 22",
+        "Footnote_Referenced_Source": "Third Army After Action Report, Volume I, page 22",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "6b",
+        "Footnote_Number": 6,
+        "Footnote_Text": "5th Div AAR, Aug.",
+        "Footnote_Referenced_Source": "5th Infantry Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "7a",
+        "Footnote_Number": 7,
+        "Footnote_Text": "MS # B-245 (Haeckel)",
+        "Footnote_Referenced_Source": "German Manuscript B-245 (Haeckel)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "US Army Center of Military History (likely archival location)",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series manuscripts",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "7b",
+        "Footnote_Number": 7,
+        "Footnote_Text": "MS # B-034 (Schramm).",
+        "Footnote_Referenced_Source": "German Manuscript B-034 (Schramm)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "US Army Center of Military History (likely archival location)",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series manuscripts",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "8a",
+        "Footnote_Number": 8,
+        "Footnote_Text": "The Fifth Division in France (Metz, France: Imprimerie du Journal de Lorraine, 1944), pp. 913",
+        "Footnote_Referenced_Source": "The Fifth Division in France (Metz, 1944), pp. 91-3",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "8b",
+        "Footnote_Number": 8,
+        "Footnote_Text": "The Fifth Infantry Division in the ETO (Atlanta, Georgia: Albert Love Enterprises, 1945), no pagination.",
+        "Footnote_Referenced_Source": "The Fifth Infantry Division in the ETO (Atlanta, 1945), no pagination",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "9",
+        "Footnote_Number": 9,
+        "Footnote_Text": "The XX Corps, Its History and Service in World War II (Osaka, Japan: The Mainichi Publishing Co., Ltd., 1951) (hereafter cited as XX Corps), pp. 74-77. On 8 August the Reconnaissance Troop supply section was transporting fuel and rations forward in convoy when the leading armored vehicle performing escort duty struck a mine and was destroyed. Hostile troops nearby opened fire. For braving the fire to rescue several wounded and unconscious soldiers who were lying in the road, S. Sgt. Wardie Barnett and T/5 Vincent Hughes were awarded the DSC.",
+        "Footnote_Referenced_Source": "The XX Corps, Its History and Service in World War II (Osaka, 1951), pp. 74-77",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "10a",
+        "Footnote_Number": 10,
+        "Footnote_Text": "Memo, Patton for Gaffey, 8 Aug, XV Corps G-3 Jnl and File",
+        "Footnote_Referenced_Source": "Memorandum, Patton for Gaffey, 8 August 1944, XV Corps G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "10b",
+        "Footnote_Number": 10,
+        "Footnote_Text": "see also TUSA AAR, I, 26, and Annex 2.",
+        "Footnote_Referenced_Source": "Third Army After Action Report, Volume I, p. 26, and Annex 2",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "11",
+        "Footnote_Number": 11,
+        "Footnote_Text": "See above, Ch. XXVI.",
+        "Footnote_Referenced_Source": "Cross-reference to Chapter XXVI of the same volume",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "12a",
+        "Footnote_Number": 12,
+        "Footnote_Text": "Ltr, Patton to Walker, 11 Aug",
+        "Footnote_Referenced_Source": "Letter, Patton to Walker, 11 August 1944, XV Corps G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "12b",
+        "Footnote_Number": 12,
+        "Footnote_Text": "Msg, Patton to Walker, 12 Aug, XV Corps G-3 Jnl and File",
+        "Footnote_Referenced_Source": "Message, Patton to Walker, 12 August 1944, XV Corps G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "12c",
+        "Footnote_Number": 12,
+        "Footnote_Text": "Memo, 15 Aug, VIII Corps G-3 Jnl and File.",
+        "Footnote_Referenced_Source": "Memorandum, 15 August 1944, VIII Corps G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      }
+    ]
+  },
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn28.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-29",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+  "Source_Link_Capture_Date": "2025-12-29"
+}

@@ -1,0 +1,2548 @@
+{
+  "Events": [
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Howie's Battalion Advances to Relieve Bingham's Unit",
+      "Sub-event_summary": "On 17 July 1944, Major Thomas D. Howie's 3d Battalion, 116th Infantry advanced silently before dawn to relieve Major Bingham's isolated unit on the Martinville ridge amidst German fire and mist.",
+      "Sub-event_fulltext": {
+        "Paragraph_45": "On 17 July, the seventh day of attack, the 29th Division struck before dawn.",
+        "Paragraph_46": "Maj. Thomas D. Howie, commanding the 3d Battalion, 116th Infantry, led his men in a column of companies in a silent march toward Major Bingham's isolated unit.",
+        "Paragraph_47": "Suspicious Germans increased their artillery and mortar fire and played grazing machine gun fire across the slope of the Martinville ridge.",
+        "Paragraph_48": "Howie's men resisted the impulse to return this fire and crept forward through an early morning mist, still undetected.",
+        "Paragraph_49": "Several hours after daybreak, they reached Bingham's isolated force:"
+      },
+      "Footnote_References": [],
+      "Place_Name": "Martinville ridge",
+      "Dates": {
+        "Date_group_of_event": "17 July 1944 before dawn",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 170300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "3d Battalion, 116th Infantry",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "116th Infantry Regiment, 29th Infantry Division",
+          "Commander": "Colonel Dwyer",
+          "Name": "Charles Dwyer",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/29th_Infantry_Division_(United_States)",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "3d Battalion",
+          "Name": "Thomas D. Howie",
+          "Rank": "Major",
+          "Date": "July 1944",
+          "End_Date_of_command": "17 July 1944",
+          "End_Status": "KIA",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Thomas_D._Howie",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Personnel": "Full strength battalion, specific numbers not detailed",
+        "Equipments": {
+          "Supply": "Ammunition and supplies carried by troops",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "M1 Garand Rifle",
+            "Identifier": "M1",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M1_Garand",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Machine Gun",
+            "Identifier": "MG42",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/MG_42",
+            "Web_Image_Reference": null,
+            "Web_Image_License": null,
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p170.jpg",
+        "Description": "Infantrymen Hit the Ground on a Street in St. Lo",
+        "License": "Public Domain - US Government"
+      },
+      "Place": {
+        "Place_Name": "Martinville ridge, near St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.normandy1944.info/templates/yootheme/cache/eb/D-Day-normandy-beyond-map-st-lo-breakthrough-1944-ebbde7ad.jpeg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Early morning mist, overcast with possible rain, average high 72°F low 55°F, incessant downpours in the region.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Death of Major Howie",
+      "Sub-event_summary": "Major Howie agreed to advance his battalion alone into St. Lô but was killed by an enemy shell shortly after.",
+      "Sub-event_fulltext": {
+        "Paragraph_50": "The regimental commander, Colonel Dwyer, had hoped that the two battalions together would be able to enter the city, but Bingham's men were exhausted.",
+        "Paragraph_51": "Howie informed Dwyer by telephone that they were incapable of further effort.",
+        "Paragraph_52": "When Dwyer asked whether Howie could move his battalion alone to the eastern edge of town, Howie replied, \"Will do.\"",
+        "Paragraph_53": "Several minutes later an enemy shell killed him."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Martinville ridge",
+      "Dates": {
+        "Date_group_of_event": "17 July 1944 several hours after daybreak",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 170800ZJUL44"
+      },
+      "TOE": {
+        "Unit": "3d Battalion, 116th Infantry",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "116th Infantry Regiment, 29th Infantry Division",
+          "Commander": "Colonel Dwyer",
+          "Name": "Charles Dwyer",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/29th_Infantry_Division_(United_States)",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "3d Battalion",
+          "Name": "Thomas D. Howie",
+          "Rank": "Major",
+          "Date": "July 1944",
+          "End_Date_of_command": "17 July 1944",
+          "End_Status": "KIA",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Thomas_D._Howie",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Personnel": "Battalion commander KIA",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Artillery Shell",
+            "Identifier": "unknown",
+            "Quantity": "1",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Image_License": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 1,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=10237973377736231",
+        "Description": "The flag draped body of Major Thomas Howie",
+        "License": "Unknown"
+      },
+      "Place": {
+        "Place_Name": "Near St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Overcast, misty, average temperatures around 72°F high, 55°F low, with possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Puntenny's Attempted Attack and German Counterattack",
+      "Sub-event_summary": "Captain Puntenny took command and attempted to attack St. Lô but was halted by heavy mortar fire. A German counterattack with tanks was repelled by American dive bombers and artillery.",
+      "Sub-event_fulltext": {
+        "Paragraph_54": "Taking command of Howie's battalion, Capt. William H. Puntenny tried to mount the attack on St. Lô along the Bérigny highway, but the Germans threw up such a heavy curtain of mortar fire that the men could not move.",
+        "Paragraph_55": "All through the day the German fire denied an advance.",
+        "Paragraph_56": "Late that afternoon a counterattack with tank support started from St. Lô to eliminate the Bingham-Puntenny force.",
+        "Paragraph_57": "Only the fortuitous presence of American dive bombers saved the day.",
+        "Paragraph_58": "While the planes strafed and bombed the German column, the division artillery placed a protective screen of fire about the American positions.",
+        "Paragraph_59": "45",
+        "Paragraph_60": "Disorganized, the Germans withdrew their assault force, but now two American battalions were isolated."
+      },
+      "Footnote_References": [45],
+      "Place_Name": "Bérigny highway, near St. Lô",
+      "Dates": {
+        "Date_group_of_event": "17 July 1944 afternoon",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 171400ZJUL44"
+      },
+      "TOE": {
+        "Unit": "3d Battalion, 116th Infantry",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "116th Infantry Regiment, 29th Infantry Division",
+          "Commander": "Colonel Dwyer",
+          "Name": "Charles Dwyer",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/29th_Infantry_Division_(United_States)",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "3d Battalion",
+          "Name": "William H. Puntenny",
+          "Rank": "Captain",
+          "Date": "17 July 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Personnel": "Battalion under heavy fire",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "P-47 Thunderbolt",
+            "Identifier": "P-47",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Republic_P-47_Thunderbolt",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Tank",
+            "Identifier": "Panzer IV",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+            "Web_Image_Reference": null,
+            "Web_Image_License": null,
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Tank",
+            "Identifier": "Panzer IV",
+            "Quantity": "unknown",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": null
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": "Disorganized, some losses from bombing",
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": "https://warfarehistorynetwork.com/wp-content/uploads/2018/12/W-St.-Lo-1-HT-Mar05.jpg",
+        "Description": "Symbol of St. Lô - The flag-draped coffin of Major Howie",
+        "License": "Unknown"
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.b24.net/stories/StLo-PeriersMap1.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Overcast, suitable for dive bombing operations, average temperatures around 72°F high, 55°F low.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Failed Efforts to Supply Isolated Battalions",
+      "Sub-event_summary": "Attempts to supply the isolated battalions with ammunition, food, and medical supplies failed due to clogged roads and enemy fire; light planes dropped blood plasma for 35 wounded men.",
+      "Sub-event_fulltext": {
+        "Paragraph_61": "All efforts of the 1st Battalion, 116th Infantry, to open a route to Bingham and Puntenny on 17 July and to bring forward ammunition, food, and medical supplies failed.",
+        "Paragraph_62": "Half-tracks and tank destroyers, escorted by quadruple .50-caliber machine guns, found the sunken roads about Martinville so clogged with debris, dead horses, and wrecked German vehicles that an advance under continuing enemy artillery fire was impossible.",
+        "Paragraph_63": "The 175th Infantry also attempted to reach the isolated men by attacking down the Bérigny highway, but the regiment sustained severe losses and made little advance.",
+        "Paragraph_64": "The only relief was that brought by light planes of the division artillery, which dropped sufficient blood plasma for 35 wounded men."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Martinville, Bérigny highway",
+      "Dates": {
+        "Date_group_of_event": "17 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 171200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "1st Battalion, 116th Infantry",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "116th Infantry Regiment, 29th Infantry Division",
+          "Commander": "Colonel Dwyer",
+          "Name": "Charles Dwyer",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/29th_Infantry_Division_(United_States)",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "175th Infantry",
+          "Name": null,
+          "Rank": null,
+          "Date": null,
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Personnel": "Carrying parties and escorts",
+        "Equipments": {
+          "Supply": "Blood plasma dropped for 35 wounded",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Half-track",
+            "Identifier": "M3 Half-track",
+            "Quantity": "several",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M3_Half-track",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 35,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": "severe losses for 175th",
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Martinville, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/4/41/Saint_Lo_Breakthrough.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Overcast, with continuing enemy artillery fire possible in rainy conditions.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Opening of Supply Route to Isolated Units",
+      "Sub-event_summary": "A carrying party reached the isolated units on the night of 17 July, and on 18 July a rifle company opened a supply route, evacuating wounded and capturing stray Germans.",
+      "Sub-event_fulltext": {
+        "Paragraph_65": "On the night of 17 July a carrying party of about forty men of the 1st Battalion, 116th Infantry, finally reached the isolated units.",
+        "Paragraph_66": "The next morning, 18 July, a rifle company--which had been reduced to 23 veterans but replenished with 85 replacements--opened a supply route to Bingham and Puntenny across the thousand-yard gap.",
+        "Paragraph_67": "Advancing in two columns along the axial hedgerows one field apart, maintaining visual contact between columns, and leaving four men in each field to hold the supply line open, the company met only light rifle fire.",
+        "Paragraph_68": "Supplies were brought forward and the wounded were evacuated.",
+        "Paragraph_69": "The few Germans, in small and disorganized groups, who blundered into the supply route during the day were either killed or captured."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Near St. Lô, France",
+      "Dates": {
+        "Date_group_of_event": "Night 17 July to morning 18 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 172000ZJUL44 to 180600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "1st Battalion, 116th Infantry",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "116th Infantry Regiment, 29th Infantry Division",
+          "Commander": "Colonel Dwyer",
+          "Name": "Charles Dwyer",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/29th_Infantry_Division_(United_States)",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": "Rifle company: 23 veterans, 85 replacements; carrying party of 40 men",
+        "Equipments": {
+          "Supply": "Ammunition, food, medical supplies brought forward",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": "few",
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": "few"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://warfarehistorynetwork.com/wp-content/uploads/W-Hill-192-MAP.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Night and morning conditions, overcast, misty.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Realization that Martinville Ridge Lost Importance",
+      "Sub-event_summary": "The Martinville ridge lost strategic importance due to German observation and fire; American forces on the ridge lacked strength for the final drive.",
+      "Sub-event_fulltext": {
+        "Paragraph_70": "By the time contact was firmly established with the two isolated battalions, the Martinville ridge had lost importance in the battle of St. Lô.",
+        "Paragraph_71": "The explanation had its basis in the condition that for seven long days had plagued the attacks along the ridge.",
+        "Paragraph_72": "In full view of the Germans south of the Bérigny highway, every American movement along the south face of the Martinville ridge had brought deadly fire.",
+        "Paragraph_73": "Though the two regiments on the ridge had constituted a threat to the town, they had been unable to make the threat good.",
+        "Paragraph_74": "Attempts to impress the troops with the fact that the German positions were worse than their own had not succeeded.",
+        "Paragraph_75": "\"Tell them that Jerry is in a wedge,\" the division G-3 had ordered a liaison officer.",
+        "Paragraph_76": "\"Jerry doesn't seem to realize it,\" had come the reply.",
+        "Paragraph_77": "46",
+        "Paragraph_78": "So it seemed, for in spite of the wedge exerting pressure from the north--Hill 122--and from the east--the Martinville ridge--the Germans had obstinately refused to release their hold on the city.",
+        "Paragraph_79": "With the passage of time it had become a matter of increasing certainty that the forces on the ridge lacked the strength to make the final drive to the objective."
+      },
+      "Footnote_References": [46],
+      "Place_Name": "Martinville ridge, Hill 122",
+      "Dates": {
+        "Date_group_of_event": "By 18 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 180600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "29th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Major General Charles H. Gerhardt",
+          "Name": "Charles H. Gerhardt",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Gerhardt",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": "Exhausted troops",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p173.jpg",
+        "Description": "Symbol of St. Lô. The flag-draped coffin of Major Howie rests on the rubble-buried steps of Ste. Croix church.",
+        "License": "Public Domain - US Government"
+      },
+      "Place": {
+        "Place_Name": "Martinville ridge, St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Overcast with mist, contributing to defensive challenges.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "115th Infantry Advance to Northeastern Outskirts",
+      "Sub-event_summary": "General Gerhardt ordered the 115th Infantry to advance to the northeast outskirts of St. Lô, expending the battalion if necessary, reaching near the city by nightfall but exhausted.",
+      "Sub-event_fulltext": {
+        "Paragraph_80": "On the afternoon of 17 July, after the 35th Division had firmly established its control over Hill 122, General Gerhardt concluded that the 115th Infantry and not the regiments on the Martinville ridge really held the key to St. Lô.",
+        "Paragraph_81": "To insert the key, General Gerhardt had somehow to get the regiment to the gates of the city.",
+        "Paragraph_82": "He therefore directed Colonel Ordway to advance the 115th to the northeastern outskirts of St. Lô.",
+        "Paragraph_83": "The advance depended almost wholly upon the battalion in the regimental center.",
+        "Paragraph_84": "\"Expend the whole battalion if necessary,\" General Gerhardt ordered, \"but it's got to get there.\"",
+        "Paragraph_85": "An hour later he repeated the same order.",
+        "Paragraph_86": "47",
+        "Paragraph_87": "By nightfall of 17 July the troops of the entire 115th Infantry were near the northeastern fringe of the city, but getting there had brought them to the point of almost complete exhaustion."
+      },
+      "Footnote_References": [47],
+      "Place_Name": "Northeastern outskirts of St. Lô",
+      "Dates": {
+        "Date_group_of_event": "Afternoon 17 July 1944 to nightfall",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 171400ZJUL44 to 172100ZJUL44"
+      },
+      "TOE": {
+        "Unit": "115th Infantry",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "29th Infantry Division",
+          "Commander": "Colonel Ordway",
+          "Name": "Godwin Ordway, Jr.",
+          "Rank": "Colonel",
+          "End_Date": "18 July 1944",
+          "End_Status": "Relieved",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/29th_Infantry_Division_(United_States)",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": "Exhausted troops",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": "heavy exhaustion and implied casualties",
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Afternoon to night, overcast, rainy conditions in Normandy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Change in Scheme of Maneuver",
+      "Sub-event_summary": "General Gerhardt changed the plan, ordering the Martinville ridge regiments to hold while the 115th made the main effort into St. Lô on 18 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_88": "Convinced beyond doubt that the only feasible point of entry to St. Lô was the northeastern gate, General Gerhardt changed his week-long scheme of maneuver.",
+        "Paragraph_89": "For operations on 18 July, he ordered the two regiments on the left--those on the Martinville ridge--to hold in place while the 115th made the main effort into the city.",
+        "Paragraph_90": "48"
+      },
+      "Footnote_References": [48],
+      "Place_Name": "St. Lô, France",
+      "Dates": {
+        "Date_group_of_event": "Late 17 July 1944 for 18 July operations",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 172200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "29th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Major General Charles H. Gerhardt",
+          "Name": "Charles H. Gerhardt",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Gerhardt",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": null,
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.normandy1944.info/templates/yootheme/cache/eb/D-Day-normandy-beyond-map-st-lo-breakthrough-1944-ebbde7ad.jpeg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Night conditions, overcast.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Commander Conversations on 18 July",
+      "Sub-event_summary": "General Gerhardt discussed plans with General Baade and General Corlett, revealing tension and focus on taking St. Lô.",
+      "Sub-event_fulltext": {
+        "Paragraph_91": "Early on 18 July, General Gerhardt phoned to ask General Baade what he was planning to have the 35th Division do that day.",
+        "Paragraph_92": "General Baade replied that he would \"probably sit tight.\"",
+        "Paragraph_93": "As an afterthought he asked, \"Are you going in?\"",
+        "Paragraph_94": "\"I'm going to try,\" General Gerhardt answered.",
+        "Paragraph_95": "\"In that case,\" General Baade said, \"so will I.\"",
+        "Paragraph_96": "\"You can help on your left,\" General Gerhardt suggested.",
+        "Paragraph_97": "General Baade promised he would \"look into it.\"",
+        "Paragraph_98": "Three minutes later General Gerhardt was telling the corps commander that he thought the 35th Division should be ordered to attack to aid the 29th and not be allowed to attack \"just because someone else [the 29th] is doing it.\"",
+        "Paragraph_99": "General Corlett's reaction was sharp: \"You had better just take on what I said in your order.\"",
+        "Paragraph_100": "Apparently realizing Gerhardt's fatigue, he added, \"Just take St. Lô and secure it.\"",
+        "Paragraph_101": "49"
+      },
+      "Footnote_References": [49],
+      "Place_Name": "St. Lô, France",
+      "Dates": {
+        "Date_group_of_event": "Early 18 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 180600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "29th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Major General Charles H. Gerhardt",
+          "Name": "Charles H. Gerhardt",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Gerhardt",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "35th Infantry Division",
+          "Name": "Paul W. Baade",
+          "Rank": "Major General",
+          "Date": "July 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/35th_Infantry_Division_(United_States)",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Personnel": null,
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Early morning, misty and overcast.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "German Request for Withdrawal",
+      "Sub-event_summary": "German commanders discussed and requested permission to withdraw from St. Lô due to American advances and shortages.",
+      "Sub-event_fulltext": {
+        "Paragraph_102": "If these conversations revealed a tension among American commanders, those occurring among German officers disclosed even greater concern.",
+        "Paragraph_103": "Seventh Army had called Army Group B in the midafternoon of 17 July, and Hausser requested not only permission to withdraw in the St. Lô sector but also an answer by 1800 that day.",
+        "Paragraph_104": "There was some double talk about withdrawing to a line north of St. Lô, but this was not feasible in terms of the terrain.",
+        "Paragraph_105": "A withdrawal meant retirement to the heights just south of the city, though combat outposts could be retained north of St. Lô.",
+        "Paragraph_106": "50"
+      },
+      "Footnote_References": [50],
+      "Place_Name": "St. Lô sector",
+      "Dates": {
+        "Date_group_of_event": "Midafternoon 17 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 171400ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "II Parachute Corps",
+          "Name": "Eugen Meindl",
+          "Rank": "General",
+          "Date": "July 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Eugen_Meindl",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Personnel": "Shortage of troops",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": "Attrition of troops",
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/4/41/Saint_Lo_Breakthrough.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Midafternoon conditions, overcast.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Army Group Response to Withdrawal Request",
+      "Sub-event_summary": "Army Group B advised Seventh Army to take necessary measures for withdrawal without formal approval from higher command, to report it as enemy penetration.",
+      "Sub-event_fulltext": {
+        "Paragraph_107": "The request was rather surprising because under Hitler's standing order to hold fast, permission to withdraw was a prerogative of OKW.",
+        "Paragraph_108": "Yet more surprising was the army group reply to the Seventh Army.",
+        "Paragraph_109": "The operations officer of Army Group B stated that, after discussion, the staff had decided that forwarding Hausser's request to OB WEST for further transmittal to OKW was not practical.",
+        "Paragraph_110": "\"You take whatever measures you think are necessary,\" the operations officer advised; \"if you have to withdraw, go ahead; just report to us afterwards that the enemy penetrated your main line of resistance in several places and that you barely succeeded in re-establishing a new line to the rear.\"",
+        "Paragraph_111": "51"
+      },
+      "Footnote_References": [51],
+      "Place_Name": "St. Lô sector",
+      "Dates": {
+        "Date_group_of_event": "17 July 1944 1750",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "171650ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Gerd von Rundstedt",
+          "Name": "Gerd von Rundstedt",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Gerd_von_Rundstedt",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Seventh Army",
+          "Name": "Paul Hausser",
+          "Rank": "General",
+          "Date": "July 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Personnel": null,
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Afternoon conditions, overcast.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Reasons for German Withdrawal",
+      "Sub-event_summary": "American capture of Hill 122, troop shortages, and threats of encirclement prompted the German withdrawal; Rommel's accident added to the concern.",
+      "Sub-event_fulltext": {
+        "Paragraph_112": "Several reasons made a withdrawal necessary. American capture of Hill 122 and the attrition of the German troops in that sector exposed St. Lô from the north.",
+        "Paragraph_113": "The shortage of troops along the entire St. Lô front made it impossible for the II Parachute Corps to re-establish a defensive line north of the city.",
+        "Paragraph_114": "Underscoring the difficult, even hopeless, situation at St. Lô were the events that had occurred on the other side of the Vire: the 30th Division advance through Pont-Hébert to Rampan, the failure of the abortive Panzer Lehr counterattack on 15 July that did no more than delay the 30th Division advance, and the mistaken notion that U.S. troops had crossed the river at Rampan to infiltrate the rear of the 352d Division.",
+        "Paragraph_115": "All added up to the uncomfortable threat of American encirclement of St. Lô from the west.",
+        "Paragraph_116": "As though this was not bad enough, Rommel, the Army Group B commander, while driving forward to visit the front on the afternoon of 17 July, incurred a severe skull fracture in an automobile accident brought on by strafing from an Allied plane.",
+        "Paragraph_117": "That evening, when the news became known to the Germans, the OB WEST commander, Kluge, assumed command of Army Group B as well."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Lô, Hill 122, Pont-Hébert, Rampan",
+      "Dates": {
+        "Date_group_of_event": "17 July 1944 afternoon",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 171400ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Army Group B",
+          "Name": "Erwin Rommel",
+          "Rank": "Field Marshal",
+          "Date": "July 1944",
+          "End_Date_of_command": "17 July 1944",
+          "End_Status": "WIA",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Erwin_Rommel",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Personnel": "Attrition and shortages",
+        "Equipments": {
+          "Supply": "Shortage of troops and reserves",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Fighter plane",
+            "Identifier": "unknown",
+            "Quantity": "1",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 1,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": "attrition",
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Afternoon, conditions allowing plane strafing.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "German Withdrawal Approval and Execution",
+      "Sub-event_summary": "Kluge permitted the withdrawal after initial attempts to avert it; main German forces withdrew undetected on the night of 17 July, leaving combat outposts.",
+      "Sub-event_fulltext": {
+        "Paragraph_118": "By this time, Army Group B had passed Hausser's withdrawal request to OB WEST, which informed Jodl at OKW that troops were pulling back to hills north of St. Lô.",
+        "Paragraph_119": "Kluge tried to avert a complete withdrawal, but though he ordered Hausser to keep the Americans out of the city, he could find no reserves to reinforce the St. Lô sector.",
+        "Paragraph_120": "52",
+        "Paragraph_121": "The 5th Parachute Division, which had arrived from Brittany several days earlier, was already committed to reinforce Panzer Lehr.",
+        "Paragraph_122": "The 275th Division, which was following the paratroopers, would not arrive in the St. Lô region for another day.",
+        "Paragraph_123": "Panzer Group West, which might have furnished troops, was expecting a strong British attack in the Caen area, and Kluge dared not disturb Eberbach's dispositions.",
+        "Paragraph_124": "Reluctantly, Kluge permitted Hausser to withdraw.",
+        "Paragraph_125": "53",
+        "Paragraph_126": "Undetected by the Americans, the main forces retired that night leaving strong combat outposts north of St. Lô."
+      },
+      "Footnote_References": [52,53],
+      "Place_Name": "St. Lô, France",
+      "Dates": {
+        "Date_group_of_event": "Night 17 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 172000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "5th Parachute Division",
+          "Name": null,
+          "Rank": null,
+          "Date": null,
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/5th_Parachute_Division_(Germany)",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Personnel": "Withdrawing forces",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Night conditions, allowing undetected withdrawal.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Replacement of 115th Commander and Preparations",
+      "Sub-event_summary": "General Gerhardt replaced Colonel Ordway with Colonel Ednie; preparations for assault on 18 July were completed, cautious about not getting cut off.",
+      "Sub-event_fulltext": {
+        "Paragraph_127": "On the American side, General Gerhardt completed his preparations for assault on the morning of 18 July. Though the 115th Infantry had made the drive possible, Gerhardt replaced the regimental commander. \"You did your best,\" Gerhardt told him. Colonel",
+        "Paragraph_128": "Ednie, who had come from the 30th Division to understudy the assistant division commander, took his place. Ednie's mission was to open the northeast entrance to the city for the passage of General Cota's task force. Unaware of the German withdrawal, General Gerhardt was cautious. \"We may go into St. Lô,\" he informed the corps commander, \"but we don't want anyone to get cut off in there.\"",
+        "Paragraph_129": "54"
+      },
+      "Footnote_References": [54],
+      "Place_Name": "St. Lô, France",
+      "Dates": {
+        "Date_group_of_event": "18 July 1944 morning",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 180600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "115th Infantry",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "29th Infantry Division",
+          "Commander": "Colonel Ednie",
+          "Name": "Ednie",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": {
+          "Unit": "115th Infantry",
+          "Name": "Godwin Ordway",
+          "Rank": "Colonel",
+          "Date": "July 1944",
+          "End_Date_of_command": "18 July 1944",
+          "End_Status": "Relieved",
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Personnel": null,
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p170.jpg",
+        "Description": "Infantrymen Hit the Ground on a Street in St. Lo",
+        "License": "Public Domain - US Government"
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://warfarehistorynetwork.com/wp-content/uploads/W-Hill-192-MAP.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Morning conditions, overcast.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "115th Infantry Attack on 18 July",
+      "Sub-event_summary": "After artillery preparation, the 115th Infantry attacked, making good progress and hammering on the gate by noon; Task Force C was alerted.",
+      "Sub-event_fulltext": {
+        "Paragraph_130": "After an artillery preparation, the 115th Infantry attacked. Since Hill 122 was no longer a point of embarrassment, the regiment made good progress. At noon Colonel Ednie was hammering on the gate. \"I believe this is the time to alert that Task Force,\" he advised General Gerhardt. The division commander no longer doubted. \"Everything's shaping up now,\" he informed General Cota, \"so I think you'd better get moving.\"",
+        "Paragraph_131": "55"
+      },
+      "Footnote_References": [55],
+      "Place_Name": "St. Lô, France",
+      "Dates": {
+        "Date_group_of_event": "18 July 1944 morning to noon",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 180800ZJUL44 to 181100ZJUL44"
+      },
+      "TOE": {
+        "Unit": "115th Infantry",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "29th Infantry Division",
+          "Commander": "Colonel Ednie",
+          "Name": "Ednie",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": {},
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Artillery",
+            "Identifier": "105mm Howitzer",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M101_howitzer",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p171.jpg",
+        "Description": "Ruins of St. Lô",
+        "License": "Public Domain - US Government"
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Morning to noon, overcast, allowing good progress.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Task Force C Enters St. Lô",
+      "Sub-event_summary": "Task Force C, carrying Major Howie's body, entered St. Lô at 1800 on 18 July, seizing key points with scattered resistance; bridges intact.",
+      "Sub-event_fulltext": {
+        "Paragraph_132": "Forty minutes later General Gerhardt transmitted another order to General Cota. He wanted the body of Major Howie to accompany the first U.S. troops into town.",
+        "Paragraph_133": "56",
+        "Paragraph_134": "The act was to be not only a gesture of honor and respect to the fallen but also a visible reminder to the members of the task force of all their comrades who had given their lives in a task not yet completed. The choice of Major Howie's body was particularly apt, for Howie, who had taken command of a battalion only three days before his death, represented the qualities of courage and sacrifice that had made the drive to the gates of St. Lô possible. The triumph belonged to the dead as well as to the living, and through Major Howie the fallen were to participate in the culmination of the effort.",
+        "Paragraph_135": "At 1500, 18 July, General Cota's Task Force C departed its assembly area near the division left boundary, crossed the division zone, and began to roll down the Isigny-St. Lô highway. Like a left halfback making a wide run around right end, the task force picked up its interference as it approached the line of scrimmage--the 1st Battalion, 115th Infantry, which was closest to the goal. Silencing an antitank gun just outside the town, passing through harassing artillery and scattered rifle fire, and breaking through a roadblock, the task force entered the northeast portion of St. Lô at 1800 of the eighth day of the battle. Quickly seizing a square near the cemetery and organizing it as a base of operations, Task Force C moved rapidly through the rubble-choked streets to points of importance. Small groups occupied key road junctions, squares, and bridges. One hour after the task force entered the town it was apparent that only scattered German resistance remained to be cleared. The bridges over the Vire were still intact.",
+        "Paragraph_136": "57"
+      },
+      "Footnote_References": [56,57],
+      "Place_Name": "St. Lô, France",
+      "Dates": {
+        "Date_group_of_event": "18 July 1944 1500 to 1900",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "181400ZJUL44 to 181800ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Task Force C",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "29th Infantry Division",
+          "Commander": "Brigadier General Norman D. Cota",
+          "Name": "Norman D. Cota",
+          "Rank": "Brigadier General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Norman_Cota",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "1st Battalion, 115th Infantry",
+          "Name": null,
+          "Rank": null,
+          "Date": null,
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Jeep",
+            "Identifier": "Willys MB",
+            "Quantity": "1 (for Howie's body)",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Willys_MB",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Antitank gun",
+            "Identifier": "PaK 40",
+            "Quantity": "1",
+            "Web_Reference": "https://en.wikipedia.org/wiki/7.5_cm_Pak_40",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": "scattered resistance",
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=10158298126356079",
+        "Description": "Flag draped body of Major Howie in rubble",
+        "License": "Unknown"
+      },
+      "Place": {
+        "Place_Name": "Northeast St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Afternoon to evening, overcast.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "35th Division Completes Assignment",
+      "Sub-event_summary": "The 35th Division mopped up enemy, reached the Vire River, and moved to the northern edge of St. Lô; some troops entered the town despite boundary restrictions.",
+      "Sub-event_fulltext": {
+        "Paragraph_137": "About the time the 29th Division task force began its drive into St. Lô, the 35th Division completed its assignment.",
+        "Paragraph_138": "Colonel Byrne's 320th Infantry mopped up bypassed enemy in the center of the division zone, Colonel Emery's 137th Infantry reached the bank of the Vire River between the loop and the bend, and Colonel Miltonberger's 134th Infantry moved down the south slope of Hill 122 to the northern edge of St. Lô.",
+        "Paragraph_139": "Because the division boundary did not permit the 35th to enter into town, General Baade requested a boundary change.",
+        "Paragraph_140": "The XIX Corps G-3 first checked with General Gerhardt: \"We have another division crying for part of St. Lô,\" he reported.",
+        "Paragraph_141": "\"OK,\" General Gerhardt said, \"let them go to it.\"",
+        "Paragraph_142": "Despite General Gerhardt's largess, the corps commander was reluctant to condone the possibility of confusion and lack of control that might result from intermingling troops of the two divisions in the city.",
+        "Paragraph_143": "He decided not to shift the boundary, yet some 35th Division troops inevitably entered St. Lô and moved a short way into town.",
+        "Paragraph_144": "58"
+      },
+      "Footnote_References": [58],
+      "Place_Name": "St. Lô, Vire River",
+      "Dates": {
+        "Date_group_of_event": "18 July 1944 afternoon",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 181400ZJUL44"
+      },
+      "TOE": {
+        "Unit": "35th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Major General Paul W. Baade",
+          "Name": "Paul W. Baade",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/35th_Infantry_Division_(United_States)",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "320th Infantry",
+          "Name": "Colonel Byrne",
+          "Rank": "Colonel",
+          "Date": "July 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Personnel": null,
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": "bypassed enemy mopped up",
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Afternoon, overcast.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Reasons for the Fall of St. Lô",
+      "Sub-event_summary": "The weight of two divisions over eight days, capture of Hill 122, and Bingham's advance led to the fall; the scheme of maneuver was reversed.",
+      "Sub-event_fulltext": {
+        "Paragraph_145": "What had caused St. Lô to fall was the weight of two divisions pressing forward relentlessly for eight days. But if specific events have direct causal relation, two were mainly responsible. The capture of Hill 122 was the more obvious, for its seizure the day before the fall of St. Lô had deprived the Germans of a vital point in their line of defense. The other event was of more subtle significance. At the same time that the 35th Division was securing a hold on Hill 122, the 29th Division was penetrating the enemy defensive line across the Martinville ridge by means of Major Bingham's accidental advance of 1,000 yards. Although temporarily encircled and isolated, Bingham's battalion, less than 1,000 yards from St. Lô, presented a serious menace to the defenders--\"an enemy battalion behind our lines.\"",
+        "Paragraph_146": "59",
+        "Paragraph_147": "Major Howie's relief force had strengthened the threat. Although the 29th Division troops on the Martinville ridge did not have the power to take the city, their positions constituted a containment force, a base or anchor for the coup de grace delivered by Task Force C. The original scheme of maneuver had thus been reversed. The intended maneuver force, the 116th and 175th Regiments, had become the base, while the 115th Infantry, earlier designated the holding force, had become, with Task Force C, the assault element."
+      },
+      "Footnote_References": [59],
+      "Place_Name": "St. Lô, France",
+      "Dates": {
+        "Date_group_of_event": "18 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "180000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "29th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Major General Charles H. Gerhardt",
+          "Name": "Charles H. Gerhardt",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Gerhardt",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": null,
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "General conditions during the battle, overcast and rainy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Lingering Doubt on Attack Method",
+      "Sub-event_summary": "Reflection on whether attacking Hill 122 earlier could have expedited the capture by shielding the advance from German fire.",
+      "Sub-event_fulltext": {
+        "Paragraph_148": "If speed was a fundamental requirement of General Gerhardt's mission, the question of whether the corps attack had been the most expeditious manner of securing St. Lô remained a lingering doubt. Other U.S. units advancing with the same slow rate of speed in the hedgerow country obscured the possibility that the corps might have secured its objective more rapidly had it attacked Hill 122 at the same time that the V Corps had attacked Hill 192. Had the Americans controlled Hill 122, the 29th Division would have been able to make its thrust to St. Lô across the north slope of the Martinville ridge and have been shielded from the German fire south of the Bérigny road."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Lô, Hill 122, Hill 192",
+      "Dates": {
+        "Date_group_of_event": "Reflection post 18 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 190000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "XIX Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Major General Joe L. Collins",
+          "Name": "Joe L. Collins",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": null,
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p173.jpg",
+        "Description": "Symbol of St. Lô. The flag-draped coffin of Major Howie rests on the rubble-buried steps of Ste. Croix church.",
+        "License": "Public Domain - US Government"
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "General hedgerow battle conditions.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Announcement of Capture",
+      "Sub-event_summary": "General Gerhardt prepared a message announcing the capture, but NBC broadcast it first via radio.",
+      "Sub-event_fulltext": {
+        "Paragraph_149": "General Gerhardt had a formal message prepared to announce the capture of St. Lô. At 1830, half an hour after Task Force C entered the streets of the town, he confidentially released the message to his special services officer in time to make that evening's edition of the division mimeographed newspaper. \"I have the honor,\" the message read, \"to report to the Corps Commander . . .,\" but before General Gerhardt could proclaim the achievement, General Corlett telephoned to inform him that he had already heard the news on a radio broadcast. \"NBC beat you to it,\" General Corlett announced.",
+        "Paragraph_150": "60"
+      },
+      "Footnote_References": [60],
+      "Place_Name": "St. Lô, France",
+      "Dates": {
+        "Date_group_of_event": "18 July 1944 1830",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "181730ZJUL44"
+      },
+      "TOE": {
+        "Unit": "29th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Major General Charles H. Gerhardt",
+          "Name": "Charles H. Gerhardt",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Gerhardt",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": null,
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Evening conditions, overcast.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "German Counterattack Fails",
+      "Sub-event_summary": "German artillery hit the town; the 352d Division counterattacked but was too weak to expel the Americans.",
+      "Sub-event_fulltext": {
+        "Paragraph_151": "Although St. Lô was taken, it was by no means safe. German artillery smashed into the town. Surprised and embarrassed by the speed with which the Americans had taken the city, Hausser ordered Meindl to have the 352d Division retake the town, but refused Meindl's request for part of the 275th Division, which had just arrived from Brittany and was in the Seventh Army reserve behind Panzer Lehr. The 352d Division, which had tried to hold the Vire bridges by fighting in St. Lô with too few men, mounted a counterattack but was too weak to expel the Americans. Hausser and Meindl both later blamed an announcement by the Wehrmacht on the afternoon of 18 July of the withdrawal as the stimulus that had caused the final American assault. Actually, however, they had been unable to secure additional troops and they had feared that U.S. forces west of the Vire would outflank St Lô from the west; both commanders in reality had been forced by American pressure to pull the II Parachute Corps back.",
+        "Paragraph_152": "61"
+      },
+      "Footnote_References": [61],
+      "Place_Name": "St. Lô, France",
+      "Dates": {
+        "Date_group_of_event": "18 July 1944 evening",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 181800ZJUL44"
+      },
+      "TOE": {
+        "Unit": "352d Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "II Parachute Corps",
+          "Commander": "Dietrich Kraiß",
+          "Name": "Dietrich Kraiß",
+          "Rank": "Generalleutnant",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dietrich_Kraiss",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": "Too few men",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Artillery",
+            "Identifier": "unknown",
+            "Quantity": "unknown",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Image_License": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": "weak counterattack",
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Evening, overcast.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Cavalry Reconnaissance and Confirmation of German Position",
+      "Sub-event_summary": "The 113th Cavalry Group passed through St. Lô but encountered heavy fire south of the city, confirming Germans on high ground less than a mile south; counterattack confirmed.",
+      "Sub-event_fulltext": {
+        "Paragraph_153": "To maintain contact and determine the extent of the withdrawal, General Corlett instructed the 113th Cavalry Group to pass through the city. The cavalry received such a volume of antitank, mortar, and artillery fire 500 yards south of St. Lô that it became evident at once that the Germans had retired only to the high ground less than a mile to the south. The 352d Division counterattack launched that evening confirmed the fact that the enemy had not gone far.",
+        "Paragraph_154": "62"
+      },
+      "Footnote_References": [62],
+      "Place_Name": "South of St. Lô, France",
+      "Dates": {
+        "Date_group_of_event": "18 July 1944 evening",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 181800ZJUL44"
+      },
+      "TOE": {
+        "Unit": "113th Cavalry Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": null,
+          "Name": null,
+          "Rank": null,
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": {},
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Antitank gun",
+            "Identifier": "PaK 40",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/7.5_cm_Pak_40",
+            "Web_Image_Reference": null,
+            "Web_Image_License": null,
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "South of St. Lô, France",
+        "Place_GPS_coordinate": "49.1, -1.09",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Evening conditions, overcast.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Completion of Corps Task",
+      "Sub-event_summary": "XIX Corps completed its task on 19 July with clearing the city and no active enemy in the sector.",
+      "Sub-event_fulltext": {
+        "Paragraph_155": "The XIX Corps completed its task on the morning of 19 July. The 29th Division finished clearing the city, and the 35th Division reported no active enemy troops in its sector.",
+        "Paragraph_156": "63"
+      },
+      "Footnote_References": [63],
+      "Place_Name": "St. Lô, France",
+      "Dates": {
+        "Date_group_of_event": "19 July 1944 morning",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "190800ZJUL44"
+      },
+      "TOE": {
+        "Unit": "XIX Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Major General Joe L. Collins",
+          "Name": "Joe L. Collins",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": null,
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "Morning conditions, overcast.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Casualties and Division Relief",
+      "Sub-event_summary": "The 35th Division lost over 2,000 men, the 29th over 3,000; on 19 July, the 35th relieved the 29th across the corps front.",
+      "Sub-event_fulltext": {
+        "Paragraph_157": "In capturing St. Lô the divisions had sustained the high losses that had become typical of the battle of the hedgerows. The 35th Division lost over 2,000 men; the 29th Division suffered over 3,000 casualties. On 19 July, in compliance with corps instructions, the 35th Division relieved the 29th, and General Baade deployed his troops across the entire corps front from the Vire River east to the Couvains-Calvaire road."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Lô, France",
+      "Dates": {
+        "Date_group_of_event": "7 to 19 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "070000ZJUL44 to 190000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "35th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Major General Paul W. Baade",
+          "Name": "Paul W. Baade",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/35th_Infantry_Division_(United_States)",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": null,
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": "35th: over 2000; 29th: over 3000",
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "General battle period, bad weather with downpours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Symbol of Major Howie",
+      "Sub-event_summary": "Major Howie's body became a symbol of sacrifice, placed before Ste. Croix church; St. Lô itself became a memorial to the fallen in the hedgerows.",
+      "Sub-event_fulltext": {
+        "Paragraph_158": "By the time the men of the 29th Division marched out of St. Lô on 20 July, the body of Major Howie had become a symbol. Task Force C had carried the flag-draped corpse as a battle standard into town on a jeep.",
+        "Paragraph_159": "64",
+        "Paragraph_160": "Placed on a pile of rubble before the rather plain Romanesque church of Ste. Croix and surrounded by empty, gaping houses, the body had become a shrine, a universal symbol of sacrifice. When the men of the division removed the body and departed the town, the symbol remained in St. Lô. St. Lô itself, disfigured and lifeless, had become a memorial to all who had suffered and died in the battle of the hedgerows."
+      },
+      "Footnote_References": [64],
+      "Place_Name": "St. Lô, France",
+      "Dates": {
+        "Date_group_of_event": "20 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "200000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "29th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Major General Charles H. Gerhardt",
+          "Name": "Charles H. Gerhardt",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Gerhardt",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {},
+        "Personnel": null,
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p173.jpg",
+        "Description": "Symbol of St. Lô. The flag-draped coffin of Major Howie rests on the rubble-buried steps of Ste. Croix church.",
+        "License": "Public Domain - US Government"
+      },
+      "Place": {
+        "Place_Name": "Ste. Croix church, St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/images/normandy_july_25_29_1944.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô, France",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "General conditions.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.216,
+          "North": 50.016
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "45",
+      "Footnote_Number": 45,
+      "Footnote_Text": "Lt. Col. Robert H. George, Ninth Air Force, April to November 1944, USAF Hist Study 36 (Maxwell Air Force Base, Alabama, Air University, 1945). p. 118.",
+      "Footnote_Referenced_Source": "Ninth Air Force, April to November 1944, USAF Hist Study 36",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Air University",
+      "NonDigital_Library_Address": "Maxwell Air Force Base, Alabama",
+      "NonDigital_Library_References": "USAF Hist Study 36"
+    },
+    {
+      "Footnote": "46",
+      "Footnote_Number": 46,
+      "Footnote_Text": "29th Div G-3 Jnl, 1216, 17 Jul.",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "29th Division G-3 Journal, 17 Jul 1944"
+    },
+    {
+      "Footnote": "47",
+      "Footnote_Number": 47,
+      "Footnote_Text": "29th Div G-3 Jnl, 1456 and 1545, 17 Jul.",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "29th Division G-3 Journal, 17 Jul 1944"
+    },
+    {
+      "Footnote": "48",
+      "Footnote_Number": 48,
+      "Footnote_Text": "XIX Corps Msg 2245, 17 Jul, XIX Corps G-3 Jnl and File; Ltr of Instr, 2300, 17 Jul.",
+      "Footnote_Referenced_Source": "XIX Corps G-3 Jnl and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "XIX Corps G-3 Journal and File, 17 Jul 1944"
+    },
+    {
+      "Footnote": "49",
+      "Footnote_Number": 49,
+      "Footnote_Text": "29th Div G-3 Jnl, 0638 and 0641, 18 Jul.",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "29th Division G-3 Journal, 18 Jul 1944"
+    },
+    {
+      "Footnote": "50",
+      "Footnote_Number": 50,
+      "Footnote_Text": "Telecon, Pemsel to Tempelhoff, 1520, 17 Jul, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "Army Group B War Diary, 17 Jul 1944"
+    },
+    {
+      "Footnote": "51",
+      "Footnote_Number": 51,
+      "Footnote_Text": "Telecon, Tempelhoff to Pemsel, 1750, 17 Jul, Seventh Army Tel Msgs, and 1755, AGp B KTB.",
+      "Footnote_Referenced_Source": "Seventh Army Tel Msgs; AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "Seventh Army Telephone Messages, 17 Jul 1944"
+    },
+    {
+      "Footnote": "52",
+      "Footnote_Number": 52,
+      "Footnote_Text": "Telecon, Speidel to Pemsel, 2155, 17 Jul, Seventh Army Tel Msgs; Hodgson, R-54.",
+      "Footnote_Referenced_Source": "Seventh Army Tel Msgs; Hodgson, R-54",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "Hodgson Manuscript R-54"
+    },
+    {
+      "Footnote": "53",
+      "Footnote_Number": 53,
+      "Footnote_Text": "Telecons, Kluge and Rommel, 2040, 16 Jul, OB WEST KTB, and Speidel to Pemsel, 2200, 17 Jul, AGp B KTB.",
+      "Footnote_Referenced_Source": "OB WEST KTB; AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "OB WEST War Diary, 16-17 Jul 1944"
+    },
+    {
+      "Footnote": "54",
+      "Footnote_Number": 54,
+      "Footnote_Text": "29th Div G-3 Jnl, 0725 and 0901, 18 Jul.",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "29th Division G-3 Journal, 18 Jul 1944"
+    },
+    {
+      "Footnote": "55",
+      "Footnote_Number": 55,
+      "Footnote_Text": "29th Div G-3 Jnl, 1147 and 1149, 18 Jul.",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "29th Division G-3 Journal, 18 Jul 1944"
+    },
+    {
+      "Footnote": "56",
+      "Footnote_Number": 56,
+      "Footnote_Text": "29th Div G-3 Jnl, 1236, 18 Jul.",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "29th Division G-3 Journal, 18 Jul 1944"
+    },
+    {
+      "Footnote": "57",
+      "Footnote_Number": 57,
+      "Footnote_Text": "29th Div G-3 Jnl, 0517, 19 Jul.",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "29th Division G-3 Journal, 19 Jul 1944"
+    },
+    {
+      "Footnote": "58",
+      "Footnote_Number": 58,
+      "Footnote_Text": "29th Div G-3 Jnl, 1615, 18 Jul; Penciled note, n.d., 35th Div G-3 Jnl File, 18 Jul; 134th Infantry Regiment, Combat History of World War II, compiled by Butler Buchanan Miltonberger (Baton Rouge, Louisiana: Army and Navy Publishing Company, 1946), p. 44.",
+      "Footnote_Referenced_Source": "35th Div G-3 Jnl File; Combat History of World War II",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "35th Division G-3 Journal File, 18 Jul 1944; Combat History of World War II by Butler Buchanan Miltonberger"
+    },
+    {
+      "Footnote": "59",
+      "Footnote_Number": 59,
+      "Footnote_Text": "Telecon, Pemsel to Tempelhoff, 2110, 17 Jul, Seventh Army Tel Msgs.",
+      "Footnote_Referenced_Source": "Seventh Army Tel Msgs",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "Seventh Army Telephone Messages, 17 Jul 1944"
+    },
+    {
+      "Footnote": "60",
+      "Footnote_Number": 60,
+      "Footnote_Text": "29th Div G-3 Jnl, 1830, 2028, 2048, 18 Jul, and Msg, 2100, 18 Jul, XIX Corps G-3 Jnl and File; FUSA, Spec Sitrep, 0045, 19 Jul.",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl; XIX Corps G-3 Jnl and File; FUSA Spec Sitrep",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "29th Division G-3 Journal, 18 Jul 1944; XIX Corps G-3 Journal and File, 18 Jul 1944"
+    },
+    {
+      "Footnote": "61",
+      "Footnote_Number": 61,
+      "Footnote_Text": "Telecon, Hausser to Pemsel, 1950, 18 Jul, Seventh Army Tel Msgs; Seventh Army KTB (Draft) and Tel Msgs, 17 and 18 Jul; Hodgson, R-54.",
+      "Footnote_Referenced_Source": "Seventh Army Tel Msgs; Seventh Army KTB (Draft); Hodgson, R-54",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "Seventh Army War Diary Draft, 17-18 Jul 1944; Hodgson Manuscript R-54"
+    },
+    {
+      "Footnote": "62",
+      "Footnote_Number": 62,
+      "Footnote_Text": "XIX Corps Memo, 19 Jul, XIX Corps G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "XIX Corps G-3 Jnl and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "XIX Corps Memo, 19 Jul 1944"
+    },
+    {
+      "Footnote": "63",
+      "Footnote_Number": 63,
+      "Footnote_Text": "35th Div Msg, 1019, 19 Jul, XIX Corps G-3 Jnl; Huston, Biography of A Battalion, pp. 23-46.",
+      "Footnote_Referenced_Source": "XIX Corps G-3 Jnl; Biography of A Battalion",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "U.S. Army Center of Military History",
+      "NonDigital_Library_Address": "Fort Lesley J. McNair, Washington, DC",
+      "NonDigital_Library_References": "Biography of A Battalion by Huston, pp. 23-46"
+    },
+    {
+      "Footnote": "64",
+      "Footnote_Number": 64,
+      "Footnote_Text": "A legend had also been born. In 1953 a roadside sign in St. Lô read: \". . . This martyred city was liberated the 26th [ sic. ] of July 1944 by Major Howie, killed at the head of his troops. . . .\"",
+      "Footnote_Referenced_Source": null,
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn8.html",
+  "Source_Footnote_Link_Capture_Date": "December 21, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+  "Source_Link_Capture_Date": "December 21, 2025"
+}

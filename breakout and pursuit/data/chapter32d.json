@@ -1,0 +1,373 @@
+{
+  "Events": [
+    {
+      "Event": "Characteristics of the Allied Pursuit Toward the West Wall",
+      "Sub-event": "Rapid, Fluid Advance with Minimal Centralized Control",
+      "Sub-event_summary": "The Allied advance was spectacularly fast and fluid, relying heavily on subordinate commanders with minimal centralized control. This resulted in unit dislocations, changing routes, and high fluidity. When fuel permitted, it resembled a stampede; key focus was often finding intact bridges. An observer noted frequent changes in First Army direction suggested unclear or inconsistent high-level planning.",
+      "Sub-event_fulltext": {
+        "Paragraph_71": "The Allied advance toward the West Wall was spectacularly fast and fluid. It operated with a minimum of control and a maximum reliance on subordinate commanders. Unit dislocations, changing routes of advance, and an overriding fluidity resulted. When gasoline stocks permitted, the pursuit resembled a stampede of wild horses. The dust that was kicked up did not obscure the fact that a mass Allied movement east of the Seine took place, a gigantic and sometimes haphazard closing action of all available forces toward Germany in which a frantic search for a bridge still intact was often the most significant detail. \"There have been so many changes in the First Army direction,\" an observer wrote, \"that indeed it seems at times as if those 'on top' did not have an altogether clear and consistent conception of the direction from which they wish to cross the German frontier.\"<sup>[48](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn48)</sup>"
+      },
+      "Footnote_References": ["48"],
+      "Place_Name": ["West Wall", "Seine River"],
+      "Dates": {
+        "Date_group_of_event": "Late Aug - early Sep 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+        "Zulu_date_group_of_event": "Late Aug - early Sep 44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Commander": "Lt. Gen. Courtney H. Hodges",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Courtney_Hodges"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "West Wall (Siegfried Line), Germany",
+          "Place_GPS_coordinate": "50.8333 N, 6.0833 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 5.0833,
+            "East": 7.0833,
+            "South": 49.8333,
+            "North": 51.8333
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Northern France / Belgium / Western Germany (general pursuit area)",
+          "Place_GPS_coordinate": "50.0000 N, 4.0000 E",
+          "Weather_text": "No specific weather data provided in source for late August-early September 1944; pursuit described as rapid and fluid without noted weather impediments.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 3.0,
+            "East": 5.0,
+            "South": 49.0,
+            "North": 51.0
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Geographic Scope and Support During Pursuit",
+      "Sub-event": "Liberation and Flank Clearance Operations",
+      "Sub-event_summary": "Allied forces thinly spread laterally and in depth, overran and liberated northern France, most of Belgium and Luxembourg, and parts of the Netherlands. Reconnaissance and cavalry units swept flanks to clear areas, freeing infantry/armor for main highways. Resistance groups assisted significantly, clearing stragglers, guarding bridges/communications, repairing obstacles, and accompanying reconnaissance.",
+      "Sub-event_fulltext": {
+        "Paragraph_72": "Thinly spread, both laterally and in depth, the armies overran and liberated northern France, most of Belgium and Luxembourg, and parts of the Netherlands. Reconnaissance units and cavalry swept far and wide, clearing great areas, particularly on the flanks, to free infantry and armor for advance along the main highways. Various patriotic groups were helpful.<sup>[49](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn49)</sup> Local Resistance members usually appeared soon after the arrival of American troops in a town, and they quickly formed into units and marched out to clear the countryside of German stragglers and to guard bridges and lines of communication. Individuals sometimes accompanied Allied reconnaissance units. Civilians cleared a number of obstacles, in at least one case repairing a destroyed bridge before the arrival of Engineer troops. Engineer support platoons often accompanied cavalry ahead of the main body of troops to remove obstacles before they could delay the advance. The artillery was usually unable to displace fast enough to get into action, and even the light artillery did comparatively little firing.<sup>[50](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn50)</sup>",
+        "Paragraph_73": "*--688--* <a id=\"page689\"></a> * * * > [![Liberated. French girls knock down German headquarters sign](:/0fd1fc16616b4d1a801a0a4cf8e9bffb)](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p689.jpg)  \n> Liberated. *French girls knock down German headquarters sign.*"
+      },
+      "Footnote_References": ["49", "50"],
+      "Place_Name": ["Northern France", "Belgium", "Luxembourg", "Netherlands"],
+      "Dates": {
+        "Date_group_of_event": "Late Aug - early Sep 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+        "Zulu_date_group_of_event": "Late Aug - early Sep 44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Commander": "Lt. Gen. Courtney H. Hodges",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Courtney_Hodges"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p689.jpg",
+          "Description": "Liberated. French girls knock down German headquarters sign.",
+          "License": "Public domain (U.S. Government publication)"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Belgium (general liberation area)",
+          "Place_GPS_coordinate": "50.8503 N, 4.3517 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 3.3517,
+            "East": 5.3517,
+            "South": 49.8503,
+            "North": 51.8503
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Northern France / Low Countries (liberation zone)",
+          "Place_GPS_coordinate": "50.5000 N, 4.0000 E",
+          "Weather_text": "No specific weather data in source; pursuit and liberation operations described without noted weather impediments.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 3.0,
+            "East": 5.0,
+            "South": 49.5,
+            "North": 51.5
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Limited German Resistance During Pursuit",
+      "Sub-event": "Sporadic Contact and Rear-Guard Actions",
+      "Sub-event_summary": "Sporadic enemy contact along fronts; Germans made few stands, mainly at river crossings. Opposition characterized by roadblocks (felled trees), destroyed bridges, feeble rear-guards (small infantry/tank groups withdrawing under pressure). No consistent plan; many bridges/ towns abandoned intact. Action consisted of road marches with short skirmishes (company-battalion level, several hours).",
+      "Sub-event_fulltext": {
+        "Paragraph_74": "There was only sporadic contact with the enemy along the fronts of the on-rushing armies. Only in a few instances did the Germans try to make a stand, usually at river-crossing sites. The inadequacy of the German forces, their lack of communications, their drastic shortages of equipment, and what seemed to be command confusion on the lower levels led to the abandonment of any pretense of re-establishing a line anywhere except at the West Wall. Occasional roadblocks (usually no more than several felled trees), a few destroyed bridges, and feeble rear-guard action characterized the opposition. A typical rear guard was composed of a small group of infantry and perhaps one or two tanks or mobile guns stationed at a town or road center until direct pressure or an outflanking move prompted withdrawal. Resistance was spotty and without consistent plan. Many bridges were abandoned intact. Few cities or towns were defended. Inadequate and haphazard strongpoints, frequently placed at illogical locations and often undefended, did little to slow the Allied advance. Road marches punctuated by occasional skirmishes of short duration and involving a company or at most a battalion for only several hours characterized the action."
+      },
+      "Footnote_References": [],
+      "Place_Name": ["West Wall"],
+      "Dates": {
+        "Date_group_of_event": "Late Aug - early Sep 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+        "Zulu_date_group_of_event": "Late Aug - early Sep 44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Commander": "Lt. Gen. Courtney H. Hodges",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Courtney_Hodges"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Western Front (general pursuit area)",
+          "Place_GPS_coordinate": "50.0000 N, 4.0000 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 3.0,
+            "East": 5.0,
+            "South": 49.0,
+            "North": 51.0
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Western Europe (pursuit fronts)",
+          "Place_GPS_coordinate": "50.0000 N, 4.0000 E",
+          "Weather_text": "No specific weather data in source; limited resistance and road marches described without weather-related impediments noted.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 3.0,
+            "East": 5.0,
+            "South": 49.0,
+            "North": 51.0
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Logistical Constraints Slowing the Pursuit",
+      "Sub-event": "Supply Shortages and Reliance on Emergency Measures",
+      "Sub-event_summary": "Logistics subordinated to tactical advantage since early August; normal depot system impossible during rapid movement. Supplies remained near invasion beaches (90-95% by end August); deliveries dwindled to thousands of tons/day. Rail system demolished; reconstruction slow. Motor transport (Red Ball Express) key but costly (strain, deterioration, accidents, hijacking). Air supply emergency only (20,000 tons Aug-mid Sep). Gasoline critical; captured stocks helped but insufficient.",
+      "Sub-event_fulltext": {
+        "Paragraph_75": "Although the enemy could do little to hinder, shortages of supplies markedly slowed the advance. Since 3 August, when the Allies had turned eastward toward the Seine, logistical considerations had been subordinated to prospects of immediate tactical advantage.<sup>[51](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn51)</sup> Pushing the advance in a gamble for quick victory had entailed a ruthless disregard for an orderly development of the logistical structure. The normal logistical structure based on a depot system could not be established under the pressure of supplying forward units on a day-to-day basis during the war of movement. The result was that go to 95 percent of all the supplies on the Continent at the end of August lay in depots near the original invasion beaches. Virtually no supplies existed between these stocks and the army dumps three hundred miles away. With supply loads being carried increasingly farther forward and carriers requiring more and more time to complete longer round trips, the deliveries to the armies dwindled during the last",
+        "Paragraph_76": "*--689--* <a id=\"page690\"></a> * * * > few days of August to several thousand tons per day.",
+        "Paragraph_77": "The planners had intended to rely on the excellent French railways for longdistance hauling, but Allied air attacks and French sabotage had virtually demolished the railroad system. The reconstruction of damaged rail lines, which required repair of choke points, rail centers and junctions, bridges, tunnels, viaducts, roundhouses, machine shops, and rolling stock, could not keep pace with the advancing forces. As early as June, when it had become apparent that paralyzing German mobility by destroying the transportation system would mean similar paralysis later for the Allies, supply chiefs had begun to request that facilities be spared and had started to hope in earnest that the Germans would not destroy them in retreat. Though the rail lines east of Paris were in better shape, the hub of the system around the French capital had been heavily damaged. By 30 August two main railroads were open as far as the capital, but the mutilated rail yards of Paris and the destroyed Seine River bridges prohibited through traffic. Small tonnages could be routed forward through Paris only after 4 September. Not until mid-September, although bottlenecks around Paris and the shortage of rolling stock still inhibited railway traffic, would the railroads begin to assume their hoped-for importance as longdistance carriers. By then the pursuit would be over.",
+        "Paragraph_78": "Motor transport played a much larger role on the Continent than had been planned, and consequently theater facilities were neither well suited nor well prepared for extensive operations because of shortages of vehicles and properly trained drivers. One of the most dramatic logistical developments was the organization by the Communications Zone of the Red Ball Express, a longdistance through-highway system inaugurated late in August. Designed as an emergency expedient to support the Seine crossings by getting 82,000 tons of supplies to the Chartres--Dreux area by 1 September, the Red Ball Express became an institution that lasted until November and operated east of the Seine as well. On 25 August Red Ball convoys began to use two parallel one-way round-trip routes from which all other traffic was excluded, and before long more than a hundred truck companies were involved. On 29 August, for example, 132 truck companies--6,000 vehicles--moved more than 12,000 tons of supplies. Operating day and night and without blackout precautions, the Express delivered 135,000 tons of supplies to army service areas by mid-September.",
+        "Paragraph_79": "The cost of this achievement was high--mounting strain on personnel and equipment, continual use of vehicles without proper maintenance, rapid deterioration of equipment and roads, abuse of vehicles by overloading and speeding, a large number of accidents caused by driver fatigue. The Red Ball fostered the habit of poor road discipline, offered opportunity for malingering, sabotage, and black marketeering, and tempted combat units to hijack and otherwise divert supplies. Haste contributed to poor documentation of shipments and concomitant sparse information on the status of supply. \"Red Ball was part of a gamble, part and parcel of the tactical decision to cross the Seine",
+        "Paragraph_80": "*--690--* <a id=\"page691\"></a> * * * > and exploit to the full the existing tactical advantage.\"<sup>[52](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn52)</sup>",
+        "Paragraph_81": "Because the Communications Zone refrained from moving its depots forward in the interests of conserving transportation facilities, the armies took over much of the hauling. Their supply vehicles sometimes had to make round trips of up to three hundred miles. Bradley had instructed Patton and Hodges to leave their heavy artillery west of the Seine so that artillery cargo trucks could be used to transport supplies, and Hodges, for example, formed between ten and twenty provisional truck companies from these vehicles to help his forty-three Quartermaster truck companies.",
+        "Paragraph_82": "The Allies also transported supplies by air, though the advantages of speed and freedom of movement were often offset by low volume and tonnage capacity, uncertainty of available aircraft, inadequate ground facilities at loading and landing sites, the possibility of enemy interference, and the hazard of weather. As a result, air supply could only be regarded as an emergency measure. However, under the direction of the Combined Air Transport Operations Room (CATOR), a special AEAF staff section that acted as a regulating station for all air supply missions, small shipments to ground forces began in June, medical evacuation commenced in July, and on 19 August more extensive air shipments started. By 25 August over 4,000 tons of supplies had been delivered to forward ground units, mainly whole blood and such signal equipment as field wire and radio parts. At the end of August, competing demands of the various armies, the civil relief program for Paris, and planned airborne operations reduced air deliveries to a trickle, but an enlarged airlift was resumed on 6 September. From 19 August to mid-September, American planes carried a total of 20,000 tons of supplies, of which about 13,000 tons were delivered to the 12th Army Group.<sup>[53](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn53)</sup>",
+        "Paragraph_83": "By far the most important requirement of the pursuit was gasoline. During the week of 20 August, when most of the units of both U.S. armies were for the first time engaged in a war of movement, the daily consumption of gasoline ran well over 800,000 gallons. By 28 August the Communications Zone transportation resources were spread so thin and the lines of communication extended so far that daily deliveries could no longer be relied on. Increasing gasoline demands were due not only to the requirements of the combat forces but also to the ever-growing requirements of the carriers--Red Ball trucks alone consumed more than 300,000 gallons per day.",
+        "Paragraph_84": "Gasoline was only one of many requirements. The troops of a single division ate about thirty-five tons of field rations a day, besides expending ammunition and wearing out clothing and equipment. Fortunately, captured German items sometimes alleviated shortages. A German dump in Namur, Belgium, for example, provided beef and canned plums and cherries; a candy factory yielded flour and sugar; a warehouse full of salt was worth its weight in gold. Yet captured stocks hardly fulfilled requirements and exactly when",
+        "Paragraph_85": "*--691--* <a id=\"page692\"></a> * * * > dwindling supplies would finally bring the pursuit to a halt was a painful question that troubled all commanders.",
+        "Paragraph_86": "The port capacity problem was still with the Allies, despite optimism in early September stemming from capture of Rouen on 31 August, seizure of Antwerp on 4 September, the rapid liberation of the minor Channel ports of Dieppe and Ostend, the quick investiture of Le Havre, Boulogne, Calais, and Dunkerque, and the not so remote possibility of taking Rotterdam and Amsterdam. The capacity of most of the ports was small, even when they were captured intact, and Le Havre, taken on 12 September, was far behind the front. Most important of all, British seizure of Antwerp--the greatest port in continental Europe, one close to the fighting front--had failed to prompt the Germans to relinquish the banks of the Schelde estuary along the sixty miles between Antwerp and the sea. Until the Schelde could be cleared, Antwerp was useless. It would be more than two months before the complex port problem would be solved.<sup>[54](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn54)</sup>"
+      },
+      "Footnote_References": ["51", "52", "53", "54"],
+      "Place_Name": ["Seine River", "Chartres", "Dreux", "Paris", "Namur", "Antwerp", "Dieppe", "Ostend", "Le Havre", "Boulogne", "Calais", "Dunkerque", "Rotterdam", "Amsterdam", "Schelde estuary"],
+      "Dates": {
+        "Date_group_of_event": "3 Aug - mid Sep 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+        "Zulu_date_group_of_event": "03 Aug - mid Sep 44"
+      },
+      "TOE": {
+        "Unit": "Communications Zone",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Commander": "Lt. Gen. John C. H. Lee",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/John_C._H._Lee"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Antwerp, Belgium",
+          "Place_GPS_coordinate": "51.2213 N, 4.4052 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 3.4052,
+            "East": 5.4052,
+            "South": 50.2213,
+            "North": 52.2213
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Northern France / Belgium / Netherlands (logistical zone)",
+          "Place_GPS_coordinate": "50.5000 N, 4.0000 E",
+          "Weather_text": "No specific weather data in source; Red Ball Express and air supply described with operational hazards but no explicit weather causation beyond general hazards.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 3.0,
+            "East": 5.0,
+            "South": 49.5,
+            "North": 51.5
+          }
+        }
+      ]
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "48",
+      "Footnote_Number": "48",
+      "Footnote_Text": "First U.S. Army G-3 Jnl, 1 Sep.",
+      "Footnote_Referenced_Source": "First U.S. Army G-3 Journal, 1 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army G-3 Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "49",
+      "Footnote_Number": "49",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 35.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "50",
+      "Footnote_Number": "50",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 35.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "51",
+      "Footnote_Number": "51",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 35-36.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "52",
+      "Footnote_Number": "52",
+      "Footnote_Text": "Ruppenthal, Logistical Support, II, 6-7.",
+      "Footnote_Referenced_Source": "Ruppenthal, Logistical Support of the Armies, Volume II",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "OCMH Files; published U.S. Army in World War II series",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "53",
+      "Footnote_Number": "53",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 36.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "54",
+      "Footnote_Number": "54",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 37-38.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-30",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+  "Source_Link_Capture_Date": "2025-12-30"
+}

@@ -1,0 +1,567 @@
+{
+  "Events": [
+    {
+      "Event": "On to Paris",
+      "Sub-event": "Selection of 2d French Armored Division and Bradley's Directive (22 August)",
+      "Sub-event_summary": "General Eisenhower selected General Leclerc's 2d French Armored Division for first entry into Paris to restore French pride after four years of occupation. Bradley explained any American division could have led but French participation was symbolic. SHAEF committed to this pre-invasion. Bradley arrived at First Army headquarters afternoon 22 August with news Paris under FFI control since 20 August with armistice expiring noon 23 August. Higher headquarters decided Paris could no longer be bypassed; entry necessary to prevent bloodshed.",
+      "Sub-event_fulltext": {
+        "Paragraph_38": "\"For the honor of first entry,\" General Eisenhower later wrote, \"General Bradley selected General Leclerc's French 2d Division.\" And General Bradley explained, \"Any number of American divisions could more easily have spearheaded our march into Paris. But to help the French recapture their pride after four years of occupation, I chose a French force with the tricolor on their Shermans.\" Yet the fact was that SHAEF was already committed to this decision. Neither Eisenhower nor Bradley could do anything else except violate a promise, an intention neither contemplated. Perhaps the presence and availability of the French division made it such an obvious choice for the assignment that the prior agreement was unimportant, possibly forgotten. Both American commanders wanted to do the right thing. Even General Hodges had independently decided about a week earlier that if he received the mission to liberate Paris he would include French troops among the liberation force.",
+        "Paragraph_39": "Suddenly General Bradley was at the First Army headquarters on the afternoon of 22 August with \"momentous news that demanded instantaneous action.\" Since 20 August, he told General Hodges, Paris had been under the control of the FFI, which had seized the principal buildings of the city and made a temporary armistice with the Germans that expired at noon, 23 August. Higher headquarters had decided that Paris could no longer be bypassed. The entry of military forces was necessary at once to prevent possible bloodshed among the civilian population. What troops could Hodges dispatch without delay?"
+      },
+      "Footnote_References": [66],
+      "Place_Name": ["Paris", "Argentan"],
+      "Dates": {
+        "Date_group_of_event": "22 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "22 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "2d French Armored Division",
+        "Unit_Nationality": "FR",
+        "Command_Structure": {
+          "Unit": "V Corps",
+          "Commander": {
+            "Name": "Leonard T. Gerow",
+            "Rank": "Major General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "2d French Armored Division",
+            "Name": "Jacques-Philippe Leclerc",
+            "Rank": "General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Philippe_Leclerc_de_Hautclocque"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "On to Paris",
+      "Sub-event": "V Corps Assignment and Movement Orders (22–23 August)",
+      "Sub-event_summary": "Hodges recommended V Corps (from Argentan) with Leclerc's 2d French Armored and Barton's 4th Infantry Divisions for Paris mission, fair to Gerow as D-Day commander. Bradley accepted; V Corps alerted for east movement. Gerow located at 12th Army Group, ordered to report with staff. Late 22 August maps assembled, orders written, routes/tables determined. Gerow instructed French to respect truce; no troops across Versailles-Palaiseau line before noon 23 August. Northern column (French bulk, American cavalry, British, engineers, artillery) 14-hour-25-minute length; southern (French combat command, American cavalry, V Corps HQ, 4th Division) 22-hour-40-minute length. British contingent failed to appear.",
+      "Sub-event_fulltext": {
+        "Paragraph_40": "General Hodges said that V Corps had completed its assignment at Argentan and was ready for a new job. From Argentan the corps could move quickly to the French capital with Leclerc's 2d French Armored and Barton's 4th Infantry Divisions. It would be fair for General Gerow, the corps commander, to have the task of liberating Paris because he and Collins had been the two American D-Day commanders and Collins had had the honor of taking Cherbourg.",
+        "Paragraph_41": "Bradley accepted Hodges' recommendation, and the V Corps was alerted for immediate movement to the east. Then frantic phone calls were put in to locate General Gerow. He was found at the 12th Army Group headquarters and instructed to report to the army command post with key members of his staff. Late that afternoon, as Gerow and his principal assistants gathered in the army war room, a scene that had taken place a week earlier was repeated. Maps were hastily assembled, movement orders hurriedly written, march routes and tables determined, and careful instructions prepared for the French, \"who have a casual manner of doing almost exactly what they please, regardless of orders.\"",
+        "Paragraph_42": "General Gerow learned that General Eisenhower had decided to send troops to Paris to \"take over from the Resistance Group, reinforce them, and act in such mobile reserve as . . . may be needed.\" The Allies were to enter Paris as soon as possible after noon of 23 August. The Supreme Commander had emphasized that \"no advance must be made into Paris until the expiration of the Armistice and that Paris was to be entered only in case the degree of the fighting was such as could be overcome by light forces.\" In other words, General Eisenhower did not \"want a severe fight in Paris at this time,\" nor did he \"want any bombing or artillery fire on the city if it can possibly be avoided.\"",
+        "Paragraph_43": "A truly Allied force was to liberate the city: the 2d French Armored Division, the 4th U.S. Infantry Division, an American cavalry reconnaissance group, a 12th Army Group technical intelligence unit, and a contingent of British troops. The French division, accompanied by American cavalry and British troops, all displaying their national flags, was to enter the city while the 4th Division seized Seine River crossings south of Paris and constituted a reserve for the French. Leclerc was to have the honor of liberating Paris, but he was to do so within the framework of the Allied command and under direct American control.",
+        "Paragraph_44": "The leader of the expedition, General Gerow, had been characterized by General Eisenhower as having demonstrated \"all the qualities of vigor, determination, reliability, and skill that we are looking for.\" Further, he had had the experience needed for a mission fraught with political implications. Serving with the War Plans Division of the War Department from 1936 to 1939, he was chief of that division during the critical year of 1941. He was thus no stranger to situations involving the interrelationship of military strategy and national policy. Yet he had not been informed of the political considerations involved, and his instructions to liberate Paris were of a military nature.",
+        "Paragraph_45": "Acting in advance on General Hodges' orders to be issued on 23 August to \"force your way into the city this afternoon,\" Gerow telephoned Leclerc on the evening of 22 August and told him to start marching immediately. The 38th Cavalry Squadron was to accompany Leclerc to \"display the [American] flag upon entering Paris.\" According to the formal corps order issued later, the only information available was that the Germans were withdrawing from Paris in accordance with the terms of the armistice. The rumor that the Germans had mined the sewers and subways was important only in spurring the Allies to occupy the city in order to prevent damage. No serious opposition was expected. If the troops did, however, encounter strong resistance, they were to assume the defensive.",
+        "Paragraph_46": "Despite the anticipated absence of opposition, Gerow commanded a large force that was to move on two routes-Sées, Mortagne, Château-en-Thymerais, Maintenon, Rambouillet, Versailles; and Alençon, Nogent-le-Rotrou, Chartres, Limours, Palaiseau. The northern column--the bulk of the French division, the attached American troops, a U.S. engineer group (controlling three combat battalions, a treadway bridge company, a light equipment platoon, and a water supply platoon), the V Corps Artillery (with four firing battalions and an observation battalion), in that order of march--had an estimated time length of fourteen hours and twenty-five minutes. The southern column--a French combat command, the bulk of the American cavalry, the V Corps headquarters, the 4th Division (reinforced by two tank destroyer battalions, an antiaircraft battalion, two tank battalions), in that order--had a time length of twenty-two hours and forty minutes. For some unexplained reason the British force, despite General Eisenhower's explicit desire for British participation, failed to appear. To make certain that the French troops, which led both columns, respected the truce in the capital, Gerow ordered that no troops were to cross the Versailles-Palaiseau line before noon, 23 August."
+      },
+      "Footnote_References": [67, 68, 69, 70, 71, 72, 73, 74],
+      "Place_Name": ["Paris", "Argentan", "Sées", "Mortagne", "Château-en-Thymerais", "Maintenon", "Rambouillet", "Versailles", "Alençon", "Nogent-le-Rotrou", "Chartres", "Limours", "Palaiseau"],
+      "Dates": {
+        "Date_group_of_event": "22 Aug 1944 - 23 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "22 Aug 1944 - 23 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "V Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": {
+            "Name": "Courtney H. Hodges",
+            "Rank": "Lieutenant General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "V Corps",
+            "Name": "Leonard T. Gerow",
+            "Rank": "Major General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Leonard_T._Gerow"
+          },
+          {
+            "Unit": "2d French Armored Division",
+            "Name": "Jacques-Philippe Leclerc",
+            "Rank": "General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Philippe_Leclerc_de_Hautclocque"
+          },
+          {
+            "Unit": "4th Infantry Division",
+            "Name": "Raymond O. Barton",
+            "Rank": "Major General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Raymond_O._Barton"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        },
+        {
+          "Place_Name": "Argentan, France",
+          "Place_GPS_coordinate": "48.7447 N, 0.0239 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "On to Paris",
+      "Sub-event": "V Corps March and Initial Opposition (23 August)",
+      "Sub-event_summary": "Division march delayed; began morning 23 August. By evening northern column (French bulk) several miles beyond Rambouillet toward Versailles; southern column reached Limours. French met opposition at both points.",
+      "Sub-event_fulltext": {
+        "Paragraph_47": "Although Gerow had ordered Leclerc to start to Paris immediately on the evening of 22 August, the division did not commence its march until the morning of 23 August. By evening of 23 August the head of the northern column was several miles beyond Rambouillet on the road to Versailles; the southern column had reached Limours. At both points, the French met opposition."
+      },
+      "Footnote_References": [],
+      "Place_Name": ["Rambouillet", "Versailles", "Limours"],
+      "Dates": {
+        "Date_group_of_event": "23 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "23 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "2d French Armored Division",
+        "Unit_Nationality": "FR",
+        "Command_Structure": {
+          "Unit": "V Corps",
+          "Commander": {
+            "Name": "Leonard T. Gerow",
+            "Rank": "Major General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "2d French Armored Division",
+            "Name": "Jacques-Philippe Leclerc",
+            "Rank": "General"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Rambouillet, France",
+          "Place_GPS_coordinate": "48.6483 N, 1.8314 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Rambouillet, France",
+          "Place_GPS_coordinate": "48.6483 N, 1.8314 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -0.1686, "East": 3.8314, "South": 47.6483, "North": 49.6483}
+        }
+      ]
+    },
+    {
+      "Event": "On to Paris",
+      "Sub-event": "Choltitz Position and Reconsideration (20–22 August)",
+      "Sub-event_summary": "Choltitz intended duty performance; handling insurrection evidence. Rejected Aulock withdrawal request 22 August. Informed of Hitler's field of ruins order and 348th Division diversion north. Became cynical. Phoned Model protesting order out of tune with reality: city undefendable, in revolt, inadequate forces, short supplies. Phoned Speidel sarcastically thanking for order, claiming preparations for destruction (Notre Dame, Invalides, Palais Bourbon, Arc de Triomphe, Opéra, Madeleine, Tour Eiffel) but impossible for 70+ bridges.",
+      "Sub-event_fulltext": {
+        "Paragraph_48": "Within Paris, before receiving Hitler's order to leave the city to the Allies only as a \"field of ruins,\" Choltitz had had no intention of doing anything but his duty. His handling of the insurrection was sufficient evidence of that. When Aulock, who commanded the perimeter defenses west of the city, requested permission to withdraw on 22 August because he felt he could not stop an Allied advance, Choltitz said no. But after receiving Hitler's order and realizing that he was expected to die among the ruins, Choltitz began to reconsider. About the same time he learned that the 348th Division, which was moving from northern France to strengthen the Paris defenses, was instead to be committed north of the capital along the lower Seine. At that moment he became rather cynical. \"Ever since our enemies have refused to listen to and obey our Fuehrer,\" he supposedly remarked at dinner one evening, \"the whole war has gone badly.\"",
+        "Paragraph_49": "One of Choltitz' first reactions to Hitler's \"field of ruins\" order was to phone Model and protest that the German high command was out of tune with reality. The city could not be defended. Paris was in revolt. The French held important administrative buildings. German forces were inadequate to the task of preserving order. Coal was short. The rations available would last the troops only two more days. But Choltitz was unable to secure a satisfactory alternative from Model, so he phoned Speidel, Model's chief of staff at Army Group B. After sarcastically thanking Speidel for the lovely order from Hitler, Choltitz said that he had complied by placing three tons of explosive in the cathedral of Notre Dame, two tons in the Invalides, and one in the Palais Bourbon (the Chamber of Deputies), that he was ready to level the Arc de Triomphe to clear a field of fire, that he was prepared to destroy the Opéra and the Madeleine, and that he was planning to dynamite the Tour Eiffel and use it as a wire entanglement to block the Seine. Incidentally, he advised Speidel, he found it impossible to destroy the seventy-odd bridges."
+      },
+      "Footnote_References": [75, 76, 77, 78],
+      "Place_Name": ["Paris", "Notre Dame", "Invalides", "Palais Bourbon", "Arc de Triomphe", "Opéra", "Madeleine", "Tour Eiffel"],
+      "Dates": {
+        "Date_group_of_event": "20 Aug 1944 - 22 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "20 Aug 1944 - 22 Aug 1944 (CET)"
+      },
+      "TOE": {
+        "Unit": "Greater Paris Command",
+        "Unit_Nationality": "DE",
+        "Subordinates": [
+          {
+            "Unit": "Greater Paris Command",
+            "Name": "Dietrich von Choltitz",
+            "Rank": "Generalleutnant"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "On to Paris",
+      "Sub-event": "Choltitz Reconsideration and Neutral Pressure (Mid-August)",
+      "Sub-event_summary": "Choltitz reconsidered after Hitler's order and 348th Division diversion. No intention to destroy Paris (generosity or insufficient means). Neutral Swedish/Swiss consulates pressured evacuation to avoid battle. Refused departure. Defended Paris outside city limits, ordered Seine bridges demolition, rejected Allied ultimatums, refused withdrawal offer.",
+      "Sub-event_fulltext": {
+        "Paragraph_50": "Speidel, who had received Hitler's order from OKW and had realized that the destruction of the bridges meant destroying monuments and residential quarters, later claimed that he had not transmitted the order forward and that Choltitz had received it directly from OB WEST. Yet, since Gestapo agents were monitoring Speidel's telephone to prove his complicity in the July 20th plot, Speidel later recalled that he urged Choltitz--as diplomatically and as obliquely as he knew how--not to destroy the French capital.",
+        "Paragraph_51": "Choltitz had no intention of destroying Paris. Whether he was motivated by a generous desire to spare human life and a great cultural center, or simply by his lack of technical means to do so--both of which he later claimed--the fact was that representatives of the neutral powers in Paris were also exerting pressure on him to evacuate Paris in order to avoid a battle there. Yet Choltitz refused to depart. Whether he was playing a double game or not, his willingness to avoid fighting inside Paris did not change his determination to defend Paris outside the city limits--a defense that eventually included orders to demolish the Seine River bridges, three rejections of Allied ultimatums to surrender, and refusal of an Allied offer to provide an opportunity for him to withdraw."
+      },
+      "Footnote_References": [79, 80, 81],
+      "Place_Name": ["Paris", "Seine River"],
+      "Dates": {
+        "Date_group_of_event": "mid-Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "mid-Aug 1944 (CET)"
+      },
+      "TOE": {
+        "Unit": "Greater Paris Command",
+        "Unit_Nationality": "DE",
+        "Subordinates": [
+          {
+            "Unit": "Greater Paris Command",
+            "Name": "Dietrich von Choltitz",
+            "Rank": "Generalleutnant"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "On to Paris",
+      "Sub-event": "Perimeter Defenses West and Southwest of Paris (August 1944)",
+      "Sub-event_summary": "Field fortifications formed solid perimeter west/southwest Paris: artillery, tanks, antiaircraft guns at Trappes, Guyancourt, Châteaufort, Saclay, Massy, Wissous, Villeneuve-le-Roi. Roads to Versailles blocked; outposts at Marcoussis, Montlhéry; strong combat outposts at Palaiseau, Longjumeau covering Arpajon highway approaches.",
+      "Sub-event_fulltext": {
+        "Paragraph_52": "The field fortifications on the western and southern approaches to the city formed a solid perimeter that was more effective than Aulock judged. Obviously, 20,000 troops dispersed over a large area could not hold back the Allies for long, but they could make a strong defense. Artillery, tanks, and antiaircraft guns sited for antitank fire supported strongpoints at Trappes, Guyancourt, Châteaufort, Saclay, Massy, Wissous, and Villeneuve-le-Roi. The roads to Versailles were well blocked, and forward outposts at Marcoussis and Montlhéry as well as strong combat outposts at Palaiseau and Longjumeau covered the approaches to the positions guarding the highway north from Arpajon."
+      },
+      "Footnote_References": [82],
+      "Place_Name": ["Trappes", "Guyancourt", "Châteaufort", "Saclay", "Massy", "Wissous", "Villeneuve-le-Roi", "Versailles", "Marcoussis", "Montlhéry", "Palaiseau", "Longjumeau", "Arpajon"],
+      "Dates": {
+        "Date_group_of_event": "Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "Aug 1944 (CET)"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "On to Paris",
+      "Sub-event": "Leclerc Arrival and Initial Assessment at Rambouillet (23 August)",
+      "Sub-event_summary": "Leclerc arrived Rambouillet with small detachment around noon 23 August ahead of division. Learned from reconnaissance and civilians of solid defense line western/southwestern Paris suburbs reinforced by tanks, antitank weapons, mines. Major effort by whole division necessary to open way into city. Postponed attack until morning 24 August waiting main body arrival evening 23 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_53": "On the Allied side, there was practically no information on the actual situation inside Paris and on its approaches. When General Leclerc arrived in Rambouillet with a small detachment around noon 23 August, well ahead of his division, he learned for the first time from his reconnaissance elements and from French civilians that there appeared to be a solid defense line along the western and southwestern suburbs of Paris, a line reinforced by tanks, antitank weapons, and mines. This meant that a major effort by the whole division would be necessary to open the way into the city proper.",
+        "Paragraph_54": "Eager though he was to come to the rescue of the FFI in Paris, which he thought might have by this time liberated the interior of the city, General Leclerc had to postpone his attack. He had to wait until the following morning because the main body of his division could not reach the Rambouillet area before evening of the 23d."
+      },
+      "Footnote_References": [83],
+      "Place_Name": ["Rambouillet", "Paris"],
+      "Dates": {
+        "Date_group_of_event": "23 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "23 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "2d French Armored Division",
+        "Unit_Nationality": "FR",
+        "Subordinates": [
+          {
+            "Unit": "2d French Armored Division",
+            "Name": "Jacques-Philippe Leclerc",
+            "Rank": "General"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Rambouillet, France",
+          "Place_GPS_coordinate": "48.6483 N, 1.8314 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Rambouillet, France",
+          "Place_GPS_coordinate": "48.6483 N, 1.8314 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -0.1686, "East": 3.8314, "South": 47.6483, "North": 49.6483}
+        }
+      ]
+    }
+  ],
+  "Footnotes": {
+    "Footnote": [
+      {
+        "Footnote": "66",
+        "Footnote_Number": 66,
+        "Footnote_Text": "Eisenhower, Crusade in Europe, p. 279; Bradley, A Soldier's Story, p. 377.",
+        "Footnote_Referenced_Source": "Dwight D. Eisenhower, Crusade in Europe (Garden City, N.Y.: Doubleday & Company, Inc., 1948), p. 279; Omar N. Bradley, A Soldier's Story (New York: Henry Holt and Company, 1951), p. 377",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "67",
+        "Footnote_Number": 67,
+        "Footnote_Text": "V Corps AAR, Aug.",
+        "Footnote_Referenced_Source": "V Corps After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "68",
+        "Footnote_Number": 68,
+        "Footnote_Text": "Msg, SHAEF to First Army, 22 Aug 44.",
+        "Footnote_Referenced_Source": "SHAEF Message to First Army, 22 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "69",
+        "Footnote_Number": 69,
+        "Footnote_Text": "Msg, V Corps to 2d Fr Armd Div, 22 Aug 44.",
+        "Footnote_Referenced_Source": "Message, V Corps to 2d French Armored Division, 22 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "70",
+        "Footnote_Number": 70,
+        "Footnote_Text": "Eisenhower Ltr to Marshall, 22 Aug 44.",
+        "Footnote_Referenced_Source": "General Eisenhower Letter to General Marshall, 22 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "71",
+        "Footnote_Number": 71,
+        "Footnote_Text": "Msg, V Corps to 2d Fr Armd Div, 22 Aug 44.",
+        "Footnote_Referenced_Source": "Message, V Corps to 2d French Armored Division, 22 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "72",
+        "Footnote_Number": 72,
+        "Footnote_Text": "Msg, V Corps to 2d Fr Armd Div, 22 Aug 44.",
+        "Footnote_Referenced_Source": "Message, V Corps to 2d French Armored Division, 22 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "73",
+        "Footnote_Number": 73,
+        "Footnote_Text": "V Corps AAR, Aug.",
+        "Footnote_Referenced_Source": "V Corps After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "74",
+        "Footnote_Number": 74,
+        "Footnote_Text": "V Corps AAR, Aug.",
+        "Footnote_Referenced_Source": "V Corps After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "75",
+        "Footnote_Number": 75,
+        "Footnote_Text": "OB WEST, KTB, 22 Aug.",
+        "Footnote_Referenced_Source": "OB WEST War Diary, 22 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "German records series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "76",
+        "Footnote_Number": 76,
+        "Footnote_Text": "Choltitz, Brennender Paris, p. 30.",
+        "Footnote_Referenced_Source": "Dietrich von Choltitz, Brennender Paris (Vowinckel Verlag, 1951), p. 30",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "77",
+        "Footnote_Number": 77,
+        "Footnote_Text": "OB WEST, KTB, 22 Aug.",
+        "Footnote_Referenced_Source": "OB WEST War Diary, 22 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "German records series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "78",
+        "Footnote_Number": 78,
+        "Footnote_Text": "Choltitz, Brennender Paris, p. 31.",
+        "Footnote_Referenced_Source": "Dietrich von Choltitz, Brennender Paris (Vowinckel Verlag, 1951), p. 31",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "79",
+        "Footnote_Number": 79,
+        "Footnote_Text": "Speidel, Invasion 1944, pp. 124-25.",
+        "Footnote_Referenced_Source": "Hans Speidel, Invasion 1944 (Chicago: Henry Regnery Company, 1950), pp. 124-25",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "80",
+        "Footnote_Number": 80,
+        "Footnote_Text": "Choltitz, Brennender Paris, pp. 32-33.",
+        "Footnote_Referenced_Source": "Dietrich von Choltitz, Brennender Paris (Vowinckel Verlag, 1951), pp. 32-33",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "81",
+        "Footnote_Number": 81,
+        "Footnote_Text": "Choltitz, Brennender Paris, pp. 34-35.",
+        "Footnote_Referenced_Source": "Dietrich von Choltitz, Brennender Paris (Vowinckel Verlag, 1951), pp. 34-35",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "82",
+        "Footnote_Number": 82,
+        "Footnote_Text": "MS # B-034 (Schramm).",
+        "Footnote_Referenced_Source": "German Manuscript B-034 (Schramm)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "83",
+        "Footnote_Number": 83,
+        "Footnote_Text": "2d Fr Armd Div AAR, Aug.",
+        "Footnote_Referenced_Source": "2d French Armored Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      }
+    ]
+  },
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn29.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-29",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+  "Source_Link_Capture_Date": "2025-12-29"
+}

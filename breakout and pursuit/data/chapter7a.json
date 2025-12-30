@@ -1,0 +1,1211 @@
+{
+  "Events": [
+    {
+      "Event": "The Battle for Caen",
+      "Sub-event": "Strategic Context and Correspondence",
+      "Sub-event_summary": "General Eisenhower expressed concerns about the shallow British sector and potential stalemate, urging energy to expand the beachhead. General Montgomery replied assuring no stalemate and outlined his plan for ports, maneuver space, and destroying German forces.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "In the first week of July the Allies had command of the air, their ground build-up was proceeding favorably, and enemy reinforcements moving toward the front were being delayed. General Eisenhower nevertheless was highly conscious of the unfulfilled need for greater maneuver room, additional ports and airfield sites, and open country \"where our present superiority can be used.\" Troubled by the \"slow and laborious\" advance of the First Army in the Cotentin--due, he realized, to terrain and weather conditions as much as to enemy resistance--he was worried more by the shallowness of the British sector, where one of the invasion beaches, a reception point for supplies and personnel coming from England, was still under enemy fire. He questioned whether General Montgomery, in his professed zeal to attract enemy forces to his front and away from the American sector, was making sufficient effort to expand the British part of the beachhead. \"We must use all possible energy in a determined effort,\" General Eisenhower wrote Montgomery, \"to prevent a stalemate\" and to insure against \"fighting a major defensive battle with the slight depth we now have\" on the Continent.",
+        "Paragraph_2": "\"I am, myself, quite happy about the situation,\" General Montgomery replied. He had maintained Allied initiative, prevented reverses, and set into motion \"a very definite plan.\" Three needs determined Montgomery's operations--the Breton ports, space for maneuver, and destruction of German forces. \"Of one thing you can be quite sure,\" General Montgomery promised; \"there will be no stalemate.\""
+      },
+      "Footnote_References": [
+        "2",
+        "3"
+      ],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "First week of July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "British Second Army",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Build-up proceeding favorably",
+        "Equipments": {
+          "Supply": "Reception point for supplies and personnel under enemy fire",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.battlemaps.eu/battles/caen.html",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Weather_text": "Weather conditions contributed to slow advance, but specific details for early July not noted.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.74,
+          "East": 1.00,
+          "South": 48.28,
+          "North": 50.08
+        }
+      }
+    },
+    {
+      "Event": "The Battle for Caen",
+      "Sub-event": "Planning for Heavy Bomber Support",
+      "Sub-event_summary": "Discussion on using heavy bombers for close support due to previous failures to mass artillery. Eisenhower approved diversion from strategic role. Bomb line set at 6,000 yards ahead, targeting northern outskirts of Caen to destroy positions, cut supplies, demoralize enemy, and boost morale.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "While the Americans were struggling in the Cotentin, the British had mounted another effort against Caen. Because in earlier attempts to take the city the British had been unable to mass sufficient artillery to destroy the strong defenses, the planners discussed the use of heavy bombers to deliver preparatory fire for the ground action. In February and March 1944 heavy bombers had launched attacks at Cassino in Italy to assist ground troops, but without notable success, and during June heavy bombers had rendered occasional close support in France by attacking targets that the chief of the RAF Bomber Command sarcastically termed of \"immediate and fleeting importance.\"",
+        "Paragraph_4": "But there had been no large-scale use of heavy bombers in direct support of the ground troops. Use of bombers in a direct support role hinged upon the answer to two major questions: Was it justifiable to divert heavy bombers from their main strategic role? Could the planes bomb close enough to the forward line to facilitate the ground advance without unduly exposing the troops to the hazards of accidental bomb spillage and inaccurate aim? General Eisenhower resolved the first question. He favored using strategic air for tactical ends whenever those ends were important and profitable. Caen, he believed, was important and profitable.",
+        "Paragraph_5": "Ground and air planning staffs worked out a solution to the second question. A bomb line 6,000 yards (about three and a half miles) ahead of the leading units, they decided, would minimize the danger to friendly ground troops. For the July attack on Caen, heavy bombers were to saturate a rectangular target, 4,000 by 1,500 yards, on the northern outskirts of the city. The purpose was to destroy both infantry and artillery positions, cut off forward troops from supply, demoralize enemy soldiers in and out of the target zone, and, finally, boost British ground force morale. Field artillery was to cover the gap between the British line and the air target with normal preparation fires."
+      },
+      "Footnote_References": [
+        "4",
+        "5",
+        "6"
+      ],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "Early July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "RAF Bomber Command",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Allied Expeditionary Air Force",
+          "Commander": "Arthur Harris",
+          "Name": "Arthur Harris",
+          "Rank": "Air Chief Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Arthur_Harris",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages noted",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "GB",
+              "Name": "Heavy Bomber",
+              "Identifier": "Lancaster/Halifax",
+              "Quantity": "460",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Avro_Lancaster",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://assets.publishing.service.gov.uk/media/5a78d064ed915d04220658c8/ww2_caen.pdf",
+        "ExternalMapLinkLicence": "UK Government Open License",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Weather_text": "Weather conditions not specified for planning phase.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.74,
+          "East": 1.00,
+          "South": 48.28,
+          "North": 50.08
+        }
+      }
+    },
+    {
+      "Event": "The Battle for Caen",
+      "Sub-event": "Preliminary Canadian Attack",
+      "Sub-event_summary": "Canadian troops initiated the offensive with a preliminary attack to secure the western exits of Caen.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "Canadian troops initiated the offensive on 4 July with a preliminary attack designed to secure the western exits of Caen."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "4 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "040000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "3rd Canadian Infantry Division",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "I British Corps",
+          "Commander": "John Crocker",
+          "Name": "John Crocker",
+          "Rank": "Lieutenant-General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/John_Crocker",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "2nd Canadian Armoured Brigade",
+            "Name": "Robert Wyman",
+            "Rank": "Brigadier",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/2nd_Canadian_Armoured_Brigade",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "Full strength assumed",
+        "Equipments": {
+          "Supply": "No shortages noted",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.dday-overlord.com/en/battle-of-normandy/allied-operations/charnwood",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Weather_text": "No specific weather noted for 4 July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.74,
+          "East": 1.00,
+          "South": 48.28,
+          "North": 50.08
+        }
+      }
+    },
+    {
+      "Event": "The Battle for Caen",
+      "Sub-event": "Air Bombardment",
+      "Sub-event_summary": "460 planes of the RAF Bomber Command dropped 2,300 tons of high explosive bombs in forty minutes on the northern outskirts of Caen.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "Three days later, at 2150 on 7 July, 460 planes of the RAF Bomber Command dropped 2,300 tons of high explosive bombs in forty minutes."
+      },
+      "Footnote_References": [
+        "6"
+      ],
+      "Place_Name": "Northern Outskirts of Caen",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944, 2150 BDST",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "071950ZJUL44"
+      },
+      "TOE": {
+        "Unit": "RAF Bomber Command",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Allied Expeditionary Air Force",
+          "Commander": "Arthur Harris",
+          "Name": "Arthur Harris",
+          "Rank": "Air Chief Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Arthur_Harris",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "2,300 tons high explosive bombs",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "GB",
+              "Name": "Lancaster Bomber",
+              "Identifier": "Avro Lancaster",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Avro_Lancaster",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "GB",
+              "Name": "Halifax Bomber",
+              "Identifier": "Handley Page Halifax",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Handley_Page_Halifax",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 300,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 100
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://commons.wikimedia.org/wiki/File:Halifax_over_Caen_7_July_1944.jpg",
+          "Description": "Handley Page Halifax over northern Caen post-bombing",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Northern Outskirts of Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://rafoverlord.blogspot.com/2019/07/operation-charnwood-bombing-of-caen-7.html",
+        "ExternalMapLinkLicence": "Blog License",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Weather_text": "Fine weather on the evening of 7 July 1944, allowing the bombardment to proceed.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.74,
+          "East": 1.00,
+          "South": 48.28,
+          "North": 50.08
+        }
+      }
+    },
+    {
+      "Event": "The Battle for Caen",
+      "Sub-event": "Ground Attack",
+      "Sub-event_summary": "Three British and Canadian divisions attacked toward Caen with armored support. Found Germans stunned, but resistance did not collapse, fighting was bitter with heavy casualties. Debris obstructed advance.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "Six hours later, just before dawn on 8 July, three British and Canadian divisions attacked directly toward the objective with three armored brigades in immediate support and a fourth in reserve. Though the British found many Germans stunned, some units cut off from ammunition and gasoline supplies, and one regiment virtually decimated, resistance did not collapse, the fighting was bitter, casualties heavy. Widespread debris and tremendous craters further obstructed a rapid ground advance.",
+        "Paragraph_7": "The full force of the air bombardment had struck the 16th Luftwaffe Field Division, recently arrived in Normandy from the Pas-de-Calais to replace an armored division in the Panzer Group West line. With one regiment of the 16th destroyed and quickly overrun, Eberbach committed without result the powerful 21st Panzer Division, which had just been moved out of the line and into reserve. The attack of the 21st \"did not have much point,\" according to Rommel, \"because of the strong enemy artillery fire.\" The air bombardment had also fallen on the excellent 12th SS Panzer Division, still not relieved from front-line defensive duty as had been hoped. Though some strongpoints in this unit's main line of resistance held until burned out by flame-throwing British tanks, the division eventually was forced to give way."
+      },
+      "Footnote_References": [
+        "6",
+        "7"
+      ],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "8 July 1944, dawn",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "APPROX 080230ZJUL44"
+      },
+      "TOE": {
+        "Unit": "I British Corps",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "British Second Army",
+          "Commander": "John Crocker",
+          "Name": "John Crocker",
+          "Rank": "Lieutenant-General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/John_Crocker",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "3rd British Infantry Division",
+            "Name": "Thomas Rennie",
+            "Rank": "Major-General",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/3rd_Division_(United_Kingdom)",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "59th (Staffordshire) Infantry Division",
+            "Name": "Lewis Lyne",
+            "Rank": "Major-General",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/59th_(Staffordshire)_Infantry_Division",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "3rd Canadian Infantry Division",
+            "Name": "Rod Keller",
+            "Rank": "Major-General",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/3rd_Canadian_Division",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "Full strength assumed",
+        "Equipments": {
+          "Supply": "Some units cut off from ammunition and gasoline",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "GB",
+              "Name": "Flame-throwing Tank",
+              "Identifier": "Churchill Crocodile",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Churchill_Crocodile",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [
+            {
+              "Origination_Country": "GB",
+              "Name": "Tank",
+              "Identifier": "Sherman",
+              "Quantity": 80,
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 3817,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://commons.wikimedia.org/wiki/File:British_troops_in_Caen_9_July_1944_B6757.jpg",
+          "Description": "British troops move through the ruins of Caen, 9 July 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.operationcharnwood.co.uk/operation-charnwood",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Weather_text": "No specific weather noted for 8 July 1944, but operations proceeded without mention of hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.74,
+          "East": 1.00,
+          "South": 48.28,
+          "North": 50.08
+        }
+      }
+    },
+    {
+      "Event": "The Battle for Caen",
+      "Sub-event": "German Response and Decision to Evacuate",
+      "Sub-event_summary": "Rommel and Eberbach decided to prepare to evacuate Caen, directing heavy weapons across the Orne River. The 1st SS Panzer Division was moved to positions southeast of Caen, but Kluge refused commitment, accepting the loss of Caen.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "On the evening of 8 July, Rommel and Eberbach decided to prepare to evacuate Caen. They began by directing that all heavy weapons be moved across the Orne River, which flows through the city."
+      },
+      "Footnote_References": [
+        "8"
+      ],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "8 July 1944, evening",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "APPROX 081800ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Group West",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Heinrich Eberbach",
+          "Name": "Heinrich Eberbach",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Heinrich_Eberbach",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "21st Panzer Division",
+            "Name": "Edgar Feuchtinger",
+            "Rank": "General",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/21st_Panzer_Division_(Wehrmacht)",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "12th SS Panzer Division",
+            "Name": "Kurt Meyer",
+            "Rank": "SS-Brigadeführer",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Kurt_Meyer",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "1st SS Panzer Division",
+            "Name": "Theodore Wisch",
+            "Rank": "SS-Brigadeführer",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/1st_SS_Panzer_Division_Leibstandarte_SS_Adolf_Hitler",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "High losses",
+        "Equipments": {
+          "Supply": "Heavy weapons moved across Orne",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Heavy Weapons",
+              "Identifier": "Artillery and Tanks",
+              "Quantity": "Unknown",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.battlemaps.eu/battles/caen.html",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Weather_text": "No specific weather noted for evening of 8 July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.74,
+          "East": 1.00,
+          "South": 48.28,
+          "North": 50.08
+        }
+      }
+    },
+    {
+      "Event": "The Battle for Caen",
+      "Sub-event": "German Losses",
+      "Sub-event_summary": "The Luftwaffe field division lost 75 percent of its infantrymen and all battalion commanders, attached to 21st Panzer. The 12th SS lost 20 medium tanks, several 88-mm pieces, all antitank guns, and high percentage of troops. Total losses equivalent of four battalions.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "The Luftwaffe field division lost 75 percent of its infantrymen and all of its battalion commanders in those units in contact with the British. No longer able to fight as an independent unit, the division was attached to the 21st Panzer Division. The 12th SS Panzer Division lost twenty medium tanks, several 88-mm. pieces, all its antitank guns, and a high percentage of its troops. All together, Rommel estimated losses as the equivalent of four battalions of men. Eberbach moved the 1st SS Panzer Division to positions southeast of Caen to forestall a British breakthrough, but Kluge, by refusing to permit its commitment, accepted the eventual loss of Caen."
+      },
+      "Footnote_References": [
+        "1",
+        "8"
+      ],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "8-9 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "080000ZJUL44 - 090000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "16th Luftwaffe Field Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Panzer Group West",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": "Unknown",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/16th_Luftwaffe_Field_Division",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "75 percent infantrymen lost, all battalion commanders lost",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Medium Tank",
+              "Identifier": "Panzer IV",
+              "Quantity": 20,
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+              "Web_Image_Reference": "https://commons.wikimedia.org/wiki/File:Panzer_IV_in_Normandy.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "88-mm Gun",
+              "Identifier": "88 mm Flak",
+              "Quantity": "Several",
+              "Web_Reference": "https://en.wikipedia.org/wiki/8.8_cm_Flak_18/36/37/41",
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Antitank Gun",
+              "Identifier": "PaK",
+              "Quantity": "All",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 2000,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.battlemaps.eu/battles/caen.html",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Weather_text": "No specific weather noted for 8-9 July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.74,
+          "East": 1.00,
+          "South": 48.28,
+          "North": 50.08
+        }
+      }
+    },
+    {
+      "Event": "The Battle for Caen",
+      "Sub-event": "Entry into Caen",
+      "Sub-event_summary": "British and Canadian troops entered Caen from the flanks and reached the Orne River. Bridges were destroyed or blocked by rubble, and troops halted there.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "On the morning of 9 July British and Canadian troops entered Caen from the flanks and reached the Orne River. The bridges across the river had been destroyed or were blocked by rubble, and there the troops halted."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "9 July 1944, morning",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "APPROX 090600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "I British Corps",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "British Second Army",
+          "Commander": "John Crocker",
+          "Name": "John Crocker",
+          "Rank": "Lieutenant-General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/John_Crocker",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://commons.wikimedia.org/wiki/File:British_troops_in_Caen_9_July_1944_B6757.jpg",
+          "Description": "British troops in the rubble of Caen on 9 July 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.battlemaps.eu/battles/caen.html",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Weather_text": "Possibly hampered by poor weather on 9 July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.74,
+          "East": 1.00,
+          "South": 48.28,
+          "North": 50.08
+        }
+      }
+    },
+    {
+      "Event": "The Battle for Caen",
+      "Sub-event": "Assessment and Aftermath",
+      "Sub-event_summary": "Montgomery did not advance much toward Breton ports or gain maneuver space, nor capture all of Caen, but inflicted heavy losses on Germans. With Panzer Lehr moving to Seventh Army, Panzer Group West was in difficult straits.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "The Allied ground commander, General Montgomery, had not moved much closer toward the Breton ports, he had not gained much maneuver space, nor had he captured all of Caen. But he had inflicted heavy losses on the Germans. With Panzer Lehr moving to the Seventh Army sector to counter the breakthrough threatened by American troops between the Taute and the Vire, Panzer Group West, after meeting the British attack, was in difficult straits."
+      },
+      "Footnote_References": [
+        "9"
+      ],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "After 9 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "END JUL44"
+      },
+      "TOE": {
+        "Unit": "British Second Army",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "Various",
+              "Quantity": 32,
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": "Equivalent of four battalions",
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.battlemaps.eu/battles/caen.html",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1814 N, 0.3716 W",
+        "Weather_text": "No specific weather noted for aftermath.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.74,
+          "East": 1.00,
+          "South": 48.28,
+          "North": 50.08
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "Hitler Letter",
+      "Footnote_Number": "1a",
+      "Footnote_Text": "Hitler Ltr, 8 Jul quoted in OB WEST Ltr, 8 Jul AGp Ia Fuehrer Befehle",
+      "Footnote_Referenced_Source": "OB WEST Ltr",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Hitler Ltr, 8 Jul"
+    },
+    {
+      "Footnote": "ONI Fuehrer Conf",
+      "Footnote_Number": "1b",
+      "Footnote_Text": "ONI Fuehrer Conf, 9 JUI",
+      "Footnote_Referenced_Source": "ONI Fuehrer Conf",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "ONI Fuehrer Conf, 9 JUI"
+    },
+    {
+      "Footnote": "MS # P-069 (Kreipe)",
+      "Footnote_Number": "1c",
+      "Footnote_Text": "MS # P-069 (Kreipe)",
+      "Footnote_Referenced_Source": "MS # P-069",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # P-069 (Kreipe)"
+    },
+    {
+      "Footnote": "OB WEST KTB",
+      "Footnote_Number": "1d",
+      "Footnote_Text": "OB WEST KTB, 10 Jul",
+      "Footnote_Referenced_Source": "OB WEST KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "OB WEST KTB, 10 Jul"
+    },
+    {
+      "Footnote": "Eisenhower to Montgomery",
+      "Footnote_Number": "2",
+      "Footnote_Text": "Eisenhower to Montgomery, 7 JUI SGS SHAEF File 381, O VERLORD , I (a).",
+      "Footnote_Referenced_Source": "SGS SHAEF File 381",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Eisenhower to Montgomery, 7 Jul"
+    },
+    {
+      "Footnote": "Montgomery to Eisenhower",
+      "Footnote_Number": "3",
+      "Footnote_Text": "Montgomery to Eisenhower, 8 Jul, SGS SHAEF File 381, O VERLORD I (a).",
+      "Footnote_Referenced_Source": "SGS SHAEF File 381",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Montgomery to Eisenhower, 8 Jul"
+    },
+    {
+      "Footnote": "Bradley Soldier's Story",
+      "Footnote_Number": "4a",
+      "Footnote_Text": "Bradley, Soldier's Story , p. 339",
+      "Footnote_Referenced_Source": "Bradley, Soldier's Story",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Bradley, Soldier's Story , p. 339"
+    },
+    {
+      "Footnote": "Harris Bomber Offensive",
+      "Footnote_Number": "4b",
+      "Footnote_Text": "Marshal of the RAF, Sir Arthur Harris, Bomber Offensive (London: Collins, 1947), p. 210.",
+      "Footnote_Referenced_Source": "Harris, Bomber Offensive",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Harris, Bomber Offensive, p. 210"
+    },
+    {
+      "Footnote": "Butcher Diary",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Capt Butcher (USNR), Diary, 29 Jun 44, Pogue Files.",
+      "Footnote_Referenced_Source": "Butcher Diary",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Butcher Diary, 29 Jun 44"
+    },
+    {
+      "Footnote": "Montgomery Normandy to the Baltic",
+      "Footnote_Number": "6a",
+      "Footnote_Text": "Montgomery, Normandy to the Baltic , pp. 113ff",
+      "Footnote_Referenced_Source": "Montgomery, Normandy to the Baltic",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Montgomery, Normandy to the Baltic , pp. 113ff"
+    },
+    {
+      "Footnote": "Stacey The Canadian Army",
+      "Footnote_Number": "6b",
+      "Footnote_Text": "Stacey, The Canadian Army , pp. 187ff",
+      "Footnote_Referenced_Source": "Stacey, The Canadian Army",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Stacey, The Canadian Army , pp. 187ff"
+    },
+    {
+      "Footnote": "Ackerman Strategic Bombers",
+      "Footnote_Number": "6c",
+      "Footnote_Text": "[Robert W. Ackerman], Employment of Strategic Bombers in a Tactical Role, 1941-1951 , USAF Hist Study 88 (Maxwell Air Force Base, Alabama, Air University, 1953), p. 86",
+      "Footnote_Referenced_Source": "Ackerman, Employment of Strategic Bombers",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Ackerman, Employment of Strategic Bombers, p. 86"
+    },
+    {
+      "Footnote": "Harris Bomber Offensive",
+      "Footnote_Number": "6d",
+      "Footnote_Text": "Harris, Bomber Offensive , p. 211.",
+      "Footnote_Referenced_Source": "Harris, Bomber Offensive",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Harris, Bomber Offensive , p. 211"
+    },
+    {
+      "Footnote": "OB WEST KTB Anlagen",
+      "Footnote_Number": "7",
+      "Footnote_Text": "OB WEST KTB , Anlagen 536 and 537 .",
+      "Footnote_Referenced_Source": "OB WEST KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "OB WEST KTB , Anlagen 536 and 537"
+    },
+    {
+      "Footnote": "Conf Rommel and Eberbach",
+      "Footnote_Number": "8a",
+      "Footnote_Text": "Conf, Rommel and Eberbach, 2100, 8 Jul, and Telecon, Rommel and Gause, 1115, 9 Jul, Pz Gp West KTB",
+      "Footnote_Referenced_Source": "Pz Gp West KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Conf, Rommel and Eberbach, 2100, 8 Jul"
+    },
+    {
+      "Footnote": "Telecons Rommel to Kluge",
+      "Footnote_Number": "8b",
+      "Footnote_Text": "Telecons, Rommel to Kluge, 0655, 9 Jul, Speidel to Blumentritt, 0950, 9 Jul, Eberbach to Tempelhoff, 0910, 11 Jul, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Telecons, Rommel to Kluge, 0655, 9 Jul"
+    },
+    {
+      "Footnote": "Eberbach to Rommel",
+      "Footnote_Number": "8c",
+      "Footnote_Text": "Eberbach to Rommel, 10 Jul, Pz Gp W KTB , Anlage 104",
+      "Footnote_Referenced_Source": "Pz Gp W KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Eberbach to Rommel, 10 Jul"
+    },
+    {
+      "Footnote": "Map OKW WFSt Op (H)",
+      "Footnote_Number": "8d",
+      "Footnote_Text": "Map dated 10 Jul, OKW WFSt Op (H), Lage West, Stand 9 V11.44",
+      "Footnote_Referenced_Source": "OKW WFSt Op (H)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Map dated 10 Jul"
+    },
+    {
+      "Footnote": "OB WEST KTB",
+      "Footnote_Number": "8e",
+      "Footnote_Text": "OB WEST KTB , 9 Jul.",
+      "Footnote_Referenced_Source": "OB WEST KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "OB WEST KTB , 9 Jul"
+    },
+    {
+      "Footnote": "Eisenhower to Montgomery",
+      "Footnote_Number": "9",
+      "Footnote_Text": "Ltr, Eisenhower to Montgomery, 10 Jul, SGS SHAEF File 38 1,  Opn O VERLORD , I (a) .",
+      "Footnote_Referenced_Source": "SGS SHAEF File 381",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Avenue, Fort McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Eisenhower to Montgomery, 10 Jul"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn7.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

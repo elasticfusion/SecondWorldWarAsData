@@ -1,0 +1,684 @@
+{
+  "Events": [
+    {
+      "Event": "Toward Lessay",
+      "Sub-event": "Heavy Casualties and No Advance (8-9 July 1944)",
+      "Sub-event_summary": "The 79th Division attempted to advance south of the Montgardon ridge but sustained heavy casualties and made no progress during 8 and 9 July 1944.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "The 79th Division, which had attempted to advance south of the Montgardon ridge, had sustained heavy casualties and had moved not at all during 8 and 9 July. (19) A typical rifle company had one officer and 94 men on 7 July, only 47 men two days later. When German pressure lessened on 10 July, General Wyche again moved the division toward the Ay estuary, a blue blob of water shimmering tantalizingly three miles away in the midst of the green lowland. Jockeying his subordinate units in a series of apparently unrelated moves, short jabs that took advantage of local enemy weakness, General Wyche pressed his advance down the terrain that sloped toward Lessay. A fortunate mistake that occurred in the late afternoon of 11 July facilitated progress. Bombing inadvertently 4,000 yards inside the safety line, American planes rendered unexpected close support. As a result, the division easily took Angoville-sur-Ay. The remaining distance to the Ay River was marked by decreasing resistance. The 79th Division reached the Ay River on 14 July. Although Lessay remained in German hands, General Wyche had cleared the coastal sector between la Haye-du-Puits and the estuary. The effort might have seemed easy in retrospect, but it had cost close to 2,000 men."
+      },
+      "Footnote_References": "19,20",
+      "Place_Name": "South of Montgardon ridge",
+      "Dates": {
+        "Date_group_of_event": "8 and 9 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "080000ZJUL44 - 092359ZJUL44"
+      },
+      "TOE": {
+        "Unit": "79th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy Houston Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "79th Infantry Division",
+          "Name": "Ira T. Wyche",
+          "Rank": "Major General",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Ira_T._Wyche",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "Reduced; typical rifle company reduced from 94 to 47 men",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "Heavy",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Montgardon ridge",
+        "Place_GPS_coordinate": "49.2811°N 1.5717°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://images.squarespace-cdn.com/content/v1/58838a3c37c581fc6ad6ef19/a32dbc20-cca6-4637-ac17-c1cdb3cf915f/79th_Infantry_Map_4_Spread_v1-Web_950.png",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Montgardon ridge",
+        "Place_GPS_coordinate": "49.2811°N 1.5717°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.9417",
+          "East": "-0.2017",
+          "South": "48.3811",
+          "North": "50.1811"
+        }
+      }
+    },
+    {
+      "Event": "Toward Lessay",
+      "Sub-event": "Renewal of Advance Toward Ay Estuary (10 July 1944)",
+      "Sub-event_summary": "As German pressure lessened, General Wyche moved the 79th Division toward the Ay estuary on 10 July 1944, using short jabs to exploit enemy weaknesses.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "The 79th Division, which had attempted to advance south of the Montgardon ridge, had sustained heavy casualties and had moved not at all during 8 and 9 July. (19) A typical rifle company had one officer and 94 men on 7 July, only 47 men two days later. When German pressure lessened on 10 July, General Wyche again moved the division toward the Ay estuary, a blue blob of water shimmering tantalizingly three miles away in the midst of the green lowland. Jockeying his subordinate units in a series of apparently unrelated moves, short jabs that took advantage of local enemy weakness, General Wyche pressed his advance down the terrain that sloped toward Lessay. A fortunate mistake that occurred in the late afternoon of 11 July facilitated progress. Bombing inadvertently 4,000 yards inside the safety line, American planes rendered unexpected close support. As a result, the division easily took Angoville-sur-Ay. The remaining distance to the Ay River was marked by decreasing resistance. The 79th Division reached the Ay River on 14 July. Although Lessay remained in German hands, General Wyche had cleared the coastal sector between la Haye-du-Puits and the estuary. The effort might have seemed easy in retrospect, but it had cost close to 2,000 men."
+      },
+      "Footnote_References": "20",
+      "Place_Name": "Toward Ay estuary",
+      "Dates": {
+        "Date_group_of_event": "10 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "100000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "79th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy Houston Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "79th Infantry Division",
+          "Name": "Ira T. Wyche",
+          "Rank": "Major General",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Ira_T._Wyche",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "Reduced strength",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Ay River estuary",
+        "Place_GPS_coordinate": "49.223611°N 1.6075°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://www.geographicus.com/mm5/graphics/00000001/L/79Inf14Jun29Aug-white-1945.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Ay River estuary",
+        "Place_GPS_coordinate": "49.223611°N 1.6075°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.9775",
+          "East": "-0.2375",
+          "South": "48.323611",
+          "North": "50.123611"
+        }
+      }
+    },
+    {
+      "Event": "Toward Lessay",
+      "Sub-event": "Accidental Bombing and Capture of Angoville-sur-Ay (11 July 1944)",
+      "Sub-event_summary": "On 11 July 1944, an inadvertent bombing by American planes provided unexpected support, enabling the 79th Division to easily capture Angoville-sur-Ay.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "The 79th Division, which had attempted to advance south of the Montgardon ridge, had sustained heavy casualties and had moved not at all during 8 and 9 July. (19) A typical rifle company had one officer and 94 men on 7 July, only 47 men two days later. When German pressure lessened on 10 July, General Wyche again moved the division toward the Ay estuary, a blue blob of water shimmering tantalizingly three miles away in the midst of the green lowland. Jockeying his subordinate units in a series of apparently unrelated moves, short jabs that took advantage of local enemy weakness, General Wyche pressed his advance down the terrain that sloped toward Lessay. A fortunate mistake that occurred in the late afternoon of 11 July facilitated progress. Bombing inadvertently 4,000 yards inside the safety line, American planes rendered unexpected close support. As a result, the division easily took Angoville-sur-Ay. The remaining distance to the Ay River was marked by decreasing resistance. The 79th Division reached the Ay River on 14 July. Although Lessay remained in German hands, General Wyche had cleared the coastal sector between la Haye-du-Puits and the estuary. The effort might have seemed easy in retrospect, but it had cost close to 2,000 men."
+      },
+      "Footnote_References": "20",
+      "Place_Name": "Angoville-sur-Ay",
+      "Dates": {
+        "Date_group_of_event": "11 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "111600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "79th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy Houston Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "79th Infantry Division",
+          "Name": "Ira T. Wyche",
+          "Rank": "Major General",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Ira_T._Wyche",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "Reduced strength",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Bombers",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Angoville-sur-Ay",
+        "Place_GPS_coordinate": "49.2539°N 1.5469°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://www.normandyamericanheroes.com/hs-fs/hubfs/Imported_Blog_Media/1%20to%2024%20July%201944%20Expanding%20the%20Beachhead-1.jpg?width=3493&height=2726&name=1%20to%2024%20July%201944%20Expanding%20the%20Beachhead-1.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Angoville-sur-Ay",
+        "Place_GPS_coordinate": "49.2539°N 1.5469°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.9169",
+          "East": "-0.1769",
+          "South": "48.3539",
+          "North": "50.1539"
+        }
+      }
+    },
+    {
+      "Event": "Toward Lessay",
+      "Sub-event": "Advance to Ay River (12-14 July 1944)",
+      "Sub-event_summary": "From 12 to 14 July 1944, the 79th Division advanced to the Ay River amid decreasing German resistance, clearing the coastal sector between la Haye-du-Puits and the estuary.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "The 79th Division, which had attempted to advance south of the Montgardon ridge, had sustained heavy casualties and had moved not at all during 8 and 9 July. (19) A typical rifle company had one officer and 94 men on 7 July, only 47 men two days later. When German pressure lessened on 10 July, General Wyche again moved the division toward the Ay estuary, a blue blob of water shimmering tantalizingly three miles away in the midst of the green lowland. Jockeying his subordinate units in a series of apparently unrelated moves, short jabs that took advantage of local enemy weakness, General Wyche pressed his advance down the terrain that sloped toward Lessay. A fortunate mistake that occurred in the late afternoon of 11 July facilitated progress. Bombing inadvertently 4,000 yards inside the safety line, American planes rendered unexpected close support. As a result, the division easily took Angoville-sur-Ay. The remaining distance to the Ay River was marked by decreasing resistance. The 79th Division reached the Ay River on 14 July. Although Lessay remained in German hands, General Wyche had cleared the coastal sector between la Haye-du-Puits and the estuary. The effort might have seemed easy in retrospect, but it had cost close to 2,000 men."
+      },
+      "Footnote_References": "20",
+      "Place_Name": "Ay River",
+      "Dates": {
+        "Date_group_of_event": "14 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "140000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "79th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy Houston Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "79th Infantry Division",
+          "Name": "Ira T. Wyche",
+          "Rank": "Major General",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Ira_T._Wyche",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "Reduced strength",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "Close to 2000 for the entire effort",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Lessay",
+        "Place_GPS_coordinate": "49.218°N 1.5294°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://www.geographicus.com/mm5/graphics/00000001/L/79Inf14Jun29Aug-white-1945.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Lessay",
+        "Place_GPS_coordinate": "49.218°N 1.5294°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.8994",
+          "East": "-0.1594",
+          "South": "48.318",
+          "North": "50.118"
+        }
+      }
+    },
+    {
+      "Event": "Toward Lessay",
+      "Sub-event": "Distinguished Service Cross Award to T/5 John G. Prentice",
+      "Sub-event_summary": "T/5 John G. Prentice of the 125th Cavalry Reconnaissance Squadron was awarded the DSC posthumously for remaining in his burning tank and continuing to fire until killed.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "The 79th Division, which had attempted to advance south of the Montgardon ridge, had sustained heavy casualties and had moved not at all during 8 and 9 July. (19) A typical rifle company had one officer and 94 men on 7 July, only 47 men two days later. When German pressure lessened on 10 July, General Wyche again moved the division toward the Ay estuary, a blue blob of water shimmering tantalizingly three miles away in the midst of the green lowland. Jockeying his subordinate units in a series of apparently unrelated moves, short jabs that took advantage of local enemy weakness, General Wyche pressed his advance down the terrain that sloped toward Lessay. A fortunate mistake that occurred in the late afternoon of 11 July facilitated progress. Bombing inadvertently 4,000 yards inside the safety line, American planes rendered unexpected close support. As a result, the division easily took Angoville-sur-Ay. The remaining distance to the Ay River was marked by decreasing resistance. The 79th Division reached the Ay River on 14 July. Although Lessay remained in German hands, General Wyche had cleared the coastal sector between la Haye-du-Puits and the estuary. The effort might have seemed easy in retrospect, but it had cost close to 2,000 men."
+      },
+      "Footnote_References": "19",
+      "Place_Name": "South of Montgardon ridge",
+      "Dates": {
+        "Date_group_of_event": "8 or 9 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "APPROX 080000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "125th Cavalry Reconnaissance Squadron",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "113th Cavalry Group",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Tank",
+            "Identifier": "",
+            "Quantity": "1",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "Tank",
+            "Identifier": "",
+            "Quantity": "1",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "1",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Montgardon ridge",
+        "Place_GPS_coordinate": "49.2811°N 1.5717°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://images.squarespace-cdn.com/content/v1/58838a3c37c581fc6ad6ef19/a32dbc20-cca6-4637-ac17-c1cdb3cf915f/79th_Infantry_Map_4_Spread_v1-Web_950.png",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Montgardon ridge",
+        "Place_GPS_coordinate": "49.2811°N 1.5717°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.9417",
+          "East": "-0.2017",
+          "South": "48.3811",
+          "North": "50.1811"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "19",
+      "Footnote_Number": "19",
+      "Footnote_Text": "T/5 John G. Prentice of the 125th Cavalry Reconnaissance Squadron, for remaining in his tank though it had been set ablaze by an enemy shell and continuing to fire his gun until killed by a second direct hit, was awarded the DSC.",
+      "Footnote_Referenced_Source": "The President of the United States takes pride in presenting the Distinguished Service Cross (Posthumously) to John G. Prentice for extraordinary heroism in connection with military operations against an armed enemy.",
+      "Web_Link": "https://homeofheroes.com/distinguished-service-cross/world-war-ii/distinguished-service-cross/army-p/",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "20a",
+      "Footnote_Number": "20a",
+      "Footnote_Text": "79th Div AAR, Jul",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "79th Infantry Division After Action Report, July 1944"
+    },
+    {
+      "Footnote": "20b",
+      "Footnote_Number": "20b",
+      "Footnote_Text": "Wyche Diary",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Diary of Major General Ira T. Wyche"
+    },
+    {
+      "Footnote": "20c",
+      "Footnote_Number": "20c",
+      "Footnote_Text": "FUSA Daily Estimated Loss Rpt",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "First U.S. Army Daily Estimated Loss Report, July 1944"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn7.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

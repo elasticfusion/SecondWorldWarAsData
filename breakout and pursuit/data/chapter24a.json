@@ -1,0 +1,1148 @@
+{
+  "Events": [
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "German Intentions and Hitler's Original Order",
+      "Sub-event_summary": "The counterattack toward Avranches was initiated on 7 August 1944 due to differing visions between Hitler and Kluge. Hitler's order from 2 August aimed to regain Avranches to restore the defensive line, while Kluge saw it as an opportunity for withdrawal.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "The attack launched toward Avranches during the early hours of 7 August was the product of a curious lack of empathy between Hitler and Kluge. Hitler had issued the attack order on 2 August, and Kluge had carried out the planning, but by 6 August Hitler had developed his original concept into a grandiose scheme that Kluge had not even imagined.",
+        "Paragraph_2": "The original goal of the counterattack was to regain Avranches and thereby re-establish a continuous defensive line in Normandy and restore the conditions that had made possible the static warfare of June and July. According to General der Panzertruppen Adolf Kuntzen, commander of the *LXXXI Corps* who was briefed by Kluge on 3 August, Kluge from the beginning felt that the counterattack could not fundamentally change the situation. The sole advantage, from Kluge's point of view, an advantage he was sure Hitler appreciated, was that the counterattack might facilitate a general withdrawal from Normandy to a new line of defense.<sup>[1](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn1)</sup> Denied by Hitler the freedom to look backward, Kluge could only hope that OKW was in the process of organizing defenses in the rear."
+      },
+      "Footnote_References": [
+        "1"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "070200BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "070100ZAUG44"
+      },
+      "TOE": {
+        "Unit": "LXXXI Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "LXXXI Corps",
+          "Name": "Adolf Kuntzen",
+          "Rank": "General der Panzertruppen",
+          "Date": "030000BAUG44",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Adolf_Kuntzen",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3611",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://warfarehistorynetwork.com/article/battle-of-mortain-big-red-one-takes-on-german-panzers/",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3611",
+        "Weather_text": "Warm summer weather with high humidity, resulting in ground fog in the early morning hours. The fog cleared rapidly later in the day.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.3611",
+          "East": "-0.3611",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Kluge's Misgivings and Reinforcement Attempts",
+      "Sub-event_summary": "On 6 August, Kluge attempted to strengthen the attacking force by incorporating additional units from the LXXXI Corps, but the divisions arrived too late. He also considered altering the attack axis but was persuaded to stick with the original plan.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "As late as 6 August, the day before the attack, Kluge's misgivings were reflected in his attempts to make last-minute changes in the plan. He was dissatisfied with the strength of the attacking force as constituted under the *XLVII Panzer Corps,* and he tried vainly to find additional units for reinforcement. The *LXXXI Corps,* in the vicinity of Alençon, was the only nearby force, and Kluge wanted it to commit the *9th Panzer Division* in a thrust to St. Hilaire-du-Harcouët once the division arrived in the area. In contrast, Hausser desired the *LXXXI Corps* to send the armored division in an attack toward Mayenne. The controversy soon entered the realm of academic discussion, for it quickly became evident that the divisions slated for the *LXXXI Corps--the 9th Panzer* and the *708th Infantry*--would arrive from southern France too late to affect significantly the operations around either Avranches or Mayenne.",
+        "Paragraph_4": "Unable to increase the striking power of the attack force either by additional units or by commitment of the *LXXXI Corps,* Kluge began to think that the *XLVII Panzer Corps* ought not to make the main effort north of Mortain as planned--between that town and the Sée River--but instead southwest through Mortain. *Seventh Army* staff planners, who had formulated the attack plan, had early pointed out that an axis of attack",
+        "Paragraph_5": "south of Mortain--between the town and St. Hilaire--would not only broaden the front and tend to dissipate the limited forces available but would also commit the armored assault force to a poor road net. The best route to Avranches, they argued, was the most direct route, since it had the added advantage of keeping the attackers on the dominating terrain north of Mortain. Despite the completion of the attack preparations, it took the persuasion of Hausser's chief of staff, Gersdorff, to reassure Kluge that the plans about to be executed were probably the better, particularly since a thrust toward St. Hilaire would more than likely result in road congestion.<sup>[2](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn2)</sup>"
+      },
+      "Footnote_References": [
+        "2"
+      ],
+      "Place_Name": "Alençon",
+      "Dates": {
+        "Date_group_of_event": "060000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "052300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "XLVII Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "9th Panzer Division",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Panzer",
+            "Identifier": "Panther",
+            "Quantity": "",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Panther_tank",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Panther_tank_1.jpg",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4333, 0.0833",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.dday-overlord.com/en/battle-of-normandy/cities/alencon",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4333, 0.0833",
+        "Weather_text": "Warm summer weather with high humidity, resulting in ground fog in the early morning hours. The fog cleared rapidly later in the day.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-0.9167",
+          "East": "1.0833",
+          "South": "47.5333",
+          "North": "49.3333"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Pre-Attack Situation and Tactical Developments",
+      "Sub-event_summary": "The situation was becoming dangerous with American advances threatening assembly areas and supply bases. Despite difficulties, some commanders saw favorable developments, and there was agreement to launch the attack promptly.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "It was a late hour to be thinking of altering plans, for the preattack situation was becoming increasingly dangerous, and an immediate effort was necessary to bolster the left flank before the lines there disintegrated completely. Even though the front had been contracted to the Chérencé-le-Roussel-Champ-du-Boult--Vire line, there was no telling how much longer the *LXXXIV Corps* could successfully hold on to the designated assembly areas and the high ground around Mortain. American occupation of Mortain was a serious setback that threatened to nullify these important attack prerequisites, and the American capture of Laval on 6 August endangered the supply bases near Alençon and le Mans.",
+        "Paragraph_7": "Despite the disadvantages and difficulties, some commanders felt that the tactical situation between 4 and 6 August had actually developed more favorably than might have been expected. The *II SS Panzer Corps* and the *II Parachute Corps* had eased, at least temporarily, the crisis along the army boundary near Vire. Although Hausser had to keep the *116th Panzer Division* committed defensively, he had pulled the *2d SS* and *2d Panzer Divisions* out of the line without breaking the connected front between the Sée River and Vire. The German field commanders nevertheless agreed that the attack had to be launched as soon as possible in order to regain operational initiative before new developments further complicated the situation."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Vire",
+      "Dates": {
+        "Date_group_of_event": "APPROX 060000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "052300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "LXXXIV Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "II SS Panzer Corps",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "Supply bases near Alençon and le Mans endangered.",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.8380, -0.8885",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.dday-overlord.com/en/battle-of-normandy/cities/vire",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.8380, -0.8885",
+        "Weather_text": "Warm summer weather with high humidity, resulting in ground fog in the early morning hours. The fog cleared rapidly later in the day.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.8885",
+          "East": "0.1115",
+          "South": "47.9380",
+          "North": "49.7380"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Hitler's Interference and Changes to the Plan",
+      "Sub-event_summary": "On 6 August, Hitler contacted Kluge for reports and provided additional forces, but proposed changes including replacing the corps commander, revealing differing operational scales between a limited attack and a major offensive.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Accepting the tactical necessity of executing the plans at once as scheduled, Kluge was rather disconcerted by several calls from Hitler on 6 August. Since 2 August, when Hitler had issued the original order, there had been neither instruction nor interference from higher headquarters. Kluge had interpreted his conversation with Jodl on 3 August as authority to command all the German forces in the west (including the Navy and the Air Force) and as clearance for attacking as he wished. Accepting the responsibility along with the freedom granted to deal with the American breakout and enjoying the implicit confidence thus accorded him, Kluge had arranged to have an advance command post set up west of Alençon so that he could personally supervise the attack. Suddenly however, on 6 August just a few hours before the attack was to begin, when Kluge was already committed to launching the effort that night, Hitler",
+        "Paragraph_9": "called *OB WEST* for a report on the progress of the planning.<sup>[3](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn3)</sup>",
+        "Paragraph_10": "Not only did Hitler want a report on Kluge's intentions and plans by that evening, he also placed additional strength at Kluge's disposal. He made available sixty Panther tanks still held in reserve east of Paris and released to Kluge eighty Mark IV tanks and all the armored cars of the *9th Panzer Division,* which was moving northward from southern France toward Normandy. These troops were to reinforce the counterattack.<sup>[4](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn4)</sup>",
+        "Paragraph_11": "Later that afternoon, after Hitler received preliminary reports on the counterattack during his customary daily briefing at the Wolf's Lair headquarters, Jodl called *OB WEST* to inform Kluge that Hitler wanted some changes made. The most important was that Hitler did not wish Funck, the *XLVII Panzer Corps* commander, to lead the attack; instead, he wanted Eberbach, commander of the *Fifth Panzer Army.*<sup>[5](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn5)</sup>",
+        "Paragraph_12": "This telephone conversation revealed clearly that Hitler and Kluge were not tuned to the same wave length; they were not thinking of the same kind of operation. Kluge was ready to attack, whereas OKW was apparently only in the preliminary stages of planning. Kluge intended only to regain Avranches and restore the defensive line, while Hitler evidently thought in terms of a big offensive to be launched by several corps under Eberbach."
+      },
+      "Footnote_References": [
+        "3",
+        "4",
+        "5"
+      ],
+      "Place_Name": "Alençon",
+      "Dates": {
+        "Date_group_of_event": "061400BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "061300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Fifth Panzer Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "XLVII Panzer Corps",
+          "Name": "Hans von Funck",
+          "Rank": "General der Panzertruppe",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Hans_von_Funck",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Panzer",
+            "Identifier": "Panther",
+            "Quantity": "60",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Panther_tank",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Panther_tank_1.jpg",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4333, 0.0833",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.dday-overlord.com/en/battle-of-normandy/cities/alencon",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4333, 0.0833",
+        "Weather_text": "Warm summer weather with high humidity, resulting in ground fog in the early morning hours. The fog cleared rapidly later in the day.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-0.9167",
+          "East": "1.0833",
+          "South": "47.5333",
+          "North": "49.3333"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Artillery Observation Post near Barenton",
+      "Sub-event_summary": "An artillery observation post near Barenton is depicted, highlighting the terrain and positions in the area.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "[![Artillery Observation Post near Barenton](:/6f91c8cf235742c4ac6d31c8889bfbd6)](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p459.jpg)  \n Artillery Observation Post near Barenton."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Barenton",
+      "Dates": {
+        "Date_group_of_event": "060000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "052300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p459.jpg",
+        "Description": "Artillery Observation Post near Barenton.",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Barenton",
+        "Place_GPS_coordinate": "48.6003, -0.8326",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.dday-overlord.com/en/battle-of-normandy/cities/barenton",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Barenton",
+        "Place_GPS_coordinate": "48.6003, -0.8326",
+        "Weather_text": "Warm summer weather with high humidity, resulting in ground fog in the early morning hours. The fog cleared rapidly later in the day.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.8326",
+          "East": "0.1674",
+          "South": "47.7003",
+          "North": "49.5003"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Decision to Proceed Despite Risks",
+      "Sub-event_summary": "Acceding to Hitler's changes would delay the attack, which was deemed unreasonable given the precarious situation. Kluge persuaded Hitler to allow the attack to proceed as planned, despite intelligence indicating Allied awareness.",
+      "Sub-event_fulltext": {
+        "Paragraph_14": "To accede to Hitler's wishes meant postponing the attack at least twenty-four hours to await the concentration of stronger forces and also disregarding the developments around le Mans. In view of the precarious tactical situation, any delay seemed unreasonable. The northern front at the Sée River might disintegrate, and the deep south flank of *Army Group B* might be so enveloped that contact between the combat troops and the supply complex based on Alençon would be impossible. Already that evening Barenton (seven miles southeast of Mortain) was being threatened, and the weakness of the *275th Division's* defenses at the village made obvious the distinct menace to the southern flank. Furthermore, Radio Calais, a German",
+        "Paragraph_15": "intelligence agency, informed Kluge that the Allies had recognized the shift of his troops for what it was. Uncertain of the ability of the German defenses to hold much longer and fearing that the Allies would bomb his assemblies out of existence, Kluge persuaded Hitler to let the attack go as planned even though it meant that he could not use the additional armor Hitler had made available.<sup>[6](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn6)</sup>"
+      },
+      "Footnote_References": [
+        "6"
+      ],
+      "Place_Name": "Barenton",
+      "Dates": {
+        "Date_group_of_event": "062000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "061900ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "275th Division",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "Supply complex based on Alençon threatened.",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Barenton",
+        "Place_GPS_coordinate": "48.6003, -0.8326",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.dday-overlord.com/en/battle-of-normandy/cities/barenton",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Barenton",
+        "Place_GPS_coordinate": "48.6003, -0.8326",
+        "Weather_text": "Warm summer weather with high humidity, resulting in ground fog in the early morning hours. The fog cleared rapidly later in the day.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.8326",
+          "East": "0.1674",
+          "South": "47.7003",
+          "North": "49.5003"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Hitler's Reluctance and Grandiose Vision",
+      "Sub-event_summary": "Hitler reluctantly approved the attack but envisioned a larger offensive after capturing Avranches, aiming to disrupt the American breakout. Field commanders did not share this optimism, viewing the operation more modestly.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "Only with great reluctance did Hitler permit the attack to be launched. Desiring the most massive blow that could be assembled, he was not convinced that the counterattacking force was as strong as it could have been. He accepted Kluge's recommendation nevertheless, and issued specific instructions for the conduct of operations once Avranches was captured. He directed that Eberbach take command from Hausser at Avranches and swing from there to the northeast into the First U.S. Army flank, thereby disrupting and nullifying the American breakout. To insure compliance, Hitler dispatched the chief of the OKW Army staff, General der Infanterie Walter Buhle, to the west by plane.<sup>[7](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn7)</sup>",
+        "Paragraph_17": "Hitler's intention, which had crystallized too late to affect the initial attack, was clear in the order he issued on the following day, 7 August, after the attack was under way. \"The decision in the Battle of France,\" he wrote, \"depends on the success of the [Avranches] attack. . . . The C-in-C West has a unique opportunity, which will never return, to drive into an extremely exposed enemy area and thereby to change the situation completely.\"<sup>[8](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn8)</sup> The Avranches counterattack, as the Germans called it, was to be the decisive blow sought since the invasion, the master stroke of strategic significance that was to destroy Operation OVERLORD. The first step in that direction was to divide the First and Third U.S. Armies at Avranches. Once this was accomplished, further measures were to roll up the Allied front. Choltitz, the former *LXXXIV Corps* commander who was being briefed by Hitler for a new assignment, recalled later that Hitler expected the offensive to throw the Allies back \"into the sea.\"<sup>[9](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn9)</sup>",
+        "Paragraph_18": "The field commanders did not share Hitler's conviction. Kluge had not suspected that Hitler anticipated such exalted results. Hausser, who considered the task of regaining Avranches relatively easy, felt that holding Avranches after taking it would be the difficult part of the assignment, to say nothing of launching a further attack to the northeast. The result of the conflicting intentions was what became known to the Americans as the Mortain counterattack, a drive launched in some uncertainty but with Avranches clearly defined as the objective. *[](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-X.jpg)*"
+      },
+      "Footnote_References": [
+        "7",
+        "8",
+        "9"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "070000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "062300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "OKW",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Hitler",
+          "Name": "Adolf Hitler",
+          "Rank": "Führer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Adolf_Hitler",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Fifth Panzer Army",
+          "Name": "Heinrich Eberbach",
+          "Rank": "General der Panzertruppe",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Heinrich_Eberbach",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3611",
+        "Map_Reference": "Map X.",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-X.jpg",
+        "ExternalMapLink": "https://warfarehistorynetwork.com/article/battle-of-mortain-big-red-one-takes-on-german-panzers/",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3611",
+        "Weather_text": "Warm summer weather with high humidity, resulting in ground fog in the early morning hours. The fog cleared rapidly later in the day.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.3611",
+          "East": "-0.3611",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "1a",
+      "Footnote_Number": "1",
+      "Footnote_Text": "MS # B-807 (Kuntzen)",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # B-807 (Kuntzen)"
+    },
+    {
+      "Footnote": "1b",
+      "Footnote_Number": "1",
+      "Footnote_Text": "AGp B KTB, 3 Aug",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "AGp B KTB, 3 Aug"
+    },
+    {
+      "Footnote": "2a",
+      "Footnote_Number": "2",
+      "Footnote_Text": "Telecon, Gersdorff and Kuntzen, 1115, 6 Aug, LXXXI Corps KTB",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Gersdorff and Kuntzen, 1115, 6 Aug, LXXXI Corps KTB"
+    },
+    {
+      "Footnote": "2b",
+      "Footnote_Number": "2",
+      "Footnote_Text": "Telecons, Gersdorff and Kluge, 1025 and 1045, 6 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecons, Gersdorff and Kluge, 1025 and 1045, 6 Aug, AGp B KTB"
+    },
+    {
+      "Footnote": "2c",
+      "Footnote_Number": "2",
+      "Footnote_Text": "MS # B-179 (Hausser)",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # B-179 (Hausser)"
+    },
+    {
+      "Footnote": "2d",
+      "Footnote_Number": "2",
+      "Footnote_Text": "MS # B-725 (Gersdorff)",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # B-725 (Gersdorff)"
+    },
+    {
+      "Footnote": "2e",
+      "Footnote_Number": "2",
+      "Footnote_Text": "Hodgson, R-58",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Hodgson, R-58"
+    },
+    {
+      "Footnote": "3a",
+      "Footnote_Number": "3",
+      "Footnote_Text": "Telecons, 1445 and 1500, 6 Aug, OB WEST KTB",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecons, 1445 and 1500, 6 Aug, OB WEST KTB"
+    },
+    {
+      "Footnote": "3b",
+      "Footnote_Number": "3",
+      "Footnote_Text": "Telecon, Kluge and Jodl, 1210, 3 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Kluge and Jodl, 1210, 3 Aug, AGp B KTB"
+    },
+    {
+      "Footnote": "3c",
+      "Footnote_Number": "3",
+      "Footnote_Text": "MS # B-723 (Gersdorff)",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # B-723 (Gersdorff)"
+    },
+    {
+      "Footnote": "4a",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Telecon, 1510, 6 Aug, OB WEST KTB",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, 1510, 6 Aug, OB WEST KTB"
+    },
+    {
+      "Footnote": "4b",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Telecon, 1516, 6 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, 1516, 6 Aug, AGp B KTB"
+    },
+    {
+      "Footnote": "5",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Telecon, Jodl and Blumentritt, 1525, 6 Aug, OB WEST KTB",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Jodl and Blumentritt, 1525, 6 Aug, OB WEST KTB"
+    },
+    {
+      "Footnote": "6a",
+      "Footnote_Number": "6",
+      "Footnote_Text": "Telecons, Kluge and Blumentritt, 1600, 6 Aug",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecons, Kluge and Blumentritt, 1600, 6 Aug"
+    },
+    {
+      "Footnote": "6b",
+      "Footnote_Number": "6",
+      "Footnote_Text": "Kluge and Buttlar-Brandenfels, 1650, 6 Aug",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Kluge and Buttlar-Brandenfels, 1650, 6 Aug"
+    },
+    {
+      "Footnote": "6c",
+      "Footnote_Number": "6",
+      "Footnote_Text": "Zimmerman and Templehoff, 1905, 6 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Zimmerman and Templehoff, 1905, 6 Aug, AGp B KTB"
+    },
+    {
+      "Footnote": "6d",
+      "Footnote_Number": "6",
+      "Footnote_Text": "Telecon Jodl and Zimmerman, 1900, 6 Aug, OB WEST KTB",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon Jodl and Zimmerman, 1900, 6 Aug, OB WEST KTB"
+    },
+    {
+      "Footnote": "7",
+      "Footnote_Number": "7",
+      "Footnote_Text": "Der Westen (Schramm), p. 83",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Der Westen (Schramm), p. 83"
+    },
+    {
+      "Footnote": "8a",
+      "Footnote_Number": "8",
+      "Footnote_Text": "Quoted in Msg, AGp B to Fifth Pz A, 7 Aug, Fifth Pz A KTB, Anlage 275",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Quoted in Msg, AGp B to Fifth Pz A, 7 Aug, Fifth Pz A KTB, Anlage 275"
+    },
+    {
+      "Footnote": "8b",
+      "Footnote_Number": "8",
+      "Footnote_Text": "OB WEST KTB, 7 Aug, and Anlage 1176",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OB WEST KTB, 7 Aug, and Anlage 1176"
+    },
+    {
+      "Footnote": "9",
+      "Footnote_Number": "9",
+      "Footnote_Text": "Choltitz, Soldat unter Soldaten, pp. 222-23",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Choltitz, Soldat unter Soldaten, pp. 222-23"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

@@ -1,0 +1,1995 @@
+{
+  "Events": [
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Plan of the Attack",
+      "Sub-event_summary": "The attacking force consisted of three armored divisions advancing westward toward the Brécey-St. Hilaire road, with specific roles for each division and supporting units to capture Avranches and block American thrusts.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "The first echelon of the attacking force was to be composed of three armored divisions moving westward abreast toward an initial objective along the Brécey-St. Hilaire road. The *116th Panzer Division* on the right was to attack without prior assembly and strike along the north bank of the Sée River toward Chérencé; it was to be echeloned to the right rear to protect the north flank. Making the main effort in the center, the *2d Panzer Division* (reinforced by a panzer battalion each from the *1st SS* and the *116th Panzer Divisions)* was to thrust along the south bank of the Sée, using the St. Barthélemy-Reffuveille road as its principal axis of advance. The *2d SS Panzer Division* (reinforced by the *17th SS Panzer Grenadiers,* a division reduced by combat to regimental strength) was to attack on both sides of Mortain; it was to be echeloned to the left to cover the open south flank. Following the first echelon closely, the *1st SS Panzer Division* (less an armored infantry regiment and a tank battalion, which remained with the *Fifth Panzer Army)* was to exploit initial success and capture Avranches. The reconnaissance battalion of *Panzer Lehr* was to patrol the deep south flank. The *LXXXI Corps* was to block a possible American thrust toward Alençon."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Brécey",
+      "Dates": {
+        "Date_group_of_event": "070000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "062300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "XLVII Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "116th Panzer Division",
+          "Name": "Gerhard von Schwerin",
+          "Rank": "Generalleutnant",
+          "Date": "060000BAUG44",
+          "End_Date_of_command": "071600BAUG44",
+          "End_Status": "Relieved",
+          "Biographical_reference": "https://grokipedia.com/page/Gerhard_von_Schwerin",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": "Units reduced by combat",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Tank",
+            "Identifier": "Various Panzer",
+            "Quantity": "120-190",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Panzer_IV_Ausf._J,_Finland_2006.jpg",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Brécey",
+        "Place_GPS_coordinate": "48.7300, -1.1600",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "http://www.coulthart.com/134/maps/german-counterattack-mortain-8-7-1944.pdf",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brécey",
+        "Place_GPS_coordinate": "48.7300, -1.1600",
+        "Weather_text": "Warm summer weather with high humidity, predicted fog in early morning but day dawned clear.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.16",
+          "East": "-0.16",
+          "South": "47.83",
+          "North": "49.63"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Situation Assessment on Evening of 6 August",
+      "Sub-event_summary": "The situation was judged favorable with predicted fog for cover, promised Luftwaffe support, weak American opposition identified, and concentrated German tanks ready, planning to commit additional divisions post-capture.",
+      "Sub-event_fulltext": {
+        "Paragraph_2": "The situation on the evening of 6 August was judged favorable. With regard to weather, a vital factor, forecasters had predicted fog for the following morning, a desirable condition for the attack. If the fog cleared later in the day, the Luftwaffe was prepared to furnish aerial support in strength. The commander of the fighter plane contingent in the west had visited the *Seventh Army* command post on 6 August to inform the ground troops that three hundred operational planes in France had been gathered to provide cover for the counterattack the next day. The ground opposition seemed weak, for only elements of two U.S. divisions, the 3d Armored and the 30th Infantry, had been identified in the attack zone, as was the actual case. Against them were concentrated between 120 and 190 German tanks poised for the surprise attack. Once Avranches was captured, a newly arriving infantry division, the *331st* (scheduled to be at Tinchebray by 9 August), would be committed between the *XLVII Panzer Corps* and the *LXXXIV Corps* in order to regain Brécey.<sup>[10](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn10)</sup>"
+      },
+      "Footnote_References": [
+        "10"
+      ],
+      "Place_Name": "Tinchebray",
+      "Dates": {
+        "Date_group_of_event": "062000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "061900ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Luftwaffe",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Fighter Plane",
+            "Identifier": "Various",
+            "Quantity": "300",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Messerschmitt_Bf_109",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Bf109G-10.jpg",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Tinchebray",
+        "Place_GPS_coordinate": "48.7641, -0.7331",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "http://www.coulthart.com/134/maps/german-counterattack-mortain-8-7-1944.pdf",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Tinchebray",
+        "Place_GPS_coordinate": "48.7641, -0.7331",
+        "Weather_text": "Warm summer weather with high humidity, predicted fog in early morning but day dawned clear.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7331",
+          "East": "0.2669",
+          "South": "47.8641",
+          "North": "49.6641"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Assembly Difficulties and Casualties on 6 August",
+      "Sub-event_summary": "Assembly of forces was hasty and difficult, with units fighting to reach positions and suffering high casualties, yet remaining combat effective as demonstrated by destroying 28 American tanks.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "On the debit side of the ledger, the assembly of the counterattack forces had been made in great haste, at night, and with great difficulty. Units had assembled while in almost constant contact with Allied forces. In some instances, they had been compelled to fight their way to assembly points while in danger of being encircled. There was no distinct boundary between moving into position and jumping off in attack. Many units had already taken heavy losses before the attack started. In contrast with the usual daily personnel losses that averaged about 3 percent of those units in contact, German casualty reports for 6 August inexplicably attained heights of 30 and 40 percent. The meaning of the casualty figures was obscure to the Germans, for although it indicated the urgent necessity of getting the counterattack under way before attrition sapped the strength of their forces in Normandy, the fact that the *353d Division* (kampfgruppe size) and *363d Division* had together knocked out 28 American tanks on 6 August indicated that the German units, though severely reduced, were still combat effective.<sup>[11](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn11)</sup>"
+      },
+      "Footnote_References": [
+        "11"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "060000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "052300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "353d Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "Reduced to kampfgruppe size",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "Tank",
+            "Identifier": "Various",
+            "Quantity": "28",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M4_Sherman_tank.jpg",
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, -1.0000",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "http://www.coulthart.com/134/maps/german-counterattack-mortain-8-7-1944.pdf",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, -1.0000",
+        "Weather_text": "Warm summer weather with high humidity, predicted fog in early morning but day dawned clear.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0",
+          "East": "0.0",
+          "South": "48.1",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Request to Postpone the Attack",
+      "Sub-event_summary": "At 2200 on 6 August, Funck requested postponement due to delays in 1st SS Panzer Division arrival and Schwerin's failure to provide reinforcements; Hausser delayed to midnight but proceeded.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "At H Hour--2200, 6 August--Hausser received a phone call from Funck, the *XLVII Panzer Corps* commander, who wanted the attack postponed. Two factors, Funck felt, made this necessary. First, the advance elements of the *1st SS Panzer Division* (the exploiting force) were only beginning to reach Tinchebray, even though the division commander had promised to be ready to cross the line of departure in strength a good six miles farther west around 2300. Obviously, the division would not be able to reach its assigned position in time. Nor would it be able to detach an armored battalion in time to reinforce the *2d Panzer Division* as planned. The reasons for the delay in arrival were several: the *89th Division* had been slow in relieving the *1st SS* on the *Fifth Panzer Army* front; traffic congestion and Allied air attacks had harassed the approach march; and finally, a piece of pure bad luck, the panzer battalion hurrying toward the *2d Panzer Division* had been moving through a defile in close formation when a crashing Allied fighter-bomber fell on the lead tank, blocked the entire battalion, and forced the tanks to back up and turn around in constricted space.",
+        "Paragraph_5": "The second factor that Funck brought to Hausser's attention was the attitude of the commander of the *116th Panzer Division,* Generalleutnant Gerhard Graf von Schwerin, who had not dispatched the tank battalion he was supposed to furnish the *2d Panzer Division.* This was not the first time, Funck explained, that the commander of the *116th* had failed to comply with orders. He requested that Schwerin be relieved.",
+        "Paragraph_6": "Hausser was inclined to agree with Funck that the news of both incidents was serious, but he was unwilling to postpone the attack. Hausser's only concession was to delay the jump-off until midnight to give the *1st SS Panzer Division* two more hours to come forward. He did nothing about Schwerin.<sup>[12](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn12)</sup>"
+      },
+      "Footnote_References": [
+        "12"
+      ],
+      "Place_Name": "Tinchebray",
+      "Dates": {
+        "Date_group_of_event": "062200BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "062100ZAUG44"
+      },
+      "TOE": {
+        "Unit": "1st SS Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "XLVII Panzer Corps",
+          "Commander": "Funck",
+          "Name": "Hans von Funck",
+          "Rank": "General der Panzertruppe",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Hans_von_Funck",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "Traffic congestion and air attacks",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Tank",
+            "Identifier": "Panzer",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Tank",
+            "Identifier": "Lead tank blocked by crashed Allied fighter-bomber",
+            "Quantity": "1",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Tinchebray",
+        "Place_GPS_coordinate": "48.7641, -0.7331",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "http://www.coulthart.com/134/maps/german-counterattack-mortain-8-7-1944.pdf",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Tinchebray",
+        "Place_GPS_coordinate": "48.7641, -0.7331",
+        "Weather_text": "Warm summer weather with high humidity, predicted fog in early morning but day dawned clear.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7331",
+          "East": "0.2669",
+          "South": "47.8641",
+          "North": "49.6641"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Attack by 2d SS Panzer Division",
+      "Sub-event_summary": "The 2d SS Panzer Division attacked after midnight, overran Mortain, advanced toward high ground and St. Hilaire, but was pinned down by artillery from encircled American battalion on Hill 317.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "The attack started shortly after midnight without an artillery preparation. The *2d SS Panzer Division* on the left attacked in two columns, overran Mortain from both sides and captured the town, then advanced toward high ground west of Mortain and to the southwest toward St. Hilaire. There was no significant American opposition, and by noon of 7 August *2d SS Panzer* troops held blocking positions about half way between Mortain and St. Hilaire, thereby protecting the southern flank of the attack of the *2d SS Panzer* zone south and west of Mortain. A thrust to St. Hilaire and a direct threat to Avranches from the southeast seemed simple except for the 2d Battalion, 120th Infantry, ensconced and encircled on Hill 317 immediately east of Mortain. This contingent, with unexcelled observation of the *2d SS Panzer* zone south and west of Mortain, called for artillery fire on the division and thus pinned the troops down, preventing further advance.<sup>[13](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn13)</sup>"
+      },
+      "Footnote_References": [
+        "13"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "070000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "062300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "2d SS Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "XLVII Panzer Corps",
+          "Commander": "Funck",
+          "Name": "Hans von Funck",
+          "Rank": "General der Panzertruppe",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Hans_von_Funck",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "17th SS Panzer Grenadiers",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "Reduced to regimental strength for attached division",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Tank",
+            "Identifier": "Panzer",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=10157589650092853",
+        "Description": "Battle of Mortain image",
+        "License": "Unknown"
+      },
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6486, -0.9397",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "http://www.coulthart.com/134/maps/german-counterattack-mortain-8-7-1944.pdf",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6486, -0.9397",
+        "Weather_text": "Warm summer weather with high humidity, predicted fog in early morning but day dawned clear.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9397",
+          "East": "0.0603",
+          "South": "47.7486",
+          "North": "49.5486"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Attack by 2d Panzer Division",
+      "Sub-event_summary": "The 2d Panzer Division advanced in columns, achieving initial success but halted by resistance; commitment of 1st SS Panzer Division failed to gain further ground due to terrain, resistance, and air attacks.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "The *2d Panzer Division,* making the main effort in the center, got only half of its troops off during the early hours of 7 August, the column on the right moving along the south bank of the Sée. Despite the failure of a tank battalion of the *116th Panzer Division* to appear for attachment, the armored column moved off, achieved surprise, and rolled through le Mesnil-Tôve to le Mesnil-Adelée. There, some elements turned north to protect the flank against a possible thrust from Chérencé, while the main body continued west toward the Brécey-St. Hilaire road. Shortly after daybreak, 7 August, just west of le Mesnil-Adelée and three miles short of the initial objective, the column encountered resistance that forced a halt.",
+        "Paragraph_9": "The left column of the *2d Panzer Division* delayed attacking until dawn of 7 August, when the panzer battalion of the *1st SS* finally joined and completed the assault formation. The column then advanced easily through Bellefontaine. Strong antitank fire at St. Barthélemy made an organized effort necessary in order to reduce the opposition. The advance then continued almost to Juvigny before being stopped.",
+        "Paragraph_10": "With the *2d Panzer Division* bogged down short of the initial objective, Funck committed the *1st SS Panzer Division* through the *2d Panzer* units in mid-morning, hoping thereby at least to gain Juvigny. The restricted road net, limited maneuver room, and American resistance on the ground and in the air balked further progress. With tank losses skyrocketing, Funck halted the attack around noon and instructed the troops to dig in.",
+        "Paragraph_11": "Because both columns of the *2d Panzer Division* and the reinforcing column of the *1st SS Panzer Division* had attacked on exceedingly narrow fronts, their spearhead wedges in unfavorable positions at le Mesnil-Adelée and east of Juvigny were especially vulnerable to counterattack. American artillery and antitank pieces located north and south of the Sée River struck the points of the German columns and kept the units immobile for the rest of the day.<sup>[14](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn14)</sup>"
+      },
+      "Footnote_References": [
+        "14"
+      ],
+      "Place_Name": "le Mesnil-Adelée",
+      "Dates": {
+        "Date_group_of_event": "070600BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "070500ZAUG44"
+      },
+      "TOE": {
+        "Unit": "2d Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "XLVII Panzer Corps",
+          "Commander": "Funck",
+          "Name": "Hans von Funck",
+          "Rank": "General der Panzertruppe",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Hans_von_Funck",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "1st SS Panzer Division",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Tank",
+            "Identifier": "Panzer",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Tank",
+            "Identifier": "Panzer",
+            "Quantity": "High losses",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "https://mikesresearch.com/wp-content/uploads/2021/07/mortain-12.jpg?w=630",
+        "Description": "Mortain 1944 image",
+        "License": "Unknown"
+      },
+      "Place": {
+        "Place_Name": "le Mesnil-Adelée",
+        "Place_GPS_coordinate": "48.7011, -1.0747",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "http://www.coulthart.com/134/maps/german-counterattack-mortain-8-7-1944.pdf",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "le Mesnil-Adelée",
+        "Place_GPS_coordinate": "48.7011, -1.0747",
+        "Weather_text": "Warm summer weather with high humidity, predicted fog in early morning but day dawned clear.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0747",
+          "East": "-0.0747",
+          "South": "47.8011",
+          "North": "49.6011"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Failure of 116th Panzer Division and Relief of Schwerin",
+      "Sub-event_summary": "The 116th Panzer Division failed to attack due to Schwerin's concerns over encirclement and lack of confidence in relief units; he was relieved at 1600 on 7 August, but the subsequent attack made no progress.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "The north flank along the Sée was open, and it gave the German command particular cause for concern because the *116th Panzer Division* had failed to attack. Schwerin had been threatened with encirclement by American attacks toward Gathemo and Chérencé, and he had simply withheld the attack order from his subordinates. He had no confidence in the ability of the *84th Division,* which was relieving him, to hold against the American pressure, and consequently felt that he could neither detach a tank battalion to the *2d Panzer Division* nor launch the attack toward Avranches. Also, Schwerin had apparently lost hope for victory. Involved in the conspiracy of July 20th, he was one of the field commanders who were to have negotiated with the Allies for an armistice. No matter whether tactical or political factors were more important to Schwerin, his failure to participate in the Avranches counterattack was a flagrant case of disobedience. At 1600, 7 August, Hausser and Funck relieved him of command and replaced him with Funck's chief of staff, Col. Walter Rein-hard. Thirty minutes later the division finally jumped off. The troops made no progress.<sup>[15](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn15)</sup>"
+      },
+      "Footnote_References": [
+        "15"
+      ],
+      "Place_Name": "Gathemo",
+      "Dates": {
+        "Date_group_of_event": "071600BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "071500ZAUG44"
+      },
+      "TOE": {
+        "Unit": "116th Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "XLVII Panzer Corps",
+          "Commander": "Funck",
+          "Name": "Hans von Funck",
+          "Rank": "General der Panzertruppe",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Hans_von_Funck",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "116th Panzer Division",
+          "Name": "Gerhard von Schwerin",
+          "Rank": "Generalleutnant",
+          "Date": "",
+          "End_Date_of_command": "071600BAUG44",
+          "End_Status": "Relieved",
+          "Biographical_reference": "https://grokipedia.com/page/Gerhard_von_Schwerin",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Gathemo",
+        "Place_GPS_coordinate": "48.7600, -0.9600",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "http://www.coulthart.com/134/maps/german-counterattack-mortain-8-7-1944.pdf",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Gathemo",
+        "Place_GPS_coordinate": "48.7600, -0.9600",
+        "Weather_text": "Warm summer weather with high humidity, predicted fog in early morning but day dawned clear.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.96",
+          "East": "0.04",
+          "South": "47.86",
+          "North": "49.66"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Overall Assessment and Air Operations",
+      "Sub-event_summary": "The attack achieved initial surprise but halted at dawn due to clear weather allowing Allied air superiority; German air support failed to materialize, and troops dug in under bombardment.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "Instead of a well-massed, co-ordinated effort, only three of the six assault columns--the *2d SS Panzer Division* and one column of the *2d Panzer Division--* had jumped off on time. The attack had achieved surprise, and the armored troops had rolled forward about six miles. When the day dawned clear, without the anticipated fog, the ground troops, who were experienced in Normandy and knew what to expect from Allied air superiority, began to dig in. At that moment the advance came to a halt, and the commitment of the *1st SS Panzer Division* availed nothing. Heavy American artillery fires indicated that surprise was already gone. When Allied planes came out in force to bomb and strafe the armored columns, the troops were already under cover, their vehicles under camouflage, but British Hurricanes and Typhoons firing rockets nevertheless struck awe into the German formations. As for the mighty German air effort promised, the fighter planes that got off the ground near Paris did not get much beyond their airfields. Allied squadrons engaged them at once, and not a single German plane reached Mortain that day.<sup>[16](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn16)</sup>"
+      },
+      "Footnote_References": [
+        "16"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "070600BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "070500ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Luftwaffe",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "GB",
+            "Name": "Fighter",
+            "Identifier": "Hurricane",
+            "Quantity": "",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Hawker_Hurricane",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Hawker_Hurricane_Mk_I_(R4118).jpg",
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Fighter Plane",
+            "Identifier": "Various",
+            "Quantity": "0 reached Mortain",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6486, -0.9397",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "http://www.coulthart.com/134/maps/german-counterattack-mortain-8-7-1944.pdf",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6486, -0.9397",
+        "Weather_text": "Warm summer weather with high humidity, predicted fog in early morning but day dawned clear.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9397",
+          "East": "0.0603",
+          "South": "47.7486",
+          "North": "49.5486"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Hitler's Reaction and Order to Continue",
+      "Sub-event_summary": "By late afternoon, Hitler criticized the execution and ordered continuation with additional divisions, aiming for a massive thrust to collapse the Normandy front, disregarding risks.",
+      "Sub-event_fulltext": {
+        "Paragraph_14": "By late afternoon, 7 August, it appeared to Hitler that Kluge had displayed poor judgment in allowing the commitment of the *1st SS Panzer Division* north of Mortain rather than southwest toward St. Hilaire, where American opposition had been absent. It also seemed to him that the attack had been launched prematurely, hastily, and carelessly. If Kluge had waited until the *9th SS, 10th SS,* and *9th Panzer Divisions* had been assembled for a truly massive effort, Hitler felt, the attack more than likely would have brought better results. Deciding that he could no longer entirely rely upon Kluge, he took a more direct role in the operations.",
+        "Paragraph_15": "Still under the impression that the situation offered him a unique opportunity for disrupting the Allied breakout and eventually destroying the Allied beachhead, Hitler determined to continue the attack to Avranches. \"I command the attack be prosecuted daringly and recklessly to the sea,\" he wrote that afternoon. He ordered that, \"regardless of the risk,\" the *II SS Panzer Corps* (with the *9th SS* and the *10th SS Panzer Divisions* and either the *12th SS* or *21st Panzer Division)* be withdrawn from the *Fifth Panzer Army* line and committed in the Avranches sector \"to bring about the collapse of the Normandy front by a thrust into the deep flank and rear of the enemy facing *Seventh Army*.\" To consummate what to him had become the master stroke of the western campaign, \"Greatest daring, determination, imagination must give wings to all echelons of command. Each and every man must believe in victory. Cleaning up in rear areas and in Brittany can wait until later.\"<sup>[17](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn17)</sup>"
+      },
+      "Footnote_References": [
+        "17"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "071800BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "071700ZAUG44"
+      },
+      "TOE": {
+        "Unit": "II SS Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Hitler",
+          "Name": "Adolf Hitler",
+          "Rank": "Führer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Adolf_Hitler",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "9th SS Panzer Division",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3611",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "http://www.coulthart.com/134/maps/german-counterattack-mortain-8-7-1944.pdf",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3611",
+        "Weather_text": "Warm summer weather with high humidity, predicted fog in early morning but day dawned clear.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.3611",
+          "East": "-0.3611",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Kluge's Assessment and Concerns",
+      "Sub-event_summary": "Kluge concluded the attack failed due to continued American pressure on flanks, considering withdrawal to avoid encirclement of spearheads.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "Kluge had already concluded that the attack had failed. His judgment was as much influenced by developments on the northern and southern flanks of the *Seventh Army* as by the progress of the attack itself. American pressure had not ceased, and renewed threats from the north at Gathemo and from the south at Barenton posed unpleasant thoughts that the *Seventh Army* spearheads directed toward Avranches might be encircled and destroyed. The wiser course of action, he began to think, might be to withdraw.<sup>[18](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn18)</sup>"
+      },
+      "Footnote_References": [
+        "18"
+      ],
+      "Place_Name": "Barenton",
+      "Dates": {
+        "Date_group_of_event": "071800BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "071700ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Barenton",
+        "Place_GPS_coordinate": "48.6003, -0.8326",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "http://www.coulthart.com/134/maps/german-counterattack-mortain-8-7-1944.pdf",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Barenton",
+        "Place_GPS_coordinate": "48.6003, -0.8326",
+        "Weather_text": "Warm summer weather with high humidity, predicted fog in early morning but day dawned clear.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.8326",
+          "East": "0.1674",
+          "South": "47.7003",
+          "North": "49.5003"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Eberbach's Call and Impact of Hitler's Order",
+      "Sub-event_summary": "Eberbach requested reinforcements for Falaise defenses; Kluge diverted units but informed him of losses due to Hitler's unequivocal order to continue the attack, foreseeing potential collapse.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "A call from Eberbach on the afternoon of 7 August added to Kluge's concern. It also reinforced his feeling that withdrawal from Mortain might be in order. Eberbach was troubled by the weakness of his thinned-out defense-lines covering the approaches to Falaise--and asked for reinforcement. Kluge diverted the incoming *331st Division* toward the *Fifth Panzer Army* front and was considering sending units from the *Seventh Army* when Hitler's order arrived to announce that the effort toward Avranches was to continue. Kluge virtually apologized when he phoned Eberbach to tell him that Eberbach not only would get no additional strength but would lose two panzer divisions at once and a third armored division eventually. \"I foresee that the failure of this [continued] attack [to Avranches],\" he told Eberbach, \"can lead to collapse of the entire Normandy front, but the order [from Hitler] is so unequivocal that it must be obeyed.\"<sup>[19](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn19)</sup>"
+      },
+      "Footnote_References": [
+        "19"
+      ],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "071400BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "071300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Fifth Panzer Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Fifth Panzer Army",
+          "Name": "Heinrich Eberbach",
+          "Rank": "General der Panzertruppe",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Heinrich_Eberbach",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": "Thinned-out defense lines",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922, -0.1953",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "http://www.coulthart.com/134/maps/german-counterattack-mortain-8-7-1944.pdf",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922, -0.1953",
+        "Weather_text": "Warm summer weather with high humidity, predicted fog in early morning but day dawned clear.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1953",
+          "East": "0.8047",
+          "South": "47.9922",
+          "North": "49.7922"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Transmission of Hitler's Order and Defensive Shift",
+      "Sub-event_summary": "Kluge transmitted Hitler's order to Hausser for continued attack with incoming divisions under LVIII Panzer Corps, holding positions until ready, shifting temporarily to defense.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "Transmitting Hitler's order to Hausser, Kluge informed him that the *10th SS* and *12th SS Panzer Divisions* were to arrive in the *Seventh Army* sector on 8 August and be committed soon afterwards toward Avranches under the *LVIII Panzer Corps* headquarters, which had recently come up from southern France. As soon as the corps assembled its two SS panzer divisions, the *Seventh Army* would continue the attack without regard to the northern and southern flanks. Until the new attack was ready, the positions reached by the forward elements were to be held. The last remaining elements of the *1st SS Panzer Division* (including twenty-five assault guns), which had become available for use that evening, moved into a line that had suddenly, if only temporarily, changed from offense to defense."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "072000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "071900ZAUG44"
+      },
+      "TOE": {
+        "Unit": "LVIII Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "10th SS Panzer Division",
+          "Name": "",
+          "Rank": "",
+          "Date": "080000BAUG44",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Assault Gun",
+            "Identifier": "StuG",
+            "Quantity": "25",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Sturmgesch%C3%BCtz_III",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:StuG_III_Ausf._G.JPG",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3611",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "http://www.coulthart.com/134/maps/german-counterattack-mortain-8-7-1944.pdf",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3611",
+        "Weather_text": "Warm summer weather with high humidity, predicted fog in early morning but day dawned clear.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.3611",
+          "East": "-0.3611",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    },
+    {
+      "Event": "The Mortain Counterattack",
+      "Sub-event": "Hausser's Admission of Failure",
+      "Sub-event_summary": "Hausser admitted failure due to Allied air superiority, 116th Panzer's immobility, and strong American resistance, but acknowledged no choice but to continue per Hitler's order.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "Hausser, too, admitted failure on 7 August. He ascribed the causes to the Allied air superiority, the immobility of the *116th Panzer Division,* and a stronger than expected American resistance. Although additional striking forces augmented the chances of regaining Avranches, continuing threats to the army's flanks increased the chances of disaster. But since Hitler felt that the outcome of the war depended on another attack toward Avranches, there was no choice.<sup>[20](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html#fn20)</sup>"
+      },
+      "Footnote_References": [
+        "20"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "072200BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+        "Zulu_date_group_of_event": "072100ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "116th Panzer Division",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3611",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "http://www.coulthart.com/134/maps/german-counterattack-mortain-8-7-1944.pdf",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3611",
+        "Weather_text": "Warm summer weather with high humidity, predicted fog in early morning but day dawned clear.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.3611",
+          "East": "-0.3611",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "10",
+      "Footnote_Number": "10",
+      "Footnote_Text": "See MS # C-017 (Speidel).",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # C-017 (Speidel)"
+    },
+    {
+      "Footnote": "11",
+      "Footnote_Number": "11",
+      "Footnote_Text": "Telecon, Gersdorff and Lt Col Guenther von Kluge, 2100, 6 Aug, Seventh Army Tel Msgs.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Gersdorff and Lt Col Guenther von Kluge, 2100, 6 Aug, Seventh Army Tel Msgs"
+    },
+    {
+      "Footnote": "12a",
+      "Footnote_Number": "12",
+      "Footnote_Text": "Telecons, Wisch and Gersdorff, 1630, 6 Aug, and Funck and Hausser, 2200, 6 Aug, Seventh Army Tel Msgs",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecons, Wisch and Gersdorff, 1630, 6 Aug, and Funck and Hausser, 2200, 6 Aug, Seventh Army Tel Msgs"
+    },
+    {
+      "Footnote": "12b",
+      "Footnote_Number": "12",
+      "Footnote_Text": "MS # B-017 (Voigtsberger)",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # B-017 (Voigtsberger)"
+    },
+    {
+      "Footnote": "12c",
+      "Footnote_Number": "12",
+      "Footnote_Text": "MS # A-918 (Gersdorff).",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # A-918 (Gersdorff)"
+    },
+    {
+      "Footnote": "13a",
+      "Footnote_Number": "13",
+      "Footnote_Text": "Telecon, Gersdorff and Speidel, 1515, 7 Aug, and Gersdorff Telecon, 1200, 7 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Gersdorff and Speidel, 1515, 7 Aug, and Gersdorff Telecon, 1200, 7 Aug, AGp B KTB"
+    },
+    {
+      "Footnote": "13b",
+      "Footnote_Number": "13",
+      "Footnote_Text": "MS # P-159 (Sueckler)",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # P-159 (Sueckler)"
+    },
+    {
+      "Footnote": "13c",
+      "Footnote_Number": "13",
+      "Footnote_Text": "see Jules and Gilles Buisson, Mortain et sa Bataille, pp. 74ff.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "Jules and Gilles Buisson, Mortain et sa Bataille, pp. 74ff"
+    },
+    {
+      "Footnote": "14a",
+      "Footnote_Number": "14",
+      "Footnote_Text": "Telecons, Ziegelmann and Lt Col Guenther von Kluge, 0430, 7 Aug, Gersdorff Telecon, 0915, 7 Aug, and Gersdorff and Speidel, 1515, 7 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecons, Ziegelmann and Lt Col Guenther von Kluge, 0430, 7 Aug, Gersdorff Telecon, 0915, 7 Aug, and Gersdorff and Speidel, 1515, 7 Aug, AGp B KTB"
+    },
+    {
+      "Footnote": "14b",
+      "Footnote_Number": "14",
+      "Footnote_Text": "MS # A-904 (Luettwitz)",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # A-904 (Luettwitz)"
+    },
+    {
+      "Footnote": "14c",
+      "Footnote_Number": "14",
+      "Footnote_Text": "MS # A-918 (Gersdorff)",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # A-918 (Gersdorff)"
+    },
+    {
+      "Footnote": "15a",
+      "Footnote_Number": "15",
+      "Footnote_Text": "Telecons, Funck and Hausser, 2200, 6 Aug, Gersdorff and Reinhard, 1800, 7 Aug, Gersdorff and Hausser, 1540, 7 Aug, Gersdorff and Speidel, 1940, 7 Aug, Seventh Army Tel Msgs",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecons, Funck and Hausser, 2200, 6 Aug, Gersdorff and Reinhard, 1800, 7 Aug, Gersdorff and Hausser, 1540, 7 Aug, Gersdorff and Speidel, 1940, 7 Aug, Seventh Army Tel Msgs"
+    },
+    {
+      "Footnote": "15b",
+      "Footnote_Number": "15",
+      "Footnote_Text": "Gersdorff and Speidel, 1515, 7 Aug, Kluge and Hausser, 2150, 7 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Gersdorff and Speidel, 1515, 7 Aug, Kluge and Hausser, 2150, 7 Aug, AGp B KTB"
+    },
+    {
+      "Footnote": "15c",
+      "Footnote_Number": "15",
+      "Footnote_Text": "MS # B-017 (Voigtsberger)",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # B-017 (Voigtsberger)"
+    },
+    {
+      "Footnote": "15d",
+      "Footnote_Number": "15",
+      "Footnote_Text": "ETHINT 17 (interview with Schwerin)",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "ETHINT 17 (interview with Schwerin)"
+    },
+    {
+      "Footnote": "15e",
+      "Footnote_Number": "15",
+      "Footnote_Text": "MS # C-017 (Speidel)",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # C-017 (Speidel)"
+    },
+    {
+      "Footnote": "15f",
+      "Footnote_Number": "15",
+      "Footnote_Text": "MS # B-721 (Speidel).",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # B-721 (Speidel)"
+    },
+    {
+      "Footnote": "16a",
+      "Footnote_Number": "16",
+      "Footnote_Text": "Telecon, Blumentritt and Gersdorff, 1940, 7 Aug, Seventh Army Tel Msgs",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Blumentritt and Gersdorff, 1940, 7 Aug, Seventh Army Tel Msgs"
+    },
+    {
+      "Footnote": "16b",
+      "Footnote_Number": "16",
+      "Footnote_Text": "MS # P-169 (Stueckler)",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # P-169 (Stueckler)"
+    },
+    {
+      "Footnote": "16c",
+      "Footnote_Number": "16",
+      "Footnote_Text": "see Pogue, Supreme Command, p. 208, n. 43 .",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "https://history.army.mil/html/books/007/7-5-1/CMH_Pub_7-5-1.pdf",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "Pogue, Supreme Command, p. 208, n. 43"
+    },
+    {
+      "Footnote": "17a",
+      "Footnote_Number": "17",
+      "Footnote_Text": "Quoted in Msg, AGp B to Fifth Pz A, 7 Aug, Fifth Pz A KTB, Anlage 275",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Quoted in Msg, AGp B to Fifth Pz A, 7 Aug, Fifth Pz A KTB, Anlage 275"
+    },
+    {
+      "Footnote": "17b",
+      "Footnote_Number": "17",
+      "Footnote_Text": "Der Westen (Schramm), p. 83",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Der Westen (Schramm), p. 83"
+    },
+    {
+      "Footnote": "17c",
+      "Footnote_Number": "17",
+      "Footnote_Text": "OB WEST KTB, 7 Aug, and Anlage 1176",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OB WEST KTB, 7 Aug, and Anlage 1176"
+    },
+    {
+      "Footnote": "17d",
+      "Footnote_Number": "17",
+      "Footnote_Text": "see also MS # A-918 (Gersdorff).",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # A-918 (Gersdorff)"
+    },
+    {
+      "Footnote": "18",
+      "Footnote_Number": "18",
+      "Footnote_Text": "See, for example, Telecon, Kluge and Kuntzen, 0730, 7 Aug, LXXXI KTB.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Kluge and Kuntzen, 0730, 7 Aug, LXXXI KTB"
+    },
+    {
+      "Footnote": "19a",
+      "Footnote_Number": "19",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 2140, 7 Aug, Fifth Panzer Army KTB",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Kluge and Eberbach, 2140, 7 Aug, Fifth Panzer Army KTB"
+    },
+    {
+      "Footnote": "19b",
+      "Footnote_Number": "19",
+      "Footnote_Text": "AGp B Forward CP Tel Log (entry 2000, 7 Aug), AGp B KTB.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "AGp B Forward CP Tel Log (entry 2000, 7 Aug), AGp B KTB"
+    },
+    {
+      "Footnote": "20a",
+      "Footnote_Number": "20",
+      "Footnote_Text": "Seventh Army Tel Jnl, entry 2200, 7 Aug",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Seventh Army Tel Jnl, entry 2200, 7 Aug"
+    },
+    {
+      "Footnote": "20b",
+      "Footnote_Number": "20",
+      "Footnote_Text": "see OB WEST KTB, 7 Aug, and Anlage 1184.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OB WEST KTB, 7 Aug, and Anlage 1184"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn24.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-24.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

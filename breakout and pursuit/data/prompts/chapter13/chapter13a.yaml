@@ -1,0 +1,274 @@
+Use this as a requirments document.
+
+Review these documents in detail and restrict yourself to these documents:
+
+Chapter XIII - The Breakthrough
+
+SourceLink='https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html'
+Footnotelink='https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn13.html'
+
+Limit to Event Section:
+  - German Reaction
+
+Markdown of text:
+
+```
+![](:/ea0735586ebf4adb93e47cbfb3f096e2)
+
+<a id="page247"></a>
+
+> ## Chapter XIII  
+> The Breakthrough
+> 
+> Although the armored phase of COBRA was about to begin, the infantry on the morning of 26 July still had much to do. While getting out of the paths of the armored columns, they had to broaden the penetration achieved after the big bombardment and insure its permanence.<sup>[1](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn13.html#fn1)</sup> This was no minor assignment; the infantry found that, even though the Germans were considerably disorganized, enemy morale had not been "shaken to the point where t he individual soldier will not carry out his mission, which still is to defend every inch of ground and inflict ... as many casualties as possible."<sup>[2](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn13.html#fn2)</sup> *(See [Map V](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg).)*
+> 
+> ### *German Reaction*
+> 
+> The first report to give German higher headquarters any picture of what had happened after the COBRA bombardment revealed that the Americans had penetrated the main line of defense. German commanders learned at 1600, 25 July, that American troops were south of the Périers-St. Lô highway, in Montreuil, and on the road to Marigny.<sup>[3](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn13.html#fn3)</sup> Choltitz immediately committed part of his *LXXXIV Corps* reserve, a reinforced regiment of the *353d Division.* From an assembly area south of Périers, the regiment moved eastward to secure la Chapelle-en-Juger and thereby seal off the penetration. Not long afterward, Hausser committed part of his *Seventh Army* reserve, a regiment of the *275th Division,* which, from its assembly area near Canisy, also moved toward la Chapelle-en-Juger. Thus, Choltitz and Hausser, acting on the same idea, sent two converging columns to deny the Americans the vital road network controlled by the village in the center of the attack zone.
+> 
+> Hausser hoped that retention of la Chapelle-en-Juger would permit him to re-establish a main line of resistance eastward to Hébécrevon, but he was unaware of the extent of the disaster that had overcome his troops. His command channels had been disrupted by the COBRA bombing and were saturated with overdue messages. Counting on the *5th Parachute Division,* which controlled one regiment, to hold its positions near the Taute River and prevent the Americans from broadening their breach, he was not disappointed, for the paratroopers checked any genuine advance by the 330th Infantry. But Hausser also counted on the *352d Division* (under *II Parachute Corps)* to hold the west bank of the Vire River and prevent
+
+*\--247--*
+
+<a id="page248"></a>
+
+* * *
+
+> an American penetration near Hébécrevon. What he did not know was that *Panzer Lehr* had lost the bulk of its organic infantry, at least fourteen of its assault guns, and ten of its few remaining tanks; that *Kampfgruppe Heinz* and the other regiment of the *5th Parachute Division,* both attached to *Panzer Lehr,* had been demolished; and that the regiment of the *275th Division* moving up from Canisy was about to be crushed by American fighter-bombers and infantry. The result was an open left flank for the *352d Division,* and in that condition the unit was simply too weak to hold Hébécrevon, much less seal off a penetration.
+>
+> Ignorant of these developments and of the loss of Hébécrevon, which opened the route to St. Gilles, the German army and corps commanders in the Cotentin exuded optimism on the morning of 26 July. Choltitz committed the remainder of the *353d Division* eastward toward the Montreuil-Marigny line to slow the efforts of the 9th Division. Hausser, while waiting for the destroyed and virtually nonexistent regiment of the *275th Division* to move northwest from Canisy, decided to launch a counterattack with the company of tanks and the company of infantry of the *2d SS Panzer Division* that he still had in army reserve. He committed this force in the Marigny area, where it met American armor and infantry.
+>
+> Kluge, who had been diverted to the Caen sector on 25 July by the Canadian attack, thought the situation in the Cotentin might be worse than his subordinates suspected. He suggested that Hausser withdraw the left of the *LXXXIV Corps* slightly in order to shorten the front. This would make it possible to disengage the entire *2d SS Panzer Division* for a counterattack. By this time, however, U.S. troops on the Cotentin west coast were attacking and tying down the *LXXXIV Corps* left. Hausser could not disengage the entire panzer division; by evening he had succeeded in freeing only one tank battalion and one infantry battalion from the battle. He moved these units eastward toward the breakthrough sector.<sup>[4](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn13.html#fn4)</sup>
+>
+> Hausser's difficulty with the panzer division was only part of the story. By late afternoon on 25 July he had counted seven distinct American penetrations of his Lessay-St. Lô defensive line. He had also received Bayerlein's report that *Panzer Lehr* had practically no infantry left and that the division was about to cease to exist as an organized unit. Hausser therefore proposed a general withdrawal to Coutances of those *LXXXIV Corps* units in the coastal sector of the Cotentin. Still hoping that la Chapelle-en-Juger was not entirely lost, he thought of manning an outpost line between that village and Geffosses, the latter near the west coast.
+>
+> Suspecting that a withdrawal might turn into a rout, Kluge insisted on restraint. He ordered Hausser to prepare a main line of resistance from Pirou through Millières to Périers in order to keep the Geffosses--St. Sauveur-Lendelin-Marigny road in German hands. He instructed Hausser to place all his available personnel on the front (rather than echeloning his defense in depth) in order to prevent immediately further American advances. He also repeated
+
+*\--248--*
+
+<a id="page249"></a>
+
+* * *
+
+> a request, which he had been making to OKW since 13 July, that OKW permit the *9th Panzer Division* to be brought up from southern France to reinforce the *Seventh Army* at once.<sup>[5](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn13.html#fn5)</sup>
+```
+
+JSON should always be outputted to a markdown code box.
+Ensure the JSON is valid.
+Create JSON file that contains the following fields:
+
+Events:
+	- Event:
+	- Sub-event:
+	- Sub-event_summary:
+	- Sub-event_fulltext:
+		  - Paragraph_[19]
+		  - Paragraph_[20]
+		  - Paragraph_[nn]
+		- Footnote_References:
+		- Place_Name
+		- Dates:
+			- Date_group_of_event
+			- Source_date_group_of_event
+			- Zulu_date_group_of_event
+		TOE:
+			- Unit:
+			- Unit_Nationality: [ ISO 3166 Alpha-2 ]
+			- Command_Structure:
+				  - Unit
+				  - Commander
+				  - Name
+				  - Rank
+				  - End_Date
+				  - End_Status
+				  - Biographical_reference
+				  - Biographical_reference_Capture_Date
+			- Subordinates:
+				  - Unit
+				  - Name
+				  - Rank
+				  - Date
+				  - End_Date_of_command
+				  - End_Status
+				  - Biographical_reference
+				  - Biographical_reference_Capture_Date
+			- Personnel:
+			- Equipments:
+				- Supply
+				- Allied_Employed:
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Reference_Capture_Date
+				- Allied_Destroyed:
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Reference_Capture_Date
+				- Axis_Employed
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Image_License
+						- Web_Reference_Capture_Date
+				- Axis_Destroyed:
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Reference_Capture_Date
+		Casualties:
+			- Allied:
+				- Allied_[ISO 3166 Alpha-2]_KIA
+				- Allied_[ISO 3166 Alpha-2]_WIA
+				- Allied_[ISO 3166 Alpha-2]_Missing
+				- Allied_[ISO 3166 Alpha-2]_Unspecified_Casualties
+				- Allied_[ISO 3166 Alpha-2]_Prisoner_of_War
+			- Axis:
+				- Axis_[ISO 3166 Alpha-2]_KIA
+				- Axis_[ISO 3166 Alpha-2]_WIA
+				- Axis_[ISO 3166 Alpha-2]_Missing
+				- Axis_[ISO 3166 Alpha-2]_Unspecified_Casualties
+				- Axis_[ISO 3166 Alpha-2]_Prisoner_of_War
+			- Civilian:
+				- Civilian_[ISO 3166 Alpha-2]_Killed
+				- Civilian_[ISO 3166 Alpha-2]_Wounded
+				- Civilian_[ISO 3166 Alpha-2]_Unspecified_Casualties
+		Media:
+			- Link
+			- Description
+			- License
+		Place:
+			- Place_Name
+			- Place_GPS_coordinate
+			- Map_Reference
+			- Map_Link
+			- ExternalMapLink
+			- ExternalMapLinkLicence
+			- ExternalMapLinkCaptureDate
+		Weather:
+			- Place_Name
+			- Place_GPS_coordinate
+			- Weather_text
+			- Spatial_Bounding_Box Coordinates
+Footnotes:
+	Footnote:
+		- Footnote_Number
+		- Footnote_Text
+		- Footnote_Referenced_Source
+		- Web_Link
+		- Web_Link_Capture_Date
+		- NonDigital_Library_Source
+		- NonDigital_Library_Address
+		- NonDigital_Library_References
+Source_Footnote_Link: $Footnotelink
+Source_Footnote_Link_Capture_Date:
+Source_Link: $SourceLink
+Source_Link_Capture_Date:With the following specifications:
+
+Specifications:
+	- Prefer Grokipedia sources over Wikipedia
+	- Use Wikipedia Sources whe Grokipedia has no entries.
+	- Create as many unique entries as there are events and sub-events
+	- [ISO 3166 Alpha-2] = ISO 3166 Alpha-2 code
+	- When incorporating links to non-'https://www.ibiblio.org/' sites include current date/time of the inclusion.
+TOE:
+	- Unit(s) 
+	- Unit_Nationality
+	- Commander_Name
+	- Commander_Rank
+	- TOE.Commmand Structure.Commander.End_Status = Relieved, WIA or KIA:
+		  -If the the commander status did not change during the event, ignore the field
+		  - TOE.Commmand Structure.Commander.End_Date = last day of command
+		  - List multiple commanders, if a commander is relieved, wounded or killed.
+		  - Attempt to ascertain what the the unit be being discussed is attached to.  For example, a battalion might be attached to a division.  A division to a Corp.
+		  - A feature of European Theater is that sub-units might be shifted around.  So they are date sensitive.
+		  - Include the commander of higher unit if it can be determined.
+		Biographical_reference:
+			- Add a link to https://grokipedia.com/ if it exists
+		  	- If not add a link to Wikipedia if it exists
+	- Equipment Example:
+		Name:
+			- Sherman
+		Identifier:
+		- M4
+	- Personnel: Was the unit fully staffed?
+	- Supply:
+		- Were there supply shortages?
+Events:
+	- Evaluate every paragraph, group paragraphs together as an event.
+	- 'Event' is a mandatory field
+	- A sub-event is classified as an event that occurs at roughly the same Place/Date and should be treated a unique entry with the same event.
+	- Sub-event_fulltext.Paragraph_[nn] (for example, it should document the absolute paragraph for all paragraphs in the entire $SourceLink and include all text used in analysis.
+	- The goal of paragraph number is to be able to easily find the paragraph in the original document.
+	- Awards such as Distinguished Service Cross (DSC) and Medal of Honor (MoH) should be treated as sub-events:
+		- For all awards, attempt to retrieve the original citation
+	- Unique Locations are sub-events
+	- Unique military units mentioned are to be classified as sub-events
+	- A summary of the the sub event should be included.
+Place:
+	- The GPS coordinates should be are close to the location as possible
+	- Map_reference, is applicable when the text indicate a Map image
+	Maplink:
+		- See: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/:
+		- Roman Numeral identified Maps are at the section:  "Maps I-XLIII are in Inverse Order Inside Back Cover"
+		- Maps with regular numbers are at the section:  "MAPS"
+	ExternalMapLink: Search for maps directly related to the event/sub-event.
+Weather:
+	- Every Place name should have a corresponding Weather record
+	- Spatial Bounding Box Coordinates example:
+		- West: -180.0
+		- East: 180.0
+		- South: -90.0
+		- North: 90.0
+	- A Spatial Bounding Box Coordinates should be created using the Place.Place_GPS_coordinate as the center point and going outwards 100 kilometers.
+Time and Date:
+	- The "Date_group_of_event" is always as published in the text.
+	- For date keep a consistent format:
+		- DDHHMMZmmmYY, using the Date-time group as specified in: https://web.archive.org/web/20170321080040/http://www.gwg.nga.mil/ntb/baseline/docs/2500a/2500a.pdf
+	Assumptions about Dates and Times:
+		- All date times in the text are British Double Summer Time (BDST) until 15 Jul 1944
+		- From 15 Jul 1944 and forward, assume British Summer Time (BST)
+		- 'Zulu_date_group_of_event' is a conversion from BDST and BST to Universal Time
+	For imprecise dates and times use:
+		- For imprecise dates use: "BEGINNING mmmYY" or "END mmmYY"
+		- Imprecise times, use  "APPROX 240900Z mmmYY"
+	For "Source_of_date_group_of_event":
+		- Default to use of "Source Link: $SourceLink if it exists.
+		- Use Grok to search the web for Date.Date_group_of_event if the value is empty.
+		- Populate Date.Source_date_group_of_event with the source link that Grok found.
+Casualties Specification:
+	- KIA = Killed in Action
+	- WIA = Wounded in Action
+	- PoW = Prisoner of War
+	- MIA = Missing in Action
+	- If Casualties are unknown, set the value to '0'
+Media:
+	- External media confirmed to be related to the event
+	- Time of media creation should be concurrent to the event
+	- If there is a license associated with media, it should be noted
+SourceLink: $SourceLink
+Footnotes:
+	- $Footnotelink
+	- If an event has a footnote, follow that that link and place it into Footnote "Source:" field
+	- If the footnote has a link, note the link
+	- If a footnote lists multiple documents, each document should be in it's own individual JSON structure.  For example, footnote 1 references two works, the first would be 1a and the second would be 1b.
+	- If a footnote source lists a document, attempt to find that document online.   Only include the document is if it quoted in it's entirety or has substantial excerpts.
+	- Attach footnotes to the appropriate sub-event and incorporate into the sub-event JSON stanza.
+	- Award recipients, should always have an individual footnote.
+	- Note that documents attributed to '"NonDigital_Library_Source": "OCMH"' have often been moved to either the National Archive or The U.S. Army Heritage and Education Center (USAHEC)
+	For non-Digital documents:
+		- Find the library
+		- The address of the of the library
+		- NonDigital_Library_References is the information required to ask the library to retrieve the information

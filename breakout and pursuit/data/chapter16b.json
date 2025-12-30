@@ -1,0 +1,3058 @@
+{
+  "Events": [
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "Patton Supervises VIII Corps Exploitation (27 July 1944)",
+      "Sub-event_summary": "General Patton supervised VIII Corps' exploitation after Operation COBRA, aiming to reach Brittany quickly. Bradley made Patton his deputy for the right forces. The situation involved German withdrawal but obstacles like mines and congestion, with XV Corps soon entering the line.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "In the coastal sector of the Cotentin an even more outstanding achievement was developing. Under the supervision of General Patton, the Third Army commander, VIII Corps had been demonstrating vividly just how much Operation COBRA had accomplished.",
+        "Paragraph_20": "When General Bradley instructed General Patton to supervise the VIII Corps exploitation growing out of COBRA, he gave Patton charge of operations that intimately and personally concerned the Third Army commander. The quicker Patton got the VIII Corps to the threshold of Brittany, the sooner he would be able to enter 09battle at the head of his army.",
+        "Paragraph_21": "To enable Patton to supervise the VIII Corps, General Bradley had asked him to serve as his deputy for the forces on the right. Though Patton remained in the background of command to the best of his ability, his presence was unmistakable, and his imprint on the operations that developed was as visible as his shadow on the wall of the operations tent.",
+        "Paragraph_22": "The situation facing the VIII Corps on the evening of 27 July was challenging. On the one hand, the Germans were making a general withdrawal, which in effect invited the Americans to exploit. On the other hand, serious obstacles kept the Americans from making a rapid advance--the profusion of mines, wrecked vehicles, and enemy delaying forces. Furthermore, the infantry divisions that had carried the VIII Corps attack in COBRA filled the roads, and from the east came the VII Corps and the threat of congestion. As though the potential confusion between VII and VIII Corps units was not enough, a new corps, the XV, was scheduled to enter the line between the VII and the VIII.",
+        "Paragraph_23": "For all these drawbacks, the absence of organized German resistance on 27 July and the urge to reach the edge of Brittany exerted an overpowering influence. General Bradley, after conferring with General Patton on 27 July, had already ordered General Middleton to disregard the COBRA limit of advance north of Coutances, and infantrymen of the VIII Corps were streaming south as quickly as engineers could clear paths for them through mine fields.",
+        "Paragraph_24": "That evening, as orders from Bradley shifted the First Army from COBRA into exploitation, Patton manifested his influence by substituting armor for infantry. Two armored divisions were to spearhead the attack to the south."
+      },
+      "Footnote_References": [
+        "13",
+        "14",
+        "15"
+      ],
+      "Place_Name": "Cotentin Peninsula",
+      "Dates": {
+        "Date_group_of_event": "27 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 271800ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar N. Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Third U.S. Army (supervising)",
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "VIII Corps",
+            "Name": "Troy H. Middleton",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cotentin Peninsula",
+        "Place_GPS_coordinate": "49.5, -1.5",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://warfarehistorynetwork.com/article/armored-blitz-to-avranches/",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cotentin Peninsula",
+        "Place_GPS_coordinate": "49.5, -1.5",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0",
+          "East": "0.0",
+          "South": "48.6",
+          "North": "50.4"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "Orders for Armored Divisions on 28 July 1944",
+      "Sub-event_summary": "The 4th Armored Division under Maj. Gen. John S. Wood was ordered to advance through the 90th Division to Monthuchon and then to Cérences. The 6th Armored Division under Maj. Gen. Robert W. Grow was to advance through the 79th Division to Granville. The plan aimed for armored thrusts, with infantry support and demining efforts.",
+      "Sub-event_fulltext": {
+        "Paragraph_25": "In the COBRA attack, the lone armored division available to the VIII Corps, the 4th under Maj. Gen. John S. Wood, had been pinched out near the starting line. Located on the Carentan-Périers isthmus in corps reserve, the 4th Armored Division was behind the infantry forces completing their COBRA assignments when General Middleton ordered General Wood to move. Shortly after daylight, 28 July, Wood was to pass through the 90th Division and proceed through Périers and toward Coutances as far as Monthuchon. Expecting troops of the VII Corps to have secured Monthuchon by that time, Middleton told Wood to co-ordinate with Collins' units so that he could continue through Coutances to Cérences, twenty-two miles south of Périers and nine miles south of Coutances.",
+        "Paragraph_26": "The second armored force was a new unit, the 6th Armored Division under Maj. Gen. Robert W. Grow, attached from the Third Army. Middleton alerted Grow to move from his assembly area north of la Haye-du-Puits and attack on the right of the 4th Armored",
+        "Paragraph_27": "Division down the Cotentin coast. Grow was to pass through the 79th Division, bypass Coutances on the west, and drive to Granville, twenty-eight miles south of Coutances.",
+        "Paragraph_28": "The plan of action for 28 July thus projected twin thrusts by the 4th and 6th Armored Divisions moving abreast through two infantry divisions, the 90th and the 79th. In the expectation that XV Corps was to be inserted on the VIII Corps left, and, anticipating that the new corps would compress the 4th Armored Division zone of advance, General Middleton intended to assign the main effort to the 6th Armored Division on the right. Followed by the 79th Division, the 6th Armored Division would subsequently drive from Granville to the base of the Cotentin near Avranches.",
+        "Paragraph_29": "To make possible armored operations in a corps zone jammed with infantry troops and strewn with mines, Middle-ton ordered the infantry divisions to intensify their demining programs and to clear the main routes. The VIII Corps Engineer, Col. William R. Winslow, hastily organized teams to teach members of the armored divisions how to remove new types of German mines.",
+        "Paragraph_30": "To assure control and balance while the armored divisions passed to the front, General Middleton instructed the troops to halt for further orders after capturing Granville and Cérences."
+      },
+      "Footnote_References": [
+        "16",
+        "17",
+        "18",
+        "19",
+        "20"
+      ],
+      "Place_Name": "Coutances",
+      "Dates": {
+        "Date_group_of_event": "28 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 280600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "4th Armored Division",
+            "Name": "John S. Wood",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/John_Shirley_Wood",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "6th Armored Division",
+            "Name": "Robert W. Grow",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_W._Grow",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "VIII Corps Engineer",
+            "Name": "William R. Winslow",
+            "Rank": "Colonel",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.0454, -1.4452",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://history.army.mil/books/wwii/100-13/maps/MapIX.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.0454, -1.4452",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.8452",
+          "East": "0.9548",
+          "South": "48.1454",
+          "North": "49.9454"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "6th Armored Division Advance on 28 July 1944",
+      "Sub-event_summary": "The 6th Armored Division reconnoitered on 27 July and advanced on 28 July, facing traffic congestion at Lessay but moving rapidly to bypass Coutances, halting after minor opposition.",
+      "Sub-event_fulltext": {
+        "Paragraph_31": "The 6th Armored Division reconnoitered its projected zone of advance on the afternoon of 27 July. The following morning, as the infantry divisions of the VIII Corps continued to advance against no opposition, Grow received the order to start rolling.",
+        "Paragraph_32": "CCA (Brig. Gen. James Taylor) moved quickly to Lessay, where traffic congestion because of combat damage to the town, bridge repair, and mine fields retarded progress. Getting through Lessay was difficult, but by early afternoon CCA was moving rapidly toward Coutances. The only opposition to what resembled a road march came from an enemy roadblock two miles northwest of Coutances, where a few German infantrymen and one tank tried to delay the column. Bypassing Coutances on the west, the leading units of CCA moved a short distance down the coastal road toward Granville before halting for the night."
+      },
+      "Footnote_References": [
+        "21",
+        "22"
+      ],
+      "Place_Name": "Lessay",
+      "Dates": {
+        "Date_group_of_event": "28 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 280600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "6th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "6th Armored Division",
+            "Name": "Robert W. Grow",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_W._Grow",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "CCA, 6th Armored Division",
+            "Name": "James Taylor",
+            "Rank": "Brigadier General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "M4 Sherman Tank",
+              "Identifier": "M4",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M4_Sherman_tank_-_WWII.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "PzKpfw",
+              "Quantity": "1",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Bundesarchiv_Bild_101I-299-1805-16,_Nordfrankreich,_Panzer_IV.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Lessay",
+        "Place_GPS_coordinate": "49.2, -1.5333",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Lessay",
+        "Place_GPS_coordinate": "49.2, -1.5333",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.9333",
+          "East": "0.8667",
+          "South": "48.3",
+          "North": "50.1"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "4th Armored Division Advance on 28 July 1944",
+      "Sub-event_summary": "The 4th Armored Division's CCB advanced through Périers, overcoming mine fields and minor opposition to capture Coutances after a sharp skirmish, securing the city by evening.",
+      "Sub-event_fulltext": {
+        "Paragraph_33": "In the left of the VIII Corps zone, the 4th Armored Division had begun to advance shortly after daybreak, 28 July, when CCB (Brig. Gen. Holmes E. Dager) moved through Périers toward",
+        "Paragraph_34": "Coutances. Near St. Sauveur-Lendelin a dense mine field held up progress. Reconnaissance troops vainly searched side roads for alternate routes, tank dozers came forward to construct bypasses, and the main body remained in place for three hours until engineers swept and demined the main road. Under way again, CCB met scant opposition. The armor found no VII Corps troops at Monthuchon and continued to the outskirts of Coutances during the afternoon. When armored infantry dismounted and, accompanied by light tanks, entered the city on foot, German rear-guard troops fought back with artillery, mortar, and small arms fire. A sharp skirmish ensued. Supported by an artillery battalion that threaded its way forward through the stationary armored column, the armored infantry by evening had cleared Coutances of its scattered defenders. German artillery on high ground several miles east of the city gave brief and half-hearted interdictory fire."
+      },
+      "Footnote_References": [
+        "23"
+      ],
+      "Place_Name": "Coutances",
+      "Dates": {
+        "Date_group_of_event": "28 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 280600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "CCB, 4th Armored Division",
+            "Name": "Holmes E. Dager",
+            "Rank": "Brigadier General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Holmes_E._Dager",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Light Tank",
+              "Identifier": "M5 Stuart",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M5_Stuart",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M5_Stuart_Tank_at_Worthington_Tank_Museum.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Tank Dozer",
+              "Identifier": "M4 Dozer",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman_variants",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M4_Sherman_Dozer.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Artillery",
+              "Identifier": "leFH 18",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/10.5_cm_leFH_18",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:LeFH_18_Howitzer.JPG",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p312.jpg",
+          "Description": "Knocked-Out American Tanks Outside Avranches",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.0454, -1.4452",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.0454, -1.4452",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.8452",
+          "East": "0.9548",
+          "South": "48.1454",
+          "North": "49.9454"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "Assessment at End of 28 July 1944",
+      "Sub-event_summary": "By end of 28 July, VIII Corps held Coutances, with armored divisions positioned for pursuit but columns backed up. Potential German defensive lines were identified, but disorganization was evident.",
+      "Sub-event_fulltext": {
+        "Paragraph_35": "By the end of 28 July, VIII Corps at last held Coutances, the objective that had lured the corps forward for almost a month. COBRA had accomplished what the battle of the hedgerows had not, but Coutances in the process had lost its value. More important, General Middleton had two armored divisions at the head of his troops, almost in position to pursue a withdrawing enemy--almost in position, but not quite, for although the",
+        "Paragraph_36": "spearheads were in place, the columns were strung out and backed up through the countryside. The armor would require another day to wriggle through the infantry.From a study of the terrain, it seemed that the Germans might try to anchor their right on Tessy-sur-Vire and withdraw their left. On this basis, the Germans might try to consolidate defenses and hold on one of three possible lines: Tessy-Coutances; Tessy-Granville; or Tessy-Villedieu-les-Poëles-Avranches.",
+        "Paragraph_37": "By the end of 28 July, however, the Germans had lost Coutances and appeared incapable of stabilizing the front in the Cotentin. There was little indication of defensive preparations. The Germans seemed \"completely disorganized with no sign of co-ordinated resistance.\" Air reconnaissance disclosed no movement of reinforcements toward the area roughly bounded by Coutances, Avranches, and Percy. On the contrary, German vehicular columns were cluttering the roads below Bréhal, Gavray, and Percy as they hurried south under punishment administered by American tactical aircraft. Destroyed and burning vehicles lined almost every main road. Trees along a 200-yard line in Coutances had been notched for felling across the highway, but were still standing when American troops arrived, clear evidence of the haste of the German withdrawal. Mines were scattered along roads and at intersections rather than in disciplined patterns. Defenders of the few isolated roadblocks that existed fought half-heartedly. Bridges were sometimes demolished, sometimes not. A small amount of light-caliber artillery fire harassed the American advance, but the bulk of the German artillery was en route south."
+      },
+      "Footnote_References": [
+        "24"
+      ],
+      "Place_Name": "Coutances",
+      "Dates": {
+        "Date_group_of_event": "28 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 282100ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar N. Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Fighter-Bomber",
+              "Identifier": "P-47 Thunderbolt",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Republic_P-47_Thunderbolt",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:P-47_Thunderbolt_2.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Vehicles",
+              "Identifier": "various",
+              "Quantity": "destroyed and burning vehicles lined almost every main road",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.0454, -1.4452",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.0454, -1.4452",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.8452",
+          "East": "0.9548",
+          "South": "48.1454",
+          "North": "49.9454"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "Plans for Overrunning German Lines and Targeting Avranches",
+      "Sub-event_summary": "Convinced German reinforcements were incoming, commanders aimed to overrun potential defensive lines before arrival. Middleton set Avranches as objective, describing its strategic importance as the gateway to Brittany.",
+      "Sub-event_fulltext": {
+        "Paragraph_38": "Convinced that German reinforcements must be on their way to the Cotentin from Brittany and from sectors east of the Vire River, American commanders hoped to overrun the potential defensive lines that remained in the Cotentin before the reinforcements could arrive. General Middleton consequently raised his immediate sights to Avranches.",
+        "Paragraph_39": "On a picturesque bluff 200 feet high, Avranches overlooks the bay of Mont St. Michel and the famous rock clearly visible eight miles away. Avranches fascinated the Americans, not because of the sights that have interested tourists for so long but because it is at the base of the Cotentin. For practical-minded Americans in July 1944, Avranches was the symbol of egress from the Cotentin and entrance into Brittany.",
+        "Paragraph_40": "Avranches lies between two rivers, the Sée and the Sélune, which flow westward to the bay about four miles apart. The city snuggles against the Sée where two highway bridges funnel traffic from five highways arriving from the north and the east--two from Granville, one each from Coutances, Villedieu-les-Poëles, and Brécey. Below Avranches the roads are compressed into one main highway leading due south and across the Sélune River near Pontaubault, where the highway splits, the roads diverging and affording access to the east, south, and west. A bottleneck in the north-south road network, protected by water on",
+        "Paragraph_41": "three sides, situated on commanding terrain, Avranches in the summer of 1944 was a prize beyond compare."
+      },
+      "Footnote_References": [
+        "25"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "28 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 282100ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar N. Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "VIII Corps",
+            "Name": "Troy H. Middleton",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7667",
+          "East": "1.0333",
+          "South": "47.7833",
+          "North": "49.5833"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "Orders for 29 July 1944 Advance to Avranches",
+      "Sub-event_summary": "Middleton ordered the 6th Armored to Granville and Avranches, the 4th Armored to Cérences and Tirepied crossing. Motorized infantry teams from 79th and 8th Divisions were attached to support.",
+      "Sub-event_fulltext": {
+        "Paragraph_42": "On the evening of 28 July, armored spearheads of the VIII Corps were more than thirty miles from Avranches, but separated from the city, General Middleton believed, only by scattered opposition. He ordered the 6th Armored Division to strike swiftly through Granville to Avranches while the 4th Armored Division took Cérences, then moved southeastward to secure a crossing of the Sée River at Tirepied, several miles east of Avranches. The capture of Avranches and of crossing sites over the Sée and Sélune Rivers would make possible the commitment of the Third Army into Brittany, and to this end the 4th Armored Division was to hold open the natural bottleneck at the base of the Cotentin and block German forces that might threaten the slender corridor from the east. Attaching forty Quartermaster trucks to the 79th and 8th Divisions, Middleton instructed each of these infantry division commanders to motorize a regimental combat team. The teams were to be ready to assist the 6th and 4th Armored Divisions, respectively."
+      },
+      "Footnote_References": [
+        "26"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "28 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 282100ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar N. Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "6th Armored Division",
+            "Name": "Robert W. Grow",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_W._Grow",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "4th Armored Division",
+            "Name": "John S. Wood",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/John_Shirley_Wood",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Quartermaster trucks attached",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Quartermaster Truck",
+              "Identifier": "GMC CCKW",
+              "Quantity": "40",
+              "Web_Reference": "https://en.wikipedia.org/wiki/GMC_CCKW_2%C2%BD-ton_6%C3%976_truck",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:GMC_CCKW_2%C2%BD-ton_6x6_truck.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7667",
+          "East": "1.0333",
+          "South": "47.7833",
+          "North": "49.5833"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "6th Armored Division Advance on 29 July 1944",
+      "Sub-event_summary": "The 6th Armored Division crossed the Sienne at Pont-de-la-Roque after a full-scale assault, but progress was disappointing, prompting criticism from Patton and Middleton.",
+      "Sub-event_fulltext": {
+        "Paragraph_43": "Shortly after daybreak, 29 July, the leading units of the 6th Armored Division moved southwest of Coutances to the Sienne River. At the destroyed bridge of Pont-de-la-Roque, small arms fire from the south bank stopped the advance. When reconnaissance revealed no other river crossing site in the division zone, CCA prepared a full-scale assault. The arrangements consumed most of the day. After a five-minute artillery preparation reinforced by tank and tank destroyer fire, armored infantrymen crossed the river early in the evening against light mortar and small arms fire and dispersed the few defenders. Engineers began to construct a bridge and prepare a ford.",
+        "Paragraph_44": "The ground gained was disappointing, and the loss of 3 killed and 10 wounded as against only 39 prisoners taken seemed to indicate that the division had been less than aggressive in its initial action. General Patton noted this pointedly to the division commander, as did General Middleton, who tersely commanded General Grow to \"put on the heat.\""
+      },
+      "Footnote_References": [
+        "27"
+      ],
+      "Place_Name": "Pont-de-la-Roque",
+      "Dates": {
+        "Date_group_of_event": "29 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 290600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "6th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "6th Armored Division",
+            "Name": "Robert W. Grow",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_W._Grow",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Tank Destroyer",
+              "Identifier": "M10 Wolverine",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M10_tank_destroyer",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M10_Wolverine_tank_destroyer.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "3",
+          "Allied_US_WIA": "10",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "39"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Pont-de-la-Roque",
+        "Place_GPS_coordinate": "48.9167, -1.3833",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pont-de-la-Roque",
+        "Place_GPS_coordinate": "48.9167, -1.3833",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7833",
+          "East": "1.0167",
+          "South": "48.0167",
+          "North": "49.8167"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "4th Armored Division Advance on 29 July 1944",
+      "Sub-event_summary": "The 4th Armored Division used parallel highways, overcoming minor resistance and VII Corps interference to reach the Sienne River at Cérences and Lengronne, capturing 125 prisoners with minimal casualties.",
+      "Sub-event_fulltext": {
+        "Paragraph_45": "On the left, the 4th Armored Division was making better progress. General Wood saw that his axis of advance, the Coutances-Hyenville-Cérences highway, crossed the Sienne River in three places. Anticipating that the Germans would have destroyed the bridges, he requested permission to use, in addition, the parallel highway--the Coutances-Lengronne road--two miles to the east. Unfortunately, the road was in the VII Corps sector. After a conference at corps and army echelons and despite recognition that VII Corps troops driving westward from Montpinchon would probably overflow the highway and cause confusion and delay, the road was reassigned to the VIII Corps. General Wood then ordered CCB to use both main highways, a course of action the tankers had already initiated.",
+        "Paragraph_46": "Brig. Gen. Holmes E. Dager's CCB",
+        "Paragraph_47": "had worked through the night of 28 July to clear the scattered enemy troops in Coutances and just south of the city. At daybreak, 29 July, when two armored columns departed, only a few armed Germans and a profusion of mines remained in Coutances. A damaged bridge immediately south of the city was quickly repaired. Then, as fighter-bombers provided air cover, the armor drove forward on two routes, meeting sporadic resistance so disorganized that deployment was usually not necessary in order to overrun and eliminate it. Interference from VII Corps tanks that overflowed from the adjacent corps zone was more serious, though not fatal. The CCB columns encountered and destroyed several German tanks late in the afternoon and rolled on to the Sienne River at Cérences and south of Lengronne. There, destroyed bridges brought the advance to a halt.",
+        "Paragraph_48": "In gaining about ten miles on 29 July, CCB had sustained little more than 30 casualties and had taken 125 prisoners. The problem of handling surrendering enemy threatened throughout the day to consume more time and energy than did the terrain, traffic, and spotty resistance. \"Send them to the rear disarmed without guards\" became a standing operating procedure."
+      },
+      "Footnote_References": [
+        "28",
+        "29",
+        "30",
+        "31"
+      ],
+      "Place_Name": "Cérences",
+      "Dates": {
+        "Date_group_of_event": "29 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 290600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "CCB, 4th Armored Division",
+            "Name": "Holmes E. Dager",
+            "Rank": "Brigadier General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Holmes_E._Dager",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Fighter-Bomber",
+              "Identifier": "P-47 Thunderbolt",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Republic_P-47_Thunderbolt",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:P-47_Thunderbolt_2.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "PzKpfw",
+              "Quantity": "several",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Bundesarchiv_Bild_101I-299-1805-16,_Nordfrankreich,_Panzer_IV.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "PzKpfw",
+              "Quantity": "several",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Bundesarchiv_Bild_101I-299-1805-16,_Nordfrankreich,_Panzer_IV.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "30",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "125"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cérences",
+        "Place_GPS_coordinate": "48.9167, -1.4333",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cérences",
+        "Place_GPS_coordinate": "48.9167, -1.4333",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.8333",
+          "East": "0.9667",
+          "South": "48.0167",
+          "North": "49.8167"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "Assessment at End of 29 July 1944",
+      "Sub-event_summary": "By end of 29 July, armored divisions were positioned for southern thrusts, with no organized German resistance. Infantry collected prisoners, artillery reconnoitered.",
+      "Sub-event_fulltext": {
+        "Paragraph_49": "By the end of 29 July, the 4th and 6th Armored Divisions were sufficiently forward to give promise of rapid thrusts to the south on the following day. Nothing the enemy seemed capable of doing appeared strong enough to block the advance. The \"disorderly withdrawal of the enemy throughout the period continued, showing no signs of slackening.\" German vehicular movement southward still clogged the roads south of Bréhal and Cérences. Sporadic fire from isolated self-propelled guns harassed American bridging parties along the Sienne River, but other than that the leading units of VIII Corps were out of contact with organized German defenses. To the rear of the armor, the infantry divisions had held in place and collected about a hundred prisoners. The 79th and 8th Divisions each had a motorized regimental combat team ready to reinforce the armored divisions. The corps artillery had fired only registration missions, had reconnoitered forward areas, and had displaced to the south as rapidly as possible. All seemed in readiness for a decisive thrust to Avranches."
+      },
+      "Footnote_References": [
+        "32"
+      ],
+      "Place_Name": "Bréhal",
+      "Dates": {
+        "Date_group_of_event": "29 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 292100ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar N. Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Self-Propelled Gun",
+              "Identifier": "StuG III",
+              "Quantity": "isolated",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Sturmgesch%C3%BCtz_III",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:StuG_III_Ausf._G.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "100"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Bréhal",
+        "Place_GPS_coordinate": "48.8992, -1.5123",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Bréhal",
+        "Place_GPS_coordinate": "48.8992, -1.5123",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.9123",
+          "East": "0.8877",
+          "South": "47.9992",
+          "North": "49.7992"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "Middleton Assigns Avranches to 4th Armored Division (29 July 1944)",
+      "Sub-event_summary": "Recognizing the 4th Armored's better position and experience, Middleton assigned Avranches to it, tasking the 6th with Bréhal and Granville. Grow advanced CCB to encircle Granville.",
+      "Sub-event_fulltext": {
+        "Paragraph_50": "To General Middleton, the 4th Armored Division instead of the 6th now seemed in a better position to secure Avranches. The 4th was also manifesting the superiority over untested units that experienced troops generally display. Earlier in the month, to the horror of some armored experts who had protested that an armored division should not be used to hold a static front,",
+        "Paragraph_51": "General Middleton had assigned the 4th a portion of the defensive line on the Carentan-Périers isthmus. There, during the week before COBRA, the division had learned enough of actual combat to acquire a confidence that was evident in its operations of 28 and 29 July. To take advantage of these factors, Middleton gave Avranches, the corps objective, to General Wood. The 6th Armored Division was to capture Bréhal and Granville.",
+        "Paragraph_52": "Dissatisfied with the progress of CCA, General Grow wished to get CCB (Col. George W. Read, Jr.) into action. He therefore passed CCB through the 6th Armored Division forces holding the bridgehead at Pont-de-la-Roque. Anticipating little resistance at Bréhal, Grow expected CCB, after driving through the town, to bypass Granville on the east and encircle it from the south."
+      },
+      "Footnote_References": [
+        "33",
+        "34"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "29 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 292100ZJUL44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "4th Armored Division",
+            "Name": "John S. Wood",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/John_Shirley_Wood",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "6th Armored Division",
+            "Name": "Robert W. Grow",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_W._Grow",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "CCB, 6th Armored Division",
+            "Name": "George W. Read Jr.",
+            "Rank": "Colonel",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Experienced from defensive line",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7667",
+          "East": "1.0333",
+          "South": "47.7833",
+          "North": "49.5833"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "6th Armored Division Advance on 30 July 1944",
+      "Sub-event_summary": "The 6th Armored's CCB advanced to Bréhal and Granville, overcoming minor resistance, moving 12 miles and capturing over 200 prisoners with minimal casualties.",
+      "Sub-event_fulltext": {
+        "Paragraph_53": "As expected, little besides small arms fire along the main road opposed the approach to Bréhal. CCB leapfrogged forward, firing high-explosive shells and canister into wooded areas along the road, and reached the outskirts of town, where a log roadblock with a rolling steel gate barred the way. After a flight of four P-47's made several unsuccessful passes at the obstacle, the lead tank in the column simply rammed the block, knocked down the logs, and opened a passage into the main street of Bréhal. After several random shots, a few bedraggled Germans were herded into the town square.",
+        "Paragraph_54": "South of Bréhal, CCB passed a prepared but undefended roadblock and drove through light artillery fire interdicting the highway to Granville. General Grow halted the advance short of the city to consolidate his gain. The division had moved about twelve miles, had taken more than 200 prisoners against 2 men killed and 10 wounded, and was demonstrating that it, too, was capable of aggressive and assured action."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Bréhal",
+      "Dates": {
+        "Date_group_of_event": "30 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 300600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "6th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "CCB, 6th Armored Division",
+            "Name": "George W. Read Jr.",
+            "Rank": "Colonel",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "P-47 Thunderbolt",
+              "Identifier": "P-47",
+              "Quantity": "4",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Republic_P-47_Thunderbolt",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:P-47_Thunderbolt_2.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "2",
+          "Allied_US_WIA": "10",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "200"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Bréhal",
+        "Place_GPS_coordinate": "48.8992, -1.5123",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Bréhal",
+        "Place_GPS_coordinate": "48.8992, -1.5123",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.9123",
+          "East": "0.8877",
+          "South": "47.9992",
+          "North": "49.7992"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "4th Armored Division Advance on 30 July 1944",
+      "Sub-event_summary": "The 4th Armored crossed the Sienne, with one column ambushed losing vehicles but advancing, the other reaching Avranches, passing near Seventh Army CP, securing bridges.",
+      "Sub-event_fulltext": {
+        "Paragraph_55": "Meanwhile, the 4th Armored Division was carrying the main effort of VIII Corps. As soon as General Wood had learned that he was to take Avranches, he notified the CCB commander: \"Present mission cancelled--using any roads [in zone] . . . move on Avranches . . . to capture it and secure crossings east thereof.\"",
+        "Paragraph_56": "For all the urgency implied in this order, the destroyed Sienne River bridges at Cérences and south of Lengronne continued to thwart advance until the afternoon of 30 July, when engineers bridged the stream. Only then could both columns of CCB cross the river and proceed to the south.",
+        "Paragraph_57": "The eastern column ran into an ambush almost at once and after losing six half-tracks spent the rest of the day eradicating the resistance. Dismounted infantry, with support from artillery and a flight of fighter-bombers, attacked German positions on high ground obstructing the advance, while antitank gunners engaged and destroyed two German tanks. At the approach of darkness the Germans retired, then shelled the high ground they had vacated, apparently on the premise that American infantrymen had occupied it. But the Americans had abandoned the hill to outpost the",
+        "Paragraph_58": "tanks on the road during the night. When the skirmish ended, CCB had incurred 43 casualties and lost eight halftracks.",
+        "Paragraph_59": "The western column, under the personal command of General Dager, had better luck. Tanks moved rapidly for about ten miles through la Haye-Pesnel and Sartilly against virtually no resistance. Three and a half miles north of Avranches, the troops unknowingly passed within several hundred yards of the Seventh Army advance command post. General Hausser, Generalmajor Rudolf-Christoph Freiherr Gersdorff, and other general staff officers made their way to safety through the meticulously regular intervals of the column serials. On foot at first, later in commandeered vehicles, the German officers fled eastward through Brécey toward Mortain.",
+        "Paragraph_60": "The CCB column continued to the Sée River just north of Avranches and discovered that both highway bridges were intact. Early in the evening troops entered Avranches, an undefended city for all its prize aspects. After outposting the southern and eastern outskirts quickly, General Dager sent a small force eastward along the north bank of the Sée to secure the bridge at Tirepied, five miles away."
+      },
+      "Footnote_References": [
+        "35",
+        "36",
+        "37"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "30 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 301200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "CCB, 4th Armored Division",
+            "Name": "Holmes E. Dager",
+            "Rank": "Brigadier General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Holmes_E._Dager",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Half-Track",
+              "Identifier": "M3 Half-track",
+              "Quantity": "8 destroyed",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M3_Half-track",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M3_Half-track.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Fighter-Bomber",
+              "Identifier": "P-47 Thunderbolt",
+              "Quantity": "a flight",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Republic_P-47_Thunderbolt",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:P-47_Thunderbolt_2.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Half-Track",
+              "Identifier": "M3 Half-track",
+              "Quantity": "6",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M3_Half-track",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M3_Half-track.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "PzKpfw",
+              "Quantity": "2",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Bundesarchiv_Bild_101I-299-1805-16,_Nordfrankreich,_Panzer_IV.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "PzKpfw",
+              "Quantity": "2",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Bundesarchiv_Bild_101I-299-1805-16,_Nordfrankreich,_Panzer_IV.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "43",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7667",
+          "East": "1.0333",
+          "South": "47.7833",
+          "North": "49.5833"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "German Seventh Army CP Evacuation (30 July 1944)",
+      "Sub-event_summary": "The 4th Armored column passed near the Seventh Army advance CP, allowing General Hausser and staff, including Gersdorff, to escape eastward to Mortain.",
+      "Sub-event_fulltext": {
+        "Paragraph_59": "The western column, under the personal command of General Dager, had better luck. Tanks moved rapidly for about ten miles through la Haye-Pesnel and Sartilly against virtually no resistance. Three and a half miles north of Avranches, the troops unknowingly passed within several hundred yards of the Seventh Army advance command post. General Hausser, Generalmajor Rudolf-Christoph Freiherr Gersdorff, and other general staff officers made their way to safety through the meticulously regular intervals of the column serials. On foot at first, later in commandeered vehicles, the German officers fled eastward through Brécey toward Mortain."
+      },
+      "Footnote_References": [
+        "36"
+      ],
+      "Place_Name": "Sartilly",
+      "Dates": {
+        "Date_group_of_event": "30 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 301500ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army (German)",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Seventh Army",
+            "Name": "Paul Hausser",
+            "Rank": "General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "Seventh Army Staff",
+            "Name": "Rudolf-Christoph Freiherr von Gersdorff",
+            "Rank": "Generalmajor",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Rudolf-Christoph_von_Gersdorff",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Staff officers",
+        "Equipments": {
+          "Supply": "Commandeered vehicles",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Sartilly",
+        "Place_GPS_coordinate": "48.7525, -1.4569",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Sartilly",
+        "Place_GPS_coordinate": "48.7525, -1.4569",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.8569",
+          "East": "0.9431",
+          "South": "47.8525",
+          "North": "49.6525"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "Assessment at End of 30 July 1944",
+      "Sub-event_summary": "Situation obscure, with evidence of German disorganization but some hard-fighting units. Uncertainty about Avranches capture, open flank concern.",
+      "Sub-event_fulltext": {
+        "Paragraph_61": "The situation as it was known at VIII Corps headquarters on the evening of 30 July was obscure, even to the achievement at Avranches.",
+        "Paragraph_62": "Abundant evidence indicated the complete absence of organized resistance in the corps zone. Airplane pilots reported having seen Frenchmen from Granville to Villedieu-les-Poëles \"waving the Tri-Color,\" which obviously meant that the Germans had withdrawn south of that line. Civilians reported Germans asking the road to Mayenne, twenty-five miles to the south. Prisoners, numbering 1,200 on 30 July, consistently affirmed that German units were completely out of contact with each other and with higher headquarters. Yet the experience of the 6th Armored Division in the coastal sector and the ambush of the 4th Armored Division eastern column pointed to the presence of hard-fighting enemy units. At the same time the whereabouts of the column in Avranches was unknown. If, as was rumored, troops of the 4th Armored Division's CCB had entered Avranches, then the VIII Corps left flank from Gavray to Avranches, a distance of ten miles, was wide open since the adjacent VII Corps on the evening of 30 July was crossing the Sienne River at Gavray."
+      },
+      "Footnote_References": [
+        "38",
+        "39",
+        "40"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "30 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 302100ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar N. Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "1200"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7667",
+          "East": "1.0333",
+          "South": "47.7833",
+          "North": "49.5833"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "Middleton Orders for 31 July 1944",
+      "Sub-event_summary": "Upon confirming Avranches capture, Middleton ordered the 4th Armored to push across the Sélune, attaching infantry and CCA. The 6th Armored to relieve at Avranches.",
+      "Sub-event_fulltext": {
+        "Paragraph_63": "Unable to believe that German disorganization was as great as represented, General Middleton was hopefully cautious until he learned definitely that American troops were in Avranches. Then, late on the evening of 30 July, Middleton acted with dispatch. He ordered Wood to push through Avranches",
+        "Paragraph_64": "and across the Sélune River and attached to the 4th Armored Division the motorized regimental combat team of the 8th Division that was ready to move. To prevent intermingling of the 4th and 6th Armored Divisions on the restricted road net, Middleton told Grow to take Granville and move only as far toward Avranches as the Sartilly-la Haye-Pesnel line.",
+        "Paragraph_65": "Appreciating the necessity for speed and on-the-spot co-ordination, General Wood delegated control of all the 4th Armored Division forces in the vicinity of Avranches to General Dager by attaching to CCB not only the infantry regiment of the 8th Division but also CCA (Col. Bruce C. Clarke), which he had already dispatched to Avranches.",
+        "Paragraph_66": "Taking Avranches was not enough. The narrow coastal corridor, consisting of the single main highway from Avranches to the Sélune River crossing near Pontaubault, four miles to the south, had to be made secure to allow the Third Army to pass into Brittany. The troops thus needed to hold Avranches and at the same time to seize and hold essential adjacent objectives: river crossings south and southeast of Avranches and high ground east and southeast. Part of the high ground between the Sée and Sélune Rivers--rugged terrain where several reservoirs and dams were located--was an eventual objective of the VII Corps, but responsibility for the portion south of the Sélune near the village of Ducey belonged, as did the other tasks around Avranches, to General Dager's CCB."
+      },
+      "Footnote_References": [
+        "41",
+        "42",
+        "43"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "30 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 302100ZJUL44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "CCB, 4th Armored Division",
+            "Name": "Holmes E. Dager",
+            "Rank": "Brigadier General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Holmes_E._Dager",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "CCA, 4th Armored Division",
+            "Name": "Bruce C. Clarke",
+            "Rank": "Colonel",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Bruce_C._Clarke",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7667",
+          "East": "1.0333",
+          "South": "47.7833",
+          "North": "49.5833"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "German Attempts at Avranches (Night 30-31 July 1944)",
+      "Sub-event_summary": "German columns attempted to pass through Avranches using red cross vehicles but were engaged, leading to abandonment of a bridge and German entry into the city before daylight.",
+      "Sub-event_fulltext": {
+        "Paragraph_67": "General Dager learned at 0200, 31 July, that he was soon to receive additional forces to help him hold Avranches, establish Sélune River crossing sites, and take Ducey. The news was opportune, less in terms of seizing the other objectives than in holding the one he had taken with such ease the afternoon before. The fact was that trouble had developed at Avranches.",
+        "Paragraph_68": "First indications that Avranches might not be as easy to hold as it had at first appeared had developed about two hours before midnight of 30 July. At the Sée River bridge on the main highway from Granville, men of a CCB tank company detected the approach of a large German vehicular column along the coastal road from Granville. Because the vehicles were marked with red crosses, the tankers assumed they were evacuating German wounded. They allowed the first few to pass and cross the bridge into Avranches. But when Germans in several of the trucks opened fire with rifles, the tankers returned the fire and destroyed a few vehicles, thus blocking the road. With the column halted, German soldiers piled out of their vehicles and came toward the bridge, hands high in surrender. The tank company took several hundred prisoners. Examination revealed that the vehicles were loaded with ammunition and other nonmedical supplies.",
+        "Paragraph_69": "Learning from their prisoners that",
+        "Paragraph_70": "another, more heavily armed German column was also approaching down the coastal road from Granville, the men of the tank company became jittery. Small arms fire shortly after midnight announced the arrival of the second column. When an enemy shell struck an ammunition truck and set it ablaze, the tank company commander reached a quick decision. His position illuminated, lacking infantry protection for his tanks, and outnumbered by his prisoners, he ordered withdrawal. Without having lost a man or a tank, the company abandoned several hundred prisoners and the Granville road bridge to move eastward to the Sée River bridge on the Villedieu-les-Poëles road."
+      },
+      "Footnote_References": [
+        "44"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "30-31 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 302200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "CCB, 4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "4th Armored Division",
+          "Commander": "Wood",
+          "Name": "John S. Wood",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/John_Shirley_Wood",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Tank Company, CCB",
+            "Name": "unknown",
+            "Rank": null,
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Vehicles (marked red cross)",
+              "Identifier": "various",
+              "Quantity": "large column",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Vehicles",
+              "Identifier": "various",
+              "Quantity": "a few",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "several hundred"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7667",
+          "East": "1.0333",
+          "South": "47.7833",
+          "North": "49.5833"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "German Entry and Attacks in Avranches (31 July 1944)",
+      "Sub-event_summary": "Germans entered Avranches, emplaced artillery, and launched attacks, but were repelled by CCB infantry supported by mortars and P-47s, with several hundred surrendering.",
+      "Sub-event_fulltext": {
+        "Paragraph_71": "Over the unguarded bridge the Germans, before daylight on 31 July, entered Avranches in considerable numbers. Some emplaced several artillery pieces on the northwest edge of the Avranches bluff to dominate the bridge and the Granville road. Others in a column of trucks, horse-drawn wagons, and tracked vehicles turned eastward and disappeared into the darkness, headed toward Mortain. Still others moved toward the southern exits of Avranches, where they bumped into armored infantrymen of CCB, who were outposting the southern approaches to the city. Surprised, both American and Germans opened fire. In the confused fight, the action of one machine gunner, Pvt. William H. Whitson, was a deciding factor. Before he was killed, he destroyed nearly 50 Germans and more than 20 light vehicles with his .30-caliber gun.",
+        "Paragraph_72": "The Germans turned back, but only to reorganize for a second attack that came after daylight. The CCB infantrymen were ready. Using white phosphorus mortar shells effectively and supported by the providential appearance of a flight of P-47's, they held their ground. When the attack collapsed, several hundred Germans surrendered."
+      },
+      "Footnote_References": [
+        "45"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "31 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 310600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "CCB, 4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "4th Armored Division",
+          "Commander": "Wood",
+          "Name": "John S. Wood",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/John_Shirley_Wood",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Armored infantrymen",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "P-47 Thunderbolt",
+              "Identifier": "P-47",
+              "Quantity": "a flight",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Republic_P-47_Thunderbolt",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:P-47_Thunderbolt_2.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Mortar",
+              "Identifier": "M2 4.2 inch mortar",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M2_4.2-inch_mortar",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M2_4.2_inch_mortar.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Artillery",
+              "Identifier": "leFH 18",
+              "Quantity": "several",
+              "Web_Reference": "https://en.wikipedia.org/wiki/10.5_cm_leFH_18",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:LeFH_18_Howitzer.JPG",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Light Vehicles",
+              "Identifier": "various",
+              "Quantity": "more than 20",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Light Vehicles",
+              "Identifier": "various",
+              "Quantity": "more than 20",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "1",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "50",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "several hundred"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p320.jpg",
+          "Description": "Abandoned German Equipment Litters a Road to Avranches",
+          "License": "Public Domain"
+        },
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p321.jpg",
+          "Description": "Destroyed Enemy Vehicles Cluttering a Street in Avranches",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7667",
+          "East": "1.0333",
+          "South": "47.7833",
+          "North": "49.5833"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "Award of DSC to Pvt. William H. Whitson",
+      "Sub-event_summary": "Pvt. William H. Whitson was posthumously awarded the Distinguished Service Cross for his actions in repelling a German attack in Avranches, destroying nearly 50 Germans and over 20 vehicles before being killed.",
+      "Sub-event_fulltext": {
+        "Paragraph_72": "The Germans turned back, but only to reorganize for a second attack that came after daylight. The CCB infantrymen were ready. Using white phosphorus mortar shells effectively and supported by the providential appearance of a flight of P-47's, they held their ground. When the attack collapsed, several hundred Germans surrendered."
+      },
+      "Footnote_References": [
+        "45"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "31 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 310600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "CCB, 4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "4th Armored Division",
+          "Commander": "Wood",
+          "Name": "John S. Wood",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/John_Shirley_Wood",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Pvt. William H. Whitson",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Machine Gun",
+              "Identifier": ".30-caliber M1919",
+              "Quantity": "1",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M1919_Browning_machine_gun",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M1919_Browning_machine_gun.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "1",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "50",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "several hundred"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7667",
+          "East": "1.0333",
+          "South": "47.7833",
+          "North": "49.5833"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "Securing Avranches and CCA Tasks (31 July 1944)",
+      "Sub-event_summary": "Dager confirmed Avranches secure, directed CCA to seize Pontaubault, Ducey bridge, and dams. Task forces bypassed resistance, capturing objectives intact with minor opposition.",
+      "Sub-event_fulltext": {
+        "Paragraph_73": "Meanwhile, General Dager had discovered the abandonment of the bridge on the Granville road and ordered the tank company commander to return. The company reached its former positions on 31 July, about the same time that advance units of CCA were arriving on the scene. When the German artillery pieces on the bluff opened fire on CCA, tankers engaged them while armored infantrymen crossed the river, mounted the bluff, and captured the pieces.",
+        "Paragraph_74": "By the afternoon of 31 July General Dager was sure that the Germans at Avranches had actually been seeking an escape route and not attempting to recapture Avranches. Dager considered the town secure. He directed CCA to move on to the other task--seizing the main bridge across the Sélune at Pontaubault, a secondary bridge at Ducey, and two dams several miles southeast of Avranches. While the bridges were of prime importance, the dams were hardly less so. If the Germans destroyed the water gates and flooded the Sélune, an immediate advance would be out of the question.",
+        "Paragraph_75": "The CCA commander, Colonel Clarke, divided his troops into four task forces. He directed each to one of the",
+        "Paragraph_76": "four objectives, which were to be secured before nightfall that day, 31 July, and ordered the forces to bypass resistance. There was no information about the enemy, nor was there time to reconnoiter. With speed the important element, the task forces planned no special tactical dispositions to provide advance or flank security. Since there was no time to obtain air support liaison parties for the individual task forces, fighter-bomber pilots without direct communication to the tankers found their own targets and kept track of progress on the ground by the bright cerise panels on the rear decks and the white painted stars on the tops of the tanks.",
+        "Paragraph_77": "One task force took Ducey after several short skirmishes and outposted the bridge there. Another secured its dam objective after overcoming minor resistance. A third was well on its way to taking the other dam after plunging through a series of small roadblocks, knocking over several German motorcyclists, destroying a few enemy tanks, running a gantlet of exploding shells in a destroyed ammunition dump, and finally capturing a company of German infantrymen who walked into the task force outposts on the assumption they were German positions."
+      },
+      "Footnote_References": [
+        "46"
+      ],
+      "Place_Name": "Pontaubault",
+      "Dates": {
+        "Date_group_of_event": "31 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 311200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "CCA, 4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "4th Armored Division",
+          "Commander": "Wood",
+          "Name": "John S. Wood",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/John_Shirley_Wood",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "CCA, 4th Armored Division",
+            "Name": "Bruce C. Clarke",
+            "Rank": "Colonel",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Bruce_C._Clarke",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Fighter-Bomber",
+              "Identifier": "P-47 Thunderbolt",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Republic_P-47_Thunderbolt",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:P-47_Thunderbolt_2.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "PzKpfw",
+              "Quantity": "a few",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Bundesarchiv_Bild_101I-299-1805-16,_Nordfrankreich,_Panzer_IV.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "PzKpfw",
+              "Quantity": "a few",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Bundesarchiv_Bild_101I-299-1805-16,_Nordfrankreich,_Panzer_IV.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "company (approx 100)"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Pontaubault",
+        "Place_GPS_coordinate": "48.629, -1.35",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pontaubault",
+        "Place_GPS_coordinate": "48.629, -1.35",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.75",
+          "East": "1.05",
+          "South": "47.729",
+          "North": "49.529"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "Capture of Pontaubault Bridge (31 July 1944)",
+      "Sub-event_summary": "Despite expectations, the Pontaubault bridge was captured intact and unguarded, with approaching enemy vehicles dispersed.",
+      "Sub-event_fulltext": {
+        "Paragraph_78": "It seemed illogical to expect the Pontaubault bridge, four miles due south of Avranches, to be captured intact. If the bridges at Avranches still stood through German oversight, it was unlikely that the same mistake would be made again. American reconnaissance pilots nevertheless had reported on 30",
+        "Paragraph_79": "July that the Pontaubault bridge was apparently in good condition and unguarded. As late as the afternoon of 31 July, pilots still failed to detect any German troops near the bridge.",
+        "Paragraph_80": "As a matter of fact, the Germans were trying to get into position to contest the Pontaubault bridge. They were too late. As a task force of the 4th Division's CCA swept across the bridge in the late afternoon of 31 July and outposted the important road intersections immediately south of it, enemy vehicles approached from the west. Tank and artillery fire quickly dispersed them."
+      },
+      "Footnote_References": [
+        "47"
+      ],
+      "Place_Name": "Pontaubault",
+      "Dates": {
+        "Date_group_of_event": "31 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 311500ZJUL44"
+      },
+      "TOE": {
+        "Unit": "CCA, 4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "4th Armored Division",
+          "Commander": "Wood",
+          "Name": "John S. Wood",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/John_Shirley_Wood",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Vehicles",
+              "Identifier": "various",
+              "Quantity": "unknown",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Pontaubault",
+        "Place_GPS_coordinate": "48.629, -1.35",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pontaubault",
+        "Place_GPS_coordinate": "48.629, -1.35",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.75",
+          "East": "1.05",
+          "South": "47.729",
+          "North": "49.529"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "Completion and Relief at Avranches (1 August 1944)",
+      "Sub-event_summary": "By 1 August, VIII Corps secured multiple river crossings. The 6th Armored relieved the 4th at Avranches and Pontaubault, with additional support moved in.",
+      "Sub-event_fulltext": {
+        "Paragraph_81": "The action completed by the 4th Armored Division by the morning of 1 August gave VIII Corps three crossing sites over the Sée River (two bridges at Avranches and one at Tirepied, five miles to the east) and four over the Sélune--easily enough routes to enter Brittany. With the division in position to continue south, General Middleton ordered the 6th Armored Division, which had cleared Granville of scattered resistance and moved to the la Haye-Pensel-Sartilly line, to relieve the 4th at Avranches and Pontaubault. He also dispatched another regimental combat team of the 8th Division to the vicinity of Avranches and sent artillery and antiaircraft units to guard the critical roads and bridges."
+      },
+      "Footnote_References": [
+        "48"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "1 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar N. Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7667",
+          "East": "1.0333",
+          "South": "47.7833",
+          "North": "49.5833"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Breakout to Avranches",
+      "Sub-event": "Overall Assessment End of July 1944",
+      "Sub-event_summary": "Armored divisions captured 7000 prisoners, infantry processed 3000 more, with corps casualties under 700. Extensive German disorganization and destruction evident.",
+      "Sub-event_fulltext": {
+        "Paragraph_82": "That little stood in the way of continued advance was clearly evident. The 4th and 6th Armored Divisions together had taken more than 4,000 prisoners on 31 July. The 79th and 8th Divisions, moving behind the armor on secondary roads, had done little more than process about 3,000 additional prisoners, all willing to be out of the war. In contrast with these figures, casualties of the VIII Corps from 28 through 31 July totaled less than 700.",
+        "Paragraph_83": "Fighter-bomber pilots continued to wreak havoc on the retreating enemy columns. Destroyed enemy vehicles along the roads continued to constitute the chief obstruction to ground operations. One pilot counted seventy vehicles burning during the night of 30 July in the Vire-Laval-Rennes-Avranches region. Everywhere in the Cotentin German disorganization was rampant. Abandoned equipment and supplies--guns, tanks, and trucks--littered the countryside as German units fled south and east, and west into Brittany. So great was the destruction in the VIII Corps zone that \"hundreds of dead horses, cows, and pigs [and the] stench and decay pervading\" were judged \"likely menaces to water points and possible bivouac areas.\"",
+        "Paragraph_84": "The facts were obvious. The German defenses in the Cotentin had crumbled and disintegrated. The Americans on the last day of July 1944 possessed and controlled the last natural defensive line before Brittany. From the German point of view, the situation had become a \"Riesensauerei\"--one hell of a mess."
+      },
+      "Footnote_References": [
+        "49",
+        "50"
+      ],
+      "Place_Name": "Cotentin Peninsula",
+      "Dates": {
+        "Date_group_of_event": "31 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 312100ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar N. Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Fighter-Bomber",
+              "Identifier": "P-47 Thunderbolt",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Republic_P-47_Thunderbolt",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:P-47_Thunderbolt_2.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Vehicles",
+              "Identifier": "various",
+              "Quantity": "70 burning",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": null
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Equipment and supplies",
+              "Identifier": "guns, tanks, trucks",
+              "Quantity": "abandoned",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "700",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "7000"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cotentin Peninsula",
+        "Place_GPS_coordinate": "49.5, -1.5",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cotentin Peninsula",
+        "Place_GPS_coordinate": "49.5, -1.5",
+        "Weather_text": "Incessant downpours and worst weather in Normandy, turning country roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0",
+          "East": "0.0",
+          "South": "48.6",
+          "North": "50.4"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "13",
+      "Footnote_Number": "13",
+      "Footnote_Text": "XV Corps G-3 Memo, Conf at Comd Post VIII Corps, 282000 Jul, 29 Jul, XV Corps G-3 Jnl and File; Pogue Interv with Bradley, Washington, 1948, Pogue Files.",
+      "Footnote_Referenced_Source": "XV Corps G-3 Memo; Pogue Interview with Bradley",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, XV Corps, July 1944; Pogue Files"
+    },
+    {
+      "Footnote": "14",
+      "Footnote_Number": "14",
+      "Footnote_Text": "XV Corps G-3 Memo, Conf at Comd Post VIII Corps, 282000 Jul, 29 Jul, XV Corps G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "XV Corps G-3 Memo",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, XV Corps, July 1944"
+    },
+    {
+      "Footnote": "15",
+      "Footnote_Number": "15",
+      "Footnote_Text": "XV Corps G-3 Memo, Conf at G-3 Office, Hq Third U.S. Army, 281600 Jul, 29 Jul, XV Corps G-3 Jnl File.",
+      "Footnote_Referenced_Source": "XV Corps G-3 Memo",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, XV Corps, July 1944"
+    },
+    {
+      "Footnote": "16",
+      "Footnote_Number": "16",
+      "Footnote_Text": "4th Armd Div G-3 Jnl, entry 2115, 27 Jul, Overlay to Accompany FO 2, 26 Jul, and FO 3, 28 Jul; VIII Corps Msgs, 1810, 27 Jul, and 0125, 28 Jul, 4th Armd Div G-3 Jnl File.",
+      "Footnote_Referenced_Source": "4th Armd Div G-3 Journal and Field Orders; VIII Corps Messages",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, 4th Armored Division, July 1944"
+    },
+    {
+      "Footnote": "17",
+      "Footnote_Number": "17",
+      "Footnote_Text": "6th Armd Div AAR, Jul, and G-3 Jnl, 28 Jul.",
+      "Footnote_Referenced_Source": "6th Armd Div After Action Report and G-3 Journal",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, 6th Armored Division, July 1944"
+    },
+    {
+      "Footnote": "18",
+      "Footnote_Number": "18",
+      "Footnote_Text": "XV Corps G-3 Memo, Conf at Comd Post VIII Corps, 282000 Jul, 29 Jul, XV Corps G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "XV Corps G-3 Memo",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, XV Corps, July 1944"
+    },
+    {
+      "Footnote": "19",
+      "Footnote_Number": "19",
+      "Footnote_Text": "357th Inf Jnl, entry 2220, 27 Jul; ETOUSA Engr Hist Rpt 10, Combat Engineering, p. 35.",
+      "Footnote_Referenced_Source": "357th Inf Journal; ETOUSA Engineer Historical Report 10",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, 357th Infantry, July 1944; ETOUSA Engineer Historical Reports"
+    },
+    {
+      "Footnote": "20",
+      "Footnote_Number": "20",
+      "Footnote_Text": "VIII Corps Msgs, 0125 and 0130, 28 Jul, to 4th and 6th Armd Divs, FUSA G-3 Jnl.",
+      "Footnote_Referenced_Source": "VIII Corps Messages",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, First U.S. Army, July 1944"
+    },
+    {
+      "Footnote": "21",
+      "Footnote_Number": "21",
+      "Footnote_Text": "VIII Corps Msg, 1600, 27 Jul, and G-3 Jnl, entries, 0113, 0200, and 1045, 28 Jul; 6th Armd Div Msg, 2210, 27 Jul, FUSA G-3 Jnl; 6th Armd Div AAR, Jul.",
+      "Footnote_Referenced_Source": "VIII Corps Messages and G-3 Journal; 6th Armd Div Message and AAR",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, VIII Corps and 6th Armored Division, July 1944"
+    },
+    {
+      "Footnote": "22",
+      "Footnote_Number": "22",
+      "Footnote_Text": "The basic sources for the action in the VIII Corps sector described below are: G-3 Section, Combat Record of the Sixth Armored Division in the European Theater of Operations, 18 July 1944-8 May 1945, compiled under direction of Maj. Clyde J. Burk (Germany: Steinbeck-Druck Aschaffenburg, 1945) (hereafter cited as Combat Record of the Sixth Armored Division), an excellent documentary source, pp. 1-8; Capt. Kenneth Koyen, The Fourth Armored Division (Munich, Germany: Herder-Druck, 1946), pp. 7-21; F. P. Halas, VIII Corps Operations, 26-31 July 1944, a preliminary MS, Hist Div USFET (1945), OCMH Files.",
+      "Footnote_Referenced_Source": "Combat Record of the Sixth Armored Division; The Fourth Armored Division; Halas, VIII Corps Operations",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Combat Record of the Sixth Armored Division; The Fourth Armored Division by Koyen; Halas manuscript"
+    },
+    {
+      "Footnote": "23a",
+      "Footnote_Number": "23",
+      "Footnote_Text": "4th Armd Div G-3 Jnl, 28 Jul; VIII Corps G-3 Per Rpt 44, 29 Jul;",
+      "Footnote_Referenced_Source": "4th Armd Div G-3 Journal; VIII Corps G-3 Periodic Report",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, 4th Armored Division and VIII Corps, July 1944"
+    },
+    {
+      "Footnote": "23b",
+      "Footnote_Number": "23",
+      "Footnote_Text": "see Abbe Georges Cadel, \"Au Pays de Coutances,\" in Herval, Bataille de Normandie, I, 166-87. General Wood received the DSC for his inspiring leadership at Coutances during the engagement.",
+      "Footnote_Referenced_Source": "Abbe Georges Cadel, Au Pays de Coutances",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+      "NonDigital_Library_References": "Bataille de Normandie by Herval"
+    },
+    {
+      "Footnote": "24a",
+      "Footnote_Number": "24",
+      "Footnote_Text": "VIII Corps G-2 Per Rpt 44, 28 Jul; FUSA Air Sec Msgs, 1800 and 2201, 28 Jul, 83d Div G-2, G-3 Jnl File, and G-2 Per Rpt 49, 29 Jul.",
+      "Footnote_Referenced_Source": "VIII Corps G-2 Periodic Report; First U.S. Army Air Section Messages and G-2 Periodic Report",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, VIII Corps and 83d Division, July 1944"
+    },
+    {
+      "Footnote": "25",
+      "Footnote_Number": "25",
+      "Footnote_Text": "VIII Corps Msg, 0030, 29 Jul, 83d Div G-2, G-3 Jnl File.",
+      "Footnote_Referenced_Source": "VIII Corps Message",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, 83d Division, July 1944"
+    },
+    {
+      "Footnote": "26",
+      "Footnote_Number": "26",
+      "Footnote_Text": "VIII Corps Msg, 2355, 28 Jul, VIII Corps G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "VIII Corps Message",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, VIII Corps, July 1944"
+    },
+    {
+      "Footnote": "27a",
+      "Footnote_Number": "27",
+      "Footnote_Text": "George S. Patton, Jr., War as I Knew It (Boston: Houghton Mifflin Company, 1947), pp. 96-97;",
+      "Footnote_Referenced_Source": "George S. Patton, Jr., War as I Knew It",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Library of Congress",
+      "NonDigital_Library_Address": "101 Independence Ave SE, Washington, DC 20540",
+      "NonDigital_Library_References": "Patton, George S. War as I Knew It. Boston: Houghton Mifflin, 1947"
+    },
+    {
+      "Footnote": "27b",
+      "Footnote_Number": "27",
+      "Footnote_Text": "Ltr, Grow to OCMH, 29 Mar 56.",
+      "Footnote_Referenced_Source": "Letter, Grow to OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+      "NonDigital_Library_References": "Grow correspondence"
+    },
+    {
+      "Footnote": "28a",
+      "Footnote_Number": "28",
+      "Footnote_Text": "VIII Corps G-3 Jnl, entry 0250, 29 Jul; VII Corps Opns Memo 51, 29 Jul (confirming oral orders 28 Jul); 4th Armd Div G-3 Jnl, entry 0040, 29 Jul, and Overlay (Routes of CCB, 4th Armd Div, East and West Elements), 1230, 29 Jul, 4th Armd Div G-3 Jnl;",
+      "Footnote_Referenced_Source": "VIII Corps G-3 Journal; VII Corps Operations Memo; 4th Armd Div G-3 Journal and Overlay",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, VIII Corps, VII Corps, 4th Armored Division, July 1944"
+    },
+    {
+      "Footnote": "28b",
+      "Footnote_Number": "28",
+      "Footnote_Text": "Interv by author with Gen Collins, Washington D.C, 2 Sep 55.",
+      "Footnote_Referenced_Source": "Author Interview with Gen Collins",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+      "NonDigital_Library_References": "Interview transcripts, 2 Sep 55"
+    },
+    {
+      "Footnote": "29a",
+      "Footnote_Number": "29",
+      "Footnote_Text": "4th Armd Div G-3 Jnl, 29 Jul, and CCB S-3 Jnl, entry 0614, 29 Jul; VIII Corps G-3 Jnl, 29 Jul.",
+      "Footnote_Referenced_Source": "4th Armd Div G-3 Journal and CCB S-3 Journal; VIII Corps G-3 Journal",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, 4th Armored Division and VIII Corps, July 1944"
+    },
+    {
+      "Footnote": "29b",
+      "Footnote_Number": "29",
+      "Footnote_Text": "Col. Louis J. Storck, the CCR commander, was killed when a mine destroyed his jeep in Coutances.",
+      "Footnote_Referenced_Source": "Death of Col. Louis J. Storck",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "30",
+      "Footnote_Number": "30",
+      "Footnote_Text": "Capt. William F. Pieri, who deactivated a row of mines blocking the bridge and enabled the armor to continue, was posthumously awarded the DSC.",
+      "Footnote_Referenced_Source": "DSC Citation for Capt. William F. Pieri",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Award citations, WWII, Distinguished Service Cross"
+    },
+    {
+      "Footnote": "31",
+      "Footnote_Number": "31",
+      "Footnote_Text": "4th Armd Div G-3 Jnl, 1825, 29 Jul, and CCB S-3 Jnl, entries 0730, 1033, and 1430, 29 Jul.",
+      "Footnote_Referenced_Source": "4th Armd Div G-3 Journal and CCB S-3 Journal",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, 4th Armored Division, July 1944"
+    },
+    {
+      "Footnote": "32a",
+      "Footnote_Number": "32",
+      "Footnote_Text": "FUSA Sitrep 108, 30 Jul, G-2 Per Rpt 50, 30 Jul, and Msg, 0320, 30 Jul, 83d G-2, G-3 Jnl and File;",
+      "Footnote_Referenced_Source": "First U.S. Army Sitrep, G-2 Periodic Report, Message",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, First U.S. Army and 83d Division, July 1944"
+    },
+    {
+      "Footnote": "32b",
+      "Footnote_Number": "32",
+      "Footnote_Text": "VIII Corps G-2 Weekly Rpt 6, 29 Jul, and G-3 Per Rpt 45, 30 Jul.",
+      "Footnote_Referenced_Source": "VIII Corps G-2 Weekly Report and G-3 Periodic Report",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, VIII Corps, July 1944"
+    },
+    {
+      "Footnote": "33",
+      "Footnote_Number": "33",
+      "Footnote_Text": "VIII Corps Msg, 29 Jul, 83d Div G-2, G-3 Jnl File.",
+      "Footnote_Referenced_Source": "VIII Corps Message",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, 83d Division, July 1944"
+    },
+    {
+      "Footnote": "34",
+      "Footnote_Number": "34",
+      "Footnote_Text": "6th Armd Div FO 3, 0300, 30 Jul.",
+      "Footnote_Referenced_Source": "6th Armd Div Field Order 3",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, 6th Armored Division, July 1944"
+    },
+    {
+      "Footnote": "35",
+      "Footnote_Number": "35",
+      "Footnote_Text": "4th Armd Div G-3 Jnl, entry 2130, 29 Jul.",
+      "Footnote_Referenced_Source": "4th Armd Div G-3 Journal",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, 4th Armored Division, July 1944"
+    },
+    {
+      "Footnote": "36",
+      "Footnote_Number": "36",
+      "Footnote_Text": "James B. Hodgson, Report of Interview [on Avranches. With General von Gersdorff, 1954, MS R-40, OCMH.",
+      "Footnote_Referenced_Source": "James B. Hodgson, Report of Interview with General von Gersdorff",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+      "NonDigital_Library_References": "MS R-40"
+    },
+    {
+      "Footnote": "37",
+      "Footnote_Number": "37",
+      "Footnote_Text": "Armor in the Exploitation or the 4th Armored Division Across France to the Moselle River (Ft. Knox, Ky., May, 1949), a research report prepared by Committee 13, Officers Advanced Course, p. 20; Koyen, Fourth Armored Division, pp. 25, 26.",
+      "Footnote_Referenced_Source": "Armor in the Exploitation; Koyen, Fourth Armored Division",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "The Armored School Library",
+      "NonDigital_Library_Address": "Fort Knox, KY",
+      "NonDigital_Library_References": "Research report, Committee 13, Officers Advanced Course, May 1949; Koyen manuscript"
+    },
+    {
+      "Footnote": "38",
+      "Footnote_Number": "38",
+      "Footnote_Text": "See, for example, VIII Corps Msg, 2030, 30 Jul, 83d Div G-2, G-3 Jnl File.",
+      "Footnote_Referenced_Source": "VIII Corps Message",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, 83d Division, July 1944"
+    },
+    {
+      "Footnote": "39",
+      "Footnote_Number": "39",
+      "Footnote_Text": "FUSA G-2 Per Rpt 51, 31 Jul; VIII Corps G-2 Jnl, 30 Jul, and Tel Msg, 1000, 30 Jul, VIII Corps G-3 Jnl.",
+      "Footnote_Referenced_Source": "First U.S. Army G-2 Periodic Report; VIII Corps G-2 Journal and Telephone Message",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, First U.S. Army and VIII Corps, July 1944"
+    },
+    {
+      "Footnote": "40",
+      "Footnote_Number": "40",
+      "Footnote_Text": "VIII Corps G-2 Jnl, 30 Jul; see above, p. 307.",
+      "Footnote_Referenced_Source": "VIII Corps G-2 Journal",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, VIII Corps, July 1944"
+    },
+    {
+      "Footnote": "41",
+      "Footnote_Number": "41",
+      "Footnote_Text": "VIII Corps G-3 Jnl, 30 Jul.",
+      "Footnote_Referenced_Source": "VIII Corps G-3 Journal",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, VIII Corps, July 1944"
+    },
+    {
+      "Footnote": "42",
+      "Footnote_Number": "42",
+      "Footnote_Text": "4th Armd Div G-3 and CCB G-3 Jnls, 30 Jul; Halas, VIII Corps Opns, pp. 79-82; Ltr, Wood to OCMH, 24 Mar 54, OCMH Files.",
+      "Footnote_Referenced_Source": "4th Armd Div G-3 and CCB G-3 Journals; Halas, VIII Corps Operations; Letter, Wood to OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC; OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013; U.S. Army Center of Military History, Washington, D.C.",
+      "NonDigital_Library_References": "After Action Reports, 4th Armored Division, July 1944; Halas manuscript; Wood correspondence"
+    },
+    {
+      "Footnote": "43",
+      "Footnote_Number": "43",
+      "Footnote_Text": "See VII Corps AAR, Jul.",
+      "Footnote_Referenced_Source": "VII Corps After Action Report, July",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, VII Corps, July 1944"
+    },
+    {
+      "Footnote": "44",
+      "Footnote_Number": "44",
+      "Footnote_Text": "VIII Corps Msg, 0200, 31 Jul, 4th Armd Div G-3 Jnl and File; 4th Armd Div CCB S-3 Jnl. 30 and 31 Jul; see Jean Seguin, \"Remous de la Lutte autour d'Avranches,\" in Herval, Bataille de Normandie, I. 208-31.",
+      "Footnote_Referenced_Source": "VIII Corps Message; 4th Armd Div CCB S-3 Journal; Jean Seguin, Remous de la Lutte autour d'Avranches",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC; OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013; U.S. Army Center of Military History, Washington, D.C.",
+      "NonDigital_Library_References": "After Action Reports, 4th Armored Division, July 1944; Bataille de Normandie by Herval"
+    },
+    {
+      "Footnote": "45",
+      "Footnote_Number": "45",
+      "Footnote_Text": "Pvt. Whitson was posthumously awarded the DSC.",
+      "Footnote_Referenced_Source": "DSC Citation for Pvt. William H. Whitson",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Award citations, WWII, Distinguished Service Cross"
+    },
+    {
+      "Footnote": "46",
+      "Footnote_Number": "46",
+      "Footnote_Text": "For his leadership, General Dager was awarded the DSC.",
+      "Footnote_Referenced_Source": "DSC Citation for General Holmes E. Dager",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Award citations, WWII, Distinguished Service Cross"
+    },
+    {
+      "Footnote": "47",
+      "Footnote_Number": "47",
+      "Footnote_Text": "VIII Corps G-3 Jnl, entries 1330 and 1430, 31 Jul.",
+      "Footnote_Referenced_Source": "VIII Corps G-3 Journal",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, VIII Corps, July 1944"
+    },
+    {
+      "Footnote": "48a",
+      "Footnote_Number": "48",
+      "Footnote_Text": "VIII Corps G-3 Jnl, entries 1525 and 1935, 31 Jul;",
+      "Footnote_Referenced_Source": "VIII Corps G-3 Journal",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, VIII Corps, July 1944"
+    },
+    {
+      "Footnote": "48b",
+      "Footnote_Number": "48",
+      "Footnote_Text": "see Charles de la Morandiere, \"L'Angoisse de Granville,\" and Mme. Paule Mortgat-Lhomer, \"Les Allies aux Portes d'Avranches,\" in Herval, Bataille de Normandie, I, 188-200, 201-07.",
+      "Footnote_Referenced_Source": "Charles de la Morandiere, L'Angoisse de Granville; Mme. Paule Mortgat-Lhomer, Les Allies aux Portes d'Avranches",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+      "NonDigital_Library_References": "Bataille de Normandie by Herval"
+    },
+    {
+      "Footnote": "49a",
+      "Footnote_Number": "49",
+      "Footnote_Text": "VIII Corps Engineer Recon Rpt, 31 Jul, VIII Corps G-3 Jnl and File; FUSA Msgs, 31 Jul, 30th Div G-3 Jnl File and 4th Armd Div G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "VIII Corps Engineer Recon Report; First U.S. Army Messages",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, VIII Corps, 30th Division, 4th Armored Division, July 1944"
+    },
+    {
+      "Footnote": "50",
+      "Footnote_Number": "50",
+      "Footnote_Text": "Telecon, Kluge and Blumentritt, 1023, 31 Jul, OB WEST KTB, Anlage 066.",
+      "Footnote_Referenced_Source": "Telephone conversation, Kluge and Blumentritt",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+      "NonDigital_Library_References": "OB WEST KTB, Anlage 066"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn16.html",
+  "Source_Footnote_Link_Capture_Date": "December 24, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+  "Source_Link_Capture_Date": "December 24, 2025"
+}

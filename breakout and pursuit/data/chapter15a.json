@@ -1,0 +1,1955 @@
+{
+  "Events": [
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "Planning and Contingencies for XIX and V Corps",
+      "Sub-event_summary": "The diversion east of the Vire River aimed to pin down enemy troops. General Bradley left details vague, leading Generals Corlett (XIX Corps) and Gerow (V Corps) to plan based on contingencies. XIX Corps prepared for displacement or advance east of Vire, providing fire support. V Corps' future was uncertain, with potential flank adjustments.",
+      "Sub-event_fulltext": {
+        "Paragraph_[4]": "The diversion east of the Vire River was predicated upon a desire to pin down enemy troops and prevent their dispatch westward across the river against the main forces in Operation COBRA. Exactly how this was to be accomplished General Bradley had left rather vague while awaiting developments in the main attack. Thus the commanders of the two corps east of the Vire, Generals Corlett and Gerow, had to plan their operations on the basis of several contingencies and in the face of a number of question marks.",
+        "Paragraph_[5]": "General Corlett was to be prepared either to displace his XIX Corps to the west bank of the Vire and assume a portion of the VII Corps zone for a drive south or to remain east of the Vire for a drive south along that side of the river. Until Bradley decided which move was to be made, the XIX Corps was to give fire support to the VII Corps.",
+        "Paragraph_[6]": "The future of General Gerow's V Corps was even less definite. Though V Corps was to attack on 26 July, General Bradley had designated no objectives. Nor could General Gerow count on a firm commitment from the forces on his flanks. If XIX Corps, on his right, displaced to a new zone west of the Vire, Gerow would have to extend his responsibility westward to the river. If the British, who were to his left and whose intentions were uncertain, did not advance, V Corps, by attacking, might expose its own left flank. (See Map V.)"
+      },
+      "Footnote_References": [
+        2
+      ],
+      "Place_Name": "East of the Vire River",
+      "Dates": {
+        "Date_group_of_event": "APPROX 240900ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "APPROX 240800ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "XIX Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "First Army",
+              "Commander": "Omar N. Bradley",
+              "Name": "Omar N. Bradley",
+              "Rank": "Lt Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "35th Infantry Division",
+              "Name": "Paul W. Baade",
+              "Rank": "Maj Gen",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_W._Baade",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Personnel": "Fully staffed based on relative inactivity allowing stockpiling",
+          "Equipments": {
+            "Supply": "Adequate ammunition stockpiled",
+            "Allied_Employed": [
+              {
+                "Origination_Country": "US",
+                "Name": "Artillery guns",
+                "Identifier": "Various",
+                "Quantity": "Unknown",
+                "Web_Reference": null,
+                "Web_Image_Reference": null,
+                "Web_Reference_Capture_Date": null
+              }
+            ],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "V Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "First Army",
+              "Commander": "Omar N. Bradley",
+              "Name": "Omar N. Bradley",
+              "Rank": "Lt Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "2d Infantry Division",
+              "Name": "Walter M. Robertson",
+              "Rank": "Maj Gen",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_M._Robertson",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            },
+            {
+              "Unit": "5th Infantry Division",
+              "Name": "S. LeRoy Irwin",
+              "Rank": "Maj Gen",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Stafford_LeRoy_Irwin",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Personnel": "Fully staffed based on relative inactivity allowing stockpiling",
+          "Equipments": {
+            "Supply": "Adequate ammunition stockpiled",
+            "Allied_Employed": [
+              {
+                "Origination_Country": "US",
+                "Name": "Artillery battalions",
+                "Identifier": "Various",
+                "Quantity": "20",
+                "Web_Reference": null,
+                "Web_Image_Reference": null,
+                "Web_Reference_Capture_Date": null
+              },
+              {
+                "Origination_Country": "US",
+                "Name": "Tank destroyer battalions",
+                "Identifier": "Various",
+                "Quantity": "2",
+                "Web_Reference": null,
+                "Web_Image_Reference": null,
+                "Web_Reference_Capture_Date": null
+              }
+            ],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "East of the Vire River",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:NormandyBreakout1944.png",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 23, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "East of the Vire River",
+          "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0000,
+            "East": 0.0000,
+            "South": 48.0000,
+            "North": 50.0000
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "V Corps Front and Limited Objective Attack",
+      "Sub-event_summary": "V Corps front was a curved line from Hill 192 to Caumont. Planning shifted to a limited attack to tie down Germans, retain flexibility, and eliminate a salient. Terrain featured bocage with ridges like Hill 101 and St. Jean-des-Baisants. Goal was to capture the St. Jean-des-Baisants ridge to encircle Germans on Hill 101.",
+      "Sub-event_fulltext": {
+        "Paragraph_[7]": "The V Corps front formed a curved line about fifteen miles long, with the right flank on Hill 192, the center at Bérigny, and the left near Caumont.",
+        "Paragraph_[8]": "Early V Corps planning for COBRA had projected an advance of about ten miles across the entire front, but in final planning General Gerow directed instead a limited objective attack. Designed to move the corps forward about three miles, the attack was to tie down Germans east of the Vire; retain a measure of flexibility necessary for adjusting to the developing COBRA operation; and eliminate a German salient between St. Lô and Caumont that threatened American possession of St. Lô, denied desirable lateral routes of communications (particularly the St. Lô-Caumont highway), and lengthened the V Corps front.",
+        "Paragraph_[9]": "In the bocage east of the Vire River, irregular hills covered by hedgerowed fields formed broken ridge lines and raised barriers against an advance toward the south. In this terrain south of the St. Lô-Bérigny highway and west of the Bérigny-Caumont road, the Germans had excellent defensive positions on commanding ground. On the first ridge south of St. Lô--commonly called Hill 101--the Germans had kept XIX Corps from moving beyond St. Lô; in fact a strong counterreconnaissance screen had denied accurate knowledge of German strength and dispositions. On the second ridge--higher ground between the villages of Ste. Suzanne-sur-Vire and St. Jean-des-Baisants--the enemy had excellent observation and supplementary defensive positions.",
+        "Paragraph_[10]": "The goal of General Gerow's limited objective attack was the St. Jean-des-Baisants ridge. Its capture would threaten to encircle the Germans on Hill 101 and thereby remove an obstacle hampering the XIX Corps. Once in possession of the St. Jean-des-Baisants ridge, General Gerow could either continue his attack to the south or take advantage of the terrain compartment and move southwest along the ridge line to Ste. Suzanne-sur-Vire and the Vire River. The latter maneuver would encircle the Germans on Hill 101."
+      },
+      "Footnote_References": [
+        3
+      ],
+      "Place_Name": "V Corps front: Hill 192, Bérigny, Caumont",
+      "Dates": {
+        "Date_group_of_event": "APPROX 240900ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "APPROX 240800ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "V Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "First Army",
+              "Commander": "Omar N. Bradley",
+              "Name": "Omar N. Bradley",
+              "Rank": "Lt Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "2d Infantry Division",
+              "Name": "Walter M. Robertson",
+              "Rank": "Maj Gen",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_M._Robertson",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            },
+            {
+              "Unit": "5th Infantry Division",
+              "Name": "S. LeRoy Irwin",
+              "Rank": "Maj Gen",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Stafford_LeRoy_Irwin",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Personnel": "Outnumbered Germans",
+          "Equipments": {
+            "Supply": "Adequate",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 192",
+        "Place_GPS_coordinate": "49.0500 N, -1.0300 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://warfarehistorynetwork.com/article/the-heroes-of-hill-192/",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 23, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Hill 192",
+          "Place_GPS_coordinate": "49.0500 N, -1.0300 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0300,
+            "East": -0.0300,
+            "South": 48.0500,
+            "North": 50.0500
+          }
+        },
+        {
+          "Place_Name": "Bérigny",
+          "Place_GPS_coordinate": "49.1430 N, -0.9411 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9411,
+            "East": 0.0589,
+            "South": 48.1430,
+            "North": 50.1430
+          }
+        },
+        {
+          "Place_Name": "Caumont",
+          "Place_GPS_coordinate": "49.0909 N, -0.8064 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8064,
+            "East": 0.1936,
+            "South": 48.0909,
+            "North": 50.0909
+          }
+        },
+        {
+          "Place_Name": "Hill 101",
+          "Place_GPS_coordinate": "49.0800 N, -1.1000 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.1000,
+            "East": -0.1000,
+            "South": 48.0800,
+            "North": 50.0800
+          }
+        },
+        {
+          "Place_Name": "St. Jean-des-Baisants",
+          "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9743,
+            "East": 0.0257,
+            "South": 48.0933,
+            "North": 50.0933
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "Gerow's Maneuver Plan",
+      "Sub-event_summary": "General Gerow planned a maneuver similar to COBRA west of Vire, driving southwest to the Vire River to pinch out XIX Corps. Boundary indicated pinch out near Ste. Suzanne-sur-Vire. Gerow controlled 2d and 5th Divisions, outnumbering Germans, with artillery and tank destroyers support.",
+      "Sub-event_fulltext": {
+        "Paragraph_[11]": "General Gerow wanted to drive down the St. Jean-des-Baisants ridge. The maneuver he hoped to execute resembled, in miniature, the main COBRA operation west of the Vire. In the same way that the VII Corps veered to the Cotentin west coast, the V Corps would attack southwestward to the Vire River. Like the VIII Corps, the XIX Corps would act as a holding force. In the same manner that a successful VII Corps envelopment might block subsequent VIII Corps progress along the west coast of the Cotentin, a V Corps drive to the Vire would obstruct an immediate XIX Corps advance. If COBRA west of the Vire made possible an exploitation along the west bank of the Vire, the V Corps envelopment to the Vire would pinch out the XIX Corps and permit its displacement to make the main exploitation. The logic appeared unimpeachable, the opportunity tempting.",
+        "Paragraph_[12]": "The boundary between the XIX and the V Corps, tentatively drawn, ran southwest to the Vire River, indicating that the XIX Corps was to be pinched out near Ste. Suzanne-sur-Vire.",
+        "Paragraph_[13]": "General Gerow controlled two infantry divisions. On the right he had an experienced division, the 2d, under General Robertson. The 5th Division on the left, commanded by Maj. Gen. S. LeRoy Irwin, had recently arrived in Normandy and had freed the 1st Division for the main COBRA attack. Together, the divisions on the V Corps front easily outnumbered the Germans they faced. Twenty battalions of artillery were in support, and two tank destroyer battalions were tied in with the corps fire direction center. The relative inactivity of the V Corps before the start of COBRA had enabled adequate stockpiling of ammunition."
+      },
+      "Footnote_References": [
+        4,
+        5
+      ],
+      "Place_Name": "Ste. Suzanne-sur-Vire",
+      "Dates": {
+        "Date_group_of_event": "APPROX 240900ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "APPROX 240800ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "2d Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "V Corps",
+              "Commander": "Leonard T. Gerow",
+              "Name": "Leonard T. Gerow",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Leonard_T._Gerow",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "9th Infantry Regiment",
+              "Name": null,
+              "Rank": null,
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            },
+            {
+              "Unit": "23d Infantry Regiment",
+              "Name": null,
+              "Rank": null,
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            },
+            {
+              "Unit": "38th Infantry Regiment",
+              "Name": null,
+              "Rank": null,
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            }
+          ],
+          "Personnel": "Experienced division",
+          "Equipments": {
+            "Supply": "Adequate",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "5th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "V Corps",
+              "Commander": "Leonard T. Gerow",
+              "Name": "Leonard T. Gerow",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Leonard_T._Gerow",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "2d Infantry Regiment",
+              "Name": "A. Worrell Roffe",
+              "Rank": "Col",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://www.wikitree.com/wiki/Roffe-85",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Personnel": "Newly arrived in Normandy",
+          "Equipments": {
+            "Supply": "Adequate",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Ste. Suzanne-sur-Vire",
+        "Place_GPS_coordinate": "49.0616 N, -1.0604 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Ste. Suzanne-sur-Vire",
+          "Place_GPS_coordinate": "49.0616 N, -1.0604 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0604,
+            "East": -0.0604,
+            "South": 48.0616,
+            "North": 50.0616
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "Preparations and Boundary Changes",
+      "Sub-event_summary": "Boundary shifted giving British responsibility for Caumont, reducing 5th Division zone. Gerow planned attack with four regiments converging on St. Jean-des-Baisants ridge, expecting capture in two days, then 5th Division to Vire River.",
+      "Sub-event_fulltext": {
+        "Paragraph_[14]": "Several days before COBRA, in compliance with arrangements made by Generals Montgomery and Bradley, the boundary separating the V Corps and the Second British Army was moved to the west, giving the British responsibility for Caumont and reducing the 5th Division zone to regimental frontage.",
+        "Paragraph_[15]": "General Gerow planned to attack with the four regiments already on line, the three of the 2d Division and one of the 5th. Because the corps zone was divided into almost equal sectors by wooded and swampy lowland that separated the interior regiments, Gerow projected two simultaneous two-regiment efforts that would converge on the St. Jean-des-Baisants ridge. He expected to be in possession of the crest of the ridge in two days, after which he planned to send the 5th Division southwest to the Vire River, to St. Suzanne-sur-Vire."
+      },
+      "Footnote_References": [
+        6
+      ],
+      "Place_Name": "Caumont",
+      "Dates": {
+        "Date_group_of_event": "APPROX 240900ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "APPROX 240800ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "Second British Army",
+          "Unit_Nationality": "GB",
+          "Command_Structure": [
+            {
+              "Unit": "21 Army Group",
+              "Commander": "Bernard L. Montgomery",
+              "Name": "Bernard L. Montgomery",
+              "Rank": "Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [
+              {
+                "Origination_Country": "GB",
+                "Name": "Artillery guns",
+                "Identifier": "Various",
+                "Quantity": "44",
+                "Web_Reference": null,
+                "Web_Image_Reference": null,
+                "Web_Reference_Capture_Date": null
+              }
+            ],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caumont",
+        "Place_GPS_coordinate": "49.0909 N, -0.8064 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Caumont",
+          "Place_GPS_coordinate": "49.0909 N, -0.8064 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8064,
+            "East": 0.1936,
+            "South": 48.0909,
+            "North": 50.0909
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "Attack on 26 July",
+      "Sub-event_summary": "Attack opened with artillery preparation by 192 US and 44 British guns. 2d Division used novel tactics with hedge-cutter tanks. Regiments advanced, with 9th and 23d making notable gains, 38th facing resistance. 5th Division's 2d Infantry advanced two miles despite disorganization.",
+      "Sub-event_fulltext": {
+        "Paragraph_[16]": "Shortly after dawn on 26 July, 192 American and 44 British guns fired a twenty-minute artillery preparation to open the attack east of the Vire River. This was the precursor of a heavy artillery effort that by the end of the first day was to consume half the ammunition allocated to the V Corps for a five-day period.",
+        "Paragraph_[17]": "Concerned that two weeks of relative inactivity in this sector had enabled the enemy to prepare extensive defensive positions in considerable depth, the 2d Division commander, General Robertson, had developed novel tactics for his attack. Tanks equipped with hedge-cutters and protected by time-fuzed artillery fire advanced buttoned up and without infantry support for several hundred yards to breach a few hedgerows in depth across the front. Achieving surprise and taking no losses from enemy fire, the tankers returned after twenty minutes to the line of departure to pick up infantry support. Together the tanks and infantry moved quickly through the gaps in the hedgerows before the Germans could re-establish their positions.",
+        "Paragraph_[18]": "With the help of these tactics, two of the 2d Division's three regiments made notable advances. On the division left, the 9th Infantry used twenty-five .50-caliber machine guns previously emplaced on high ground to deliver flanking fire across the regimental front and advanced steadily for almost two miles. Against artillery, mortar, and slight small-arms fire, the regiment nearly reached the St. Lô-Caumont highway. Comprising one half of the corps right flank pincer force, the 23d Infantry gained almost a mile and reached a lateral country road. There, German artillery and high-velocity weapons placed flanking fire on the road and prevented a crossing in strength. The fire also made it difficult to evacuate casualties and bring up supplies. On the division right, where the 38th Infantry composed the other half of the pincer force, a comparable advance was made except on the extreme right. Stanch resistance and an increasingly exposed right flank forced a halt.",
+        "Paragraph_[19]": "Employing artillery fire to good advantage, the only regiment of the 5th Division to attack, the 2d Infantry, also made a quick initial gain of about a thousand yards. It was making a flanking approach to the St. Jean-des-Baisants ridge when intense and accurate German fire caused considerable disorganization. Nevertheless, by committing all three battalions judiciously, the regimental commander, Col. A. Worrell Roffe, was able to keep the attack going another 1,500 yards. Cutting the St. Lô-Caumont highway, the regiment made a total advance of two miles."
+      },
+      "Footnote_References": [
+        7,
+        8,
+        9,
+        10
+      ],
+      "Place_Name": "St. Lô-Caumont highway",
+      "Dates": {
+        "Date_group_of_event": "260600ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "260500ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "9th Infantry Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "2d Infantry Division",
+              "Commander": "Walter M. Robertson",
+              "Name": "Walter M. Robertson",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_M._Robertson",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Adequate",
+            "Allied_Employed": [
+              {
+                "Origination_Country": "US",
+                "Name": ".50-caliber machine guns",
+                "Identifier": "M2 Browning",
+                "Quantity": "25",
+                "Web_Reference": null,
+                "Web_Image_Reference": null,
+                "Web_Reference_Capture_Date": null
+              }
+            ],
+            "Allied_Destroyed": []
+          }
+        },
+        {
+          "Unit": "23d Infantry Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "2d Infantry Division",
+              "Commander": "Walter M. Robertson",
+              "Name": "Walter M. Robertson",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_M._Robertson",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Adequate",
+            "Allied_Employed": [],
+            "Allied_Destroyed": []
+          }
+        },
+        {
+          "Unit": "38th Infantry Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "2d Infantry Division",
+              "Commander": "Walter M. Robertson",
+              "Name": "Walter M. Robertson",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_M._Robertson",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Adequate",
+            "Allied_Employed": [],
+            "Allied_Destroyed": []
+          }
+        },
+        {
+          "Unit": "2d Infantry Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "5th Infantry Division",
+              "Commander": "S. LeRoy Irwin",
+              "Name": "S. LeRoy Irwin",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Stafford_LeRoy_Irwin",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "New in battle, some disorganization",
+          "Equipments": {
+            "Supply": "Adequate",
+            "Allied_Employed": [],
+            "Allied_Destroyed": []
+          }
+        },
+        {
+          "Unit": "741st Tank Battalion",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "2d Infantry Division",
+              "Commander": "Walter M. Robertson",
+              "Name": "Walter M. Robertson",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_M._Robertson",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Adequate",
+            "Allied_Employed": [
+              {
+                "Origination_Country": "US",
+                "Name": "Sherman tank with hedge-cutter",
+                "Identifier": "M4 Rhino",
+                "Quantity": "Unknown",
+                "Web_Reference": "https://en.wikipedia.org/wiki/Rhino_tank",
+                "Web_Image_Reference": "https://en.wikipedia.org/wiki/Rhino_tank#/media/File:Hedgerow_cutter_2.jpg",
+                "Web_Reference_Capture_Date": "December 23, 2025"
+              }
+            ],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 1000,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 300
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.alamy.com/stock-photo/operation-cobra-1944.html",
+          "Description": "Stock photo of Operation Cobra 1944",
+          "License": "RM/RF"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Jean-des-Baisants ridge",
+        "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://warfarehistorynetwork.com/article/deadly-cobra-strike/",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 23, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "St. Jean-des-Baisants ridge",
+          "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9743,
+            "East": 0.0257,
+            "South": 48.0933,
+            "North": 50.0933
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "Achievements on 26 July",
+      "Sub-event_summary": "V Corps took 300 prisoners, advanced halfway to ridge, cost 1000 casualties from artillery. Broke through defenses but couldn't exploit due to terrain and disorganization. Accomplished mission of containing Germans.",
+      "Sub-event_fulltext": {
+        "Paragraph_[20]": "By the end of the first day, the units of the V Corps had taken about 300 prisoners and advanced half way to the St. Jean-des-Baisants ridge. The drive cost nearly a thousand casualties, chiefly from artillery fire.",
+        "Paragraph_[21]": "The assault troops had broken through the crust of the German defenses, though they had been unable to exploit local penetrations because of the terrain, the wide frontages, and, in the case of the 2d Infantry Regiment, a certain amount of disorganization within the battalions.",
+        "Paragraph_[22]": "The V Corps clearly appeared to be accomplishing its main mission of containing some of the German forces and preventing them from bringing their strength to bear on the main development of COBRA west of the Vire River."
+      },
+      "Footnote_References": [
+        11,
+        12
+      ],
+      "Place_Name": "St. Jean-des-Baisants ridge",
+      "Dates": {
+        "Date_group_of_event": "262359ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "262259ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 1000,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 300
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Jean-des-Baisants ridge",
+        "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "St. Jean-des-Baisants ridge",
+          "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9743,
+            "East": 0.0257,
+            "South": 48.0933,
+            "North": 50.0933
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "Resumption on 27 July",
+      "Sub-event_summary": "V Corps advanced but didn't reach objective. 2d Division gained 1000 yards against less resistance. 5th Division hampered by disorganization, no advance. Contact made eliminating Bérigny salient.",
+      "Sub-event_fulltext": {
+        "Paragraph_[23]": "Resuming the attack on 27 July, V Corps advanced but did not reach its objective. The two regiments of the 2d Division, comprising the right arm of the corps pincer movement, gained about a thousand yards against resistance that was appreciably less determined than on 26 July. The regiments on the left were hampered by continuing disorganization and nervousness among 5th Division units, still new in battle. Neither regiment advanced. At the end of the day, V Corps was still more than a mile short of the crest of the St. Jean-des-Baisants ridge. The real achievement was the contact made by the two interior regiments on the corps front. After bypassing the wooded swampy lowland that separated them, the regiments had turned inward and eliminated what had been the Bérigny salient."
+      },
+      "Footnote_References": [
+        13
+      ],
+      "Place_Name": "Bérigny salient",
+      "Dates": {
+        "Date_group_of_event": "270600ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "270500ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Bérigny",
+        "Place_GPS_coordinate": "49.1430 N, -0.9411 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Bérigny",
+          "Place_GPS_coordinate": "49.1430 N, -0.9411 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9411,
+            "East": 0.0589,
+            "South": 48.1430,
+            "North": 50.1430
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "Change in Plans",
+      "Sub-event_summary": "Denied the ridge, Gerow divided zone equally, alerting divisions for possible southwest attack. Reapportionment acknowledged resistance and prepared for absorbing 35th Division as XIX Corps might displace.",
+      "Sub-event_fulltext": {
+        "Paragraph_[24]": "Denied the ridge he wanted, General Gerow changed his plans around midday, 27 July. Dividing the corps zone equally between the 2d and 5th Divisions, he alerted both to the possibility that either or both might be designated to make the attack southwestward to the Vire.",
+        "Paragraph_[25]": "The reapportionment of frontage acknowledged the strong resistance in terrain favorable for defense. It also was a precautionary measure predicated upon readying the corps to absorb another division, the 35th. A possibility that the 35th Division soon might pass to V Corps had become strong on the morning of 27 July when indications developed that the XIX Corps might displace west of the Vire River. Since the 35th was the only division of XIX Corps actually in the line, it might be left behind when the corps moved."
+      },
+      "Footnote_References": [
+        14
+      ],
+      "Place_Name": "West of the Vire River",
+      "Dates": {
+        "Date_group_of_event": "271200ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "271100ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "35th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "XIX Corps",
+              "Commander": "Charles H. Corlett",
+              "Name": "Charles H. Corlett",
+              "Rank": "Maj Gen",
+              "End_Date": "27 Jul 1944",
+              "End_Status": "Transferred to V Corps",
+              "Biographical_reference": "https://grokipedia.com/page/Charles_H._Corlett",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "West of the Vire River",
+        "Place_GPS_coordinate": "49.0000 N, -1.1000 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "West of the Vire River",
+          "Place_GPS_coordinate": "49.0000 N, -1.1000 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.1000,
+            "East": -0.1000,
+            "South": 48.0000,
+            "North": 50.0000
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "XIX Corps Actions on 27 July",
+      "Sub-event_summary": "XIX Corps provided artillery fire. 35th Division concluded Germans withdrawing, attacked afternoon to secure Hill 101 against light resistance, capturing bridge sites.",
+      "Sub-event_fulltext": {
+        "Paragraph_[26]": "Earlier, the XIX Corps had executed its COBRA mission by placing strong artillery fire on the ridges south of St. Lô. On 27 July the commander of the 35th Division, General Baade, came to the conclusion that the Germans were withdrawing primarily because of American gains west of the Vire. Deciding that an advance was in order, Baade secured the corps commander's permission to attack during the afternoon to secure Hill 101, the ridge immediately south of St. Lô. As events developed, the attack was well timed. The Germans had begun to withdraw during the morning, and the 35th Division took Hill 101 against no more than light resistance. Several Vire River bridge sites southwest of St. Lô fell in the process."
+      },
+      "Footnote_References": [
+        15
+      ],
+      "Place_Name": "Hill 101",
+      "Dates": {
+        "Date_group_of_event": "271200ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "271100ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "35th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "XIX Corps",
+              "Commander": "Charles H. Corlett",
+              "Name": "Charles H. Corlett",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Charles_H._Corlett",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 101",
+        "Place_GPS_coordinate": "49.0800 N, -1.1000 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Hill 101",
+          "Place_GPS_coordinate": "49.0800 N, -1.1000 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.1000,
+            "East": -0.1000,
+            "South": 48.0800,
+            "North": 50.0800
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "Decision to Displace XIX Corps",
+      "Sub-event_summary": "Evening 27 July, Bradley decided to displace XIX Corps west of Vire, attaching 35th Division to V Corps, extending Gerow's responsibility. COBRA ended, new operation began.",
+      "Sub-event_fulltext": {
+        "Paragraph_[27]": "On the evening of 27 July, a telephone call from First Army headquarters to General Corlett acknowledged the changing situation brought about by COBRA. General Bradley had decided to displace the XIX Corps west of the Vire River. As Gerow had anticipated, Bradley attached the 35th Division to the V Corps and extended Gerow's responsibility westward to the Vire. COBRA had ended, and a new operation was about to begin."
+      },
+      "Footnote_References": [
+        1
+      ],
+      "Place_Name": "West of the Vire River",
+      "Dates": {
+        "Date_group_of_event": "272000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "271900ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "West of the Vire River",
+        "Place_GPS_coordinate": "49.0000 N, -1.1000 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "West of the Vire River",
+          "Place_GPS_coordinate": "49.0000 N, -1.1000 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.1000,
+            "East": -0.1000,
+            "South": 48.0000,
+            "North": 50.0000
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "Award of DSC to S. Sgt. Edward V. Maloney",
+      "Sub-event_summary": "S. Sgt. Edward V. Maloney of the 38th Cavalry Reconnaissance Squadron, though mortally wounded, continued to fire tank guns to cover defensive preparations, posthumously awarded DSC.",
+      "Sub-event_fulltext": {
+        "Paragraph_[18]": "With the help of these tactics, two of the 2d Division's three regiments made notable advances. On the division left, the 9th Infantry used twenty-five .50-caliber machine guns previously emplaced on high ground to deliver flanking fire across the regimental front and advanced steadily for almost two miles. Against artillery, mortar, and slight small-arms fire, the regiment nearly reached the St. Lô-Caumont highway. Comprising one half of the corps right flank pincer force, the 23d Infantry gained almost a mile and reached a lateral country road. There, German artillery and high-velocity weapons placed flanking fire on the road and prevented a crossing in strength. The fire also made it difficult to evacuate casualties and bring up supplies. On the division right, where the 38th Infantry composed the other half of the pincer force, a comparable advance was made except on the extreme right. Stanch resistance and an increasingly exposed right flank forced a halt."
+      },
+      "Footnote_References": [
+        9
+      ],
+      "Place_Name": "East of the Vire River",
+      "Dates": {
+        "Date_group_of_event": "260000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "252300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "38th Cavalry Reconnaissance Squadron",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "2d Infantry Division",
+              "Commander": "Walter M. Robertson",
+              "Name": "Walter M. Robertson",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_M._Robertson",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 1,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "East of the Vire River",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "East of the Vire River",
+          "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0000,
+            "East": 0.0000,
+            "South": 48.0000,
+            "North": 50.0000
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "Award of DSC to Pfc. Clifford L. Curry",
+      "Sub-event_summary": "Pfc. Clifford L. Curry of the 38th Cavalry Reconnaissance Squadron walked through fire to rescue a wounded soldier, awarded DSC.",
+      "Sub-event_fulltext": {
+        "Paragraph_[18]": "With the help of these tactics, two of the 2d Division's three regiments made notable advances. On the division left, the 9th Infantry used twenty-five .50-caliber machine guns previously emplaced on high ground to deliver flanking fire across the regimental front and advanced steadily for almost two miles. Against artillery, mortar, and slight small-arms fire, the regiment nearly reached the St. Lô-Caumont highway. Comprising one half of the corps right flank pincer force, the 23d Infantry gained almost a mile and reached a lateral country road. There, German artillery and high-velocity weapons placed flanking fire on the road and prevented a crossing in strength. The fire also made it difficult to evacuate casualties and bring up supplies. On the division right, where the 38th Infantry composed the other half of the pincer force, a comparable advance was made except on the extreme right. Stanch resistance and an increasingly exposed right flank forced a halt."
+      },
+      "Footnote_References": [
+        9
+      ],
+      "Place_Name": "East of the Vire River",
+      "Dates": {
+        "Date_group_of_event": "260000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "252300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "38th Cavalry Reconnaissance Squadron",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "2d Infantry Division",
+              "Commander": "Walter M. Robertson",
+              "Name": "Walter M. Robertson",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_M._Robertson",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 1,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "East of the Vire River",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "East of the Vire River",
+          "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0000,
+            "East": 0.0000,
+            "South": 48.0000,
+            "North": 50.0000
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "Award of DSC to Pfc. Milo J. Flynn",
+      "Sub-event_summary": "Pfc. Milo J. Flynn of the 5th Division awarded DSC for heroic action.",
+      "Sub-event_fulltext": {
+        "Paragraph_[19]": "Employing artillery fire to good advantage, the only regiment of the 5th Division to attack, the 2d Infantry, also made a quick initial gain of about a thousand yards. It was making a flanking approach to the St. Jean-des-Baisants ridge when intense and accurate German fire caused considerable disorganization. Nevertheless, by committing all three battalions judiciously, the regimental commander, Col. A. Worrell Roffe, was able to keep the attack going another 1,500 yards. Cutting the St. Lô-Caumont highway, the regiment made a total advance of two miles."
+      },
+      "Footnote_References": [
+        10
+      ],
+      "Place_Name": "St. Jean-des-Baisants ridge",
+      "Dates": {
+        "Date_group_of_event": "260000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "252300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "2d Infantry Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "5th Infantry Division",
+              "Commander": "S. LeRoy Irwin",
+              "Name": "S. LeRoy Irwin",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Stafford_LeRoy_Irwin",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Jean-des-Baisants ridge",
+        "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "St. Jean-des-Baisants ridge",
+          "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9743,
+            "East": 0.0257,
+            "South": 48.0933,
+            "North": 50.0933
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "Award of DSC to Pfc. Amijan O. Lazar",
+      "Sub-event_summary": "Pfc. Amijan O. Lazar of the 5th Division awarded DSC for heroic action.",
+      "Sub-event_fulltext": {
+        "Paragraph_[19]": "Employing artillery fire to good advantage, the only regiment of the 5th Division to attack, the 2d Infantry, also made a quick initial gain of about a thousand yards. It was making a flanking approach to the St. Jean-des-Baisants ridge when intense and accurate German fire caused considerable disorganization. Nevertheless, by committing all three battalions judiciously, the regimental commander, Col. A. Worrell Roffe, was able to keep the attack going another 1,500 yards. Cutting the St. Lô-Caumont highway, the regiment made a total advance of two miles."
+      },
+      "Footnote_References": [
+        10
+      ],
+      "Place_Name": "St. Jean-des-Baisants ridge",
+      "Dates": {
+        "Date_group_of_event": "260000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "252300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "2d Infantry Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "5th Infantry Division",
+              "Commander": "S. LeRoy Irwin",
+              "Name": "S. LeRoy Irwin",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Stafford_LeRoy_Irwin",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Jean-des-Baisants ridge",
+        "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "St. Jean-des-Baisants ridge",
+          "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9743,
+            "East": 0.0257,
+            "South": 48.0933,
+            "North": 50.0933
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "Award of DSC to Pvt. Jack Gill",
+      "Sub-event_summary": "Pvt. Jack Gill of the 5th Division awarded DSC for heroic action.",
+      "Sub-event_fulltext": {
+        "Paragraph_[19]": "Employing artillery fire to good advantage, the only regiment of the 5th Division to attack, the 2d Infantry, also made a quick initial gain of about a thousand yards. It was making a flanking approach to the St. Jean-des-Baisants ridge when intense and accurate German fire caused considerable disorganization. Nevertheless, by committing all three battalions judiciously, the regimental commander, Col. A. Worrell Roffe, was able to keep the attack going another 1,500 yards. Cutting the St. Lô-Caumont highway, the regiment made a total advance of two miles."
+      },
+      "Footnote_References": [
+        10
+      ],
+      "Place_Name": "St. Jean-des-Baisants ridge",
+      "Dates": {
+        "Date_group_of_event": "260000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "252300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "2d Infantry Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "5th Infantry Division",
+              "Commander": "S. LeRoy Irwin",
+              "Name": "S. LeRoy Irwin",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Stafford_LeRoy_Irwin",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Jean-des-Baisants ridge",
+        "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "St. Jean-des-Baisants ridge",
+          "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9743,
+            "East": 0.0257,
+            "South": 48.0933,
+            "North": 50.0933
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "Award of DSC to S. Sgt. Richard F. Heinzelman",
+      "Sub-event_summary": "S. Sgt. Richard F. Heinzelman of the 5th Division awarded DSC for heroic action.",
+      "Sub-event_fulltext": {
+        "Paragraph_[19]": "Employing artillery fire to good advantage, the only regiment of the 5th Division to attack, the 2d Infantry, also made a quick initial gain of about a thousand yards. It was making a flanking approach to the St. Jean-des-Baisants ridge when intense and accurate German fire caused considerable disorganization. Nevertheless, by committing all three battalions judiciously, the regimental commander, Col. A. Worrell Roffe, was able to keep the attack going another 1,500 yards. Cutting the St. Lô-Caumont highway, the regiment made a total advance of two miles."
+      },
+      "Footnote_References": [
+        10
+      ],
+      "Place_Name": "St. Jean-des-Baisants ridge",
+      "Dates": {
+        "Date_group_of_event": "260000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "252300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "2d Infantry Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "5th Infantry Division",
+              "Commander": "S. LeRoy Irwin",
+              "Name": "S. LeRoy Irwin",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Stafford_LeRoy_Irwin",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Jean-des-Baisants ridge",
+        "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "St. Jean-des-Baisants ridge",
+          "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9743,
+            "East": 0.0257,
+            "South": 48.0933,
+            "North": 50.0933
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The COBRA Diversion",
+      "Sub-event": "Award of DSC to T. Sgt. Lloyd N. Peterson",
+      "Sub-event_summary": "T. Sgt. Lloyd N. Peterson of the 5th Division awarded DSC for heroic action.",
+      "Sub-event_fulltext": {
+        "Paragraph_[19]": "Employing artillery fire to good advantage, the only regiment of the 5th Division to attack, the 2d Infantry, also made a quick initial gain of about a thousand yards. It was making a flanking approach to the St. Jean-des-Baisants ridge when intense and accurate German fire caused considerable disorganization. Nevertheless, by committing all three battalions judiciously, the regimental commander, Col. A. Worrell Roffe, was able to keep the attack going another 1,500 yards. Cutting the St. Lô-Caumont highway, the regiment made a total advance of two miles."
+      },
+      "Footnote_References": [
+        10
+      ],
+      "Place_Name": "St. Jean-des-Baisants ridge",
+      "Dates": {
+        "Date_group_of_event": "260000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "252300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "2d Infantry Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "5th Infantry Division",
+              "Commander": "S. LeRoy Irwin",
+              "Name": "S. LeRoy Irwin",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Stafford_LeRoy_Irwin",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Jean-des-Baisants ridge",
+        "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "St. Jean-des-Baisants ridge",
+          "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9743,
+            "East": 0.0257,
+            "South": 48.0933,
+            "North": 50.0933
+          }
+        }
+      ]
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "1",
+      "Footnote_Number": "1",
+      "Footnote_Text": "FUSA FO 2, 28 Jul; see FUSA Msg, 1100, 28 Jul, FUSA G-3 Jnl.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "First Army Field Order 2"
+    },
+    {
+      "Footnote": "2",
+      "Footnote_Number": "2",
+      "Footnote_Text": "XIX Corps Ltr of Instr 3, 20 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "XIX Corps Letter of Instructions 3"
+    },
+    {
+      "Footnote": "3a",
+      "Footnote_Number": "3",
+      "Footnote_Text": "V Corps FO's 12 and 13, 16 and 21 Jul; V Corps Operations in the ETO, pp. 113ff.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "V Corps Field Orders 12 and 13"
+    },
+    {
+      "Footnote": "3b",
+      "Footnote_Number": "3",
+      "Footnote_Text": "see S. Sgt. Jose M. Topete, Maj. Franklin Ferriss, and Lt. Hollis Alpert, Operations of V Corps, 26 July-15 August (hereafter cited Topete et al., Opns of V Corps), a preliminary MS, Hist Div, USFET, 1946, OCMH Files.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Operations of V Corps, 26 July-15 August"
+    },
+    {
+      "Footnote": "4",
+      "Footnote_Number": "4",
+      "Footnote_Text": "V Corps AAR, Jul, Ltr of Instrs to the 5th Div, 24 Jul, FO 13, 21 Jul, Ltr of Instrs supplementing FO 12, 24 Jul, and G-3 Situation Map, 2030, 25 Jul; Memo, Maj Gen S. LeRoy Irwin to Gen Gerow, 23 Jul, V Corps G-3 Jnl.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "V Corps After Action Report, Jul"
+    },
+    {
+      "Footnote": "5",
+      "Footnote_Number": "5",
+      "Footnote_Text": "FUSA Ltr, Relief of 1st Div by 5th Inf Div, 11 Jul, and Msgs, FUSA G-3 Jnl, 12-14 Jul; V Corps History, p. 124; Gen Bd Arty Rpt, App. C; V Corps Ord Sec Rpt, V Corps AAR, Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "First Army Letter, Relief of 1st Div by 5th Inf Div"
+    },
+    {
+      "Footnote": "6",
+      "Footnote_Number": "6",
+      "Footnote_Text": "Observations of the Div Comdr During Jul, 2d Div AAR, Jul; 2d Div FO 6, 19 Jul; 5th Div FO 2, 17 Jul, and FO 3, 22 Jul; V Corps Ltr of Instrs to 5th Div, 24 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Observations of the Div Comdr During Jul, 2d Div AAR, Jul"
+    },
+    {
+      "Footnote": "7",
+      "Footnote_Number": "7",
+      "Footnote_Text": "V Corps History, p. 121; Gen Bd Arty Rpt, App. C; V Corps Ord Sec Rpt, V Corps AAR, Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "V Corps History"
+    },
+    {
+      "Footnote": "8",
+      "Footnote_Number": "8",
+      "Footnote_Text": "9th Inf AAR, Jul; Observations of the Div Comdr During Jul, 2d Div AAR, Jul; 741st Tk Bn AAR, Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "9th Inf AAR, Jul"
+    },
+    {
+      "Footnote": "9",
+      "Footnote_Number": "9",
+      "Footnote_Text": "S. Sgt. Edward V. Maloney of the 38th Cavalry Reconnaissance Squadron, who though mortally wounded continued to fire the guns of his tank to cover the defensive preparations of his unit, was posthumously awarded the DSC. Pfc. Clifford L. Curry of the same unit walked through fire on the battlefield to rescue a wounded soldier. All fire \"ceased in salute\" as he carried the wounded man back to safety. He was awarded the DSC.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "DSC Awards"
+    },
+    {
+      "Footnote": "10",
+      "Footnote_Number": "10",
+      "Footnote_Text": "The intensity of the combat may be judged from the fact that five soldiers of the 5th Division were awarded the DSC, two posthumously: Pfc. Milo J. Flynn, Pfc. Amijan O. Lazar, Pvt. Jack Gill, S. Sgt. Richard F. Heinzelman, and T. Sgt. Lloyd N. Peterson.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "DSC Awards"
+    },
+    {
+      "Footnote": "11",
+      "Footnote_Number": "11",
+      "Footnote_Text": "V Corps G-2 Per Rpts, 26 and 27 Jul. Losses for the 2d Infantry were officially placed at 147, a low figure produced in compliance with a First Army order that estimates of men missing in action were to be \"no higher than absolutely necessary.\" (5th Div G-1 Jnl, 26 Jul.) To equate its reported figures and its actual losses, the division reported higher losses during the succeeding days. General Irwin, Personal Diary; see also Topete et al., Opns of V Corps, p. 25.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "V Corps G-2 Per Rpts"
+    },
+    {
+      "Footnote": "12",
+      "Footnote_Number": "12",
+      "Footnote_Text": "Observations of the Div Comdr During Jul, 2d Div AAR, Jul; Comments, 5th Div AAR, Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Observations of the Div Comdr During Jul, 2d Div AAR, Jul"
+    },
+    {
+      "Footnote": "13",
+      "Footnote_Number": "13",
+      "Footnote_Text": "2d Div G-3 Jnl, 27 Jul, and G-3 Per Rpt, 27 Jul; V Corps G-2 Per Rpt, 27 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "2d Div G-3 Jnl, 27 Jul"
+    },
+    {
+      "Footnote": "14",
+      "Footnote_Number": "14",
+      "Footnote_Text": "V Corps FO 14, 27 Jul; Gerow Memo, 27 Jul, V Corps G-3 Jnl.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "V Corps FO 14, 27 Jul"
+    },
+    {
+      "Footnote": "15",
+      "Footnote_Number": "15",
+      "Footnote_Text": "35th Div AAR, Jul, FO 8, 27 Jul, G-3 Jnl, 27 Jul, G-3 Per Rpt, 27 Jul; XIX Corps Ltr of Instr 3, 20 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "35th Div AAR, Jul"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn15.html",
+  "Source_Footnote_Link_Capture_Date": "December 23, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+  "Source_Link_Capture_Date": "December 23, 2025"
+}

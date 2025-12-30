@@ -1,0 +1,971 @@
+{
+  "Events": [
+    {
+      "Event": "Montgomery's Directive for Pursuit Tactics",
+      "Sub-event": "Instruction for Armored and Mobile Columns",
+      "Sub-event_summary": "General Montgomery directed aggressive pursuit tactics: strong armored and mobile columns to bypass resistance centers, push forward to create alarm in enemy rear areas, with infantry following to deal with bypassed forces. Emphasized ruthless elimination of caution or 'stickiness' in commanders.",
+      "Sub-event_fulltext": {
+        "Paragraph_32": "The Allied pursuit launched across the lower Seine and from the Melun bridgehead exhibited the same characteristics displayed by the pursuit beyond the upper Seine. \"The enemy has not the troops to hold any strong position,\" General Montgomery had advised.",
+        "Paragraph_33": "The proper tactics now are for strong armored and mobile columns to bypass enemy centers of resistance and push boldly ahead, creating alarm and despondency in enemy rear areas. Enemy bypassed will be dealt with by infantry columns coming on later. I rely on commanders of every rank and grade to \"drive\" ahead with the utmost energy; any tendency to be \"sticky\" or cautious must be stamped on ruthlessly.<sup>[44](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn31.html#fn44)</sup>"
+      },
+      "Footnote_References": ["44"],
+      "Place_Name": ["Lower Seine", "Melun bridgehead"],
+      "Dates": {
+        "Date_group_of_event": "Late Aug 1944 (post-Seine crossing pursuit phase)",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+        "Zulu_date_group_of_event": "Late Aug 44"
+      },
+      "TOE": {
+        "Unit": "21 Army Group",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Commander": "General Sir Bernard L. Montgomery",
+          "Rank": "General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": "0",
+          "Allied_GB_WIA": "0",
+          "Allied_GB_Missing": "0",
+          "Allied_GB_Unspecified_Casualties": "0",
+          "Allied_GB_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Melun Bridgehead, France",
+          "Place_GPS_coordinate": "48.5333 N, 2.6667 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 1.6667,
+            "East": 3.6667,
+            "South": 47.5333,
+            "North": 49.5333
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Lower Seine and Melun area, France",
+          "Place_GPS_coordinate": "48.5333 N, 2.6667 E",
+          "Weather_text": "No specific weather data provided in source; pursuit operations proceeded under generally favorable late-summer conditions, with no mention of adverse weather impeding armored mobility in this phase.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 1.6667,
+            "East": 3.6667,
+            "South": 47.5333,
+            "North": 49.5333
+          }
+        }
+      ]
+    },
+    {
+      "Event": "German Withdrawal and Disorganization East of Seine",
+      "Sub-event": "Collapse of Coherent Defense and Flight to Somme",
+      "Sub-event_summary": "German Fifth Panzer and Seventh Armies in severe disarray: road congestion, lost equipment, dispersed staffs, no effective command. Attempts at controlled withdrawal failed; units fell back to Somme. LXVII Corps (Fifteenth Army) attempted coordination but withdrew behind Somme by 27-28 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_34": "More German forces than had opposed the Third Army were in the Allied path of advance nearer the coast, but",
+        "Paragraph_35": "*--670--* <a id=\"page671\"></a> * * * > they were in bad straits. Road congestion added to the problems of German commanders who sought with little success to preserve a semblance of order in the flight to the Somme River. With artillery and antitank guns lost, staffs and technical services dispersed, command and communication virtually nonexistent, and rumors spreading among the troops that everyone was heading back to Germany, the *Fifth Panzer* and *Seventh Armies* found it impossible to conduct controlled operations. There had been no over-all planning early enough to make the withdrawal beyond the Seine an orderly procedure, and after a brief attempt by some units to make a stand, all fell back to the Somme.",
+        "Paragraph_36": "The *LXVII Corps,* under the control of the *Fifteenth Army* and responsible for the coastal area between the Seine and the Somme, had received no orders to direct the river crossings of the troops streaming eastward, but did so anyway. Co-ordinating with the *Fifth Panzer Army* traffic control staff, the *LXVII Corps* tried to collect troops, allocate them to assembly areas, and secure supplies for them--a hopeless task that came to an end on 27 or 28 August when the *Fifteenth Army* ordered the corps to withdraw behind the Somme.<sup>[45](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn31.html#fn45)</sup>"
+      },
+      "Footnote_References": ["45a", "45b", "45c"],
+      "Place_Name": ["Somme River", "Seine River", "Pas-de-Calais"],
+      "Dates": {
+        "Date_group_of_event": "Late Aug 1944 (27-28 Aug withdrawal emphasis)",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+        "Zulu_date_group_of_event": "27-28 Aug 44"
+      },
+      "TOE": {
+        "Unit": "Fifth Panzer Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Commander": "SS-Oberstgruppenführer Sepp Dietrich",
+          "Rank": "SS-Oberstgruppenführer",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Sepp_Dietrich"
+        },
+        "Subordinates": [
+          {
+            "Unit": "LXVII Corps",
+            "Commander": "General der Infanterie Walther Lucht",
+            "Rank": "General der Infanterie",
+            "Date": "Aug 1944"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": "0",
+          "Allied_GB_WIA": "0",
+          "Allied_GB_Missing": "0",
+          "Allied_GB_Unspecified_Casualties": "0",
+          "Allied_GB_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Somme River, France",
+          "Place_GPS_coordinate": "50.0000 N, 2.0000 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 1.0,
+            "East": 3.0,
+            "South": 49.0,
+            "North": 51.0
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Somme River area, France",
+          "Place_GPS_coordinate": "50.0000 N, 2.0000 E",
+          "Weather_text": "No specific weather data in source; German withdrawal characterized by road congestion but no mention of weather-induced delays in this phase.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 1.0,
+            "East": 3.0,
+            "South": 49.0,
+            "North": 51.0
+          }
+        }
+      ]
+    },
+    {
+      "Event": "German Defensive Attempts and Corps Withdrawals",
+      "Sub-event": "LVIII Panzer Corps Actions",
+      "Sub-event_summary": "LVIII Panzer Corps attempted to block panic and form defensive line northeast of Paris (Beaumont to Meaux) with remnants and arriving divisions, but withdrew toward Compiègne after losing contact.",
+      "Sub-event_fulltext": {
+        "Paragraph_37": "The *LVIII Panzer Corps* had appointed about one hundred officers to block the roads and stop the beginnings of a panic-stricken retreat toward Reims and points east. Under the control of the *First Army,* the corps tried to form a defensive line between the Oise and the Seine, positions generally northeast of Paris, from Beaumont to Meaux--with panzer remnants; with the *348th Division,* which was arriving in a dilatory fashion from northern France too late to strengthen the Paris defenses as intended; and with fragments of the *18th Luftwaffe Field Division* and the *6th Parachute Division.* When news came that the *First Army* was falling back from the upper Seine toward Reims, *Army Group B* assigned the *LVIII Panzer Corps* to the *Fifth Panzer Army.* Lacking communications with army, without even knowledge of where the army command post was located, the corps decided to withdraw toward Compiègne.<sup>[46](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn31.html#fn46)</sup>"
+      },
+      "Footnote_References": ["46a", "46b", "46c"],
+      "Place_Name": ["Oise River", "Seine River", "Beaumont", "Meaux", "Compiègne"],
+      "Dates": {
+        "Date_group_of_event": "Late Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+        "Zulu_date_group_of_event": "Late Aug 44"
+      },
+      "TOE": {
+        "Unit": "LVIII Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Commander": "General der Panzertruppen Walter Krüger",
+          "Rank": "General der Panzertruppen",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_Kr%C3%BCger_(general)"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Compiègne, France",
+          "Place_GPS_coordinate": "49.4144 N, 2.8261 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 1.8261,
+            "East": 3.8261,
+            "South": 48.4144,
+            "North": 50.4144
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Oise-Seine area near Paris, France",
+          "Place_GPS_coordinate": "49.0000 N, 2.5000 E",
+          "Weather_text": "No specific weather data in source; German defensive attempts and withdrawals described without weather-related impediments noted.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 1.5,
+            "East": 3.5,
+            "South": 48.0,
+            "North": 50.0
+          }
+        }
+      ]
+    },
+    {
+      "Event": "German Defensive Attempts and Corps Withdrawals",
+      "Sub-event": "LXXXI Corps Actions",
+      "Sub-event_summary": "LXXXI Corps clung to Vernon area with straggler battalions and panzer troops but dissipated and withdrew to Somme due to lack of combat capability and supplies.",
+      "Sub-event_fulltext": {
+        "Paragraph_38": "The *LXXXI Corps,* directed to hold the area around Vernon, tried to cling to wooded terrain near Mantes with several straggler battalions and panzer troops formerly belonging to the *II SS Panzer Corps.* Allied attacks as well as the general climate of retreat soon dissipated combat strength, and, without units capable of battle and without supplies, the *LXXXI Corps* withdrew toward the Somme.<sup>[47](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn31.html#fn47)</sup>"
+      },
+      "Footnote_References": ["47"],
+      "Place_Name": ["Vernon", "Mantes", "Somme River"],
+      "Dates": {
+        "Date_group_of_event": "Late Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+        "Zulu_date_group_of_event": "Late Aug 44"
+      },
+      "TOE": {
+        "Unit": "LXXXI Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Commander": "General der Infanterie Friedrich Köchling",
+          "Rank": "General der Infanterie",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Friedrich_K%C3%B6chling"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Vernon, France",
+          "Place_GPS_coordinate": "49.0833 N, 1.4833 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 0.4833,
+            "East": 2.4833,
+            "South": 48.0833,
+            "North": 50.0833
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Vernon area, France",
+          "Place_GPS_coordinate": "49.0833 N, 1.4833 E",
+          "Weather_text": "No specific weather data in source; withdrawal described without weather-related impediments noted.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 0.4833,
+            "East": 2.4833,
+            "South": 48.0833,
+            "North": 50.0833
+          }
+        }
+      ]
+    },
+    {
+      "Event": "First U.S. Army Pursuit Northeast from Seine",
+      "Sub-event": "Hodges' Plan and Initial Advances",
+      "Sub-event_summary": "First Army to advance northeast from Mantes-Gassicourt-Melun to Peronne-Laon, then to Mons-Sedan, turning east through Liège-Arlon-Luxembourg to Rhine between Cologne-Koblenz. VII Corps from Melun unhinged LVIII Panzer Corps, reached Laon (30 Aug), Rethel-Montcornet (31 Aug). XIX Corps from Mantes-Gassicourt reached Beauvais-Compiègne line (31 Aug). V Corps from Paris reached Compiègne, crossed Aisne (1 Sep).",
+      "Sub-event_fulltext": {
+        "Paragraph_39": "As the German forces rushed rearward, a vast undefended gap opened between the weak forces of the *First Army* and the conglomerate masses of the *Fifth Panzer* and *Seventh Armies* seeking refuge in the Pas-de-Calais area, which was defended by the *Fifteenth Army.* Into the gap came the First U.S. Army.",
+        "Paragraph_40": "General Hodges was to support the British by advancing in a northeasterly direction from the Mantes-Gassicourt-Melun line to Peronne-Laon, more than",
+        "Paragraph_41": "*--671--* <a id=\"page672\"></a> * * * > eighty-five miles away. Then, after driving about fifty miles to Mons-Sedan, the army was to turn gradually to the east and advance a hundred and twenty-five miles through Liège-Arlon, the duchy of Luxembourg, and across the Rhine River between Cologne and Koblenz to the southern fringe of the Ruhr.<sup>[48](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn31.html#fn48)</sup>",
+        "Paragraph_42": "The terrain, the best invasion route to Germany, posed no special problems. The army would generally follow the Oise River valley to Landrecies, the Sambre River valley from Maubeuge to Namur, the Meuse River valley to Liège. Only in the right side of the zone were there several obstacles--the Marne, the Aisne, and the Meuse Rivers crossed the routes of advance in succession, and later the Ardennes interposed its rugged terrain. But if the army could move quickly, and there seemed no reason why it should not, it would forestall effective opposition on these terrain features. In the left part of the army zone, where General Hodges was to make his main effort to support the British, no major waterways or terrain obstacles intervened. Enemy resistance was expected to be ineffective along the whole army front.",
+        "Paragraph_43": "Hodges had four corps, only two of which were immediately available. Gerow's V Corps in the center was liberating Paris. Haislip's XV Corps headquarters, commanding the forces in the Mantes-Gassicourt bridgehead, was to rejoin the Third Army after being replaced by Corlett's XIX Corps headquarters. Collins' VII Corps was to take over the Melun bridgehead. With Corlett on the left and Collins on the right, Hodges would launch a twin pursuit to encircle Paris and drive to Peronne and Laon. Heavy artillery was to remain west of the Seine for the time being. Supplies for the pursuing troops seemed adequate.<sup>[49](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn31.html#fn49)</sup>",
+        "Paragraph_44": "Collins' VII Corps attacked to the northeast from Melun on 26 August and quickly unhinged the *LVIII Panzer Corps* line near Meaux. Dispersing the defenders and passing within a mile of the *First Army* command post near Fontenay-Trésigny, American tankers sped through Château-Thierry and Soissons on 28 August, reaching Laon two days later. On the last day of the month armored troops were at Rethel and Montcornet, a hundred miles beyond the Seine. General Rose, who had developed the 3d Armored Division \"into a marvelous thing, . . . built up morale, taught the division how to . . . fight,\" led the advance, with the 9th Division (commanded now by Maj. Gen. Louis A. Craig) and Huebner's 1st Division clearing the corps zone behind the armor.<sup>[50](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn31.html#fn50)</sup>"
+      },
+      "Footnote_References": ["48", "49", "50"],
+      "Place_Name": ["Mantes-Gassicourt", "Melun", "Peronne", "Laon", "Mons", "Sedan", "Liège", "Arlon", "Luxembourg", "Cologne", "Koblenz", "Ruhr", "Oise River", "Sambre River", "Meuse River", "Ardennes", "Paris", "Meaux", "Fontenay-Trésigny", "Château-Thierry", "Soissons", "Rethel", "Montcornet"],
+      "Dates": {
+        "Date_group_of_event": "26-31 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+        "Zulu_date_group_of_event": "26-31 Aug 44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Commander": "Lt. Gen. Courtney H. Hodges",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Courtney_Hodges"
+        },
+        "Subordinates": [
+          {
+            "Unit": "VII Corps",
+            "Commander": "Maj. Gen. J. Lawton Collins",
+            "Rank": "Major General",
+            "Date": "Aug 1944",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins"
+          },
+          {
+            "Unit": "XIX Corps",
+            "Commander": "Maj. Gen. Charles H. Corlett",
+            "Rank": "Major General",
+            "Date": "Aug 1944"
+          },
+          {
+            "Unit": "V Corps",
+            "Commander": "Maj. Gen. Leonard T. Gerow",
+            "Rank": "Major General",
+            "Date": "Aug 1944"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Laon, France",
+          "Place_GPS_coordinate": "49.5636 N, 3.6219 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 2.6219,
+            "East": 4.6219,
+            "South": 48.5636,
+            "North": 50.5636
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Melun to Laon area, France",
+          "Place_GPS_coordinate": "49.0000 N, 3.0000 E",
+          "Weather_text": "No specific adverse weather reported; rapid armored advances proceeded under favorable late-summer conditions.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 2.0,
+            "East": 4.0,
+            "South": 48.0,
+            "North": 50.0
+          }
+        }
+      ]
+    },
+    {
+      "Event": "XIX Corps Advance from Mantes-Gassicourt",
+      "Sub-event": "Expansion and Pursuit to Beauvais-Compiègne",
+      "Sub-event_summary": "XV Corps held Mantes-Gassicourt bridgehead (30th and 79th Divisions expanded east bank, 2d Armored crossed Seine 28 Aug). XIX Corps took command 29 Aug noon, drove forward with 2d Armored in lead against negligible opposition, reached Beauvais-Compiègne line by 31 Aug.",
+      "Sub-event_fulltext": {
+        "Paragraph_45": "Until the XIX Corps headquarters took over the Mantes-Gassicourt bridgehead, XV Corps continued in command. Hobbs' 30th Division reinforced Wyche's 79th (which had held the bridgehead for a week with the help of extensive artillery support and a \"big program of harassing and interdicting fires\") on 27 August, and Brooks' 2d Armored Division",
+        "Paragraph_46": "*--672--* <a id=\"page673\"></a> * * * > crossed the Seine on 28 August to protect the left flank of the bridgehead. The 79th and 30th began to expand their hold on the east bank by seizing and securing badly broken and heavily wooded ground. Thirty-five artillery battalions fired \"a generous amount of ammunition\" in support.<sup>[51](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn31.html#fn51)</sup>",
+        "Paragraph_47": "At noon, 29 August, as Haislip's XV Corps headquarters started to move to an assembly area southeast of Paris and eventual Third Army assignment, Corlett's XIX Corps took command of the three divisions east of the Seine. Since the troops were emerging on terrain favorable for rapid advance and since the organized resistance of the *LXXXI Corps* had disintegrated, Corlett moved the 2d Armored Division into the lead, and the corps drove forward against virtually no opposition. Two days later the corps was fifty miles to the east, on a line between Beauvais and Compiègne.<sup>[52](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn31.html#fn52)</sup>"
+      },
+      "Footnote_References": ["51", "52"],
+      "Place_Name": ["Mantes-Gassicourt", "Seine River", "Beauvais", "Compiègne"],
+      "Dates": {
+        "Date_group_of_event": "27-31 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+        "Zulu_date_group_of_event": "27-31 Aug 44"
+      },
+      "TOE": {
+        "Unit": "XIX Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Commander": "Maj. Gen. Charles H. Corlett",
+          "Rank": "Major General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett"
+        },
+        "Subordinates": [
+          {
+            "Unit": "2d Armored Division",
+            "Commander": "Maj. Gen. Edward H. Brooks",
+            "Rank": "Major General",
+            "Date": "Aug 1944"
+          },
+          {
+            "Unit": "30th Infantry Division",
+            "Commander": "Maj. Gen. Leland S. Hobbs",
+            "Rank": "Major General"
+          },
+          {
+            "Unit": "79th Infantry Division",
+            "Commander": "Maj. Gen. Ira T. Wyche",
+            "Rank": "Major General"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Beauvais, France",
+          "Place_GPS_coordinate": "49.4291 N, 2.0807 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 1.0807,
+            "East": 3.0807,
+            "South": 48.4291,
+            "North": 50.4291
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Mantes-Gassicourt to Beauvais area, France",
+          "Place_GPS_coordinate": "49.0000 N, 2.0000 E",
+          "Weather_text": "No specific weather data; advance characterized by rapid progress on favorable terrain with no weather impediments noted.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 1.0,
+            "East": 3.0,
+            "South": 48.0,
+            "North": 50.0
+          }
+        }
+      ]
+    },
+    {
+      "Event": "V Corps Pursuit from Paris Area",
+      "Sub-event": "Advance to Compiègne and Aisne Crossing",
+      "Sub-event_summary": "V Corps (28th Division after Paris parade, 4th Division) joined pursuit 29 Aug. 5th Armored Division passed through, advanced in five columns to Fôret de Compiègne, infantry cleared forest and took Compiègne. Early 1 Sep, contingents crossed Aisne between Compiègne and Soissons.",
+      "Sub-event_fulltext": {
+        "Paragraph_48": "Gerow's V Corps joined the pursuit on 29 August in the army center when Cota's 28th Division, after parading in Paris, joined Barton's 4th. Two days later Oliver's 5th Armored Division passed through both infantry divisions to move into the lead. In five columns, with three combat commands abreast, the armor dashed to the Fôret de Compiègne, hampered only occasionally by hastily erected roadblocks. There, the troops met units under control of the *LVIII Panzer Corps.* Bogged down in poor terrain, hindered by some confusion of communications, the tankers let 4th Division infantry pass through to clear the forest and take the city of Compiègne, forty-five miles northeast of Paris. In the early morning hours of 1 September, contingents of the corps got across the Aisne River between Compiègne and Soissons.<sup>[53](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn31.html#fn53)</sup>"
+      },
+      "Footnote_References": ["53"],
+      "Place_Name": ["Paris", "Fôret de Compiègne", "Compiègne", "Aisne River", "Soissons"],
+      "Dates": {
+        "Date_group_of_event": "29 Aug - 1 Sep 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+        "Zulu_date_group_of_event": "29 Aug - 01 Sep 44"
+      },
+      "TOE": {
+        "Unit": "V Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Commander": "Maj. Gen. Leonard T. Gerow",
+          "Rank": "Major General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leonard_T._Gerow"
+        },
+        "Subordinates": [
+          {
+            "Unit": "5th Armored Division",
+            "Commander": "Maj. Gen. Lunsford E. Oliver",
+            "Rank": "Major General",
+            "Date": "Aug 1944"
+          },
+          {
+            "Unit": "4th Infantry Division",
+            "Commander": "Maj. Gen. Raymond O. Barton",
+            "Rank": "Major General",
+            "Date": "Aug 1944"
+          },
+          {
+            "Unit": "28th Infantry Division",
+            "Commander": "Maj. Gen. Norman D. Cota",
+            "Rank": "Major General",
+            "Date": "Aug 1944"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Compiègne, France",
+          "Place_GPS_coordinate": "49.4144 N, 2.8261 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 1.8261,
+            "East": 3.8261,
+            "South": 48.4144,
+            "North": 50.4144
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris to Compiègne area, France",
+          "Place_GPS_coordinate": "49.0000 N, 2.5000 E",
+          "Weather_text": "No specific weather data; pursuit advanced rapidly with occasional roadblocks but no weather-related delays noted.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 1.5,
+            "East": 3.5,
+            "South": 48.0,
+            "North": 50.0
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Pursuit Experiences and Notable Incidents",
+      "Sub-event": "Soldier Experiences and Braine Train Captures",
+      "Sub-event_summary": "Rapid advance blurred scenery; soldiers exhausted but exhilarated. Notable incident at Braine: Sgt. Butler's AA section disabled and captured German train (36 cars, 70 prisoners); second train captured shortly after. Pursuit characterized by incidental captures and liberated French enthusiasm.",
+      "Sub-event_fulltext": {
+        "Paragraph_49": "For the soldiers, the countryside had become a monotonous blur of changing scenery. Their eyes bloodshot and tear-filled from sun, wind, dust, and weariness, they followed a blinding road all day long and at night strained to keep the cat eyes of the vehicle ahead in sight.<sup>[54](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn31.html#fn54)</sup> Little seemed spectacular except the lack of opposition and the growing feeling that they would soon reach Germany. \"Unfortunately,\" it often seemed, \"the Germans pulled out of the town before we arrived.\"<sup>[55](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn31.html#fn55)</sup> Those infantrymen who clung to the tanks of the advance units were grateful that the \"tank-riding detail\" got them \"first into the towns, with first shot at the cheers, the cognac, and the kisses.\"<sup>[56](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn31.html#fn56)</sup>",
+        "Paragraph_50": "There were exhilarating moments such as the one in the little village of Braine (on the Vesle River ten miles east of Soissons). When the French stationmaster informed American tankers",
+        "Paragraph_51": "*--673--* <a id=\"page674\"></a> * * * > passing through that a German train coming from Paris was due in fifteen minutes, no one was interested, no one except Sgt. Hollis Butler, who commanded a gun section of the 468th Antiaircraft Artillery Automatic Weapons Battalion (self-propelled). German planes had been virtually nonexistent east of the Seine, and his men had not fired for several days. Although a train was bound to be less exciting than a plane, Sergeant Butler pulled his carriage mounting a 37-mm. gun and dual .50-caliber machine guns out the column and covered the railroad so that his men could shoot a few rounds. When the train appeared, the crew quickly disabled the locomotive and raked the cars with machine gun fire. Turning themselves for the moment into infantrymen, the artillerymen advanced in squad formation with marching fire, captured thirty-six cars (among them machine shops for tank repair) and seventy prisoners. Local FFI members were on hand to take the prisoners, and the Americans got into their vehicles and rejoined the column. Because the train blocked the tracks, it was easy for men of the 54th Armored Field Artillery Battalion to capture a second train thirty minutes later.<sup>[57](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn31.html#fn57)</sup>"
+      },
+      "Footnote_References": ["54", "55", "56", "57"],
+      "Place_Name": ["Braine", "Vesle River", "Soissons"],
+      "Dates": {
+        "Date_group_of_event": "Late Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+        "Zulu_date_group_of_event": "Late Aug 44"
+      },
+      "TOE": {
+        "Unit": "468th Antiaircraft Artillery Automatic Weapons Battalion",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Sgt. Hollis Butler (section commander)",
+          "Rank": "Sergeant"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_Prisoner_of_War": "70 (at Braine)"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Braine, France",
+          "Place_GPS_coordinate": "49.4500 N, 3.5333 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 2.5333,
+            "East": 4.5333,
+            "South": 48.45,
+            "North": 50.45
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Braine / Vesle River area, France",
+          "Place_GPS_coordinate": "49.4500 N, 3.5333 E",
+          "Weather_text": "No specific weather data; incident occurred during rapid pursuit with no weather impediments noted.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 2.5333,
+            "East": 4.5333,
+            "South": 48.45,
+            "North": 50.45
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Canadian and British Advances to Rouen and Amiens",
+      "Sub-event": "First Canadian Army to Rouen; Second British Army to Amiens",
+      "Sub-event_summary": "First Canadian Army secured five bridgeheads, liberated Rouen (30 Aug). Second British Army crossed near Vernon/Louviers, advanced slowly initially due to weather/mines/resistance, reached Amiens (31 Aug) capturing intact Somme bridges; captured Seventh Army commander Eberbach.",
+      "Sub-event_fulltext": {
+        "Paragraph_52": "While the First Army was having such easy success, the 21 Army Group was also getting across the Seine and toward the Somme, some seventy miles distant. The First Canadian Army, instructed to drive up the Channel coast with the main weight on the right for pursuit purposes and at the same time to develop right hooks to secure the Channel ports, faced a more difficult problem in getting across the Seine. Not only was the river wider between Rouen and the sea, German troops had been deflected downstream by the American drive down the west bank and were fighting with desperation to maintain escape routes across the river. Canadian forces nevertheless secured five bridgeheads--two in the Elbeuf-Rouen area, three between Rouen and the coast--and on 30 August, against slight opposition, entered and liberated Rouen, the capital of Normandy and the second largest port in France.",
+        "Paragraph_53": "The Second British Army, beset by logistical difficulties, retained one corps west of the Seine and used its transportation facilities to support the two corps making assault crossings near Vernon and Louviers. Armored forces departed the Vernon bridgehead on 29 August, but weather, scattered mine fields, and small German pockets of resistance kept the advance to a mere twenty miles. On the afternoon of the following day, as the weather improved and resistance diminished, British tankers drove forward with increasing speed. After continuing to advance through the night, they reached Amiens early on 31 August and, with FFI assistance, secured the city and took several bridges over the Somme intact. Eberbach, the *Seventh Army* commander who had just signed an order for the defense of the Somme River line, was captured.<sup>[58](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn31.html#fn58)</sup>"
+      },
+      "Footnote_References": ["58"],
+      "Place_Name": ["Rouen", "Elbeuf", "Vernon", "Louviers", "Amiens", "Somme River"],
+      "Dates": {
+        "Date_group_of_event": "29-31 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+        "Zulu_date_group_of_event": "29-31 Aug 44"
+      },
+      "TOE": {
+        "Unit": "First Canadian Army",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Commander": "General Henry D. G. Crerar",
+          "Rank": "General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Henry_Duncan_Graham_Crerar"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Second British Army",
+            "Commander": "General Miles C. Dempsey",
+            "Rank": "General",
+            "Date": "Aug 1944",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Miles_Dempsey"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": "0",
+          "Allied_GB_KIA": "0",
+          "Allied_CA_WIA": "0",
+          "Allied_GB_WIA": "0",
+          "Allied_CA_Missing": "0",
+          "Allied_GB_Missing": "0",
+          "Allied_CA_Unspecified_Casualties": "0",
+          "Allied_GB_Unspecified_Casualties": "0",
+          "Allied_CA_Prisoner_of_War": "0",
+          "Allied_GB_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_Prisoner_of_War": "1 (Eberbach)"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Amiens, France",
+          "Place_GPS_coordinate": "49.8941 N, 2.2958 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 1.2958,
+            "East": 3.2958,
+            "South": 48.8941,
+            "North": 50.8941
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Vernon to Amiens area, France",
+          "Place_GPS_coordinate": "49.0000 N, 1.5000 E",
+          "Weather_text": "Initial slow advance due to weather on 29 August; improvement on 30 August allowed faster progress and night advance to Amiens.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 0.5,
+            "East": 2.5,
+            "South": 48.0,
+            "North": 50.0
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Fall of Somme-Marne Line and Outlook to Rhine",
+      "Sub-event": "Capture of Amiens and Breach of German Line",
+      "Sub-event_summary": "Capture of Amiens completed penetration of Somme-Marne line (previously breached by Third Army at Châlons and First Army northeast of Paris). Except for Albert Canal-Meuse line (undefended), virtually no obstacles remained to Rhine approaches.",
+      "Sub-event_fulltext": {
+        "Paragraph_54": "With the capture of Amiens, the last sector of the German Somme-Marne defense line fell into Allied hands, a line earlier penetrated by the Third Army",
+        "Paragraph_55": "*--674--* <a id=\"page675\"></a> * * * > capture of Châlons and the First Army advance northeast of Paris. With the exception of the Albert Canal and Meuse River water line, which appeared undefended, virtually no obstacles seemed to lie between the armies making the main Allied effort and the western approaches to the Rhine.",
+        "Paragraph_56": "*--675--*"
+      },
+      "Footnote_References": [],
+      "Place_Name": ["Amiens", "Châlons", "Somme-Marne Line", "Albert Canal", "Meuse River", "Rhine River"],
+      "Dates": {
+        "Date_group_of_event": "31 Aug 1944 (Amiens capture)",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+        "Zulu_date_group_of_event": "31 Aug 44"
+      },
+      "TOE": {
+        "Unit": "21 Army Group",
+        "Unit_Nationality": "GB"
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": "0",
+          "Allied_GB_WIA": "0",
+          "Allied_GB_Missing": "0",
+          "Allied_GB_Unspecified_Casualties": "0",
+          "Allied_GB_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Somme River Line, France",
+          "Place_GPS_coordinate": "50.0000 N, 2.0000 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 1.0,
+            "East": 3.0,
+            "South": 49.0,
+            "North": 51.0
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Somme-Marne region, France",
+          "Place_GPS_coordinate": "50.0000 N, 2.5000 E",
+          "Weather_text": "No specific weather data; capture of line completed under conditions allowing continued rapid Allied advance.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 1.5,
+            "East": 3.5,
+            "South": 49.0,
+            "North": 51.0
+          }
+        }
+      ]
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "44",
+      "Footnote_Number": "44",
+      "Footnote_Text": "21 AGp Dir, M-520, 26 Aug, SGS SHAEF File 381, Post-OVERLORD Plng, I.",
+      "Footnote_Referenced_Source": "21 Army Group Directive M-520, 26 August 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "SGS SHAEF File 381, Post-OVERLORD Plng",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "45a",
+      "Footnote_Number": "45",
+      "Footnote_Text": "MS # B-728 (Emmerich).",
+      "Footnote_Referenced_Source": "German manuscript: Emmerich (MS # B-728)",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "1 Archives Drive, St. Louis, MO 63138, United States",
+      "NonDigital_Library_References": "Captured German manuscripts series (MS # B-728)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "45b",
+      "Footnote_Number": "45",
+      "Footnote_Text": "MS # B-222 (Knobelsdorff).",
+      "Footnote_Referenced_Source": "German manuscript: Knobelsdorff (MS # B-222)",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "1 Archives Drive, St. Louis, MO 63138, United States",
+      "NonDigital_Library_References": "Captured German manuscripts series (MS # B-222)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "45c",
+      "Footnote_Number": "45",
+      "Footnote_Text": "MS # B-732 (Hold).",
+      "Footnote_Referenced_Source": "German manuscript: Hold (MS # B-732)",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "1 Archives Drive, St. Louis, MO 63138, United States",
+      "NonDigital_Library_References": "Captured German manuscripts series (MS # B-732)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "46a",
+      "Footnote_Number": "46",
+      "Footnote_Text": "MS # B-728 (Emmerich).",
+      "Footnote_Referenced_Source": "German manuscript: Emmerich (MS # B-728)",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "1 Archives Drive, St. Louis, MO 63138, United States",
+      "NonDigital_Library_References": "Captured German manuscripts series (MS # B-728)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "46b",
+      "Footnote_Number": "46",
+      "Footnote_Text": "MS # B-222 (Knobelsdorff).",
+      "Footnote_Referenced_Source": "German manuscript: Knobelsdorff (MS # B-222)",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "1 Archives Drive, St. Louis, MO 63138, United States",
+      "NonDigital_Library_References": "Captured German manuscripts series (MS # B-222)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "46c",
+      "Footnote_Number": "46",
+      "Footnote_Text": "MS # B-732 (Hold).",
+      "Footnote_Referenced_Source": "German manuscript: Hold (MS # B-732)",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "1 Archives Drive, St. Louis, MO 63138, United States",
+      "NonDigital_Library_References": "Captured German manuscripts series (MS # B-732)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "47",
+      "Footnote_Number": "47",
+      "Footnote_Text": "MS # B-728 (Emmerich); MS # B-222 (Knobelsdorff); MS # B-732 (Hold).",
+      "Footnote_Referenced_Source": "German manuscripts: Emmerich, Knobelsdorff, Hold",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "1 Archives Drive, St. Louis, MO 63138, United States",
+      "NonDigital_Library_References": "Captured German manuscripts series (MS # B-728, B-222, B-732)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "48",
+      "Footnote_Number": "48",
+      "Footnote_Text": "1st U.S. Army Ltr of Instrs 2, 28 Aug, First U.S. Army Report of Operations, I, 34-35; 21 AGp Dir, M-520, 26 Aug, SGS SHAEF File 381, Post-OVERLORD Plng, I.",
+      "Footnote_Referenced_Source": "First U.S. Army Letter of Instructions 2; 21 AGp Directive M-520",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files; SGS SHAEF File 381",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "49",
+      "Footnote_Number": "49",
+      "Footnote_Text": "1st U.S. Army Ltr of Instrs 2, 28 Aug; First U.S. Army Report of Operations, I, 34-35.",
+      "Footnote_Referenced_Source": "First U.S. Army Letter of Instructions 2",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "50",
+      "Footnote_Number": "50",
+      "Footnote_Text": "VII Corps AAR, Aug; 3d Armd Div AAR, Aug; First U.S. Army Report of Operations, I, 34-35; Pogue, Supreme Command, p. 254.",
+      "Footnote_Referenced_Source": "VII Corps and 3d Armored Division AARs; First U.S. Army Report; Pogue, Supreme Command",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "VII Corps AAR; 3d Armd Div AAR; OCMH Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "51",
+      "Footnote_Number": "51",
+      "Footnote_Text": "XV Corps AAR, Aug; 30th and 79th Div AAR's, Aug.",
+      "Footnote_Referenced_Source": "XV Corps, 30th, and 79th Division AARs",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "XV Corps AAR; 30th/79th Div AAR",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "52",
+      "Footnote_Number": "52",
+      "Footnote_Text": "XIX Corps AAR, Aug; 2d Armd Div AAR, Aug.",
+      "Footnote_Referenced_Source": "XIX Corps and 2d Armored Division AARs",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "XIX Corps AAR; 2d Armd Div AAR",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "53",
+      "Footnote_Number": "53",
+      "Footnote_Text": "V Corps AAR, Aug; 5th Armd Div AAR, Aug.",
+      "Footnote_Referenced_Source": "V Corps and 5th Armored Division AARs",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "V Corps AAR; 5th Armd Div AAR",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "54",
+      "Footnote_Number": "54",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 35.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "55",
+      "Footnote_Number": "55",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 35.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "56",
+      "Footnote_Number": "56",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 35.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "57",
+      "Footnote_Number": "57",
+      "Footnote_Text": "468th AAA AW Bn AAR, Aug; CI 384 (XII Corps).",
+      "Footnote_Referenced_Source": "468th AAA AW Battalion AAR; XII Corps CI 384",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "468th AAA AW Bn AAR; XII Corps Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "58",
+      "Footnote_Number": "58",
+      "Footnote_Text": "21 AGp Dir, M-520, 26 Aug, SGS SHAEF File 381, Post-OVERLORD Plng, I; Second Army Opns, 27-31 Aug; First Canadian Army Report, pp. 45-46; Montgomery, Normandy to the Baltic, pp. 200-202.",
+      "Footnote_Referenced_Source": "21 AGp Directive M-520; Second Army operations; First Canadian Army Report; Montgomery publication",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "SGS SHAEF File 381; Army operational reports",
+      "Source_Type": "US"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn31.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-30",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+  "Source_Link_Capture_Date": "2025-12-30"
+}

@@ -1,0 +1,368 @@
+{
+  "Events": [
+    {
+      "Event": "German Breakout from Falaise Pocket",
+      "Sub-event": "Preparation and Initial Movement of 3rd Parachute Division",
+      "Sub-event_summary": "Hausser arrives at II Parachute Corps CP; Meindl prepares breakout with 3rd Parachute Division; troops briefed, rested, and in good spirits; advance begins at 2230 from la Londe.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "Hausser, Seventh Army commander and in charge of the encircled forces, arrived with a small staff after dark on 19 August at the II Parachute Corps command post. There Meindl, the corps commander, was making his final preparations for the breakout. In order to be able to handle the situation promptly as it developed, Meindl chose his place behind the forward elements of the left column of the 3d Parachute Division. Hausser also elected to break out with the paratroopers.",
+        "Paragraph_20": "Unit commanders and noncommissioned officers of the division had been thoroughly briefed. The men had slept for a few hours and had eaten. No one underestimated the difficulty of the undertaking, but weariness seemed to have vanished and the troops appeared in good spirits.",
+        "Paragraph_21": "The forward elements moved from the line of departure at la Londe at 2230. Forty-five minutes later Meindl's column drew fire from a tank near the Trun-Argentan highway. Two more encounters with Allied outposts occurred before the paratroopers, around 0030 on 20 August, reached the Dives River."
+      },
+      "Footnote_References": [28, 29],
+      "Place_Name": "la Londe to Dives River near Magny/St. Lambert",
+      "Dates": {
+        "Date_group_of_event": "19-20 August 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "192230ZAUG44 to 200030ZAUG44"
+      },
+      "TOE": {
+        "Unit": "3rd Parachute Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": [
+          {
+            "Unit": "3rd Parachute Division",
+            "Commander": "Richard Schimpf",
+            "Name": "Richard Schimpf",
+            "Rank": "Generalleutnant",
+            "End_Date": "20 August 1944",
+            "End_Status": "WIA",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Richard_Schimpf"
+          },
+          {
+            "Unit": "3rd Parachute Division (assumed command)",
+            "Commander": "Eugen Meindl",
+            "Name": "Eugen Meindl",
+            "Rank": "General der Fallschirmtruppe",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Eugen_Meindl"
+          },
+          {
+            "Unit": "II Parachute Corps",
+            "Commander": "Eugen Meindl",
+            "Name": "Eugen Meindl",
+            "Rank": "General der Fallschirmtruppe",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Eugen_Meindl"
+          },
+          {
+            "Unit": "Seventh Army",
+            "Commander": "Paul Hausser",
+            "Name": "Paul Hausser",
+            "Rank": "Generaloberst der Waffen-SS",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser"
+          }
+        ],
+        "Subordinates": [],
+        "Personnel": "Troops in good spirits, rested; no specific staffing details.",
+        "Equipments": {
+          "Axis_Employed": {
+            "DE": [
+              {
+                "Name": "Tanks (Allied contact)",
+                "Identifier": "Unspecified",
+                "Quantity": "Multiple (observed in encounters)",
+                "Web_Reference": null
+              }
+            ]
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0
+        },
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": 0
+        }
+      },
+      "Weather": {
+        "Place_Name": "la Londe area",
+        "Place_GPS_coordinate": "48.75 N, 0.15 W",
+        "Weather_text": "Night conditions; no specific weather noted until later drizzle.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.15,
+          "East": 0.85,
+          "South": 47.75,
+          "North": 49.75
+        }
+      }
+    },
+    {
+      "Event": "German Breakout from Falaise Pocket",
+      "Sub-event": "Crossing Dives River and Initial Engagements",
+      "Sub-event_summary": "Meindl assumes command after Schimpf wounded; small group crosses Dives at ford; encounters tanks, machine gun fire; uses tracer fire to find gaps; progress slowed by Very lights; continues east under rain and fatigue.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "Because the division commander, Generalleutnant Richard Schimpf, was seriously wounded in the last encounter, Meindl himself assumed command of the 3d Parachute Division.",
+        "Paragraph_23": "Bypassing Allied-held points had delayed progress and broken contact among units and along the chain of command. Thus when Meindl reached the Dives somewhere between Magny and St. Lambert, he had with him only twenty paratroopers and Hausser's small command group. As he searched for a suitable crossing site, Meindl came upon one of his regimental commanders, who told him of a ford, about a mile southeast of Magny, where the water was about five feet deep.",
+        "Paragraph_24": "To move a large body of men across the river and maintain silence in close proximity to enemy forces was no easy task. The opposite bank was covered with dense underbrush, and it rose steeply toward a hill, where three enemy tanks stood silhouetted against the sky. There was no time to lose if the troops were to get out of the pocket before daylight. Having gathered a larger group about him, Meindl took the lead and set off to the southeast, crossed the river about half a mile downstream from St. Lambert, went around the hill crowned by tanks, and ran head on into machine gun fire from a concealed tank thirty yards away. Meindl and the few men around him hit the ground, while those in the immediate rear rushed to the protection of the dead angle of the hill. Aroused by the commotion, other tanks in the vicinity opened fire. Trajectories were high, and none of the paratroopers was hurt. At about the same time wild musketry fire flared up on the right rear near St. Lambert, where the 353d Division was supposed to be crossing the river.",
+        "Paragraph_25": "According to Meindl, the liberal use of tracer bullets by the Allies was quite helpful in revealing gaps in their lines through which the paratroopers were able to infiltrate. On the other hand, the Very lights were a great nuisance. Drifting leisurely to the ground, they illuminated large areas, froze all movement, and delayed progress considerably.",
+        "Paragraph_26": "Meindl's group, reduced to about fifteen men, worked its way out of the field of tank fire by crawling along a furrow in the ground. The men continued eastward, deflected from time to time by hostile tanks. As the sky began to pale, they were still only half way to their objective, the hill mass of Mt. Ormel near Coudehard. The fire fight at St. Lambert had subsided, but another broke out in the left rear, in the direction of Neauphe-sur-Dives, where Meindl thought his rear-guard regiment was likely to be. A drizzling rain set in. The dim diffused morning light seemed oppressive. The exertion of the past hours suddenly began to tell. The men felt very tired.",
+        "Paragraph_27": "They continued nevertheless to work their way eastward, picking up stragglers and small groups of men along the way. By the time there was enough light to distinguish the main features of the landscape, they found themselves less than a mile west of the northern hill of the Mt. Ormel ridge."
+      },
+      "Footnote_References": [29, 30],
+      "Place_Name": "Dives River crossing to Mt. Ormel ridge near Coudehard",
+      "Dates": {
+        "Date_group_of_event": "20 August 1944 (night to dawn)",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "200030ZAUG44 to 200900ZAUG44 approx"
+      },
+      "TOE": {
+        "Unit": "3rd Parachute Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": [
+          {
+            "Unit": "3rd Parachute Division",
+            "Commander": "Eugen Meindl",
+            "Name": "Eugen Meindl",
+            "Rank": "General der Fallschirmtruppe",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Eugen_Meindl"
+          }
+        ],
+        "Equipments": {
+          "Axis_Employed": {
+            "DE": [
+              {
+                "Name": "Infantry small arms",
+                "Identifier": "Unspecified",
+                "Quantity": "Small groups"
+              }
+            ]
+          }
+        }
+      },
+      "Casualties": {
+        "Axis": {
+          "Axis_DE_WIA": 0
+        }
+      },
+      "Weather": {
+        "Place_Name": "Mt. Ormel area",
+        "Place_GPS_coordinate": "48.7833 N, 0.3833 E",
+        "Weather_text": "Drizzling rain; dim diffused morning light; bad weather (preventing Allied air operations as noted later).",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -0.6167,
+          "East": 1.3833,
+          "South": 47.7833,
+          "North": 49.7833
+        }
+      }
+    },
+    {
+      "Event": "German Breakout from Falaise Pocket",
+      "Sub-event": "Polish Defense of Mt. Ormel (Hill 262) and German Attacks",
+      "Sub-event_summary": "Poles (1st Polish Armoured Division) hold Hill 262 since 19 August; no supplies; observe German columns; repel attacks from 2nd SS Panzer Division starting 0900; heavy fighting through afternoon; perimeter compressed by 1700-1900, opening escape roads.",
+      "Sub-event_fulltext": {
+        "Paragraph_28": "This was Meindl's objective, but it was not long before he realized that it was already in Allied hands and that the encircling ring was much deeper than he had anticipated.",
+        "Paragraph_29": "The Allied troops on Mt. Ormel were that part of the 1st Polish Armored Division that had advanced to the ridge on 19 August and by nightfall had occupied a defensive perimeter on the northern extremity, Hill 262 just north of the Chambois-Vimoutiers highway. Two infantry battalions and a tank regiment deployed along the ridge line facing westward; the third infantry battalion and the other tank regiment guarded the approaches to the hill from the north and east. There were about 1,500 infantrymen, approximately 80 tanks.",
+        "Paragraph_30": "No supplies had reached the Poles by evening of 19 August and at 0200, 20 August, it was established that Germans were astride the roads to their rear. Throughout the night they heard the rumble of traffic moving toward Vimoutiers; reconnaissance reported Germans digging in along the Chambois--Vimoutiers road. Nevertheless, apart from a few concentrations of harassing mortar fire on the southern part of the perimeter, the night passed uneventfully.",
+        "Paragraph_31": "In the morning a task force moved out to secure the southern part of the Ormel ridge, a move that soon had to be canceled as heavy enemy pressure began to develop against the northern sector of the Polish perimeter.",
+        "Paragraph_32": "When the morning mist lifted, almost the whole plain to the west came into Polish view. The ground was covered with German columns moving to the northeast in dispersed formations on the roads and cross-country.",
+        "Paragraph_33": "While Polish guns were taking profitable targets under fire, a German attack, the first of several that day, struck the northeastern part of the perimeter at 0900. The attack was beaten off by 1030. In the meantime, German tanks had been observed around 1000 moving from the direction of Champosoult toward Hill 239, less than two miles north of the Polish perimeter. A detachment dispatched to deny the Germans possession of the hill, from which they could enfilade the Polish position, was unable to accomplish its mission. About an hour later gun fire from the direction of Hill 239 struck the Poles on Hill 262. Very quickly the Poles lost five tanks and a number of killed and wounded.",
+        "Paragraph_34": "The German units involved in both of these actions belonged to the 2d SS Panzer Division of the II SS Panzer Corps. The mission of the corps, which had earlier assembled in the Vimoutiers area, was to assist the Seventh Army breakout by an attack with two divisions in a southeasterly direction toward the Trun-Chambois line. The 9th SS Panzer Division on the right advanced toward Trun, the 2d SS on the left toward Chambois. Both divisions had been \"utterly torn asunder\" by previous night marches and air attacks. Together they had perhaps twenty tanks; their infantry consisted of about the equivalent of three battalions. They had few communications facilities. Roads were \"so packed with burned out vehicles\" that tanks had \"to clear an alley before passing.\" Yet Allied aircraft were not overhead, for the weather was bad, just as the meteorologists had predicted for this day, the date that Eberbach so long ago had thought he could attack again toward Avranches. The 9th SS Panzer Division bogged down near Champosoult and played a passive role for the rest of the day, but the 2d SS actively engaged the Poles on Mt. Ormel and thereby made a significant contribution to the Seventh Army breakout.",
+        "Paragraph_35": "When the first German attack struck the Polish perimeter, Meindl was northwest of Coudehard, not far from the place he had reached at dawn. He was immobilized there for a considerable time, first by an encounter with Polish tanks, later by a heavy concentration of Allied fire on the entire Coudehard area. Around 0900, Meindl saw behind him a paratroop unit charging headlong into Polish fire from Hill 262. He stopped the attack, admonished the captain in command for his reckless behavior, oriented him on the situation around Hill 262, and pointed out the possibility of outflanking the hill from the north. Learning from the captain the whereabouts of Hausser, Meindl turned over to the captain's command the men who had joined him during the night, a considerable number by then, and set out to find Hausser."
+      },
+      "Footnote_References": [30, 31, 32],
+      "Place_Name": "Mt. Ormel (Hill 262) near Coudehard",
+      "Dates": {
+        "Date_group_of_event": "19-20 August 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "192300ZAUG44 to 201900ZAUG44"
+      },
+      "TOE": {
+        "Unit": "1st Polish Armoured Division",
+        "Unit_Nationality": "PL",
+        "Command_Structure": {
+          "Commander": "Stanisław Maczek",
+          "Name": "Stanisław Maczek",
+          "Rank": "Major-General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Stanis%C5%82aw_Maczek"
+        },
+        "Equipments": {
+          "Allied_Employed": {
+            "GB": [
+              {
+                "Name": "Tanks",
+                "Identifier": "Unspecified (Sherman likely)",
+                "Quantity": "Approximately 80",
+                "Web_Reference": null
+              }
+            ]
+          },
+          "Allied_Destroyed": {
+            "GB": [
+              {
+                "Name": "Tanks",
+                "Identifier": "Unspecified",
+                "Quantity": "5"
+              }
+            ]
+          }
+        },
+        "Unit": "2nd SS Panzer Division",
+        "Unit_Nationality": "DE",
+        "Equipments": {
+          "Axis_Employed": {
+            "DE": [
+              {
+                "Name": "Tanks",
+                "Identifier": "Unspecified",
+                "Quantity": "Portion of ~20 total for corps"
+              }
+            ]
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_KIA": 0
+        },
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": 0
+        }
+      },
+      "Weather": {
+        "Place_Name": "Mt. Ormel",
+        "Place_GPS_coordinate": "48.7833 N, 0.3833 E",
+        "Weather_text": "Morning mist lifting; bad weather (no Allied aircraft overhead).",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -0.6167,
+          "East": 1.3833,
+          "South": 47.7833,
+          "North": 49.7833
+        }
+      }
+    },
+    {
+      "Event": "German Breakout from Falaise Pocket",
+      "Sub-event": "Meindl-Hausser Conference and Final Breakthrough",
+      "Sub-event_summary": "Meindl meets Hausser; plans attack on Hill 262 from north; heavy German fire on Poles; series of attacks; breach opens near Coudehard; wounded evacuated under Red Cross; stragglers escape until midnight; Meindl withdraws before dawn 21 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_36": "Retracing his steps to the west, then turning south, then east, chased by artillery fire part of the way, Meindl found the army commander southwest of Coudehard about noontime. In an old bomb crater--the area was under artillery fire--they discussed the situation. Meindl reported his intention of attacking Hill 262 from the north and learned from Hausser that a panzer division had reached the Mt. Ormel area and was preparing to attack the ridge. Hausser intended to join this division for the final breakout. He told Meindl to make every effort to open the way for the remaining divisions. Despite the extreme exhaustion of his men, Meindl expressed confidence that they would make it, though probably not before evening. By this time a large number of troops and two tanks had joined his attack force.",
+        "Paragraph_37": "While Meindl was conferring with Hausser, an impressive volume of German artillery and mortar fire, especially the latter, began to fall on the Polish positions on Mt. Ormel. About two hours later the Germans launched a series of determined, but apparently uncoordinated, attacks against the perimeter. Lasting through the afternoon, the attacks struck for the most part against the northern and southern sectors of the Polish positions. The climax of the battle came about 1700, when German infantry supported by tanks broke into the northeastern part of the perimeter. The attack was finally beaten off by the combined efforts of infantrymen, tankers, and men of a mortar platoon acting as riflemen after they had expended their mortar ammunition. Another deep penetration occurred at the junction of two Polish infantry battalions near the Chambois--Vimoutiers highway. Not until about 1900 was this last German thrust contained and the penetration sealed off.",
+        "Paragraph_38": "These attacks, by elements of the 2d SS Panzer Division, Meindl's paratroopers, and unidentifiable units, had the apparent effect by late afternoon of 20 August of compressing the Polish perimeter to the extent where the Poles were no longer able to control some of the vital German escape roads in the vicinity of Hill 262.",
+        "Paragraph_39": "With the road to Champosoult opened, Meindl's next concern was to get the seriously wounded to safety. He organized a column of vehicles loaded with wounded and marked with Red Cross flags. To make the appearance of this column conspicuous and to convey his intention to the Allies, Meindl stopped all traffic on the road for fifteen minutes. Then the vehicles carrying the wounded moved out in close formation. The Allies understood the message. As the Red Cross convoy emerged on the road all artillery fire ceased. \"Not a shot was fired on the column,\" Meindl wrote later, \"and I can openly acknowledge the feeling of gratitude to the chivalrous enemy. . . .\" Half an hour later, after the Red Cross flags had disappeared into the distance, traffic resumed and Allied artillery fire opened up once more.",
+        "Paragraph_40": "News of the breakthrough at Coudehard spread to the rear like wildfire and a multitude of stragglers poured through the opening until late into the night. Meindl established a command post near a crossroad on the Coudehard-Champosoult road, not far from the nose of Hill 262. Shortly after midnight part of the rear-guard regiment of the 3d Parachute Division arrived, and Meindl passed to the regimental commander the other elements of the division nearby. Meanwhile, a heavy rain had begun to fall. Traffic on the road gradually thinned out, then ceased completely. Finally, an armored reconnaissance battalion, the rear guard of a panzer division, came by and reported nothing was following behind it.",
+        "Paragraph_41": "Estimating that he could not keep the breach open during the coming day, Meindl decided to start before dawn of 21 August. Anxious to insure movement at the proper time, he kept vigil while his exhausted men slept despite the heavy rainfall--except a few outposts that Meindl thought \"could also have been asleep.\"",
+        "Paragraph_42": "After the fury of the German attacks had subsided, the Poles remained in firm control of Hill 262, but their situation was serious. Shortages of ammunition and gasoline were becoming acute. About 300 wounded were lying in the open under enemy fire without adequate medical care. The presence of some 800 prisoners inside the small perimeter was a problem. Hope that 4th Canadian Armoured Division elements would bring badly needed supplies and open the road to the rear so that the wounded and prisoners could be evacuated was not fulfilled. The Canadians themselves were busily engaged a few miles to the northwest. No help reached the Poles that day, and when night came their perimeter formed a small island in a broad stream of escaping Germans."
+      },
+      "Footnote_References": [32, 33],
+      "Place_Name": "Coudehard-Champosoult road near Hill 262",
+      "Dates": {
+        "Date_group_of_event": "20 August 1944 (noon to midnight)",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "201200ZAUG44 to 210000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "3rd Parachute Division",
+        "Unit_Nationality": "DE",
+        "Equipments": {
+          "Axis_Employed": {
+            "DE": [
+              {
+                "Name": "Tanks",
+                "Identifier": "Unspecified",
+                "Quantity": "2 (with Meindl's force)"
+              }
+            ]
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_PL_Unspecified_Casualties": 0
+        }
+      },
+      "Weather": {
+        "Place_Name": "Coudehard area",
+        "Place_GPS_coordinate": "48.7833 N, 0.3833 E",
+        "Weather_text": "Heavy rain in evening/night.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -0.6167,
+          "East": 1.3833,
+          "South": 47.7833,
+          "North": 49.7833
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "28",
+      "Footnote_Number": "28",
+      "Footnote_Text": "The scarcity of official German records has made it necessary to depend almost entirely on the recollections, as noted below, of some of the German commanders who were participants and who later tried to reconstruct the sequence of events of the breakout.",
+      "Footnote_Referenced_Source": "Recollections of German commanders (post-war MS series)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Various MS recollections",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "29",
+      "Footnote_Number": "29",
+      "Footnote_Text": "On 14 August Schimpf had issued a message to his paratroopers as follows: \"False rumors are the same as bad odors—both come from the rear. . . . contrary to all rumors . . . there is no need to worry that the division might be encircled and cut off from its supply lines. . . . Even if the enemy should ever succeed temporarily in interrupting our supply routes, this would be no reason for a paratrooper, who is specially trained to jump into the midst of the enemy, to feel depressed. . . . He who thinks or talks otherwise will be slapped across the mouth.\" VII Corps G-2 Per Rpt 79, 23 Aug.",
+      "Footnote_Referenced_Source": "VII Corps G-2 Periodic Report 79, 23 August 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "VII Corps G-2 Per Rpt 79, 23 Aug",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "30",
+      "Footnote_Number": "30",
+      "Footnote_Text": "MS # A-923 (Meindl).",
+      "Footnote_Referenced_Source": "Northern France (25 Jul-14 Sep 1944). By General der Fallschirmtruppen Eugen Meindl; 48 pp; 1946.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "MS # A-923 (Meindl)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "31",
+      "Footnote_Number": "31",
+      "Footnote_Text": "The account of Polish action is based on the 1st Polish Armored Division, pp. 110-16.",
+      "Footnote_Referenced_Source": "1st Polish Armored Division unit history, pp. 110-16",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "1st Polish Armored Division, pp. 110-16",
+      "Source_Type": "PL"
+    },
+    {
+      "Footnote": "32",
+      "Footnote_Number": "32",
+      "Footnote_Text": "MS # P-162 (Harzer); MS # P-159 (Stueckler and Wisliceny); MS # A-922 (Eberbach); see also AGp B Tagesmeldung, 20 Aug, dated 0155, 21 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "Multiple sources: MS # P-162 (Harzer); MS # P-159 (Stueckler and Wisliceny); Panzer Group Eberbach and the Falaise Encirclement. By General der Panzertruppen Hans Eberbach; 32 pp, 3 illus; 1946; plus Army Group B daily report and war diary.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "MS # P-162 (Harzer); MS # P-159 (Stueckler and Wisliceny); MS # A-922 (Eberbach); AGp B Tagesmeldung, 20 Aug, dated 0155, 21 Aug, AGp B KTB",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "33",
+      "Footnote_Number": "33",
+      "Footnote_Text": "Meindl states that the attack on the \"hill east of Coudehard had succeeded\" by 1630 and that by 1700 German vehicles had begun to roll along the \"curving road from Coudehard to the east.\" These times correspond quite well with the time of the full-scale German attack described in the Polish narrative.",
+      "Footnote_Referenced_Source": "Meindl account (cross-referenced with Polish narrative)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Meindl post-war account (likely MS # A-923 or related)",
+      "Source_Type": "DE"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn27.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-29",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+  "Source_Link_Capture_Date": "2025-12-29"
+}

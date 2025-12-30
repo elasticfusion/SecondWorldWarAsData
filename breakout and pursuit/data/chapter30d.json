@@ -1,0 +1,289 @@
+{
+  "Events": [
+    {
+      "Event": "Post-Capture Assessment of Brest Destruction and Port Demolition",
+      "Sub-event": "German Demolition and Resulting Devastation in Brest",
+      "Sub-event_summary": "The capture of Brest resulted in a completely destroyed city and port, with extensive German demolition rendering facilities unusable; twisted bridges, scuttled ships, ruined wharves, drydocks, cranes, and breakwaters; American bombing and shelling contributed to gutting buildings and creating rubble-filled streets.",
+      "Sub-event_fulltext": {
+        "Paragraph_67": "The capture of Brest gave the Allies a totally destroyed city and a thoroughly demolished port. The desolation was appalling. The Germans had wrecked everything that might be of any use to the Americans, Ramcke later boasting that he had done so \"in good time.\" Twisted bridge structures blocked the Penfeld River channel. The wharves, drydocks, cranes along the waterfront, even the breakwaters enclosing the naval basin and the commercial port, had been ruined. Scuttled ships lay in the harbor.",
+        "Paragraph_68": "The American operation had also contributed to the destruction. Bombs and shells from air and ground, including white phosphorus and jellied gasoline, had burned and gutted practically every building in the downtown section of Brest as well as in Recouvrance. Demolished houses had tumbled into the streets, filling thoroughfares with rubble. Even after bulldozers cut paths through the piles of brick and masonry, weakened and collapsing walls made passage hazardous. The French inhabitants who had been evacuated before the siege returned to find their city virtually obliterated."
+      },
+      "Footnote_References": [60, 61],
+      "Place_Name": "Brest, France",
+      "Dates": {
+        "Date_group_of_event": "Sep 1944 (post-capture assessment)",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-30.html",
+        "Zulu_date_group_of_event": "BEGINNING SEP44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps (post-operation assessment)",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": {
+            "Name": "Troy H. Middleton",
+            "Rank": "Major General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton"
+          }
+        }
+      },
+      "Casualties": {
+        "Civilian": {
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Brest port and city",
+          "Place_GPS_coordinate": "48.3900, -4.4900",
+          "ExternalMapLink": "https://www.history.navy.mil/content/history/museums/nmusn/explore/photography/wwii/wwii-europe/operation-dragoon/france/80-g-257414.html",
+          "ExternalMapLinkCaptureDate": "2025-12-29"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3900, -4.4900",
+          "Weather_text": "No specific weather conditions mentioned in the text for the post-capture period.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -5.49,
+            "East": -3.49,
+            "South": 47.39,
+            "North": 49.39
+          }
+        }
+      ],
+      "Media": [
+        {
+          "Link": "https://www.history.navy.mil/content/dam/nhhc/browse-by-topic/WWII/operation-dragoon/80-G-257414.jpg",
+          "Description": "Devastation and wreckage in Brest harbor from Allied naval gunfire and aerial bombing, showing a wrecked German mobile repair unit truck, photographed 5 October 1944.",
+          "License": "Official U.S. Navy Photograph, public domain (National Archives)"
+        },
+        {
+          "Link": "https://www.war.gov/Multimedia/Photos/igphoto/2002838282/",
+          "Description": "Long siege destruction in Brest, nearly every building and military installation damaged or destroyed, photographed 26 September 1944.",
+          "License": "U.S. Department of War, public domain"
+        }
+      ]
+    },
+    {
+      "Event": "Strategic Reassessment and Abandonment of Brittany Ports",
+      "Sub-event": "Allied Decision to Abandon Use of Brest and Other Brittany Ports",
+      "Sub-event_summary": "Reconstruction requirements led to confirmation that Brest was not necessary; SHAEF planners recommended and accepted abandonment of Lorient, Quiberon Bay, St. Nazaire, and Nantes; Brest plans withdrawn 14 September despite earlier Eisenhower insistence on its value as insurance for troop reception.",
+      "Sub-event_fulltext": {
+        "Paragraph_69": "The vast amount of reconstruction and repair necessary to rehabilitate the port led the Allies to confirm a decision already made--that use of Brest was not necessary. The difficult operation at Brest had contrasted bleakly with the triumph of the pursuit, and Allied commanders had been as disappointed by the siege of Brest as they had been elated by the surge toward the Rhine. Interest in the geographically remote ports of Brittany had begun to wane toward the end of August as unabashed Allied optimism raised hopes that the Channel ports, including even Rotterdam and Amsterdam, would soon come within reach.",
+        "Paragraph_70": "On 3 September SHAEF planners recommended the abandonment of plans to use the ports of Lorient, Quiberon Bay, St. Nazaire, and Nantes, a recommendation SHAEF accepted four days later. Had the battle of Brest not been in progress, the planners might well have withdrawn their approval of Brest also, a conclusion they finally reached on 14 September, even before capture of the city. Yet only a day before, General Eisenhower had said that since no one could predict with certainty when the Channel ports would be taken and opened, he still felt that he needed Brest to receive newly arriving troops and their organizational equipment that were scheduled to come directly from the United States.",
+        "Paragraph_71": "Thus the continuing idea of taking Brest was like insurance that everyone hoped he would not have to collect."
+      },
+      "Footnote_References": [62, 63],
+      "Place_Name": "Brest and Brittany ports (Lorient, St. Nazaire, Nantes), France",
+      "Dates": {
+        "Date_group_of_event": "03-14 Sep 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-30.html",
+        "Zulu_date_group_of_event": "031200ZSEP44 - 141200ZSEP44"
+      },
+      "TOE": {
+        "Unit": "SHAEF (planners)",
+        "Unit_Nationality": "Allied",
+        "Command_Structure": {
+          "Unit": "Supreme Headquarters Allied Expeditionary Force",
+          "Commander": {
+            "Name": "Dwight D. Eisenhower",
+            "Rank": "General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower"
+          }
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3900, -4.4900"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Brest area",
+          "Place_GPS_coordinate": "48.3900, -4.4900",
+          "Weather_text": "No weather conditions specified in the text for early September 1944.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -5.49,
+            "East": -3.49,
+            "South": 47.39,
+            "North": 49.39
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Containment of Remaining Brittany Pockets and Strategic Evaluation",
+      "Sub-event": "Containment of Lorient, St. Nazaire, and Bordeaux Pocket; Evaluation of Brest Operation Value",
+      "Sub-event_summary": "Plans for Lorient and St. Nazaire scrapped; German forces (15,000 at Lorient, 12,000 at St. Nazaire) contained until war's end; Brest siege eliminated aggressive garrison but resources used had limited impact on broader pursuit; Bradley and Patton views noted; port capacity problem persisted until Antwerp opened in November.",
+      "Sub-event_fulltext": {
+        "Paragraph_72": "Whatever the actual value of Brest in retrospect, it appeared with certainty at the end of August that Brest and the other ports were needed to supplement the far from adequate port capacity of Cherbourg and the minor harbors of Normandy. Yet soon afterwards, port plans for Lorient and St. Nazaire were scrapped, and the 15,000-man German force at Lorient and the 12,000-man force at St. Nazaire, together with a small pocket northwest of Bordeaux, were contained until the end of the war.",
+        "Paragraph_73": "Since the Breton ports, on which the Allies had counted so heavily, were not put to use, what had been accomplished by the siege of Brest? The immediate result was the elimination of a strong German garrison of aggressive, first-rate soldiers. Containment of the Brest garrison, according to General Bradley, would have required \"more troops than we could spare on an inactive front.\" According to Patton, he and Bradley agreed that Brest was useless, but they felt that \"when the American Army had once put its hand to the plow, it should not let go.\" In any event, completion of the operation freed VIII Corps for action in the operations directed toward Germany. The charge was later made that the employment of three divisions and valuable transport and supplies at Brest adversely affected pursuit operations, for just at that time troops, vehicles, and supplies were desperately needed on the main Allied front. Yet the resources used at Brest, slender when compared to the total effort, could hardly have altered the pattern of a pursuit that was destined to run a limited course.",
+        "Paragraph_74": "The serious Allied problem of port capacity had prompted the Brest operation. The Allied commanders who had initiated the operation had not been able to foretell exactly when and to what extent the Channel ports would alleviate the situation. Thus they looked upon Brest as a port in reserve. The fact that capture of neither the destroyed harbor of Brest nor the Channel ports proved to be an immediate solution did not vitiate their wisdom and vision. For, as it turned out, the problem persisted. Not until November, when Antwerp was opened, was the problem of port capacity finally solved.",
+        "Paragraph_75": "If it seemed in retrospect that the commanders erred in starting the siege of Brest, they did so on the side of caution, preferring to be safe rather than sorry. If they displayed any recklessness at all, it was in the pursuit beyond the Seine, where that kind of behavior was understandable."
+      },
+      "Footnote_References": [64, 65, 66],
+      "Place_Name": "Brest, Lorient, St. Nazaire, Bordeaux pocket, France",
+      "Dates": {
+        "Date_group_of_event": "END AUG44 - NOV44 (overall evaluation)",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-30.html",
+        "Zulu_date_group_of_event": "END AUG44 - NOV44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps (post-Brest redeployment)",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": {
+            "Name": "Troy H. Middleton",
+            "Rank": "Major General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_Unspecified_Casualties": 0
+        },
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": 0
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3900, -4.4900"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Brest area",
+          "Place_GPS_coordinate": "48.3900, -4.4900",
+          "Weather_text": "No weather details provided in the text for late August to November 1944.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -5.49,
+            "East": -3.49,
+            "South": 47.39,
+            "North": 49.39
+          }
+        }
+      ]
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "60",
+      "Footnote_Number": "60",
+      "Footnote_Text": "Ramcke, Fallschirmjaeger, Damals und Danach, p. 67.",
+      "Footnote_Referenced_Source": "Ramcke, Fallschirmjaeger, Damals und Danach",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "2025-12-29",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "No full digitized version located; German post-war memoir, archival copies likely at USAHEC or National Archives",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "61",
+      "Footnote_Number": "61",
+      "Footnote_Text": "Vulliez, Brest au Combat, pp. 225ff.",
+      "Footnote_Referenced_Source": "Vulliez, Brest au Combat",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "2025-12-29",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "French publication; no digitized version located",
+      "Source_Type": "FR"
+    },
+    {
+      "Footnote": "62",
+      "Footnote_Number": "62",
+      "Footnote_Text": "See Ruppenthal, Logistical Support, I, 508-09.",
+      "Footnote_Referenced_Source": "Ruppenthal, Logistical Support of the Armies, Vol. I",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "2025-12-29",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "U.S. Army official history series; partial excerpts in hyperwar but no full digitized public version located",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "63",
+      "Footnote_Number": "63a",
+      "Footnote_Text": "SHAEF Msg, 13 Sep, SGS SHAEF File 381, Post-OVERLORD Plng; Eisenhower to Marshall, 13 Sep, Eisenhower Papers.",
+      "Footnote_Referenced_Source": "SHAEF Msg, 13 Sep, SGS SHAEF File 381",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "2025-12-29",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "SHAEF files, National Archives at College Park, MD or equivalent repository",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "63",
+      "Footnote_Number": "63b",
+      "Footnote_Text": "SHAEF Msg, 13 Sep, SGS SHAEF File 381, Post-OVERLORD Plng; Eisenhower to Marshall, 13 Sep, Eisenhower Papers.",
+      "Footnote_Referenced_Source": "Eisenhower to Marshall, 13 Sep, Eisenhower Papers",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "2025-12-29",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "Eisenhower Papers, Dwight D. Eisenhower Presidential Library, Abilene, KS or National Archives",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "64",
+      "Footnote_Number": "64",
+      "Footnote_Text": "See Ruppenthal, Logistical Support, I, 509-10.",
+      "Footnote_Referenced_Source": "Ruppenthal, Logistical Support of the Armies, Vol. I",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "2025-12-29",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "No full digitized version located",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "65",
+      "Footnote_Number": "65a",
+      "Footnote_Text": "Bradley, Soldier's Story, p. 317; Patton, War as I Knew It, p. 116.",
+      "Footnote_Referenced_Source": "Bradley, A Soldier's Story",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "2025-12-29",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "Published memoir; partial excerpts available online but no full public digitized copy located",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "65",
+      "Footnote_Number": "65b",
+      "Footnote_Text": "Bradley, Soldier's Story, p. 317; Patton, War as I Knew It, p. 116.",
+      "Footnote_Referenced_Source": "Patton, War as I Knew It",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "2025-12-29",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "Published memoir; partial excerpts available online but no full public digitized copy located",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "66",
+      "Footnote_Number": "66",
+      "Footnote_Text": "See Ruppenthal, Logistical Support, I, 510-11.",
+      "Footnote_Referenced_Source": "Ruppenthal, Logistical Support of the Armies, Vol. I",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "2025-12-29",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "No full digitized version located",
+      "Source_Type": "US"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn30.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-29",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-30.html",
+  "Source_Link_Capture_Date": "2025-12-29"
+}

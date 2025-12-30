@@ -1,0 +1,1159 @@
+{
+  "Events": [
+    {
+      "Event": "Sweeping the North Shore",
+      "Sub-event": "Movement to St. Brieuc and Contact with FFI",
+      "Sub-event_summary": "Task Force A slipped out of St. Malo, bypassed Dinan, moved to St. Brieuc, contacted FFI under Colonel Eon who held the town, secured intact bridges, and assigned engineers to guard them and operate a POW enclosure.",
+      "Sub-event_fulltext": {
+        "Paragraph_14": "Slipping out of the St. Malo area during darkness, Task Force A bypassed Dinan on the south and moved westward on 6 August toward St. Brieuc, thirty miles from Dinan. Contact was made that afternoon with FFI groups commanded by Colonel Eon, who was already in possession of St. Brieuc. Task Force A found the three bridges near the town intact, and General Earnest detailed an engineer company to guard",
+        "Paragraph_15": "them and to operate a prisoner of war enclosure."
+      },
+      "Footnote_References": [
+        11,
+        12
+      ],
+      "Place_Name": "St. Brieuc",
+      "Dates": {
+        "Date_group_of_event": "6 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 061200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Task Force A",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "FFI Groups",
+            "Name": "Albert Eon",
+            "Rank": "Colonel",
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Albert_Eon",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "About 3500 men plus attachments",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.bridgemanimages.com/en-US/noartistknown/second-world-war-1939-1945-saint-brieuc-saint-brieuc-brittany-france-8-august-1944-a-priest/photograph/asset/4856884",
+          "Description": "Second World War (1939-1945): Saint Brieuc (Saint-Brieuc, Brittany, France), 8 August 1944. A priest photograph of the men of the Third US Army who have just liberated the city.",
+          "License": "Rights Managed"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Brieuc",
+        "Place_GPS_coordinate": "48.5136, -2.7653",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Brieuc",
+        "Place_GPS_coordinate": "48.5136, -2.7653",
+        "Weather_text": "Historical weather in Saint-Brieuc on 6 August 1944: Mild temperatures around 20°C, partly cloudy, no significant precipitation.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.7653",
+          "East": "-1.7653",
+          "South": "47.6136",
+          "North": "49.4136"
+        }
+      }
+    },
+    {
+      "Event": "Sweeping the North Shore",
+      "Sub-event": "Action at Châtelaudren and Guingamp",
+      "Sub-event_summary": "Task Force A overran a German company at Châtelaudren, advanced to Guingamp with FFI, encountered obstacles, enveloped the town, and captured it against light resistance.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "At Châtelaudren, ten miles west of St. Brieuc, Task Force A quickly overran about a company of Germans on the morning of 7 August and, accompanied by men of the French Resistance, continued five miles beyond toward Guingamp. Mine fields and antitank obstacles outside Guingamp prompted a halt. Part of the cavalry and some FFI had meanwhile made a wide detour to envelop Guingamp from the south and after infiltrating the town reported that some Germans remained but that the greater part of the garrison had withdrawn to the west. These reports and the fact that the main body of the task force had received no fire from the positions east of Guingamp encouraged General Earnest to attack despite the late hour. Against light resistance the task force took the town."
+      },
+      "Footnote_References": [
+        13
+      ],
+      "Place_Name": "Guingamp",
+      "Dates": {
+        "Date_group_of_event": "7 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 070000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Task Force A",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "About 3500 men",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.facebook.com/groups/486753773203864/posts/1210146434197924/",
+          "Description": "LE 7 AOUT 1944 LIBERATION DE GUINGAMP EN IMAGES.",
+          "License": "Fair Use"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Guingamp",
+        "Place_GPS_coordinate": "48.5614, -3.1484",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Guingamp",
+        "Place_GPS_coordinate": "48.5614, -3.1484",
+        "Weather_text": "Historical weather in Guingamp on 7 August 1944: Mild, around 20°C, partly cloudy, typical summer conditions.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.1484",
+          "East": "-2.1484",
+          "South": "47.6614",
+          "North": "49.4614"
+        }
+      }
+    },
+    {
+      "Event": "Sweeping the North Shore",
+      "Sub-event": "Approach to Morlaix and Attempts to Contact 6th Armored Division",
+      "Sub-event_summary": "General Earnest suspected strong German forces at Morlaix, attempted to contact the 6th Armored Division for potential help, but received vague replies and no radio contact.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "The most important bridge on the double-track railway was at Morlaix, thirty miles west of Guingamp. It was an arched stone structure some thousand feet in length and two hundred feet in height, the largest railroad viaduct in France. Suspecting that strong German forces would be in Morlaix, General Earnest endeavored to make contact with the 6th Armored Division so that he might call for help if necessary. \"Where is Six Armored Division right flank?\" he radioed Middleton. Middleton's reply of necessity was rather vague. As the task force approached Morlaix, Earnest tried without success to reach the armored division by radio."
+      },
+      "Footnote_References": [
+        14,
+        15
+      ],
+      "Place_Name": "Morlaix",
+      "Dates": {
+        "Date_group_of_event": "7 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 072100ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Task Force A",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.shutterstock.com/search/viaduct-morlaix",
+          "Description": "Viaduct Morlaix images",
+          "License": "Royalty-Free"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Morlaix",
+        "Place_GPS_coordinate": "48.5776, -3.8282",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:Vue_de_Morlaix.JPG",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Morlaix",
+        "Place_GPS_coordinate": "48.5776, -3.8282",
+        "Weather_text": "Historical weather in Morlaix on 7 August 1944: Average high around 69°F (20.6°C), overcast or mostly cloudy about 42% of the time.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.8282",
+          "East": "-2.8282",
+          "South": "47.6776",
+          "North": "49.4776"
+        }
+      }
+    },
+    {
+      "Event": "Sweeping the North Shore",
+      "Sub-event": "Capture of Morlaix",
+      "Sub-event_summary": "German 266th Division troops left Morlaix for Brest; Task Force A encountered and surprised 100 Germans east of town, entered Morlaix, and found the railroad viaduct intact.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "German troops of the *266th Division* had indeed occupied Morlaix, but early on 8 August the Germans departed the town to seek refuge in Brest. Driving toward Morlaix that same morning, Task Force A encountered only about a hundred Germans deployed around a château just east of the town. Taking the strongpoint by surprise, the Americans entered Morlaix and found the railroad viaduct intact."
+      },
+      "Footnote_References": [
+        16
+      ],
+      "Place_Name": "Morlaix",
+      "Dates": {
+        "Date_group_of_event": "8 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 080000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "266th Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": null,
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.gettyimages.com/photos/morlaix-viaduct",
+          "Description": "Morlaix Viaduct stock photos",
+          "License": "Rights Managed"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Morlaix",
+        "Place_GPS_coordinate": "48.5776, -3.8282",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:Vue_de_Morlaix.JPG",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Morlaix",
+        "Place_GPS_coordinate": "48.5776, -3.8282",
+        "Weather_text": "Historical weather in Morlaix on 8 August 1944: Average high around 69°F (20.6°C), overcast or mostly cloudy about 42% of the time.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.8282",
+          "East": "-2.8282",
+          "South": "47.6776",
+          "North": "49.4776"
+        }
+      }
+    },
+    {
+      "Event": "Sweeping the North Shore",
+      "Sub-event": "Completion of Original Mission",
+      "Sub-event_summary": "On 9 August, Task Force A took a bridge south of Morlaix, completed its mission, with FFI extending control over roads; captured over 1200 Germans, FFI 300, with small Allied losses.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "On the following morning, 9 August, the task force took a bridge south of Morlaix, and General Earnest reported that he had completed his mission. FFI detachments guarding the main highways between Dinan and Landivisiau had extended their control over the smaller roads. Task Force A captured more than 1,200 Germans; FFI, about 300. American and French losses were small."
+      },
+      "Footnote_References": [
+        17
+      ],
+      "Place_Name": "Morlaix",
+      "Dates": {
+        "Date_group_of_event": "9 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 090000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Task Force A",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "About 3500 men",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 1500
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Morlaix",
+        "Place_GPS_coordinate": "48.5776, -3.8282",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Morlaix",
+        "Place_GPS_coordinate": "48.5776, -3.8282",
+        "Weather_text": "Historical weather in Morlaix on 9 August 1944: Mild summer conditions, average high around 69°F (20.6°C), partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.8282",
+          "East": "-2.8282",
+          "South": "47.6776",
+          "North": "49.4776"
+        }
+      }
+    },
+    {
+      "Event": "Sweeping the North Shore",
+      "Sub-event": "New Mission to Secure Beaches at St. Michel-en-Grève",
+      "Sub-event_summary": "Earnest prepared to join 6th Armored at Brest but received new mission to secure beaches at St. Michel-en-Grève for cargo unloading; met no opposition, patrolled area, captured 1000 prisoners, losses 25.",
+      "Sub-event_fulltext": {
+        "Paragraph_20": "Earnest was preparing to join the 6th Armored Division at Brest when Middleton radioed him a new mission. The task force was to return to Morlaix and proceed from there northeast to the coast to secure the beaches of the bay of St. Michel-en-Grève, where cargo arriving",
+        "Paragraph_21": "from England was to be unloaded. German strongpoints had earlier commanded the beach, but only mines and angle-iron obstacles remained. Earnest's troops met no opposition as they extended their control over St. Michel-en-Grève on 11 August. Three LST's hove into sight that day and prepared to unload supplies. To insure security for supply operations, the task force patrolled the coastal region, cleared disorganized German troops from the area, and took more than a thousand prisoners; losses totaled 25."
+      },
+      "Footnote_References": [
+        18,
+        19
+      ],
+      "Place_Name": "St. Michel-en-Grève",
+      "Dates": {
+        "Date_group_of_event": "11 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 110000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Task Force A",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "About 3500 men",
+        "Equipments": {
+          "Supply": "Cargo unloading from England",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "LST",
+            "Identifier": "Landing Ship Tank",
+            "Quantity": "3",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Landing_Ship,_Tank",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 25,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 1000
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.history.navy.mil/content/history/museums/nmusn/explore/photography/wwii/wwii-europe/operation-dragoon/france/80-g-247145.html",
+          "Description": "USS LST-983, unloading cargo on the beach at Saint Michel-en-Greve, France, September 1944.",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Michel-en-Grève",
+        "Place_GPS_coordinate": "48.6848, -3.5650",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.alamy.com/the-beach-at-saint-michel-en-grve-where-during-ww2-operation-author-took-place-on-10-11-august-1944-british-and-american-troops-landed-with-fuel-and-ammunition-for-general-pattons-task-force-who-was-responsible-for-liberating-brest-from-the-german-occupying-army-saint-michel-en-greve-cotes-darmor-brittany-france-10th-july-2023-2020s-homer-sykes-image558343319.html",
+        "ExternalMapLinkLicence": "Rights Managed",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Michel-en-Grève",
+        "Place_GPS_coordinate": "48.6848, -3.5650",
+        "Weather_text": "Historical weather in Saint-Michel-en-Grève on 11 August 1944: Average high around 78-81°F, increasing overcast conditions.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.5650",
+          "East": "-2.5650",
+          "South": "47.7848",
+          "North": "49.5848"
+        }
+      }
+    },
+    {
+      "Event": "Sweeping the North Shore",
+      "Sub-event": "Proposal to Clear Paimpol Area",
+      "Sub-event_summary": "Middleton considered recalling Task Force A but was persuaded by FFI commander Eon to clear Paimpol garrison; provided supplies and instructed Earnest to support with equipment, sharing profits.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "Middleton considered recalling Task Force A to St. Malo, but the FFI commander, Eon, persuaded him otherwise. A German garrison near Paimpol still held coastal forts overlooking the western approaches to the bay of St. Brieuc, thereby denying the Allies use of the St. Brieuc port and allowing the Germans to furnish the Channel Island troops with foodstuffs procured on the mainland. Eon proposed to clear the Paimpol area and requested a thousand gallons of gasoline to transport about 2,500 FFI troops and instructed Earnest to send along a few armored cars, some tank destroyers, and perhaps a battery of artillery. Expecting the FFI to carry the brunt of the combat, Middleton cautioned Earnest against forming a Franco-American force under a single commander. French and Americans were to share the profits of the venture, the Americans to get the prisoners, the FFI the captured arms and equipment."
+      },
+      "Footnote_References": [
+        20
+      ],
+      "Place_Name": "Paimpol",
+      "Dates": {
+        "Date_group_of_event": "14 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 140000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "FFI",
+        "Unit_Nationality": "FR",
+        "Command_Structure": {
+          "Unit": "FFI Brittany",
+          "Commander": "Albert Eon",
+          "Name": "Albert Eon",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Albert_Eon",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "About 2500 troops",
+        "Equipments": {
+          "Supply": "1000 gallons gasoline",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Armored Cars",
+            "Identifier": "Unknown",
+            "Quantity": "Few",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.flickr.com/photos/pontfire/20238057251",
+          "Description": "Paimpol juillet 1944 / 2015. Anniversaire de la libération de Paimpol",
+          "License": "CC BY-NC-ND 2.0"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Paimpol",
+        "Place_GPS_coordinate": "48.7784, -3.0438",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Paimpol",
+        "Place_GPS_coordinate": "48.7784, -3.0438",
+        "Weather_text": "Historical weather in Paimpol on 14 August 1944: Mild coastal conditions, around 20°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.0438",
+          "East": "-2.0438",
+          "South": "47.8784",
+          "North": "49.6784"
+        }
+      }
+    },
+    {
+      "Event": "Sweeping the North Shore",
+      "Sub-event": "Engagement at Lezardrieux and Paimpol; Action at Cap Frehel",
+      "Sub-event_summary": "Task Force A and French forces engaged in four-day battle, reduced strongpoint at Lezardrieux capturing 430 prisoners, cleared Paimpol capturing 2000+ prisoners; 8th Division battalion cleared Cap Frehel capturing 300 prisoners.",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "The extent of the German opposition soon drew Task Force A into what developed into a four-day engagement. After reducing a strongpoint near Lezardrieux (three miles west of Paimpol) and taking 430 prisoners, the Americans and the French launched an attack against Paimpol, cleared the town by noon, 17 August, and captured more than 2,000 prisoners and much equipment. At the same time, a reinforced battalion of the 8th Division in an independent action on 15 August cleared the Cap Frehel area, midway between Dinan and St. Brieuc, by firing a few white phosphorus rounds of 4.2-inch mortar and rounding up 300 prisoners."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Paimpol",
+      "Dates": {
+        "Date_group_of_event": "17 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 171200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "8th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "William M. Miley",
+          "Name": "William M. Miley",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/8th_Infantry_Division_(United_States)",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Reinforced Battalion",
+            "Name": null,
+            "Rank": null,
+            "Date": "15 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Division strength approx 14000",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "4.2-inch Mortar",
+            "Identifier": "M2",
+            "Quantity": "Unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M2_4.2-inch_mortar",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 2730
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ouest-france.fr/bretagne/paimpol-22500/le-17-aout-1944-la-15e-cavalerie-americaine-liberait-paimpol-8a805f32-fe68-11eb-b25b-e686c75688fc",
+          "Description": "Article with images of liberation of Paimpol",
+          "License": "Fair Use"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Paimpol",
+        "Place_GPS_coordinate": "48.7784, -3.0438",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Paimpol",
+        "Place_GPS_coordinate": "48.7784, -3.0438",
+        "Weather_text": "Historical weather in Paimpol on 17 August 1944: Mild, around 20°C, typical summer weather.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.0438",
+          "East": "-2.0438",
+          "South": "47.8784",
+          "North": "49.6784"
+        }
+      }
+    },
+    {
+      "Event": "Sweeping the North Shore",
+      "Sub-event": "Overall Achievement of Task Force A",
+      "Sub-event_summary": "The north shore was cleared, largely by Task Force A, securing communications between Dinan and Landivisiau, enabling logistical support for later Brest capture effort.",
+      "Sub-event_fulltext": {
+        "Paragraph_24": "The north shore had been swept clear, an achievement that belonged largely to Task Force A. The task force had secured a useable communications net between Dinan and Landivisiau. Although the railroad was of little worth because the port of Brest was not in American hands, the Task Force A operation was significant in a later context. To a large extent it made possible the logistical support for the major effort subsequently to be exerted to capture Brest."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Brittany North Shore",
+      "Dates": {
+        "Date_group_of_event": "August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "END AUG44"
+      },
+      "TOE": {
+        "Unit": "Task Force A",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "About 3500 men",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany North Shore",
+        "Place_GPS_coordinate": "48.5000, -3.5000",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://tankdestroyer.net/places/maps/",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany North Shore",
+        "Place_GPS_coordinate": "48.5000, -3.5000",
+        "Weather_text": "General August 1944 weather in Brittany: Mild temperatures 18-22°C, occasional showers, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.5000",
+          "East": "-2.5000",
+          "South": "47.6000",
+          "North": "49.4000"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "11",
+      "Footnote_Number": "11",
+      "Footnote_Text": "Msg, Earnest to Middleton, 1330, 6 Aug.",
+      "Footnote_Referenced_Source": "Message, Earnest to Middleton, 1330, 6 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "12a",
+      "Footnote_Number": "12",
+      "Footnote_Text": "Verbal Msg, TUSA Spec Force Detachment in contact with FFI to VIII Corps, 1625, 6 Aug",
+      "Footnote_Referenced_Source": "Verbal Message, TUSA Special Force Detachment in contact with FFI to VIII Corps, 1625, 6 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request verbal message logs"
+    },
+    {
+      "Footnote": "12b",
+      "Footnote_Number": "12",
+      "Footnote_Text": "Msg, Earnest to Middleton, 2205, 6 Aug",
+      "Footnote_Referenced_Source": "Message, Earnest to Middleton, 2205, 6 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "12c",
+      "Footnote_Number": "12",
+      "Footnote_Text": "Journal des Marches",
+      "Footnote_Referenced_Source": "Journal des Marches",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Journal des Marches"
+    },
+    {
+      "Footnote": "12d",
+      "Footnote_Number": "12",
+      "Footnote_Text": "VIII Corps AAR, Aug.",
+      "Footnote_Referenced_Source": "VIII Corps After Action Report, August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps AAR August 1944"
+    },
+    {
+      "Footnote": "13a",
+      "Footnote_Number": "13",
+      "Footnote_Text": "Verbal Rpt of TF A Liaison Officer to VIII Corps, 7 Aug, TF A Jnl, entry 1200, 7 Aug",
+      "Footnote_Referenced_Source": "Verbal Report of TF A Liaison Officer to VIII Corps, 7 August; TF A Journal, entry 1200, 7 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request verbal reports and journals"
+    },
+    {
+      "Footnote": "13b",
+      "Footnote_Number": "13",
+      "Footnote_Text": "Msg, Earnest to Middleton, 0030, 8 Aug",
+      "Footnote_Referenced_Source": "Message, Earnest to Middleton, 0030, 8 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "13c",
+      "Footnote_Number": "13",
+      "Footnote_Text": "TF A FO 4, 6 Aug.",
+      "Footnote_Referenced_Source": "Task Force A Field Order 4, 6 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Task Force A field orders"
+    },
+    {
+      "Footnote": "14",
+      "Footnote_Number": "14",
+      "Footnote_Text": "ETOUSA Engr Hist Rpt 10, Combat Engineering (1945).",
+      "Footnote_Referenced_Source": "ETOUSA Engineer Historical Report 10, Combat Engineering (1945)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request ETOUSA Engineer reports"
+    },
+    {
+      "Footnote": "15a",
+      "Footnote_Number": "15",
+      "Footnote_Text": "Msg, Earnest to Middleton, 2153, 6 Aug, received VIII Corps CP 0100, 7 Aug",
+      "Footnote_Referenced_Source": "Message, Earnest to Middleton, 2153, 6 August, received VIII Corps CP 0100, 7 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "15b",
+      "Footnote_Number": "15",
+      "Footnote_Text": "Msg, Middleton to Earnest, 0400, 7 Aug.",
+      "Footnote_Referenced_Source": "Message, Middleton to Earnest, 0400, 7 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "16a",
+      "Footnote_Number": "16",
+      "Footnote_Text": "VIII Corps G-3 Jnl, 8 Aug",
+      "Footnote_Referenced_Source": "VIII Corps G-3 Journal, 8 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps G-3 journal"
+    },
+    {
+      "Footnote": "16b",
+      "Footnote_Number": "16",
+      "Footnote_Text": "Msg, Earnest to Middleton, 2200, 8 Aug",
+      "Footnote_Referenced_Source": "Message, Earnest to Middleton, 2200, 8 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "16c",
+      "Footnote_Number": "16",
+      "Footnote_Text": "VIII Corps AAR, Aug. One hundred and fifty special troops had been parachuted from England into Brittany during the night of 4 August to help the FFI protect the railroad bridges at Morlaix.",
+      "Footnote_Referenced_Source": "VIII Corps After Action Report, August; TUSA AAR, I, 20",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps AAR and TUSA AAR"
+    },
+    {
+      "Footnote": "17",
+      "Footnote_Number": "17",
+      "Footnote_Text": "Msgs, Earnest to Middleton, 1352 and 1615, 9 Aug.",
+      "Footnote_Referenced_Source": "Messages, Earnest to Middleton, 1352 and 1615, 9 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "18a",
+      "Footnote_Number": "18",
+      "Footnote_Text": "TF A FO 6, 2400, 8 Aug, and Jnl, entry 2100, 9 Aug",
+      "Footnote_Referenced_Source": "Task Force A Field Order 6, 2400, 8 August, and Journal, entry 2100, 9 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Task Force A field orders and journals"
+    },
+    {
+      "Footnote": "18b",
+      "Footnote_Number": "18",
+      "Footnote_Text": "Msg, Middleton to Earnest, 1710, 9 Aug",
+      "Footnote_Referenced_Source": "Message, Middleton to Earnest, 1710, 9 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "18c",
+      "Footnote_Number": "18",
+      "Footnote_Text": "Msg, Middleton to Earnest, 1810, 10 Aug, TF A Jnl",
+      "Footnote_Referenced_Source": "Message, Middleton to Earnest, 1810, 10 August, TF A Journal",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs and journals"
+    },
+    {
+      "Footnote": "18d",
+      "Footnote_Number": "18",
+      "Footnote_Text": "see 21 AGp, Dir M-515, 27 Jul.",
+      "Footnote_Referenced_Source": "21 Army Group, Directive M-515, 27 July",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 21 Army Group directives"
+    },
+    {
+      "Footnote": "19a",
+      "Footnote_Number": "19",
+      "Footnote_Text": "App. A to PS SHAEF (44) 29 (First Draft), 16 Jul, SHAEF G-3 File 24533/Opns, Future Opns",
+      "Footnote_Referenced_Source": "Appendix A to PS SHAEF (44) 29 (First Draft), 16 July, SHAEF G-3 File 24533/Opns, Future Opns",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request SHAEF files"
+    },
+    {
+      "Footnote": "19b",
+      "Footnote_Number": "19",
+      "Footnote_Text": "Memo, Evans to Earnest, 12 Aug",
+      "Footnote_Referenced_Source": "Memo, Evans to Earnest, 12 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request memos"
+    },
+    {
+      "Footnote": "19c",
+      "Footnote_Number": "19",
+      "Footnote_Text": "Roland G. Ruppenthal, Logistical Support of the Armies, Vol. II, UNITED STATES IN WORLD WAR II (Washington, 1959), Ch. II",
+      "Footnote_Referenced_Source": "Roland G. Ruppenthal, Logistical Support of the Armies, Vol. II, UNITED STATES IN WORLD WAR II (Washington, 1959), Ch. II",
+      "Web_Link": "https://history.army.mil/html/books/007/7-3-1/index.html",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "19d",
+      "Footnote_Number": "19",
+      "Footnote_Text": "TF A Opns 1 Aug-22 Sep, a preliminary MS, OCMH Files",
+      "Footnote_Referenced_Source": "Task Force A Operations 1 August-22 September, a preliminary MS, OCMH Files",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Task Force A operations MS"
+    },
+    {
+      "Footnote": "19e",
+      "Footnote_Number": "19",
+      "Footnote_Text": "ETOUSA Engr Hist Rpt 10.",
+      "Footnote_Referenced_Source": "ETOUSA Engineer Historical Report 10",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request ETOUSA Engineer reports"
+    },
+    {
+      "Footnote": "20a",
+      "Footnote_Number": "20",
+      "Footnote_Text": "Msg, Middleton to Earnest, 1530, 14 Aug",
+      "Footnote_Referenced_Source": "Message, Middleton to Earnest, 1530, 14 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "20b",
+      "Footnote_Number": "20",
+      "Footnote_Text": "Journal des Marches",
+      "Footnote_Referenced_Source": "Journal des Marches",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Journal des Marches"
+    },
+    {
+      "Footnote": "20c",
+      "Footnote_Number": "20",
+      "Footnote_Text": "see Memo, \"JTR\" [Col John R. Jeter. to Evans, 15 Aug.",
+      "Footnote_Referenced_Source": "Memo, \"JTR\" [Col John R. Jeter] to Evans, 15 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request memos"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

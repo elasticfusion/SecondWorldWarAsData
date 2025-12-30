@@ -1,0 +1,3014 @@
+{
+  "Events": [
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "German Withdrawal Ending the Battle",
+      "Sub-event_summary": "The German withdrawal from Mortain on the night of 11 August brought the battle that had been raging there to an end. Until that time, the Americans could mark an increasing improvement in their situation about Mortain, but no decisive result had been achieved.",
+      "Sub-event_fulltext": {
+        "Paragraph_100": "The German withdrawal from Mortain on the night of 11 August brought the battle that had been raging there to an end. Until that time, although the Americans could mark an increasing improvement in their situation about Mortain, no decisive result had been achieved."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "112300BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "Oberstgruppenführer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://warfarehistorynetwork.com/wp-content/uploads/W-Mortain-Map.jpg",
+        "ExternalMapLinkLicence": "Fair use",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.316,
+          "East": 0.434,
+          "South": 47.747,
+          "North": 49.547
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "Hobbs-Collins Interactions",
+      "Sub-event_summary": "General Hobbs expressed varying emotions of elation and depression regarding the situation, informing General Collins that they were holding and improving, but also questioning if positions were untenable, to which Collins responded sternly.",
+      "Sub-event_fulltext": {
+        "Paragraph_101": "General Hobbs, for example, had been variously elated and depressed. \"We are holding and getting in better shape all the time,\" he informed General Collins on 8 August. \"It was precarious for a while . .&bnbsp; [but] we are doing everything in God's power to hold.\" Yet on the following day, when Hobbs wondered aloud whether his positions might be \"practically untenable,\" Collins flared in exasperation: \"Stop talking about untenable.\"[26](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn26)"
+      },
+      "Footnote_References": [
+        "26"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "30th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "VII Corps",
+            "Commander": "Leland Hobbs",
+            "Name": "Leland Hobbs",
+            "Rank": "Major General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_Hobbs",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Fully staffed",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "VII Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "First Army",
+            "Commander": "Joseph Lawton Collins",
+            "Name": "Joseph Lawton Collins",
+            "Rank": "Lieutenant General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.316,
+          "East": 0.434,
+          "South": 47.747,
+          "North": 49.547
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "Description of Small Unit Combat",
+      "Sub-event_summary": "The battle was characterized by small unit combat involving infiltration, close-range fighting, splinter groups maneuvering, seesawing penetrations, ambushes, and surprise, often at the level of individual soldiers, with units intermingled in chaos.",
+      "Sub-event_fulltext": {
+        "Paragraph_102": "Essentially, the battle was small unit combat, \"infiltration and counter infiltration,\" close-range fighting by splinter groups maneuvering to outflank, and in turn being outflanked, \"a seesawing activity consisting of minor penetrations by both sides,\" operations characterized by ambush and surprise and fought on a level often no higher than that of the individual soldier. \"What does the situation look like down there?\" the 30th Division G-3 asked a regimental officer. \"Looks like hell,\" came the reply. \"We are just mingled in one big mess, our CP is getting all kinds of fire, tanks within 500 yards of us.\"[27](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn27)"
+      },
+      "Footnote_References": [
+        "27"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "APPROX 070000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "062300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Leland Hobbs",
+          "Name": "Leland Hobbs",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_Hobbs",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.316,
+          "East": 0.434,
+          "South": 47.747,
+          "North": 49.547
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "30th Division's Assignment to Expel Germans",
+      "Sub-event_summary": "The Germans' retention of gained ground challenged the 30th Division to expel them, described by General Hobbs as 'trying to plug up these rat holes,' with the division's lines changing little for four days.",
+      "Sub-event_fulltext": {
+        "Paragraph_103": "Though the Germans had been stopped on the first day of their attack, their retention of the ground gained represented a distinct challenge, particularly to the 30th Division, to expel them. In General Hobbs's words, it was a matter of \"trying to plug up these rat holes.\"[28](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn28) The rats were dangerous, as was indicated by the fact that the division's lines changed but little for four days."
+      },
+      "Footnote_References": [
+        "28"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "070000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "062300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Leland Hobbs",
+          "Name": "Leland Hobbs",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_Hobbs",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.316,
+          "East": 0.434,
+          "South": 47.747,
+          "North": 49.547
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "First Improvement on 8 August",
+      "Sub-event_summary": "On 8 August, the attached CCB of the 3d Armored Division and the 119th Infantry combined forces and made physical contact with the 4th Division several miles west of Chérencé, blocking further German westward movement along the south bank of the Sée.",
+      "Sub-event_fulltext": {
+        "Paragraph_104": "The first improvement occurred on 8 August, when the attached CCB of the 3d Armored Division and the 119th Infantry, after combining forces, made physical contact with the 4th Division several miles west of Chérencé and thereby blocked the possibility of unopposed further westward movement by the Germans along the south bank of the Sée."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Chérencé",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "CCB, 3d Armored Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "30th Infantry Division",
+            "Commander": "Unknown",
+            "Name": "Unknown",
+            "Rank": "Unknown",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "119th Infantry Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "30th Infantry Division",
+            "Commander": "Unknown",
+            "Name": "Unknown",
+            "Rank": "Unknown",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "4th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "VII Corps",
+            "Commander": "Raymond O. Barton",
+            "Name": "Raymond O. Barton",
+            "Rank": "Major General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Raymond_O._Barton",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Fully staffed",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Chérencé",
+        "Place_GPS_coordinate": "48.800, -1.195",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Chérencé",
+        "Place_GPS_coordinate": "48.800, -1.195",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.57,
+          "East": 0.18,
+          "South": 47.9,
+          "North": 49.7
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "Death of Col. William W. Cornog, Jr.",
+      "Sub-event_summary": "The death of Col. William W. Cornog, Jr., a CCB task force commander, killed by an enemy shell on 9 August, temporarily disrupted efforts to eject the Germans from le Mesnil-Tôve.",
+      "Sub-event_fulltext": {
+        "Paragraph_105": "The death of Col. William W. Cornog, Jr., a CCB task force commander killed by an enemy shell on 9 August, temporarily disrupted efforts to eject the Germans from le Mesnil-Tôve, but after hard fighting on 10 and 11 August the armor and infantry regained the village and re-established contact with the 39th Infantry at Chérencé."
+      },
+      "Footnote_References": [],
+      "Place_Name": "le Mesnil-Tôve",
+      "Dates": {
+        "Date_group_of_event": "090000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "082300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "CCB, 3d Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "William W. Cornog Jr.",
+          "Name": "William W. Cornog Jr.",
+          "Rank": "Colonel",
+          "End_Date": "090000BAUG44",
+          "End_Status": "KIA",
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 1,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "le Mesnil-Tôve",
+        "Place_GPS_coordinate": "48.702, -1.021",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "le Mesnil-Tôve",
+        "Place_GPS_coordinate": "48.702, -1.021",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.396,
+          "East": 0.354,
+          "South": 47.802,
+          "North": 49.602
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "Regaining le Mesnil-Tôve and Contact at Chérencé",
+      "Sub-event_summary": "After hard fighting on 10 and 11 August, the armor and infantry regained le Mesnil-Tôve and re-established contact with the 39th Infantry at Chérencé.",
+      "Sub-event_fulltext": {
+        "Paragraph_106": "The death of Col. William W. Cornog, Jr., a CCB task force commander killed by an enemy shell on 9 August, temporarily disrupted efforts to eject the Germans from le Mesnil-Tôve, but after hard fighting on 10 and 11 August the armor and infantry regained the village and re-established contact with the 39th Infantry at Chérencé."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Chérencé",
+      "Dates": {
+        "Date_group_of_event": "100000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "092300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "39th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "9th Infantry Division",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": "Unknown",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Chérencé",
+        "Place_GPS_coordinate": "48.800, -1.195",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Chérencé",
+        "Place_GPS_coordinate": "48.800, -1.195",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.57,
+          "East": 0.18,
+          "South": 47.9,
+          "North": 49.7
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "Re-entering St. Barthélemy",
+      "Sub-event_summary": "On 12 August, the 117th Infantry re-entered the rubble of St. Barthélemy, restoring American lines north of Mortain to pre-counterattack positions.",
+      "Sub-event_fulltext": {
+        "Paragraph_107": "On 12 August the 117th Infantry, on the immediate right, re-entered the smoking pile of rubble that was St. Barthélemy. The American lines north of Mortain were thus restored to the positions held before the counterattack."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Barthélemy",
+      "Dates": {
+        "Date_group_of_event": "120000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "117th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": "Unknown",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Barthélemy",
+        "Place_GPS_coordinate": "48.65, -0.93",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "St. Barthélemy",
+        "Place_GPS_coordinate": "48.65, -0.93",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.305,
+          "East": 0.445,
+          "South": 47.75,
+          "North": 49.55
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "35th Division's Advance South of Mortain",
+      "Sub-event_summary": "The 35th Division had a difficult assignment advancing through St. Hilaire to the Mortain-Barenton road, with regiments split by counterattacks, committing the reserve regiment on 9 August, using tank and artillery fire, forming 'killing parties,' but General Baade was dissatisfied with progress, taking four days and over 700 casualties to cover eight miles.",
+      "Sub-event_fulltext": {
+        "Paragraph_108": "In the sector south of Mortain, the 35th Division had had a difficult assignment in advancing through St. Hilaire to the Mortain-Barenton road. Two regiments of the 35th Division had initially attacked abreast, but small counterattacks split unit formations repeatedly. General Baade, the division commander, committed his reserve regiment on 9 August, and all three attacking abreast made liberal use of tank and artillery fire. Unit commanders also formed \"killing parties\" to clear Germans out of the paths of advance. Still Baade was not satisfied with the progress, and though he exerted pressure to get the division moving forward aggressively, it took the 35th Division four days and more than seven hundred casualties to cover eight miles.[29](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn29) The Germans withdrew from their positions southwest of Mortain and released their hold on Romagny on 11 August as the 35th Division reached the Mortain-Barenton road."
+      },
+      "Footnote_References": [
+        "29"
+      ],
+      "Place_Name": "St. Hilaire",
+      "Dates": {
+        "Date_group_of_event": "090000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "082300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "35th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Paul Baade",
+          "Name": "Paul Baade",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_W._Baade",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Tank",
+            "Identifier": "Various",
+            "Quantity": "Unknown",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 700,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p488.jpg",
+          "Description": "Antiaircraft Position near St. Hilaire.",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Hilaire",
+        "Place_GPS_coordinate": "48.55, -1.266",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "St. Hilaire",
+        "Place_GPS_coordinate": "48.55, -1.266",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.641,
+          "East": 0.109,
+          "South": 47.65,
+          "North": 49.45
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "German Withdrawal Southwest of Mortain",
+      "Sub-event_summary": "The Germans withdrew from positions southwest of Mortain and released hold on Romagny on 11 August as the 35th Division reached the Mortain-Barenton road.",
+      "Sub-event_fulltext": {
+        "Paragraph_109": "The Germans withdrew from their positions southwest of Mortain and released their hold on Romagny on 11 August as the 35th Division reached the Mortain-Barenton road."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Romagny",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "35th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Paul Baade",
+          "Name": "Paul Baade",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_W._Baade",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Romagny",
+        "Place_GPS_coordinate": "48.64, -0.96",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Romagny",
+        "Place_GPS_coordinate": "48.64, -0.96",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.335,
+          "East": 0.415,
+          "South": 47.74,
+          "North": 49.54
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "Relief of Isolated Battalion on Hill 317",
+      "Sub-event_summary": "General Baade prepared to assault the south slope of Hill 317 to relieve the isolated battalion of the 30th Division. At noon on 12 August, troops of the 35th Division made contact with the battalion after moving up the south slope, and minutes later the 120th Infantry re-entered Mortain and relieved the men on the hill.",
+      "Sub-event_fulltext": {
+        "Paragraph_110": "General Baade then prepared to assault the south slope of Hill 317 to relieve the isolated battalion of the 30th Division on the crest. At noon, 12 August, after having moved up the south slope of the hill, troops of the 35th Division made contact with the battalion. Minutes later, the 120th Infantry, 30th Division, re-entered Mortain and relieved the men on the hill.[30](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn30)"
+      },
+      "Footnote_References": [
+        "30"
+      ],
+      "Place_Name": "Hill 317",
+      "Dates": {
+        "Date_group_of_event": "121200BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "121100ZAUG44"
+      },
+      "TOE": {
+        "Unit": "120th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": "Unknown",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.315,
+          "East": 0.435,
+          "South": 47.75,
+          "North": 49.55
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "Outstanding Achievement of 2d Battalion, 120th Infantry",
+      "Sub-event_summary": "The 2d Battalion, 120th Infantry retained possession of the top of Hill 317 during the battle of Mortain, one of the outstanding small unit achievements in the European campaign, denying the Germans observation over much of the VII Corps sector for five days.",
+      "Sub-event_fulltext": {
+        "Paragraph_111": "The fact that the 2d Battalion, 120th Infantry, had retained possession of the top of Hill 317 during the battle of Mortain was one of the outstanding small unit achievements in the course of the campaign in western Europe. The battalion command post in Mortain had been overrun early on 7 August, and the command group had been captured on the following morning as the officers endeavored to reach their troops on the hill. Under the leadership of Capt. Reynold C. Erichson, who assumed command of the surrounded force, the troops on the hill for five days denied the Germans possession of terrain that would have given them observation over the major part of the VII Corps sector. Like Erichson, Capt. Delmont K. Byrn, who directed the heavy weapons company, and 1st Lts. Ralph A. Kerley, Joseph C. Reaser, and Ronal E. Woody, Jr., who commanded the rifle companies, refused to surrender.[31](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn31) They were fortunate in having with them two forward observers of the 230th Field Artillery Battalion, 1st Lt. Charles A. Barts and 2d Lt. Robert L. Weiss, who brought accurate fire not only on the Germans assaulting the hill positions but also on other German units within sight of the crest.[32](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn32)"
+      },
+      "Footnote_References": [
+        "31",
+        "32"
+      ],
+      "Place_Name": "Hill 317",
+      "Dates": {
+        "Date_group_of_event": "070000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "062300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "2d Battalion, 120th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Reynold C. Erichson",
+          "Name": "Reynold C. Erichson",
+          "Rank": "Captain",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://valor.militarytimes.com/hero/30899",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Heavy Weapons Company",
+            "Name": "Delmont K. Byrn",
+            "Rank": "Captain",
+            "Date": "070000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "Rifle Company",
+            "Name": "Ralph A. Kerley",
+            "Rank": "1st Lieutenant",
+            "Date": "070000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://www.tracesofwar.com/persons/30025/Kerley-Ralph-A.htm",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "Rifle Company",
+            "Name": "Joseph C. Reaser",
+            "Rank": "1st Lieutenant",
+            "Date": "070000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "Rifle Company",
+            "Name": "Ronal E. Woody Jr.",
+            "Rank": "1st Lieutenant",
+            "Date": "070000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Nearly 700 men",
+        "Equipments": {
+          "Supply": "Supplied by air drops and artillery shells"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.315,
+          "East": 0.435,
+          "South": 47.75,
+          "North": 49.55
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "Artillery Observers on Hill 317",
+      "Sub-event_summary": "The battalion was fortunate to have two forward observers from the 230th Field Artillery Battalion, 1st Lt. Charles A. Barts and 2d Lt. Robert L. Weiss, who directed accurate fire on German assaults and other units visible from the crest.",
+      "Sub-event_fulltext": {
+        "Paragraph_112": "They were fortunate in having with them two forward observers of the 230th Field Artillery Battalion, 1st Lt. Charles A. Barts and 2d Lt. Robert L. Weiss, who brought accurate fire not only on the Germans assaulting the hill positions but also on other German units within sight of the crest.[32](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn32)"
+      },
+      "Footnote_References": [
+        "32"
+      ],
+      "Place_Name": "Hill 317",
+      "Dates": {
+        "Date_group_of_event": "070000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "062300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "230th Field Artillery Battalion",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Lewis D. Vieman",
+          "Name": "Lewis D. Vieman",
+          "Rank": "Lieutenant Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [
+          {
+            "Unit": "Forward Observer",
+            "Name": "Charles A. Barts",
+            "Rank": "1st Lieutenant",
+            "Date": "070000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "Forward Observer",
+            "Name": "Robert L. Weiss",
+            "Rank": "2d Lieutenant",
+            "Date": "070000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://www.the-independent.com/news/obituaries/lieutenant-robert-weiss-soldier-whose-expertise-and-valour-in-calling-in-artillery-strikes-helped-the-allies-win-the-second-world-war-a6741321.html",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.315,
+          "East": 0.435,
+          "South": 47.75,
+          "North": 49.55
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "German Assault on Hill 317",
+      "Sub-event_summary": "Under almost constant attack by the regimental-sized 17th SS Panzer Grenadier Division under control of the 2d SS Panzer Division, whose mission was to seize Hill 317, the troops on the hill held out.",
+      "Sub-event_fulltext": {
+        "Paragraph_113": "Under almost constant attack (the regimental-sized *17th SS Panzer Grenadier Division* under control of the *2d SS* Panzer Division* had had the mission of seizing Hill 317), the troops on the hill captured several prisoners; though they needed radio batteries, food, and medical supplies, they were \"Not too worried about situation as long as [friendly] artillery fire continues.\" After two days of isolation, they still \"didn't seem to be worried.\"[33](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn33)"
+      },
+      "Footnote_References": [
+        "33"
+      ],
+      "Place_Name": "Hill 317",
+      "Dates": {
+        "Date_group_of_event": "070000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "062300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "17th SS Panzer Grenadier Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "2d SS Panzer Division",
+            "Commander": "Otto Baum",
+            "Name": "Otto Baum",
+            "Rank": "Brigadeführer",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/17th_SS_Panzergrenadier_Division_G%C3%B6tz_von_Berlichingen",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Regimental-sized",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "2d SS Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "XLVII Panzer Corps",
+            "Commander": "Heinz Lammerding",
+            "Name": "Heinz Lammerding",
+            "Rank": "Brigadeführer",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/2nd_SS_Panzer_Division_Das_Reich",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.315,
+          "East": 0.435,
+          "South": 47.75,
+          "North": 49.55
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "General Hobbs' Concern and Artillery Support",
+      "Sub-event_summary": "While waiting for the 35th Division to advance, General Hobbs, concerned about the situation, maintained a ring of artillery fire around the hill.",
+      "Sub-event_fulltext": {
+        "Paragraph_114": "If the men were not overly concerned about their situation, General Hobbs was. While waiting for the 35th Division to advance and relieve the pressure, he maintained a ring of artillery fire around the hill.[34](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn34)"
+      },
+      "Footnote_References": [
+        "34"
+      ],
+      "Place_Name": "Hill 317",
+      "Dates": {
+        "Date_group_of_event": "070000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "062300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Leland Hobbs",
+          "Name": "Leland Hobbs",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_Hobbs",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.315,
+          "East": 0.435,
+          "South": 47.75,
+          "North": 49.55
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "Supply Drops by Plane",
+      "Sub-event_summary": "On 9 August, light artillery planes attempted to drop supplies but were driven away by German flak. C-47 cargo planes dropped two days' supply of food and ammunition on 10 August, though half fell outside the perimeter. Another drop on 11 August was less successful.",
+      "Sub-event_fulltext": {
+        "Paragraph_115": "On 9 August, two light artillery planes tried to drop supplies by parachute, but German flak drove them away. C-47 cargo planes did somewhat better on the afternoon of 10 August, dropping two days supply of food and ammunition, though half fell outside the defensive perimeter. Another drop on the following day was less successful.[35](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn35)"
+      },
+      "Footnote_References": [
+        "35"
+      ],
+      "Place_Name": "Hill 317",
+      "Dates": {
+        "Date_group_of_event": "090000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "082300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "First Army G-4 Section",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "William K. C. Collonan",
+          "Name": "William K. C. Collonan",
+          "Rank": "Major",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Food and ammunition dropped"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.315,
+          "East": 0.435,
+          "South": 47.75,
+          "North": 49.55
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "Supply by Artillery Shell",
+      "Sub-event_summary": "Lt. Col. Lewis D. Vieman conceived sending supplies by shell using smoke shell cases for medical supplies. The first supply shoot occurred on 10 August evening, eventually involving 105-mm. assault guns and 155-mm. howitzers, though blood plasma could not be propelled.",
+      "Sub-event_fulltext": {
+        "Paragraph_116": "Lt. Col. Lewis D. Vieman, commander of the 230th Field Artillery Battalion, conceived the idea of sending supplies by shell. Using smoke shell cases normally employed for propaganda leaflets, the battalion fired bandages, adhesive tape, morphine, and other medical supplies onto the hill. The first of the supply shoots occurred on the evening of 10 August, and eventually 105-mm. assault guns of the 743d Tank Battalion and 155-mm. howitzers of the 113th Field Artillery Battalion participated in the effort. Although it was impossible to propel blood plasma, which was badly needed on the hill, the other supplies helped morale considerably.[36](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn36)"
+      },
+      "Footnote_References": [
+        "36"
+      ],
+      "Place_Name": "Hill 317",
+      "Dates": {
+        "Date_group_of_event": "102000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "101900ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "230th Field Artillery Battalion",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "30th Infantry Division",
+            "Commander": "Lewis D. Vieman",
+            "Name": "Lewis D. Vieman",
+            "Rank": "Lieutenant Colonel",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Medical supplies by shell"
+          }
+        },
+        {
+          "Unit": "743d Tank Battalion",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "30th Infantry Division",
+            "Commander": "Unknown",
+            "Name": "Unknown",
+            "Rank": "Unknown",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": {
+              "Origination_Country": "US",
+              "Name": "105-mm. assault gun",
+              "Identifier": "M7 Priest",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M7_Priest",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/M7_Priest#/media/File:M7_HMC_preserved_at_Aberdeen_Proving_Ground.JPG",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          }
+        },
+        {
+          "Unit": "113th Field Artillery Battalion",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "30th Infantry Division",
+            "Commander": "Unknown",
+            "Name": "Unknown",
+            "Rank": "Unknown",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": {
+              "Origination_Country": "US",
+              "Name": "155-mm. howitzer",
+              "Identifier": "M1",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M114_155_mm_howitzer",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/M114_155_mm_howitzer#/media/File:M114-155mm-howitzer-07.jpg",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.315,
+          "East": 0.435,
+          "South": 47.75,
+          "North": 49.55
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "Aid from French Farmers",
+      "Sub-event_summary": "Fed by French farmers who shared their chickens, vegetables, and the common danger, nearly seven hundred men held out on the hill.",
+      "Sub-event_fulltext": {
+        "Paragraph_117": "Fed by French farmers who shared with the soldiers their chickens, vegetables, and the common danger, nearly seven hundred men held out.[37](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn37)"
+      },
+      "Footnote_References": [
+        "37"
+      ],
+      "Place_Name": "Hill 317",
+      "Dates": {
+        "Date_group_of_event": "070000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "062300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "2d Battalion, 120th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Reynold C. Erichson",
+          "Name": "Reynold C. Erichson",
+          "Rank": "Captain",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://valor.militarytimes.com/hero/30899",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Nearly 700 men",
+        "Equipments": {
+          "Supply": "Aided by French farmers"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.315,
+          "East": 0.435,
+          "South": 47.75,
+          "North": 49.55
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "Casualties on Hill 317",
+      "Sub-event_summary": "By 12 August, three hundred men had been killed or wounded on the hill, but more than three hundred walked off unharmed. During the battle, they had been a 'thorn in the flesh' that paralyzed German movements in the area.",
+      "Sub-event_fulltext": {
+        "Paragraph_118": "By 12 August three hundred men had been killed or wounded, but more than three hundred walked off the hill unharmed. During the battle of Mortain they had been a \"thorn in the flesh\" that had paralyzed all German movements in the area.[38](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn38)"
+      },
+      "Footnote_References": [
+        "38"
+      ],
+      "Place_Name": "Hill 317",
+      "Dates": {
+        "Date_group_of_event": "120000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "2d Battalion, 120th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Reynold C. Erichson",
+          "Name": "Reynold C. Erichson",
+          "Rank": "Captain",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://valor.militarytimes.com/hero/30899",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Nearly 700 men",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 300,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Hill 317",
+        "Place_GPS_coordinate": "48.65, -0.94",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.315,
+          "East": 0.435,
+          "South": 47.75,
+          "North": 49.55
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "2d Armored Division's Contribution from Barenton",
+      "Sub-event_summary": "The 2d Armored Division attacked northeast from Barenton toward Ger into the German left flank and rear, advancing three miles into the Mortain forest on 8 August, keeping a threat that hampered German communications and forced commitment of the 10th SS Panzer Division elsewhere.",
+      "Sub-event_fulltext": {
+        "Paragraph_119": "The 2d Armored Division had made a similar contribution by attacking northeast from Barenton toward Ger into the German left flank and rear. Employing the small task force of the 3d Armored Division's CCA and the battalion of the 30th Division already near Barenton, the 2d Armored Division had attacked on 8 August and advanced three miles into the broken terrain of the Mortain forest. Although stiffening opposition had prevented capture of Ger, the armored division had kept a spear sticking into the enemy flank for four more days, a constant threat hampering German communications between Tinchebray and Sourdeval, disrupting forward assembly areas between Sourdeval and Ger, and forcing commitment of the *10th SS Panzer Division* elsewhere than toward Avranches.[39](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn39)"
+      },
+      "Footnote_References": [
+        "39"
+      ],
+      "Place_Name": "Barenton",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "2d Armored Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "VII Corps",
+            "Commander": "Edward H. Brooks",
+            "Name": "Edward H. Brooks",
+            "Rank": "Major General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Edward_H._Brooks",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "CCA, 3d Armored Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "2d Armored Division",
+            "Commander": "Unknown",
+            "Name": "Unknown",
+            "Rank": "Unknown",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "10th SS Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Fifth Panzer Army",
+            "Commander": "Otto Baum",
+            "Name": "Otto Baum",
+            "Rank": "Brigadeführer",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/10th_SS_Panzer_Division_Frundsberg",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Barenton",
+        "Place_GPS_coordinate": "48.600, -0.833",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Barenton",
+        "Place_GPS_coordinate": "48.600, -0.833",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.208,
+          "East": 0.542,
+          "South": 47.7,
+          "North": 49.5
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "American Casualties in the Battle",
+      "Sub-event_summary": "On 12 August, with the 35th Division beyond the Mortain-Barenton road and the 30th Division in possession of St. Barthélemy and Mortain, the battle ended. The 30th Division lost almost two thousand men in six days, the 9th Division nearly a thousand in closing the gap, and the 4th Division about six hundred while contributing regiments.",
+      "Sub-event_fulltext": {
+        "Paragraph_120": "On 12 August, with the 35th Division beyond the Mortain-Barenton road and the 30th Division again in possession of St. Barthélemy and Mortain, the costly battle came to an end. The 30th Division alone had lost almost two thousand men in six days. The 9th Division, fighting on the fringe of the Mortain action, had sustained nearly a thousand casualties in closing the gap that had separated the division from the 39th Infantry. In protecting the Sée River line, the 4th Division, which had contributed a regiment each to the 9th and 30th Divisions, had sustained about six hundred casualties.[40](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn40)"
+      },
+      "Footnote_References": [
+        "40"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "120000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "30th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "VII Corps",
+            "Commander": "Leland Hobbs",
+            "Name": "Leland Hobbs",
+            "Rank": "Major General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_Hobbs",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Fully staffed",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "9th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "VII Corps",
+            "Commander": "Manton S. Eddy",
+            "Name": "Manton S. Eddy",
+            "Rank": "Major General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Fully staffed",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "4th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "VII Corps",
+            "Commander": "Raymond O. Barton",
+            "Name": "Raymond O. Barton",
+            "Rank": "Major General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Raymond_O._Barton",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Fully staffed",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 2000,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.316,
+          "East": 0.434,
+          "South": 47.747,
+          "North": 49.547
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "German Losses and Effects",
+      "Sub-event_summary": "American casualties were heavy, but German losses were greater due to artillery and air power. One regiment of the 2d Panzer Division was annihilated near le Mesnil-Tôve, the 1st SS Panzer Division had heavy tank losses, and the 2d SS Panzer Division was slashed by artillery, tank fire, and air attacks.",
+      "Sub-event_fulltext": {
+        "Paragraph_121": "As heavy as American casualties were, German losses were greater. The effect of artillery and air power had been particularly telling. One regiment of the *2d Panzer Division* had been annihilated near le Mesnil-Tôve. The *1st SS Panzer Division* had had especially heavy tank losses. The *2d SS Panzer Division* had been slashed by artillery fire called from Hill 317, by tank fire from the 2d Armored Division near Barenton, and by air attacks that had seemed particularly effective in its sector. Allied tactical aircraft, somewhat hampered by early morning haze, flew from midmorning to darkness, while Brig. Gen. James M. Lewis, the 30th Division Artillery commander, alone massed more than twelve battalions of artillery to achieve devastating results. Between 1900 and 2000, 9 August, the 30th Division Artillery, for example, fired thirty observed and fully adjusted counterbattery missions, an imposing total for an hour's activity and one that was later claimed as a record. Observation was excellent from both the ground and the air, and artillerymen and pilots \"just plaster[ed the enemy] . . . all along the line.\" Close to a hundred German tanks lay abandoned in the Mortain sector at the close of the battle.[41](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn41)"
+      },
+      "Footnote_References": [
+        "41"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "120000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "2d Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "XLVII Panzer Corps",
+            "Commander": "Heinrich Freiherr von Lüttwitz",
+            "Name": "Heinrich Freiherr von Lüttwitz",
+            "Rank": "General der Panzertruppe",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/2nd_Panzer_Division_(Wehrmacht)",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Annihilated regiment",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "1st SS Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "XLVII Panzer Corps",
+            "Commander": "Theodor Wisch",
+            "Name": "Theodor Wisch",
+            "Rank": "Brigadeführer",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/1st_SS_Panzer_Division_Leibstandarte_SS_Adolf_Hitler",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Axis_Destroyed": {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "Various",
+              "Quantity": "Heavy losses",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          }
+        },
+        {
+          "Unit": "2d SS Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "XLVII Panzer Corps",
+            "Commander": "Heinz Lammerding",
+            "Name": "Heinz Lammerding",
+            "Rank": "Brigadeführer",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/2nd_SS_Panzer_Division_Das_Reich",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "30th Division Artillery",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "30th Infantry Division",
+            "Commander": "James M. Lewis",
+            "Name": "James M. Lewis",
+            "Rank": "Brigadier General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p491.jpg",
+          "Description": "Wrecked German Armor in the Sourdeval Area",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours; early morning haze hampering aircraft.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.316,
+          "East": 0.434,
+          "South": 47.747,
+          "North": 49.547
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "Assessment of German Capabilities and Outcome",
+      "Sub-event_summary": "At the outset, American officers estimated the enemy capable of driving to Avranches to rupture the front, but the threat vanished quickly as the enemy abandoned the effort due to heavy casualties from air and artillery. By 8 August, intelligence considered post-attack scenarios.",
+      "Sub-event_fulltext": {
+        "Paragraph_122": "At the outset of the attack, American officers had estimated that the enemy seemed capable of driving a wedge to Avranches \"to rupture\" the front and make the position of the forces south of Avranches \"logistically untenable.\" It was not long, however, before the \"potential threat of a major counterattack\" vanished. The enemy had very quickly \"been forced to abandon his ambitious effort . . . because of heavy tank casualties from allied air attacks . .&bnbsp; and artillery fire.\" As early as 8 August, intelligence officers were optimistically considering what the Germans might do after the current attack was defeated or contained.[42](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn42)"
+      },
+      "Footnote_References": [
+        "42"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Joseph Lawton Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3617",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3617",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.736,
+          "East": 0.012,
+          "South": 47.785,
+          "North": 49.584
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "Effect on VII Corps and Readjustment",
+      "Sub-event_summary": "The only effect of the Mortain counterattack was stopping the VII Corps advance and prompting local readjustment of forces in the Mortain-Avranches area. SHAEF was prepared to supply forces south of Avranches by air if supply lines were cut.",
+      "Sub-event_fulltext": {
+        "Paragraph_123": "The only effect of the Mortain counterattack was that it had \"practically stopped the VII Corps advance.\" Beyond that, it had prompted some readjustment of forces in the Mortain-Avranches area, but the rearrangement of units had no more than local significance. What the counterattack might have accomplished seemed in retrospect to have been its only merit. Even had it succeeded in cutting the supply lines to the Allied forces south of Avranches, SHAEF was prepared to supply those forces with two thousand tons per day by air.[43](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn43)"
+      },
+      "Footnote_References": [
+        "43"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "120000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Joseph Lawton Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Prepared for air supply"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.316,
+          "East": 0.434,
+          "South": 47.747,
+          "North": 49.547
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "30th Division's Stand",
+      "Sub-event_summary": "Taken by surprise in newly occupied positions, the 30th Division stood its ground and fought as hard as any unit in the European theater, with a staff officer noting the battle was going well despite the challenges faced by front-line soldiers.",
+      "Sub-event_fulltext": {
+        "Paragraph_124": "Taken by surprise in newly occupied positions, the 30th Division had stood its ground and fought as hard as any unit was to fight in the European theater. \"It isn't very easy,\" a staff officer wrote, \"to tell the man in the front lines that the battle is going well when he's still up against that old combination of machine guns, burp guns, mortars, 88s, artillery, tanks--and terrain. . .&bnbsp; [But] the battle is going well; [and] it's worth saying.\"[44](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn44)"
+      },
+      "Footnote_References": [
+        "44"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "120000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Leland Hobbs",
+          "Name": "Leland Hobbs",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_Hobbs",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.316,
+          "East": 0.434,
+          "South": 47.747,
+          "North": 49.547
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "XIX Corps Actions",
+      "Sub-event_summary": "XIX Corps attacked in the Sourdeval-Gathemo area with the 28th and 29th Divisions and CCA of the 2d Armored Division, sustaining over 1,200 casualties in three days, then moved forward easily on 11 August, contacting the 30th Division north of Mortain on 12 August and pinching out the 4th and 9th Divisions.",
+      "Sub-event_fulltext": {
+        "Paragraph_125": "The battle had indeed gone well, not only at Mortain but elsewhere on the First Army front. On the VII Corps left, XIX Corps, after having attacked in the Sourdeval-Gathemo area (with the 28th and 29th Divisions and CCA of the 2d Armored Division) and having sustained more than 1,200 casualties in three days of heavy fighting, finally moved forward with relative ease on 11 August, and on the following day made contact with the 30th Division north of Mortain and pinched out the 4th and 9th Divisions."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Sourdeval",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "XIX Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "First Army",
+            "Commander": "Charles H. Corlett",
+            "Name": "Charles H. Corlett",
+            "Rank": "Major General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [
+            {
+              "Unit": "28th Infantry Division",
+              "Name": "Lloyd D. Brown",
+              "Rank": "Major General",
+              "Date": "110000BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/28th_Infantry_Division_(United_States)",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "29th Infantry Division",
+              "Name": "Charles H. Gerhardt",
+              "Rank": "Major General",
+              "Date": "110000BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/29th_Infantry_Division_(United_States)",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "CCA, 2d Armored Division",
+              "Name": "Unknown",
+              "Rank": "Unknown",
+              "Date": "110000BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            }
+          ],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 1200,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Sourdeval",
+        "Place_GPS_coordinate": "48.723, -0.920",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Sourdeval",
+        "Place_GPS_coordinate": "48.723, -0.920",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.295,
+          "East": 0.455,
+          "South": 47.823,
+          "North": 49.623
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "V Corps Actions",
+      "Sub-event_summary": "On the First Army left, the V Corps held Vire with the 2d Infantry Division while exerting pressure southeast, noting diminishing German pressure on 12 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_126": "On the First Army left the V Corps, which had held on firmly to the town of Vire with the 2d Infantry Division while exerting pressure toward the southeast, noted diminishing German pressure on 12 August.[45](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn45)"
+      },
+      "Footnote_References": [
+        "45"
+      ],
+      "Place_Name": "Vire",
+      "Dates": {
+        "Date_group_of_event": "120000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "V Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "First Army",
+            "Commander": "Leonard T. Gerow",
+            "Name": "Leonard T. Gerow",
+            "Rank": "Lieutenant General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Leonard_T._Gerow",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [
+            {
+              "Unit": "2d Infantry Division",
+              "Name": "Walter M. Robertson",
+              "Rank": "Major General",
+              "Date": "120000BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/2nd_Infantry_Division_(United_States)",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.838, -0.889",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.838, -0.889",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.264,
+          "East": 0.486,
+          "South": 47.938,
+          "North": 49.737
+        }
+      }
+    },
+    {
+      "Event": "The Battle at Mortain",
+      "Sub-event": "Allies Maneuvering to Trap Germans",
+      "Sub-event_summary": "By 12 August, the Allies were maneuvering to trap the Germans who had unsuccessfully attacked toward Avranches.",
+      "Sub-event_fulltext": {
+        "Paragraph_127": "By that date, the Allies were maneuvering to trap the Germans who had plunged unsuccessfully toward Avranches."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "120000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Allied Forces",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Dwight D. Eisenhower",
+          "Name": "Dwight D. Eisenhower",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3617",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3617",
+        "Weather_text": "Warm summer weather with high humidity resulting in ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.736,
+          "East": 0.012,
+          "South": 47.785,
+          "North": 49.584
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "26a",
+      "Footnote_Number": "26",
+      "Footnote_Text": "Telecons, Collins and Hobbs, 1220, 8 Aug, and 2307, 9 Aug, 30th Div G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "Telecons, Collins and Hobbs, 1220, 8 Aug, and 2307, 9 Aug, 30th Div G-3 Jnl and File.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "30th Div G-3 Journal and File"
+    },
+    {
+      "Footnote": "27a",
+      "Footnote_Number": "27",
+      "Footnote_Text": "FUSA G-2 Jnl, entries 0215, 9 Aug, and 1700, 11 Aug",
+      "Footnote_Referenced_Source": "FUSA G-2 Jnl, entries 0215, 9 Aug, and 1700, 11 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "First Army G-2 Journal"
+    },
+    {
+      "Footnote": "27b",
+      "Footnote_Number": "27",
+      "Footnote_Text": "Hassenfelt Telecon, 0520, 8 Aug, 30th Div G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "Hassenfelt Telecon, 0520, 8 Aug, 30th Div G-3 Jnl and File.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "30th Div G-3 Journal and File"
+    },
+    {
+      "Footnote": "28a",
+      "Footnote_Number": "28",
+      "Footnote_Text": "Telecon, Collins and Hobbs, 1044, 9 Aug, 30th Div G-3 Jnl and File",
+      "Footnote_Referenced_Source": "Telecon, Collins and Hobbs, 1044, 9 Aug, 30th Div G-3 Jnl and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "30th Div G-3 Journal and File"
+    },
+    {
+      "Footnote": "28b",
+      "Footnote_Number": "28",
+      "Footnote_Text": "see also 30th Div Ltr of Instrs, 2230, 9 Aug.",
+      "Footnote_Referenced_Source": "see also 30th Div Ltr of Instrs, 2230, 9 Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "30th Div Letter of Instructions"
+    },
+    {
+      "Footnote": "29a",
+      "Footnote_Number": "29",
+      "Footnote_Text": "35th Div AAR, Aug, and G-3 Per Rpt 55, 8 Aug",
+      "Footnote_Referenced_Source": "35th Div AAR, Aug, and G-3 Per Rpt 55, 8 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "35th Div After Action Report, August"
+    },
+    {
+      "Footnote": "29b",
+      "Footnote_Number": "29",
+      "Footnote_Text": "VII Corps Msg, 8 Aug (recording 35th Div Radio Msg, 1517, 8 Aug)",
+      "Footnote_Referenced_Source": "VII Corps Msg, 8 Aug (recording 35th Div Radio Msg, 1517, 8 Aug)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "VII Corps Messages"
+    },
+    {
+      "Footnote": "29c",
+      "Footnote_Number": "29",
+      "Footnote_Text": "Telecons, Hobbs and Baade, 2225, 11 Aug, and 1255, 12 Aug, and Gen Hobbs, Col Howard S. Searle, and Gen Collins, 1021, 8 Aug, 30th Div G-3 Jnl and File",
+      "Footnote_Referenced_Source": "Telecons, Hobbs and Baade, 2225, 11 Aug, and 1255, 12 Aug, and Gen Hobbs, Col Howard S. Searle, and Gen Collins, 1021, 8 Aug, 30th Div G-3 Jnl and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "30th Div G-3 Journal and File"
+    },
+    {
+      "Footnote": "29d",
+      "Footnote_Number": "29",
+      "Footnote_Text": "FUSA Daily G-1 Estimated Losses, Aug.",
+      "Footnote_Referenced_Source": "FUSA Daily G-1 Estimated Losses, Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "First Army Daily G-1 Estimated Losses, August"
+    },
+    {
+      "Footnote": "30",
+      "Footnote_Number": "30",
+      "Footnote_Text": "On the damage to Mortain, see Leon Blouet, Mortain en Flammes (Mortain, 1951).",
+      "Footnote_Referenced_Source": "On the damage to Mortain, see Leon Blouet, Mortain en Flammes (Mortain, 1951).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Book",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Mortain en Flammes"
+    },
+    {
+      "Footnote": "31",
+      "Footnote_Number": "31",
+      "Footnote_Text": "Erichson, Byrn, Kerley, Reaser, and Woody received the DSC for their leadership on Hill 317.",
+      "Footnote_Referenced_Source": "Erichson, Byrn, Kerley, Reaser, and Woody received the DSC for their leadership on Hill 317.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Distinguished Service Cross citations"
+    },
+    {
+      "Footnote": "32",
+      "Footnote_Number": "32",
+      "Footnote_Text": "Hewitt, Story of 30th Division, pp. 70-71; History of the 120th Infantry Regiment (Washington: Infantry Journal Press, 1947), pp. 46-56.",
+      "Footnote_Referenced_Source": "Hewitt, Story of 30th Division, pp. 70-71; History of the 120th Infantry Regiment (Washington: Infantry Journal Press, 1947), pp. 46-56.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Book",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Story of 30th Division; History of the 120th Infantry Regiment"
+    },
+    {
+      "Footnote": "33a",
+      "Footnote_Number": "33",
+      "Footnote_Text": "Telecon, Hobbs and Ellis, 2135, 9 Aug, and entry 2246, 8 Aug, 30th Div G-3 Jnl and File",
+      "Footnote_Referenced_Source": "Telecon, Hobbs and Ellis, 2135, 9 Aug, and entry 2246, 8 Aug, 30th Div G-3 Jnl and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "30th Div G-3 Journal and File"
+    },
+    {
+      "Footnote": "33b",
+      "Footnote_Number": "33",
+      "Footnote_Text": "MS # B-725 (Gersdorff).",
+      "Footnote_Referenced_Source": "MS # B-725 (Gersdorff).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-725"
+    },
+    {
+      "Footnote": "34a",
+      "Footnote_Number": "34",
+      "Footnote_Text": "See Telecon, Collins and Hobbs, 2307, 9 Aug, 30th Div G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "See Telecon, Collins and Hobbs, 2307, 9 Aug, 30th Div G-3 Jnl and File.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "30th Div G-3 Journal and File"
+    },
+    {
+      "Footnote": "35",
+      "Footnote_Number": "35",
+      "Footnote_Text": "Maj. William K. C. Collonan of the First Army G-4 Section had reconnoitred Hill 317 as a passenger in a light plane on 9 August in order to arrange for cargo drops. The plane was struck by flak, and Major Collonan parachuted and fell into enemy lines. He was awarded the DSC.",
+      "Footnote_Referenced_Source": "Maj. William K. C. Collonan of the First Army G-4 Section had reconnoitred Hill 317 as a passenger in a light plane on 9 August in order to arrange for cargo drops. The plane was struck by flak, and Major Collonan parachuted and fell into enemy lines. He was awarded the DSC.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Distinguished Service Cross citation for Maj. William K. C. Collonan"
+    },
+    {
+      "Footnote": "36",
+      "Footnote_Number": "36",
+      "Footnote_Text": "See Hewitt, Story of 30th Division, pp. 69-75, for a detailed account.",
+      "Footnote_Referenced_Source": "See Hewitt, Story of 30th Division, pp. 69-75, for a detailed account.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Book",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Story of 30th Division, pp. 69-75"
+    },
+    {
+      "Footnote": "37",
+      "Footnote_Number": "37",
+      "Footnote_Text": "See Jules and Gilles Buisson, Mortain et sa Bataille; also their \"Les Combats de Mortain,\" in Herval, Bataille de Normandie, I, 219-42.",
+      "Footnote_Referenced_Source": "See Jules and Gilles Buisson, Mortain et sa Bataille; also their \"Les Combats de Mortain,\" in Herval, Bataille de Normandie, I, 219-42.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Book",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Mortain et sa Bataille; Bataille de Normandie"
+    },
+    {
+      "Footnote": "38",
+      "Footnote_Number": "38",
+      "Footnote_Text": "MS # B-445 (Krueger).",
+      "Footnote_Referenced_Source": "MS # B-445 (Krueger).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-445"
+    },
+    {
+      "Footnote": "39",
+      "Footnote_Number": "39",
+      "Footnote_Text": "For heroism on 8 August, 2d Lt. Glenn H. Warren of the 82d Armored Reconnaissance Battalion received the DSC. Capt. Thomas F. Carothers and Pvt. William J. Draper of the 41st Armored Infantry Regiment received the DSC for heroism from 9 to 14 August and on 11 August, respectively.",
+      "Footnote_Referenced_Source": "For heroism on 8 August, 2d Lt. Glenn H. Warren of the 82d Armored Reconnaissance Battalion received the DSC. Capt. Thomas F. Carothers and Pvt. William J. Draper of the 41st Armored Infantry Regiment received the DSC for heroism from 9 to 14 August and on 11 August, respectively.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Distinguished Service Cross citations"
+    },
+    {
+      "Footnote": "40a",
+      "Footnote_Number": "40",
+      "Footnote_Text": "VII Corps, 2d Armd Div, 4th, 9th, and 30th Div AAR's, Aug",
+      "Footnote_Referenced_Source": "VII Corps, 2d Armd Div, 4th, 9th, and 30th Div AAR's, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "After Action Reports, August"
+    },
+    {
+      "Footnote": "40b",
+      "Footnote_Number": "40",
+      "Footnote_Text": "Msgs, Brooks to Collins, 0830 and 0907, 8 Aug, VII Corps G-3 Jnl and File",
+      "Footnote_Referenced_Source": "Msgs, Brooks to Collins, 0830 and 0907, 8 Aug, VII Corps G-3 Jnl and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "VII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "40c",
+      "Footnote_Number": "40",
+      "Footnote_Text": "VII Corps Opns Memo 60, 8 Aug (confirming oral orders, 7 Aug)",
+      "Footnote_Referenced_Source": "VII Corps Opns Memo 60, 8 Aug (confirming oral orders, 7 Aug)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "VII Corps Operations Memo 60"
+    },
+    {
+      "Footnote": "40d",
+      "Footnote_Number": "40",
+      "Footnote_Text": "Collins' Talk at the Armored School, 19 Jan 48.",
+      "Footnote_Referenced_Source": "Collins' Talk at the Armored School, 19 Jan 48.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Collins' Talk at the Armored School, 19 Jan 48"
+    },
+    {
+      "Footnote": "41a",
+      "Footnote_Number": "41",
+      "Footnote_Text": "CI 96, 30th Div, 6-12 Aug",
+      "Footnote_Referenced_Source": "CI 96, 30th Div, 6-12 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Combat Interview 96, 30th Div"
+    },
+    {
+      "Footnote": "41b",
+      "Footnote_Number": "41",
+      "Footnote_Text": "30th Div FO 22, 1230, 9 Aug",
+      "Footnote_Referenced_Source": "30th Div FO 22, 1230, 9 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "30th Div Field Order 22"
+    },
+    {
+      "Footnote": "41c",
+      "Footnote_Number": "41",
+      "Footnote_Text": "Telecons, Gen Hobbs and Col Otto Ellis, 0823, 8 Aug, and Hobbs and Lewis, 1715, 7 Aug, 30th Div G-3 Jnl and File",
+      "Footnote_Referenced_Source": "Telecons, Gen Hobbs and Col Otto Ellis, 0823, 8 Aug, and Hobbs and Lewis, 1715, 7 Aug, 30th Div G-3 Jnl and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "30th Div G-3 Journal and File"
+    },
+    {
+      "Footnote": "41d",
+      "Footnote_Number": "41",
+      "Footnote_Text": "Hewitt, Story of 30th Division, p. 77",
+      "Footnote_Referenced_Source": "Hewitt, Story of 30th Division, p. 77",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Book",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Story of 30th Division, p. 77"
+    },
+    {
+      "Footnote": "41e",
+      "Footnote_Number": "41",
+      "Footnote_Text": "MS # B-725 (Gersdorff).",
+      "Footnote_Referenced_Source": "MS # B-725 (Gersdorff).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-725"
+    },
+    {
+      "Footnote": "42a",
+      "Footnote_Number": "42",
+      "Footnote_Text": "TUSA G-2 Per Rpt 59, 9 Aug",
+      "Footnote_Referenced_Source": "TUSA G-2 Per Rpt 59, 9 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Third Army G-2 Periodic Report 59"
+    },
+    {
+      "Footnote": "42b",
+      "Footnote_Number": "42",
+      "Footnote_Text": "FUSA G-2 Per Rpts 60, 61, and 64, 9, 10, and 13 Aug, and G-2 Est 14, 8 Aug",
+      "Footnote_Referenced_Source": "FUSA G-2 Per Rpts 60, 61, and 64, 9, 10, and 13 Aug, and G-2 Est 14, 8 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "First Army G-2 Periodic Reports and Estimate"
+    },
+    {
+      "Footnote": "42c",
+      "Footnote_Number": "42",
+      "Footnote_Text": "VII Corps G-2 Per Rpt 64, 8 Aug.",
+      "Footnote_Referenced_Source": "VII Corps G-2 Per Rpt 64, 8 Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "VII Corps G-2 Periodic Report 64"
+    },
+    {
+      "Footnote": "43a",
+      "Footnote_Number": "43",
+      "Footnote_Text": "VII Corps and FUSA AAR's, Aug",
+      "Footnote_Referenced_Source": "VII Corps and FUSA AAR's, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "VII Corps and First Army After Action Reports, August"
+    },
+    {
+      "Footnote": "43b",
+      "Footnote_Number": "43",
+      "Footnote_Text": "Lt. Gen. Walter Bedell Smith, \"Eisenhower's Six Great Decisions,\" Saturday Evening Post, Vol. 218, No. 50 (June 15, 1946), 18.",
+      "Footnote_Referenced_Source": "Lt. Gen. Walter Bedell Smith, \"Eisenhower's Six Great Decisions,\" Saturday Evening Post, Vol. 218, No. 50 (June 15, 1946), 18.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Magazine",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Saturday Evening Post, Vol. 218, No. 50 (June 15, 1946), 18"
+    },
+    {
+      "Footnote": "44",
+      "Footnote_Number": "44",
+      "Footnote_Text": "30th Div G-2 Notes for Co Comdrs, 10 Aug, 30th Div G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "30th Div G-2 Notes for Co Comdrs, 10 Aug, 30th Div G-3 Jnl and File.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "30th Div G-2 Notes for Co Comdrs"
+    },
+    {
+      "Footnote": "45a",
+      "Footnote_Number": "45",
+      "Footnote_Text": "V Corps Operations in the ETO, pp. 163ff.",
+      "Footnote_Referenced_Source": "V Corps Operations in the ETO, pp. 163ff.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "V Corps Operations in the ETO, pp. 163ff."
+    },
+    {
+      "Footnote": "45b",
+      "Footnote_Number": "45",
+      "Footnote_Text": "CI 85 (the Battle for Vire)",
+      "Footnote_Referenced_Source": "CI 85 (the Battle for Vire)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Combat Interview 85"
+    },
+    {
+      "Footnote": "45c",
+      "Footnote_Number": "45",
+      "Footnote_Text": "[Ferriss], Notes.",
+      "Footnote_Referenced_Source": "[Ferriss], Notes.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Ferriss Notes"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

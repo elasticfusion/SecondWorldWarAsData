@@ -1,0 +1,492 @@
+{
+  "Events": [
+    {
+      "Event": "Advance Through the Paris-Orléans Gap",
+      "Sub-event": "Initiation of XX and XII Corps Eastward Attacks on 21 August",
+      "Sub-event_summary": "On 21 August XX Corps attacks eastward from Dreux and Chartres, XII Corps from Châteaudun and Orléans. Objective is the Paris-Orléans gap and Seine River line south of Paris. German First Army under Knobelsdorff attempts to delay with security troops, local garrisons, antiaircraft detachments, and stragglers with inadequate equipment.",
+      "Sub-event_fulltext": {
+        "Paragraph_114": "A day after operations along the lower Seine had started, those directed toward the upper Seine south of Paris began. On 21 August the XX Corps attacked eastward from Dreux and Chartres, the XII Corps from Châteaudun and Orléans. The objective of the two corps, moving abreast, was the Paris-Orléans gap--the Seine River line south of Paris.",
+        "Paragraph_115": "Confronting the two corps was the German First Army, commanded now by General de Panzertruppen Otto von Knobelsdorff, who was trying to gather forces to defend the upper Seine and a line southward through Nemours, Montargis, Gien, and Orléans. His immediate task was to delay the Americans by blocking the main roads until new divisions promised for the Western Front could be brought up to defend the line of the Seine. The only delaying forces available were security troops, local garrisons, antiaircraft detachments, and stragglers from scattered units, all with hopelessly inadequate equipment.",
+        "Paragraph_116": "Those portions of the 48th and 338th Divisions that had met the Americans at Chartres fell back to the Seine to join other newly arriving and as yet uncommitted portions that gathered at Melun, Fontainebleau, and Montereau. These were far from impressive forces--the 48th was without combat experience, inadequately trained, and deficient in equipment; the 338th lacked organic transportation and became partially mobile only after commandeering French vehicles. At Montargis, which Hitler had ordered strongly defended, were assembled the erstwhile defenders of Orléans--fragments of the 708th Division and the usual quota of security troops and supply personnel. The 348th Division and the 18th Luftwaffe Field Division were on the way from northern France to the First Army but were diverted later toward the Seine north of Paris."
+      },
+      "Footnote_References": [69, 70],
+      "Place_Name": ["Dreux", "Chartres", "Châteaudun", "Orléans", "Paris-Orléans gap", "Seine River", "Nemours", "Montargis", "Gien", "Melun", "Fontainebleau", "Montereau"],
+      "Dates": {
+        "Date_group_of_event": "21 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "21 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "XX Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": {
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "XX Corps",
+            "Name": "Walton H. Walker",
+            "Rank": "Major General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Walton_Walker"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Orléans, France",
+          "Place_GPS_coordinate": "47.9029 N, 1.9093 E"
+        },
+        {
+          "Place_Name": "Chartres, France",
+          "Place_GPS_coordinate": "48.4439 N, 1.4893 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Orléans, France",
+          "Place_GPS_coordinate": "47.9029 N, 1.9093 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -0.0907, "East": 3.9093, "South": 46.9029, "North": 48.9029}
+        },
+        {
+          "Place_Name": "Chartres, France",
+          "Place_GPS_coordinate": "48.4439 N, 1.4893 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -0.5107, "East": 2.4893, "South": 47.4439, "North": 49.4439}
+        }
+      ]
+    },
+    {
+      "Event": "Advance Through the Paris-Orléans Gap",
+      "Sub-event": "XII Corps Command Change and 4th Armored Drive to Sens (20–22 August)",
+      "Sub-event_summary": "General Eddy replaces General Cook as XII Corps commander. Eddy attaches 137th Infantry (35th Division) to 4th Armored Division and orders attack on 20 August. CCA advances, bypasses defended Montargis (bridge destroyed), crosses Loing at Souppes-sur-Loing, reaches Sens on 21 August capturing garrison by surprise. Bridgehead established east of Yonne by morning 22 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_117": "On the American side, General Eddy, former commander of the 9th Division, took General Cook's place in command of XII Corps and was given the mission of driving to the Yonne River at Sens, seventy miles east of Orléans.",
+        "Paragraph_118": "After attaching the 137th Infantry, 35th Division, to the 4th Armored Division, General Eddy on 20 August ordered General Wood to attack. CCA (with a battalion of attached infantry) pushed off in a drive that gathered speed as it progressed. Though the tankers found Montargis defended and the bridge over the Loing River at the town destroyed, reconnaissance troops located a damaged but usable bridge at Souppes-sur-Loing, fifteen miles north of Montargis. Ignoring Montargis, CCA dashed to Souppes-sur-Loing on 21 August, crossed the river, and, against occasional small arms fire, raced to Sens. Spearheads entered the city that afternoon and took the German garrison so by surprise that some officers were strolling in the streets in dress uniform--tourists who had missed the last truck home. Having captured the city, CCA established a bridgehead on the east bank of the Yonne by the morning of 22 August."
+      },
+      "Footnote_References": [71],
+      "Place_Name": ["Sens", "Orléans", "Montargis", "Souppes-sur-Loing", "Yonne River"],
+      "Dates": {
+        "Date_group_of_event": "20 Aug 1944 - 22 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "20 Aug 1944 - 22 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "XII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": {
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "XII Corps",
+            "Name": "Manton S. Eddy",
+            "Rank": "Major General",
+            "Date": "APPROX 21 Aug 1944",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy"
+          },
+          {
+            "Unit": "4th Armored Division",
+            "Name": "John S. Wood",
+            "Rank": "Major General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/John_S._Wood"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_Prisoner_of_War": 0, "Axis_DE_Unspecified_Casualties": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Sens, France",
+          "Place_GPS_coordinate": "48.2000 N, 3.2833 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Sens, France",
+          "Place_GPS_coordinate": "48.2000 N, 3.2833 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 1.2833, "East": 5.2833, "South": 47.2000, "North": 49.2000}
+        }
+      ]
+    },
+    {
+      "Event": "Advance Through the Paris-Orléans Gap",
+      "Sub-event": "Reduction of Montargis and Eastward Sweep (22–24 August)",
+      "Sub-event_summary": "35th Division advances to western outskirts of Montargis while CCB of 4th Armored crosses Loing at Souppes and outflanks defenses. Coordinated attack crushes resistance; Montargis liberated on 24 August. Armor and infantry then sweep area eastward to Sens.",
+      "Sub-event_fulltext": {
+        "Paragraph_119": "To eliminate those Germans concentrated at Montargis, the 35th Division pushed to the western outskirts of the city while CCB of the 4th Armored, which had also crossed the Loing River at Souppes, turned south to outflank the defenses. A co-ordinated attack crushed the resistance and liberated the town on 24 August. After clearing Montargis, armor and infantry proceeded to sweep the area eastward to Sens."
+      },
+      "Footnote_References": [],
+      "Place_Name": ["Montargis", "Sens"],
+      "Dates": {
+        "Date_group_of_event": "22 Aug 1944 - 24 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "22 Aug 1944 - 24 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "35th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XII Corps",
+          "Commander": {
+            "Name": "Manton S. Eddy",
+            "Rank": "Major General"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_Unspecified_Casualties": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Montargis, France",
+          "Place_GPS_coordinate": "48.0067 N, 2.7533 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Montargis, France",
+          "Place_GPS_coordinate": "48.0067 N, 2.7533 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.7533, "East": 4.7533, "South": 47.0067, "North": 49.0067}
+        }
+      ]
+    },
+    {
+      "Event": "Advance Through the Paris-Orléans Gap",
+      "Sub-event": "4th Armored Division Thrust to Troyes (24–25 August)",
+      "Sub-event_summary": "From Sens, CCA of 4th Armored Division drives forty miles to Troyes outskirts by morning 25 August. Bulk of command launches frontal attack in desert-spread formation across open ground. Street fighting continues through night; Americans possess greater part of city by nightfall 25 August. Column crosses Seine north of city; battle ends morning 26 August when column enters rear of garrison.",
+      "Sub-event_fulltext": {
+        "Paragraph_120": "From Sens, CCA of the 4th Armored Division drove forty miles to the outskirts of Troyes on the morning of 25 August. There the bulk of the command launched a frontal attack in desert-spread formation. With tanks approximately a hundred yards apart and tankers firing their weapons continuously, the troops charged across three miles of open ground sloping down toward the city. Inside Troyes, the Germans fought back. Though street fighting continued through the night, the Americans were in possession of the greater part of the city by nightfall. That evening a column crossed the Seine a few miles north of the city. Not until the following morning, when this column drove into the rear of the German garrison, did the battle come to an end."
+      },
+      "Footnote_References": [72],
+      "Place_Name": ["Sens", "Troyes", "Seine River"],
+      "Dates": {
+        "Date_group_of_event": "24 Aug 1944 - 26 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "24 Aug 1944 - 26 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Subordinates": [
+          {
+            "Unit": "4th Armored Division",
+            "Name": "John S. Wood",
+            "Rank": "Major General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/John_S._Wood"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_Unspecified_Casualties": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Troyes, France",
+          "Place_GPS_coordinate": "48.2973 N, 4.0741 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Troyes, France",
+          "Place_GPS_coordinate": "48.2973 N, 4.0741 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 2.0741, "East": 6.0741, "South": 47.2973, "North": 49.2973}
+        }
+      ]
+    },
+    {
+      "Event": "Advance Through the Paris-Orléans Gap",
+      "Sub-event": "35th Division Protection of Corps Right Flank and Flank Security Measures",
+      "Sub-event_summary": "35th Division advances through Joigny to St. Florentin, protecting XII Corps right flank east of Orléans. Armor and infantry cooperate smoothly with light casualties and numerous prisoners. Eddy relieved of Loire guarding west of Orléans (assigned to VIII Corps); east of Orléans, 35th Division elements, CCR of 4th Armored, and cavalry patrol line Orléans-Gien-Joigny until relieved by 319th Infantry (80th Division) from Angers.",
+      "Sub-event_fulltext": {
+        "Paragraph_121": "Meanwhile, the 35th Division pushed through Joigny to St. Florentin, thereby protecting the corps right flank east of Orléans.",
+        "Paragraph_122": "Armor and infantry had worked together smoothly. Crossing their columns west of Montargis, the divisions had performed a difficult maneuver efficiently. Casualties were extremely light, prisoners numerous.",
+        "Paragraph_123": "While advancing to the Seine, Eddy had also protected the army group south flank. Patton had relieved him of guarding the Loire River west of Orléans by assigning that task to the VIII Corps. East of Orléans, part of the 35th Division, CCR of the 4th Armored, and cavalry troops patrolled a line from Orléans through Gien to Joigny until the 319th Infantry of the 80th Division moved from Angers to relieve them.",
+        "Paragraph_124": "The other regiments of the 80th Division (attached to the XII Corps) marched from Argentan to assemble near Orléans."
+      },
+      "Footnote_References": [73],
+      "Place_Name": ["Joigny", "St. Florentin", "Orléans", "Gien", "Angers", "Argentan"],
+      "Dates": {
+        "Date_group_of_event": "21 Aug 1944 - 25 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "21 Aug 1944 - 25 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "35th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XII Corps",
+          "Commander": {
+            "Name": "Manton S. Eddy",
+            "Rank": "Major General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "35th Infantry Division",
+            "Name": "Paul W. Baade",
+            "Rank": "Major General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_W._Baade"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_Unspecified_Casualties": 0},
+        "Axis": {"Axis_DE_Prisoner_of_War": 0, "Axis_DE_Unspecified_Casualties": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Joigny, France",
+          "Place_GPS_coordinate": "47.9822 N, 3.4000 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Joigny, France",
+          "Place_GPS_coordinate": "47.9822 N, 3.4000 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 1.4000, "East": 5.4000, "South": 46.9822, "North": 48.9822}
+        }
+      ]
+    },
+    {
+      "Event": "Advance Through the Paris-Orléans Gap",
+      "Sub-event": "XX Corps Advance from Chartres to Fontainebleau and Montereau (21–24 August)",
+      "Sub-event_summary": "7th Armored Division reconnaissance patrols reach Rambouillet and Seine. 5th Division attacks from Dreux/Chartres with two regiments abreast on 21 August. 10th Infantry crosses Essonne at Malesherbes; 2d Infantry encircles Etampes. 11th Infantry (reserve) advances center, crosses Essonne. On 22 August 10th takes la Chapelle; 11th advances to Fontainebleau by 23 August noon. 10th reaches Montereau 24 August, establishes bridgehead with improvised crossing and treadway bridge.",
+      "Sub-event_fulltext": {
+        "Paragraph_125": "On the left at Dreux, General Silvester's 7th Armored Division had received the mission of driving to Melun and crossing the Seine there, ten miles north of Fontainebleau and twenty-five miles south of Paris. Straddling the Seine at the apex of a long, V-shaped bend, the town of Melun is divided by the river into three parts. The principal portion is on the right (east) bank; the modern part is on the left; the third section is on an island in the center of the river, the site of a Roman camp dating from the time of Caesar's Gallic wars. A highway bridge, still intact, joined the three parts of town.",
+        "Paragraph_126": "The problem of taking Melun was not simple since the Seine is 250 to 300 feet wide there. Twisting and turning between steep banks, it presents a serious natural obstacle. The 48th Division occupied a defensive sector fifty miles long between Montereau and Corbeil; at Melun and in possession of dominating ground along the right bank of the Seine was a reinforced infantry regiment.",
+        "Paragraph_127": "General Silvester suspected that Melun would be strongly held and doubted that the Germans would permit the bridge across the Seine there to remain intact for long. Charged still with maintaining security at Dreux and mindful of the proximity of Paris, he retained CCB at Dreux. He sent CCR on 21 August directly to Melun to seize the bridge and take the town by frontal assault if possible, to perform a holding mission if not. At the same time, he dispatched CCA in the main effort to cross the river several miles north of Melun and threaten the town from the rear.",
+        "Paragraph_128": "CCA on the left and CCR on the right gained thirty miles on 21 August despite rather difficult terrain--steep hills and narrow valleys, thick woods (including the great forest of Rambouillet), and innumerable villages that afforded the enemy excellent opportunities for roadblocks, mine fields, and ambush. On 22 August, though artillery fire near Arpajon delayed CCA, CCR reached the railway embankment on the outskirts of Melun. The bridge across the Seine was still standing and in good condition.",
+        "Paragraph_129": "Hoping to take the enemy by surprise, General Silvester ordered CCR to attack at once without an artillery preparation. When the combat command did so, German artillery, automatic weapons, and small arms fire soon halted the attack. Another assault the same evening, this time after an air attack and a twenty-minute preparation by three battalions of artillery, was also unsuccessful. The troops then took defiladed positions and prepared to make a third attack on the following day.",
+        "Paragraph_130": "Before the combat command could attack on the morning of 23 August, the Germans destroyed the bridge. Recognizing that CCR, which lacked assault boats, could then perform only a diversionary and holding action at Melun, General Silvester canceled the attack the combat command had scheduled, then turned his attention to CCA, held up near Arpajon.",
+        "Paragraph_131": "Prodded forward on 23 August, CCA late that afternoon reached the Seine near the village of Ponthierry, about seven miles downstream from Melun. Since the bridge at Ponthierry was destroyed, armored infantrymen crossed the river in assault boats several hundred yards to the north at the hamlet of Tilly and established a slender bridgehead that evening. Division engineers worked through the night to bridge the river.",
+        "Paragraph_132": "Meanwhile, the corps commander, General Walker, had appeared at the CCR command post near Melun late on the morning of 23 August. Dissatisfied with what he considered the idleness of CCR, he ordered an immediate attack. That afternoon armored infantrymen of CCR advanced to the river. Enough of the bridge structure remained to give foot soldiers passage to the island in the middle of the stream. While Walker virtually took control of the local operation, an infantry company scrambled across the wreckage of the bridge and secured the island.",
+        "Paragraph_133": "The only result of this success was the liberation from a prison on the island of several hundred French felons who fled to the west bank, where civil affairs personnel, military police, and civilian authorities took them into custody. Heavy fire from the east bank of the Seine inflicted numerous casualties on CCR units. The action appeared stalemated.",
+        "Paragraph_134": "Downstream at Tilly, however, engineers completed a treadway bridge on the morning of 24 August, and tankers and artillerymen of CCA crossed at once to reinforce the bridgehead and establish blocking positions to the north and east.",
+        "Paragraph_135": "Immediately behind came CCB, relieved of its duty at Dreux. Across the river and on the east bank, CCB turned south and drove toward Melun. Hasty mine fields and small roadblocks slowed the advance, but early on 25 August armored columns of CCB entered Melun from the northeast and dispersed the defenders.",
+        "Paragraph_136": "As the result of the action by the XII and XX Corps between 20 and 25 August, the Third Army had four bridgeheads across the upper Seine River south of Paris between Melun and Troyes. North of Paris along the lower Seine, the First Army had another bridgehead at Mantes-Gassicourt. And on 25 August, in the most dramatic act of liberation to take place in France, the Allies were securing still another bridgehead across the Seine at Paris."
+      },
+      "Footnote_References": [74, 75, 76, 77, 78],
+      "Place_Name": ["Dreux", "Chartres", "Melun", "Fontainebleau", "Montereau", "Malesherbes", "Etampes", "Essonne River", "Loing River", "Nemours", "Yonne River"],
+      "Dates": {
+        "Date_group_of_event": "21 Aug 1944 - 25 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "21 Aug 1944 - 25 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "5th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XX Corps",
+          "Commander": {
+            "Name": "Walton H. Walker",
+            "Rank": "Major General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "5th Infantry Division",
+            "Name": "S. LeRoy Irwin",
+            "Rank": "Major General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/S._LeRoy_Irwin"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_Unspecified_Casualties": 0},
+        "Axis": {"Axis_DE_Unspecified_Casualties": 0}
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p585.jpg",
+          "Description": "Ferrying Jeeps Across the Seine in the Early Morning Fog",
+          "License": "Public domain (US Government publication)"
+        },
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p587.jpg",
+          "Description": "Advancing Under Fire Toward Fontainebleau",
+          "License": "Public domain (US Government publication)"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Fontainebleau, France",
+          "Place_GPS_coordinate": "48.4049 N, 2.7016 E"
+        },
+        {
+          "Place_Name": "Melun, France",
+          "Place_GPS_coordinate": "48.5394 N, 2.6606 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Fontainebleau, France",
+          "Place_GPS_coordinate": "48.4049 N, 2.7016 E",
+          "Weather_text": "Not specified in source.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.7016, "East": 4.7016, "South": 47.4049, "North": 49.4049}
+        },
+        {
+          "Place_Name": "Melun, France",
+          "Place_GPS_coordinate": "48.5394 N, 2.6606 E",
+          "Weather_text": "Not specified in source.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.6606, "East": 4.6606, "South": 47.5394, "North": 49.5394}
+        }
+      ]
+    }
+  ],
+  "Footnotes": {
+    "Footnote": [
+      {
+        "Footnote": "69",
+        "Footnote_Number": 69,
+        "Footnote_Text": "TUSA AAR, I, 32.",
+        "Footnote_Referenced_Source": "Third Army After Action Report, Volume I, page 32",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "70",
+        "Footnote_Number": 70,
+        "Footnote_Text": "MS # B-034 (Schramm).",
+        "Footnote_Referenced_Source": "German Manuscript B-034 (Schramm)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "71",
+        "Footnote_Number": 71,
+        "Footnote_Text": "XII Corps AAR, Aug.",
+        "Footnote_Referenced_Source": "XII Corps After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "72",
+        "Footnote_Number": 72,
+        "Footnote_Text": "4th Armd Div AAR, Aug.",
+        "Footnote_Referenced_Source": "4th Armored Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "73",
+        "Footnote_Number": 73,
+        "Footnote_Text": "XII Corps AAR, Aug.",
+        "Footnote_Referenced_Source": "XII Corps After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "74",
+        "Footnote_Number": 74,
+        "Footnote_Text": "XX Corps AAR, Aug.",
+        "Footnote_Referenced_Source": "XX Corps After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "75a",
+        "Footnote_Number": 75,
+        "Footnote_Text": "5th Div AAR, Aug.",
+        "Footnote_Referenced_Source": "5th Infantry Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "75b",
+        "Footnote_Number": 75,
+        "Footnote_Text": "See also Fifth Infantry Division in the ETO, no pagination.",
+        "Footnote_Referenced_Source": "The Fifth Infantry Division in the ETO (Atlanta, 1945), no pagination",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "76",
+        "Footnote_Number": 76,
+        "Footnote_Text": "5th Div AAR, Aug.",
+        "Footnote_Referenced_Source": "5th Infantry Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "77",
+        "Footnote_Number": 77,
+        "Footnote_Text": "7th Armd Div AAR, Aug.",
+        "Footnote_Referenced_Source": "7th Armored Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "78",
+        "Footnote_Number": 78,
+        "Footnote_Text": "7th Armd Div AAR, Aug.",
+        "Footnote_Referenced_Source": "7th Armored Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      }
+    ]
+  },
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn28.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-29",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+  "Source_Link_Capture_Date": "2025-12-29"
+}

@@ -1,0 +1,1424 @@
+{
+  "Events": [
+    {
+      "Event": "The Reduction of Dinard",
+      "Sub-event": "Initial Attack by 121st Infantry",
+      "Sub-event_summary": "On 7 August, the 121st Infantry crossed the Rance to destroy the Dinard garrison, dispatched a force to Dinan for surrender, and advanced north under heavy fire.",
+      "Sub-event_fulltext": {
+        "Paragraph_52": "Though ground forces alone could only shell the Ile de Cézembre with artillery,",
+        "Paragraph_53": "Dinard was approachable by land. On 7 August, while the 83d Division was launching its attack on St. Malo, the 121st Infantry (Col. John R. Jeter) had crossed the Rance to destroy the Dinard garrison. Colonel Jeter dispatched a small force to take the surrender of the enemy force at Dinan, which had promised the FFI to capitulate to the Americans. Turning north from Dinan, the main body of the 121st Infantry soon came under heavy artillery fire."
+      },
+      "Footnote_References": [
+        37
+      ],
+      "Place_Name": "Dinard",
+      "Dates": {
+        "Date_group_of_event": "7 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "070000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "121st Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "8th Infantry Division",
+          "Commander": "John R. Jeter",
+          "Name": "John R. Jeter",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Regiment strength, approximately 3000 men",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Weather_text": "Historical weather in Dinard on 7 August 1944: Mild temperatures around 20°C, partly cloudy, typical summer conditions.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0614",
+          "East": "-1.0614",
+          "South": "47.7319",
+          "North": "49.5319"
+        }
+      }
+    },
+    {
+      "Event": "The Reduction of Dinard",
+      "Sub-event": "Discovery of Strong Defenses",
+      "Sub-event_summary": "The 121st Infantry encountered heavily barricaded roads, camouflaged strongpoints, pillboxes, fences, wire, and mine fields defended by automatic weapons.",
+      "Sub-event_fulltext": {
+        "Paragraph_54": "The 121st Infantry quickly discovered that every usable road to Dinard was barred by roadblocks of concrete, rock, felled trees, and barbed wire, each covered by camouflaged strongpoints manned by from twenty to eighty men armed with a high proportion of automatic weapons. The Germans also had constructed underground pillboxes and iron rail fences, strung double-apron barbed wire and concertina entanglements, and laid extensive mine fields. The pillboxes seemed unaffected by American artillery fire. German machine gun, small arms, mortar, and artillery fire harassed every American attempt to blast passageways through the other obstacles."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Dinard",
+      "Dates": {
+        "Date_group_of_event": "7-8 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "070000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "121st Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "8th Infantry Division",
+          "Commander": "John R. Jeter",
+          "Name": "John R. Jeter",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Weather_text": "Historical weather in Dinard on 7-8 August 1944: Mild, around 20°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0614",
+          "East": "-1.0614",
+          "South": "47.7319",
+          "North": "49.5319"
+        }
+      }
+    },
+    {
+      "Event": "The Reduction of Dinard",
+      "Sub-event": "Isolation of 3d Battalion",
+      "Sub-event_summary": "On 8 August, the 3d Battalion entered Pleurtuit, reduced pillboxes, but was isolated by German tanks and infantry re-establishing a roadblock.",
+      "Sub-event_fulltext": {
+        "Paragraph_55": "The 121st Infantry's advance was painfully slow. On the afternoon of 8 August, the 3d Battalion entered the village of Pleurtuit, less than four miles from Dinard. In the process it had reduced three pillboxes by close-in engineer and infantry action. As the troops moved into the village, several German tanks came in from the flanks and cut behind the battalion. Re-establishing a previously destroyed roadblock, German infantrymen isolated the unit."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Pleurtuit",
+      "Dates": {
+        "Date_group_of_event": "8 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "081200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "3d Battalion, 121st Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "121st Infantry Regiment",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": null,
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Battalion strength, approximately 800 men",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Pleurtuit",
+        "Place_GPS_coordinate": "48.5789, -2.0589",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pleurtuit",
+        "Place_GPS_coordinate": "48.5789, -2.0589",
+        "Weather_text": "Historical weather in Pleurtuit on 8 August 1944: Mild temperatures around 20°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0589",
+          "East": "-1.0589",
+          "South": "47.6789",
+          "North": "49.4789"
+        }
+      }
+    },
+    {
+      "Event": "The Reduction of Dinard",
+      "Sub-event": "Attempts to Relieve Isolated Battalion",
+      "Sub-event_summary": "Strong artillery, mortar, and tank destroyer fire failed to break through to the isolated battalion; several artillery planes crashed during support missions.",
+      "Sub-event_fulltext": {
+        "Paragraph_56": "Despite the support of strong artillery, mortar, and tank destroyer fire, the rest of the 121st Infantry could not break through to the battalion. Discouragement and tragedy marked the efforts. Two artillery planes, after successfully dropping blood plasma to the 3d Battalion, locked wings and crashed, their pilots and observers killed. A third plane was shot down by enemy fire. Two other planes flying observation missions in support of the isolated unit collided and crashed."
+      },
+      "Footnote_References": [
+        38
+      ],
+      "Place_Name": "Pleurtuit",
+      "Dates": {
+        "Date_group_of_event": "8-9 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "080000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "121st Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "8th Infantry Division",
+          "Commander": "John R. Jeter",
+          "Name": "John R. Jeter",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Artillery Planes",
+            "Identifier": "Unknown",
+            "Quantity": "5",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "Artillery Planes",
+            "Identifier": "Unknown",
+            "Quantity": "5",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 4,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Pleurtuit",
+        "Place_GPS_coordinate": "48.5789, -2.0589",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pleurtuit",
+        "Place_GPS_coordinate": "48.5789, -2.0589",
+        "Weather_text": "Historical weather in Pleurtuit on 8-9 August 1944: Mild, around 20°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0589",
+          "East": "-1.0589",
+          "South": "47.6789",
+          "North": "49.4789"
+        }
+      }
+    },
+    {
+      "Event": "The Reduction of Dinard",
+      "Sub-event": "Heroic Act of Pvt. Francis A. Gardner",
+      "Sub-event_summary": "On 9 August, Pvt. Francis A. Gardner charged a German tank with a bazooka, disabling it and killing the crew despite being under fire.",
+      "Sub-event_fulltext": {
+        "Paragraph_61": "The isolation of the 121st Infantry's 3d Battalion confirmed General Macon's impression that in general the regiment's performance west of the Rance had been far from brilliant, but only on 9 August, when St. Joseph's Hill fell, was General Macon able to turn full attention to the situation. When the capitulation of St. Joseph's Hill enabled the 83d Division to occupy St. Servan and Paramé, Macon decided to reorganize his forces, reshape the battle, and give priority to the reduction of Dinard."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Pleurtuit",
+      "Dates": {
+        "Date_group_of_event": "9 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "090000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Headquarters Company, 121st Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "121st Infantry Regiment",
+          "Commander": null,
+          "Name": "Francis A. Gardner",
+          "Rank": "Private",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Individual soldier",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Bazooka",
+            "Identifier": "M1",
+            "Quantity": "1",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Bazooka",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 4,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Pleurtuit",
+        "Place_GPS_coordinate": "48.5789, -2.0589",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pleurtuit",
+        "Place_GPS_coordinate": "48.5789, -2.0589",
+        "Weather_text": "Historical weather in Pleurtuit on 9 August 1944: Mild, around 20°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0589",
+          "East": "-1.0589",
+          "South": "47.6789",
+          "North": "49.4789"
+        }
+      }
+    },
+    {
+      "Event": "The Reduction of Dinard",
+      "Sub-event": "Reorganization and Priority to Dinard",
+      "Sub-event_summary": "After St. Joseph's Hill fell on 9 August, Macon reorganized forces and prioritized Dinard to stop artillery fire, prevent escape, release isolated battalion, and return 121st to parent unit.",
+      "Sub-event_fulltext": {
+        "Paragraph_57": "The isolation of the 121st Infantry's 3d Battalion confirmed General Macon's impression that in general the regiment's performance west of the Rance had been far from brilliant, but only on 9 August, when St. Joseph's Hill fell, was General Macon able to turn full attention to the situation. When the capitulation of St. Joseph's Hill enabled the 83d Division to occupy St. Servan and Paramé, Macon decided to reorganize his forces, reshape the battle, and give priority to the reduction of Dinard.",
+        "Paragraph_58": "Eliminating the Dinard garrison, a task General Macon judged to be relatively easy, would serve four purposes: it would stop part of the effective artillery fire that came from across the Rance; it would block the possibility that German troops might escape from the St. Malo fortress westward toward Brest; it would release the isolated battalion of the 121st Infantry; and it would make possible the return of the 121st to its parent organization for possible participation in a strong attack against Brest, an operation then under discussion."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Dinard",
+      "Dates": {
+        "Date_group_of_event": "9 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "090000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Robert C. Macon",
+          "Name": "Robert C. Macon",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_C._Macon",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Full division",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Weather_text": "Historical weather in Dinard on 9 August 1944: Mild, around 20°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0614",
+          "East": "-1.0614",
+          "South": "47.7319",
+          "North": "49.5319"
+        }
+      }
+    },
+    {
+      "Event": "The Reduction of Dinard",
+      "Sub-event": "Reshuffling Forces",
+      "Sub-event_summary": "Macon reshuffled organic forces, replacing 331st with 330th in Paramé, moving 331st across Rance to reinforce 121st; Macon took personal command.",
+      "Sub-event_fulltext": {
+        "Paragraph_59": "To help the 121st Infantry take Dinard, General Macon first reshuffled his organic forces by replacing the 331st Infantry in the Paramé sector with the 330th and moving the 331st across the Rance to reinforce the 121st. Finally, he took personal command of the Dinard operation."
+      },
+      "Footnote_References": [
+        39
+      ],
+      "Place_Name": "Dinard",
+      "Dates": {
+        "Date_group_of_event": "9-10 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "090000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Robert C. Macon",
+          "Name": "Robert C. Macon",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_C._Macon",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "331st Infantry Regiment",
+            "Name": "Robert York",
+            "Rank": "Colonel",
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p400.jpg",
+          "Description": "Beach at Dinard, showing underwater obstacles planted by the Germans to prevent amphibious landings.",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Weather_text": "Historical weather in Dinard on 9-10 August 1944: Mild, around 20°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0614",
+          "East": "-1.0614",
+          "South": "47.7319",
+          "North": "49.5319"
+        }
+      }
+    },
+    {
+      "Event": "The Reduction of Dinard",
+      "Sub-event": "Attack on 11 August",
+      "Sub-event_summary": "Macon launched co-ordinated attack on 11 August; progress slow, repulsed counterattack with difficulty; Macon reported stronger resistance than anticipated.",
+      "Sub-event_fulltext": {
+        "Paragraph_60": "On 11 August, when General Macon got a co-ordinated attack on Dinard under way, physical contact with the 3d Battalion, 121st Infantry, still had not been established. The advance through the strongly fortified and stubbornly defended area continued painfully slow. The climax of a discouraging day came in the evening when a counterattack was repulsed with difficulty. \"I want Monarch 6 [General Middleton] to know,\" a somewhat chastened General Macon radioed to the corps headquarters, \"thatthe resistance we are meeting south of Dinard is more determined than I anticipated.\""
+      },
+      "Footnote_References": [
+        40
+      ],
+      "Place_Name": "Dinard",
+      "Dates": {
+        "Date_group_of_event": "11 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "110000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Robert C. Macon",
+          "Name": "Robert C. Macon",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_C._Macon",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Weather_text": "Historical weather in Dinard on 11 August 1944: Mild, around 20°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0614",
+          "East": "-1.0614",
+          "South": "47.7319",
+          "North": "49.5319"
+        }
+      }
+    },
+    {
+      "Event": "The Reduction of Dinard",
+      "Sub-event": "German Defense by Colonel Bacherer",
+      "Sub-event_summary": "Colonel Bacherer commanded Kamp Gruppe from 77th Division remnants, using field expedients; rejected surrender, vowing to fight for every stone.",
+      "Sub-event_fulltext": {
+        "Paragraph_61": "The defense of Dinard was in the capable hands of Colonel Bacherer, who commanded a kampfgruppe composed in the main of remnants of the 77th Division, veterans of earlier fighting in the Cotentin. Creating their own field expedients to augment the existing fortifications of the Dinard portion of the St. Malo fortress, the men fought ably. To a surrender ultimatum from General Macon, Bacherer replied defiantly: \"Every house must become a fortress, every stone a hiding place, and for every stone we shall fight.\""
+      },
+      "Footnote_References": [
+        41
+      ],
+      "Place_Name": "Dinard",
+      "Dates": {
+        "Date_group_of_event": "August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Kampfgruppe Bacherer",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "St. Malo Fortress",
+          "Commander": "Bacherer",
+          "Name": "Bacherer",
+          "Rank": "Colonel",
+          "End_Date": "15 August 1944",
+          "End_Status": "Captured",
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [
+          {
+            "Unit": "Remnants of 77th Division",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/77th_Infantry_Division_(Wehrmacht)",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Weather_text": "Historical weather in Dinard during August 1944: Mild, around 20°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0614",
+          "East": "-1.0614",
+          "South": "47.7319",
+          "North": "49.5319"
+        }
+      }
+    },
+    {
+      "Event": "The Reduction of Dinard",
+      "Sub-event": "Breakthrough on 12 August",
+      "Sub-event_summary": "On 12 August, 331st Infantry broke through around Pleurtuit, destroyed bunkers, knocked out guns and vehicles, captured 100 prisoners, and made contact with isolated battalion.",
+      "Sub-event_fulltext": {
+        "Paragraph_62": "Despite the excellence of the German positions and the will to resist, the Germans could not indefinitely withstand the pressure of two regiments plus the increasing power of a growing number of corps artillery battalions in support. On the afternoon of 12 August, the 331st Infantry broke through the German line around Pleurtuit. After destroying five bunkers by demolition and assault, knocking out an 88-mm. gun and several vehicles, and taking more than a hundred prisoners, the regiment at last made contact with the isolated battalion of the 121st."
+      },
+      "Footnote_References": [
+        42
+      ],
+      "Place_Name": "Pleurtuit",
+      "Dates": {
+        "Date_group_of_event": "12 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "121200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "331st Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "Robert York",
+          "Name": "Robert York",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Regiment strength",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "88-mm Gun",
+            "Identifier": "88 mm KwK 36",
+            "Quantity": "1",
+            "Web_Reference": "https://en.wikipedia.org/wiki/8.8_cm_KwK_36",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 100
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Pleurtuit",
+        "Place_GPS_coordinate": "48.5789, -2.0589",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pleurtuit",
+        "Place_GPS_coordinate": "48.5789, -2.0589",
+        "Weather_text": "Historical weather in Pleurtuit on 12 August 1944: Mild, around 20°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0589",
+          "East": "-1.0589",
+          "South": "47.6789",
+          "North": "49.4789"
+        }
+      }
+    },
+    {
+      "Event": "The Reduction of Dinard",
+      "Sub-event": "Casualties of Isolated Battalion",
+      "Sub-event_summary": "The isolated battalion retained integrity through three days, with losses of 31 killed, 106 wounded, 16 missing.",
+      "Sub-event_fulltext": {
+        "Paragraph_63": "Through three days of isolation, the battalion had retained its integrity in the face of several counterattacks launched with artillery support. Surprisingly, losses were not so high as had been feared--31 killed, 106 wounded, and 16 missing. The kind of courage that had sustained the battalion was exemplified by a heroic act on 9 August, not long after the force was isolated. No sooner had an artillery shell struck the battalion command post, killing the operations and motor officers and seriously wounding the operations sergeant and a radio operator, than a German tank appeared five hundred yards away. Opening fire, the tankers killed several men. For a moment it appeared that the battalion headquarters might be annihilated. Taking matters into his own hands, Pvt. Francis A. Gardner of the Headquarters Company ran toward the tank with a bazooka. Though his first rocket missed, a 57-mm. antitank gun firing at the same time immobilized the tank by a hit on the treads. As the German crew started to abandon the disabled tank, Gardner fired a second time, striking the turret and killing the crew."
+      },
+      "Footnote_References": [
+        43
+      ],
+      "Place_Name": "Pleurtuit",
+      "Dates": {
+        "Date_group_of_event": "8-12 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "080000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "3d Battalion, 121st Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "121st Infantry Regiment",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": null,
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Battalion strength",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 31,
+          "Allied_US_WIA": 106,
+          "Allied_US_Missing": 16,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Pleurtuit",
+        "Place_GPS_coordinate": "48.5789, -2.0589",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pleurtuit",
+        "Place_GPS_coordinate": "48.5789, -2.0589",
+        "Weather_text": "Historical weather in Pleurtuit during 8-12 August 1944: Mild, around 20°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0589",
+          "East": "-1.0589",
+          "South": "47.6789",
+          "North": "49.4789"
+        }
+      }
+    },
+    {
+      "Event": "The Reduction of Dinard",
+      "Sub-event": "Distinguished Service Cross to T. Sgt. Milford W. Wilson",
+      "Sub-event_summary": "T. Sgt. Milford W. Wilson awarded DSC posthumously for boldly diverting enemy fire to cover his squad's withdrawal on 14 August 1944.",
+      "Sub-event_fulltext": {
+        "Paragraph_63": "Through three days of isolation, the battalion had retained its integrity in the face of several counterattacks launched with artillery support. Surprisingly, losses were not so high as had been feared--31 killed, 106 wounded, and 16 missing. The kind of courage that had sustained the battalion was exemplified by a heroic act on 9 August, not long after the force was isolated. No sooner had an artillery shell struck the battalion command post, killing the operations and motor officers and seriously wounding the operations sergeant and a radio operator, than a German tank appeared five hundred yards away. Opening fire, the tankers killed several men. For a moment it appeared that the battalion headquarters might be annihilated. Taking matters into his own hands, Pvt. Francis A. Gardner of the Headquarters Company ran toward the tank with a bazooka. Though his first rocket missed, a 57-mm. antitank gun firing at the same time immobilized the tank by a hit on the treads. As the German crew started to abandon the disabled tank, Gardner fired a second time, striking the turret and killing the crew."
+      },
+      "Footnote_References": [
+        42
+      ],
+      "Place_Name": "Dinard",
+      "Dates": {
+        "Date_group_of_event": "14 August 1944",
+        "Source_date_group_of_event": "https://valor.militarytimes.com/hero/22795",
+        "Zulu_date_group_of_event": "140000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "121st Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "8th Infantry Division",
+          "Commander": "Milford W. Wilson",
+          "Name": "Milford W. Wilson",
+          "Rank": "Technical Sergeant",
+          "End_Date": "14 August 1944",
+          "End_Status": "KIA",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Milford_W._Wilson",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Individual soldier",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 1,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Weather_text": "Historical weather in Dinard on 14 August 1944: Mild, around 20°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0614",
+          "East": "-1.0614",
+          "South": "47.7319",
+          "North": "49.5319"
+        }
+      }
+    },
+    {
+      "Event": "The Reduction of Dinard",
+      "Sub-event": "Distinguished Service Cross to Capt. Arthur W. Kaiser",
+      "Sub-event_summary": "Capt. Arthur W. Kaiser awarded DSC posthumously for leading his company through mine fields and barriers to assault enemy positions on 14 August 1944.",
+      "Sub-event_fulltext": {
+        "Paragraph_63": "Through three days of isolation, the battalion had retained its integrity in the face of several counterattacks launched with artillery support. Surprisingly, losses were not so high as had been feared--31 killed, 106 wounded, and 16 missing. The kind of courage that had sustained the battalion was exemplified by a heroic act on 9 August, not long after the force was isolated. No sooner had an artillery shell struck the battalion command post, killing the operations and motor officers and seriously wounding the operations sergeant and a radio operator, than a German tank appeared five hundred yards away. Opening fire, the tankers killed several men. For a moment it appeared that the battalion headquarters might be annihilated. Taking matters into his own hands, Pvt. Francis A. Gardner of the Headquarters Company ran toward the tank with a bazooka. Though his first rocket missed, a 57-mm. antitank gun firing at the same time immobilized the tank by a hit on the treads. As the German crew started to abandon the disabled tank, Gardner fired a second time, striking the turret and killing the crew."
+      },
+      "Footnote_References": [
+        42
+      ],
+      "Place_Name": "Dinard",
+      "Dates": {
+        "Date_group_of_event": "14 August 1944",
+        "Source_date_group_of_event": "https://valor.militarytimes.com/hero/22303",
+        "Zulu_date_group_of_event": "140000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Company B, 121st Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "121st Infantry Regiment",
+          "Commander": "Arthur W. Kaiser",
+          "Name": "Arthur W. Kaiser",
+          "Rank": "Captain",
+          "End_Date": "14 August 1944",
+          "End_Status": "KIA",
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Individual officer",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 1,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Weather_text": "Historical weather in Dinard on 14 August 1944: Mild, around 20°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0614",
+          "East": "-1.0614",
+          "South": "47.7319",
+          "North": "49.5319"
+        }
+      }
+    },
+    {
+      "Event": "The Reduction of Dinard",
+      "Sub-event": "Continuation and Completion of Operation",
+      "Sub-event_summary": "On 13 August, regiments reduced pillboxes; by 14 August entered Dinard; operation completed on 15 August with clearing of Dinard, St. Lunaire, St. Briac-sur-Mer, capture of Bacherer's headquarters and 4000 prisoners.",
+      "Sub-event_fulltext": {
+        "Paragraph_64": "With Pleurtuit in hand, the two regiments continued their attack on 13 August, slowly and systematically reducing individual pillboxes. By the afternoon of 14 August both regiments had entered Dinard and its suburbs. The operation was completed on the following day with the clearing of Dinard and the nearby villages of St. Lunaire and St. Briac-sur-Mer. Bacherer's headquarters, located in a small fort equipped with running water, air conditioning, food, and facilities to withstand siege, was captured. Surrender of the Dinard garrison added almost four thousand prisoners, including Bacherer, to the Allied bag."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Dinard",
+      "Dates": {
+        "Date_group_of_event": "15 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "150000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Kampfgruppe Bacherer",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "St. Malo Fortress",
+          "Commander": "Bacherer",
+          "Name": "Bacherer",
+          "Rank": "Colonel",
+          "End_Date": "15 August 1944",
+          "End_Status": "Captured",
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 4000
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Weather_text": "Historical weather in Dinard on 15 August 1944: Mild, around 20°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0614",
+          "East": "-1.0614",
+          "South": "47.7319",
+          "North": "49.5319"
+        }
+      }
+    },
+    {
+      "Event": "The Reduction of Dinard",
+      "Sub-event": "Middleton's Remark",
+      "Sub-event_summary": "General Middleton remarked on 121st Infantry's performance; 83d chief of staff explained the slow progress and eventual break.",
+      "Sub-event_fulltext": {
+        "Paragraph_65": "When General Middleton remarked that the 121st Infantry didn't appear to have done much, the 83d Division chief of staff explained, \"It is hard to tell what they have been up against. Sometimes those things go very slow for a while then break. . . .\" The fact was that one regiment had not been enough west of the Rance but two had been able to do the job."
+      },
+      "Footnote_References": [
+        44
+      ],
+      "Place_Name": "Dinard",
+      "Dates": {
+        "Date_group_of_event": "15 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "150000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Samuel V. Krauthoff",
+          "Name": "Samuel V. Krauthoff",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Dinard",
+        "Place_GPS_coordinate": "48.6319, -2.0614",
+        "Weather_text": "Historical weather in Dinard on 15 August 1944: Mild, around 20°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0614",
+          "East": "-1.0614",
+          "South": "47.7319",
+          "North": "49.5319"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "37",
+      "Footnote_Number": "37",
+      "Footnote_Text": "The following account is largely from the 121st Inf AAR, Aug.",
+      "Footnote_Referenced_Source": "121st Infantry After Action Report, August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 121st Infantry AAR for August 1944"
+    },
+    {
+      "Footnote": "38a",
+      "Footnote_Number": "38",
+      "Footnote_Text": "VIII Corps G-2 Per Rpt 56, 2400, 10 Aug",
+      "Footnote_Referenced_Source": "VIII Corps G-2 Periodic Report 56, 2400, 10 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps G-2 report 56"
+    },
+    {
+      "Footnote": "38b",
+      "Footnote_Number": "38",
+      "Footnote_Text": "G-2 Weekly Rpt 8, 12 Aug",
+      "Footnote_Referenced_Source": "G-2 Weekly Report 8, 12 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request G-2 weekly report 8"
+    },
+    {
+      "Footnote": "38c",
+      "Footnote_Number": "38",
+      "Footnote_Text": "83d Div FO 23, 2240, 6 Aug",
+      "Footnote_Referenced_Source": "83d Division Field Order 23, 2240, 6 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division field order 23"
+    },
+    {
+      "Footnote": "39a",
+      "Footnote_Number": "39",
+      "Footnote_Text": "83d Div G-2, G-3 Jnl, entries 1110, 1440, and 1800, 9 Aug",
+      "Footnote_Referenced_Source": "83d Division G-2, G-3 Journal, entries 1110, 1440, and 1800, 9 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division journals for 9 August"
+    },
+    {
+      "Footnote": "39b",
+      "Footnote_Number": "39",
+      "Footnote_Text": "FO 24, 0200, 10 Aug",
+      "Footnote_Referenced_Source": "Field Order 24, 0200, 10 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request field order 24"
+    },
+    {
+      "Footnote": "39c",
+      "Footnote_Number": "39",
+      "Footnote_Text": "The 330th Infantry, which had detached a battalion for duty with Task Force A, took control of a battalion and an additional rifle company of the 331st; the 331st took a battalion of the 330th under its control.",
+      "Footnote_Referenced_Source": "Explanatory note on unit reshuffling",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "40",
+      "Footnote_Number": "40",
+      "Footnote_Text": "Msg, Macon to Evans, 1400, 11 Aug.",
+      "Footnote_Referenced_Source": "Message, Macon to Evans, 1400, 11 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "41",
+      "Footnote_Number": "41",
+      "Footnote_Text": "83d Div G-2 Per Rpt 40, 1600, 12 Aug.",
+      "Footnote_Referenced_Source": "83d Division G-2 Periodic Report 40, 1600, 12 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-2 report 40"
+    },
+    {
+      "Footnote": "42",
+      "Footnote_Number": "42",
+      "Footnote_Text": "Two members of the 121st Infantry, T. Sgt. Milford W. Wilson, who boldly diverted enemy fire to himself to cover his squad's withdrawal, and Capt. Arthur W. Kaiser, who led his company through mine fields, barbed wire, tank barriers, and artillery and machine gun fire to assault enemy positions with bayonet and grenade, were posthumously awarded the DSC.",
+      "Footnote_Referenced_Source": "Award mention for Wilson and Kaiser",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "43",
+      "Footnote_Number": "43",
+      "Footnote_Text": "Annex 1 to 121st Inf AAR, Aug, Summary of Action of 3d Bn 121st Inf from 7 Aug to 12 Aug 44, 4 Sep.",
+      "Footnote_Referenced_Source": "Annex 1 to 121st Infantry After Action Report, August, Summary of Action of 3d Bn 121st Inf from 7 Aug to 12 Aug 44, 4 Sep",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request annex to 121st Infantry AAR"
+    },
+    {
+      "Footnote": "44",
+      "Footnote_Number": "44",
+      "Footnote_Text": "Telecon, Gen Middleton and Col Samuel V. Krauthoff, 1440, 13 Aug.",
+      "Footnote_Referenced_Source": "Telephone conversation, General Middleton and Colonel Samuel V. Krauthoff, 1440, 13 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request telephone conversation logs"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

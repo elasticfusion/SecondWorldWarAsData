@@ -1,0 +1,428 @@
+{
+  "Events": [
+    {
+      "Event": "The Attempt to Exploit",
+      "Sub-event": "German Response to the Bridgehead",
+      "Sub-event_summary": "The Germans identified a soft spot in their defenses between the Taute and Vire Rivers and planned to shift Panzer Lehr and part of the 2d SS Panzer Division to counterattack and demolish the American bridgehead.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "The comparative ease with which the bridgehead between the Taute and the Vire Rivers was established on 7 July indicated to Americans and Germans alike the existence of a soft spot in the German defenses. With only Kampfgruppe Heinz and a small part of the 17th SS Panzer Grenadier Division defending the area, the Americans were close to achieving a breakthrough. Hausser, the Seventh Army commander, shifted a mobile (bicycle) brigade of light infantry and a reconnaissance battalion westward across the Vire River out of the II Parachute Corps sector. This could be only an expedient, a stopgap measure, for obviously the troops were not strong enough, nor the defensive attitude that their commitment implied sufficient, to stop expansion of the bridgehead. What the Germans needed was a counterattack by strong forces to demolish the bridgehead and restore the positions along the canal and the river.",
+        "Paragraph_5": "Panzer Lehr, an armored division recently in defensive positions near Caen, seemed to Kluge and Rommel an obvious choice. Having just been replaced by a newly arrived infantry division, Panzer Lehr was scheduled to go into the Panzer Group West reserve and strengthen Eberbach's zone defense. The division was the only strong force available for transfer to the Seventh Army front to counterattack the American bridgehead.",
+        "Paragraph_6": "Since shifting the division across the front from the vicinity of Caen to the area west of St. Lô would take several days, the Germans had to preserve the conditions that still made a counterattack feasible. They had to find strong forces that were closer to the threatened area and available for immediate commitment. They settled on the 2d SS Panzer Division, most of which already was battling the VII and VIII Corps. Although Kluge realized that drawing part of the SS armored division away from the Seventh Army left might weaken the west flank defenses beyond repair, Rommel pointed out that the Taute and Vire situation was much more critical. American success between the two rivers had created a minor penetration that, if exploited, might well invalidate the German policy of holding fast. Kluge reluctantly agreed. He approved the plan to send part of the 2d SS Panzer Division eastward across the Taute to hold until the Panzer Lehr Division, moving westward across the Vire, could arrive to counterattack and demolish the bridgehead.",
+        "Paragraph_7": "1",
+        "Paragraph_9": "> German Bicycle Brigade",
+        "Paragraph_10": "before the enemy could act."
+      },
+      "Footnote_References": [
+        "1"
+      ],
+      "Place_Name": "Between Taute and Vire Rivers",
+      "Dates": {
+        "Date_group_of_event": "APPROX 071615ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-6.html",
+        "Zulu_date_group_of_event": "APPROX 071415ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Günther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Panzer Lehr Division",
+            "Name": "Fritz Bayerlein",
+            "Rank": "Generalleutnant",
+            "Date": "July 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "2d SS Panzer Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "July 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "Kampfgruppe Heinz",
+            "Name": "",
+            "Rank": "",
+            "Date": "July 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "17th SS Panzer Grenadier Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "July 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Adequate for counterattack",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Panzer IV",
+            "Identifier": "PzKpfw IV",
+            "Quantity": "Unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": "December 20, 2025"
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Panzer IV",
+            "Identifier": "PzKpfw IV",
+            "Quantity": "5",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": "December 20, 2025"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Between Taute and Vire Rivers",
+        "Place_GPS_coordinate": "49.2286°N 1.1367°W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://mappingtheoverlays.wordpress.com/tag/83rd-id/",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Between Taute and Vire Rivers",
+        "Place_GPS_coordinate": "49.2286°N 1.1367°W",
+        "Weather_text": "Rainy conditions, rain-soaked roads, mild temperatures typical of Normandy in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.536,
+          "East": 0.264,
+          "South": 48.328,
+          "North": 50.128
+        }
+      }
+    },
+    {
+      "Event": "The Attempt to Exploit",
+      "Sub-event": "American Commitment of 3d Armored Division",
+      "Sub-event_summary": "General Bradley attached the 3d Armored Division to XIX Corps to exploit the bridgehead, with General Corlett instructing General Watson to drive south, leading to confusion in objectives and commitment.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "The Americans, for their part, having judged the probable German course correctly, hastened to exploit their success",
+        "Paragraph_11": "2",
+        "Paragraph_12": "Hopeful that the First Army offensive was at last about to move with dispatch, but also looking to the lesser goal of shoring up the bridgehead against counterattack, General Bradley gave XIX Corps the 3d Armored Division, which had been in the army reserve.",
+        "Paragraph_13": "3",
+        "Paragraph_14": "Unwilling to dictate the details of commitment, General Bradley simply instructed General Corlett to support the 30th Division with the armored division. General Corlett had definite ideas of his own. He wanted to get the 3d Armored Division across the Vire, pass it through the 30th Division, and advance rapidly to the south to seize and hold the high ground west of St. Lô. Unfortunately, it was difficult to translate the desire into action, for General Corlett was severely ill and confined to bed at his command post for several days. He telephoned the armored division commander, Maj. Gen. Leroy H. Watson, in the late afternoon of 7 July and instructed him to cross the Vire River as soon as he could and then drive south. \"How far do you want me to go?\" General Watson asked. \"The Germans have little or nothing over there,\" the corps commander replied, \"just keep going.\"",
+        "Paragraph_15": "Thus, at the beginning of the new phase of action between the Taute and the Vire, clarity of aims was lacking. The army commander envisioned a build-up of the bridgehead forces with armor; the corps commander foresaw a limited exploitation to the ridge west of St. Lô; the armored division commander understood that he was to make an unlimited drive to the. south. The incompatibility of intent led to some confusion that was the beginning of increasing disorder.",
+        "Paragraph_16": "Although General Corlett had known for some time that the armored division might be attached to his corps, illness prevented him from personally directing its commitment. To help him with the operation, Maj. Gen. Walton H. Walker, commander of the XX Corps, which had not yet been committed to action, temporarily acted as Corlett's representative.",
+        "Paragraph_17": "General Watson was surprised by the sudden news of his impending commitment. He had not been informed beforehand of the corps objectives and plans, nor had he discussed with Generals Corlett and Hobbs such arrangements as co-ordinating artillery fires, constructing additional bridges, facilitating the entry of the division into the bridgehead, providing passage through the 30th Division, or determining routes of advance. Guessing that General Corlett intended to commit the entire armored division, which happened actually to be the case, Watson decided to send one combat command across the river first.",
+        "Paragraph_18": "General Watson's force was one of the two \"old-type\" armored divisions in the European theater. Both had been in England preparing for the invasion when a new table of organization, effective September 1943, had triangularized the armored division and reduced its size to make it less cumbersome and more maneuverable. Because reorganizing the two divisions in England might have delayed their battle readiness, they had retained their original organization. In contrast with the new and smaller armored divisions, the 3d Armored Division possessed two combat commands instead of three, 232 medium tanks instead of 168, and with its attached units numbered over 16,000 men instead of 12,000. Powerful, if somewhat unwieldy, the 3d Armored Division was subdivided into twin combat commands, each a strong force easily detached from the whole. Neither Bradley nor Corlett had specified the size of the armored force to be committed west of the Vire River on 7 July, but Watson's decision to commit one combat command as a start was normal.",
+        "Paragraph_19": "The armored division had arrived in Normandy late in June. Early plans for July had caused the division to be tentatively alerted for an attack in the VII Corps sector; but because of increasing danger that the Germans might counterattack the army left, east of the Vire River, the division remained in army reserve. Since Combat Command A (CCA) had taken part in a limited objective attack at the end of June, General Watson decided to give Combat Command B (CCB), headed by Brig. Gen. John J. Bohn, the first mission between the Taute and the Vire. In an assembly area east of the Vire River, CCB had been prepared to execute several potential plans of action, among them one based on the assumption that",
+        "Paragraph_20": "it would attack south after the 30th Division seized St. Jean-de-Daye--exactly the situation the unit was called upon to implement."
+      },
+      "Footnote_References": [
+        "2",
+        "3",
+        "4"
+      ],
+      "Place_Name": "Airel bridge",
+      "Dates": {
+        "Date_group_of_event": "071615ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-6.html",
+        "Zulu_date_group_of_event": "071415ZJUL44"
+      },
+      "TOE": {
+        "Unit": "XIX Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Omar N. Bradley",
+          "Name": "Omar N. Bradley",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "3d Armored Division",
+            "Name": "Leroy H. Watson",
+            "Rank": "Maj. Gen.",
+            "Date": "July 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Leroy_H._Watson",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "30th Infantry Division",
+            "Name": "Leland S. Hobbs",
+            "Rank": "Maj. Gen.",
+            "Date": "July 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_Hobbs",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "CCB, 3d Armored Division",
+            "Name": "John J. Bohn",
+            "Rank": "Brig. Gen.",
+            "Date": "July 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://generals.dk/general/Bohn/John_James/USA.html",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "Over 16,000 for 3d Armored Division",
+        "Equipments": {
+          "Supply": "Traffic congestion and rain affected supply",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Sherman",
+            "Identifier": "M4",
+            "Quantity": "232",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": "December 20, 2025"
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "Sherman",
+            "Identifier": "M4",
+            "Quantity": "1",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": "December 20, 2025"
+          },
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 16,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Airel",
+        "Place_GPS_coordinate": "49.214°N 1.075°W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Airel",
+        "Place_GPS_coordinate": "49.214°N 1.075°W",
+        "Weather_text": "Rain-soaked roads, intermittent enemy artillery fire, typical Normandy summer with rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.475,
+          "East": 0.325,
+          "South": 48.314,
+          "North": 50.114
+        }
+      }
+    },
+    {
+      "Event": "The Attempt to Exploit",
+      "Sub-event": "Award of DSC to Capt. George T. Stallings",
+      "Sub-event_summary": "Captain George T. Stallings of the 33d Armored Regiment received the Distinguished Service Cross for his actions between 8 and 11 July 1944.",
+      "Sub-event_fulltext": {
+        "Paragraph_footnote_31": "Capt. George T. Stallings of the 33d Armored Regiment received the DSC for his actions between 8 and 11 July."
+      },
+      "Footnote_References": [
+        "31"
+      ],
+      "Place_Name": "Hauts-Vents",
+      "Dates": {
+        "Date_group_of_event": "082400ZJUL44 to 112400ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-6.html",
+        "Zulu_date_group_of_event": "082200ZJUL44 to 112200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "33d Armored Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "3d Armored Division",
+          "Commander": "Leroy H. Watson",
+          "Name": "Leroy H. Watson",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leroy_H._Watson",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {},
+        "Civilian": {}
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hauts-Vents",
+        "Place_GPS_coordinate": "49.1678°N 1.1319°W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Hauts-Vents",
+        "Place_GPS_coordinate": "49.1678°N 1.1319°W",
+        "Weather_text": "Intermittent rain, muddy fields, typical for the period.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5319,
+          "East": 0.2681,
+          "South": 48.2678,
+          "North": 50.0678
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "Telecons, 1610, 1910, 1930, 2005, and 2020, 7 Jul, AGp B KTB; Seventh Army KTB (Draft), 7 Jul.",
+      "Footnote_Number": "1a",
+      "Footnote_Text": "Telecons, 1610, 1910, 1930, 2005, and 2020, 7 Jul, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "Telecons, 1610, 1910, 1930, 2005, and 2020, 7 Jul, AGp B KTB; Seventh Army KTB (Draft), 7 Jul.",
+      "Footnote_Number": "1b",
+      "Footnote_Text": "Seventh Army KTB (Draft), 7 Jul.",
+      "Footnote_Referenced_Source": "Seventh Army KTB (Draft)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "National Archives",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Captured German Records"
+    },
+    {
+      "Footnote": "See, for example, the 3d Armd Div CCB G-2 Daily Narrative, 7-16 Jul.",
+      "Footnote_Number": "2",
+      "Footnote_Text": "See, for example, the 3d Armd Div CCB G-2 Daily Narrative, 7-16 Jul.",
+      "Footnote_Referenced_Source": "3d Armd Div CCB G-2 Daily Narrative",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "3d Armd Div Records"
+    },
+    {
+      "Footnote": "The official records of the units involved have been supplemented by letters to OCMH from General of the Army Omar N. Bradley, 16 Mar 54; Maj Gen Charles H. Corlett (Ret.), 19 Jan 54; Maj Gen Leroy H. Watson (Ret.) (CG, 3d Armd Div), 22 Feb 54; Maj Gen Leland S. Hobbs (Ret.), 5 Mar 54; and Brig Gen John J. Bohn (Ret.) (CG, CCB, 3d Armd Div), 14 Jan 54. All in OCMH Files. Garth, St.-Lô , presents an excellent narrative of the events described below.",
+      "Footnote_Number": "3a",
+      "Footnote_Text": "letters to OCMH from General of the Army Omar N. Bradley, 16 Mar 54",
+      "Footnote_Referenced_Source": "OCMH Files",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Letters to OCMH, Bradley, 16 Mar 54"
+    },
+    {
+      "Footnote": "The official records of the units involved have been supplemented by letters to OCMH from General of the Army Omar N. Bradley, 16 Mar 54; Maj Gen Charles H. Corlett (Ret.), 19 Jan 54; Maj Gen Leroy H. Watson (Ret.) (CG, 3d Armd Div), 22 Feb 54; Maj Gen Leland S. Hobbs (Ret.), 5 Mar 54; and Brig Gen John J. Bohn (Ret.) (CG, CCB, 3d Armd Div), 14 Jan 54. All in OCMH Files. Garth, St.-Lô , presents an excellent narrative of the events described below.",
+      "Footnote_Number": "3b",
+      "Footnote_Text": "Maj Gen Charles H. Corlett (Ret.), 19 Jan 54",
+      "Footnote_Referenced_Source": "OCMH Files",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Letters to OCMH, Corlett, 19 Jan 54"
+    },
+    {
+      "Footnote": "Capt. George T. Stallings of the 33d Armored Regiment received the DSC for his actions between 8 and 11 July.",
+      "Footnote_Number": "31",
+      "Footnote_Text": "Capt. George T. Stallings of the 33d Armored Regiment received the DSC for his actions between 8 and 11 July.",
+      "Footnote_Referenced_Source": "Distinguished Service Cross Citation",
+      "Web_Link": "https://homeofheroes.com/distinguished-service-cross/world-war-ii/distinguished-service-cross/army-s/",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn6.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-6.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

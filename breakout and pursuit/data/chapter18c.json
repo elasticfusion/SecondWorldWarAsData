@@ -1,0 +1,1425 @@
+{
+  "Events": [
+    {
+      "Event": "Personalities and Concepts",
+      "Sub-event": "Planning for VIII Corps Turn into Brittany",
+      "Sub-event_summary": "It was planned to turn VIII Corps westward into Brittany upon reaching Avranches, with VIII Corps preceding other Third Army units to clear the peninsula. Bradley ordered Patton to seize Rennes and Fougeres, then turn westward to secure St. Malo, Quiberon Bay, Brest, and the rest of Brittany, alerting Communications Zone to develop the ports post-capture.",
+      "Sub-event_fulltext": {
+        "Paragraph_41": "It had long been planned to turn the VIII Corps westward into Brittany as soon as the Americans reached the base of the Cotentin at Avranches. In moving toward Rennes and St. Malo, VIII Corps was to precede other units of the Third Army, which would clear the \"whole of the Brittany Peninsula.\"[28] General Bradley thus ordered Patton to drive south from Pontaubault to seize Rennes and Fougeres, then turn westward to secure St. Malo, the Quiberon Bay area, Brest, and the remainder of Brittany, in that sequence. The Communications Zone was alerted to the task of opening and developing the ports of St. Malo, Quiberon Bay, and Brest as soon as possible after their capture.[29]"
+      },
+      "Footnote_References": [
+        28,
+        29
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "end of July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "END JUL44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844,-1.3611",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/4/41/US_advance_into_Brittany.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844,-1.3611",
+        "Weather_text": "No specific data for end of July 1944; typical summer weather in Avranches: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7111",
+          "East": "-0.0111",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    },
+    {
+      "Event": "Personalities and Concepts",
+      "Sub-event": "Original vs. Adjusted Plans for Brittany Capture",
+      "Sub-event_summary": "Original plans required diverting sizable forces including VIII, XV, VII, and XX Corps to capture Breton ports, but German disorganization allowed seizure with smaller forces.",
+      "Sub-event_fulltext": {
+        "Paragraph_42": "Before the invasion, it had been thought necessary to divert a sizable U.S. force to capture the Breton ports, and plans had been formed to deploy not",
+        "Paragraph_43": "only the VIII Corps but also the XV, and possibly even the VII and XX.[30] When German disorganization seemed so thorough, the opportunity of seizing Brittany with smaller forces became feasible."
+      },
+      "Footnote_References": [
+        30
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "pre-invasion",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "BEGINNING JUN44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "XV Corps",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "VII Corps",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "XX Corps",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "sizable force",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/4/41/US_advance_into_Brittany.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Weather_text": "No specific data for pre-invasion June 1944; typical summer weather in Brittany: mild temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.35",
+          "East": "-1.65",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "Personalities and Concepts",
+      "Sub-event": "Patton's Plan for Brittany",
+      "Sub-event_summary": "General Patton planned to drive southwest from Avranches through Rennes to Quiberon Bay to cut off Brittany, preventing German reinforcement or escape, then clear the peninsula by seizing the central plateau, liberating France, opening communications, reducing enemy to coastal pockets for easy capitulation, freeing Third Army to turn east toward Paris and the Seine.",
+      "Sub-event_fulltext": {
+        "Paragraph_44": "Specifically, General Patton planned to drive southwest from Avranches through Rennes to Quiberon Bay in order to cut the Brittany peninsula near its base and prevent the reinforcement or escape of German forces thus isolated.",
+        "Paragraph_45": "Next, he would clear Brittany by seizing the central plateau of the peninsula. In so doing, he would liberate a vast region of France, open interior lines of communication, and reduce the enemy defenses to isolated pockets along the coast. With the Germans penned into a few port cities, it would be relatively easy to force their capitulation. Once the ports were in American hands, the Third Army would be free to turn east, where the decisive battle of the European campaign would obviously be fought. Thus, Patton visualized his primary mission as clearing the peninsula, his incidental mission as securing Quiberon",
+        "Paragraph_46": "Bay and Brest first and the other ports later, his eventual mission as driving eastward toward Paris and the Seine.[31]"
+      },
+      "Footnote_References": [
+        31
+      ],
+      "Place_Name": "Rennes",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Third Army",
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General",
+            "Date": "1 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Rennes",
+        "Place_GPS_coordinate": "48.1173,-1.6778",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/4/41/US_advance_into_Brittany.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Rennes",
+        "Place_GPS_coordinate": "48.1173,-1.6778",
+        "Weather_text": "No specific data for 1 August 1944; typical summer weather in Rennes: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0278",
+          "East": "-0.3278",
+          "South": "47.2173",
+          "North": "49.0173"
+        }
+      }
+    },
+    {
+      "Event": "Personalities and Concepts",
+      "Sub-event": "Patton's Method: Armored Columns",
+      "Sub-event_summary": "Patton's method involved unleashing armored columns: 4th Armored Division through Rennes to Quiberon, 6th Armored Division to Brest, Task Force A under Brig. Gen. Herbert L. Earnest to secure the north shore railroad to Brest.",
+      "Sub-event_fulltext": {
+        "Paragraph_47": "Patton's method for securing Brittany was to unleash armored columns in the peninsula. The 4th Armored Division was to drive through Rennes to Quiberon. The 6th Armored Division was to go all the way to Brest. A third column, formed by activating a provisional unit called Task Force A under the command of Brig. Gen. Herbert L. Earnest, was to advance to Brest to secure the vital railroad that follows generally the north shore.[32]"
+      },
+      "Footnote_References": [
+        32
+      ],
+      "Place_Name": "Brest",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "4th Armored Division",
+            "Name": "John S. Wood",
+            "Rank": "Major General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/John_S._Wood",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "6th Armored Division",
+            "Name": "Robert W. Grow",
+            "Rank": "Major General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_W._Grow",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "Task Force A",
+            "Name": "Herbert L. Earnest",
+            "Rank": "Brigadier General",
+            "Date": "1 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Herbert_L._Earnest",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Armored vehicles",
+              "Identifier": "various",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/American_armor_during_World_War_II",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/M4_Sherman_tank_-_Flickr_-_Joost_J._Bakker_IJmuiden.jpg/800px-M4_Sherman_tank_-_Flickr_-_Joost_J._Bakker_IJmuiden.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brest",
+        "Place_GPS_coordinate": "48.3904,-4.4861",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://warfarehistorynetwork.com/wp-content/uploads/2021/10/Brittany-121Inf-Map-2.jpg",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brest",
+        "Place_GPS_coordinate": "48.3904,-4.4861",
+        "Weather_text": "No specific data for 1 August 1944; typical summer weather in Brest: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-5.8361",
+          "East": "-3.1361",
+          "South": "47.4904",
+          "North": "49.2904"
+        }
+      }
+    },
+    {
+      "Event": "Personalities and Concepts",
+      "Sub-event": "Importance of Railroad and Bridges",
+      "Sub-event_summary": "To make Brest valuable as a port, the double-track railway to Rennes needed to be in good condition; Task Force A was to capture key bridges before German demolition, with Patton requesting 6th Armored Division to monitor bridges, especially at Morlaix.",
+      "Sub-event_fulltext": {
+        "Paragraph_48": "If Brest was to prove of value as a port of entry, the double-track railway linking it to Rennes had to be in good condition. Since the railroad crosses several big bridges that can not be quickly or easily replaced or repaired, Task Force A was to capture the bridges before the Germans could demolish them. That Patton considered this an important mission was clear when he requested General Grow of the 6th Armored Division also to keep an eye out for the bridges along the railroad, particularly the one at Morlaix.[33]"
+      },
+      "Footnote_References": [
+        33
+      ],
+      "Place_Name": "Morlaix",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Task Force A",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "1st Tank Destroyer Brigade",
+          "Commander": "Herbert L. Earnest",
+          "Name": "Herbert L. Earnest",
+          "Rank": "Brigadier General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Herbert_L._Earnest",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "15th Cavalry Group",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "1 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "6th Tank Destroyer Group",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "1 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Morlaix",
+        "Place_GPS_coordinate": "48.5776,-3.8282",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://warfarehistorynetwork.com/wp-content/uploads/2021/10/Brittany-121Inf-Map-2.jpg",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Morlaix",
+        "Place_GPS_coordinate": "48.5776,-3.8282",
+        "Weather_text": "No specific data for 1 August 1944; typical summer weather in Morlaix: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-5.1782",
+          "East": "-2.4782",
+          "South": "47.6776",
+          "North": "49.4776"
+        }
+      }
+    },
+    {
+      "Event": "Personalities and Concepts",
+      "Sub-event": "St. Malo as Incidental Objective",
+      "Sub-event_summary": "Patton considered capturing St. Malo incidental, not assigning it as an objective, influencing Bradley to agree it could be bypassed if requiring too many forces or time.",
+      "Sub-event_fulltext": {
+        "Paragraph_49": "Unlike General Bradley, General Patton considered the capture of St. Malo incidental to the entire Brittany campaign. He did not specifically assign it as an objective to any of his forces. And he apparently influenced Bradley to the extent that Bradley agreed St. Malo could be bypassed and contained if its reduction appeared to require too many forces and too much time.[34]"
+      },
+      "Footnote_References": [
+        34
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Third Army",
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General",
+            "Date": "1 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6493,-2.0257",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://warfarehistorynetwork.com/wp-content/uploads/2021/10/Brittany-121Inf-Map-2.jpg",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6493,-2.0257",
+        "Weather_text": "No specific data for 1 August 1944; typical summer weather in St. Malo: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.3757",
+          "East": "-0.6757",
+          "South": "47.7493",
+          "North": "49.5493"
+        }
+      }
+    },
+    {
+      "Event": "Personalities and Concepts",
+      "Sub-event": "Patton's Concept of Warfare",
+      "Sub-event_summary": "Patton's concept differed from Cotentin operations, focusing on distant objectives, slashing forward to exploit armor mobility and German disorganization, granting subordinates freedom for independent judgment and daring, confident in armor's ability to disrupt and sustain in enemy territory.",
+      "Sub-event_fulltext": {
+        "Paragraph_50": "What emerged was a concept quite different from that which had governed operations in the Cotentin. Patton saw his immediate objectives far in advance of the front, for his intent was to slash forward and exploit not only the mobility and striking power of his armored divisions but also the German disorganization.[35] Prone to give his subordinates free rein, Patton expected them to exercise independent judgment and tactical daring. Confident of the ability of armor to disrupt enemy rear areas and to sustain itself deep in enemy territory, and conscious of the weak and disorganized opposition, he felt that the ultimate objectives were immediately pertinent and attainable. There seemed little point in slowly reducing Brittany by carefully planned and thoroughly supervised operations unraveled in successive phases. As a result, Patton granted his subordinates a freedom of action that permitted the division commanders to be virtually independent."
+      },
+      "Footnote_References": [
+        35
+      ],
+      "Place_Name": "Cotentin",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5000,-1.5000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/4/41/US_advance_into_Brittany.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5000,-1.5000",
+        "Weather_text": "No specific data for 1 August 1944; typical summer weather in Cotentin: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.85",
+          "East": "-0.15",
+          "South": "48.6",
+          "North": "50.4"
+        }
+      }
+    },
+    {
+      "Event": "Personalities and Concepts",
+      "Sub-event": "Creation of Patton's Household Cavalry",
+      "Sub-event_summary": "To maintain constant front-line knowledge, Patton renamed the 6th Cavalry Group the Army Information Service, transforming it into a communications unit with reconnaissance platoons reporting directly to army command post, bypassing normal channels, providing better information sometimes than corps.",
+      "Sub-event_fulltext": {
+        "Paragraph_51": "With this concept of warfare that stressed taking advantage of the breaks, General Patton required constant knowledge of front-line changes. To get it,",
+        "Paragraph_52": "he renamed the 6th Cavalry Group (Col. Edward M. Fickett) the Army Information Service and transformed it into a communications unit. A varying number of reconnaissance platoons (each usually with two officers, twenty-eight men, six armored cars, and six jeeps) formed into troops under two squadrons were to report the activities of combat units down through battalion size. The reconnaissance platoons were to funnel G-2 and G-3 information through troop headquarters to squadron and group. The latter would co-ordinate and condense the information into teletype messages and send it directly to the army advance command post. Known as Patton's \"Household Cavalry\" and required to bypass normal communications channels, the 6th Cavalry Group was to provide a means of contact between far-flung forces engaged in diverse missions and the army command post, which was sometimes to be as much as a hundred miles behind the front.[36] It thus happened on occasion that, though corps and divisions monitored the messages, the army staff was better informed on a particular situation than the corps directing the operation."
+      },
+      "Footnote_References": [
+        36
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "6th Cavalry Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "6th Cavalry Group",
+            "Name": "Edward M. Fickett",
+            "Rank": "Colonel",
+            "Date": "1 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "varying number of reconnaissance platoons, each with 2 officers, 28 men",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Armored car",
+              "Identifier": "M8 Greyhound",
+              "Quantity": "6 per platoon",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M8_Greyhound",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/M8_Greyhound_1.jpg/800px-M8_Greyhound_1.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Jeep",
+              "Identifier": "Willys MB",
+              "Quantity": "6 per platoon",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Willys_MB",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Willys_MB_Jeep.jpg/800px-Willys_MB_Jeep.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/4/41/US_advance_into_Brittany.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Weather_text": "No specific data for 1 August 1944; typical summer weather in Brittany: mild temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.35",
+          "East": "-1.65",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "Personalities and Concepts",
+      "Sub-event": "Middleton's Methodical Approach",
+      "Sub-event_summary": "General Middleton, methodical and meticulous, faced a whirlwind in Brittany, transitioning from hedgerow warfare to exploitation; his plans involved orderly advances with two columns abreast—4th Armored followed by 8th Division to Rennes, 6th Armored supported by 79th Division to Pontorson, Dol-de-Bretagne, Dinan—then to Quiberon and St. Malo, considering St. Malo his immediate task.",
+      "Sub-event_fulltext": {
+        "Paragraph_53": "In Brittany, the corps commander in immediate charge of operations, General Middleton, methodical and meticulous, found himself in a whirlwind that threatened to upset his ideas of orderly and controlled progress. The transfer of VIII Corps from First to Third Army brought changes in staff procedures, communications, and supply, but these were minor problems when compared to the exigencies that emerged in rapid succession as a result of the change from the positional hedgerow warfare in the Cotentin to wide-open exploitation in Brittany.",
+        "Paragraph_54": "General Middleton's plans for Brittany grew out of the premises that had governed the action in the Cotentin: orderly advances were to be made to specific objectives by units developing a compact fighting front. In conformance with this manner of operation, he planned to send two columns into Brittany--two armored divisions abreast, each followed by an infantry division--the same formation employed so successfully during the post-COBRA exploitation to Avranches. The 4th Armored Division, followed by the 8th Division, was to move southwest from Pontaubault and capture Rennes; the 6th Armored Division, supported by the 79th Division, was to strike westward from Pontaubault and seize in turn Pontorson, Dol-de-Bretagne, and Dinan. Once these objectives were secured, General Middleton would send his columns on to Quiberon and St. Malo, respectively. St. Malo, Middleton believed, was his \"immediate task\" in Brittany.[37]"
+      },
+      "Footnote_References": [
+        37
+      ],
+      "Place_Name": "Cotentin",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "VIII Corps",
+            "Name": "Troy H. Middleton",
+            "Rank": "Major General",
+            "Date": "1 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "4th Armored Division",
+            "Name": "John S. Wood",
+            "Rank": "Major General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/John_S._Wood",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "8th Division",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "6th Armored Division",
+            "Name": "Robert W. Grow",
+            "Rank": "Major General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_W._Grow",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "79th Division",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "changes in supply",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5000,-1.5000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/4/41/US_advance_into_Brittany.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5000,-1.5000",
+        "Weather_text": "No specific data for 1 August 1944; typical summer weather in Cotentin: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.85",
+          "East": "-0.15",
+          "South": "48.6",
+          "North": "50.4"
+        }
+      }
+    },
+    {
+      "Event": "Personalities and Concepts",
+      "Sub-event": "Division Commanders' Alignment with Patton",
+      "Sub-event_summary": "Spearhead commanders regarded themselves as Patton's school, seizing exploitation with relish; Generals Grow and Earnest planned to pass St. Malo without capturing it; Generals Wood and Grow felt affinity with Patton as tank officers, convinced they understood his expectations, their units untouched by hedgerow losses, enthusiastic and self-confident after Avranches thrust, becoming rambunctious in Brittany.",
+      "Sub-event_fulltext": {
+        "Paragraph_55": "The commanders who were to lead the spearheads into Brittany regarded themselves as belonging to the Patton school of thought. They seized upon the situation of exploitation with relish. Generals Grow and Earnest, who were to pass near St. Malo, for example, made no plans to capture the city, Earnest going so far as to tell his staff, with some exaggeration, that they would go by it without even looking at it.[38]",
+        "Paragraph_56": "to pass near St. Malo, for example, made no plans to capture the city, Earnest going so far as to tell his staff, with some exaggeration, that they would go by it without even looking at it.[38]",
+        "Paragraph_57": "Generals Wood and Grow in particular felt toward General Patton, who, like them, was a tank officer, an affinity they could not feel toward General Middleton, bred in the infantry. They were convinced they understood better what Patton expected. Their units had been relatively untouched by the depressing combat in the hedgerows and had not sustained the heavy losses that were normal in the Cotentin. Having thrust victoriously to Avranches in the last days of July, they believed they had accomplished what other units had not been able to do. Having led the U.S. forces from the breakthrough into the breakout, the division commanders and their units became infected with an enthusiasm and a self-confidence that were perfectly suited to exploitation but proved to be a headache to those who sought to retain a semblance of control. A naturally headstrong crew became rambunctious in Brittany."
+      },
+      "Footnote_References": [
+        38
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "6th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "6th Armored Division",
+            "Name": "Robert W. Grow",
+            "Rank": "Major General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_W._Grow",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "4th Armored Division",
+            "Name": "John S. Wood",
+            "Rank": "Major General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/John_S._Wood",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "Task Force A",
+            "Name": "Herbert L. Earnest",
+            "Rank": "Brigadier General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Herbert_L._Earnest",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "relatively untouched by hedgerow combat",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6493,-2.0257",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://warfarehistorynetwork.com/wp-content/uploads/2021/10/Brittany-121Inf-Map-2.jpg",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6493,-2.0257",
+        "Weather_text": "No specific data for 1 August 1944; typical summer weather in St. Malo: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.3757",
+          "East": "-0.6757",
+          "South": "47.7493",
+          "North": "49.5493"
+        }
+      }
+    },
+    {
+      "Event": "Personalities and Concepts",
+      "Sub-event": "Generals Hodges, Bradley, and Patton Discussion",
+      "Sub-event_summary": "Generals Hodges, Bradley, and Patton discussed the drive through Brittany at Bradley's headquarters on 17 August 1944.",
+      "Sub-event_fulltext": {
+        "Paragraph_43": "Generals Hodges, Bradley, and Patton discuss the drive through Brittany at General Bradley's headquarters, 17 August."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "17 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "170000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "12th Army Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "First Army",
+            "Name": "Courtney Hodges",
+            "Rank": "Lieutenant General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://grokipedia.com/page/Courtney_Hodges",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "Third Army",
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p348.jpg",
+          "Description": "Generals Hodges, Bradley, and Patton discuss the drive through Brittany at General Bradley's headquarters, 17 August.",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/4/41/US_advance_into_Brittany.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Weather_text": "No specific data for 17 August 1944; typical summer weather in Brittany: mild temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.35",
+          "East": "-1.65",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "28a",
+      "Footnote_Number": "28",
+      "Footnote_Text": "21 AGp Dirs, M-510 and M-515, 10 and 27 Jul",
+      "Footnote_Referenced_Source": "21 AGp Dirs, M-510 and M-515, 10 and 27 Jul",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "21 AGp Dirs, M-510 and M-515, 10 and 27 Jul"
+    },
+    {
+      "Footnote": "28b",
+      "Footnote_Number": "28",
+      "Footnote_Text": "Ltr, Montgomery to Bradley, Dempsey, Patton, and Crerar, M-512, 21 Jul",
+      "Footnote_Referenced_Source": "Ltr, Montgomery to Bradley, Dempsey, Patton, and Crerar, M-512, 21 Jul",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Ltr, Montgomery to Bradley, Dempsey, Patton, and Crerar, M-512, 21 Jul"
+    },
+    {
+      "Footnote": "29a",
+      "Footnote_Number": "29",
+      "Footnote_Text": "12th AGp Ltr of Instrs 1, 29 Jul",
+      "Footnote_Referenced_Source": "12th AGp Ltr of Instrs 1, 29 Jul",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "12th AGp Ltr of Instrs 1, 29 Jul"
+    },
+    {
+      "Footnote": "29b",
+      "Footnote_Number": "29",
+      "Footnote_Text": "The 12th Army Group orders are conveniently reproduced as Annex 4 of the 12th Army Group History and also in Annex 1 of the Third Army AAR",
+      "Footnote_Referenced_Source": "12th Army Group History; Third Army AAR",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "12th Army Group History; Third Army AAR"
+    },
+    {
+      "Footnote": "30a",
+      "Footnote_Number": "30",
+      "Footnote_Text": "TUSA AAR, I, 13",
+      "Footnote_Referenced_Source": "TUSA AAR, I, 13",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "TUSA AAR, I, 13"
+    },
+    {
+      "Footnote": "30b",
+      "Footnote_Number": "30",
+      "Footnote_Text": "SHAEF/17100/35/Opns, NEPTUNE, Summary of Third U.S. Army Outline Plan, 22 May, EUCOM Files, Box 3",
+      "Footnote_Referenced_Source": "SHAEF/17100/35/Opns, NEPTUNE, Summary of Third U.S. Army Outline Plan, 22 May",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "SHAEF/17100/35/Opns, NEPTUNE, Summary of Third U.S. Army Outline Plan, 22 May, EUCOM Files, Box 3"
+    },
+    {
+      "Footnote": "30c",
+      "Footnote_Number": "30",
+      "Footnote_Text": "83d Div Min of Mtg, 0900, 30 Jul, 83d Div G-2, G-3 Jnl and File",
+      "Footnote_Referenced_Source": "83d Div Min of Mtg, 0900, 30 Jul, 83d Div G-2, G-3 Jnl and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "83d Div Min of Mtg, 0900, 30 Jul, 83d Div G-2, G-3 Jnl and File"
+    },
+    {
+      "Footnote": "31a",
+      "Footnote_Number": "31",
+      "Footnote_Text": "TUSA FO 1, 4 Aug (confirming verbal orders, 1 Aug), AAR, I, 16, and Ltr, Confirmation of Verbal Orders Issued 2 Aug 44, 4 Aug",
+      "Footnote_Referenced_Source": "TUSA FO 1, 4 Aug (confirming verbal orders, 1 Aug), AAR, I, 16, and Ltr, Confirmation of Verbal Orders Issued 2 Aug 44, 4 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "TUSA FO 1, 4 Aug (confirming verbal orders, 1 Aug), AAR, I, 16, and Ltr, Confirmation of Verbal Orders Issued 2 Aug 44, 4 Aug"
+    },
+    {
+      "Footnote": "31b",
+      "Footnote_Number": "31",
+      "Footnote_Text": "TF A AAR and Jnl, Aug",
+      "Footnote_Referenced_Source": "TF A AAR and Jnl, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "TF A AAR and Jnl, Aug"
+    },
+    {
+      "Footnote": "31c",
+      "Footnote_Number": "31",
+      "Footnote_Text": "The Third Army orders are conveniently reproduced in Annex 2 of the Third Army AAR",
+      "Footnote_Referenced_Source": "Third Army AAR",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Third Army AAR"
+    },
+    {
+      "Footnote": "32",
+      "Footnote_Number": "32",
+      "Footnote_Text": "The principal components of Task Force A were the 15th Cavalry Group and the 6th Tank Destroyer Group, both supported by attached engineers and operating under the headquarters of the 1st Tank Destroyer Brigade. The brigade had been activated in 1942 as a tactical headquarters, but, upon its assignment to the Third Army in 1944, it had been transformed into the army tank destroyer staff section. On 1 August it was again given command status and attached to VIII Corps.",
+      "Footnote_Referenced_Source": "The principal components of Task Force A were the 15th Cavalry Group and the 6th Tank Destroyer Group, both supported by attached engineers and operating under the headquarters of the 1st Tank Destroyer Brigade. The brigade had been activated in 1942 as a tactical headquarters, but, upon its assignment to the Third Army in 1944, it had been transformed into the army tank destroyer staff section. On 1 August it was again given command status and attached to VIII Corps.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Task Force A composition"
+    },
+    {
+      "Footnote": "33a",
+      "Footnote_Number": "33",
+      "Footnote_Text": "1st Tank Destroyer Brigade History, 24 Nov 42-31 Dec 44",
+      "Footnote_Referenced_Source": "1st Tank Destroyer Brigade History, 24 Nov 42-31 Dec 44",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "1st Tank Destroyer Brigade History, 24 Nov 42-31 Dec 44"
+    },
+    {
+      "Footnote": "33b",
+      "Footnote_Number": "33",
+      "Footnote_Text": "VIII Corps FO 9, 1600, 1 Aug",
+      "Footnote_Referenced_Source": "VIII Corps FO 9, 1600, 1 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "VIII Corps FO 9, 1600, 1 Aug"
+    },
+    {
+      "Footnote": "33c",
+      "Footnote_Number": "33",
+      "Footnote_Text": "TUSA Ltr, Confirmation of Verbal Orders Issued 2 Aug, 4 Aug",
+      "Footnote_Referenced_Source": "TUSA Ltr, Confirmation of Verbal Orders Issued 2 Aug, 4 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "TUSA Ltr, Confirmation of Verbal Orders Issued 2 Aug, 4 Aug"
+    },
+    {
+      "Footnote": "33d",
+      "Footnote_Number": "33",
+      "Footnote_Text": "TF A FO 1, 2 Aug",
+      "Footnote_Referenced_Source": "TF A FO 1, 2 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "TF A FO 1, 2 Aug"
+    },
+    {
+      "Footnote": "33e",
+      "Footnote_Number": "33",
+      "Footnote_Text": "Interv by author with Gen Grow",
+      "Footnote_Referenced_Source": "Interv by author with Gen Grow",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Interv by author with Gen Grow"
+    },
+    {
+      "Footnote": "34",
+      "Footnote_Number": "34",
+      "Footnote_Text": "12th AGp Dir for Current Opns, 2 Aug",
+      "Footnote_Referenced_Source": "12th AGp Dir for Current Opns, 2 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "12th AGp Dir for Current Opns, 2 Aug"
+    },
+    {
+      "Footnote": "35",
+      "Footnote_Number": "35",
+      "Footnote_Text": "TUSA AAR, I, 16-18",
+      "Footnote_Referenced_Source": "TUSA AAR, I, 16-18",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "TUSA AAR, I, 16-18"
+    },
+    {
+      "Footnote": "36a",
+      "Footnote_Number": "36",
+      "Footnote_Text": "TUSA AAR, I, 5",
+      "Footnote_Referenced_Source": "TUSA AAR, I, 5",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "TUSA AAR, I, 5"
+    },
+    {
+      "Footnote": "36b",
+      "Footnote_Number": "36",
+      "Footnote_Text": "Interv with Lt Col Samuel M. Goodwin, Executive Officer, 6th Cav Gp, Hosp Intervs, IV, GL-93 (321), ML-2235",
+      "Footnote_Referenced_Source": "Interv with Lt Col Samuel M. Goodwin, Executive Officer, 6th Cav Gp, Hosp Intervs, IV, GL-93 (321), ML-2235",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Interv with Lt Col Samuel M. Goodwin, Executive Officer, 6th Cav Gp, Hosp Intervs, IV, GL-93 (321), ML-2235"
+    },
+    {
+      "Footnote": "36c",
+      "Footnote_Number": "36",
+      "Footnote_Text": "Between 1 August and 10 October, the reconnaissance platoons lost 1 officer and 57 men. Twenty-eight were casualties of enemy action, the remaining 30 victims of traffic accidents. Montgomery used a similar communications system called Phantom",
+      "Footnote_Referenced_Source": "Between 1 August and 10 October, the reconnaissance platoons lost 1 officer and 57 men. Twenty-eight were casualties of enemy action, the remaining 30 victims of traffic accidents. Montgomery used a similar communications system called Phantom",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Casualty data and Phantom note"
+    },
+    {
+      "Footnote": "37a",
+      "Footnote_Number": "37",
+      "Footnote_Text": "VIII Corps AAR, Aug, Opns Instrs, 31 Jul (confirming fragmentary verbal orders, 31 Jul), and FO 9, 1600, 1 Aug",
+      "Footnote_Referenced_Source": "VIII Corps AAR, Aug, Opns Instrs, 31 Jul (confirming fragmentary verbal orders, 31 Jul), and FO 9, 1600, 1 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "VIII Corps AAR, Aug, Opns Instrs, 31 Jul (confirming fragmentary verbal orders, 31 Jul), and FO 9, 1600, 1 Aug"
+    },
+    {
+      "Footnote": "38",
+      "Footnote_Number": "38",
+      "Footnote_Text": "TF A AAR and Jnl, Aug",
+      "Footnote_Referenced_Source": "TF A AAR and Jnl, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "TF A AAR and Jnl, Aug"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn18.html",
+  "Source_Footnote_Link_Capture_Date": "December 24, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+  "Source_Link_Capture_Date": "December 24, 2025"
+}

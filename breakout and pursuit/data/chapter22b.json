@@ -1,0 +1,1480 @@
+{
+  "Events": [
+    {
+      "Event": "OVERLORD Modified",
+      "Sub-event": "Initial Situation in Post-COBRA Period",
+      "Sub-event_summary": "During the post-COBRA exploitation, the disorganization on the German left flank contrasted with firmness elsewhere, prompting exploitation via the XV Corps' southeastern orientation. General Bradley directed movements, but progress varied between corps.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "In the midst of the fast-moving post-COBRA period, the utter disorganization of forces on the German left flank contrasted sharply with unexpected firmness in other parts of the German line. To exploit the collapse on the German left and to deal with continuing tenacity elsewhere, the Allied command seized upon the southeastern orientation of the XV Corps.",
+        "Paragraph_14": "In the post-COBRA exploitation during the last days of July, when General Bradley had directed XIX Corps to advance along an axis projected through Tessy, Vire, and Domfront to Mayenne, Bradley thought the XV Corps might advance toward the upper reaches of the Sélune River, pinch out the VII Corps at Mortain, and meet the XIX Corps at Mayenne. Unfortunately, XIX Corps had not gotten much beyond Tessy by 3 August. In contrast, XV Corps had met no \"cohesive enemy front\" in moving to the St. Hilaire-au-Harcouët-Fougères-Rennes line, and the 79th Division reported no enemy contact at all at Fougères. To exploit this contrasting situation was tempting."
+      },
+      "Footnote_References": [
+        31,
+        32
+      ],
+      "Place_Name": "Tessy-sur-Vire",
+      "Dates": {
+        "Date_group_of_event": "APPROX 310000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "APPROX 310000Zjul44"
+      },
+      "TOE": {
+        "Unit": "XIX Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Charles H. Corlett",
+          "Name": "Charles H. Corlett",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://media.defense.gov/2015/May/20/2001056411/1200/1200/0/150520-F-ZZ999-005.JPG",
+          "Description": "Map of Allied operations in Normandy and Brittany August 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Tessy-sur-Vire",
+        "Place_GPS_coordinate": "48.97381, -1.06087",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-10.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Tessy-sur-Vire",
+        "Place_GPS_coordinate": "48.97381, -1.06087",
+        "Weather_text": "Mild temperatures with occasional rain, typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.06087,
+          "East": 0.06087,
+          "South": 47.97381,
+          "North": 49.97381
+        }
+      }
+    },
+    {
+      "Event": "OVERLORD Modified",
+      "Sub-event": "Preinvasion Planning and Expectations",
+      "Sub-event_summary": "Preinvasion planners anticipated focus on Brittany unless German collapse, leading to consideration of eastward drive toward Seine ports as Germans seemed disintegrating.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "Preinvasion OVERLORD and NEPTUNE planners had expected the early Allied effort to be directed toward Brittany unless the Germans had decided to withdraw from France or were at the point of collapse, and actual operations during June and July had conformed to this concept. Since the Germans appeared on the verge of disintegration at the beginning of August, the Allies began to consider the bolder choice offered by the planners: an immediate eastward drive toward the principal Seine ports of Le Havre and Rouen."
+      },
+      "Footnote_References": [
+        33
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING aug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "BEGINNING aug44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [
+          {
+            "Unit": "",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Normandy_Breakout_Map%2C_operations_25_July_to_15_August_1944.svg/500px-Normandy_Breakout_Map%2C_operations_25_July_to_15_August_1944.svg.png",
+          "Description": "Normandy Breakout Map, operations 25 July to 15 August 1944",
+          "License": "CC BY-SA 4.0"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000, -3.0000",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000, -3.0000",
+        "Weather_text": "Mild with downpours and variable conditions, as reported in historical accounts for August 1944 in western France.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -4.0000,
+          "East": -2.0000,
+          "South": 47.0000,
+          "North": 49.0000
+        }
+      }
+    },
+    {
+      "Event": "OVERLORD Modified",
+      "Sub-event": "NEPTUNE Planners' Vision and Montgomery's Suggestions",
+      "Sub-event_summary": "Planners envisioned a wide sweep south of bocage, with Montgomery suggesting eastward maneuvers toward specific lines before and after COBRA.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "The NEPTUNE planners had visualized the Allied right in Normandy making a wide sweep south of the *bocage* country, and as early as 10 July General Montgomery had suggested a maneuver of this kind eastward toward the successive lines Laval-Mayenne and le Mans-Alençon. Several days before COBRA and again several days after COBRA, Montgomery had reiterated this concept: he wanted the First U.S. Army to wheel eastward while the Third Army was occupied with operations in Brittany."
+      },
+      "Footnote_References": [
+        34
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "100000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "100000Zjul44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "21 Army Group",
+          "Commander": "Courtney Hodges",
+          "Name": "Courtney Hodges",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Courtney_Hodges",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Allied_Invasion_Force.jpg/500px-Allied_Invasion_Force.jpg",
+          "Description": "Allied Invasion Force map related to Normandy operations",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, 0.0000",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.amc.af.mil/News/Features/Display/Article/787549/operation-neptune-the-normandy-landings/",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, 0.0000",
+        "Weather_text": "Variable weather with strong winds and rough seas in early August, improving mid-month; typical temperatures around 20°C with rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.0000,
+          "East": 1.0000,
+          "South": 48.0000,
+          "North": 50.0000
+        }
+      }
+    },
+    {
+      "Event": "OVERLORD Modified",
+      "Sub-event": "21 Army Group Planners' Considerations",
+      "Sub-event_summary": "Planners identified opportunities to seize Breton ports, destroy German Seventh Army, and cross the Seine, shifting focus to post-OVERLORD operations.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "During the latter days of July, when 21 Army Group planners considered in detail the bountiful advantages that might accrue from capture of Avranches, they were impressed by three opportunities that seemed immediately and simultaneously feasible: seize the Breton ports, destroy the German *Seventh Army* west of the Seine River, and cross the Seine before the enemy could organize the water line for defense. Thus assuming that the ground forces were about to fulfill the objectives of the OVERLORD plan, the Allies began to think seriously of post-OVERLORD operations directed toward the heart of Germany."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "APPROX 280000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "APPROX 280000Zjul44"
+      },
+      "TOE": {
+        "Unit": "21 Army Group",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Supreme Headquarters Allied Expeditionary Force",
+          "Commander": "Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "Field Marshal",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "GB",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "GB",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "",
+          "Description": "",
+          "License": ""
+        }
+      ],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.68436, -1.35686",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.68436, -1.35686",
+        "Weather_text": "Mild and variable, with periods of rain in late July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.35686,
+          "East": -0.35686,
+          "South": 47.68436,
+          "North": 49.68436
+        }
+      }
+    },
+    {
+      "Event": "OVERLORD Modified",
+      "Sub-event": "Importance of Breton Ports",
+      "Sub-event_summary": "Occupation of lodgment area implied possession of Breton ports for logistics; planners estimated small force for conquest, allowing main forces to destroy Germans west of Seine.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "Occupying the OVERLORD lodgment area had always implied possession of the Breton ports, one of the most vital strategic objectives of the OVERLORD plan, before winter weather precluded further use of the invasion beaches. Now the planners were confident that a small force, one American corps of perhaps an armored division and three infantry divisions, \"might take about a month to complete the conquest.\" The remainder of the Allied forces could turn to the other, more profitable opportunities: \"round up\" the Germans west of the Seine, drive them against the river, destroy them within the limits of the lodgment area, and, by seeking such distant objectives as Paris and Orléans, prepare to cross the Seine River.",
+        "Paragraph_19": "These speculations slighted a fundamental factor that had governed OVERLORD planning until that time: the belief that the Allies needed the Breton ports before they could move outside the confines of the lodgment area. Montgomery's planners had weighed the logistical merits of gaining Brittany against the tactical opportunities created by COBRA and by arguing for the latter presented a radically different conclusion. Until that moment the importance of the Breton ports could hardly have been exaggerated, for the very success of OVERLORD had seemed predicated on organizing Brittany as the principal American base of operations."
+      },
+      "Footnote_References": [
+        35,
+        36
+      ],
+      "Place_Name": "Breton ports",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING aug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "BEGINNING aug44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "Logistical merits weighed against tactical opportunities; ports needed for base operations.",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+          "Description": "US Army official history map of the liberation of Brittany 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000, -3.0000",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000, -3.0000",
+        "Weather_text": "Mild with downpours and variable conditions, as reported in historical accounts for August 1944 in western France.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -4.0000,
+          "East": -2.0000,
+          "South": 47.0000,
+          "North": 49.0000
+        }
+      }
+    },
+    {
+      "Event": "OVERLORD Modified",
+      "Sub-event": "Eisenhower's Changing Attitude",
+      "Sub-event_summary": "Eisenhower believed Bradley would create an open flank soon, making large forces for Brittany unnecessary, focusing instead on destroying German forces.",
+      "Sub-event_fulltext": {
+        "Paragraph_20": "General Eisenhower reflected the changing attitude toward the question of Brittany on 2 August. He believed that \"within the next two or three days\" Bradley would \"so manhandle the western flank of the enemy's forces\" that the Allies would create \"virtually an open [enemy] flank,\" and he predicted that the Allies would then be able to exercise almost complete freedom in selecting the next move. He would then \"consider it unnecessary to detach any large forces for the conquest of Brittany,\" and would instead \"devote the greater bulk of the forces to the task of completing the destruction of the German Army, at least that portion west of the Orne, and exploiting beyond that as far as [possible].\" He did not mean to write off the need for the Breton ports, but securing both objectives simultaneously, he believed, would now be practical."
+      },
+      "Footnote_References": [
+        37
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "020000Zaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "020000Zaug44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "Supreme Headquarters Allied Expeditionary Force",
+          "Commander": "Dwight D. Eisenhower",
+          "Name": "Dwight D. Eisenhower",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "",
+          "Description": "",
+          "License": ""
+        }
+      ],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000, -3.0000",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000, -3.0000",
+        "Weather_text": "Mild with downpours and variable conditions, as reported in historical accounts for August 1944 in western France.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -4.0000,
+          "East": -2.0000,
+          "South": 47.0000,
+          "North": 49.0000
+        }
+      }
+    },
+    {
+      "Event": "OVERLORD Modified",
+      "Sub-event": "Bradley's Initial and Changed Plans",
+      "Sub-event_summary": "On 2 August, Bradley followed original plan with Third Army in Brittany; by 3 August, he shifted to minimal forces in Brittany, prioritizing eastward drive.",
+      "Sub-event_fulltext": {
+        "Paragraph_21": "On the same day, 2 August, General Bradley was still thinking along the lines of the original OVERLORD plan. Patton's forces then entering Brittany were still executing the American main effort, and the entire Third Army was eventually to be committed there to secure the ports. The St. Hilaire-du-Harcouët-Fougères--Rennes line, in the process of being established by the XV Corps, was no more than a shield to prevent interference with the Third Army conquest of the Brittany peninsula.",
+        "Paragraph_22": "On the following day, 3 August, Bradley changed the entire course of the campaign by announcing that Patton was to clear Brittany with \"a minimum of forces\"; the primary American mission was to go to the forces in Normandy who were to drive eastward and expand the continental lodgment area. Brittany had become a minor prize worth the expense of only one corps. \"I have turned only one American Corps westward into Brittany,\" General Montgomery stated on the following day, \"as I feel that will be enough.\" Had logistical planners not insisted that the ports were still needed, even fewer forces might have been committed there. Several days later, when heavy resistance had been discovered at the port cities, Montgomery resisted \"considerable pressure\" to send more troops \"into the peninsula to get the ports cleaned up quickly,\" for he felt that \"the main business lies to the East.\""
+      },
+      "Footnote_References": [
+        38,
+        39,
+        40,
+        41,
+        42
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "030000Zaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "030000Zaug44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "XV Corps",
+            "Name": "Wade H. Haislip",
+            "Rank": "Major General",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Wade_H._Haislip",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "",
+          "Description": "",
+          "License": ""
+        }
+      ],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, 0.0000",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, 0.0000",
+        "Weather_text": "Variable weather with strong winds and rough seas in early August, improving mid-month; typical temperatures around 20°C with rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.0000,
+          "East": 1.0000,
+          "South": 48.0000,
+          "North": 50.0000
+        }
+      }
+    },
+    {
+      "Event": "OVERLORD Modified",
+      "Sub-event": "New Allied Strategy",
+      "Sub-event_summary": "Strategy focused on swinging right flank toward Paris, forcing Germans against Seine River for potential destruction.",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "The new broad Allied strategy that had emerged concentrated on the possibility of swinging the Allied right flank around toward Paris. The sweeping turn would force the Germans back against the lower reaches of the Seine River, where all the bridges had been destroyed by air bombardment. Pushed against the river and unable to cross with sufficient speed to escape, the Germans west of the Seine would face potential destruction."
+      },
+      "Footnote_References": [
+        43
+      ],
+      "Place_Name": "Paris",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING aug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "BEGINNING aug44"
+      },
+      "TOE": {
+        "Unit": "German Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": "August 1944",
+          "End_Status": "Relieved",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "",
+          "Description": "",
+          "License": ""
+        }
+      ],
+      "Place": {
+        "Place_Name": "Paris",
+        "Place_GPS_coordinate": "48.8567, 2.3522",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Paris",
+        "Place_GPS_coordinate": "48.8567, 2.3522",
+        "Weather_text": "Warm and mostly sunny in early August 1944, with average temperatures around 22°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": 1.3522,
+          "East": 3.3522,
+          "South": 47.8567,
+          "North": 49.8567
+        }
+      }
+    },
+    {
+      "Event": "OVERLORD Modified",
+      "Sub-event": "Assignment to XV Corps",
+      "Sub-event_summary": "XV Corps, oriented eastward, assigned to initiate right flank sweep; resolving direction from conflicting orders remained.",
+      "Sub-event_fulltext": {
+        "Paragraph_24": "Because the XV Corps was already around the German left and oriented generally eastward, General Haislip drew the assignment of initiating the sweep of the Allied right flank. The remaining problem was to resolve from somewhat conflicting orders the exact direction in which Haislip was to move-south, southeast, or east."
+      },
+      "Footnote_References": [
+        44
+      ],
+      "Place_Name": "German left flank",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING aug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+        "Zulu_date_group_of_event": "BEGINNING aug44"
+      },
+      "TOE": {
+        "Unit": "XV Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "Wade H. Haislip",
+          "Name": "Wade H. Haislip",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Wade_H._Haislip",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "79th Division",
+            "Name": "Ira T. Wyche",
+            "Rank": "Major General",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Ira_T._Wyche",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "",
+          "Description": "",
+          "License": ""
+        }
+      ],
+      "Place": {
+        "Place_Name": "German left flank",
+        "Place_GPS_coordinate": "48.5000, -1.0000",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "German left flank",
+        "Place_GPS_coordinate": "48.5000, -1.0000",
+        "Weather_text": "Mild temperatures with occasional rain, typical for Normandy in August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0000,
+          "East": 0.0000,
+          "South": 47.5000,
+          "North": 49.5000
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "31a",
+      "Footnote_Number": "31",
+      "Footnote_Text": "XV Corps AAR, Aug",
+      "Footnote_Referenced_Source": "XV Corps After Action Report, August 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center",
+      "NonDigital_Library_References": "After Action Report"
+    },
+    {
+      "Footnote": "31b",
+      "Footnote_Number": "31",
+      "Footnote_Text": "Warning Order, 1 Aug",
+      "Footnote_Referenced_Source": "Warning Order, 1 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center",
+      "NonDigital_Library_References": "Warning Order"
+    },
+    {
+      "Footnote": "32a",
+      "Footnote_Number": "32",
+      "Footnote_Text": "XV Corps G-2 Per Rpt 1, 2200, 3 Aug",
+      "Footnote_Referenced_Source": "XV Corps G-2 Periodic Report 1, 2200, 3 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center",
+      "NonDigital_Library_References": "G-2 Periodic Report"
+    },
+    {
+      "Footnote": "32b",
+      "Footnote_Number": "32",
+      "Footnote_Text": "79th Div G-3 Per Rpt 37, 4 Aug",
+      "Footnote_Referenced_Source": "79th Division G-3 Periodic Report 37, 4 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center",
+      "NonDigital_Library_References": "G-3 Periodic Report"
+    },
+    {
+      "Footnote": "33a",
+      "Footnote_Number": "33",
+      "Footnote_Text": "COSSAC (43) 28, Opn OVERLORD, 15 Jul 43",
+      "Footnote_Referenced_Source": "COSSAC (43) 28, Operation OVERLORD, 15 Jul 1943",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "SHAEF File GCT 370-42/Ops 'A,' Opn OVERLORD",
+      "NonDigital_Library_Address": "National Archives",
+      "NonDigital_Library_References": "SHAEF Files"
+    },
+    {
+      "Footnote": "33b",
+      "Footnote_Number": "33",
+      "Footnote_Text": "SHAEF/17100/35/Ops, NEPTUNE, Summary of Jt Opns Plan, Phase II, 25 Apr 44",
+      "Footnote_Referenced_Source": "SHAEF/17100/35/Ops, NEPTUNE, Summary of Joint Operations Plan, Phase II, 25 Apr 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "EUCOM Files, Box 3",
+      "NonDigital_Library_Address": "National Archives",
+      "NonDigital_Library_References": "EUCOM Files"
+    },
+    {
+      "Footnote": "33c",
+      "Footnote_Number": "33",
+      "Footnote_Text": "SHAEF/17100/35/Ops, NEPTUNE, Summary of Revised Jt Opns Plan--U.S. Forces for Phase II of Opn OVERLORD, 20 May 44",
+      "Footnote_Referenced_Source": "SHAEF/17100/35/Ops, NEPTUNE, Summary of Revised Joint Operations Plan--U.S. Forces for Phase II of Operation OVERLORD, 20 May 44",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "EUCOM Files, Box 3",
+      "NonDigital_Library_Address": "National Archives",
+      "NonDigital_Library_References": "EUCOM Files"
+    },
+    {
+      "Footnote": "34a",
+      "Footnote_Number": "34",
+      "Footnote_Text": "21 AGp, Dir M-510, 10 Jul",
+      "Footnote_Referenced_Source": "21 Army Group Directive M-510, 10 Jul 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center",
+      "NonDigital_Library_References": "Directive"
+    },
+    {
+      "Footnote": "34b",
+      "Footnote_Number": "34",
+      "Footnote_Text": "Ltr, M-512, Montgomery to Bradley, Dempsey, Patton, and Crerar, 21 Jul",
+      "Footnote_Referenced_Source": "Letter M-512, Montgomery to Bradley, Dempsey, Patton, and Crerar, 21 Jul 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center",
+      "NonDigital_Library_References": "Letter"
+    },
+    {
+      "Footnote": "34c",
+      "Footnote_Number": "34",
+      "Footnote_Text": "Dir, M-515, 27 Jul",
+      "Footnote_Referenced_Source": "Directive M-515, 27 Jul 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center",
+      "NonDigital_Library_References": "Directive"
+    },
+    {
+      "Footnote": "35a",
+      "Footnote_Number": "35",
+      "Footnote_Text": "SHAEF G-3 Div, Precis of 21 AGp's Appreciation and Plan (21AGP/20748/G (Plans)), dated 29 Jul, 4 Aug",
+      "Footnote_Referenced_Source": "SHAEF G-3 Division, Precis of 21 Army Group's Appreciation and Plan (21AGP/20748/G (Plans)), dated 29 Jul 1944, 4 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "SHAEF File 18008, Post-OVERLORD Plng, G-3 Plans",
+      "NonDigital_Library_Address": "National Archives",
+      "NonDigital_Library_References": "SHAEF Files"
+    },
+    {
+      "Footnote": "35b",
+      "Footnote_Number": "35",
+      "Footnote_Text": "see 21 AGp Dir, M-515, 27 Jul",
+      "Footnote_Referenced_Source": "21 Army Group Directive M-515, 27 Jul 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center",
+      "NonDigital_Library_References": "Directive"
+    },
+    {
+      "Footnote": "36",
+      "Footnote_Number": "36",
+      "Footnote_Text": "Ruppenthal, Logistical Support, I, 467",
+      "Footnote_Referenced_Source": "Ruppenthal, Logistical Support of the Armies, Volume I",
+      "Web_Link": "https://history.army.mil/html/books/007/7-2-1/index.html",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "37",
+      "Footnote_Number": "37",
+      "Footnote_Text": "Eisenhower to Marshall, S-56667, 2 Aug, Pogue Files",
+      "Footnote_Referenced_Source": "Eisenhower to Marshall, S-56667, 2 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Pogue Files",
+      "NonDigital_Library_Address": "National Archives",
+      "NonDigital_Library_References": "Pogue Files"
+    },
+    {
+      "Footnote": "38",
+      "Footnote_Number": "38",
+      "Footnote_Text": "12th AGp Dir for Current Opns, 2 Aug",
+      "Footnote_Referenced_Source": "12th Army Group Directive for Current Operations, 2 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center",
+      "NonDigital_Library_References": "Directive"
+    },
+    {
+      "Footnote": "39",
+      "Footnote_Number": "39",
+      "Footnote_Text": "12th AGp Ltr of Instrs 2, 3 Aug",
+      "Footnote_Referenced_Source": "12th Army Group Letter of Instructions 2, 3 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center",
+      "NonDigital_Library_References": "Letter of Instructions"
+    },
+    {
+      "Footnote": "40",
+      "Footnote_Number": "40",
+      "Footnote_Text": "Unnumbered Telg, Montgomery to CIGS (Brooke), 4 Aug, in Answers by British Historical Office to Questions by Pogue, Pogue Files",
+      "Footnote_Referenced_Source": "Unnumbered Telegram, Montgomery to CIGS (Brooke), 4 Aug 1944, in Answers by British Historical Office to Questions by Pogue",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Pogue Files",
+      "NonDigital_Library_Address": "National Archives",
+      "NonDigital_Library_References": "Pogue Files"
+    },
+    {
+      "Footnote": "41",
+      "Footnote_Number": "41",
+      "Footnote_Text": "Ruppenthal, Logistical Support, II, 7",
+      "Footnote_Referenced_Source": "Ruppenthal, Logistical Support of the Armies, Volume II",
+      "Web_Link": "https://history.army.mil/html/books/007/7-3-1/index.html",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "42",
+      "Footnote_Number": "42",
+      "Footnote_Text": "Telg, M-84, Montgomery to CIGS, 9 Aug, Pogue Files",
+      "Footnote_Referenced_Source": "Telegram M-84, Montgomery to CIGS, 9 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Pogue Files",
+      "NonDigital_Library_Address": "National Archives",
+      "NonDigital_Library_References": "Pogue Files"
+    },
+    {
+      "Footnote": "43",
+      "Footnote_Number": "43",
+      "Footnote_Text": "21 AGp Gen Operational Situation and Dir, M-516, 4 Aug",
+      "Footnote_Referenced_Source": "21 Army Group General Operational Situation and Directive M-516, 4 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center",
+      "NonDigital_Library_References": "Directive"
+    },
+    {
+      "Footnote": "44a",
+      "Footnote_Number": "44",
+      "Footnote_Text": "Compare the objectives enumerated in Ibid",
+      "Footnote_Referenced_Source": "Compare the objectives enumerated in Ibid",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center",
+      "NonDigital_Library_References": "Previous Directive"
+    },
+    {
+      "Footnote": "44b",
+      "Footnote_Number": "44",
+      "Footnote_Text": "12th AGp Ltr of Instrs 2, 3 Aug",
+      "Footnote_Referenced_Source": "12th Army Group Letter of Instructions 2, 3 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center",
+      "NonDigital_Library_References": "Letter of Instructions"
+    },
+    {
+      "Footnote": "44c",
+      "Footnote_Number": "44",
+      "Footnote_Text": "TUSA FO 1, 4 Aug (confirming verbal orders, 1 Aug)",
+      "Footnote_Referenced_Source": "Third U.S. Army Field Order 1, 4 Aug 1944 (confirming verbal orders, 1 Aug 1944)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center",
+      "NonDigital_Library_References": "Field Order"
+    },
+    {
+      "Footnote": "44d",
+      "Footnote_Number": "44",
+      "Footnote_Text": "Ltr, Confirmation of Verbal Orders Issued 2 Aug, 4 Aug",
+      "Footnote_Referenced_Source": "Letter, Confirmation of Verbal Orders Issued 2 Aug 1944, 4 Aug 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center",
+      "NonDigital_Library_References": "Letter"
+    },
+    {
+      "Footnote": "44e",
+      "Footnote_Number": "44",
+      "Footnote_Text": "Ltr, Dir, 5 Aug (confirming fragmentary orders issued 4 Aug)",
+      "Footnote_Referenced_Source": "Letter, Directive, 5 Aug 1944 (confirming fragmentary orders issued 4 Aug 1944)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center",
+      "NonDigital_Library_References": "Letter Directive"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

@@ -1,0 +1,1495 @@
+{
+  "Events": [
+    {
+      "Event": "Problems",
+      "Sub-event": "Control and Distance Issues",
+      "Sub-event_summary": "Control was a major problem in the Brittany campaign, exacerbated by distance; VIII Corps command post north of Avranches moved south on 4 August, but by then units were scattered; Middleton wanted to move closer but complied with Third Army's request to stay within telephone range, maintaining army-corps communications but straining below corps level.",
+      "Sub-event_fulltext": {
+        "Paragraph_58": "Control was one of the major problems of the Brittany campaign, and distance added to the problem. The VIII Corps command post was located north of Avranches, and General Middleton was able to displace forward to a point several miles south of that city only on 4 August. By then the combat components of the corps were scattered, out of sight and virtually out of hearing.",
+        "Paragraph_59": "Although Middleton wanted to move his command post into Brittany and closer to his far-flung units, the Third Army staff was most anxious for him not to displace the corps headquarters beyond the limited range of field telephones. Middleton complied. Communications between the army and the corps headquarters thus remained satisfactory, but this state of affairs was not duplicated below the corps level. Middleton complied. Communications between the army and the corps headquarters thus remained satisfactory, but this state of affairs was not duplicated below the corps level. As early as 2 August, General Middleton remarked that contact with the armored divisions was \"practically nil.\"[39]"
+      },
+      "Footnote_References": [
+        39
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "4 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "040000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "VIII Corps",
+            "Name": "Troy H. Middleton",
+            "Rank": "Major General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://grokipedia.com/page/Troy_H._Middleton",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844,-1.3611",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844,-1.3611",
+        "Weather_text": "No specific data for 4 August 1944; typical summer weather in Avranches: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7111",
+          "East": "-0.0111",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    },
+    {
+      "Event": "Problems",
+      "Sub-event": "Communications Breakdown",
+      "Sub-event_summary": "With units stretched and moving rapidly, signal communications broke down; equipment not designed for such pursuit; wire communications impossible; German planes bombed lines on 3 August night, isolating corps for eight hours.",
+      "Sub-event_fulltext": {
+        "Paragraph_60": "With the corps units stretched over a vast area and moving rapidly, signal communications broke down almost completely. \"The expensive signal equipment at the disposal of the Corps,\" General Middleton later wrote, \"was never designed apparently for a penetration and pursuit of the magnitude of the Brittany operation.\"[40] It was impossible to install or maintain wire communications over such distances. During the night of 3 August, the few corps signal lines to forward units that did exist were bombed out by German planes, as were the wires to the army headquarters. For about eight hours, while the lines were being repaired, the corps headquarters existed in a virtual vacuum, able to exercise only the most limited influence on operations.[41]"
+      },
+      "Footnote_References": [
+        40,
+        41
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "night of 3 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "032300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps Signal",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Signal equipment",
+              "Identifier": "various",
+              "Quantity": "unknown",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Weather_text": "No specific data for night of 3 August 1944; typical summer weather in Brittany: mild temperatures 15-20°C, possible rain, clear enough for German bombing.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.35",
+          "East": "-1.65",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "Problems",
+      "Sub-event": "Communications with 6th Armored Division",
+      "Sub-event_summary": "Communications strained with 6th Armored Division, which disappeared toward Brest; depended on SCR-399 radio, unsatisfactory due to jamming and faint signals; radio teletype failed due to mislocation and range limits.",
+      "Sub-event_fulltext": {
+        "Paragraph_61": "Although communications with both armored divisions were strained, they were particularly weak in the case of the 6th Armored Division, which had disappeared in a cloud of dust on the roads to Brest. Since Signal personnel were unable to lay telephone cables fast enough and far enough, the division depended to a large extent on the high-powered SCR-399 long-distance radio, which proved unsatisfactory. As many as eight different transmitters working on the assigned corps frequency were often heard at the same time. With the corps radio communications net so jammed and signals so faint because of distance, the division had to wait for radio time. Often a code group had to be repeated six to ten times to insure accurate reception.[42]",
+        "Paragraph_62": "A corps cable teletype team had been attached to the 6th Armored Division in the Cotentin, but it had been unable to keep up with the rapid advance and was replaced in Brittany by a radio teletype team using very high frequency beam antenna equipment. The new team was instructed to beam its equipment on a prominent hill near Avranches, where the corps expected to place a receiving station on 1 August. Because the enemy still was ensconced on the hill and because German planes were attacking U.S. troops and installations in the Avranches area, the corps Signal section set up its receiving station near Brehal instead. Without knowledge of the change of location, the division radio teletype team beamed on the wrong place. Had the distance between sender and receiver been shorter, the correct location would have easily been found, but beyond fifty miles the equipment was unreliable, and contact was not established for several days.[43]"
+      },
+      "Footnote_References": [
+        42,
+        43
+      ],
+      "Place_Name": "Brest",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "6th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "6th Armored Division",
+            "Name": "Robert W. Grow",
+            "Rank": "Major General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_W._Grow",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "SCR-399 radio",
+              "Identifier": "SCR-399",
+              "Quantity": "1",
+              "Web_Reference": "https://radionerds.com/index.php/SCR-399",
+              "Web_Image_Reference": "https://www.history.navy.mil/content/history/museums/nnam/explore/exhibits/permanent-exhibits/west-wing/40mm-bofors-gun.html",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Radio teletype",
+              "Identifier": "VHF beam antenna",
+              "Quantity": "1 team",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brest",
+        "Place_GPS_coordinate": "48.3904,-4.4861",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brest",
+        "Place_GPS_coordinate": "48.3904,-4.4861",
+        "Weather_text": "No specific data for 1 August 1944; typical summer weather in Brest: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-5.8361",
+          "East": "-3.1361",
+          "South": "47.4904",
+          "North": "49.2904"
+        }
+      }
+    },
+    {
+      "Event": "Problems",
+      "Sub-event": "Use of Messengers",
+      "Sub-event_summary": "With radios unreliable and wires lacking, communications relied on jeep messengers traveling long distances; hazardous due to enemy pockets; example of Capt. Hans H. Marechal's nine-hour journey with detours and warnings from civilians; an enlisted man returned with bullet and captives.",
+      "Sub-event_fulltext": {
+        "Paragraph_63": "With radio teletype nonoperational, with high-power radio erratic, and with wire and cable lacking, communications devolved upon messengers who traveled long distances by jeep. Sometimes a round trip between division and corps headquarters took the better part of a day. Messengers were excellent targets for bypassed enemy groups and individual snipers in the far-reaching no man's land between the corps and division command posts, and they had to have ingenuity, patience, and luck. An officer courier, Capt. Hans H. Marechal, who started from the VIII Corps command post for the 6th Armored Division headquarters about noon one day proceeded through Antrain and beyond Loudeac until French civilians warned him that several hundred Germans with a few tanks still held a town ahead. Detouring south to Pontivy, the captain met and joined a convoy of gasoline trucks going to the division. A destroyed bridge caused another change in route. At the town where the division command post had last been reported, Marechal learned from civilians that the division had moved on to another town. Eventually, he found a solitary military policeman who was awaiting the arrival of the division trains. The convoy halted, but Marechal continued alone in search of the division command post. Another reported pocket of enemy forced another detour, and then he was \"off the map.\" Noticing tank tracks in the road, he followed them and reached the armored division command post nine hours after he had departed the corps headquarters. Returning by the same route early the following day, Marechal discovered that Germans drifting across Brittany to find refuge in the port cities made the roads hazardous for single American vehicles. Fortunately, civilians warned him in time of hostile groups, and he regained the corps command post twenty-four hours after he had left. An enlisted man of the 6th Armored Division, who often carried messages to the corps though unable to read or write or follow a map, returned to the division on one occasion after a two-day trip--with a bullet in his back and two captured Germans on the hood of the jeep he was still driving.[44]"
+      },
+      "Footnote_References": [
+        44
+      ],
+      "Place_Name": "Antrain",
+      "Dates": {
+        "Date_group_of_event": "early August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "BEGINNING AUG44"
+      },
+      "TOE": {
+        "Unit": "6th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Jeep",
+              "Identifier": "Willys MB",
+              "Quantity": "1",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Willys_MB",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Willys_MB_Jeep.jpg/800px-Willys_MB_Jeep.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 1,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 2
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Antrain",
+        "Place_GPS_coordinate": "48.4614,-1.4842",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Antrain",
+        "Place_GPS_coordinate": "48.4614,-1.4842",
+        "Weather_text": "No specific data for early August 1944; typical summer weather in Antrain: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.8342",
+          "East": "-0.1342",
+          "South": "47.5614",
+          "North": "49.3614"
+        }
+      }
+    },
+    {
+      "Event": "Problems",
+      "Sub-event": "Message Delays and Artillery Planes",
+      "Sub-event_summary": "Hazardous journeys often futile as situations changed rapidly; artillery observation planes could have aided liaison but most out of action due to rough fields and enemy fire in Normandy, lack of landing strips in Brittany.",
+      "Sub-event_fulltext": {
+        "Paragraph_64": "The hazardous journeys to supply information between corps and divisions were often futile, since situations changed so fast that the messages were frequently out of date by the time they were delivered.[45] The division artillery observation planes might have been used for liaison and thus have provided a faster means of communications but, in the case of the 6th Armored Division at least, most of the planes were out of action. Rough landing fields in Normandy and enemy fire had accounted for most of the casualties. The absence of landing strips in Brittany--because the fast-moving division lacked time to clear landing fields--kept the corps artillery observation planes grounded.[46]"
+      },
+      "Footnote_References": [
+        45,
+        46
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "early August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "BEGINNING AUG44"
+      },
+      "TOE": {
+        "Unit": "6th Armored Division Artillery",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "6th Armored Division",
+          "Commander": "Robert W. Grow",
+          "Name": "Robert W. Grow",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_W._Grow",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Observation plane",
+              "Identifier": "various",
+              "Quantity": "most out of action",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Weather_text": "No specific data for early August 1944; typical summer weather in Brittany: mild temperatures 15-20°C, possible rain, hot and dry mentioned.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.35",
+          "East": "-1.65",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "Problems",
+      "Sub-event": "Household Cavalry Assistance",
+      "Sub-event_summary": "Patton's Household Cavalry provided additional communications with armored cars and jeeps, relaying messages despite burdens, sometimes better than normal channels.",
+      "Sub-event_fulltext": {
+        "Paragraph_65": "Patton's Household Cavalry provided an additional channel of communications. One armored car with a high-powered SCR-506 radio, as well as several armored jeeps, accompanied each armored division. The radio car possessed choice and workable frequencies, and the armored jeeps, often entrusted with situation reports, were able to shoot their way through small roadblocks. Even though the cavalrymen were burdened with their own radio traffic and could absorb only a small part of the division communications, they sometimes relayed division messages."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "early August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "BEGINNING AUG44"
+      },
+      "TOE": {
+        "Unit": "6th Cavalry Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Armored car",
+              "Identifier": "M8 Greyhound",
+              "Quantity": "1 per division",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M8_Greyhound",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/M8_Greyhound_1.jpg/800px-M8_Greyhound_1.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Armored jeep",
+              "Identifier": "Willys MB",
+              "Quantity": "several",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Willys_MB",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Willys_MB_Jeep.jpg/800px-Willys_MB_Jeep.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "SCR-506 radio",
+              "Identifier": "SCR-506",
+              "Quantity": "1",
+              "Web_Reference": "https://radionerds.com/index.php/SCR-506",
+              "Web_Image_Reference": "https://www.ebay.com/itm/197807667404",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Weather_text": "No specific data for early August 1944; typical summer weather in Brittany: mild temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.35",
+          "East": "-1.65",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "Problems",
+      "Sub-event": "Limited Control and Confusion",
+      "Sub-event_summary": "Message intervals exceeded 36 hours; by end of first week, 6th Armored 150 miles away, Middleton had little control, denying responsibility; division commanders made independent decisions as orders delayed, better informed than higher authority.",
+      "Sub-event_fulltext": {
+        "Paragraph_66": "Because of all these difficulties, the interval between the sending of a message and the receipt of its acknowledgment from the addressee usually exceeded thirty-six hours.[47] Before the end of the first week in August, the 6th Armored Division was about 150 miles west of Avranches. It was so far away from the corps that Middleton advised Patton that he had practically no control and little knowledge of the division operation, and thus virtually denied responsibility for the division activities. \"This headquarters\" he wrote, \"has made repeated attempts to establish radio contact with the 6th Armored Division without success. A special messenger was dispatched . . . but his time of arrival cannot be stated. This headquarters will continue efforts to establish radio contact. . . .\"[48]",
+        "Paragraph_67": "In the face of these difficulties, confusion and misunderstanding were inevitable. Having outrun communications in the interest of exploitation, the division commanders found it difficult to understand why their messages to corps were apparently being ignored, why they received so little assistance and guidance. Needing to react quickly to fast fast-changing situations, they could hardly wait for orders, which might be out of date by the time they arrived. As General Wood, the 4th Armored Division commander, later recalled, \"The situation at the time was . . . extremely fluid. I had to make decisions on my own responsibility, since there were no orders from higher authority. Of course, everything went 'according to plan,' but at that time no one in the higher circles had [yet] discovered just how . . . the plan [fitted] . . . the events. . . . We were moving on our own. We could not wait for directions or objectives to be passed down from higher authority.\"[49]"
+      },
+      "Footnote_References": [
+        47,
+        48,
+        49
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "end of the first week in August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "APPROX 070000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "6th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "4th Armored Division",
+            "Name": "John S. Wood",
+            "Rank": "Major General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://grokipedia.com/page/John_Shirley_Wood",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844,-1.3611",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844,-1.3611",
+        "Weather_text": "No specific data for end of first week August 1944; typical summer weather in Avranches: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7111",
+          "East": "-0.0111",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    },
+    {
+      "Event": "Problems",
+      "Sub-event": "Supply Expediency",
+      "Sub-event_summary": "Supplies secured on expediency; VIII Corps assumed logistical responsibilities; no permanent dumps as breakthrough continued; convoys like stage-coaches through enemy territory; armed escorts needed due to hostile pockets, using 40-mm antiaircraft batteries, later 54th Antiaircraft Brigade with FFI aid.",
+      "Sub-event_fulltext": {
+        "Paragraph_68": "Supplies were secured on the basis of expediency. Because of the development of the main stream of the European campaign outside Brittany, the VIII Corps was semi-independent. A tactical headquarters, it had to assume certain administrative and logistical responsibilities. Permanent supply dumps were out of the question because the breakthrough had never stopped. \"Within a couple of days [we] were passing out rations like Santa Claus on his sleigh on his sleigh, with both giver and receiver on the move. . . . The trucks were like a band of stage-coaches making a run through Indian country. We got used to keeping the wheels going, disregarding the snipers, and hoping we wouldn't get lost or hit.\"[50] Supply depots remained north of Avranches during the early part of the month, and gasoline and ammunition convoys added to traffic complications in the Avranches bottleneck. Convoys had to have armed escorts because of hostile pockets along the lines of communication in Brittany. Individual snipers in the far-reaching no man's land between the corps and division command posts, and they had to have ingenuity, patience, and luck. At first, 40-mm. antiaircraft batteries were used for escort duty. Later in the month the 54th Antiaircraft Brigade assumed the task of guarding the supply routes with the aid of members of the French Forces of the Interior (FFI)."
+      },
+      "Footnote_References": [
+        50
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "early part of the month",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "BEGINNING AUG44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "54th Antiaircraft Brigade",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "expediency, no permanent dumps",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "40-mm antiaircraft gun",
+              "Identifier": "Bofors 40 mm",
+              "Quantity": "batteries",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Bofors_40_mm_L/60_gun",
+              "Web_Image_Reference": "https://www.history.navy.mil/content/history/museums/nnam/explore/exhibits/permanent-exhibits/west-wing/40mm-bofors-gun.html",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844,-1.3611",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844,-1.3611",
+        "Weather_text": "No specific data for early August 1944; typical summer weather in Avranches: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7111",
+          "East": "-0.0111",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    },
+    {
+      "Event": "Problems",
+      "Sub-event": "FFI Activation in Brittany",
+      "Sub-event_summary": "FFI in Brittany numbered about 20,000 armed members; London planned unified command under Col. Albert M. Eon; briefed by de Guingand on operations; intensified activities planned after drops, but U.S. speed forced early action; 12th Army Group assumed command on 29 July; parachute drops on 4-5 August; contact with U.S. on 6 August, peninsula largely cleared with local Resistance aid.",
+      "Sub-event_fulltext": {
+        "Paragraph_69": "The FFI in Brittany was a sizable force numbering about 20,000 armed members.[51] During July preparations had been made in London to activate a unified command to direct this large and dispersed but potentially strong underground force. General Koenig had designated Col. Albert M. Eon as the commander of all the FFI in Brittany and had taken him to visit General Montgomery's 21 Army Group headquarters in Normandy, where the army group chief of staff, Major-General Sir Francis de Guingand, had briefed both French officers on future operations. The French leaders learned that the Americans planned to penetrate Brittany along two principal axes--Dinan-Brest, and Avranches-Rennes-Redon--and they hoped to be of assistance. The Allies had planned to promote intensified FFI activities in Brittany only after trained guerrilla leaders, arms, ammunition, and supplies had been dropped into the area. This program was to have been completed about the time U.S. troops made their appearance on the peninsula, but American exploitation was so rapid that the FFI had to begin operating before the program could be fully realized.",
+        "Paragraph_70": "General Bradley's 12th Army Group assumed command of the FFI in Brittany on 29 July and placed it under the control of the Third Army. Plans were made to parachute a small reconnaissance party into Brittany during the night of 2 August to establish a command post for Colonel Eon, but poor weather conditions forced cancellation of the drop. On 3 August the British Broadcasting Corporation radioed a coded message to the FFI in Brittany to begin general guerrilla activities short of open warfare. Because American troops had already sped beyond Dinan and Rennes by 4 August, General Koenig requested Colonel Eon to parachute into Brittany with his staff, take command of Resistance operations at once, and assume an initial mission of seizing and securing high ground north of Vannes in the Quiberon Bay area. Although some French officers, including Eon, had had no jump experience, the command group parachuted into Brittany during the night of 4 August. At the same time, 150 men were dropped in the Morlaix area to seize and preserve the railroad trestle bridges there. On the following night, ten American gliders towed by British aircraft were landed between Vannes and Lorient to bring in armored jeeps, weapons, and ammunition to support local FFI troops who were ready to take the Vannes airfield. On 6 August the FFI command made contact with a U.S. armored patrol and learned that the Americans, with the assistance of local French Resistance groups, had already cleared a large part of the peninsula.[52]"
+      },
+      "Footnote_References": [
+        51,
+        52
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "29 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "290000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "FFI Brittany",
+        "Unit_Nationality": "FR",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "FFI Brittany",
+            "Name": "Albert M. Eon",
+            "Rank": "Colonel",
+            "Date": "4 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Albert_Eon",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "20,000 armed members",
+        "Equipments": {
+          "Supply": "arms, ammunition, supplies dropped",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Armored jeep",
+              "Identifier": "Willys MB",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Willys_MB",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Willys_MB_Jeep.jpg/800px-Willys_MB_Jeep.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Weather_text": "Poor weather on 2 August forced cancellation of drop; night of 4 August clear for parachute.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.35",
+          "East": "-1.65",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "Problems",
+      "Sub-event": "Weather Conditions",
+      "Sub-event_summary": "Weather turned hot and dry in August, mechanized columns raising dust; clear skies aided Allied fighter-bombers.",
+      "Sub-event_fulltext": {
+        "Paragraph_71": "The weather had turned hot and dry in August, and mechanized columns raised clouds of grit and dust as they drove over the sun-baked earth. Sun glasses became precious possessions, goggles a necessity. Overhead, the clear weather gave perfect visibility for Allied fighter-bombers."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "BEGINNING AUG44"
+      },
+      "TOE": {
+        "Unit": "Allied fighter-bombers",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Ninth Air Force",
+          "Commander": "unknown",
+          "Name": "unknown",
+          "Rank": "unknown",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Weather_text": "Hot and dry in August 1944, mechanized columns raised dust, clear skies for fighter-bombers.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.35",
+          "East": "-1.65",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "Problems",
+      "Sub-event": "Traffic and Bottlenecks",
+      "Sub-event_summary": "Getting troops into Brittany difficult due to obstructed highways, convergence at Coutances and Avranches; engineers constructed cutoffs; Pontaubault critical funnel; priorities and compliance required; high-ranking officers acted as MPs; achieved getting two armored divisions into Brittany in under 48 hours.",
+      "Sub-event_fulltext": {
+        "Paragraph_72": "As fluid as the situation was to become in Brittany, the immediate preliminary to it was quite the opposite. Getting troops out of Normandy and into Brittany was a difficult problem. In the coastal sector of the Cotentin there were only two main highways running southward, and debris, dead animals, and wrecked vehicles, as well as mines, obstructed traffic, while destroyed villages and damaged towns blocked it. Bulldozers had had to clear lanes through rubble in some places--particularly in Avranches --before normal military traffic could pass. Convergence of the two highways at Coutances and again at Avranches posed additional difficulties. Engineers constructed a cutoff at Coutances to keep traffic moving along both routes and opened a subsidiary road from Avranches to Pontaubault. Pontaubault was the most critical traffic point of all, for through that village had to be funnelled all the vehicles moving into Brittany. Establishing traffic priorities and assuring compliance with them required perseverance and patience as well as attention to detail. Task Force A was given three hours to move its 3,500 men through the Avranches-Pontaubault bottleneck; it was to arrive in Avranches \"precisely at 0200, 3 August, not before\" and was to clear Pontaubault exactly by 0500. \"Still spending most of my time as a traffic cop,\" wrote a division commander. It was not unusual to see high ranking officers acting as military policemen at critical traffic points, but the payoff was the feat of getting two armored divisions into Brittany in less than forty-eight hours.[53]"
+      },
+      "Footnote_References": [
+        53
+      ],
+      "Place_Name": "Pontaubault",
+      "Dates": {
+        "Date_group_of_event": "3 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "030200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Task Force A",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "3,500 men",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Pontaubault",
+        "Place_GPS_coordinate": "48.6298,-1.3497",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pontaubault",
+        "Place_GPS_coordinate": "48.6298,-1.3497",
+        "Weather_text": "No specific data for 3 August 1944; typical summer weather in Pontaubault: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.6997",
+          "East": "0.0003",
+          "South": "47.7298",
+          "North": "49.5298"
+        }
+      }
+    },
+    {
+      "Event": "Problems",
+      "Sub-event": "German Air Attacks and Antiaircraft",
+      "Sub-event_summary": "German Air Force bombed bridges over Sée and Sélune, road approaches, dams; antiaircraft protection vital, gun crews shot down over 20 planes around Avranches first week August.",
+      "Sub-event_fulltext": {
+        "Paragraph_73": "Several bridges over the Sée and the Sélune Rivers, the road approaches to these crossing sites, and the dams nearby were of extreme importance. During the first few days of August the German Air Force appeared in relative strength over the Cotentin in a belated effort to block by bombardment the American entrance into Brittany. Antiaircraft protection, a matter of small importance during July, became a vital adjunct of the breakout and exploitation. Gun crews, enthusiastic that they had an opportunity at last to participate in action against the enemy, shot down more than a score of planes around Avranches during the first week of August."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "first few days of August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "BEGINNING AUG44"
+      },
+      "TOE": {
+        "Unit": "German Air Force",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Luftwaffe",
+          "Commander": "unknown",
+          "Name": "unknown",
+          "Rank": "unknown",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Planes",
+              "Identifier": "various",
+              "Quantity": "over 20",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844,-1.3611",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844,-1.3611",
+        "Weather_text": "No specific data for first few days August 1944; typical summer weather in Avranches: temperatures 15-20°C, possible rain, clear for air attacks.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7111",
+          "East": "-0.0111",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    },
+    {
+      "Event": "Problems",
+      "Sub-event": "High Expectations and Transition",
+      "Sub-event_summary": "Operations in Brittany diminished later, but initial success led to high expectations; Normandy slow, Brittany fast; Germans had little opposition; confusion from abrupt change, contrasting leaders; symbolized by Patton.",
+      "Sub-event_fulltext": {
+        "Paragraph_74": "Though operations in Brittany later diminished in importance, the prospect of success at the beginning of August led to high expectations. Normandy had been slow and painful; Brittany appeared to be fast and exhilarating. Beyond the initial physical obstructions at Avranches, one fact shone brightly: the Germans had little with which to oppose the exploitation of the breakout into Brittany.[54] Confusion of purpose and method on the American side, which was to mar the breakout, stemmed from the abruptness of the change from static to mobile warfare and from the contrasting personalities of the leaders involved. With fluidity the overriding condition, the Americans broke out of the Cotentin into the relative freedom of a war of movement in Brittany, a difference that seemed to be symbolized by the man of the hour, General Patton."
+      },
+      "Footnote_References": [
+        54
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "beginning of August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "BEGINNING AUG44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Third Army",
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Weather_text": "Hot and dry at beginning of August 1944, clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.35",
+          "East": "-1.65",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "39",
+      "Footnote_Number": "39",
+      "Footnote_Text": "Telecon, 6 Aug, VIII Corps G-3 Jnl; VIII Corps Sitrep, 2 Aug.",
+      "Footnote_Referenced_Source": "Telecon, 6 Aug, VIII Corps G-3 Jnl; VIII Corps Sitrep, 2 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, 6 Aug, VIII Corps G-3 Jnl; VIII Corps Sitrep, 2 Aug"
+    },
+    {
+      "Footnote": "40",
+      "Footnote_Number": "40",
+      "Footnote_Text": "VIII Corps AAR, Aug.",
+      "Footnote_Referenced_Source": "VIII Corps AAR, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "VIII Corps AAR, Aug"
+    },
+    {
+      "Footnote": "41",
+      "Footnote_Number": "41",
+      "Footnote_Text": "Msg, VIII Corps Sig Officer to G-3, 0040, 4 Aug; Memo, Rpt of Evenings Activities, 4 Aug. Both in VIII Corps G-3 Jnl.",
+      "Footnote_Referenced_Source": "Msg, VIII Corps Sig Officer to G-3, 0040, 4 Aug; Memo, Rpt of Evenings Activities, 4 Aug. Both in VIII Corps G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Msg, VIII Corps Sig Officer to G-3, 0040, 4 Aug; Memo, Rpt of Evenings Activities, 4 Aug. Both in VIII Corps G-3 Jnl"
+    },
+    {
+      "Footnote": "42a",
+      "Footnote_Number": "42",
+      "Footnote_Text": "Ltr, Lt Col William J. Given to Gen Grow, 12 Jan 53, OCMH Files",
+      "Footnote_Referenced_Source": "Ltr, Lt Col William J. Given to Gen Grow, 12 Jan 53, OCMH Files",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Ltr, Lt Col William J. Given to Gen Grow, 12 Jan 53, OCMH Files"
+    },
+    {
+      "Footnote": "42b",
+      "Footnote_Number": "42",
+      "Footnote_Text": "146th Armored Signal Company, The Signal Circuit (Luxembourg, 1945), p. 7",
+      "Footnote_Referenced_Source": "146th Armored Signal Company, The Signal Circuit (Luxembourg, 1945), p. 7",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "146th Armored Signal Company, The Signal Circuit (Luxembourg, 1945), p. 7"
+    },
+    {
+      "Footnote": "43",
+      "Footnote_Number": "43",
+      "Footnote_Text": "Interv with Col Claude E. Haswell, Third Army Sig Sec Executive Officer, 1st Lt Richard Stockton's Hosp Intervs, ML-2234",
+      "Footnote_Referenced_Source": "Interv with Col Claude E. Haswell, Third Army Sig Sec Executive Officer, 1st Lt Richard Stockton's Hosp Intervs, ML-2234",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Interv with Col Claude E. Haswell, Third Army Sig Sec Executive Officer, 1st Lt Richard Stockton's Hosp Intervs, ML-2234"
+    },
+    {
+      "Footnote": "44a",
+      "Footnote_Number": "44",
+      "Footnote_Text": "Capt Marechal's Notes, 6 Aug, VIII Corps G-3 Jnl",
+      "Footnote_Referenced_Source": "Capt Marechal's Notes, 6 Aug, VIII Corps G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Capt Marechal's Notes, 6 Aug, VIII Corps G-3 Jnl"
+    },
+    {
+      "Footnote": "44b",
+      "Footnote_Number": "44",
+      "Footnote_Text": "Ltr, Given to Grow, 12 Jan 53",
+      "Footnote_Referenced_Source": "Ltr, Given to Grow, 12 Jan 53",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Ltr, Given to Grow, 12 Jan 53"
+    },
+    {
+      "Footnote": "45",
+      "Footnote_Number": "45",
+      "Footnote_Text": "VIII Corps AAR, Aug.",
+      "Footnote_Referenced_Source": "VIII Corps AAR, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "VIII Corps AAR, Aug"
+    },
+    {
+      "Footnote": "46",
+      "Footnote_Number": "46",
+      "Footnote_Text": "Msg, Middleton to Grow, 1715, 4 Aug.",
+      "Footnote_Referenced_Source": "Msg, Middleton to Grow, 1715, 4 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Msg, Middleton to Grow, 1715, 4 Aug"
+    },
+    {
+      "Footnote": "47",
+      "Footnote_Number": "47",
+      "Footnote_Text": "6th Armd Div Ltr to VIII Corps, Rpts Submitted 6-7 Aug, 8 Aug, and Telephonic Msg from VIII Corps Sig Officer, 0855, 6 Aug. Both in VIII Corps G-3 Jnl.",
+      "Footnote_Referenced_Source": "6th Armd Div Ltr to VIII Corps, Rpts Submitted 6-7 Aug, 8 Aug, and Telephonic Msg from VIII Corps Sig Officer, 0855, 6 Aug. Both in VIII Corps G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "6th Armd Div Ltr to VIII Corps, Rpts Submitted 6-7 Aug, 8 Aug, and Telephonic Msg from VIII Corps Sig Officer, 0855, 6 Aug. Both in VIII Corps G-3 Jnl"
+    },
+    {
+      "Footnote": "48",
+      "Footnote_Number": "48",
+      "Footnote_Text": "Msg, Middleton to Patton, 1700, 5 Aug.",
+      "Footnote_Referenced_Source": "Msg, Middleton to Patton, 1700, 5 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Msg, Middleton to Patton, 1700, 5 Aug"
+    },
+    {
+      "Footnote": "49",
+      "Footnote_Number": "49",
+      "Footnote_Text": "Ltr, Wood to OCMH, 24 Mar 54, OCMH Files.",
+      "Footnote_Referenced_Source": "Ltr, Wood to OCMH, 24 Mar 54, OCMH Files",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Ltr, Wood to OCMH, 24 Mar 54, OCMH Files"
+    },
+    {
+      "Footnote": "50",
+      "Footnote_Number": "50",
+      "Footnote_Text": "Interv with William M. King, 44th Armd Inf Bn, 6th Armd Div, Hosp Intervs, II, ML-2235, GL-93 (104).",
+      "Footnote_Referenced_Source": "Interv with William M. King, 44th Armd Inf Bn, 6th Armd Div, Hosp Intervs, II, ML-2235, GL-93 (104)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Interv with William M. King, 44th Armd Inf Bn, 6th Armd Div, Hosp Intervs, II, ML-2235, GL-93 (104)"
+    },
+    {
+      "Footnote": "51",
+      "Footnote_Number": "51",
+      "Footnote_Text": "TUSA AAR states that the FFI membership in Brittany numbered about 30,000, but the Journal des Marches et Opérations du Commandement des F. F. I. en Bretagne (4 juillet au 10 septembre 1944) (hereafter cited as Journal des Marches) gives the figure used above. The Journal was submitted as an after action report by the commander of the FFI in Brittany, Col. Albert M. Eon, and the manuscript is in the files of the Section Historique de l'Armeé FranZçaise. Lieutenant Colonel Lugand, Maj. Jean Vial, and Capt. André Méric of the French Army historical section kindly made this source and others available to the author in the summer of 1953.",
+      "Footnote_Referenced_Source": "TUSA AAR states that the FFI membership in Brittany numbered about 30,000, but the Journal des Marches et Opérations du Commandement des F. F. I. en Bretagne (4 juillet au 10 septembre 1944) (hereafter cited as Journal des Marches) gives the figure used above. The Journal was submitted as an after action report by the commander of the FFI in Brittany, Col. Albert M. Eon, and the manuscript is in the files of the Section Historique de l'Armeé FranZçaise. Lieutenant Colonel Lugand, Maj. Jean Vial, and Capt. André Méric of the French Army historical section kindly made this source and others available to the author in the summer of 1953",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Section Historique de l'Armeé FranZçaise",
+      "NonDigital_Library_Address": "French Army Historical Section, Paris, France",
+      "NonDigital_Library_References": "Journal des Marches et Opérations du Commandement des F. F. I. en Bretagne (4 juillet au 10 septembre 1944)"
+    },
+    {
+      "Footnote": "52a",
+      "Footnote_Number": "52",
+      "Footnote_Text": "Journal des Marches",
+      "Footnote_Referenced_Source": "Journal des Marches",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Section Historique de l'Armeé FranZçaise",
+      "NonDigital_Library_Address": "French Army Historical Section, Paris, France",
+      "NonDigital_Library_References": "Journal des Marches"
+    },
+    {
+      "Footnote": "52b",
+      "Footnote_Number": "52",
+      "Footnote_Text": "6th Armd Div Msg to VIII Corps G-2, 1410, 3 Aug",
+      "Footnote_Referenced_Source": "6th Armd Div Msg to VIII Corps G-2, 1410, 3 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "6th Armd Div Msg to VIII Corps G-2, 1410, 3 Aug"
+    },
+    {
+      "Footnote": "52c",
+      "Footnote_Number": "52",
+      "Footnote_Text": "TUSA 11th Spec Force Detachment Ltr, Resistance Activities and Plans (Brittany), 4 Aug",
+      "Footnote_Referenced_Source": "TUSA 11th Spec Force Detachment Ltr, Resistance Activities and Plans (Brittany), 4 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "TUSA 11th Spec Force Detachment Ltr, Resistance Activities and Plans (Brittany), 4 Aug"
+    },
+    {
+      "Footnote": "52d",
+      "Footnote_Number": "52",
+      "Footnote_Text": "TUSA Memo to VIII Corps. 5 Aug",
+      "Footnote_Referenced_Source": "TUSA Memo to VIII Corps. 5 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "TUSA Memo to VIII Corps. 5 Aug"
+    },
+    {
+      "Footnote": "52e",
+      "Footnote_Number": "52",
+      "Footnote_Text": "Msg, Middleton to Grow, 1405, 5 Aug",
+      "Footnote_Referenced_Source": "Msg, Middleton to Grow, 1405, 5 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Msg, Middleton to Grow, 1405, 5 Aug"
+    },
+    {
+      "Footnote": "53",
+      "Footnote_Number": "53",
+      "Footnote_Text": "Msg, Middleton to Earnest, 2 Aug; Comments, Gen Grow to author 27 Apr 54, OCMH Files.",
+      "Footnote_Referenced_Source": "Msg, Middleton to Earnest, 2 Aug; Comments, Gen Grow to author 27 Apr 54, OCMH Files",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Msg, Middleton to Earnest, 2 Aug; Comments, Gen Grow to author 27 Apr 54, OCMH Files"
+    },
+    {
+      "Footnote": "54",
+      "Footnote_Number": "54",
+      "Footnote_Text": "App. A to PS SHAEF (44) 29 (First Draft), Enemy Dispositions and Possible Reaction (in Brittany), SHAEF G-3 File 24533/Opns, Future Opns; TUSA AAR, I, 16; Notes, 1 Aug, 83d Div G-2, G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "App. A to PS SHAEF (44) 29 (First Draft), Enemy Dispositions and Possible Reaction (in Brittany), SHAEF G-3 File 24533/Opns, Future Opns; TUSA AAR, I, 16; Notes, 1 Aug, 83d Div G-2, G-3 Jnl and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "App. A to PS SHAEF (44) 29 (First Draft), Enemy Dispositions and Possible Reaction (in Brittany), SHAEF G-3 File 24533/Opns, Future Opns; TUSA AAR, I, 16; Notes, 1 Aug, 83d Div G-2, G-3 Jnl and File"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn18.html",
+  "Source_Footnote_Link_Capture_Date": "December 24, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+  "Source_Link_Capture_Date": "December 24, 2025"
+}

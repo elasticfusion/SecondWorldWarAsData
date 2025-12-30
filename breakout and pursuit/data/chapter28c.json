@@ -1,0 +1,391 @@
+{
+  "Events": [
+    {
+      "Event": "Logistical Constraints and Initial Restriction to Dreux, Chartres, Orléans",
+      "Sub-event": "Supply Challenges and Emergency Airlift Initiation",
+      "Sub-event_summary": "General Bradley restricted Patton to Dreux, Chartres, and Orléans due to severe logistical strain, particularly gasoline and rations shortages outpacing combat gains. Air supply was employed as an emergency measure; on 19 August, 21 C-47s delivered 47 tons of rations near le Mans, marking the start of daily emergency airlifts to Third Army.",
+      "Sub-event_fulltext": {
+        "Paragraph_62": "General Bradley had limited General Patton to Dreux, Chartres, and Orléans primarily because of logistical problems. The essential difficulty was that the supply services did not have enough transportation to keep up with the breakout from the Cotentin and the spectacular momentum of the Allied advance.",
+        "Paragraph_63": "It was obvious after the first week in August that the combat gains were outstripping the capacity of the Communications Zone to keep the units adequately supplied. Because of the rapidity of troop movement and the relative paucity of targets, ammunition was less a problem than were gasoline and rations. Gasoline consumption, which skyrocketed, and ration requirements, which remained constant, threatened to bring operations to a halt.",
+        "Paragraph_64": "In order to keep the troops moving, Allied commanders looked to air supply. Nevertheless, only small amounts of supplies actually arrived on the Continent by air in early August, primarily because transport planes were being held in readiness for possible airborne operations at Orléans and Chartres. Once the two cities were captured, use of the transports was less restricted. On 19 August twenty-one C-47's landed forty-seven tons of rations near le Mans in the first delivery of what was to become a daily emergency airlift to the Third Army."
+      },
+      "Footnote_References": ["32", "33", "34", "35"],
+      "Place_Name": ["Dreux", "Chartres", "Orléans", "le Mans", "Cotentin"],
+      "Dates": {
+        "Date_group_of_event": "BEGINNING Aug 1944 - 19 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "BEGINNING Aug 1944 - 19 Aug 1944 (BST)"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "le Mans, France",
+          "Place_GPS_coordinate": "48.0061 N, 0.1999 E",
+          "Map_Reference": null,
+          "Map_Link": null
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "le Mans, France",
+          "Place_GPS_coordinate": "48.0061 N, 0.1999 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -1.8001, "East": 2.1999, "South": 47.0061, "North": 49.0061}
+        }
+      ]
+    },
+    {
+      "Event": "Removal of Restriction and Extension to the Seine",
+      "Sub-event": "Bradley Lifts Restriction on 17 August; Patton Issues Orders for Seine Advance",
+      "Sub-event_summary": "On 17 August Bradley removes restriction on advancing beyond the lodgment area to the Seine after meeting with Hodges and Patton. Patton holds XII Corps at Orléans, directs XX Corps to complete Chartres and assume Dreux responsibility, and orders XV Corps to drive to Mantes-Gassicourt on the Seine to interdict German crossings. XV Corps (5th Armored and 79th Divisions) reaches Mantes-Gassicourt on 18 August; task force enters town on 19 August finding Germans absent.",
+      "Sub-event_fulltext": {
+        "Paragraph_65": "Although this emergency measure hardly promised to make up all shortages, the temptation to take advantage of the weak enemy opposition at Dreux, Chartres, and Orléans (despite the local resistance at Chartres) was irresistible. After meeting with Hodges and Patton to discuss \"spheres of influence\" and \"zones of action,\" Bradley on 17 August removed his restriction on going beyond the confines of the Overload lodgment area to the Seine. Since the main enemy forces were concentrated west of the lower Seine (north of Paris), Allied troops advancing to the Seine would in effect be extending to the river the lower jaw of the Allied trap, which already stretched from Argentan through Chambois to Dreux.",
+        "Paragraph_66": "To conserve gasoline and other supplies, Patton held the XII Corps at Orléans. He instructed the XX Corps to complete the capture of Chartres and at the same time to assume responsibility for Dreux. He directed the XV Corps to drive twenty-five miles northeast from Dreux to the Seine at Mantes-Gassicourt, a town thirty miles northwest of Paris. At Mantes, the XV Corps was to interdict the roads east of the river and disrupt German ferrying operations.",
+        "Paragraph_67": "The 5th Armored and 79th Infantry Divisions of the XV Corps, relieved at Dreux and Nogent-le-Roi by the 7th Armored Division, moved easily to Mantes-Gassicourt on 18 August, set up roadblocks to collect German stragglers, and placed interdictory artillery fire on the river-crossing sites. On the following day a task force of the 79th entered Mantes-Gassicourt and found the Germans gone."
+      },
+      "Footnote_References": ["36", "37"],
+      "Place_Name": ["Dreux", "Chartres", "Orléans", "Mantes-Gassicourt", "Paris", "Argentan", "Chambois", "Nogent-le-Roi"],
+      "Dates": {
+        "Date_group_of_event": "17 Aug 1944 - 19 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "17 Aug 1944 - 19 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "XV Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": {
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "XV Corps",
+            "Name": "Leonard T. Gerow",
+            "Rank": "Major General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Leonard_T._Gerow"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_Unspecified_Casualties": 0}
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p573.jpg",
+          "Description": "German Removing Boobytrap under the eyes of a U.S. soldier.",
+          "License": "Public domain (US Government publication)"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Mantes-Gassicourt, France",
+          "Place_GPS_coordinate": "48.9780 N, 1.7033 E",
+          "Map_Reference": null,
+          "Map_Link": null
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Mantes-Gassicourt, France",
+          "Place_GPS_coordinate": "48.9780 N, 1.7033 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -0.2967, "East": 3.7033, "South": 47.9780, "North": 49.9780}
+        }
+      ]
+    },
+    {
+      "Event": "Modification of OVERLORD Plan and Allied Decision to Cross the Seine",
+      "Sub-event": "Allied Command Agreement on 19 August to Proceed Beyond Seine",
+      "Sub-event_summary": "On 19 August, Allied commanders modify OVERLORD planning to initiate post-OVERLORD operations toward Germany immediately rather than halting at the Seine. XV Corps receives dual mission: 5th Armored to attack down west bank, 79th to establish east bank bridgehead at Mantes-Gassicourt. Estimated 75,000 German troops and 250 tanks remain west of Seine, offering encirclement opportunity.",
+      "Sub-event_fulltext": {
+        "Paragraph_68": "On 19 August, while the XV Corps was discovering that no effective obstacle save the river itself barred a crossing of the Seine, the top Allied commanders were reaching agreement to modify further the OVERLORD planning. Instead of halting at the Seine to reorganize and build up a supply base west of the Seine, the Allied command decided to move immediately into post-OVERLORD operations directed toward Germany.",
+        "Paragraph_69": "To drive across the upper Seine south of Paris and the lower Seine north of Paris would be a comparatively simple maneuver, but the presence of a considerable number of Germans between the Argentan-Falaise pocket and the lower Seine presented an opportunity to complete the destruction of the forces that had escaped the pocket. The Allies estimated that 75,000 enemy troops and 250 tanks could still be encircled west of the Seine.",
+        "Paragraph_70": "The major difficulty of a maneuver such as this was the same that had inhibited American activity north of Argentan. At Mantes, the XV Corps was again beyond the zone assigned to the 12th Army Group. Further advance toward the mouth of the Seine would place the corps across the projected routes of advance of the British and Canadian armies and would surely result in \"an administrative headache.\"",
+        "Paragraph_71": "Although General Bradley offered to lend trucks to transport British troops to Mantes-Gassicourt and suggested that the British move units through the American zone to launch the attack down the west bank of the river, General Dempsey declined with thanks on the basis that his logistical organization could not support such a move. For the Allies then to take advantage of the alluring possibilities at the Seine--disrupting the German withdrawal, bagging additional prisoners among the escapees from the Argentan-Falaise pocket, removing Germans from the British zone, and thus allowing Dempsey to move to the Seine against \"almost negligible resistance\"--General Montgomery would have to permit further intrusion of American troops into the British sector and accept in advance the administrative consequences. He, Bradley, and Dempsey decided to chance the headache.",
+        "Paragraph_72": "Having decided to send part of Patton's force down the west bank of the Seine, the Allied commanders saw a coincident opportunity to seize a bridgehead on the east bank of the river as a springboard for future operations. The XV Corps thus drew a double mission-- the 5th Armored was to attack down the west bank while the 79th established a bridgehead on the east bank. In his order issued on 20 August, Montgomery cautioned: \"This is no time to relax, or to sit back and congratulate ourselves. . . . Let us finish off the business in record time.\" By then, American troops were already across the Seine."
+      },
+      "Footnote_References": ["38", "39", "40", "41", "42"],
+      "Place_Name": ["Seine River", "Mantes-Gassicourt", "Paris", "Argentan-Falaise pocket"],
+      "Dates": {
+        "Date_group_of_event": "19 Aug 1944 - 20 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "19 Aug 1944 - 20 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "XV Corps",
+        "Unit_Nationality": "US",
+        "Subordinates": [
+          {
+            "Unit": "79th Infantry Division",
+            "Name": "Ira T. Wyche",
+            "Rank": "Major General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Ira_T._Wyche"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_Unspecified_Casualties": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Mantes-Gassicourt, France",
+          "Place_GPS_coordinate": "48.9780 N, 1.7033 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Mantes-Gassicourt, France",
+          "Place_GPS_coordinate": "48.9780 N, 1.7033 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -0.2967, "East": 3.7033, "South": 47.9780, "North": 49.9780}
+        }
+      ]
+    },
+    {
+      "Event": "79th Infantry Division Crossing and Bridgehead at Mantes-Gassicourt",
+      "Sub-event": "Night Crossing and Bridge Construction by 79th Division (19–20 August)",
+      "Sub-event_summary": "At 2135 on 19 August, General Haislip orders General Wyche to cross the Seine that night. During heavy rain, 313th Infantry crosses via dam footpath; 314th paddles across at daybreak 20 August. Engineers install 700 feet of treadway bridge, followed by Bailey bridge on 23 August. By nightfall 20 August, bulk of 79th Division including armor and artillery is on east bank. Division extends bridgehead, repels counterattacks, interdicts crossings, captures Army Group B command post at la Roche-Guyon.",
+      "Sub-event_fulltext": {
+        "Paragraph_73": "General Wyche had received a telephone call at 2135, 19 August, from General Haislip, who ordered him to cross the Seine that night. The 79th was to get foot troops on the east bank at once, build a bridge for vehicles, tanks, and heavy equipment, and gain ground in sufficient depth (four to six miles) to protect the crossing sites at Mantes from medium artillery fire.",
+        "Paragraph_74": "In a situation that was \"too fluid to define an enemy front line,\" General Wyche anticipated little resistance. His 79th Division had that day engaged only scattered German groups in flight, had captured nineteen vehicles and a Mark IV tank, and had received only sporadic machine gun fire from across the Seine. The river itself was the main problem, for near Mantes it varied in width from five hundred to eight hundred feet.",
+        "Paragraph_75": "Fortunately, a dam nearby offered a narrow foot path across it, and Engineer assault boats and rafts could transport other troops and light equipment. For the bridge he was to build, Wyche secured seven hundred feet of treadway from the 5th Armored Division.",
+        "Paragraph_76": "While a torrential rain fell during the night of 19 August, men of the 313th Infantry walked across the dam in single file, each man touching the one ahead to keep from falling into the water. At daybreak, 20 August, as the 314th Infantry paddled across the river, the division engineers began to install the treadway. In the afternoon, as soon as the bridge was ready, the 315th Infantry crossed in trucks. By nightfall, 20 August, the bulk of the division, including tanks, artillery, and tank destroyers, was on the east bank.",
+        "Paragraph_77": "The following day battalions of the XV Corps Artillery crossed. Antiaircraft units hurriedly emplaced their pieces around the bridge, arriving in time to shoot down about a dozen enemy planes on the first day and to amass a total of almost fifty claimed in four days. To supplement the treadway, engineers constructed a Bailey bridge that was opened to traffic on 23 August.",
+        "Paragraph_78": "On the east bank, the 79th not only extended and improved the bridgehead, repelled counterattacks, and interdicted highways, ferry routes, and barge traffic lanes, but also dramatically pointed out to the Germans their critical situation by capturing the Army Group B command post at la Roche-Guyon and sending the German headquarters troops scurrying eastward to Soissons."
+      },
+      "Footnote_References": ["43", "44"],
+      "Place_Name": ["Mantes-Gassicourt", "Seine River", "la Roche-Guyon", "Soissons"],
+      "Dates": {
+        "Date_group_of_event": "19 Aug 1944 - 23 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "19 Aug 1944 - 23 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "79th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XV Corps",
+          "Commander": {
+            "Name": "Leonard T. Gerow",
+            "Rank": "Major General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "79th Infantry Division",
+            "Name": "Ira T. Wyche",
+            "Rank": "Major General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Ira_T._Wyche"
+          },
+          {
+            "Unit": "313th Infantry Regiment",
+            "Name": null,
+            "Rank": null
+          },
+          {
+            "Unit": "314th Infantry Regiment",
+            "Name": null,
+            "Rank": null
+          },
+          {
+            "Unit": "315th Infantry Regiment",
+            "Name": null,
+            "Rank": null
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_Unspecified_Casualties": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Mantes-Gassicourt, France",
+          "Place_GPS_coordinate": "48.9780 N, 1.7033 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Mantes-Gassicourt, France",
+          "Place_GPS_coordinate": "48.9780 N, 1.7033 E",
+          "Weather_text": "Not specified in source; torrential rain during night of 19 August 1944.",
+          "Spatial_Bounding_Box Coordinates": {"West": -0.2967, "East": 3.7033, "South": 47.9780, "North": 49.9780}
+        }
+      ]
+    }
+  ],
+  "Footnotes": {
+    "Footnote": [
+      {
+        "Footnote": "32",
+        "Footnote_Number": 32,
+        "Footnote_Text": "TUSA AAR, I, 30-31.",
+        "Footnote_Referenced_Source": "Third Army After Action Report, Volume I, pages 30-31",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "33",
+        "Footnote_Number": 33,
+        "Footnote_Text": "Msg, TUSA to Corps Comdrs, 19 Aug, TUSA G-3 Jnl and File.",
+        "Footnote_Referenced_Source": "Message, Third Army to Corps Commanders, 19 August 1944, Third Army G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "34",
+        "Footnote_Number": 34,
+        "Footnote_Text": "XV Corps AAR, Aug; XX Corps AAR, Aug; XII Corps AAR, Aug.",
+        "Footnote_Referenced_Source": "XV Corps After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "35",
+        "Footnote_Number": 35,
+        "Footnote_Text": "Msg, 12th AGp to TUSA, 19 Aug, TUSA G-3 Jnl and File.",
+        "Footnote_Referenced_Source": "Message, 12th Army Group to Third Army, 19 August 1944, Third Army G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "36",
+        "Footnote_Number": 36,
+        "Footnote_Text": "Msg, 12th AGp to TUSA, 17 Aug, TUSA G-3 Jnl and File.",
+        "Footnote_Referenced_Source": "Message, 12th Army Group to Third Army, 17 August 1944, Third Army G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "37",
+        "Footnote_Number": 37,
+        "Footnote_Text": "Msg, TUSA to XV Corps, 17 Aug, XV Corps G-3 Jnl and File.",
+        "Footnote_Referenced_Source": "Message, Third Army to XV Corps, 17 August 1944, XV Corps G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "38",
+        "Footnote_Number": 38,
+        "Footnote_Text": "Msg, 12th AGp to TUSA, 19 Aug, TUSA G-3 Jnl and File.",
+        "Footnote_Referenced_Source": "Message, 12th Army Group to Third Army, 19 August 1944, Third Army G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "39",
+        "Footnote_Number": 39,
+        "Footnote_Text": "12th AGp G-2 Est, 19 Aug.",
+        "Footnote_Referenced_Source": "12th Army Group G-2 Estimate, 19 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "40",
+        "Footnote_Number": 40,
+        "Footnote_Text": "Msg, 12th AGp to TUSA, 19 Aug, TUSA G-3 Jnl and File.",
+        "Footnote_Referenced_Source": "Message, 12th Army Group to Third Army, 19 August 1944, Third Army G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "41",
+        "Footnote_Number": 41,
+        "Footnote_Text": "Msg, 21 AGp to TUSA, 20 Aug, TUSA G-3 Jnl and File.",
+        "Footnote_Referenced_Source": "Message, 21st Army Group to Third Army, 20 August 1944, Third Army G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "GB"
+      },
+      {
+        "Footnote": "42",
+        "Footnote_Number": 42,
+        "Footnote_Text": "Msg, 21 AGp to TUSA, 20 Aug, TUSA G-3 Jnl and File.",
+        "Footnote_Referenced_Source": "Message, 21st Army Group to Third Army, 20 August 1944, Third Army G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "GB"
+      },
+      {
+        "Footnote": "43",
+        "Footnote_Number": 43,
+        "Footnote_Text": "79th Div AAR, Aug.",
+        "Footnote_Referenced_Source": "79th Infantry Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "44a",
+        "Footnote_Number": 44,
+        "Footnote_Text": "79th Div AAR, Aug.",
+        "Footnote_Referenced_Source": "79th Infantry Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "44b",
+        "Footnote_Number": 44,
+        "Footnote_Text": "XV Corps AAR, Aug.",
+        "Footnote_Referenced_Source": "XV Corps After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      }
+    ]
+  },
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn28.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-29",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+  "Source_Link_Capture_Date": "2025-12-29"
+}

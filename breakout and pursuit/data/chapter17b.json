@@ -1,0 +1,3046 @@
+{
+  "Events": [
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Overview of COBRA Turning into Breakout",
+      "Sub-event_summary": "Explanation of how Operation COBRA evolved from a breakthrough to a breakout, with Germans escaping initial thrusts but falling to later developments, surprised by bombardment, outmaneuvered, communications wrecked, hampered by shortages and own mistakes.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "How had it happened? How had an operation designed to reach the Coutances-Caumont line been parlayed from a breakthrough into a breakout? The explanation could be likened to a double exposure of the same subject, filmed from different points of view. The edges of the picture were slightly blurred, but the result was clearly discernible. The Germans had astutely escaped the initial COBRA thrusts, only to fall prey to the later developments. They had been completely surprised by the COBRA bombardment and ground attack of 25 July. And yet they themselves had aggravated the consequences. That they had been outmaneuvered was soon apparent. Their communications facilities wrecked, they had found their endeavors to re-establish order marked by ignorance and inevitable frustration. Unable to keep abreast of a COBRA operation that developed remarkable speed after a slow beginning, the Germans were too late in their counter-measures. Hampered by shortages of manpower, equipment, and supplies, they were also the victims of their own mistakes. Whereas Eberbach had launched major portions of two panzer divisions in a counterattack several hours after GOODWOOD had begun and had thereby blocked British exploitation of a penetration already achieved, the Germans in the Cotentin were not able to match or even come close to Eberbach's accomplishment. A large part of the confusing and conflicting drama that had ensued in the Cotentin could in the final analysis be traced to the failure of a few men to react quickly, with decision, and in accord with a single purpose."
+      },
+      "Footnote_References": [
+        11
+      ],
+      "Place_Name": "Coutances, Caumont, Cotentin",
+      "Dates": {
+        "Date_group_of_event": "25 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "APPROX 250000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/page/G%25C3%25BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Panzer Group West",
+            "Name": "Hans Eberbach",
+            "Rank": "General der Panzertruppe",
+            "Date": "July 1944",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Eberbach",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Shortages of manpower",
+        "Equipments": {
+          "Supply": "Shortages of equipment and supplies",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Cobra_Coutances.jpg",
+          "Description": "Map of Operation Cobra showing breakout to Coutances",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.0558 N, -1.4437 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Cobra_Coutances.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.0558 N, -1.4437 W",
+        "Weather_text": "Poor weather conditions before COBRA, clear for bombardment on 25 July.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.8137",
+          "East": "0.9263",
+          "South": "48.1558",
+          "North": "49.9558"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "German Intelligence Failure",
+      "Sub-event_summary": "German intelligence failed to reflect significant changes in American dispositions in reports to higher headquarters, not even reaching Hausser.",
+      "Sub-event_fulltext": {
+        "Paragraph_2": "At the beginning, German intelligence had failed. Radio interception had revealed significant changes in American dispositions during the week preceding COBRA, but these were not reflected in the reports that reached army group and theater headquarters. They did not even reach Hausser."
+      },
+      "Footnote_References": [
+        12
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "week preceding COBRA",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "APPROX 180000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/page/G%25C3%25BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Seventh Army",
+            "Name": "Paul Hausser",
+            "Rank": "SS-Oberst-Gruppenführer",
+            "Date": "July 1944",
+            "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Map_Reference": "Map I Normandy",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Weather_text": "A week of poor weather conditions before COBRA.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7409",
+          "East": "0.9991",
+          "South": "48.2829",
+          "North": "50.0829"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Hausser's Dispositions Before COBRA",
+      "Sub-event_summary": "Hausser had time to reshuffle forces but kept panzer divisions in line, with nearly seven infantry divisions and two panzer divisions, Panzer Lehr not at top strength, 2d SS strong.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "More important than the lack of advance warning on COBRA and perhaps even more significant than the disparity in numbers of troops controlled by the opponents were Hausser's dispositions before COBRA, which had largely predetermined his initial reaction. From the night of 13 July, when American pressure against the LXXXIV Corps left began to diminish, Hausser was increasingly free to regroup his forces because except for minor action the fighting in the Cotentin came to an end with the fall of St. Lô on 18 July. A week of poor weather conditions before COBRA gave Hausser further respite. In all, he had about ten days to reshuffle his forces in the Cotentin. The equivalent of nearly seven infantry divisions, these forces had numbered about 21,000 combat effectives. The infantry was incapable of rapid movement, but Hausser had two panzer divisions that were highly mobile. Even though Panzer Lehr had not been at top strength (it had been unable--even with the support of its attached parachute regiment--to launch an attack east of the Vire River to regain St. Lô), the 2d SS Panzer Division had been strong, confident, and aggressive."
+      },
+      "Footnote_References": [
+        13
+      ],
+      "Place_Name": "St. Lô, Cotentin, Vire River",
+      "Dates": {
+        "Date_group_of_event": "13 July to 25 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "APPROX 130000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/page/G%25C3%25BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "LXXXIV Corps",
+            "Name": "Dietrich von Choltitz",
+            "Rank": "General der Infanterie",
+            "Date": "July 1944",
+            "Biographical_reference": "https://grokipedia.com/page/Dietrich_von_Choltitz",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "Panzer Lehr Division",
+            "Name": "Fritz Bayerlein",
+            "Rank": "Generalleutnant",
+            "Date": "July 1944",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "2d SS Panzer Division",
+            "Name": "Heinz Lammerding",
+            "Rank": "SS-Brigadeführer",
+            "Date": "July 1944",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Heinz_Lammerding",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "21,000 combat effectives, nearly seven infantry divisions equivalent",
+        "Equipments": {
+          "Supply": "Panzer Lehr not at top strength",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Panzer divisions",
+              "Identifier": "Various",
+              "Quantity": "2",
+              "Web_Reference": "https://grokipedia.com/page/2nd_SS_Panzer_Division_Das_Reich",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0906 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Copyright Military History Matters",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0906 W",
+        "Weather_text": "A week of poor weather conditions before COBRA.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4606",
+          "East": "0.2794",
+          "South": "48.2162",
+          "North": "50.0162"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Kluge's Suggestion vs Hausser's Decision",
+      "Sub-event_summary": "Kluge suggested pulling panzer divisions out of the line to conserve for mobile action, but Hausser kept them in place as backbone of static defense.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "Kluge had suggested to Hausser that he pull his two panzer divisions out of the line, replace them with infantry, and conserve them for mobile action against American penetrations of the defensive line. Hausser, on the other hand, had been reluctant to deprive his static defense of armor. He believed that \"tanks formed the backbone of the position; built into the ground, they served as antitank guns and as armored machine guns.\" He had consequently held the armored divisions in place."
+      },
+      "Footnote_References": [
+        14
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "before COBRA",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "APPROX 240000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/page/G%25C3%25BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Seventh Army",
+            "Name": "Paul Hausser",
+            "Rank": "SS-Oberst-Gruppenführer",
+            "Date": "July 1944",
+            "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tanks",
+              "Identifier": "Various panzer",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://grokipedia.com/page/Panzer",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Weather_text": "Poor weather conditions before COBRA.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7409",
+          "East": "0.9991",
+          "South": "48.2829",
+          "North": "50.0829"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Consequences of Dispositions",
+      "Sub-event_summary": "Panzer Lehr knocked out by bombardment, 2d SS not extricated in time, reserves deficient in transport, gap between corps not closed.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "As a result, instead of having the infantry absorb the shock of the COBRA assault and having an armored reserve capable of counterattack, Hausser had so disposed his troops that the Americans knocked out one of the two panzer divisions in the COBRA bombardment--Panzer Lehr was immediately eliminated as a potential threat. The 2d SS Panzer Division, though more fortunate than Lehr in escaping bombardment, could not be extricated from the front in time for a decisive counterattack role. Once the Americans broke through, their mechanized and motorized troops easily outmaneuvered German infantrymen and paratroopers who comprised Hausser's immediate reserves, forces that were sadly deficient in transportation facilities. Without additional assembled reserves, Hausser could not close the gap that developed between the LXXXIV and II Parachute Corps."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Marigny-St. Gilles gap",
+      "Dates": {
+        "Date_group_of_event": "25 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "250000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Deficient in transportation",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Panzer Lehr Division",
+              "Identifier": "Panzer",
+              "Quantity": "1 division",
+              "Web_Reference": "https://grokipedia.com/page/Panzer_Lehr_Division",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://api.army.mil/e2/c/-images/2010/07/25/80980/army.mil-80980-2010-07-23-150732.jpg",
+          "Description": "American troops during Operation COBRA breakout",
+          "License": "Public Domain - U.S. Army"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.0989 N, -1.2422 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Copyright Military History Matters",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.0989 N, -1.2422 W",
+        "Weather_text": "Clear skies for bombardment.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.6122",
+          "East": "0.1278",
+          "South": "48.1989",
+          "North": "49.9989"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Hausser's Failure to Prepare Alternate Positions",
+      "Sub-event_summary": "Hausser could have envisaged a gradual withdrawal to Avranches-Vire-Caen line but didn't prepare rally points; Eberbach did despite not intending to withdraw.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "By the very terrain his troops occupied, Hausser might have visualized his task as the maintenance of a resilient defense. He might have envisaged a gradual hard-fought withdrawal, if necessary, to the Avranches-Vire-Caen line (which Rundstedt and Rommel had discussed around the end of June), for such a withdrawal would have been in accord with the defensive concept in Normandy. Eberbach, in contrast, could not withdraw his Panzer Group West and retain for the forces in Normandy the same conditions of warfare. Despite the impossibility of his even considering a withdrawal and despite his lack of intention to withdraw, Eberbach had constructed alternate positions to the rear. Hausser, who could have justified a withdrawal and who could have given up ground without endangering the forces of Army Group B, had failed to prepare even rally points to the rear."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Avranches, Vire, Caen",
+      "Dates": {
+        "Date_group_of_event": "end of June",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "APPROX 300000ZJUN44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/page/G%25C3%25BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Panzer Group West",
+            "Name": "Hans Eberbach",
+            "Rank": "General der Panzertruppe",
+            "Date": "July 1944",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Eberbach",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844 N, -1.3611 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844 N, -1.3611 W",
+        "Weather_text": "Poor weather conditions before COBRA.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7311",
+          "East": "0.0089",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Choltitz's Actions and Relationship with Hausser",
+      "Sub-event_summary": "Choltitz prepared alternate positions on own authority but didn't tell Hausser due to fear of appearing defeatist; lack of trust; after St. Lo, 352d under II Parachute Corps, leading to floating flanks.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "Though Hausser had not designated alternate positions, Choltitz was sufficiently security conscious--perhaps simply cautious enough--to do so on his own authority. Afraid to appear a defeatist in Hausser's eyes, Choltitz did not tell him of the alternate positions. The relationship between the two commanders was founded on a lack of mutual trust, co-operation, and understanding that bred confusion. When Choltitz had marked a line of defense to the rear, he had been responsible for the defense of the Cotentin from the west coast to the Vire River. After the fall of St. Lô, when the 352d Division withdrew behind the Vire River west of St. Lô and took positions on the west bank, Hausser allowed it to remain under the control of the II Parachute Corps. Thus, when Choltitz shortly after the COBRA bombardment ordered Panzer Lehr to man a designated line to the rear, the consequence was that Lehr had neither contact with the 352d nor an anchor on the Vire River. Both units had floating flanks. When the 352d withdrew a day later to anchor the flanks, Panzer Lehr had been further jostled by the COBRA exploitation and was beyond salvation."
+      },
+      "Footnote_References": [
+        15
+      ],
+      "Place_Name": "St. Lô, Vire River",
+      "Dates": {
+        "Date_group_of_event": "after 18 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "APPROX 190000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "LXXXIV Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "LXXXIV Corps",
+            "Name": "Dietrich von Choltitz",
+            "Rank": "General der Infanterie",
+            "Date": "July 1944",
+            "End_Date": "July 1944",
+            "End_Status": "Relieved",
+            "Biographical_reference": "https://grokipedia.com/page/Dietrich_von_Choltitz",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "352d Division",
+            "Name": "Dietrich Kraiss",
+            "Rank": "Generalleutnant",
+            "Date": "July 1944",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Dietrich_Kraiss",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0906 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0906 W",
+        "Weather_text": "Poor weather conditions.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4606",
+          "East": "0.2794",
+          "South": "48.2162",
+          "North": "50.0162"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Kluge's Accountability",
+      "Sub-event_summary": "Kluge shared accountability for defeat, preoccupied with British threat, failed to note Hausser's inadequate preparations and failure to create armored reserves.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Kluge shared in the accountability for defeat. Concerned with the Panzer Group West sector and worried about the positions south of Caen, he had failed to note Hausser's inadequate preparations for defense. It should have been clear to him that Hausser had not grasped the role of the Seventh Army in the defense of Normandy. Yet Kluge was preoccupied with the British threat to Falaise, and he did not remark Hausser's failure to comply with his instructions on creating armored reserves."
+      },
+      "Footnote_References": [
+        16
+      ],
+      "Place_Name": "Caen, Falaise",
+      "Dates": {
+        "Date_group_of_event": "July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/page/G%25C3%25BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Seventh Army",
+            "Name": "Paul Hausser",
+            "Rank": "SS-Oberst-Gruppenführer",
+            "Date": "July 1944",
+            "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Weather_text": "Poor weather conditions.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7409",
+          "East": "0.9991",
+          "South": "48.2829",
+          "North": "50.0829"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Kluge's Criticisms of Hausser",
+      "Sub-event_summary": "Kluge criticized Hausser for employment of 2d SS, helplessness with communications, inefficiency of staff including Pemsel.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "Kluge criticized Hausser explicitly soon after COBRA began for his employment of the 2d SS Panzer Division. He condemned Hausser's helplessness in the face of communications difficulties. He thought that Hausser and army staff members, particularly his chief of staff, General-major Max Pemsel, who, Kluge felt, would hamper Hausser's influence on the course of the battle."
+      },
+      "Footnote_References": [
+        17
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "after 25 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "APPROX 260000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/page/G%25C3%25BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Seventh Army",
+            "Name": "Paul Hausser",
+            "Rank": "SS-Oberst-Gruppenführer",
+            "Date": "July 1944",
+            "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "Chief of Staff",
+            "Name": "Max Pemsel",
+            "Rank": "General-major",
+            "Date": "July 1944",
+            "End_Date": "28 July 1944",
+            "End_Status": "Relieved",
+            "Biographical_reference": "https://grokipedia.com/page/Max-Josef_Pemsel",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Communications difficulties",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Weather_text": "Clear for air operations.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7409",
+          "East": "0.9991",
+          "South": "48.2829",
+          "North": "50.0829"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Consideration to Relieve Pemsel",
+      "Sub-event_summary": "Kluge considered relieving Pemsel, thought Hausser and Pemsel not masters of the situation.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "He thought it necessary to restrain Hausser's request to withdraw, and he had insisted on withdrawal only for the purpose of gaining reserves. On the morning of 28 July he remarked that Hausser and Pemsel were obviously not masters of the situation and that he had just about decided to relieve at least Pemsel."
+      },
+      "Footnote_References": [
+        18
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "morning of 28 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "280923ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/page/G%25C3%25BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Chief of Staff",
+            "Name": "Max Pemsel",
+            "Rank": "General-major",
+            "Date": "28 July 1944",
+            "End_Date": "28 July 1944",
+            "End_Status": "Relieved",
+            "Biographical_reference": "https://grokipedia.com/page/Max-Josef_Pemsel",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Weather_text": "Clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7409",
+          "East": "0.9991",
+          "South": "48.2829",
+          "North": "50.0829"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Sending Kluge's Son as Representative",
+      "Sub-event_summary": "Kluge sent his son Guenther as personal representative to Seventh Army sector.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "That same morning he sent his son Guenther, a lieutenant colonel who was his aide, to the Seventh Army sector as his personal representative."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "28 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "280000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/page/G%25C3%25BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Aide",
+            "Name": "Guenther von Kluge",
+            "Rank": "Oberstleutnant",
+            "Date": "28 July 1944",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Weather_text": "Clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7409",
+          "East": "0.9991",
+          "South": "48.2829",
+          "North": "50.0829"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Issue with Coutances Plan",
+      "Sub-event_summary": "Kluge prioritized closing gap but retention of Coutances more important; Hausser's plan to attack southeast abandoned Coutances, allowing American advance.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "The climax of Kluge's doubt came on the question of Coutances. Though Kluge considered closing the gap in the Seventh Army center vital, he felt that retention of Coutances was even more important. When Pemsel assured Kluge on 28 July that strong rear-guard action north of Coutances would keep the Americans out of the city and prevent them from launching a major effort along the coast, Kluge was certain that Hausser understood the significance of Coutances--that loss of Coutances would open the door to an American drive that might outflank the counterattack about to be launched in the army center by the XLVII Panzer Corps. His surprise bordered on shock when he received word that evening of Hausser's plan to have the LXXXIV Corps in the Coutances area escape American encirclement by attacking southeast, rather than by withdrawing south along the coast. By virtually abandoning Coutances and projecting a concentration of forces near Percy, Hausser removed opposition to an American advance down the west coast of the Cotentin."
+      },
+      "Footnote_References": [
+        19
+      ],
+      "Place_Name": "Coutances, Percy",
+      "Dates": {
+        "Date_group_of_event": "28 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "280000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "LXXXIV Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "XLVII Panzer Corps",
+            "Name": "Hans Freiherr von Funck",
+            "Rank": "General der Panzertruppe",
+            "Date": "July 1944",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Freiherr_von_Funck",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.battleofnormandytours.com/uploads/2/5/1/7/2517577/1609689_orig.jpg",
+          "Description": "American troops advancing during Operation Cobra",
+          "License": "Copyright Battle of Normandy Tours"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.0558 N, -1.4437 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Cobra_Coutances.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.0558 N, -1.4437 W",
+        "Weather_text": "Clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.8137",
+          "East": "0.9263",
+          "South": "48.1558",
+          "North": "49.9558"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Relief of Pemsel and Choltitz",
+      "Sub-event_summary": "Kluge replaced Pemsel with Gersdorff and Choltitz with Elfeldt, though without authority to relieve Hausser.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "Kluge's countermand of Hausser's order had little effect because of inadequate communication facilities. A result was that Hausser's act brought to a head Kluge's dissatisfaction with the Seventh Army leadership. That evening, though apparently without authority to relieve Hausser, who was one of Himmler's SS commanders, or perhaps not daring to, Kluge replaced Pemsel with Gersdorff; Choltitz, the LXXXIV Corps commander, with Generalleutnant Otto Elfeldt."
+      },
+      "Footnote_References": [
+        20
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "evening of 28 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "281800ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/page/G%25C3%25BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Chief of Staff",
+            "Name": "Max Pemsel",
+            "Rank": "General-major",
+            "Date": "28 July 1944",
+            "End_Date": "28 July 1944",
+            "End_Status": "Relieved",
+            "Biographical_reference": "https://grokipedia.com/page/Max-Josef_Pemsel",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "Chief of Staff",
+            "Name": "Rudolf-Christoph von Gersdorff",
+            "Rank": "General-major",
+            "Date": "28 July 1944",
+            "Biographical_reference": "https://grokipedia.com/page/Rudolf-Christoph_von_Gersdorff",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "LXXXIV Corps",
+            "Name": "Dietrich von Choltitz",
+            "Rank": "General der Infanterie",
+            "Date": "28 July 1944",
+            "End_Date": "28 July 1944",
+            "End_Status": "Relieved",
+            "Biographical_reference": "https://grokipedia.com/page/Dietrich_von_Choltitz",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "LXXXIV Corps",
+            "Name": "Otto Elfeldt",
+            "Rank": "Generalleutnant",
+            "Date": "28 July 1944",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Otto_Elfeldt",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Inadequate communication facilities",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Weather_text": "Clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7409",
+          "East": "0.9991",
+          "South": "48.2829",
+          "North": "50.0829"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Kluge's Late Involvement",
+      "Sub-event_summary": "Kluge countermanded another Hausser order; by time Kluge active, battle lost; reluctant to draw from Eberbach reserves, believed decisive action at Caen.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "Kluge must have regretted that Hausser still commanded the Seventh Army on the following day, for again he countermanded Hausser's order committing the XLVII Panzer Corps to defense between Tessy and Gavray. By the time that Kluge took an active part in the Cotentin operation, the battle was lost. Even though he drew upon Eberbach's Panzer Group West reserves in an attempt to stem the tide of events, he did so with reluctance, not because GOODWOOD had exhausted those operational reserves concentrated south of Caen, but because in the midst of the COBRA deluge he still believed that the decisive action would take place on the eastern flank near Caen. Kluge was, of course, mistaken."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Tessy, Gavray, Caen",
+      "Dates": {
+        "Date_group_of_event": "29 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "290000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "XLVII Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Tessy-sur-Vire",
+        "Place_GPS_coordinate": "48.9717 N, -1.0611 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Tessy-sur-Vire",
+        "Place_GPS_coordinate": "48.9717 N, -1.0611 W",
+        "Weather_text": "Clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4311",
+          "East": "0.3089",
+          "South": "48.0717",
+          "North": "49.8717"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "American Commanders Taking Advantage",
+      "Sub-event_summary": "German errors part of story, American commanders took advantage to transform limited envelopment to breakthrough and breakout.",
+      "Sub-event_fulltext": {
+        "Paragraph_14": "German errors were only part of the story. The breakout also illustrated the magnificent ability of American commanders to take advantage of the opportunities and transform a limited envelopment in process to a breakthrough that became a breakout."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "APPROX 250000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "First Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Weather_text": "Clear skies for operations.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7409",
+          "East": "0.9991",
+          "South": "48.2829",
+          "North": "50.0829"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Abortive Bombardment on 24 July",
+      "Sub-event_summary": "Abortive COBRA bombardment on 24 July acted as ruse, giving Germans false confidence, nailing down main line of defense.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "The abortive COBRA bombardment on 24 July had acted as a ruse. It had given the Germans a false sense of confidence and had nailed down the German main line of defense along the Périers-St. Lô highway."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Périers, St. Lô",
+      "Dates": {
+        "Date_group_of_event": "24 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "240000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Ninth Air Force",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Allied Expeditionary Air Force",
+          "Commander": "Arthur Tedder",
+          "Name": "Arthur Tedder",
+          "Rank": "Air Chief Marshal",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Arthur_Tedder,_1st_Baron_Tedder",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Heavy and medium bombers",
+              "Identifier": "Various (B-17, B-24, etc.)",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://grokipedia.com/page/Boeing_B-17_Flying_Fortress",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers",
+        "Place_GPS_coordinate": "49.1864 N, -1.4072 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers",
+        "Place_GPS_coordinate": "49.1864 N, -1.4072 W",
+        "Weather_text": "Poor weather leading to abortive bombardment.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7772",
+          "East": "0.9628",
+          "South": "48.2864",
+          "North": "50.0864"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Real Bombardment on 25 July",
+      "Sub-event_summary": "Real bombardment on 25 July smashed defense in Marigny-St. Gilles gap, destroyed German efficiency, provided American impetus.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "The real bombardment on 25 July had smashed the defense in the Marigny-St. Gilles gap. Though not at first apparent, the massed heavy and medium bomber attack had destroyed the efficiency and the initiative of the German soldier, both as an individual and as a member of the combat team, and had provided American ground troops with an initial impetus that turned out to be decisive."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Marigny, St. Gilles",
+      "Dates": {
+        "Date_group_of_event": "25 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "250000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "VII Corps",
+            "Name": "J. Lawton Collins",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "Biographical_reference": "https://grokipedia.com/page/J._Lawton_Collins",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Heavy and medium bombers",
+              "Identifier": "B-17, B-24, B-26",
+              "Quantity": "Massed",
+              "Web_Reference": "https://grokipedia.com/page/Boeing_B-17_Flying_Fortress",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Cobra_Coutances.jpg",
+          "Description": "Map showing bombardment area in Operation Cobra",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.0989 N, -1.2422 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.0989 N, -1.2422 W",
+        "Weather_text": "Clear for bombardment.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.6122",
+          "East": "0.1278",
+          "South": "48.1989",
+          "North": "49.9989"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Bombardment Effects on Germans",
+      "Sub-event_summary": "Bombing demoralized Germans, 10% casualties, confusion, disruption, shock; best carpet bombing in European theater.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "To the Germans, the mere presence of unopposed aircraft overhead had been depressing, but the bombing itself had produced a temporary demoralization and a loss of will to fight or even to move about in the area under attack, a psychological effect that had given the Americans a tremendous tactical advantage. German casualties were later conservatively estimated as 10 percent of the total troops in the area. Even more important than the casualties were the confusion, the disruption of communications, and the shock effect. Some German soldiers were still deaf twenty-four hours later. Despite the bomb casualties among American troops, despite the fact that small isolated German groups had still been able to resist after the bombing, the COBRA bombardment was later judged to have been the best example in the European theater of \"carpet bombing.\""
+      },
+      "Footnote_References": [
+        21
+      ],
+      "Place_Name": "Marigny-St. Gilles gap",
+      "Dates": {
+        "Date_group_of_event": "25 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "251200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "10% casualties",
+        "Equipments": {
+          "Supply": "Disruption of communications",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.0989 N, -1.2422 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.0989 N, -1.2422 W",
+        "Weather_text": "Clear, unopposed aircraft.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.6122",
+          "East": "0.1278",
+          "South": "48.1989",
+          "North": "49.9989"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "German Resistance and American Caution",
+      "Sub-event_summary": "Isolated German groups resisted, maintaining semblance of opposition; American infantrymen afflicted with caution.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "The small and isolated German groups in the Marigny-St. Lô gap that had been able to resist had performed so well that they had maintained a semblance of the opposition that had stopped the Americans in the battle of the hedgerows earlier in the month. Expecting the same kind of combat, American infantrymen had been afflicted with a caution that, in view of the lack of organized German defense, approached timidity."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Marigny, St. Lô",
+      "Dates": {
+        "Date_group_of_event": "25 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "251200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.0989 N, -1.2422 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.0989 N, -1.2422 W",
+        "Weather_text": "Clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.6122",
+          "East": "0.1278",
+          "South": "48.1989",
+          "North": "49.9989"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Collins Commits Armor on 26 July",
+      "Sub-event_summary": "Collins committed armor on 26 July to dissipate hesitation, insured COBRA success; Brooks' 2d Armored and Rose's CCA carried the corps.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "Recognizing that the entire First Army attack depended on getting through the German defenses at once, General Collins had dissipated the hesitation marking the American ground attack on the first day of COBRA, 25 July, by committing his armor on the morning of 26 July. That act had insured COBRA's success, but the forces in the VII Corps main effort had not made the decisive thrust. Rather, the aggressiveness of General Brooks' 2d Armored Division and the single-minded leadership of General Rose had carried CCA, and with it the VII Corps, into the exploitation phase of COBRA."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "26 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "260900ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "VII Corps",
+            "Name": "J. Lawton Collins",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "Biographical_reference": "https://grokipedia.com/page/J._Lawton_Collins",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "2d Armored Division",
+            "Name": "Edward H. Brooks",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "Biographical_reference": "https://grokipedia.com/page/Edward_H._Brooks",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "CCA, 3d Armored Division",
+            "Name": "Maurice Rose",
+            "Rank": "Brigadier General",
+            "Date": "July 1944",
+            "Biographical_reference": "https://grokipedia.com/page/Maurice_Rose",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Armor",
+              "Identifier": "M4 Sherman, etc.",
+              "Quantity": "Division strength",
+              "Web_Reference": "https://grokipedia.com/page/M4_Sherman",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.battleofnormandytours.com/uploads/2/5/1/7/2517577/1609689_orig.jpg",
+          "Description": "U.S. armor advancing during Operation Cobra",
+          "License": "Copyright Battle of Normandy Tours"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Weather_text": "Clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7409",
+          "East": "0.9991",
+          "South": "48.2829",
+          "North": "50.0829"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Night Attack on 26 July",
+      "Sub-event_summary": "Collins ordered continued attack through night of 26 July, rammed COBRA home; Barton's 4th Division key; if VIII Corps attacked night 26, Germans might not escape.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "Again sensing a critical moment, General Collins had ordered continued attack through the night of 26 July. It was this--in particular the activity of General Barton's 4th Division--that had rammed the COBRA attack home. Had the VIII Corps attacked during the night of 26 July, the Germans on the Cotentin west coast might not have slipped away in the dark to temporary escape."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Cotentin",
+      "Dates": {
+        "Date_group_of_event": "night of 26 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "262000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "4th Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "J. Lawton Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Major General",
+          "Biographical_reference": "https://grokipedia.com/page/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "4th Division",
+            "Name": "Raymond O. Barton",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "Biographical_reference": "https://grokipedia.com/page/Raymond_O._Barton",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cotentin Peninsula",
+        "Place_GPS_coordinate": "49.5000 N, -1.2667 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cotentin Peninsula",
+        "Place_GPS_coordinate": "49.5000 N, -1.2667 W",
+        "Weather_text": "Dark night, clear.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.6367",
+          "East": "0.1033",
+          "South": "48.6000",
+          "North": "50.4000"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Bradley Exploits Disorganization",
+      "Sub-event_summary": "Bradley exploited German disorganization despite strong forces between Lessay and Périers and at Marigny.",
+      "Sub-event_fulltext": {
+        "Paragraph_20": "The German miscalculations that had allowed the COBRA attack to cross the original relatively limited horizon and had made possible the post-COBRA opportunity for exploitation were quickly seized upon by General Bradley. Despite strong German forces between Lessay and Périers and despite the ability of German forces at Marigny to keep the COBRA main effort toward Coutances from reaching fruition, General Bradley exploited and deepened a nascent disorganization of the enemy as disastrous as that caused by the heavy bombers, as compelling as the effect of the American ground attack."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Lessay, Périers, Marigny, Coutances",
+      "Dates": {
+        "Date_group_of_event": "after 25 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "APPROX 260000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "First Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Lessay",
+        "Place_GPS_coordinate": "49.1972 N, -1.5328 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Lessay",
+        "Place_GPS_coordinate": "49.1972 N, -1.5328 W",
+        "Weather_text": "Clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.9028",
+          "East": "0.8372",
+          "South": "48.2972",
+          "North": "50.0972"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Trap at Roncey",
+      "Sub-event_summary": "Americans closed trap at Roncey; Hausser's premature anticipation of encirclement; 2d Armored and White's CCB key in blocking and destroying.",
+      "Sub-event_fulltext": {
+        "Paragraph_21": "With the chief COBRA premise invalidated because the Germans had eluded not only the principal COBRA envelopment to Coutances but also the subsidiary thrust, the Americans closed another trap with alacrity around Roncey. Hausser's premature anticipation of the encirclement of his west coast forces--a maneuver that was never actually completed--and his order for the troops on the left to attack toward the southeast would have had little effect on the ultimate result if American troops had not been in place to block them--in particular the 2d Armored Division and General White's CCB, which had displayed a ruthlessness in its destructive capacity. The German hold on the Cotentin west coast broken and the way thereby open not only to an encirclement of the LXXXIV Corps left but also to the much more serious encirclement of the entire German defensive line in France, the Americans again acted with dispatch."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Roncey",
+      "Dates": {
+        "Date_group_of_event": "28 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "280000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "2d Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "J. Lawton Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Major General",
+          "Biographical_reference": "https://grokipedia.com/page/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "CCB, 2d Armored Division",
+            "Name": "Isaac D. White",
+            "Rank": "Brigadier General",
+            "Date": "July 1944",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Isaac_D._White",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Roncey",
+        "Place_GPS_coordinate": "49.0189 N, -1.3361 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Roncey",
+        "Place_GPS_coordinate": "49.0189 N, -1.3361 W",
+        "Weather_text": "Clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7061",
+          "East": "0.0339",
+          "South": "48.1189",
+          "North": "49.9189"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Corlett Blunts Counterattack",
+      "Sub-event_summary": "Corlett's XIX Corps blunted enemy counterattack at Tessy, destroying hopes of re-establishing defensive line.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "General Corlett's XIX Corps had blunted the enemy's planned counterattack at Tessy and had thereby destroyed German hopes of quickly re-establishing a defensive line in the Cotentin."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Tessy",
+      "Dates": {
+        "Date_group_of_event": "late July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "APPROX 290000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "XIX Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "XIX Corps",
+            "Name": "Charles H. Corlett",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "Biographical_reference": "https://grokipedia.com/page/Charles_H._Corlett",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Tessy-sur-Vire",
+        "Place_GPS_coordinate": "48.9717 N, -1.0611 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Tessy-sur-Vire",
+        "Place_GPS_coordinate": "48.9717 N, -1.0611 W",
+        "Weather_text": "Clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4311",
+          "East": "0.3089",
+          "South": "48.0717",
+          "North": "49.8717"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Collins Reorganization and Thrusts",
+      "Sub-event_summary": "Collins rapid reorganization of VII Corps, spectacular thrust of 3d Armored task forces to St. Pois and Brecey, denied Germans vital terrain at Villedieu-les-Poëles.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "General Collins' rapid reorganization of the VII Corps and the spectacular thrust of 3d Armored Division task forces toward St. Pois and to Brécey had denied the Germans the vital terrain about Villedieu-les-Poëles."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Pois, Brécey, Villedieu-les-Poëles",
+      "Dates": {
+        "Date_group_of_event": "late July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "APPROX 300000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "3d Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "J. Lawton Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Major General",
+          "Biographical_reference": "https://grokipedia.com/page/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "3d Armored Division",
+            "Name": "Maurice Rose",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "Biographical_reference": "https://grokipedia.com/page/Maurice_Rose",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Task forces",
+              "Identifier": "Armored",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://grokipedia.com/page/3rd_Armored_Division_(United_States)",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Saint-Pois",
+        "Place_GPS_coordinate": "48.7500 N, -1.0667 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Saint-Pois",
+        "Place_GPS_coordinate": "48.7500 N, -1.0667 W",
+        "Weather_text": "Clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4367",
+          "East": "0.3033",
+          "South": "47.8500",
+          "North": "49.6500"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Patton's Modification",
+      "Sub-event_summary": "Patton modified VIII Corps attack by inserting twin armored columns; Wood's 4th Armored Division sensational success, exploded nightmare of static warfare.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "General Patton's modification of the VIII Corps attack by inserting twin armored columns and the sensational success of General Wood's 4th Armored Division had exploded the nightmare of static warfare that had haunted the Americans so long in the Cotentin."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Cotentin",
+      "Dates": {
+        "Date_group_of_event": "31 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "310000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "4th Armored Division",
+            "Name": "John S. Wood",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "Biographical_reference": "https://grokipedia.com/page/John_Shirley_Wood",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Armored columns",
+              "Identifier": "Various tanks",
+              "Quantity": "Twin columns",
+              "Web_Reference": "https://grokipedia.com/page/4th_Armored_Division_(United_States)",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://api.army.mil/e2/c/-images/2010/07/25/80980/army.mil-80980-2010-07-23-150732.jpg",
+          "Description": "4th Armored Division in action during breakout",
+          "License": "Public Domain - U.S. Army"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Cotentin Peninsula",
+        "Place_GPS_coordinate": "49.5000 N, -1.2667 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cotentin Peninsula",
+        "Place_GPS_coordinate": "49.5000 N, -1.2667 W",
+        "Weather_text": "Clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.6367",
+          "East": "0.1033",
+          "South": "48.6000",
+          "North": "50.4000"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "British and Canadian Contributions",
+      "Sub-event_summary": "Montgomery worried Kluge in Caen sector, creating uncertainty, tying down Panzer Group West except two divisions; added to surprise.",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "The British and Canadian contributions to the development of the breakout are difficult to judge. There is no doubt that General Montgomery had worried Kluge in the Caen sector. By creating uncertainty in the mind of the German field commander, Montgomery had added to and deepened the surprise that accompanied the American operation. Except for two armored divisions that had moved to the American zone to oppose the post-COBRA exploitation, Montgomery had tied down the strength of Panzer Group West, which still guarded the vital approaches to Falaise. Whether General Montgomery had visualized it so, or whether he was aware of the historical example, the breakout in Normandy from a larger perspective resembled in the essentials of maneuver the operation in Sicily of less than a year earlier. There, too, Montgomery's forces had tied down the enemy while Patton's U.S. troops carried the main assault and made the striking gain."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caen, Falaise, Sicily",
+      "Dates": {
+        "Date_group_of_event": "July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "21st Army Group",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Supreme Headquarters Allied Expeditionary Force",
+          "Commander": "Dwight D. Eisenhower",
+          "Name": "Dwight D. Eisenhower",
+          "Rank": "General",
+          "Biographical_reference": "https://grokipedia.com/page/Dwight_D._Eisenhower",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "21st Army Group",
+            "Name": "Bernard Montgomery",
+            "Rank": "Field Marshal",
+            "Date": "July 1944",
+            "Biographical_reference": "https://grokipedia.com/page/Bernard_Montgomery",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Weather_text": "Clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7409",
+          "East": "0.9991",
+          "South": "48.2829",
+          "North": "50.0829"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Montgomery's Parachute Suggestion",
+      "Sub-event_summary": "Montgomery suggested dropping parachute troops to seize bridgeheads over Sée and Sélune Rivers; Bradley vetoed, unnecessary as it turned out.",
+      "Sub-event_fulltext": {
+        "Paragraph_24": "Two days before COBRA, General Montgomery had suggested it might be advantageous to drop parachute troops to seize bridgeheads over the Sée and Sélune Rivers--to block a German retreat, to prevent the enemy from stabilizing his line at Avranches, and to facilitate the projected American thrust into Brittany. General Bradley had vetoed this relatively shallow drop. As it turned out, an airborne operation was unnecessary."
+      },
+      "Footnote_References": [
+        23
+      ],
+      "Place_Name": "Sée River, Sélune River, Avranches, Brittany",
+      "Dates": {
+        "Date_group_of_event": "23 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "230000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "21st Army Group",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Supreme Headquarters Allied Expeditionary Force",
+          "Commander": "Dwight D. Eisenhower",
+          "Name": "Dwight D. Eisenhower",
+          "Rank": "General",
+          "Biographical_reference": "https://grokipedia.com/page/Dwight_D._Eisenhower",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "21st Army Group",
+            "Name": "Bernard Montgomery",
+            "Rank": "Field Marshal",
+            "Date": "July 1944",
+            "Biographical_reference": "https://grokipedia.com/page/Bernard_Montgomery",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "GB",
+              "Name": "Parachute troops",
+              "Identifier": "Airborne",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://grokipedia.com/page/Airborne_forces",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844 N, -1.3611 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844 N, -1.3611 W",
+        "Weather_text": "Clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7311",
+          "East": "0.0089",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Eisenhower's Letter",
+      "Sub-event_summary": "Eisenhower wrote to Bradley on eve of COBRA, expressing high hopes, urging pursuit with ardor verging on recklessness.",
+      "Sub-event_fulltext": {
+        "Paragraph_25": "General Eisenhower had sounded the keynote when he had written General Bradley on the eve of COBRA: My high hopes and best wishes ride with you in your attack . . . , which is the largest ground assault yet staged in this war by American troops exclusively. Speaking as the responsible American rather than the Allied Commander, I assure you that . . . a breakthrough at this juncture will minimize the total cost [of victory]. . . . Pursue every advantage with an ardor verging on recklessness and with all your troops without fear of major counter offensive from the forces the enemy now has on his front. . . . The results will be incalculable."
+      },
+      "Footnote_References": [
+        24
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "24 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "240000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Supreme Headquarters Allied Expeditionary Force",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Dwight D. Eisenhower",
+          "Name": "Dwight D. Eisenhower",
+          "Rank": "General",
+          "Biographical_reference": "https://grokipedia.com/page/Dwight_D._Eisenhower",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829 N, -0.3709 W",
+        "Weather_text": "Clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7409",
+          "East": "0.9991",
+          "South": "48.2829",
+          "North": "50.0829"
+        }
+      }
+    },
+    {
+      "Event": "The Explanation",
+      "Sub-event": "Final Results",
+      "Sub-event_summary": "28,000 German prisoners in July, 20,000 last six days; no German defensive capability in Pontaubault-Brécey-Villedieu sector; LXXXIV Corps smashed, II Parachute Corps beaten, Seventh Army defeated.",
+      "Sub-event_fulltext": {
+        "Paragraph_26": "The results were indeed incalculable. Of the 28,000 German prisoners the First Army captured during the month of July, 20,000 were taken during the last six days. No German defensive capability was apparent in the Pontaubault-Brécey-Villedieu-les-Poëles sector. The LXXXIV Corps was smashed. The II Parachute Corps was beaten. The Seventh Army had been defeated. The way was open to even greater German disaster and even more incalculable results."
+      },
+      "Footnote_References": [
+        25
+      ],
+      "Place_Name": "Pontaubault, Brécey, Villedieu-les-Poëles",
+      "Dates": {
+        "Date_group_of_event": "July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "END JUL44"
+      },
+      "TOE": {
+        "Unit": "First Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 28000
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Pontaubault",
+        "Place_GPS_coordinate": "48.6300 N, -1.3500 W",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pontaubault",
+        "Place_GPS_coordinate": "48.6300 N, -1.3500 W",
+        "Weather_text": "Clear skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7200",
+          "East": "0.0200",
+          "South": "47.7300",
+          "North": "49.5300"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "11a",
+      "Footnote_Number": "11",
+      "Footnote_Text": "See Hodgson, R-58",
+      "Footnote_Referenced_Source": "Hodgson, R-58",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Hodgson Report R-58"
+    },
+    {
+      "Footnote": "11b",
+      "Footnote_Number": "11",
+      "Footnote_Text": "MS # B-723 (Gersdorff) is a valuable source.",
+      "Footnote_Referenced_Source": "MS # B-723 (Gersdorff)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Foreign Military Studies MS # B-723 by Rudolf-Christoph von Gersdorff"
+    },
+    {
+      "Footnote": "12a",
+      "Footnote_Number": "12",
+      "Footnote_Text": "Seventh Army KTB, 22-24 Jul",
+      "Footnote_Referenced_Source": "Seventh Army KTB, 22-24 Jul",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Seventh Army Kriegstagebuch (KTB), 22-24 Jul"
+    },
+    {
+      "Footnote": "12b",
+      "Footnote_Number": "12",
+      "Footnote_Text": "OB WEST KTB, Anlagen 1c Anlageband II, Feindlagekarten 1.VII.-31.XII.44, Annexes 27 and 28",
+      "Footnote_Referenced_Source": "OB WEST KTB, Anlagen 1c Anlageband II, Feindlagekarten 1.VII.-31.XII.44, Annexes 27 and 28",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Kriegstagebuch (KTB) OB WEST, Anlagen 1c Anlageband II, Feindlagekarten 1.VII.-31.XII.44, Annexes 27 and 28"
+    },
+    {
+      "Footnote": "12c",
+      "Footnote_Number": "12",
+      "Footnote_Text": "MS # B-464 (Ziegelmann).",
+      "Footnote_Referenced_Source": "MS # B-464 (Ziegelmann)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Foreign Military Studies MS # B-464 by Ernst Ziegelmann"
+    },
+    {
+      "Footnote": "13a",
+      "Footnote_Number": "13",
+      "Footnote_Text": "Hechler, The Enemy Build-up Prior to Operation C OBRA",
+      "Footnote_Referenced_Source": "Hechler, The Enemy Build-up Prior to Operation C OBRA",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Hechler Report on Enemy Build-up Prior to Operation COBRA"
+    },
+    {
+      "Footnote": "13b",
+      "Footnote_Number": "13",
+      "Footnote_Text": "MS #159 (Stueckler).",
+      "Footnote_Referenced_Source": "MS #159 (Stueckler)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Foreign Military Studies MS #159 by Stueckler"
+    },
+    {
+      "Footnote": "14",
+      "Footnote_Number": "14",
+      "Footnote_Text": "MS # A-903 (Bayerlein).",
+      "Footnote_Referenced_Source": "MS # A-903 (Bayerlein)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Foreign Military Studies MS # A-903 by Fritz Bayerlein"
+    },
+    {
+      "Footnote": "15a",
+      "Footnote_Number": "15",
+      "Footnote_Text": "See MS # B-418 (Choltitz)",
+      "Footnote_Referenced_Source": "MS # B-418 (Choltitz)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Foreign Military Studies MS # B-418 by Dietrich von Choltitz"
+    },
+    {
+      "Footnote": "15b",
+      "Footnote_Number": "15",
+      "Footnote_Text": "MS # B-489 (Ziegelmann)",
+      "Footnote_Referenced_Source": "MS # B-489 (Ziegelmann)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Foreign Military Studies MS # B-489 by Ernst Ziegelmann"
+    },
+    {
+      "Footnote": "15c",
+      "Footnote_Number": "15",
+      "Footnote_Text": "MS # P-159 (Stueckler)",
+      "Footnote_Referenced_Source": "MS # P-159 (Stueckler)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Foreign Military Studies MS # P-159 by Stueckler"
+    },
+    {
+      "Footnote": "15d",
+      "Footnote_Number": "15",
+      "Footnote_Text": "MS # B-179 (Hausser)",
+      "Footnote_Referenced_Source": "MS # B-179 (Hausser)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Foreign Military Studies MS # B-179 by Paul Hausser"
+    },
+    {
+      "Footnote": "15e",
+      "Footnote_Number": "15",
+      "Footnote_Text": "Pz Lehr Div FO, 23 Jul, Pz Lehr Div lb KTB, Allg. Anlagen, Annex 241.",
+      "Footnote_Referenced_Source": "Pz Lehr Div FO, 23 Jul, Pz Lehr Div lb KTB, Allg. Anlagen, Annex 241",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Panzer Lehr Division Field Order, 23 Jul, Panzer Lehr Division lb Kriegstagebuch, Allgemeine Anlagen, Annex 241"
+    },
+    {
+      "Footnote": "16a",
+      "Footnote_Number": "16",
+      "Footnote_Text": "See Hausser's Est of the Situation, 19 Jul",
+      "Footnote_Referenced_Source": "Hausser's Est of the Situation, 19 Jul",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Hausser's Estimate of the Situation, 19 Jul"
+    },
+    {
+      "Footnote": "16b",
+      "Footnote_Number": "16",
+      "Footnote_Text": "Kluge's forwarding letter, 21 Jul, AGp B Ia Lagebeurteilungen und Wochenmeldungen.",
+      "Footnote_Referenced_Source": "Kluge's forwarding letter, 21 Jul, AGp B Ia Lagebeurteilungen und Wochenmeldungen",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Kluge's forwarding letter, 21 Jul, Army Group B Ia Lagebeurteilungen und Wochenmeldungen"
+    },
+    {
+      "Footnote": "17",
+      "Footnote_Number": "17",
+      "Footnote_Text": "Telecon, Kluge, Pemsel, and Tempelhoff, 1845, 26 Jul, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Army Group B Kriegstagebuch (KTB)"
+    },
+    {
+      "Footnote": "18",
+      "Footnote_Number": "18",
+      "Footnote_Text": "Telecon, Kluge to Warlimont, 0925, 28 Jul, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Army Group B Kriegstagebuch (KTB)"
+    },
+    {
+      "Footnote": "19",
+      "Footnote_Number": "19",
+      "Footnote_Text": "Telecon, Kluge and Pemsel, 1640, 28 Jul, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Army Group B Kriegstagebuch (KTB)"
+    },
+    {
+      "Footnote": "20",
+      "Footnote_Number": "20",
+      "Footnote_Text": "Hodgson, R-40.",
+      "Footnote_Referenced_Source": "Hodgson, R-40",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Hodgson Report R-40"
+    },
+    {
+      "Footnote": "21a",
+      "Footnote_Number": "21",
+      "Footnote_Text": "USSAFE, Intelligence Study on Effectiveness of Carpet Bombing, 21 Feb 45, Hist Sec AF File, Carpet Bombing.",
+      "Footnote_Referenced_Source": "USSAFE, Intelligence Study on Effectiveness of Carpet Bombing, 21 Feb 45, Hist Sec AF File, Carpet Bombing",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "USSAFE Intelligence Study on Effectiveness of Carpet Bombing, 21 Feb 45, Historical Section Air Force File, Carpet Bombing"
+    },
+    {
+      "Footnote": "22",
+      "Footnote_Number": "22",
+      "Footnote_Text": "First U.S. Army, Report of Operations, I, 106-07.",
+      "Footnote_Referenced_Source": "First U.S. Army, Report of Operations, I, 106-07",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "First U.S. Army Report of Operations, Volume I, pages 106-07"
+    },
+    {
+      "Footnote": "23a",
+      "Footnote_Number": "23",
+      "Footnote_Text": "21 AGp Msg, 23 Jul",
+      "Footnote_Referenced_Source": "21 AGp Msg, 23 Jul",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "21 Army Group Message, 23 Jul"
+    },
+    {
+      "Footnote": "23b",
+      "Footnote_Number": "23",
+      "Footnote_Text": "FUSA Msg, 23 Jul, FUSA G-3 Jnl.",
+      "Footnote_Referenced_Source": "FUSA Msg, 23 Jul, FUSA G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "First U.S. Army Message, 23 Jul, First U.S. Army G-3 Journal"
+    },
+    {
+      "Footnote": "24",
+      "Footnote_Number": "24",
+      "Footnote_Text": "Ltr, Eisenhower to Montgomery for Bradley, 24 Jul, FWD-12438, Pogue Files.",
+      "Footnote_Referenced_Source": "Ltr, Eisenhower to Montgomery for Bradley, 24 Jul, FWD-12438, Pogue Files",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Letter, Eisenhower to Montgomery for Bradley, 24 Jul, FWD-12438, Pogue Files"
+    },
+    {
+      "Footnote": "25",
+      "Footnote_Number": "25",
+      "Footnote_Text": "FUSA G-2 Per Rpt 52, 1 Aug.",
+      "Footnote_Referenced_Source": "FUSA G-2 Per Rpt 52, 1 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "First U.S. Army G-2 Periodic Report 52, 1 Aug"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn17.html",
+  "Source_Footnote_Link_Capture_Date": "December 24, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+  "Source_Link_Capture_Date": "December 24, 2025"
+}

@@ -1,0 +1,275 @@
+{
+  "Events": [
+    {
+      "Event": "French Aims in the Liberation of Paris",
+      "Sub-event": "Importance of Paris to French Governance and Resistance Dynamics",
+      "Sub-event_summary": "Paris represented the liberation of France and the only effective seat of national governance, serving as the hub of administration, politics, railways, communications, and highways. In August 1944, it became the prize in an internal power contest within the French Resistance between de Gaullist patriots outside France and heterogeneous groups inside the country.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "Though was not an immediate major military goal to the Allies, to Frenchmen it meant the liberation of France. More than the spiritual capital, Paris was the only place from which the country could be effectively governed. It was the hub of national administration and politics and the center of the railway system, the communication lines, and the highways. Control of the city was particularly important in August 1944, because Paris was the prize of an intramural contest for power within the French Resistance movement.",
+        "Paragraph_17": "The fundamental aim of the Resistance--to rid France of the Germans-cemented together men of conflicting philosophies and interests but did not entirely hide the cleavage between the patriots within occupied France and those outside the country--groups in mutual contact only by secret radios and underground messengers. Outside France the Resistance had developed a politically homogeneous character under de Gaulle, who had established a political headquarters in Algiers and a military staff in London, and had proclaimed just before the cross-Channel attack that he headed a provisional government. Inside France, although it was freely acknowledged that de Gaulle had symbolically inspired anti-German resistance, heterogeneous groups had formed spontaneously into small, autonomous organizations existing in a precarious and clandestine status. In 1943 political supporters of de Gaulle inside and outside France were instrumental in creating a supreme co-ordinating Resistance agency within the country that, while not eradicating factionalism, had the effect of providing a common direction to Resistance activity and increasing de Gaulle's strength and authority in Allied eyes."
+      },
+      "Footnote_References": [16, 17],
+      "Place_Name": ["Paris", "France", "Algiers", "London"],
+      "Dates": {
+        "Date_group_of_event": "1943 - Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "1943 - Aug 1944 (BST)"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "French Aims in the Liberation of Paris",
+      "Sub-event": "Left-Wing Contestation and Arms Supply Dynamics",
+      "Sub-event_summary": "A large, vociferous left-wing contingent inside France contested de Gaulle's leadership, demanding arms and supplies to harass Germans more effectively. Some hoped to create a second front for Soviet benefit. De Gaullists outside France restricted large supply drops, favoring rural over urban delivery to limit left-wing strength development.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "Although political lines were not yet sharply drawn, a large, vociferous, and increasingly influential contingent of the left contested de Gaulle's leadership inside France. This group clamored for arms, ammunition, and military supplies, the more to harass the Germans. Some few in 1943 hoped in this small way to create the second front demanded by the Soviet Union. The de Gaullists outside the country were not anxious to have large amounts of military stores parachuted into France, and the matériel supplied was dropped in rural areas rather than near urban centers, not only to escape German detection but also to inhibit the development of a strong left-wing opposition."
+      },
+      "Footnote_References": [18],
+      "Place_Name": ["France"],
+      "Dates": {
+        "Date_group_of_event": "1943 - Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "1943 - Aug 1944 (BST)"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "French Aims in the Liberation of Paris",
+      "Sub-event": "Integration of Resistance into Allied Operations and FFI Formation",
+      "Sub-event_summary": "Early 1944 de Gaullists established Resistance as adjunct to Allied liberating armies. Resistance groups became OVERLORD support for information and assistance. French Forces of the Interior (FFI) formed shortly before cross-Channel attack as military organization. SHAEF recognized FFI as regular armed force under OVERLORD. General Koenig (London headquarters) became FFI commander; FFI (except southern units oriented to ANVIL) came under SHAEF and de Gaulle control upon Allied landing.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "Early in 1944 the de Gaullists succeeded in establishing the entire Resistance movement as the handmaiden of the Allied liberating armies. The Resistance groups inside France became an adjunct of OVERLORD. French Resistance members, instead of launching independent operations against the Germans, were primarily to furnish information and render assistance to the Allied military forces. To co-ordinate this activity with the Allied operations, a military organization of Resistance members was formed shortly before the cross-Channel attack: the French Forces of the Interior. SHAEF formally recognized the FFI as a regular armed force and accepted the organization as a component of the OVERLORD forces. General Koenig (whose headquarters was in London), the military chief of the Free French armed forces already under SHAEF, became the FFI commander. When the Allies landed on French soil, the FFI (except those units engaged in operations not directly connected with the OVERLORD front--primarily those in the south, which were oriented toward the forthcoming ANVIL landing on the Mediterranean coast) came under the command of SHAEF and thus under de Gaulle's control."
+      },
+      "Footnote_References": [19],
+      "Place_Name": ["France", "London", "Algiers"],
+      "Dates": {
+        "Date_group_of_event": "Early 1944 - Jun 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "Early 1944 - Jun 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "French Forces of the Interior (FFI)",
+        "Unit_Nationality": "FR",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": {
+            "Name": "Dwight D. Eisenhower",
+            "Rank": "General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "FFI",
+            "Name": "Pierre Koenig",
+            "Rank": "General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Pierre_Koenig"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "French Aims in the Liberation of Paris",
+      "Sub-event": "Koenig Orders Cessation of Revolt Activities and Onset of Unrest (July–August 1944)",
+      "Sub-event_summary": "July news of Paris unrest and agitation for unaided liberation prompted Koenig to order immediate cessation of activities risking social/political convulsion. Despite order, August German garrison decrease, American approach, and Pétain government disintegration created patriotic excitement. By 18 August over half railway workers struck, policemen disappeared from streets, public anti-German demonstrations frequent, armed FFI openly active, Resistance posters called for strike, mobilization, insurrection.",
+      "Sub-event_fulltext": {
+        "Paragraph_20": "News in July of unrest in Paris and intimations that there was agitation for an unaided liberation of the city by the Resistance led General Koenig to order immediate cessation of activities that might cause social and political convulsion. Since Allied plans did not envision the immediate liberation of the capital, a revolt might provoke bloody suppression on the part of the Germans, a successful insurrection might place de Gaullist opponents in the seat of political power, civil disorder might burgeon into full-scale revolution.",
+        "Paragraph_21": "Despite Koenig's order, the decrease in the German garrison in August, the approach of American troops, and the disintegration of the Pétain government promoted an atmosphere charged with patriotic excitement. By 18 August more than half the railway workers were on strike and virtually all the policemen in the capital had disappeared from the streets for the same reason. Public anti-German demonstrations occurred frequently. Armed FFI members moved through the streets quite openly. Resistance posters appeared calling for a general strike, for mobilization, for insurrection."
+      },
+      "Footnote_References": [20],
+      "Place_Name": ["Paris"],
+      "Dates": {
+        "Date_group_of_event": "Jul 1944 - 18 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "Jul 1944 - 18 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "French Forces of the Interior (FFI)",
+        "Unit_Nationality": "FR",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": {
+            "Name": "Pierre Koenig",
+            "Rank": "General"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "French Aims in the Liberation of Paris",
+      "Sub-event": "Local FFI Occupation of Key Buildings (19 August)",
+      "Sub-event_summary": "German reaction to brewing revolt manifestations appeared feeble. On 19 August small local FFI groups, without central direction or discipline, forcibly took possession of police stations, town halls, national ministries, newspaper buildings, and Hôtel de Ville (municipal government seat). FFI military component directly challenged Choltitz.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "The German reaction to these manifestations of brewing revolt seemed so feeble that on 19 August small local FFI groups, without central direction or discipline, forcibly took possession of police stations, town halls, national ministries, newspaper buildings, and the seat of the municipal government, the Hôtel de Ville. The military component of the French Resistance, the FFI, thus disobeyed orders and directly challenged Choltitz."
+      },
+      "Footnote_References": [],
+      "Place_Name": ["Paris", "Hôtel de Ville"],
+      "Dates": {
+        "Date_group_of_event": "19 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "19 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "French Forces of the Interior (FFI)",
+        "Unit_Nationality": "FR"
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    }
+  ],
+  "Footnotes": {
+    "Footnote": [
+      {
+        "Footnote": "16",
+        "Footnote_Number": 16,
+        "Footnote_Text": "See, for example, F. F. F. (Forces Françaises de l'Intérieur), pp. 1-2.",
+        "Footnote_Referenced_Source": "Forces Françaises de l'Intérieur (FFI) records, pp. 1-2",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "17",
+        "Footnote_Number": 17,
+        "Footnote_Text": "See, for example, F. F. F. (Forces Françaises de l'Intérieur), pp. 3-5.",
+        "Footnote_Referenced_Source": "Forces Françaises de l'Intérieur (FFI) records, pp. 3-5",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "18",
+        "Footnote_Number": 18,
+        "Footnote_Text": "See, for example, F. F. F. (Forces Françaises de l'Intérieur), pp. 6-8.",
+        "Footnote_Referenced_Source": "Forces Françaises de l'Intérieur (FFI) records, pp. 6-8",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "19",
+        "Footnote_Number": 19,
+        "Footnote_Text": "SHAEF GO 1, 6 Jun 44.",
+        "Footnote_Referenced_Source": "SHAEF General Order 1, 6 June 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "20",
+        "Footnote_Number": 20,
+        "Footnote_Text": "Koenig Msg, 17 Jul 44.",
+        "Footnote_Referenced_Source": "General Koenig Message, 17 July 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      }
+    ]
+  },
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn29.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-29",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+  "Source_Link_Capture_Date": "2025-12-29"
+}

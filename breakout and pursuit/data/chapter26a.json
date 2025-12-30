@@ -1,0 +1,1374 @@
+{
+  "Events": [
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Halt of XV Corps and Formation of the Gap",
+      "Sub-event_summary": "General Bradley halts the XV Corps south of Argentan on 13 August 1944, creating the Argentan-Falaise Gap as Canadian forces remain north of Falaise, leading to later controversy over not closing the gap.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "When General Bradley halted the XV Corps just south of Argentan on 13 August, the Canadian army was still several miles north of Falaise. The stretch of terrain--less than twenty-five miles--that separated Canadian and American forces became known as the Argentan-Falaise Gap. Why Bradley did not allow Patton to try to close the gap and seal the Argentan--Falaise pocket later became the subject of a considerable polemic."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Argentan-Falaise Gap",
+      "Dates": {
+        "Date_group_of_event": "13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "130000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "XV Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "XV Corps",
+          "Name": "Wade H. Haislip",
+          "Rank": "Major General",
+          "Date": "August 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Wade_H._Haislip",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": "https://upload.wikimedia.org/wikipedia/commons/2/22/Falaise_Pocket_German_Counterattack.png",
+        "Description": "Historical map showing the German counterattack in the Falaise Pocket",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Argentan-Falaise Gap",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Map_Reference": "Argentan-Falaise Pocket, 12-16 August 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Falaise_pocket#/media/File:Falaise_Pocket_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan-Falaise Gap",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Weather_text": "Very hot and clear conditions based on contemporary diary entries.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.5",
+          "South": "47.8",
+          "North": "49.6"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Rumor about Time Bombs",
+      "Sub-event_summary": "Post-event rumor attributed the halt to Allied air force warnings about time bombs dropped in the area, though the bombs were fused for a maximum 12-hour delay and posed no danger.",
+      "Sub-event_fulltext": {
+        "Paragraph_2": "Rumor soon after the event ascribed the halt to warnings by the Allied air forces that planes had dropped time bombs along the highways in the Argentan--Falaise area to harass German movements; further northward movement by the XV Corps would have exposed American troops to this hazard. Whether this had a part in shaping Bradley's decision or not, the fact was that fighter-bomber pilots had sown delayed-action explosives over a wide area between 10 and 13 August, though the bombs were fused for a maximum of twelve hours delay and thus could not have endangered the troops."
+      },
+      "Footnote_References": [
+        "1a",
+        "1b",
+        "1c"
+      ],
+      "Place_Name": "Argentan-Falaise area",
+      "Dates": {
+        "Date_group_of_event": "10-13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "APPROX 100000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "Allied air forces",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Dwight D. Eisenhower",
+          "Name": "Dwight D. Eisenhower",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": null,
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Delayed-action explosives",
+              "Identifier": "Time bombs",
+              "Quantity": null,
+              "Web_Reference": "https://en.wikipedia.org/wiki/Fuze#Time_fuzes",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": "https://www.flamesofwar.com/Portals/0/all_images/Historical/Cobra/Falaise-map.jpg",
+        "Description": "Historical map of the Falaise Pocket",
+        "License": "Copyright Flames of War"
+      },
+      "Place": {
+        "Place_Name": "Argentan-Falaise area",
+        "Place_GPS_coordinate": "48.8183 N, -0.1003 E",
+        "Map_Reference": "Closing the Argentan-Falaise Pocket, 17-19 August 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "ExternalMapLink": "https://mikesresearch.com/wp-content/uploads/2024/09/falaise-3.jpg",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan-Falaise area",
+        "Place_GPS_coordinate": "48.8183 N, -0.1003 E",
+        "Weather_text": "Very hot and clear conditions based on contemporary diary entries.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.5",
+          "South": "47.8",
+          "North": "49.6"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Danger of Head-on Meeting",
+      "Sub-event_summary": "Bradley explained the halt as avoiding a dangerous head-on meeting with Canadians, potentially leading to friendly fire; he suggested alternative coordination methods like selecting landmarks or shifting axes.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "Perhaps more to the point was General Bradley's later explanation that a head-on meeting of Canadians and Americans would have been a \"dangerous and uncontrollable maneuver\" that (in General Eisenhower's words) might have caused a \"calamitous battle between friends.\"",
+        "Paragraph_4": "Yet General Bradley himself afterwards offered two solutions that might have been applied to co-ordinate the artillery fires of the forces coming together: a distinctive terrain feature or conspicuous landmark could have been selected as the place of juncture, or the Canadian or American axis of advance could have been shifted several miles east or west to provide a double (and stronger) barrier across the German escape routes without the danger of a head-on meeting."
+      },
+      "Footnote_References": [
+        "2a",
+        "2b",
+        "2c",
+        "2d",
+        "3"
+      ],
+      "Place_Name": "Argentan-Falaise Gap",
+      "Dates": {
+        "Date_group_of_event": "13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "130000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "Canadian army",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "21 Army Group",
+          "Commander": "Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "First Canadian Army",
+          "Name": "Harry Crerar",
+          "Rank": "General",
+          "Date": "August 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_Crerar",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan-Falaise Gap",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Map_Reference": "Argentan-Falaise Pocket, 12-16 August 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/2/22/Falaise_Pocket_German_Counterattack.png",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan-Falaise Gap",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Weather_text": "Very hot and clear conditions based on contemporary diary entries.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.5",
+          "South": "47.8",
+          "North": "49.6"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Hampering Artillery and Air Operations",
+      "Sub-event_summary": "Closing the gap would hamper artillery and air support due to restricted missions and increased bombing error risk; Allied aircraft operated effectively until 17 August when close air support ceased.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "A disadvantage of bringing Canadians and Americans closer together was that it would have hampered artillery and particularly air operations. Close support missions would have become increasingly restricted and the danger of bombing error greater. As it was, the extremely fluid front necessitated considerable shifting of bomb lines to protect the ground troops and made the work of the Allied pilots a delicate matter.",
+        "Paragraph_6": "Yet for all the hazards of error, Allied aircraft operated in the Argentan-Falaise area with excellent effect until 17 August, when the bomb line in that sector was removed and close air support, at least officially, ceased."
+      },
+      "Footnote_References": [
+        "4a",
+        "4b",
+        "4c"
+      ],
+      "Place_Name": "Argentan-Falaise area",
+      "Dates": {
+        "Date_group_of_event": "17 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "170000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "Allied aircraft",
+        "Unit_Nationality": "US",
+        "Command_Structure": null,
+        "Subordinates": null,
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Fighter-bomber",
+              "Identifier": "P-47 Thunderbolt",
+              "Quantity": null,
+              "Web_Reference": "https://en.wikipedia.org/wiki/Republic_P-47_Thunderbolt",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan-Falaise area",
+        "Place_GPS_coordinate": "48.8183 N, -0.1003 E",
+        "Map_Reference": "Closing the Argentan-Falaise Pocket, 17-19 August 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Argentan-Falaise area",
+        "Place_GPS_coordinate": "48.8183 N, -0.1003 E",
+        "Weather_text": "Very hot and clear conditions based on contemporary diary entries.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.5",
+          "South": "47.8",
+          "North": "49.6"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Preference for Solid Shoulder at Argentan",
+      "Sub-event_summary": "Bradley preferred a solid shoulder at Argentan over risking a broken neck at Falaise, doubting the corps' ability to keep the gap closed against believed 19 German divisions.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "Another reason contributing to General Bradley's reluctance to send American troops beyond Argentan was his preference, as he later said, for \"a solid shoulder at Argentan to a broken neck at Falaise.\" Although he afterwards stated that he had not doubted the ability of the XV Corps to close the gap (despite increasing resistance on the morning of 13 August), he had questioned the ability of the corps to keep the gap closed. Incorrectly believing that elements of nineteen German divisions were already stampeding eastward through the gap, he thought it conceivable that they would trample the thin line of American troops."
+      },
+      "Footnote_References": [
+        "5"
+      ],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "130900Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "German divisions",
+        "Unit_Nationality": "DE",
+        "Command_Structure": null,
+        "Subordinates": null,
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.74441 N, -0.02023 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.74441 N, -0.02023 E",
+        "Weather_text": "Very hot and clear conditions based on contemporary diary entries.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.5",
+          "South": "47.8",
+          "North": "49.6"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Exposed Position of XV Corps",
+      "Sub-event_summary": "The XV Corps was in an exposed position with open flanks; intelligence unaware of Eberbach's planned attack on the left flank through a 25-mile gap between Mayenne and Carrouges.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Holding the XV Corps at Argentan conformed with General Bradley's concept of destroying the enemy by closing two jaws, for at Argentan the XV Corps formed the lower front teeth of a not yet solid mandible. Actually, the XV Corps was already in an exposed position. Both flanks were open. There were no German forces to speak of to threaten the right flank, but the situation was quite the opposite on the left.",
+        "Paragraph_9": "American intelligence officers did not seem aware of Eberbach's mission to launch a massive attack against the deep XV Corps left flank, yet if Eberbach had been able to get it off, the attack would have struck exactly through a gap in the American line. Between the 1st Division troops firmly ensconced at Mayenne and French forces at Carrouges there was a gap of about twenty-five miles. American troops started to close the gap on the morning of 13 August, but until they actually did, a XV Corps advance beyond Argentan to close the Falaise gap would have extended the Mayenne gap. Although General Bradley did not mention this fact in his later account, it was reasonable for him to be concerned at the time with the exposed position of the XV Corps."
+      },
+      "Footnote_References": [
+        "6"
+      ],
+      "Place_Name": "Mayenne-Carrouges gap",
+      "Dates": {
+        "Date_group_of_event": "13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "130900Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "1st Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": null,
+        "Subordinates": {
+          "Unit": "1st Infantry Division",
+          "Name": "Clarence R. Huebner",
+          "Rank": "Major General",
+          "Date": "August 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Clarence_R._Huebner",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Mayenne",
+        "Place_GPS_coordinate": "48.3032 N, -0.6137 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Mayenne",
+        "Place_GPS_coordinate": "48.3032 N, -0.6137 E",
+        "Weather_text": "Very hot and clear conditions based on contemporary diary entries.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0",
+          "East": "0.8",
+          "South": "47.4",
+          "North": "49.2"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Army Group Boundary and Authority",
+      "Sub-event_summary": "Bradley may have felt advancing beyond Argentan exceeded his authority as it crossed the army group boundary into 21 Army Group zone without Montgomery's consent.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "These reasons were sufficient to justify General Bradley's decision, but he may also have felt he could not let the XV Corps go to and beyond Argentan without exceeding his authority. Near Argentan the American troops were already across the army group boundary and impinging on the 21 Army Group zone. Since General Montgomery commanded the ground forces in France, Bradley needed his consent to go farther. Although Montgomery did not prohibit American advance beyond the boundary, neither did Bradley propose it."
+      },
+      "Footnote_References": [
+        "7a",
+        "7b"
+      ],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "130000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "12th Army Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Dwight D. Eisenhower",
+          "Name": "Dwight D. Eisenhower",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "12th Army Group",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "Date": "August 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.74441 N, -0.02023 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.74441 N, -0.02023 E",
+        "Weather_text": "Very hot and clear conditions based on contemporary diary entries.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.5",
+          "South": "47.8",
+          "North": "49.6"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Montgomery's Expectation for Canadians",
+      "Sub-event_summary": "Montgomery did not initiate American advance beyond the boundary, expecting Canadians to close the gap from the north more quickly due to shorter distance and anticipated German focus on the south.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "General Montgomery did not take the initiative, probably because he thought the Canadians would close the gap from the north. Early in August he had planned to have Patton's Third Army make a wide envelopment to the Seine. Instead, Bradley had reacted to the Mortain counterattack by suggesting and securing approval for a shorter envelopment--the right hook thrust by the XV Corps to Argentan. The virtue of this maneuver was that it took advantage of the Canadian attack on 8 August toward Falaise, an attack launched out of an entirely different context. Juncture of the two forces was implicit. Yet the Americans were at that time much farther from Argentan than the Canadians. Montgomery, estimating that the Germans would shift their defensive strength to protect their southern flank against the Americans, consequently felt that the Canadians, attacking from the opposite flank, could cover the shorter distance to Argentan more quickly.",
+        "Paragraph_12": "Yet the Americans were at that time much farther from Argentan than the Canadians. Montgomery, estimating that the Germans would shift their defensive strength to protect their southern flank against the Americans, consequently felt that the Canadians, attacking from the opposite flank, could cover the shorter distance to Argentan more quickly."
+      },
+      "Footnote_References": [
+        "8a",
+        "8b",
+        "8c"
+      ],
+      "Place_Name": "Seine",
+      "Dates": {
+        "Date_group_of_event": "Early August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "BEGINNING AUG 44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Third Army",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "Date": "August 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Seine",
+        "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Seine",
+        "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+        "Weather_text": "Warm and clear conditions in northern France during early August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "1.0",
+          "East": "3.8",
+          "South": "47.9",
+          "North": "49.8"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Retrospect as Tactical Error",
+      "Sub-event_summary": "In retrospect, halting at Argentan was seen by many Allied and German commanders as a tactical error, missing an opportunity to exploit German vulnerability.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "Halting the XV Corps at Argentan seemed in retrospect to many commanders, Allied and German, to have been a tactical error, a failure to take full advantage of German vulnerability."
+      },
+      "Footnote_References": [
+        "9a",
+        "9b"
+      ],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "130000Z AUG 44"
+      },
+      "TOE": null,
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.74441 N, -0.02023 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.74441 N, -0.02023 E",
+        "Weather_text": "Very hot and clear conditions based on contemporary diary entries.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.5",
+          "South": "47.8",
+          "North": "49.6"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Bradley's Later View and Blaming Montgomery",
+      "Sub-event_summary": "Bradley later viewed the halt as a mistake, placing responsibility on Montgomery, recalling doubts about Montgomery's ability to close the gap and observing German reinforcements and escapes.",
+      "Sub-event_fulltext": {
+        "Paragraph_14": "General Bradley, too, seemed afterwards to consider the halt a mistake, and he sought to refute criticism by placing the responsibility for the halt on Montgomery. In that connection, he recalled that he and Patton had doubted \"Monty's ability to close the gap at Argentan\" from the north, and had \"waited impatiently\" for word to continue northward. While waiting, Bradley wrote, he and Patton saw the Germans reinforce the shoulders of the Argentan-Falaise gap and watched the enemy pour troops and materiel eastward to escape out of the unsealed pocket. It seemed to him and Patton, Bradley remembered, that Dempsey's British army by driving from the northwest was accelerating German movement eastward and facilitating German escape, actually pushing the Germans out of the open end of the pocket, like squeezing a tube of tooth paste. \"If Monty's tactics mystified me,\" Bradley later wrote, \"they dismayed Eisenhower even more. And . . . a shocked Third Army looked on helplessly as its quarry fled [while] Patton raged at Montgomery's blunder.\""
+      },
+      "Footnote_References": [
+        "10"
+      ],
+      "Place_Name": "Argentan-Falaise Gap",
+      "Dates": {
+        "Date_group_of_event": "13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "130000Z AUG 44"
+      },
+      "TOE": {
+        "Unit": "British army",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "21 Army Group",
+          "Commander": "Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Second Army",
+          "Name": "Miles Dempsey",
+          "Rank": "Lieutenant General",
+          "Date": "August 1944",
+          "End_Date_of_command": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Miles_Dempsey",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan-Falaise Gap",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Argentan-Falaise Gap",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Weather_text": "Very hot and clear conditions based on contemporary diary entries.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.5",
+          "South": "47.8",
+          "North": "49.6"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Clarification on German Movements and Eisenhower's Non-Intervention",
+      "Sub-event_summary": "Germans were building shoulders by 13 August but not yet fleeing; Bradley's memory may be faulty; Eisenhower did not intervene, respecting tactical decisions of commanders closer to the situation.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "It was true that the Germans were building up the shoulders of the gap by 13 August, but by that date they were not fleeing eastward to escape encirclement. Either Bradley and Patton were anticipating what was soon to occur or General Bradley's memory was faulty by several days. If Patton, in a subordinate role, could only rage, and if Bradley thought he might offend a sensitive Montgomery, Eisenhower, who was in France and following combat developments, might have resolved the situation had he thought it necessary to do so.",
+        "Paragraph_16": "Yet General Eisenhower did not intervene. Interfering with a tactical decision made by a commander who was in closer contact with the situation was not Eisenhower's method of exercising command. Long after the event, General Eisenhower implied that the gap might have been closed, which, he thought, \"might have won us a complete battle of annihilation.\""
+      },
+      "Footnote_References": [
+        "11a",
+        "11b",
+        "11c"
+      ],
+      "Place_Name": "Argentan-Falaise Gap",
+      "Dates": {
+        "Date_group_of_event": "13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "130000Z AUG 44"
+      },
+      "TOE": null,
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan-Falaise Gap",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Argentan-Falaise Gap",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Weather_text": "Very hot and clear conditions based on contemporary diary entries.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.5",
+          "South": "47.8",
+          "North": "49.6"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Risk and Coalition Considerations",
+      "Sub-event_summary": "Bradley might have proposed advancing but felt it risky and inappropriate in coalition context, leaving the decision to Montgomery or Eisenhower as responsible commanders.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "If this had been clear to Bradley at the time, he probably would have picked up the telephone and proposed to Montgomery that the XV Corps proceed beyond the army group boundary to make contact with the Canadians. Yet to propose was, in effect, to recommend, particularly in a situation where Montgomery and Bradley were both army group commanders and where one was British, the other American. Because sending the XV Corps through and beyond Argentan was risky, Bradley probably felt he could not in good conscience recommend such a course of action without reservation. Because Montgomery, not Bradley, was the ground force commander and thus the responsible commander, Bradley, by so proposing, would be saddling Montgomery with responsibility for a course of action that Bradley himself was, apparently, unwilling to recommend wholeheartedly. For Montgomery would, more than likely, have felt impelled to accept the recommendation, given the circumstances of the command setup. Where the assumption of risk was involved, finesse, good manners, and the subtleties of coalition warfare required the responsible commander to make the responsible decision without prompting, and this only Montgomery--or Eisenhower--could have done."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "130000Z AUG 44"
+      },
+      "TOE": null,
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.74441 N, -0.02023 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.74441 N, -0.02023 E",
+        "Weather_text": "Very hot and clear conditions based on contemporary diary entries.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.5",
+          "South": "47.8",
+          "North": "49.6"
+        }
+      }
+    },
+    {
+      "Event": "The Argentan-Falaise Pocket",
+      "Sub-event": "Summary of Tactical Considerations",
+      "Sub-event_summary": "Bradley's decision was based on five tactical considerations including Montgomery's boundary, resistance, exposed position, intelligence estimates, and upcoming Canadian attack.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "What might have seemed clear to commanders from the perspective of a later vantage point was not so clear at the moment of decision. Bradley himself made the decision to halt, probably on the basis of five tactical considerations: (1) Montgomery, the ground force commander, had not moved the army group boundary, nor did he seem about to do so, and thus he appeared not to favor further American advance. (2) On the evidence of the increasing resistance to the XV Corps on the morning of 13 August, there was no certainty that American troops could move through or around Argentan and beyond. (3) Since the XV Corps was already in an exposed position by virtue of the vacuums on both flanks, there was no point in closing the Argentan-Falaise gap at the expense of further exposing the corps, particularly by enlarging the gap on the left. (4) Intelligence estimates inclined to the incorrect view that the bulk of the German forces had already escaped the pocket. (5) The Canadians were about to launch their second attack to Falaise, an effort that, it was hoped, would get troops beyond Falaise to Argentan and preclude further American advance into the 21 Army Group sector."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "13 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+        "Zulu_date_group_of_event": "130900Z AUG 44"
+      },
+      "TOE": null,
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": {
+        "Link": null,
+        "Description": null,
+        "License": null
+      },
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.8922 N, -0.1804 E",
+        "Weather_text": "Very hot and clear conditions based on contemporary diary entries.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.5",
+          "East": "1.5",
+          "South": "47.8",
+          "North": "49.6"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "1a",
+      "Footnote_Number": "1",
+      "Footnote_Text": "Stacey, Canadian Army, p. 204, n. 9",
+      "Footnote_Referenced_Source": "Stacey, Canadian Army",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "The Victory Campaign: The Operations in North-West Europe, 1944-1945 by C.P. Stacey"
+    },
+    {
+      "Footnote": "1b",
+      "Footnote_Number": "1",
+      "Footnote_Text": "Patton, War As I Knew It, p. 105",
+      "Footnote_Referenced_Source": "Patton, War As I Knew It",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "War As I Knew It by George S. Patton"
+    },
+    {
+      "Footnote": "1c",
+      "Footnote_Number": "1",
+      "Footnote_Text": "AAF III, pp. 257-58",
+      "Footnote_Referenced_Source": "AAF III",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "The Army Air Forces in World War II, Volume III"
+    },
+    {
+      "Footnote": "2a",
+      "Footnote_Number": "2",
+      "Footnote_Text": "Bradley, Soldier's Story, p. 377",
+      "Footnote_Referenced_Source": "Bradley, Soldier's Story",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "A Soldier's Story by Omar Bradley"
+    },
+    {
+      "Footnote": "2b",
+      "Footnote_Number": "2",
+      "Footnote_Text": "Eisenhower, Crusade in Europe, pp. 278-79",
+      "Footnote_Referenced_Source": "Eisenhower, Crusade in Europe",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Crusade in Europe by Dwight D. Eisenhower"
+    },
+    {
+      "Footnote": "2c",
+      "Footnote_Number": "2",
+      "Footnote_Text": "see also, Butcher, My Three Years With Eisenhower, p. 641",
+      "Footnote_Referenced_Source": "Butcher, My Three Years With Eisenhower",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "My Three Years With Eisenhower by Harry C. Butcher"
+    },
+    {
+      "Footnote": "2d",
+      "Footnote_Number": "2",
+      "Footnote_Text": "It would also have disarranged plans to \"get the U.S. and British forces lined up and started together going east.\" Answers by Generals Smith and Bull to questions by Hist Sec, ETOUSA, 14-15 Sep 45.",
+      "Footnote_Referenced_Source": "Answers by Generals Smith and Bull to questions by Hist Sec, ETOUSA, 14-15 Sep 45",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives or U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Historical Section, ETOUSA records"
+    },
+    {
+      "Footnote": "3",
+      "Footnote_Number": "3",
+      "Footnote_Text": "Bradley, Soldier's Story, p. 377.",
+      "Footnote_Referenced_Source": "Bradley, Soldier's Story",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "A Soldier's Story by Omar Bradley"
+    },
+    {
+      "Footnote": "4a",
+      "Footnote_Number": "4",
+      "Footnote_Text": "AAF III, pp. 253-54",
+      "Footnote_Referenced_Source": "AAF III",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "The Army Air Forces in World War II, Volume III"
+    },
+    {
+      "Footnote": "4b",
+      "Footnote_Number": "4",
+      "Footnote_Text": "12th AGp Memo for Rcd (Kibler), 18 Aug, ML-205",
+      "Footnote_Referenced_Source": "12th AGp Memo for Rcd (Kibler), 18 Aug, ML-205",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives or U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "12th Army Group records, ML-205"
+    },
+    {
+      "Footnote": "4c",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Leigh-Mallory (in his \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946, p. 66) stated that he opposed the fixing of any bomb lines at all, for he felt they restricted close air support, denied fighter-bombers excellent targets, and allowed many enemy troops to escape. He would have preferred a less cautious policy, which would have permitted fighter-bombers to attack identified targets at will.",
+      "Footnote_Referenced_Source": "Leigh-Mallory Despatch, London Gazette",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": "Fourth Supplement to the London Gazette of December 31, 1946, p. 66"
+    },
+    {
+      "Footnote": "5",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Bradley, Soldier's Story, p. 377.",
+      "Footnote_Referenced_Source": "Bradley, Soldier's Story",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "A Soldier's Story by Omar Bradley"
+    },
+    {
+      "Footnote": "6",
+      "Footnote_Number": "6",
+      "Footnote_Text": "See above, Ch. XXV.",
+      "Footnote_Referenced_Source": "Ch. XXV",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "7a",
+      "Footnote_Number": "7",
+      "Footnote_Text": "Kibler, the 12th Army Group G-3, recollected long afterward that Bradley had telephoned Montgomery to ask permission to go beyond Argentan and that Montgomery had refused (Answers to Questions by Lt Col Hugh M. Cole, 29 May 45, ML-501)",
+      "Footnote_Referenced_Source": "Answers to Questions by Lt Col Hugh M. Cole, 29 May 45, ML-501",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives or U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "ML-501 records"
+    },
+    {
+      "Footnote": "7b",
+      "Footnote_Number": "7",
+      "Footnote_Text": "but Bradley denied ever asking (Bradley, Soldier's Story, p. 376).",
+      "Footnote_Referenced_Source": "Bradley, Soldier's Story",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "A Soldier's Story by Omar Bradley"
+    },
+    {
+      "Footnote": "8a",
+      "Footnote_Number": "8",
+      "Footnote_Text": "See 21 AGp Dir, M-518, 11 Aug",
+      "Footnote_Referenced_Source": "21 AGp Dir, M-518, 11 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives or U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "21 Army Group Directive M-518"
+    },
+    {
+      "Footnote": "8b",
+      "Footnote_Number": "8",
+      "Footnote_Text": "See above, Ch. XXV",
+      "Footnote_Referenced_Source": "Ch. XXV",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "8c",
+      "Footnote_Number": "8",
+      "Footnote_Text": "On Montgomery's overly optimistic estimate of the speed with which the Canadians would get to Falaise, see Wilmot, Struggle for Europe, p. 417.",
+      "Footnote_Referenced_Source": "Wilmot, Struggle for Europe",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "The Struggle for Europe by Chester Wilmot"
+    },
+    {
+      "Footnote": "9a",
+      "Footnote_Number": "9",
+      "Footnote_Text": "See, for example, Patton, War As I Knew It, p. 105",
+      "Footnote_Referenced_Source": "Patton, War As I Knew It",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "War As I Knew It by George S. Patton"
+    },
+    {
+      "Footnote": "9b",
+      "Footnote_Number": "9",
+      "Footnote_Text": "and MS # B-807 (Kuntzen).",
+      "Footnote_Referenced_Source": "MS # B-807 (Kuntzen)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives or U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Manuscript B-807 by Kuntzen"
+    },
+    {
+      "Footnote": "10",
+      "Footnote_Number": "10",
+      "Footnote_Text": "Bradley, Soldier's Story, p. 377.",
+      "Footnote_Referenced_Source": "Bradley, Soldier's Story",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "A Soldier's Story by Omar Bradley"
+    },
+    {
+      "Footnote": "11a",
+      "Footnote_Number": "11",
+      "Footnote_Text": "Eisenhower, Crusade in Europe, pp. 278-79",
+      "Footnote_Referenced_Source": "Eisenhower, Crusade in Europe",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Crusade in Europe by Dwight D. Eisenhower"
+    },
+    {
+      "Footnote": "11b",
+      "Footnote_Number": "11",
+      "Footnote_Text": "Pogue, Supreme Command, p. 214",
+      "Footnote_Referenced_Source": "Pogue, Supreme Command",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "The Supreme Command by Forrest C. Pogue"
+    },
+    {
+      "Footnote": "11c",
+      "Footnote_Number": "11",
+      "Footnote_Text": "Montgomery's chief of staff, Major-General Sir Francis de Guingand, believed that the Falaise gap might have been closed if Montgomery had not restricted the Americans by means of the existing army group boundary. \"The Americans felt this [restriction],\" he wrote. Guingand, Operation Victory, p. 407.",
+      "Footnote_Referenced_Source": "Guingand, Operation Victory",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Operation Victory by Francis de Guingand"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn26.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

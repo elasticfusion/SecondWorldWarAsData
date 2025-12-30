@@ -1,0 +1,627 @@
+{
+  "Events": [
+    {
+      "Event": "Strategic Context and Initial Directives for Eastward Advance",
+      "Sub-event": "Emergence of Third Army Orientation Toward Seine and Corps Reassignments",
+      "Sub-event_summary": "Operations exploit German disorganization in western France across open plain between Seine and Loire, suited for armor and airfield sites. Patton orders flexible dispositions on 13 August: XV Corps secures Argentan-Falaise gap, XX Corps (with 7th Armored) advances toward Dreux to block lower Seine escape, XII Corps concentrates southeast of le Mans for Paris-Orléans gap. On 15 August, objectives shift to bridgeheads: XX Corps at Chartres (Eure River), XV Corps at Dreux (Eure River), XII Corps at Châteaudun/Orléans with Loire flank protection.",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "Despite Irwin's bewilderment as to the meaning of his apparently uncharted and aimless peregrinations, a well-defined course of action was emerging. Although the strands of significance were often improvised and tangled, they reflected a pattern of activity designed to exploit the German disorganization in western France. The general area of operations for those units not engaged at the Argentan-Falaise pocket lay between the Seine and Loire Rivers, an open, level plain ideally suited for armored operations.",
+        "Paragraph_24": "The chalk plateaus in the Evreux, Dreux, Chartres, and Châteaudun areas provided excellent airfield sites capable of insuring satisfactory air support for post-OVERLORD operations east of the Seine. Since securing this ground was an essential preliminary to breaking out of the lodgment area, the operations of the Third Army were oriented toward this goal.",
+        "Paragraph_25": "Depending on further developments in the fast changing situation, the most likely objectives toward which the Third Army could next direct its efforts were closing the Argentan-Falaise gap, cutting off at the Seine the Germans escaping from the pocket, and securing the Paris-Orléans gap. Accordingly, Patton on 13 August ordered his forces to assume flexible dispositions. The XV Corps at Argentan was already in position to secure the Argentan-Falaise gap. Patton gave the XX Corps the 7th Armored Division and instructed Walker to secure Dreux as the initial step in blocking German escape across the lower Seine. The XII Corps, with newly assigned subordinate units, was to concentrate in the area southeast of le Mans to be in position for an advance to the Paris-Orléans gap. Because of the fluid situation, Patton instructed all three corps commanders to be prepared to operate to the north, northeast, or east.",
+        "Paragraph_26": "The XII Corps headquarters had virtually completed the administrative task of landing and assembling the Third Army units coming from England and dispatching them to the front. Although the corps headquarters had been scheduled to take control of the 7th Armored and 80th Infantry Divisions, neither proved available; the 80th was involved at Argentan, and the 7th Armored was moving toward Dreux. Fortunately, the 35th Division was about to complete its mission near Mortain, and Patton gave it, as well as the 4th Armored Division (coming from Brittany and VIII Corps control), to XII Corps. With these forces, XII Corps, in addition to protecting the south flank of the army, could advance toward the Paris-Orléans gap or, if necessary, support the XX Corps drive to the lower Seine.",
+        "Paragraph_27": "After Bradley halted the XV Corps at Argentan and after Patton ordered Haislip to split the corps and move two divisions eastward, Patton found himself on 15 August, for all practical purposes and exclusive of the VIII Corps in Brittany, in command of four corps of two divisions each. Half of the XV Corps (2d French Armored and 90th Infantry Divisions) was facing north in the Argentan area, while the XV Corps headquarters with the other half (5th Armored and 79th Infantry Divisions) was heading generally eastward, as were the XX Corps (7th Armored and 5th Divisions) and the XII Corps (4th Armored and 35th Divisions). On 15 August Patton directed the XII Corps to seize Châteaudun and Orléans and protect the army right flank along the Loire. He changed the objective of the XX Corps--instead of taking Dreux, the corps was to establish a bridgehead across the Eure River at Chartres. He instructed the XV Corps to establish a bridgehead over the Eure at Dreux. Thus evolved the Third Army three-corps drive eastward to the Seine. *[](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XII.jpg)*",
+        "Paragraph_28": "Though General Patton alerted his corps commanders for advances beyond these objectives, General Bradley exerted a restraining influence. Bradley was concerned with the strain that the rapid advance was imposing on supply and communications facilities. In accord with OVERLORD planning, Bradley wanted to give the logistical apparatus time to develop installations that would provide a secure base for post-OVERLORD operations beyond the Seine. He therefore restricted Patton to Dreux; Chartres, and Orléans so that he, Bradley, could there regroup his forces and readjust the army boundaries."
+      },
+      "Footnote_References": [13, 14, 15, 16, 17],
+      "Place_Name": ["Seine River", "Loire River", "Argentan-Falaise pocket", "Dreux", "Chartres", "Châteaudun", "Orléans", "Evreux", "le Mans"],
+      "Dates": {
+        "Date_group_of_event": "13 Aug 1944 - 15 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "13 Aug 1944 - 15 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "XII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": {
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "XII Corps",
+            "Name": "Gilbert R. Cook",
+            "Rank": "Major General",
+            "Date": "1943",
+            "End_Date_of_command": "APPROX 18 Aug 1944",
+            "End_Status": "Relieved",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Gilbert_R._Cook"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XII.jpg",
+          "Description": "Map XII illustrating Third Army eastward operations to the Seine.",
+          "License": "Public domain (US Government publication)"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Chartres, France",
+          "Place_GPS_coordinate": "48.4439 N, 1.4893 E",
+          "Map_Reference": "Map XII",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XII.jpg"
+        },
+        {
+          "Place_Name": "Orléans, France",
+          "Place_GPS_coordinate": "47.9029 N, 1.9093 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Chartres, France",
+          "Place_GPS_coordinate": "48.4439 N, 1.4893 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -0.5107, "East": 2.4893, "South": 47.4439, "North": 49.4439}
+        },
+        {
+          "Place_Name": "Orléans, France",
+          "Place_GPS_coordinate": "47.9029 N, 1.9093 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -0.0907, "East": 3.9093, "South": 46.9029, "North": 48.9029}
+        }
+      ]
+    },
+    {
+      "Event": "XII Corps Advance and Capture of Orléans and Châteaudun",
+      "Sub-event": "XII Corps Movement from le Mans, Seizure of Orléans and Châteaudun",
+      "Sub-event_summary": "XII Corps headquarters at le Mans on 13 August. On 15 August, combined 4th Armored CCA and 35th Division task force (under General Sebree) advances from St. Calais, captures Orléans airport and city by evening 16 August despite conflicting orders and light resistance. 320th Infantry captures Châteaudun by noon 17 August after all-night march and short engagement. German defenses limited to rear-guard elements and local improvised forces.",
+      "Sub-event_fulltext": {
+        "Paragraph_29": "To secure Orléans was the mission of Maj. Gen. Gilbert R. Cook, a West Pointer who had fought in France during World War I, who had commanded XII Corps since 1943, and who in addition was deputy commander of the Third Army. To perform his first combat mission as corps commander, General Cook set up his headquarters at le Mans on 13 August and awaited the arrival of his widely separated units--the 4th Armored Division coming out of Brittany and the 35th Division on the road from Mortain.",
+        "Paragraph_30": "Since Patton had told him to \"get started as soon as possible,\" Cook formed an armored-infantry column composed of elements from both divisions and headed the column down the main road from le Mans to Orléans on 15 August.",
+        "Paragraph_31": "The 4th Armored Division's CCA under Colonel Clarke had driven from Nantes to St. Calais--more than a hundred miles--in one day, but after a short halt for refueling, the tankers moved on toward Orléans. Immediately behind came a 35th Division regimental task force, Col. Robert Sears's 137th Infantry. The armor was eventually attached to the infantry, and both units then operated under General Sebree, the 35th's assistant division commander.",
+        "Paragraph_32": "There was little knowledge of enemy strength or dispositions save vague reports that the Germans were assembling forces to defend Châteaudun and Orléans. As a result of conflicting intelligence, Cook later received contrary messages from Patton advising him to proceed directly to Orléans and also to go by way of Châteaudun. To resolve the matter, Cook ordered Sebree to take Orléans if quick capture appeared feasible without reinforcement and if it appeared possible to hold the city with light forces after its capture.",
+        "Paragraph_33": "With very few maps, without prior reconnaissance, lacking information of enemy dispositions, and ignorant of the natural obstacles of the region, tankers and infantrymen plunged boldly toward Orléans. Though all the bridges between St. Calais and Orléans had been destroyed, energetic reconnaissance revealed crossing sites. By dark of 15 August, the large Orléans airport, which had been strongly fortified with antiaircraft and antitank guns but left virtually undefended, was captured, and American troops were at the outskirts of the city.",
+        "Paragraph_34": "About that time, because of changing plans on higher levels of command, Patton directed Cook to halt the advance on Orléans and secure Châteaudun. Cook objected, saying he could take both. Patton gave no immediate answer but called back later and authorized continuation of the attack on Orléans with the forces already committed. Cook again objected, this time to the restriction on employing his forces. Patton finally told him to go ahead and use his own judgment.",
+        "Paragraph_35": "After meeting with Baade, Sebree, Clarke, and Sears on the morning of 16 August, Cook directed the attack to Orléans continued. While two columns of armor attacked the city from the north and northeast, the 137th Infantry assaulted Orléans from the west. The converging attacks crushed slight opposition, and that night the city of Joan of Arc was in American hands.",
+        "Paragraph_36": "Meanwhile, Cook had also directed Baade to capture Châteaudun. General Baade sent Col. Bernard A. Byrne's 320th Infantry, and after an all-night march and a short sharp engagement against several hundred Germans with a few tanks, the regiment took the town by noon of 17 August.",
+        "Paragraph_37": "Concentrating his forces in the Châteaudun-Orléans area, General Cook awaited further instructions."
+      },
+      "Footnote_References": [18, 19, 20],
+      "Place_Name": ["le Mans", "St. Calais", "Orléans", "Châteaudun", "Nantes"],
+      "Dates": {
+        "Date_group_of_event": "15 Aug 1944 - 17 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "15 Aug 1944 - 17 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Subordinates": [
+          {
+            "Unit": "Combat Command A (CCA)",
+            "Name": "Clarke",
+            "Rank": "Colonel"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_Unspecified_Casualties": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Orléans, France",
+          "Place_GPS_coordinate": "47.9029 N, 1.9093 E"
+        },
+        {
+          "Place_Name": "Châteaudun, France",
+          "Place_GPS_coordinate": "48.0702 N, 1.3277 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Orléans, France",
+          "Place_GPS_coordinate": "47.9029 N, 1.9093 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -0.0907, "East": 3.9093, "South": 46.9029, "North": 48.9029}
+        },
+        {
+          "Place_Name": "Châteaudun, France",
+          "Place_GPS_coordinate": "48.0702 N, 1.3277 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -0.6723, "East": 3.3277, "South": 47.0702, "North": 49.0702}
+        }
+      ]
+    },
+    {
+      "Event": "German Defensive Reorganization and Withdrawal from Southwest France",
+      "Sub-event": "German Displacement and Initiation of Withdrawal",
+      "Sub-event_summary": "Loss of Orléans and Châteaudun disrupts German plans for Paris-Orléans gap defense. First Army and LXXX Corps displace to Fontainebleau and Reims; limited defensive efforts along upper Seine and Marne. OKW/OB WEST authorizes withdrawal from southwest France under LXIV Corps supervision; 16th Division covers Loire northern flank. Approximately 100,000 mostly non-combat personnel withdraw northeast, harassed by FFI and American air/ground pressure.",
+      "Sub-event_fulltext": {
+        "Paragraph_38": "The speed of the XII Corps advance to Orléans dashed German hopes of organizing a defense of the Paris-Orléans gap.",
+        "Paragraph_39": "The *First Army* and the *LXXX Corps* headquarters had displaced from the Bay of Biscay region to Fontainebleau and Reims, respectively, on 10 August to form a line west of the upper Seine that would tie in with the *Seventh Army* and *Fifth Panzer Army* defenses west of the lower Seine.",
+        "Paragraph_40": "Developments at Argentan and Falaise and the lack of combat units for immediate attachment to the *First Army,* however, prevented more than a cursory defensive effort along the upper Seine south of Paris. The *LXXX Corps* instead built up defensive positions along the Marne River. The troops that had met the Americans at Orléans and Châteaudun had been miscellaneous rear-guard elements reinforced by remnants of the *708th Division* and hastily assembled antiaircraft and antitank units, all under the control of local commanders who had been instructed to prepare defensive positions with the aid of impressed French inhabitants. The *First Army,* for all practical purposes, commanded local strongpoints \"of doubtful combat value.\"",
+        "Paragraph_41": "The loss of Orléans on 16 August, the weakness of the *First Army,* developments at Argentan and Falaise in Normandy, and the Allied invasion of southern France on 15 August prompted OKW and *OB WEST* to relinquish southwest France. Anticipating an Allied drive up the Rhone River valley and a continued eastward advance from Orléans, the Germans could foresee the eventual meeting between the Dragoon (southern France) and OVERLORD forces. They therefore tried to avert the isolation of their own forces in southwest France. As the Germans in Normandy began their definite withdrawal out of the Argentan-Falaise pocket, a general withdrawal from the Bay of Biscay to Dijon started under the supervision of the *LXIV Corps.*",
+        "Paragraph_42": "The *16th Division* was assigned the task along the Loire of covering the northern flank of the withdrawal movement. Spread rather thin, the division garrisoned the towns at the Loire crossing sites with the exception of Nantes, Angers, and Orléans, which were in American possession. Perhaps a thousand infantrymen reinforced by some artillery pieces, a few antitank weapons, and a handful of tanks, guarded the Loire crossings at Saumur, Tours, and Blois.",
+        "Paragraph_43": "The withdrawal from southwest France got under way as approximately 100,000 men moved northeastward, mostly on foot. The great majority had engaged in agricultural, construction, and security operations, and very few combat troops were among them. Their movement stimulated the FFI to activity that increased from relatively minor nuisance raids to major harassing action, including intensified FFI operations along the Loire River. At the same time, American pressure along the north bank of the Loire, both on the ground and in the air, increased."
+      },
+      "Footnote_References": [21, 22],
+      "Place_Name": ["Orléans", "Châteaudun", "Fontainebleau", "Reims", "Loire River", "Saumur", "Tours", "Blois", "Dijon"],
+      "Dates": {
+        "Date_group_of_event": "10 Aug 1944 - 17 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "10 Aug 1944 - 17 Aug 1944 (BST)"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {"Allied_US_Unspecified_Casualties": 0},
+        "Axis": {"Axis_DE_Unspecified_Casualties": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Loire River, France",
+          "Place_GPS_coordinate": "47.25 N, 0.0833 W"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Loire River area, France",
+          "Place_GPS_coordinate": "47.25 N, 0.0833 W",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -1.0833, "East": 1.0833, "South": 46.25, "North": 48.25}
+        }
+      ]
+    },
+    {
+      "Event": "XX Corps Advance and Capture of Chartres",
+      "Sub-event": "7th Armored Division and 5th Division Operations at Chartres",
+      "Sub-event_summary": "XX Corps objective shifts to Chartres. 7th Armored Division advances via Nogent-le-Rotrou, adjusts columns, attacks Chartres on 15 August. CCB enters but withdraws due to opposition; renewed assault 16 August. 5th Division assists 18 August, clears town after stiff resistance including tanks and artillery. Captures over 2,000 prisoners, major Luftwaffe installation, and positions 50 miles from Paris.",
+      "Sub-event_fulltext": {
+        "Paragraph_44": "The XX Corps mission to take Chartres had evolved out of a fluid situation that bred some confusion. After having attacked on the left of XV Corps on 13 August toward the Carrouges-Sées line, the same objective given to XV Corps, and having collided with XV Corps units, XX Corps received new orders sending it to Dreux. General Walker's field order, issued on the morning of 14 August, directed an attack \"on the axis le Mans-Nogent-le-Rotrou-Dreux-Mantes-Gassicourt to seize the line of the Seine between Meulan--Vernon.\"",
+        "Paragraph_45": "As far as Dreux was concerned, this projected an advance to the northeast. But XV Corps on the XX Corps left was preparing on the same day to advance to the east, also on Dreux, with the two divisions departing the Argentan area. If the two corps converged on a single point, in this case Dreux, a confusion of major proportions was inevitable. During the evening of 14 August, therefore, Walker received a new mission--Chartres became the new XX Corps objective.",
+        "Paragraph_46": "As a result of these changes, the initial commitment of the 7th Armored Division was fraught with haste and potential disorder. Having almost been sent into attack on the XV Corps left as it was hurrying from its recent unloading at Omaha Beach toward le Mans, the 7th Armored Division on the afternoon of 13 August received orders to pass through le Mans, clear the roads to enable the 35th Division to advance on Orléans, and assemble near la Ferté-Bernard, fifty miles southwest of Dreux. While the division was assembling near la Ferté-Bernard, General Walker arrived at the command post at noon, 14 August. He ordered the division commander, Maj. Gen. Lindsay McD. Silvester, to begin his attack at once--toward Dreux and Mantes-Gassicourt.",
+        "Paragraph_47": "Though some division components were still coming from the beaches, Silvester had three armored columns advancing toward Dreux that afternoon.",
+        "Paragraph_48": "The columns encountered scattered resistance and advanced about fifteen miles to Nogent-le-Rotrou by evening. At that time Silvester received word of the change in objective. He was to move instead to Chartres.",
+        "Paragraph_49": "Silvester immediately notified his subordinate commands of the change in direction, and by the morning of 15 August the forces had shifted and consolidated into two columns. The excellent road net, the sparseness of enemy opposition, and good command control had facilitated a difficult readjustment made during the hours of darkness. Yet, despite the shift of armored columns, considerable traffic intermingling occurred on 15 August between the 7th Armored and the 79th Divisions on the approaches to Nogent-le-Roi.",
+        "Paragraph_50": "Still mindful of driving to the Seine, General Silvester sent Col. Dwight A. Rosebaum's CCA and Lt. Col. James W. Newberry's CCR north of Chartres and into the area between Chartres and Dreux; he dispatched Brig. Gen. John B. Thompson's CCB to take the new objective. At the outskirts of Chartres by the evening of 15 August, CCB attacked with two forces. One force entered the town from the northwest; the other sought to enter from the southwest. The latter met determined opposition that came somewhat as a surprise because of the relatively light resistance encountered earlier. At a disadvantage in the failing light, the troops withdrew.",
+        "Paragraph_51": "Meanwhile, the 5th Division, which had moved from Angers, was arriving at an area about eight miles southwest of Chartres.",
+        "Paragraph_52": "Like the Americans, the Germans were surprised by the effectiveness of the Chartres defenses. The *First Army,* in command of the area between Chartres and the Loire, had designated Chartres as an \"absorption point,\" where remnants of units (among them the *17th SS Panzer Grenadier* and 352d *Divisions)* and stragglers from the Normandy battlefield were to be reorganized. As at Châteaudun and Orléans, a local commander was in charge of assembling these and rear-area troops (among them students of an antiaircraft training center at Chartres) into a coherent force. On the afternoon of 15 August, as the 7th U.S. Armored Division was approaching, General der Infanterie Kurt von der Chevallerie, the *First Army* commander, was holding a conference in the town to plan how newly arriving units that Hitler had ordered there--the *48th Division* from northern France and the *338th Division* from southern France--might best reinforce the defenses west of the Seine in general and the defenses of Chartres in particular. Before the fight for Chartres terminated, regimental-sized portions of both new divisions (the *338th* tied to the artillery of the vanished *708th Division)* were committed there.",
+        "Paragraph_53": "CCB of the 7th Armored Division attacked Chartres again on 16 August and extended a precarious hold over part of the objective despite active resistance inside the town and the arrival of increasing numbers of new troops in wooded areas just south of the town.",
+        "Paragraph_54": "Corps artillery, cautioned to be careful of the historic town and its cathedral, commenced to fire on 17 August in support of CCB, which encircled Chartres and fought to clear German troops from the town. Since the Germans continued to defend stubbornly, and because tanks were at a disadvantage in the narrow streets, General Walker ordered the 5th Division to aid the armor.",
+        "Paragraph_55": "General Irwin, still not altogether informed on the broad picture, wished he had more information on the American armored dispositions, felt that the XX Corps was overextended, and believed that security against enemy infiltration was insufficient. He dispatched the 11th Infantry just as General Walker made his usual telephone call to urge speed. The 11th Infantry attacked toward Chartres on 18 August, and, despite stiff opposition that included tanks and artillery, the combined efforts of armor and infantry succeeded in clearing and securing the remainder of the town.",
+        "Paragraph_56": "More than two thousand prisoners were taken, a large German Air Force installation (including airport, warehouses, depots, a bomb assembly plant, and fifty planes) was captured, and the XX Corps was in possession of a historic gateway to Paris, only fifty miles away."
+      },
+      "Footnote_References": [23, 24, 25, 26, 27, 28, 29],
+      "Place_Name": ["Chartres", "Nogent-le-Rotrou", "Dreux", "Angers", "la Ferté-Bernard"],
+      "Dates": {
+        "Date_group_of_event": "14 Aug 1944 - 18 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "14 Aug 1944 - 18 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "7th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XX Corps",
+          "Commander": {
+            "Name": "Walton H. Walker",
+            "Rank": "Major General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "7th Armored Division",
+            "Name": "Lindsay McD. Silvester",
+            "Rank": "Major General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Lindsay_McDonald_Silvester"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_Unspecified_Casualties": 0},
+        "Axis": {"Axis_DE_Prisoner_of_War": 2000, "Axis_DE_Unspecified_Casualties": 0}
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p569.jpg",
+          "Description": "General Walker Holding Roadside Conference with General Silvester.",
+          "License": "Public domain (US Government publication)"
+        },
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p571.jpg",
+          "Description": "Armored Bivouac Area near Chartres. The cathedral can be seen in the background.",
+          "License": "Public domain (US Government publication)"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Chartres, France",
+          "Place_GPS_coordinate": "48.4439 N, 1.4893 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Chartres, France",
+          "Place_GPS_coordinate": "48.4439 N, 1.4893 E",
+          "Weather_text": "Not specified in source.",
+          "Spatial_Bounding_Box Coordinates": {"West": -0.5107, "East": 2.4893, "South": 47.4439, "North": 49.4439}
+        }
+      ]
+    },
+    {
+      "Event": "XV Corps Advance to Dreux and Eure River Bridgehead",
+      "Sub-event": "XV Corps Movement from Argentan to Dreux",
+      "Sub-event_summary": "XV Corps (5th Armored and 79th Divisions) advances 60 miles from Argentan. 5th Armored crosses Eure River on 16 August, encircles and captures Dreux with light opposition, seizing nine artillery pieces, six destroyed tanks, and over 200 prisoners. 79th Division establishes bridgehead east of Eure at Nogent-le-Roi.",
+      "Sub-event_fulltext": {
+        "Paragraph_57": "At the same time, the XV Corps was making its sixty-mile advance from Argentan: the 79th Division toward Nogent-le-Roi, and the 5th Armored Division toward Dreux.",
+        "Paragraph_58": "The 5th Armored met only a few Germans at lightly defended roadblocks. Although German jamming of radios interfered with communications between unit commanders and the heads of their columns, the troops crossed the Eure River on the morning of 16 August, encircled Dreux, fired at some German troops fleeing eastward, and took the town that afternoon. Nine artillery pieces, six destroyed tanks, and a little more than two hundred prisoners were captured.",
+        "Paragraph_59": "The motorized 79th Division, advancing toward Nogent-le-Roi, met hardly a German and on 16 August established a bridgehead on the east bank of the Eure River, thirty-seven miles from Paris."
+      },
+      "Footnote_References": [30],
+      "Place_Name": ["Dreux", "Nogent-le-Roi", "Argentan"],
+      "Dates": {
+        "Date_group_of_event": "15 Aug 1944 - 16 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "15 Aug 1944 - 16 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "5th Armored Division",
+        "Unit_Nationality": "US"
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_Unspecified_Casualties": 0},
+        "Axis": {"Axis_DE_Prisoner_of_War": 200, "Axis_DE_Unspecified_Casualties": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Dreux, France",
+          "Place_GPS_coordinate": "48.7379 N, 1.3725 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Dreux, France",
+          "Place_GPS_coordinate": "48.7379 N, 1.3725 E",
+          "Weather_text": "Not specified in source.",
+          "Spatial_Bounding_Box Coordinates": {"West": -0.6275, "East": 3.3725, "South": 47.7379, "North": 49.7379}
+        }
+      ]
+    },
+    {
+      "Event": "Strategic Emphasis on Seine Crossing",
+      "Sub-event": "Prioritization of Seine Objectives Over Paris",
+      "Sub-event_summary": "Capture of Orléans and Chartres positions XII and XX Corps near Paris, but Dreux approach considered superior due to Eure bridges and road net. Seine River designated primary Allied objective over Paris as vital communications center.",
+      "Sub-event_fulltext": {
+        "Paragraph_60": "Although capture of Orléans and Chartres had placed the XII and XX Corps within striking distance of Paris, the approach to the French capital from Dreux was shorter and considered better. Five bridges across the Eure and a good road net afforded more than adequate accommodations for military movement.",
+        "Paragraph_61": "Despite the attractiveness and the importance of Paris--the most vital communications center in France--the Seine River, not the city, became the foremost Allied objective."
+      },
+      "Footnote_References": [31],
+      "Place_Name": ["Paris", "Dreux", "Seine River", "Eure River"],
+      "Dates": {
+        "Date_group_of_event": "16 Aug 1944 - 18 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+        "Zulu_date_group_of_event": "16 Aug 1944 - 18 Aug 1944 (BST)"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    }
+  ],
+  "Footnotes": {
+    "Footnote": [
+      {
+        "Footnote": "13",
+        "Footnote_Number": 13,
+        "Footnote_Text": "TUSA AAR, I, 26-27.",
+        "Footnote_Referenced_Source": "Third Army After Action Report, Volume I, pages 26-27",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "14",
+        "Footnote_Number": 14,
+        "Footnote_Text": "Msg, Patton to Corps Comdrs, 13 Aug, TUSA G-3 Jnl and File.",
+        "Footnote_Referenced_Source": "Message, Patton to Corps Commanders, 13 August 1944, Third Army G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "15",
+        "Footnote_Number": 15,
+        "Footnote_Text": "TUSA AAR, I, 27.",
+        "Footnote_Referenced_Source": "Third Army After Action Report, Volume I, page 27",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "16a",
+        "Footnote_Number": 16,
+        "Footnote_Text": "Msg, TUSA to XII Corps, 15 Aug, XII Corps G-3 Jnl and File.",
+        "Footnote_Referenced_Source": "Message, Third Army to XII Corps, 15 August 1944, XII Corps G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "16b",
+        "Footnote_Number": 16,
+        "Footnote_Text": "Msg, TUSA to XX Corps, 15 Aug, XX Corps G-3 Jnl and File.",
+        "Footnote_Referenced_Source": "Message, Third Army to XX Corps, 15 August 1944, XX Corps G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "17",
+        "Footnote_Number": 17,
+        "Footnote_Text": "Msg, 12th AGp to TUSA, 15 Aug, TUSA G-3 Jnl and File.",
+        "Footnote_Referenced_Source": "Message, 12th Army Group to Third Army, 15 August 1944, Third Army G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "18a",
+        "Footnote_Number": 18,
+        "Footnote_Text": "Msg, TUSA to XII Corps, 15 Aug, XII Corps G-3 Jnl and File.",
+        "Footnote_Referenced_Source": "Message, Third Army to XII Corps, 15 August 1944, XII Corps G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "18b",
+        "Footnote_Number": 18,
+        "Footnote_Text": "See also XII Corps AAR, Aug.",
+        "Footnote_Referenced_Source": "XII Corps After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "19",
+        "Footnote_Number": 19,
+        "Footnote_Text": "XII Corps AAR, Aug; 35th Div AAR, Aug; 4th Armd Div AAR, Aug.",
+        "Footnote_Referenced_Source": "XII Corps After Action Report, August 1944; 35th Division After Action Report, August 1944; 4th Armored Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "20a",
+        "Footnote_Number": 20,
+        "Footnote_Text": "MS # B-034 (Schramm).",
+        "Footnote_Referenced_Source": "German Manuscript B-034 (Schramm)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "20b",
+        "Footnote_Number": 20,
+        "Footnote_Text": "See also MS # B-728 (Zimmermann).",
+        "Footnote_Referenced_Source": "German Manuscript B-728 (Zimmermann)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "21a",
+        "Footnote_Number": 21,
+        "Footnote_Text": "MS # B-034 (Schramm).",
+        "Footnote_Referenced_Source": "German Manuscript B-034 (Schramm)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "21b",
+        "Footnote_Number": 21,
+        "Footnote_Text": "See also MS # B-728 (Zimmermann).",
+        "Footnote_Referenced_Source": "German Manuscript B-728 (Zimmermann)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "22",
+        "Footnote_Number": 22,
+        "Footnote_Text": "TUSA AAR, I, 28; XIX TAC AAR, Aug.",
+        "Footnote_Referenced_Source": "Third Army After Action Report, Volume I, page 28; XIX Tactical Air Command After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "23",
+        "Footnote_Number": 23,
+        "Footnote_Text": "XX Corps FO 13, 14 Aug, XX Corps G-3 Jnl and File.",
+        "Footnote_Referenced_Source": "XX Corps Field Order 13, 14 August 1944, XX Corps G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "24",
+        "Footnote_Number": 24,
+        "Footnote_Text": "7th Armd Div AAR, Aug.",
+        "Footnote_Referenced_Source": "7th Armored Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "25",
+        "Footnote_Number": 25,
+        "Footnote_Text": "Msg, XX Corps to 7th Armd Div, 14 Aug, XX Corps G-3 Jnl and File.",
+        "Footnote_Referenced_Source": "Message, XX Corps to 7th Armored Division, 14 August 1944, XX Corps G-3 Journal and File",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "26",
+        "Footnote_Number": 26,
+        "Footnote_Text": "7th Armd Div AAR, Aug.",
+        "Footnote_Referenced_Source": "7th Armored Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "27a",
+        "Footnote_Number": 27,
+        "Footnote_Text": "MS # B-034 (Schramm).",
+        "Footnote_Referenced_Source": "German Manuscript B-034 (Schramm)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "27b",
+        "Footnote_Number": 27,
+        "Footnote_Text": "See also MS # B-728 (Zimmermann).",
+        "Footnote_Referenced_Source": "German Manuscript B-728 (Zimmermann)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "28",
+        "Footnote_Number": 28,
+        "Footnote_Text": "7th Armd Div AAR, Aug.",
+        "Footnote_Referenced_Source": "7th Armored Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "29a",
+        "Footnote_Number": 29,
+        "Footnote_Text": "5th Div AAR, Aug.",
+        "Footnote_Referenced_Source": "5th Infantry Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "29b",
+        "Footnote_Number": 29,
+        "Footnote_Text": "XX Corps AAR, Aug.",
+        "Footnote_Referenced_Source": "XX Corps After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "30",
+        "Footnote_Number": 30,
+        "Footnote_Text": "XV Corps AAR, Aug; 5th Armd Div AAR, Aug; 79th Div AAR, Aug.",
+        "Footnote_Referenced_Source": "XV Corps After Action Report, August 1944; 5th Armored Division After Action Report, August 1944; 79th Infantry Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "31",
+        "Footnote_Number": 31,
+        "Footnote_Text": "TUSA AAR, I, 29.",
+        "Footnote_Referenced_Source": "Third Army After Action Report, Volume I, page 29",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      }
+    ]
+  },
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn28.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-29",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+  "Source_Link_Capture_Date": "2025-12-29"
+}

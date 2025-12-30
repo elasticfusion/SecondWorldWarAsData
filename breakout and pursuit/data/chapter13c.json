@@ -1,0 +1,1892 @@
+{
+  "Events": [
+    {
+      "Event": "Commitment of Armor",
+      "Sub-event": "Decision to commit armor on 26 July",
+      "Sub-event_summary": "General Collins committed armored forces on 26 July despite incomplete infantry objectives at Marigny and St. Gilles to accelerate the breakthrough in a three-corps offensive, with all air support assigned to VII Corps. To avoid congestion, only two armored columns were committed instead of three.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "For the Americans, the critical day of the COBRA operation was 26 July, when General Collins had gambled. He committed some of his forces assembled for the exploitation before the situation was unquestionably ripe for an exploitation maneuver. Specifically, the infantry had not captured the towns of Marigny and St. Gilles, road centers considered prerequisite to an uninhibited exploitation by mobile armored reserves.",
+        "Paragraph_19": "The fact that COBRA on 26 July was to become a three-corps offensive actually made it impossible for General Collins to wait for the infantry to seize Marigny and St. Gilles. The success of the larger effort depended basically on a VII Corps breakthrough. Emphasizing this fact, General Bradley assigned to VII Corps all the air support available on 26 July, thus obliging Collins to step up the attack. The only way to do this was to commit the armor.",
+        "Paragraph_20": "The basic gamble involved was the possibility that armored columns would congest the VII Corps battlefield. \"The only doubtful part of it [the original COBRA plan] to my mind,\" General Collins had said two weeks earlier, \"is we shouldn't count too much on fast movement of armored divisions through this country; if we make a break-through it is OK but until them . . . [the armored divisions] can't move any faster than the infantry.\"",
+        "Paragraph_21": "To minimize congestion, General Collins called upon only part of his reserve, two armored columns instead of the three that were ready."
+      },
+      "Footnote_References": [
+        "19",
+        "20"
+      ],
+      "Place_Name": "Marigny and St. Gilles",
+      "Dates": {
+        "Date_group_of_event": "26 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 260000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "VII Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "First US Army",
+              "Commander": "Omar Bradley",
+              "Name": "Omar Bradley",
+              "Rank": "Lieutenant General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.1°N 1.2333°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 22, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Marigny",
+          "Place_GPS_coordinate": "49.1°N 1.2333°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.3333",
+            "East": "-0.1333",
+            "South": "48.2",
+            "North": "50.0"
+          }
+        },
+        {
+          "Place_Name": "St. Gilles",
+          "Place_GPS_coordinate": "49.1°N 1.1667°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.2667",
+            "East": "-0.0667",
+            "South": "48.2",
+            "North": "50.0"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Commitment of Armor",
+      "Sub-event": "Objectives for armored columns on 26 July",
+      "Sub-event_summary": "The armored commitment aimed to deepen the penetration, with columns tasked to take Marigny and St. Gilles after air strikes. Commanders adjusted plans from reconnaissance to assault due to remaining enemy resistance, keeping artillery centralized.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "The commitment of the mobile units on 26 July was not so much the start of the exploitation as an effort to deepen the penetration. Instead of assigning exploitation objectives, Collins told one of the armored columns to take Marigny, the other St. Gilles. Two hundred fighter-bombers were to attack each town in advance of the thrusts.",
+        "Paragraph_23": "Only after these original infantry objectives were secured was the true exploitation phase of COBRA to begin.",
+        "Paragraph_24": "Having expected the COBRA air bombardment to obliterate the German defenses and the infantry to clear the routes of advance, the commanders of the mobile forces had planned to move at least as far as Marigny and St. Gilles with reconnaissance squadrons ahead of their main spearheads. Now a semi-administrative road march of this type was out of the question. The commanders replaced their reconnaissance units with assault troops and retained their artillery under centralized control rather than parceling it out to subordinate combat teams."
+      },
+      "Footnote_References": [
+        "21",
+        "22"
+      ],
+      "Place_Name": "Marigny and St. Gilles",
+      "Dates": {
+        "Date_group_of_event": "26 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 260000ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.1°N 1.2333°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 22, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Marigny",
+          "Place_GPS_coordinate": "49.1°N 1.2333°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.3333",
+            "East": "-0.1333",
+            "South": "48.2",
+            "North": "50.0"
+          }
+        },
+        {
+          "Place_Name": "St. Gilles",
+          "Place_GPS_coordinate": "49.1°N 1.1667°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.2667",
+            "East": "-0.0667",
+            "South": "48.2",
+            "North": "50.0"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Commitment of Armor",
+      "Sub-event": "1st Division and CCB advance to Marigny on 26 July",
+      "Sub-event_summary": "Maj. Gen. Huebner led the 1st Infantry Division and attached CCB to clear the road to Marigny. They bypassed enemy pockets, advanced against small arms fire, bomb craters, and roadblocks, encountering increasing resistance from the 353d Division and 2d SS Panzer Division near Marigny, halting progress in the afternoon despite air strikes.",
+      "Sub-event_fulltext": {
+        "Paragraph_25": "Clearing the road to Marigny became the responsibility of Maj. Gen. Clarence R. Huebner, who commanded the 1st Infantry Division and the attached Combat Command B of the 3d Armored Division. Alerted on the afternoon of 25 July to pass through the 9th Division the next day and capture Marigny, General Huebner ordered CCB (Col. Truman E. Boudinot) and the reinforced 18th Infantry (Col. George Smith, Jr.) to attack abreast astride the road. Not quite certain whether the 1st Division, which had motorized its infantry troops, was embarking on exploitation, a VII Corps staff officer in a routine telephone call to transmit the bomb safety line remarked somewhat facetiously that his message was unnecessary if \"you are going someplace and are going fast.\"",
+        "Paragraph_26": "General Huebner, who commanded one of the two divisions General Eisenhower had characterized as \"tops\" in the theater, was planning to go somewhere fast all right. He hoped to take Marigny quickly and proceed at once to exploit westward from Marigny to Coutances.",
+        "Paragraph_27": "The 1st Division made its approach march to the vicinity of the Périers-St. Lô highway during the night of 25 July without incident. Shortly after daybreak, 26 July, the leading units bypassed an enemy pocket of 150 men still north of the COBRA line of departure. Leaving the reduction of this small force to the reserve battalion of the 18th Infantry, the advance troops drove toward Marigny.",
+        "Paragraph_28": "With the combat command on the right (west) of the road and the infantry regiment on the left, the 1st Division troops moved cautiously against small arms fire. Bomb craters in the roads and defended hedgerows bounding the fields were the principal deterrents to a rapid advance. Small roadblocks also slowed the attack. Artillery and tank fire eliminated most of the opposition, but only after the infantry components had received heavy casualties, particularly among key personnel.",
+        "Paragraph_29": "Near Marigny, the troops encountered the increasing resistance of the 353d Division and the two companies of the 2d SS Panzer Division. Several Mark IV tanks and a few 75-mm. antitank guns north of the town halted progress early in the afternoon. Under cover of an extended tank fire fight, CCB attempted an envelopment to the right but achieved no success. A tactical air strike late in the afternoon enabled armored elements to reach the northern edge of the town; the enveloping forces buttoned up for the night about a mile west of Marigny."
+      },
+      "Footnote_References": [
+        "23",
+        "24",
+        "25",
+        "26"
+      ],
+      "Place_Name": "Marigny",
+      "Dates": {
+        "Date_group_of_event": "26 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 260000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "1st Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "VII Corps",
+              "Commander": "J. Lawton Collins",
+              "Name": "J. Lawton Collins",
+              "Rank": "Lieutenant General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "18th Infantry Regiment",
+              "Name": "George Smith, Jr.",
+              "Rank": "Colonel",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            },
+            {
+              "Unit": "Combat Command B, 3d Armored Division",
+              "Name": "Truman E. Boudinot",
+              "Rank": "Colonel",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Truman_Everett_Boudinot",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Personnel": "Fully staffed assumed",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [
+              {
+                "Origination_Country": "US",
+                "Name": "Sherman tank",
+                "Identifier": "M4",
+                "Quantity": "Unknown",
+                "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+                "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/4/4a/M4_Sherman_tank.jpg",
+                "Web_Reference_Capture_Date": "December 22, 2025"
+              }
+            ],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [
+              {
+                "Origination_Country": "DE",
+                "Name": "Mark IV tank",
+                "Identifier": "PzKpfw IV",
+                "Quantity": "Several",
+                "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+                "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Panzer_IV_Ausf_H.jpg",
+                "Web_Image_License": "Public domain",
+                "Web_Reference_Capture_Date": "December 22, 2025"
+              },
+              {
+                "Origination_Country": "DE",
+                "Name": "75-mm. antitank gun",
+                "Identifier": "7.5 cm Pak 40",
+                "Quantity": "A few",
+                "Web_Reference": "https://en.wikipedia.org/wiki/7.5_cm_Pak_40",
+                "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/4/4f/7.5_cm_Pak_40.jpg",
+                "Web_Image_License": "Public domain",
+                "Web_Reference_Capture_Date": "December 22, 2025"
+              }
+            ],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "353d Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "LXXXIV Corps",
+              "Commander": "Dietrich von Choltitz",
+              "Name": "Dietrich von Choltitz",
+              "Rank": "General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Dietrich_von_Choltitz",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "2d SS Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "II SS Panzer Corps",
+              "Commander": "Paul Hausser",
+              "Name": "Paul Hausser",
+              "Rank": "SS-Oberst-Gruppenführer",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Two companies",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 150
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/1st_Infantry_Division_in_World_War_II.jpg/1200px-1st_Infantry_Division_in_World_War_II.jpg",
+          "Description": "1st Infantry Division troops in Normandy",
+          "License": "Public domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.1°N 1.2333°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 22, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Marigny",
+          "Place_GPS_coordinate": "49.1°N 1.2333°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.3333",
+            "East": "-0.1333",
+            "South": "48.2",
+            "North": "50.0"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Commitment of Armor",
+      "Sub-event": "Actions at Marigny night of 26 July",
+      "Sub-event_summary": "American tanks reached northern Marigny, but mistaken reports led to a battalion becoming lost. Collins ordered exploitation to Coutances, but Huebner delayed due to uncertainty and resistance, leaving Marigny unsecured after two days.",
+      "Sub-event_fulltext": {
+        "Paragraph_30": "The presence of American tanks in the northern outskirts of Marigny and the abortive envelopment led the 18th Infantry to the erroneous belief that the combat command had taken the town. Acting on this mistaken impression, the regiment sent a battalion to bypass the town on the east during the evening and take high ground south of Marigny. The battalion took some high ground shortly before midnight and reported completion of its mission. Unfortunately, the battalion had become lost in the darkness; not only was it on the wrong objective, its actual location was a mystery.",
+        "Paragraph_31": "The belief that Marigny had been captured was one of the factors leading to General Collins' order to continue the attacks during the night of 26 July. Specifically, Collins instructed General Huebner to commence his exploitation toward Coutances. To provide additional elbow room for the 1st Division, General Collins redrew the boundary between the 1st and 9th Divisions.",
+        "Paragraph_32": "General Huebner for his part dared not carry out the order. He was not sure exactly where all his front-line units were, for reports of their locations and dispositions had confused his headquarters throughout the day; he was not certain that his troops had really secured Marigny; he was concerned by continuing resistance near Marigny; and, finally, he feared that large-scale movement during darkness would promote congestion and confusion.",
+        "Paragraph_33": "Still without Marigny after two days, the VII Corps had yet to launch its main exploiting effort westward to Coutances. As discouraging as this seemed to be, the success achieved on the other flank of the corps was quite the opposite."
+      },
+      "Footnote_References": [
+        "27",
+        "28"
+      ],
+      "Place_Name": "Marigny",
+      "Dates": {
+        "Date_group_of_event": "Night 26 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 262100ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "18th Infantry Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "1st Infantry Division",
+              "Commander": "Clarence R. Huebner",
+              "Name": "Clarence R. Huebner",
+              "Rank": "Major General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Clarence_R._Huebner",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.1°N 1.2333°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 22, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Marigny",
+          "Place_GPS_coordinate": "49.1°N 1.2333°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.3333",
+            "East": "-0.1333",
+            "South": "48.2",
+            "North": "50.0"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Commitment of Armor",
+      "Sub-event": "2d Armored Division mission on 26 July",
+      "Sub-event_summary": "Maj. Gen. Brooks commanded the 2d Armored Division with attached 22d Infantry to protect the COBRA flank. CCA under Brig. Gen. Rose led the advance through the 30th Division zone to secure St. Gilles, passing lines without difficulty and beginning the drive south.",
+      "Sub-event_fulltext": {
+        "Paragraph_34": "On the left (east) flank, Maj. Gen. Edward H. Brooks, commanding the 2d Armored Division, had what was essentially a protective mission: guarding the COBRA flank on the south and southeast. Yet if General Brooks realized that his mission was defensive in nature, he gave no indication of it. So far as he was concerned, he was going to move. With the 22d Infantry (Col. Charles T. Lanham) attached, he was to attack in a column of combat commands, which eventually were to split and make independent thrusts. Brig. Gen. Maurice Rose's Combat Command A, with the 22d Infantry attached, was to be the leading unit.",
+        "Paragraph_35": "Rose's troops were to pass through the 30th Division zone and secure St. Gilles. Effecting the passage of lines without difficulty, CCA drove south early on 26 July in a single column.",
+        "Paragraph_36": "Almost immediately after the troops crossed the Périers-St. Lô highway, an enemy antitank gun destroyed one Sherman, but this was a blow not soon repeated. Brooks told Rose to get moving, and Rose complied. As the column began to roll, only scattered artillery and antitank fire and an occasional defended hedgerow or ditch provided any genuine resistance. When combined with the problem of bomb craters dotting the countryside, this was nevertheless sufficient to preclude a rapid advance. In the early afternoon a defended roadblock several hundred yards north of St. Gilles held up progress for a short time, but tank fire and an air strike that destroyed four Mark IV tanks and a self-propelled gun soon eliminated the opposition."
+      },
+      "Footnote_References": [
+        "29",
+        "30"
+      ],
+      "Place_Name": "St. Gilles",
+      "Dates": {
+        "Date_group_of_event": "26 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 260000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "2d Armored Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "VII Corps",
+              "Commander": "J. Lawton Collins",
+              "Name": "J. Lawton Collins",
+              "Rank": "Lieutenant General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "Combat Command A",
+              "Name": "Maurice Rose",
+              "Rank": "Brigadier General",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Maurice_Rose",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            },
+            {
+              "Unit": "22d Infantry Regiment",
+              "Name": "Charles T. Lanham",
+              "Rank": "Colonel",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_T._Lanham",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [
+              {
+                "Origination_Country": "US",
+                "Name": "Sherman tank",
+                "Identifier": "M4",
+                "Quantity": "Unknown",
+                "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+                "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/4/4a/M4_Sherman_tank.jpg",
+                "Web_Reference_Capture_Date": "December 22, 2025"
+              }
+            ],
+            "Allied_Destroyed": [
+              {
+                "Origination_Country": "US",
+                "Name": "Sherman tank",
+                "Identifier": "M4",
+                "Quantity": "1",
+                "Web_Reference": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                "Web_Image_Reference": null,
+                "Web_Reference_Capture_Date": "December 22, 2025"
+              }
+            ],
+            "Axis_Employed": [
+              {
+                "Origination_Country": "DE",
+                "Name": "Antitank gun",
+                "Identifier": "Unknown",
+                "Quantity": "1",
+                "Web_Reference": null,
+                "Web_Image_Reference": null,
+                "Web_Image_License": null,
+                "Web_Reference_Capture_Date": "December 22, 2025"
+              },
+              {
+                "Origination_Country": "DE",
+                "Name": "Mark IV tank",
+                "Identifier": "PzKpfw IV",
+                "Quantity": "4",
+                "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+                "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Panzer_IV_Ausf_H.jpg",
+                "Web_Image_License": "Public domain",
+                "Web_Reference_Capture_Date": "December 22, 2025"
+              },
+              {
+                "Origination_Country": "DE",
+                "Name": "Self-propelled gun",
+                "Identifier": "Unknown",
+                "Quantity": "1",
+                "Web_Reference": null,
+                "Web_Image_Reference": null,
+                "Web_Image_License": null,
+                "Web_Reference_Capture_Date": "December 22, 2025"
+              }
+            ],
+            "Axis_Destroyed": [
+              {
+                "Origination_Country": "DE",
+                "Name": "Mark IV tank",
+                "Identifier": "PzKpfw IV",
+                "Quantity": "4",
+                "Web_Reference": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                "Web_Image_Reference": null,
+                "Web_Reference_Capture_Date": "December 22, 2025"
+              },
+              {
+                "Origination_Country": "DE",
+                "Name": "Self-propelled gun",
+                "Identifier": "Unknown",
+                "Quantity": "1",
+                "Web_Reference": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                "Web_Image_Reference": null,
+                "Web_Reference_Capture_Date": "December 22, 2025"
+              }
+            ]
+          }
+        },
+        {
+          "Unit": "30th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "VII Corps",
+              "Commander": "J. Lawton Collins",
+              "Name": "J. Lawton Collins",
+              "Rank": "Lieutenant General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/2nd_Armored_Division_tanks.jpg/1200px-2nd_Armored_Division_tanks.jpg",
+          "Description": "2d Armored Division tanks in Normandy",
+          "License": "Public domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Gilles",
+        "Place_GPS_coordinate": "49.1°N 1.1667°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 22, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "St. Gilles",
+          "Place_GPS_coordinate": "49.1°N 1.1667°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.2667",
+            "East": "-0.0667",
+            "South": "48.2",
+            "North": "50.0"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Commitment of Armor",
+      "Sub-event": "CCA breakthrough at St. Gilles on 26 July",
+      "Sub-event_summary": "CCA rolled through St. Gilles in midafternoon, launching the exploitation phase of COBRA and confirming the German line penetration.",
+      "Sub-event_fulltext": {
+        "Paragraph_37": "In midafternoon CCA rolled through St. Gilles. By this act, the combat command launched the exploitation phase of COBRA. There was no longer any doubt that the German line had definitely been penetrated. The VII Corps had achieved its breakthrough."
+      },
+      "Footnote_References": [
+        "31"
+      ],
+      "Place_Name": "St. Gilles",
+      "Dates": {
+        "Date_group_of_event": "26 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 261500ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "Combat Command A, 2d Armored Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "2d Armored Division",
+              "Commander": "Edward H. Brooks",
+              "Name": "Edward H. Brooks",
+              "Rank": "Major General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Edward_H._Brooks",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Gilles",
+        "Place_GPS_coordinate": "49.1°N 1.1667°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 22, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "St. Gilles",
+          "Place_GPS_coordinate": "49.1°N 1.1667°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.2667",
+            "East": "-0.0667",
+            "South": "48.2",
+            "North": "50.0"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Commitment of Armor",
+      "Sub-event": "Advance to Canisy on 26 July",
+      "Sub-event_summary": "CCA advanced against light opposition toward high ground beyond St. Gilles, facing more difficulty from terrain than enemy. Rose reported negligible opposition, contributing to Collins' night attack order. The road was open due to destruction of Panzer Lehr and 30th Division clearing.",
+      "Sub-event_fulltext": {
+        "Paragraph_38": "Troops Rolling Through Canisy Limited Exploitation South of St. Gilles, CCA of the 2d Armored Division, with the 22d Infantry still attached, headed for its initial objective in the exploitation: the high ground five miles beyond St. Gilles, ground commanding an extensive network of roads leading into the COBRA zone from the east and south. There, at St. Samson-de-Bonfossé, le Mesnil-Herman, and Hill 183, the armor would find good defensive positions from which to halt a possible German counterattack from across the Vire River.",
+        "Paragraph_39": "To reach the area, CCA had to pass through Canisy, not quite two miles south of St. Gilles. Proceeding steadily against mortar, artillery, and antitank fire interdicting the Canisy road, CCA had more difficulty with bomb craters, mine fields, and hedgerows than with the occasional enemy resistance. In late afternoon General Rose reported opposition in his zone negligible and estimated that the rear of his column would soon clear St. Gilles.",
+        "Paragraph_40": "Rose's optimism contributed materially to General Collins' decision to continue the corps attack during the night.",
+        "Paragraph_41": "Part of the reason why the opposition was negligible lay in the clearing operations of the 30th Division. Another part lay in the fact that the St. Gilles-Canisy road was the boundary separating the LXXXIV and II Parachute Corps sectors. Panzer Lehr was specifically responsible for the highway. The virtual destruction of Panzer Lehr left the road open. The 352d Division, manning the sector between the road and the river, was thus continually outflanked as Rose's combat command drove down an excellent route of advance, threatened solely by occasional flanking fire."
+      },
+      "Footnote_References": [
+        "32"
+      ],
+      "Place_Name": "Canisy",
+      "Dates": {
+        "Date_group_of_event": "26 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 261700ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "Panzer Lehr Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "LXXXIV Corps",
+              "Commander": "Dietrich von Choltitz",
+              "Name": "Dietrich von Choltitz",
+              "Rank": "General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Dietrich_von_Choltitz",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Virtually destroyed",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "352d Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "II Parachute Corps",
+              "Commander": "Eugen Meindl",
+              "Name": "Eugen Meindl",
+              "Rank": "General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Eugen_Meindl",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "LXXXIV Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "Seventh Army",
+              "Commander": "Paul Hausser",
+              "Name": "Paul Hausser",
+              "Rank": "SS-Oberst-Gruppenführer",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "II Parachute Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "Seventh Army",
+              "Commander": "Paul Hausser",
+              "Name": "Paul Hausser",
+              "Rank": "SS-Oberst-Gruppenführer",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p253.jpg",
+          "Description": "Troops Rolling Through Canisy",
+          "License": "Public domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Canisy",
+        "Place_GPS_coordinate": "49.0667°N 1.1667°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 22, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Canisy",
+          "Place_GPS_coordinate": "49.0667°N 1.1667°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.2667",
+            "East": "-0.0667",
+            "South": "48.1667",
+            "North": "49.9667"
+          }
+        },
+        {
+          "Place_Name": "St. Samson-de-Bonfossé",
+          "Place_GPS_coordinate": "48.9833°N 1.1333°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.2333",
+            "East": "-0.0333",
+            "South": "48.0833",
+            "North": "49.8833"
+          }
+        },
+        {
+          "Place_Name": "le Mesnil-Herman",
+          "Place_GPS_coordinate": "49.0°N 1.15°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.25",
+            "East": "-0.05",
+            "South": "48.1",
+            "North": "49.9"
+          }
+        },
+        {
+          "Place_Name": "Hill 183",
+          "Place_GPS_coordinate": "49.0°N 1.15°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.25",
+            "East": "-0.05",
+            "South": "48.1",
+            "North": "49.9"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Commitment of Armor",
+      "Sub-event": "Actions at Canisy on 26 July",
+      "Sub-event_summary": "CCA encountered resistance at a railroad embankment north of Canisy, outflanking and enfilading the defenders. Dive bombers struck Canisy, setting half the town ablaze, and the armor rolled through that evening.",
+      "Sub-event_fulltext": {
+        "Paragraph_42": "Only as CCA neared the first buildings in Canisy was there any real resistance. At a railroad embankment north of Canisy where a bombed railway overpass had tumbled across the highway, a few Germans tried to make a stand; the combat command outflanked the position from the east and raked the defenders with enfilading fire.",
+        "Paragraph_43": "Coincidentally, dive bombers struck Canisy and set half the town ablaze. The armor rolled through the burning town that evening."
+      },
+      "Footnote_References": [
+        "33"
+      ],
+      "Place_Name": "Canisy",
+      "Dates": {
+        "Date_group_of_event": "26 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 261900ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Canisy",
+        "Place_GPS_coordinate": "49.0667°N 1.1667°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 22, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Canisy",
+          "Place_GPS_coordinate": "49.0667°N 1.1667°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.2667",
+            "East": "-0.0667",
+            "South": "48.1667",
+            "North": "49.9667"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Commitment of Armor",
+      "Sub-event": "Splitting CCA and night advance on 26 July",
+      "Sub-event_summary": "Beyond Canisy, Rose split CCA into two columns toward St. Samson-de-Bonfossé and le Mesnil-Herman. Despite division assumptions of halting, Rose continued the advance, seizing objectives late at night.",
+      "Sub-event_fulltext": {
+        "Paragraph_44": "Just beyond Canisy, General Rose split his command into two columns. One moved southeastward toward St. Samson-de-Bonfossé, the other southward toward le Mesnil-Herman. Although division headquarters assumed that the combat command had halted for the night, Rose drove his men forward with single-minded purpose and determination in compliance with General Collins' and General Brooks' orders.",
+        "Paragraph_45": "An hour before midnight one column entered St. Samson-de-Bonfossé without a fight. Three hours later the other seized the road intersection just north of le Mesnil-Herman. Only then, with part of the initial objective in hand, did General Rose sanction a halt."
+      },
+      "Footnote_References": [
+        "34"
+      ],
+      "Place_Name": "St. Samson-de-Bonfossé and le Mesnil-Herman",
+      "Dates": {
+        "Date_group_of_event": "Night 26 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 262300ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Samson-de-Bonfossé",
+        "Place_GPS_coordinate": "48.9833°N 1.1333°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 22, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "St. Samson-de-Bonfossé",
+          "Place_GPS_coordinate": "48.9833°N 1.1333°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.2333",
+            "East": "-0.0333",
+            "South": "48.0833",
+            "North": "49.8833"
+          }
+        },
+        {
+          "Place_Name": "le Mesnil-Herman",
+          "Place_GPS_coordinate": "49.0°N 1.15°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.25",
+            "East": "-0.05",
+            "South": "48.1",
+            "North": "49.9"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Commitment of Armor",
+      "Sub-event": "Completion of initial objective on 27 July",
+      "Sub-event_summary": "On 27 July, CCA engaged enemy tanks and guns, securing le Mesnil-Herman and Hill 183 in the afternoon, completing its initial mission with low casualties due to weak opposition and rapid advance, though terrain slowed movement.",
+      "Sub-event_fulltext": {
+        "Paragraph_46": "The next morning, 27 July, as batteries of the 14th Armored Field Artillery Battalion leapfrogged forward to give continuous fire support, the combat command engaged enemy tanks and antitank guns before taking and securing le Mensil-Herman. Hill 183 fell during the afternoon. With that, CCA completed its initial mission.",
+        "Paragraph_47": "In two days Combat Command A had lost less than 200 men, 3 medium tanks, and 2 small trucks. Not only the weakness of the opposition but the dispatch with which General Rose had secured his objective had prevented higher casualties. Even so, Rose was not satisfied with his accomplishment; he complained that the poor condition of the roads, the absence of road bypasses, and the hedgerowed terrain had slowed his movement."
+      },
+      "Footnote_References": [
+        "35",
+        "36"
+      ],
+      "Place_Name": "le Mesnil-Herman and Hill 183",
+      "Dates": {
+        "Date_group_of_event": "27 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 270000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "14th Armored Field Artillery Battalion",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "2d Armored Division",
+              "Commander": "Edward H. Brooks",
+              "Name": "Edward H. Brooks",
+              "Rank": "Major General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Edward_H._Brooks",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 200,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "le Mesnil-Herman",
+        "Place_GPS_coordinate": "49.0°N 1.15°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 22, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "le Mesnil-Herman",
+          "Place_GPS_coordinate": "49.0°N 1.15°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.25",
+            "East": "-0.05",
+            "South": "48.1",
+            "North": "49.9"
+          }
+        },
+        {
+          "Place_Name": "Hill 183",
+          "Place_GPS_coordinate": "49.0°N 1.15°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.25",
+            "East": "-0.05",
+            "South": "48.1",
+            "North": "49.9"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Commitment of Armor",
+      "Sub-event": "Award of Distinguished Service Cross to Lt. Col. Lindsay C. Herkness, Jr.",
+      "Sub-event_summary": "Lt. Col. Lindsay C. Herkness, Jr. was awarded the DSC for extraordinary heroism on 26 July 1944, leading an armored attack on the Canisy-Le Mesnil Herman road, continuing to direct the advance despite being wounded.",
+      "Sub-event_fulltext": {
+        "Paragraph_46": "The next morning, 27 July, as batteries of the 14th Armored Field Artillery Battalion leapfrogged forward to give continuous fire support, the combat command engaged enemy tanks and antitank guns before taking and securing le Mensil-Herman. Hill 183 fell during the afternoon. With that, CCA completed its initial mission."
+      },
+      "Footnote_References": [
+        "35"
+      ],
+      "Place_Name": "Canisy-Le Mesnil Herman road",
+      "Dates": {
+        "Date_group_of_event": "26 July 1944",
+        "Source_date_group_of_event": "https://www.tracesofwar.com/persons/41823/Herkness-Lindsay-C-Jr.htm",
+        "Zulu_date_group_of_event": "APPROX 260000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "66th Armored Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "2d Armored Division",
+              "Commander": "Edward H. Brooks",
+              "Name": "Edward H. Brooks",
+              "Rank": "Major General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Edward_H._Brooks",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Lindsay C. Herkness, Jr., Lt. Col.",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 1,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 1,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Canisy-Le Mesnil Herman road",
+        "Place_GPS_coordinate": "49.05°N 1.1667°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 22, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Canisy-Le Mesnil Herman road",
+          "Place_GPS_coordinate": "49.05°N 1.1667°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.2667",
+            "East": "-0.0667",
+            "South": "48.15",
+            "North": "49.95"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Commitment of Armor",
+      "Sub-event": "Award of Distinguished Service Cross to Capt. Mario T. De Felice",
+      "Sub-event_summary": "Capt. Mario T. De Felice was awarded the DSC for extraordinary heroism on 27 July 1944 near Le Mesnil Herman, evacuating wounded under enemy fire, administering aid despite being surrounded and without assistance.",
+      "Sub-event_fulltext": {
+        "Paragraph_46": "The next morning, 27 July, as batteries of the 14th Armored Field Artillery Battalion leapfrogged forward to give continuous fire support, the combat command engaged enemy tanks and antitank guns before taking and securing le Mensil-Herman. Hill 183 fell during the afternoon. With that, CCA completed its initial mission."
+      },
+      "Footnote_References": [
+        "35"
+      ],
+      "Place_Name": "Le Mesnil Herman",
+      "Dates": {
+        "Date_group_of_event": "27 July 1944",
+        "Source_date_group_of_event": "https://www.findagrave.com/memorial/78369544/mario-theodore-de_felice",
+        "Zulu_date_group_of_event": "APPROX 270000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "66th Armored Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "2d Armored Division",
+              "Commander": "Edward H. Brooks",
+              "Name": "Edward H. Brooks",
+              "Rank": "Major General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Edward_H._Brooks",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Mario T. De Felice, Capt. (Medical Corps)",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [
+              {
+                "Origination_Country": "US",
+                "Name": "Half-track ambulance",
+                "Identifier": "M3 half-track",
+                "Quantity": "1",
+                "Web_Reference": "https://en.wikipedia.org/wiki/M3_half-track",
+                "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/2/2f/M3_half-track.jpg",
+                "Web_Reference_Capture_Date": "December 22, 2025"
+              }
+            ],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 1,
+          "Allied_US_WIA": 2,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Le Mesnil Herman",
+        "Place_GPS_coordinate": "49.0°N 1.15°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 22, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Le Mesnil Herman",
+          "Place_GPS_coordinate": "49.0°N 1.15°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.25",
+            "East": "-0.05",
+            "South": "48.1",
+            "North": "49.9"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Commitment of Armor",
+      "Sub-event": "End of CCA role in COBRA on 28 July",
+      "Sub-event_summary": "As CCA prepared to reconnoiter toward Villebaudon and Tessy-sur-Vire on 28 July, it received word that its role in COBRA was over, passing from VII Corps control.",
+      "Sub-event_fulltext": {
+        "Paragraph_48": "As General Rose prepared to reconnoiter in force toward Villebaudon and Tessy-sur-Vire on the morning of 28 July, word came that CCA's role in COBRA was over. The combat command and the attached infantry regiment were soon to pass from control of the VII Corps."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Villebaudon and Tessy-sur-Vire",
+      "Dates": {
+        "Date_group_of_event": "28 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 280000ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Villebaudon",
+        "Place_GPS_coordinate": "48.95°N 1.0833°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 22, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Villebaudon",
+          "Place_GPS_coordinate": "48.95°N 1.0833°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.1833",
+            "East": "0.0167",
+            "South": "48.05",
+            "North": "49.85"
+          }
+        },
+        {
+          "Place_Name": "Tessy-sur-Vire",
+          "Place_GPS_coordinate": "48.9667°N 1.0667°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.1667",
+            "East": "0.0333",
+            "South": "48.0667",
+            "North": "49.8667"
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Commitment of Armor",
+      "Sub-event": "1st Division exploitation on 27 July",
+      "Sub-event_summary": "While CCA succeeded, the 1st Division faced difficulty at Marigny. Huebner ordered CCB to thrust west to Coutances and 18th Infantry to secure Marigny. The axis followed the Coutances-St. Lô highway along a ridge line.",
+      "Sub-event_fulltext": {
+        "Paragraph_49": "While General Rose's attack had moved smoothly against light opposition, General Huebner had met unexpected difficulty at Marigny on 26 July. The 1st Division, with Combat Command B of the 3d Armored Division attached, had been unable to start the main effort of the exploitation--its thrust westward from Marigny to Coutances to slash across the rear of the German troops facing north against the VIII Corps. Since the VIII Corps had begun to exert pressure from the north on 26 July, it became vital for the 1st Division to get to Coutances at once in order to execute the squeeze play that was part of the basic COBRA idea.",
+        "Paragraph_50": "Even though General Huebner did not possess a secure pivot point at Marigny, he felt impelled to begin his exploitation on the morning of 27 July. He ordered Colonel Boudinot's CCB to initiate the westward thrust toward Coutances. In the meantime, Colonel Smith's 18th Infantry was to attack Marigny and high ground south of the town in order to secure the road network required for sustaining the exploitation.",
+        "Paragraph_51": "Getting CCB on the way to Coutances conformed with the original 1st Division plan, a plan devised to employ as the axis of advance the east--west Coutances-St. Lô highway, which passes through rolling bocage country. West of Marigny the highway runs along the southern slope of a ridge line formed by a complex of three hills--the highest rising 580 feet--a mile or so north of the highway. This prominent terrain feature dominating the approaches to Coutances from the north and"
+      },
+      "Footnote_References": [],
+      "Place_Name": "Coutances",
+      "Dates": {
+        "Date_group_of_event": "27 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "APPROX 270000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "VIII Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "First US Army",
+              "Commander": "Omar Bradley",
+              "Name": "Omar Bradley",
+              "Rank": "Lieutenant General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+              "Biographical_reference_Capture_Date": "December 22, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.05°N 1.45°W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapV.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 22, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Coutances",
+          "Place_GPS_coordinate": "49.05°N 1.45°W",
+          "Weather_text": "Fair weather with mild temperatures, suitable for ground and air operations after initial delays.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": "-2.55",
+            "East": "-0.35",
+            "South": "48.15",
+            "North": "49.95"
+          }
+        }
+      ]
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "19",
+      "Footnote_Number": "19",
+      "Footnote_Text": "See Ruppenthal Notes, ML-2185.",
+      "Footnote_Referenced_Source": "Ruppenthal Notes, ML-2185",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "ML-2185"
+    },
+    {
+      "Footnote": "20",
+      "Footnote_Number": "20",
+      "Footnote_Text": "FUSA Conf Notes, 12 Jul, FUSA G-3 Misc File.",
+      "Footnote_Referenced_Source": "FUSA Conf Notes",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, FUSA G-3 Misc File"
+    },
+    {
+      "Footnote": "21",
+      "Footnote_Number": "21",
+      "Footnote_Text": "1st Div G-3 Jnl and File, entries 0500 and 0550, 26 Jul.",
+      "Footnote_Referenced_Source": "1st Div G-3 Jnl and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "22",
+      "Footnote_Number": "22a",
+      "Footnote_Text": "1st Div FO's 38 and 39, 19 and 25 Jul",
+      "Footnote_Referenced_Source": "1st Div FO's 38 and 39",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "22",
+      "Footnote_Number": "22b",
+      "Footnote_Text": "G-3 Jnl, entry 1700, 25 Jul",
+      "Footnote_Referenced_Source": "G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "22",
+      "Footnote_Number": "22c",
+      "Footnote_Text": "Arty S-3 Per Rpt 38, 26 Jul",
+      "Footnote_Referenced_Source": "Arty S-3 Per Rpt 38",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "22",
+      "Footnote_Number": "22d",
+      "Footnote_Text": "[Pillsbury], 2d Armd Div in Opn COBRA, p. 18",
+      "Footnote_Referenced_Source": "[Pillsbury], 2d Armd Div in Opn COBRA",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "22",
+      "Footnote_Number": "22e",
+      "Footnote_Text": "3d Armd Div Arty Annex to 3d Armd Div FO 5, 19 Jul.",
+      "Footnote_Referenced_Source": "3d Armd Div Arty Annex to 3d Armd Div FO 5",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "23",
+      "Footnote_Number": "23",
+      "Footnote_Text": "1st Div G-3 Jnl, entry 2155, 25 Jul.",
+      "Footnote_Referenced_Source": "1st Div G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "24",
+      "Footnote_Number": "24",
+      "Footnote_Text": "Ltr, Eisenhower to Marshall, 5 Jul, Pogue Files.",
+      "Footnote_Referenced_Source": "Ltr, Eisenhower to Marshall",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Pogue Files"
+    },
+    {
+      "Footnote": "25",
+      "Footnote_Number": "25a",
+      "Footnote_Text": "1st Div AAR, Jul, G-3 Jnl, 25 and 26 Jul, Situation Overlay, 2400, 25 Jul, and Msgs, 0725 and 1010, 26 Jul",
+      "Footnote_Referenced_Source": "1st Div AAR",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "25",
+      "Footnote_Number": "25b",
+      "Footnote_Text": "1st Div Arty S-3 Per Rpt 39, 26 Jul",
+      "Footnote_Referenced_Source": "1st Div Arty S-3 Per Rpt 39",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "25",
+      "Footnote_Number": "25c",
+      "Footnote_Text": "9th Div G-3 Jnl, entries 0130 and 0210, 26 Jul.",
+      "Footnote_Referenced_Source": "9th Div G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "26",
+      "Footnote_Number": "26",
+      "Footnote_Text": "3d Armd Div CCB AAR, Jul, Action 25 Jul-31 Jul.",
+      "Footnote_Referenced_Source": "3d Armd Div CCB AAR",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "27",
+      "Footnote_Number": "27a",
+      "Footnote_Text": "VII Corps Sitrep 101, 27 Jul, and Opns Memos 48 and 49, 25 and 27 Jul (the latter confirming oral orders 26 Jul)",
+      "Footnote_Referenced_Source": "VII Corps Sitrep 101",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "27",
+      "Footnote_Number": "27b",
+      "Footnote_Text": "9th Div G-3 Jnl, entry 1900, 26 Jul.",
+      "Footnote_Referenced_Source": "9th Div G-3 Jnl",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "28",
+      "Footnote_Number": "28a",
+      "Footnote_Text": "1st Div Arty S-3 Per Rpt 39, 26 Jul",
+      "Footnote_Referenced_Source": "1st Div Arty S-3 Per Rpt 39",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "28",
+      "Footnote_Number": "28b",
+      "Footnote_Text": "VII Corps Tactical Study of the Terrain, 17 Jul.",
+      "Footnote_Referenced_Source": "VII Corps Tactical Study of the Terrain",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "29",
+      "Footnote_Number": "29",
+      "Footnote_Text": "Other elements of CCA were: 66th Armored Regiment, 702d Tank Destroyer Battalion, 14th Armored Field Artillery Battalion, and engineer, antiaircraft, medical, and maintenance detachments.",
+      "Footnote_Referenced_Source": "Other elements of CCA",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "30",
+      "Footnote_Number": "30a",
+      "Footnote_Text": "2d Div AAR, Jul",
+      "Footnote_Referenced_Source": "2d Div AAR",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "30",
+      "Footnote_Number": "30b",
+      "Footnote_Text": "see [Pillsbury], 2d Armd Div in Opn COBRA, p. 18.",
+      "Footnote_Referenced_Source": "[Pillsbury], 2d Armd Div in Opn COBRA",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "31",
+      "Footnote_Number": "31",
+      "Footnote_Text": "FUSA G-2 Per Rpt 47, 27 Jul.",
+      "Footnote_Referenced_Source": "FUSA G-2 Per Rpt 47",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "32",
+      "Footnote_Number": "32",
+      "Footnote_Text": "2d Armd Div Msgs, 1730 and 1830, 26 Jul, 30th Div G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "2d Armd Div Msgs",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, 30th Div G-3 Jnl and File"
+    },
+    {
+      "Footnote": "33",
+      "Footnote_Number": "33",
+      "Footnote_Text": "2d Armd Div Msgs, 1930 and 2030, 26 Jul, 30th Div G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "2d Armd Div Msgs",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, 30th Div G-3 Jnl and File"
+    },
+    {
+      "Footnote": "34",
+      "Footnote_Number": "34",
+      "Footnote_Text": "2d Armd Div G-3 Per Rpt 4, 27 Jul.",
+      "Footnote_Referenced_Source": "2d Armd Div G-3 Per Rpt 4",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, Army AG Group, WWII Operations Reports"
+    },
+    {
+      "Footnote": "35",
+      "Footnote_Number": "35a",
+      "Footnote_Text": "2d Armd Div Msg, 1130, 27 Jul, 30th Div Jnl and File.",
+      "Footnote_Referenced_Source": "2d Armd Div Msg",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, 30th Div Jnl and File"
+    },
+    {
+      "Footnote": "35",
+      "Footnote_Number": "35b",
+      "Footnote_Text": "Lt. Col. Lindsay C. Herkness, Jr., was awarded the DSC for his heroic leadership of armored troops",
+      "Footnote_Referenced_Source": "Citation text",
+      "Web_Link": "https://www.tracesofwar.com/persons/41823/Herkness-Lindsay-C-Jr.htm",
+      "Web_Link_Capture_Date": "December 22, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "35",
+      "Footnote_Number": "35c",
+      "Footnote_Text": "Capt. Mario T. DeFelice, a medical officer, was awarded the DSC for heroism.",
+      "Footnote_Referenced_Source": "Citation text",
+      "Web_Link": "https://www.findagrave.com/memorial/78369544/mario-theodore-de_felice",
+      "Web_Link_Capture_Date": "December 22, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "36",
+      "Footnote_Number": "36",
+      "Footnote_Text": "2d Armd Div Msg, 0730, 27 Jul, 30th Div Jnl and File.",
+      "Footnote_Referenced_Source": "2d Armd Div Msg",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "RG 407, 30th Div Jnl and File"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn13.html",
+  "Source_Footnote_Link_Capture_Date": "December 22, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+  "Source_Link_Capture_Date": "December 22, 2025"
+}

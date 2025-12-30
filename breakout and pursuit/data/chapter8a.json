@@ -1,0 +1,1262 @@
+{
+  "Events": [
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Allied Bombing of St. Lô",
+      "Sub-event_summary": "Before the summer of 1944, St. Lô was a prosperous market town. By mid-June 1944, it was reduced to rubble by Allied bombing starting on 6 June, killing nearly 800 civilians.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "Before the summer of 1944 the provincial city of St. Lô--primarily a market town but also a political and administrative capital--enjoyed a prosperity common to most agricultural centers and reflected a touch of more than rural elegance imparted by the society of officialdom. By the middle of June 1944 this once \"charming and serene little city\" had become \"no more than a heap of smoking rubble.\" On the day the Allies invaded the Continent, 6 June, Allied planes had bombed the power plant and railroad station and then made concentrated and repeated attacks that seemed to the inhabitants to have been motivated by the sole intention of destroying the city. Almost 800 civilians lay dead under the ruins by the morning of 7 June, and Allied bombers returned every day for a week to increase the devastation.",
+        "Paragraph_2": "Although German propaganda pointed to St. Lô as an example of how the Allies were liberating France, the inhabitants apparently harbored less resentment than the Allies had expected. The French exhibited a \"pathetic eagerness\" to understand why the Allies had selected St. Lô as an air force target long before the ground troops were near the town. There were several reasons: hope of hindering German troop movements by making a roadblock of the town itself, \"a choke-point\"; desire to destroy the LXXXIV Corps headquarters, located in a suburb until 16 June; and plans to take St. Lô nine days after the invasion."
+      },
+      "Footnote_References": ["1", "2"],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "061200BDSTJUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "061000ZJUN44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 800,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://picryl.com/media/four-us-soldiers-watching-allied-bombardement",
+          "Description": "Four US-Soldiers watching allied bombardement.",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.normandy1944.info/home/maps/battle-of-saint-lo",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Windy and cool day with moderate to fresh north-westerly winds across the country, the wind only slowly moderating during the afternoon.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Importance of St. Lô",
+      "Sub-event_summary": "St. Lô held prestige value, political importance, and strategic road access. By mid-July, it became crucial for General Bradley's plan.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "The Americans' unsuccessful efforts to capture St. Lô in June only stimulated desire for it. Although destroyed, the city at the beginning of July remained a place of vital interest both to the Americans who had helped demolish it and to the Germans who still held it. St. Lô had prestige value, and its continued retention by the Germans or its seizure by the Americans would have a strong effect on the morale of the opposing forces. The capital of the Department of the Manche, St. Lô was politically and psychologically important to the French. A Norman road center rivaling Caen, St. Lô would give the Allies additional lateral communications and routes to the south. The Americans felt that their possession of St. Lô would correspondingly deny the Germans the ability to move troops and supplies easily from one side of the Vire River to the other immediately behind the front.",
+        "Paragraph_4": "By mid-July, the prestige factor and the value of the city as an access point to roads leading south gave way to a more important reason. Because of its location at the apex of the Coutances-St. Lô-Lessay road triangle, the city was specifically important to General Bradley's emerging plan for achieving more rapid advance in the Cotentin. A premise of the new plan was American possession of St. Lô, a need that by mid-July imparted a sense of urgency to the battle for the city."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.normandy1944.info/home/maps/battle-of-saint-lo",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Typical early July weather in Normandy, with scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "German Reappraisal and Defenses",
+      "Sub-event_summary": "After capturing a U.S. field order, the Germans decided to defend St. Lô strongly with the II Parachute Corps and supporting units.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "The Germans had anchored their positions on the hills north and northeast of St. Lô, advantageous terrain for defense. At first they fought not so much to hold St. Lô as to maintain their line. The city was useless to them for lateral communications because it was within range of U.S. artillery, and their troop and supply movements were taking place far to the south. But in July, just before the Americans opened their attack toward the city, the Germans captured an American field order. With St. Lô revealed as a major U.S. objective, the Germans reappraised its worth and determined to challenge the effort to the extent of their strength.",
+        "Paragraph_6": "German strength appeared adequate. St. Lô was the responsibility of the II Parachute Corps, which held the sector between the Vire and the Drôme Rivers. On the left (west) were three kampfgruppen--one each from the 353d, the 266th, and the 352d Divisions--under the operational control of the 352d headquarters. On the right was the 3d Parachute Division. In support was the 12th Assault Gun Brigade. Although the troops in the line were spread thin across a wide front, they were veterans. The corps commander, Meindl, though concerned with what amounted to a manpower shortage for his wide front, felt certain that the defensive skill of his troops and the excellent positions would offset to a great extent the rather sparse dispositions. He was confident he could keep the Americans out of St. Lô."
+      },
+      "Footnote_References": ["4", "5"],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 302200ZJUN44"
+      },
+      "TOE": {
+        "Unit": "II Parachute Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "II Parachute Corps",
+          "Name": "Eugen Meindl",
+          "Rank": "General",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Eugen_Meindl",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Personnel": "Spread thin, veterans",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "StuG III",
+            "Identifier": "StuG III",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Sturmgeschütz_III",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Sturmgeschütz_III_Ausf._G.JPG",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.normandy1944.info/home/maps/battle-of-saint-lo",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Typical early July weather in Normandy, with scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Geography of St. Lô",
+      "Sub-event_summary": "Description of the terrain, rivers, highways, and approaches to St. Lô.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "The old part of the city of St. Lô occupied a rock bluff that was crowned by ancient ramparts, a tower, and the graceful double spires of a fifteenth century church. Surrounding the bluff, modern St. Lô spreads across the lowlands and up the slopes of encircling hills. The Vire River, flowing generally northward, enters the city from the southwest, executes a horseshoe loop, and leaves to the northwest. The greater part of the city lies east of the river and outside the horseshoe. (Map 8.) The western suburb of St. Lô, inside the horseshoe loop, is on the high ground that extends westward to Coutances. The northern part of St. Lô rises steeply toward the plateau-like top of Hill 122. On the east, the city spreads toward the base of the Martinville ridge, an eminence that ascends in a gentle slope for four miles to Hill 192. The southern portion climbs very briefly toward high ground that dominates the southern approaches.",
+        "Paragraph_8": "Two main highways intersect at St. Lô, and five blacktop roads converge on the city. On the west, the highway from Coutances and the road from Lessay and Périers merge inside the river loop before crossing the stream into town. From the north two routes arrive, one the highway from Carentan through Pont-Hébert and along the western slope of Hill 122, the other the road from Isigny along the eastern edge of the hill. From the east, the road from Caumont merges with the highway from Bayeux and Caen at the Bérigny fork (seven miles from St. Lô) and the resultant single large highway runs along the south face of the Martinville ridge and into town. From the south one highway and two roads enter the city."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "",
+        "Source_date_group_of_event": "",
+        "Zulu_date_group_of_event": ""
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.normandy1944.info/home/maps/battle-of-saint-lo",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Corps Zones and Hill 192 Importance",
+      "Sub-event_summary": "St. Lô was initially in V Corps zone, then XIX Corps. Hill 192's capture was prerequisite for the attack on St. Lô.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "At the time of the invasion, St. Lô had been in the V Corps zone. Commanded by Maj. Gen. Leonard T. Gerow, who had directed the landings on OMAHA Beach and the drive to Caumont, the V Corps in June had anchored the American left flank firmly on Caumont and in mid-June had surrendered the St. Lô region to the XIX Corps, under General Corlett. Yet the configuration of the terrain--specifically, the location of Hill 192--is such that both corps had to participate in the direct attack toward the city.",
+        "Paragraph_10": "Hill 192 is the culminating point of the high ground that straddles the Bérigny-St. Lô road four miles northeast of St. Lô. In the V Corps zone of operations, Hill 192 gave the Germans observation not only of the V Corps sector as far to the rear as the invasion beaches but also of all the approaches to St. Lô. Capture of the height thus was a prerequisite to the XIX Corps attack on the city. The XIX and V Corps consequently planned co-ordinated action for simultaneous attacks east of the Vire River on 11 July."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Hill 192",
+      "Dates": {
+        "Date_group_of_event": "APPROX 110000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 110900ZJUL44"
+      },
+      "TOE": {
+        "Unit": "V Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Leonard T. Gerow",
+          "Name": "Leonard T. Gerow",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leonard_T._Gerow",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "V Corps",
+          "Name": "Leonard T. Gerow",
+          "Rank": "Maj. Gen.",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leonard_T._Gerow",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 192",
+        "Place_GPS_coordinate": "49.1250 N, -1.0333 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.normandy1944.info/home/maps/battle-of-saint-lo",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hill 192",
+        "Place_GPS_coordinate": "49.1250 N, -1.0333 W",
+        "Weather_text": "Haze limiting visibility, scattered clouds from 3000 to 7000 feet.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Planning and Preparation for Attack on Hill 192",
+      "Sub-event_summary": "The V Corps and XIX Corps planned coordinated attacks. The 2d Infantry Division prepared for the assault on Hill 192, including training and planning.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "As the offensive east of the Vire began, the focal point of the operations initially developed on Hill 192 and involved the right (west) flank unit of the V Corps. While the 2d Armored and the 1st Infantry Divisions on the left (east) of the V Corps sector defended Caumont and held the pivot point of the projected First Army wheeling movement, the 2d Infantry Division attacked on the right to secure Hill 192 in conjunction with the XIX Corps attack toward St. Lô.",
+        "Paragraph_12": "Under Maj. Gen. Walter M. Robertson, division commander since 1942, the 2d Division had arrived in Normandy the day after the invasion and had participated in the early drive from OMAHA Beach. Considered a good unit, the division had no illusions about taking Hill 192 easily, for an attempt in June had cost over 1,200 casualties within three days.",
+        "Paragraph_13": "The division awaited the inevitable order to attack the hill again; and while in physical contact with the enemy at distances varying from several yards to a few hedgerowed fields, the division shelled the hill thoroughly, drew up elaborate plans of attack, and conducted training specifically designed for the assault. The training emphasized tank-infantry-engineer proficiency in applying the tactics of demolition, fire power, and speed in the hedgerow terrain. To achieve speed in the attack, troops scooped holes, large enough for tanks to drive through, in the hedgerow embankments that served as the line of departure--holes that left a thin shell of earth on the side facing the enemy; when the attack order came, the tanks would be able to crash through under their own power. Bursting through the hollowed-out hedgerows, the tankers hoped to be upon the Germans in the next row before antitank weapons could be brought to bear.",
+        "Paragraph_14": "Hill 192 had been \"so pounded by artillery that aerial photographs showed it as a moth-eaten white blanket.\" Yet it was a strong position. The slopes of the hill rise gradually to a rather flat top, and the small fields bordered by hedgerows and the scattered woods that surface the slopes provided concealment for the defenders. Hedgerows presented natural defensive lines in depth. Sunken lanes provided excellent lines of communication easily protected by a few carefully sited weapons. Several hamlets and occasional farmhouses offered shelter for crew-served weapons and centers of resistance. A tower concealed in a diamond-shaped patch of woods, earlier destroyed by U.S. artillery fire but rebuilt by the Germans, gave the defenders a good observation post. A battalion of the 3d Parachute Division occupied the hill and had fortified it with an intricate system of mutually supporting positions.",
+        "Paragraph_15": "The Germans maintained a tight counter-reconnaissance screen, made maximum use of sunken roads and hedges, and employed roadblocks, wire entanglements, and mine fields. Although the main defensive positions were judged shallow--perhaps only two or three hedgerows in depth--the Americans expected the Germans to defend with determination and vigor and to employ local counterattacks to retain their positions. There seemed to be few if any German tanks in the area, and intelligence officers estimated that the II Parachute Corps did not have an impressive amount of artillery. The Americans were sure, however, that prior registration would enable the Germans to cover the approaches to St. Lô and also the slopes of Hill 192 with precision fire.",
+        "Paragraph_16": "The \"top of the hill is the big thing,\" General Gerow said, but to make it secure the 2d Division had to advance beyond it and occupy a two and a half mile stretch of the Bérigny highway between the Calvaire road and the Bérigny fork. The other corps units were to make a strong demonstration; air support was arranged; the corps artillery and four artillery battalions of the other divisions in the corps sector were to reinforce the 2d Division fires.",
+        "Paragraph_17": "The 38th Infantry (Col. Ralph W. Zwicker), on the right (west) and less than a thousand yards north of the crest of Hill 192, was to make the main assault with three tank companies and two heavy mortar companies attached. The 23d Infantry (Lt. Col. Jay B. Loveless), in the center, was to send one battalion across the eastern slope of the objective. The 9th Infantry (Col. Chester J. Hirschfelder), in position east of the Bérigny fork, was to support the division attack with fire."
+      },
+      "Footnote_References": ["6", "8", "9", "10", "11"],
+      "Place_Name": "Hill 192",
+      "Dates": {
+        "Date_group_of_event": "110600BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "110400ZJUL44"
+      },
+      "TOE": {
+        "Unit": "2d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "V Corps",
+          "Commander": "Walter M. Robertson",
+          "Name": "Walter M. Robertson",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_M._Robertson",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "38th Infantry",
+          "Name": "Ralph W. Zwicker",
+          "Rank": "Col.",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Ralph_Wise_Zwicker",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Personnel": "Good unit, veterans from OMAHA Beach",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Sherman",
+            "Identifier": "M4",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M4_Sherman_tank_-_Flickr_-_Joost_J._Bakker_IJmuiden.jpg",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "MG42",
+            "Identifier": "MG42",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/MG_42",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:MG_42_machine_gun_(14883590620).jpg",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 1200,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.normandy1944.info/photographs/st-lo",
+          "Description": "Color images of the ruins of St. Lo Normandy France after the battle.",
+          "License": "Unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Hill 192",
+        "Place_GPS_coordinate": "49.1250 N, -1.0333 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.normandy1944.info/home/maps/battle-of-saint-lo",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hill 192",
+        "Place_GPS_coordinate": "49.1250 N, -1.0333 W",
+        "Weather_text": "Haze limiting visibility, scattered clouds from 3000 to 7000 feet.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Attack on Hill 192",
+      "Sub-event_summary": "On 11 July 1944, the 2d Infantry Division attacked Hill 192, overcoming strong German resistance to capture the hill by noon, with further advances in the afternoon.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "Since a haze limited visibility on the morning of 11 July, the planned air support was canceled. The artillery fired a heavy preparation for twenty minutes, and shortly after 0600 the division jumped off.",
+        "Paragraph_19": "The preceding night Colonel Zwicker's 38th Infantry had withdrawn several hundred yards for safety during the anticipated air strike, and when the regiment jumped off the troops immediately met a heavy volume of enemy fire that temporarily prevented them from reaching their line of departure. The Germans had discovered the slight withdrawal, had moved forward, and had thus escaped the full force of the twenty-minute artillery preparation. During the first half hour of the attack, they disabled with Panzerfaust fire or forced to retire all six tanks in the first wave of one of the assault battalions. The stratagem of scooping out hedgerow banks to gain a surprise forward bound had thus been nullified.",
+        "Paragraph_20": "American infantrymen advanced slowly with the help of heavy and accurate artillery fire. Twenty thousand rounds were fired by the division artillery alone; a total of 45 tons of high explosive came from all the artillery in support. Tanks and bazooka teams knocked out assault guns concealed in the rubble of a village. A dozen riflemen enveloped by stealth an enemy position known as \"Kraut Corner,\" reached grenade distance, and destroyed the enemy weapons. Fifteen German paratroopers surrendered. Three who refused to capitulate were buried alive by a tank dozer. \"We have a battle on our hands,\" General Robertson said, \"[but] things are breaking a little, a hundred yards here and a hundred yards there.\"",
+        "Paragraph_21": "This was the pattern of the slow, vigorous advance that by noon got the 38th Infantry to the top of Hill 192. The Germans then disengaged and withdrew, and only scattered groups opposed the descent on the south slope. Part of the 38th Infantry dug in on a defensive perimeter just short of the highway and covered the road with fire; the other elements slipped across the road in small groups and organized the high ground immediately to the south.",
+        "Paragraph_22": "Meanwhile, a battalion of the 23d Infantry outflanked a gully called \"Purple Heart Draw.\" Tanks placed direct fire on houses suspected of concealing German strongpoints. Several lucky shots by rifle grenades struck enemy-held hedgerows just right to achieve the effect of air bursts over enemy crew-served weapons. By late afternoon the battalion had crossed the east slope of Hill 192 and gained positions overlooking the Bérigny highway."
+      },
+      "Footnote_References": ["12", "13"],
+      "Place_Name": "Hill 192",
+      "Dates": {
+        "Date_group_of_event": "110600BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "110400ZJUL44"
+      },
+      "TOE": {
+        "Unit": "2d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "V Corps",
+          "Commander": "Walter M. Robertson",
+          "Name": "Walter M. Robertson",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_M._Robertson",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "23d Infantry",
+          "Name": "Jay B. Loveless",
+          "Rank": "Lt. Col.",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Tank",
+            "Identifier": "M4 Sherman",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M4_Sherman_tank_-_Flickr_-_Joost_J._Bakker_IJmuiden.jpg",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "Tank",
+            "Identifier": "M4 Sherman",
+            "Quantity": 6,
+            "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M4_Sherman_tank_-_Flickr_-_Joost_J._Bakker_IJmuiden.jpg",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Assault Gun",
+            "Identifier": "StuG III",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Sturmgeschütz_III",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Sturmgeschütz_III_Ausf._G.JPG",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Assault Gun",
+            "Identifier": "StuG III",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Sturmgeschütz_III",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Sturmgeschütz_III_Ausf._G.JPG",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 3,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 15
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.historynet.com/wp-content/uploads/sites/6/2016/07/Hill-192-1.jpg",
+          "Description": "Image from the battle for Hill 192",
+          "License": "Unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Hill 192",
+        "Place_GPS_coordinate": "49.1250 N, -1.0333 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.normandy1944.info/home/maps/battle-of-saint-lo",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hill 192",
+        "Place_GPS_coordinate": "49.1250 N, -1.0333 W",
+        "Weather_text": "Haze limiting visibility, scattered clouds from 3000 to 7000 feet.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "German Order and US Success",
+      "Sub-event_summary": "German orders to hold Hill 192 at all costs came too late as US forces had already captured it and placed harassing fires.",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "That evening Hausser, the Seventh Army commander, ordered Meindl, the II Parachute Corps commander, to hold Hill 192 at all costs.",
+        "Paragraph_24": "It was already too late. As U.S. artillery placed harassing fires south of the Bérigny road during the night, the"
+      },
+      "Footnote_References": ["14"],
+      "Place_Name": "Hill 192",
+      "Dates": {
+        "Date_group_of_event": "111900BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "111700ZJUL44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 192",
+        "Place_GPS_coordinate": "49.1250 N, -1.0333 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.normandy1944.info/home/maps/battle-of-saint-lo",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hill 192",
+        "Place_GPS_coordinate": "49.1250 N, -1.0333 W",
+        "Weather_text": "Scattered clouds, typical July evening.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "1a",
+      "Footnote_Number": "1a",
+      "Footnote_Text": "Robert Patry, St.-Lô, pp. 15-16 (English translation)",
+      "Footnote_Referenced_Source": "Robert Patry, St.-Lô",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Unknown",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "pp. 15-16"
+    },
+    {
+      "Footnote": "1b",
+      "Footnote_Number": "1b",
+      "Footnote_Text": "J. de Saint-Jorre, \"Saint-Lô sous les Bombes,\" in Herval, Bataille de Normandie, I, 85-101",
+      "Footnote_Referenced_Source": "Herval, Bataille de Normandie",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Unknown",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "I, 85-101"
+    },
+    {
+      "Footnote": "1c",
+      "Footnote_Number": "1c",
+      "Footnote_Text": "A. Legoy, \"Exode de Saint-Lô,\" in Herval, Bataille de Normandie, I, 10204",
+      "Footnote_Referenced_Source": "Herval, Bataille de Normandie",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Unknown",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "I, 102-104"
+    },
+    {
+      "Footnote": "2a",
+      "Footnote_Number": "2a",
+      "Footnote_Text": "XIX Corps AAR, Jul",
+      "Footnote_Referenced_Source": "XIX Corps AAR, Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Report, July 1944"
+    },
+    {
+      "Footnote": "2b",
+      "Footnote_Number": "2b",
+      "Footnote_Text": "FUSA Psychological Warfare Div Ltr, Bombing of St. Lô, 4 Jul, FUSA G-3 Jnl",
+      "Footnote_Referenced_Source": "FUSA Psychological Warfare Div Ltr",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Bombing of St. Lô, 4 Jul"
+    },
+    {
+      "Footnote": "2c",
+      "Footnote_Number": "2c",
+      "Footnote_Text": "Rpt of the Supreme Commander, p. 7",
+      "Footnote_Referenced_Source": "Rpt of the Supreme Commander",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "p. 7"
+    },
+    {
+      "Footnote": "2d",
+      "Footnote_Number": "2d",
+      "Footnote_Text": "Seventh Army KTB, Anlagen, Lagenkarten, 6.VI.-30.VI.44",
+      "Footnote_Referenced_Source": "Seventh Army KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Anlagen, Lagenkarten, 6.VI.-30.VI.44"
+    },
+    {
+      "Footnote": "2e",
+      "Footnote_Number": "2e",
+      "Footnote_Text": "General Omar N. Bradley and Air Effects Committee, 12th Army Group, Effect of Air Power on Military Operations in Western Europe (Wiesbaden, Germany, 1945)",
+      "Footnote_Referenced_Source": "Bradley, Effect of Air Power",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Unknown",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "p. 28"
+    },
+    {
+      "Footnote": "2f",
+      "Footnote_Number": "2f",
+      "Footnote_Text": "Sunday Punch in Normandy: the Tactical Use of Heavy Bombardment in the Normandy Invasion, Wings at War Series, No. 2 (Washington, 1945)",
+      "Footnote_Referenced_Source": "Sunday Punch in Normandy",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Unknown",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "p. 19"
+    },
+    {
+      "Footnote": "4",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Seventh Army KTB (Draft), 11 Jul",
+      "Footnote_Referenced_Source": "Seventh Army KTB (Draft)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "11 Jul"
+    },
+    {
+      "Footnote": "5a",
+      "Footnote_Number": "5a",
+      "Footnote_Text": "Seventh Army KTB (Draft), 11 Jul",
+      "Footnote_Referenced_Source": "Seventh Army KTB (Draft)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "11 Jul"
+    },
+    {
+      "Footnote": "5b",
+      "Footnote_Number": "5b",
+      "Footnote_Text": "Telecons, Pemsel to Hausser, 1220, 11 Jul, and Pemsel to Tempelhoff, 1245, 11 Jul, Seventh Army Tel Msgs",
+      "Footnote_Referenced_Source": "Seventh Army Tel Msgs",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Telecons, 11 Jul"
+    },
+    {
+      "Footnote": "5c",
+      "Footnote_Number": "5c",
+      "Footnote_Text": "OB WEST KTB, 11 Jul",
+      "Footnote_Referenced_Source": "OB WEST KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "11 Jul"
+    },
+    {
+      "Footnote": "5d",
+      "Footnote_Number": "5d",
+      "Footnote_Text": "MS # B-401 (Meindl)",
+      "Footnote_Referenced_Source": "MS # B-401 (Meindl)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Foreign Military Studies, B-401"
+    },
+    {
+      "Footnote": "6",
+      "Footnote_Number": "6",
+      "Footnote_Text": "FUSA Ltr, Timing of Attack as Set Forth in FO 1, rev as of 1 Jul, 2 Jul, FUSA G-3 Jnl File",
+      "Footnote_Referenced_Source": "FUSA Ltr",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Timing of Attack as Set Forth in FO 1, 2 Jul"
+    },
+    {
+      "Footnote": "8",
+      "Footnote_Number": "8",
+      "Footnote_Text": "V Corps Operations in the ETO, 6 Jan. 1942-9 May 1945 (G-3 Historical Sub-Section; n.p., n.d.), pp. 101ff. This is an excellent source containing a narrative account, reproductions of important documents, and annexes detailing the activities of the supporting services.",
+      "Footnote_Referenced_Source": "V Corps Operations in the ETO",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "pp. 101ff"
+    },
+    {
+      "Footnote": "9",
+      "Footnote_Number": "9",
+      "Footnote_Text": "See Ltr, Eisenhower to Marshall, 5 Jul, Pogue Files",
+      "Footnote_Referenced_Source": "Ltr, Eisenhower to Marshall",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "5 Jul, Pogue Files"
+    },
+    {
+      "Footnote": "10",
+      "Footnote_Number": "10",
+      "Footnote_Text": "Sylvan Diary, 11 Jul",
+      "Footnote_Referenced_Source": "Sylvan Diary",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "11 Jul"
+    },
+    {
+      "Footnote": "11",
+      "Footnote_Number": "11",
+      "Footnote_Text": "2d Div G-3 Jnl, 0925, 11 Jul, FO 5, 6 Jul, and G-3 Per Rpt 33, 12 Jul; V Corps FO 10, 4 Jul",
+      "Footnote_Referenced_Source": "2d Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "0925, 11 Jul, FO 5, 6 Jul"
+    },
+    {
+      "Footnote": "12",
+      "Footnote_Number": "12",
+      "Footnote_Text": "Garth, St.-Lô, pp. 58-60. This American Forces in Action booklet contains an excellent detailed account of the battle for St. Lô with emphasis on small unit action.",
+      "Footnote_Referenced_Source": "Garth, St.-Lô",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/index.html",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "pp. 58-60"
+    },
+    {
+      "Footnote": "13",
+      "Footnote_Number": "13",
+      "Footnote_Text": "2d Div G-3 Jnl, 0925 and 0955, 11 Jul",
+      "Footnote_Referenced_Source": "2d Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "0925 and 0955, 11 Jul"
+    },
+    {
+      "Footnote": "14",
+      "Footnote_Number": "14",
+      "Footnote_Text": "Telecon, Pemsel and Meindl, 1900, 11 Jul, Seventh Army Tel Msgs",
+      "Footnote_Referenced_Source": "Seventh Army Tel Msgs",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Telecon, 1900, 11 Jul"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn8.html",
+  "Source_Footnote_Link_Capture_Date": "December 21, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+  "Source_Link_Capture_Date": "December 21, 2025"
+}

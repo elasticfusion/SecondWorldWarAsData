@@ -1,0 +1,2346 @@
+{
+  "Events": [
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "Boundary Shift and New Missions (15 July 1944)",
+      "Sub-event_summary": "At midnight on 15 July 1944, General Bradley shifted the corps boundaries, assigning VII Corps control of the area between the Taute and Vire Rivers, with the 9th Division to clear the east bank of the Taute and advance south, the 30th Division to advance to the Périers-St. Lô road and then east, and the 3d Armored Division in reserve.",
+      "Sub-event_fulltext": {
+        "Paragraph_51": "Delayed by both the Panzer Lehr counterattack and a combination of enemy and terrain, the 9th and 30th Divisions still were short of fulfilling their missions when a new factor emerged to modify General Bradley's earlier split of the Taute and Vire River area. As his new plan to get out of the Cotentin approached maturity, the ground near the Périers-St. Lô highway became a vital necessity. To make possible a joint effort by the 9th and 30th Divisions toward the new objective--the Périers-St. Lô highway--General Bradley shifted the corps boundaries again. At midnight on 15 July, General Collins' VII Corps relinquished the Carentan-Périers isthmus to the VIII Corps and assumed control of the area between the Taute and the Vire.",
+        "Paragraph_52": "The 9th Division on the right was to clear the east bank of the Taute River and advance south. The 30th Division on the left was to advance south to the Périers-St. Lô road, then turn east to secure the high ground west of St. Lô. The 3d Armored Division, in reserve, was to be committed as needed. The 330th Infantry, detached from the 83d Division and temporarily attached to the 9th Division, was to clear the east bank of the Taute River between the Vire et Taute Canal and the Tribehou causeway. The 330th was then to be pinched out and returned to the 83d Division."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Between Taute and Vire Rivers",
+      "Dates": {
+        "Date_group_of_event": "15 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "152359ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Omar N. Bradley",
+          "Name": "Omar Nelson Bradley",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "VII Corps",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "Lieutenant General",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Taute and Vire River area",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Taute and Vire River area",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.52",
+          "East": "0.22",
+          "South": "48.25",
+          "North": "50.05"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "German Reorganization in Taute-Vire Area",
+      "Sub-event_summary": "The Germans were reorganizing in the Taute-Vire area, reinforcing the 17th SS Panzer Grenadier Division with a battalion from the 6th Parachute Regiment, moving Panzer Lehr into the line to relieve the 352d Division, and planning to relieve the 2d SS Panzer Division for rehabilitation.",
+      "Sub-event_fulltext": {
+        "Paragraph_53": "The Germans in the Taute-Vire area were attempting to reorganize. The 17th SS Panzer Grenadier Division, which had taken a severe battering, was being reinforced by a battalion of the 6th Parachute Regiment. Panzer Lehr, after its unsuccessful counterattack, was being moved into the line to relieve the 352d Division, which was to be shifted to a quiet sector. The 2d SS Panzer Division was to be relieved for rehabilitation. The Germans thus expected to hold their positions with fewer troops. The U.S. attack on 15 July was not entirely a surprise to the Germans, who had noted the movement of the 9th Division across the Vire et Taute Canal and had deduced the general American intention. But the Germans had not expected the attack so soon, and the troops in the line were still not completely reorganized."
+      },
+      "Footnote_References": "51",
+      "Place_Name": "Taute-Vire area",
+      "Dates": {
+        "Date_group_of_event": "Before 15 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "APPROX 150000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "17th SS Panzer Grenadier Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "17th SS Panzer Grenadier Division",
+          "Name": "Werner Ostendorff",
+          "Rank": "SS-Gruppenführer",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Werner_Ostendorff",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "Severe battering",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Taute-Vire area",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Taute-Vire area",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.52",
+          "East": "0.22",
+          "South": "48.25",
+          "North": "50.05"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "9th Division Attack Launch (15 July 1944)",
+      "Sub-event_summary": "On 15 July 1944, the 9th Division attacked with three regiments abreast: the 60th Infantry securing high ground overlooking the Tribehou causeway, the 47th Infantry clearing the Vire et Taute Canal to the causeway but halted short, and the 39th Infantry reaching the river bank while the attached 330th Infantry was stopped by fire.",
+      "Sub-event_fulltext": {
+        "Paragraph_54": "The 9th Division attacked with three regiments abreast. The 60th Infantry on the right advanced toward the Taute River flats to secure the high ground overlooking the Tribehou causeway. The 47th Infantry in the center cleared the banks of the Vire et Taute Canal to the Tribehou causeway. The 39th Infantry on the left, with the 330th Infantry attached, cleared the east bank of the Taute River as far south as the Tribehou causeway, where the 330th Infantry was to be pinched out.",
+        "Paragraph_55": "The 9th Division attack began well. The 60th Infantry took its objective on 15 July, but the 47th Infantry, in the center, met resistance at le Hommet and le Mesnil-Veneron that halted the regiment a mile short of the causeway. On the left, the 39th Infantry reached the river bank, but the 330th Infantry was stopped by fire from across the Taute and could not advance. The Germans were apparently still in possession of Tribehou Island in the Taute flats, and the causeway was still in enemy hands. To secure the causeway and clear the island, the 9th Division on 16 July committed a battalion of the 330th Infantry. Supported by artillery and dive-bombers, the battalion crossed the causeway and cleared Tribehou Island by evening. The 330th Infantry was pinched out and reverted to 83d Division control. The 39th Infantry cleared the east bank of the Taute to the causeway, and the 47th Infantry reached the causeway."
+      },
+      "Footnote_References": "52",
+      "Place_Name": "East bank of Taute River",
+      "Dates": {
+        "Date_group_of_event": "15 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "150000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "9th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Joseph Lawton Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "9th Infantry Division",
+          "Name": "Manton S. Eddy",
+          "Rank": "Major General",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Dive-bombers",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Tribehou causeway",
+        "Place_GPS_coordinate": "49.2144°N 1.2433°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://mappingtheoverlays.wordpress.com/tag/83rd-infantry-division/",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Tribehou causeway",
+        "Place_GPS_coordinate": "49.2144°N 1.2433°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.6133",
+          "East": "0.1267",
+          "South": "48.3144",
+          "North": "50.1144"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "9th Division Turns South (17-19 July 1944)",
+      "Sub-event_summary": "From 17 to 19 July 1944, the 9th Division turned south, with the 60th Infantry advancing along high ground, the 47th along the canal, and the 39th along the Taute bank; made good progress on 17 July but halted by strong German defense on 18 July, preparing for COBRA on 19 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_56": "The 9th Division then turned south. The 60th Infantry on the right advanced along the high ground overlooking the Taute River flats. The 47th Infantry in the center moved south along the canal. The 39th Infantry on the left advanced along the east bank of the Taute River. The division made good progress on 17 July, but on the following day ran into strong resistance from the 17th SS Panzer Grenadier Division, reinforced by the 6th Parachute Regiment. The Germans had organized a strong defensive line along the Périers-St. Lô road, and the 9th Division could not break through. On 19 July the division was halted and began to prepare for the forthcoming COBRA operation."
+      },
+      "Footnote_References": "52",
+      "Place_Name": "Périers-St. Lô road",
+      "Dates": {
+        "Date_group_of_event": "17-19 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "170000ZJUL44 - 192359ZJUL44"
+      },
+      "TOE": {
+        "Unit": "9th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Joseph Lawton Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "60th Infantry Regiment",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Périers-St. Lô road",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://www.b24.net/StLoPeriers.htm",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô road",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4603",
+          "East": "0.2797",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "30th Division Advance (15-18 July 1944)",
+      "Sub-event_summary": "The 30th Division attacked on 15 July 1944 with two regiments, the 117th reaching the Périers-St. Lô road on 16 July, the 119th halted short; on 17 July the 117th turned east, and on 18 July the 119th and committed 120th reached the road, preparing for COBRA.",
+      "Sub-event_fulltext": {
+        "Paragraph_57": "The 30th Division on the left of the 9th Division had a more difficult time. The division was to advance south to the Périers-St. Lô road, then turn east to secure the high ground west of St. Lô. The division attacked on 15 July with two regiments abreast, the 117th Infantry on the right and the 119th Infantry on the left. Combat Command B of the 3d Armored Division was in reserve.",
+        "Paragraph_58": "The 117th Infantry on the right advanced against light resistance and reached the Périers-St. Lô road on 16 July. The 119th Infantry on the left met stronger resistance and was halted short of the road. On 17 July the 117th Infantry turned east and advanced toward St. Lô, but the 119th Infantry was still held up. General Hobbs committed the 120th Infantry on the left of the 119th to assist. On 18 July the 119th and 120th Infantry regiments reached the Périers-St. Lô road, and the division began to prepare for COBRA."
+      },
+      "Footnote_References": "53",
+      "Place_Name": "Périers-St. Lô road",
+      "Dates": {
+        "Date_group_of_event": "15-18 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "150000ZJUL44 - 182359ZJUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Joseph Lawton Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "30th Infantry Division",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Major General",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "High ground west of St. Lô",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://www.b24.net/StLoPeriers.htm",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "High ground west of St. Lô",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4603",
+          "East": "0.2797",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "VII Corps Reaches Objective (19 July 1944)",
+      "Sub-event_summary": "By 19 July 1944, the VII Corps reached the Périers-St. Lô road, sustaining heavy casualties but inflicting heavier losses on the Germans, setting the stage for Operation COBRA.",
+      "Sub-event_fulltext": {
+        "Paragraph_59": "The VII Corps had thus reached the Périers-St. Lô road, the compromise objective that General Bradley had selected as the jump-off line for the attack to the Coutances-Caumont line. The corps had sustained heavy casualties, but had inflicted even heavier losses on the Germans. The stage was set for Operation COBRA."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Périers-St. Lô road",
+      "Dates": {
+        "Date_group_of_event": "19 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "190000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Joseph Lawton Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "Heavy",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "Heavier",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Périers-St. Lô road",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://www.b24.net/StLoPeriers.htm",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô road",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4603",
+          "East": "0.2797",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "330th Infantry (83d Division)",
+      "Sub-event_summary": "The 330th Infantry, detached from the 83d Division and attached to the 9th Division, cleared the east bank of the Taute River between the Vire et Taute Canal and the Tribehou causeway, then pinched out and returned to 83d Division control.",
+      "Sub-event_fulltext": {
+        "Paragraph_52": "The 9th Division on the right was to clear the east bank of the Taute River and advance south. The 30th Division on the left was to advance south to the Périers-St. Lô road, then turn east to secure the high ground west of St. Lô. The 3d Armored Division, in reserve, was to be committed as needed. The 330th Infantry, detached from the 83d Division and temporarily attached to the 9th Division, was to clear the east bank of the Taute River between the Vire et Taute Canal and the Tribehou causeway. The 330th was then to be pinched out and returned to the 83d Division.",
+        "Paragraph_55": "The 9th Division attack began well. The 60th Infantry took its objective on 15 July, but the 47th Infantry, in the center, met resistance at le Hommet and le Mesnil-Veneron that halted the regiment a mile short of the causeway. On the left, the 39th Infantry reached the river bank, but the 330th Infantry was stopped by fire from across the Taute and could not advance. The Germans were apparently still in possession of Tribehou Island in the Taute flats, and the causeway was still in enemy hands. To secure the causeway and clear the island, the 9th Division on 16 July committed a battalion of the 330th Infantry. Supported by artillery and dive-bombers, the battalion crossed the causeway and cleared Tribehou Island by evening. The 330th Infantry was pinched out and reverted to 83d Division control. The 39th Infantry cleared the east bank of the Taute to the causeway, and the 47th Infantry reached the causeway."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Tribehou Island",
+      "Dates": {
+        "Date_group_of_event": "15-16 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "150000ZJUL44 - 162359ZJUL44"
+      },
+      "TOE": {
+        "Unit": "330th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "9th Infantry Division (attached)",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "330th Infantry Regiment",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Tribehou Island",
+        "Place_GPS_coordinate": "49.2144°N 1.2433°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://mappingtheoverlays.wordpress.com/tag/83rd-infantry-division/",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Tribehou Island",
+        "Place_GPS_coordinate": "49.2144°N 1.2433°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.6133",
+          "East": "0.1267",
+          "South": "48.3144",
+          "North": "50.1144"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "60th Infantry Regiment",
+      "Sub-event_summary": "The 60th Infantry Regiment of the 9th Division advanced toward the Taute River flats to secure high ground overlooking the Tribehou causeway on 15 July 1944, and later along the high ground overlooking the Taute River flats when turning south.",
+      "Sub-event_fulltext": {
+        "Paragraph_54": "The 9th Division attacked with three regiments abreast. The 60th Infantry on the right advanced toward the Taute River flats to secure the high ground overlooking the Tribehou causeway. The 47th Infantry in the center cleared the banks of the Vire et Taute Canal to the Tribehou causeway. The 39th Infantry on the left, with the 330th Infantry attached, cleared the east bank of the Taute River as far south as the Tribehou causeway, where the 330th Infantry was to be pinched out.",
+        "Paragraph_56": "The 9th Division then turned south. The 60th Infantry on the right advanced along the high ground overlooking the Taute River flats. The 47th Infantry in the center moved south along the canal. The 39th Infantry on the left advanced along the east bank of the Taute River. The division made good progress on 17 July, but on the following day ran into strong resistance from the 17th SS Panzer Grenadier Division, reinforced by the 6th Parachute Regiment. The Germans had organized a strong defensive line along the Périers-St. Lô road, and the 9th Division could not break through. On 19 July the division was halted and began to prepare for the forthcoming COBRA operation."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Taute River flats",
+      "Dates": {
+        "Date_group_of_event": "15 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "150000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "60th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "9th Infantry Division",
+          "Commander": "Manton S. Eddy",
+          "Name": "Manton Sprague Eddy",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "60th Infantry Regiment",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Taute River flats",
+        "Place_GPS_coordinate": "49.2°N 1.2°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Taute River flats",
+        "Place_GPS_coordinate": "49.2°N 1.2°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.57",
+          "East": "0.17",
+          "South": "48.3",
+          "North": "50.1"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "47th Infantry Regiment",
+      "Sub-event_summary": "The 47th Infantry Regiment of the 9th Division cleared the banks of the Vire et Taute Canal to the Tribehou causeway, meeting resistance at le Hommet and le Mesnil-Veneron on 15 July 1944, reaching the causeway on 16 July, and moving south along the canal when turning south.",
+      "Sub-event_fulltext": {
+        "Paragraph_54": "The 9th Division attacked with three regiments abreast. The 60th Infantry on the right advanced toward the Taute River flats to secure the high ground overlooking the Tribehou causeway. The 47th Infantry in the center cleared the banks of the Vire et Taute Canal to the Tribehou causeway. The 39th Infantry on the left, with the 330th Infantry attached, cleared the east bank of the Taute River as far south as the Tribehou causeway, where the 330th Infantry was to be pinched out.",
+        "Paragraph_55": "The 9th Division attack began well. The 60th Infantry took its objective on 15 July, but the 47th Infantry, in the center, met resistance at le Hommet and le Mesnil-Veneron that halted the regiment a mile short of the causeway. On the left, the 39th Infantry reached the river bank, but the 330th Infantry was stopped by fire from across the Taute and could not advance. The Germans were apparently still in possession of Tribehou Island in the Taute flats, and the causeway was still in enemy hands. To secure the causeway and clear the island, the 9th Division on 16 July committed a battalion of the 330th Infantry. Supported by artillery and dive-bombers, the battalion crossed the causeway and cleared Tribehou Island by evening. The 330th Infantry was pinched out and reverted to 83d Division control. The 39th Infantry cleared the east bank of the Taute to the causeway, and the 47th Infantry reached the causeway.",
+        "Paragraph_56": "The 9th Division then turned south. The 60th Infantry on the right advanced along the high ground overlooking the Taute River flats. The 47th Infantry in the center moved south along the canal. The 39th Infantry on the left advanced along the east bank of the Taute River. The division made good progress on 17 July, but on the following day ran into strong resistance from the 17th SS Panzer Grenadier Division, reinforced by the 6th Parachute Regiment. The Germans had organized a strong defensive line along the Périers-St. Lô road, and the 9th Division could not break through. On 19 July the division was halted and began to prepare for the forthcoming COBRA operation."
+      },
+      "Footnote_References": "",
+      "Place_Name": "le Hommet",
+      "Dates": {
+        "Date_group_of_event": "15 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "150000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "47th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "9th Infantry Division",
+          "Commander": "Manton S. Eddy",
+          "Name": "Manton Sprague Eddy",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "47th Infantry Regiment",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "le Hommet",
+        "Place_GPS_coordinate": "49.2°N 1.2°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "le Hommet",
+        "Place_GPS_coordinate": "49.2°N 1.2°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.57",
+          "East": "0.17",
+          "South": "48.3",
+          "North": "50.1"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "39th Infantry Regiment",
+      "Sub-event_summary": "The 39th Infantry Regiment of the 9th Division, with the 330th attached, cleared the east bank of the Taute River to the Tribehou causeway on 15-16 July 1944, and advanced along the east bank when turning south.",
+      "Sub-event_fulltext": {
+        "Paragraph_54": "The 9th Division attacked with three regiments abreast. The 60th Infantry on the right advanced toward the Taute River flats to secure the high ground overlooking the Tribehou causeway. The 47th Infantry in the center cleared the banks of the Vire et Taute Canal to the Tribehou causeway. The 39th Infantry on the left, with the 330th Infantry attached, cleared the east bank of the Taute River as far south as the Tribehou causeway, where the 330th Infantry was to be pinched out.",
+        "Paragraph_55": "The 9th Division attack began well. The 60th Infantry took its objective on 15 July, but the 47th Infantry, in the center, met resistance at le Hommet and le Mesnil-Veneron that halted the regiment a mile short of the causeway. On the left, the 39th Infantry reached the river bank, but the 330th Infantry was stopped by fire from across the Taute and could not advance. The Germans were apparently still in possession of Tribehou Island in the Taute flats, and the causeway was still in enemy hands. To secure the causeway and clear the island, the 9th Division on 16 July committed a battalion of the 330th Infantry. Supported by artillery and dive-bombers, the battalion crossed the causeway and cleared Tribehou Island by evening. The 330th Infantry was pinched out and reverted to 83d Division control. The 39th Infantry cleared the east bank of the Taute to the causeway, and the 47th Infantry reached the causeway.",
+        "Paragraph_56": "The 9th Division then turned south. The 60th Infantry on the right advanced along the high ground overlooking the Taute River flats. The 47th Infantry in the center moved south along the canal. The 39th Infantry on the left advanced along the east bank of the Taute River. The division made good progress on 17 July, but on the following day ran into strong resistance from the 17th SS Panzer Grenadier Division, reinforced by the 6th Parachute Regiment. The Germans had organized a strong defensive line along the Périers-St. Lô road, and the 9th Division could not break through. On 19 July the division was halted and began to prepare for the forthcoming COBRA operation."
+      },
+      "Footnote_References": "",
+      "Place_Name": "East bank of Taute River",
+      "Dates": {
+        "Date_group_of_event": "15 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "150000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "39th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "9th Infantry Division",
+          "Commander": "Manton S. Eddy",
+          "Name": "Manton Sprague Eddy",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "39th Infantry Regiment",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "East bank of Taute River",
+        "Place_GPS_coordinate": "49.2°N 1.2°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "East bank of Taute River",
+        "Place_GPS_coordinate": "49.2°N 1.2°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.57",
+          "East": "0.17",
+          "South": "48.3",
+          "North": "50.1"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "117th Infantry Regiment",
+      "Sub-event_summary": "The 117th Infantry Regiment of the 30th Division advanced against light resistance, reaching the Périers-St. Lô road on 16 July 1944, and turning east toward St. Lô on 17 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_57": "The 30th Division on the left of the 9th Division had a more difficult time. The division was to advance south to the Périers-St. Lô road, then turn east to secure the high ground west of St. Lô. The division attacked on 15 July with two regiments abreast, the 117th Infantry on the right and the 119th Infantry on the left. Combat Command B of the 3d Armored Division was in reserve.",
+        "Paragraph_58": "The 117th Infantry on the right advanced against light resistance and reached the Périers-St. Lô road on 16 July. The 119th Infantry on the left met stronger resistance and was halted short of the road. On 17 July the 117th Infantry turned east and advanced toward St. Lô, but the 119th Infantry was still held up. General Hobbs committed the 120th Infantry on the left of the 119th to assist. On 18 July the 119th and 120th Infantry regiments reached the Périers-St. Lô road, and the division began to prepare for COBRA."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Périers-St. Lô road",
+      "Dates": {
+        "Date_group_of_event": "15 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "150000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "117th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland Stanford Hobbs",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "117th Infantry Regiment",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "High ground west of St. Lô",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://www.b24.net/StLoPeriers.htm",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "High ground west of St. Lô",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4603",
+          "East": "0.2797",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "119th Infantry Regiment",
+      "Sub-event_summary": "The 119th Infantry Regiment of the 30th Division met stronger resistance, halted short of the Périers-St. Lô road on 16 July 1944, still held up on 17 July, and reached the road on 18 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_57": "The 30th Division on the left of the 9th Division had a more difficult time. The division was to advance south to the Périers-St. Lô road, then turn east to secure the high ground west of St. Lô. The division attacked on 15 July with two regiments abreast, the 117th Infantry on the right and the 119th Infantry on the left. Combat Command B of the 3d Armored Division was in reserve.",
+        "Paragraph_58": "The 117th Infantry on the right advanced against light resistance and reached the Périers-St. Lô road on 16 July. The 119th Infantry on the left met stronger resistance and was halted short of the road. On 17 July the 117th Infantry turned east and advanced toward St. Lô, but the 119th Infantry was still held up. General Hobbs committed the 120th Infantry on the left of the 119th to assist. On 18 July the 119th and 120th Infantry regiments reached the Périers-St. Lô road, and the division began to prepare for COBRA."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Périers-St. Lô road",
+      "Dates": {
+        "Date_group_of_event": "15 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "150000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "119th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland Stanford Hobbs",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "119th Infantry Regiment",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Périers-St. Lô road",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://www.b24.net/StLoPeriers.htm",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô road",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4603",
+          "East": "0.2797",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "120th Infantry Regiment",
+      "Sub-event_summary": "The 120th Infantry Regiment of the 30th Division was committed on the left of the 119th on 17 July 1944 to assist, and reached the Périers-St. Lô road on 18 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_58": "The 117th Infantry on the right advanced against light resistance and reached the Périers-St. Lô road on 16 July. The 119th Infantry on the left met stronger resistance and was halted short of the road. On 17 July the 117th Infantry turned east and advanced toward St. Lô, but the 119th Infantry was still held up. General Hobbs committed the 120th Infantry on the left of the 119th to assist. On 18 July the 119th and 120th Infantry regiments reached the Périers-St. Lô road, and the division began to prepare for COBRA."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Périers-St. Lô road",
+      "Dates": {
+        "Date_group_of_event": "17 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "170000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "120th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland Stanford Hobbs",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "120th Infantry Regiment",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Périers-St. Lô road",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://www.b24.net/StLoPeriers.htm",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô road",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4603",
+          "East": "0.2797",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "17th SS Panzer Grenadier Division",
+      "Sub-event_summary": "The 17th SS Panzer Grenadier Division, reinforced by the 6th Parachute Regiment, organized a strong defensive line along the Périers-St. Lô road, halting the 9th Division on 18 July 1944.",
+      "Sub-event_fulltext": {
+        "Paragraph_53": "The Germans in the Taute-Vire area were attempting to reorganize. The 17th SS Panzer Grenadier Division, which had taken a severe battering, was being reinforced by a battalion of the 6th Parachute Regiment. Panzer Lehr, after its unsuccessful counterattack, was being moved into the line to relieve the 352d Division, which was to be shifted to a quiet sector. The 2d SS Panzer Division was to be relieved for rehabilitation. The Germans thus expected to hold their positions with fewer troops. The U.S. attack on 15 July was not entirely a surprise to the Germans, who had noted the movement of the 9th Division across the Vire et Taute Canal and had deduced the general American intention. But the Germans had not expected the attack so soon, and the troops in the line were still not completely reorganized.",
+        "Paragraph_56": "The 9th Division then turned south. The 60th Infantry on the right advanced along the high ground overlooking the Taute River flats. The 47th Infantry in the center moved south along the canal. The 39th Infantry on the left advanced along the east bank of the Taute River. The division made good progress on 17 July, but on the following day ran into strong resistance from the 17th SS Panzer Grenadier Division, reinforced by the 6th Parachute Regiment. The Germans had organized a strong defensive line along the Périers-St. Lô road, and the 9th Division could not break through. On 19 July the division was halted and began to prepare for the forthcoming COBRA operation."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Périers-St. Lô road",
+      "Dates": {
+        "Date_group_of_event": "18 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "180000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "17th SS Panzer Grenadier Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "17th SS Panzer Grenadier Division",
+          "Name": "Werner Ostendorff",
+          "Rank": "SS-Gruppenführer",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Werner_Ostendorff",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "Reinforced by battalion from 6th Parachute Regiment",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Périers-St. Lô road",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://www.b24.net/StLoPeriers.htm",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô road",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4603",
+          "East": "0.2797",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "6th Parachute Regiment",
+      "Sub-event_summary": "A battalion of the 6th Parachute Regiment reinforced the 17th SS Panzer Grenadier Division in the Taute-Vire area.",
+      "Sub-event_fulltext": {
+        "Paragraph_53": "The Germans in the Taute-Vire area were attempting to reorganize. The 17th SS Panzer Grenadier Division, which had taken a severe battering, was being reinforced by a battalion of the 6th Parachute Regiment. Panzer Lehr, after its unsuccessful counterattack, was being moved into the line to relieve the 352d Division, which was to be shifted to a quiet sector. The 2d SS Panzer Division was to be relieved for rehabilitation. The Germans thus expected to hold their positions with fewer troops. The U.S. attack on 15 July was not entirely a surprise to the Germans, who had noted the movement of the 9th Division across the Vire et Taute Canal and had deduced the general American intention. But the Germans had not expected the attack so soon, and the troops in the line were still not completely reorganized.",
+        "Paragraph_56": "The 9th Division then turned south. The 60th Infantry on the right advanced along the high ground overlooking the Taute River flats. The 47th Infantry in the center moved south along the canal. The 39th Infantry on the left advanced along the east bank of the Taute River. The division made good progress on 17 July, but on the following day ran into strong resistance from the 17th SS Panzer Grenadier Division, reinforced by the 6th Parachute Regiment. The Germans had organized a strong defensive line along the Périers-St. Lô road, and the 9th Division could not break through. On 19 July the division was halted and began to prepare for the forthcoming COBRA operation."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Taute-Vire area",
+      "Dates": {
+        "Date_group_of_event": "Before 15 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "APPROX 150000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "6th Parachute Regiment",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "II Parachute Corps",
+          "Commander": "Eugen Meindl",
+          "Name": "Eugen Meindl",
+          "Rank": "General der Fallschirmtruppe",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Eugen_Meindl",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "6th Parachute Regiment",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Taute-Vire area",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Taute-Vire area",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.52",
+          "East": "0.22",
+          "South": "48.25",
+          "North": "50.05"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "Panzer Lehr Division",
+      "Sub-event_summary": "Panzer Lehr Division was moved into the line to relieve the 352d Division after its unsuccessful counterattack.",
+      "Sub-event_fulltext": {
+        "Paragraph_53": "The Germans in the Taute-Vire area were attempting to reorganize. The 17th SS Panzer Grenadier Division, which had taken a severe battering, was being reinforced by a battalion of the 6th Parachute Regiment. Panzer Lehr, after its unsuccessful counterattack, was being moved into the line to relieve the 352d Division, which was to be shifted to a quiet sector. The 2d SS Panzer Division was to be relieved for rehabilitation. The Germans thus expected to hold their positions with fewer troops. The U.S. attack on 15 July was not entirely a surprise to the Germans, who had noted the movement of the 9th Division across the Vire et Taute Canal and had deduced the general American intention. But the Germans had not expected the attack so soon, and the troops in the line were still not completely reorganized."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Taute-Vire area",
+      "Dates": {
+        "Date_group_of_event": "After 11 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "APPROX 120000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Panzer Lehr Division",
+          "Name": "Fritz Bayerlein",
+          "Rank": "Generalleutnant",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Taute-Vire area",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Taute-Vire area",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.52",
+          "East": "0.22",
+          "South": "48.25",
+          "North": "50.05"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "352d Division",
+      "Sub-event_summary": "The 352d Division was relieved by Panzer Lehr and shifted to a quiet sector.",
+      "Sub-event_fulltext": {
+        "Paragraph_53": "The Germans in the Taute-Vire area were attempting to reorganize. The 17th SS Panzer Grenadier Division, which had taken a severe battering, was being reinforced by a battalion of the 6th Parachute Regiment. Panzer Lehr, after its unsuccessful counterattack, was being moved into the line to relieve the 352d Division, which was to be shifted to a quiet sector. The 2d SS Panzer Division was to be relieved for rehabilitation. The Germans thus expected to hold their positions with fewer troops. The U.S. attack on 15 July was not entirely a surprise to the Germans, who had noted the movement of the 9th Division across the Vire et Taute Canal and had deduced the general American intention. But the Germans had not expected the attack so soon, and the troops in the line were still not completely reorganized."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Taute-Vire area",
+      "Dates": {
+        "Date_group_of_event": "After 11 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "APPROX 120000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "352d Infantry Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/352nd_Infantry_Division_(Wehrmacht)",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "352d Infantry Division",
+          "Name": "Dietrich Kraiss",
+          "Rank": "Generalleutnant",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dietrich_Kraiss",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Taute-Vire area",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Taute-Vire area",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.52",
+          "East": "0.22",
+          "South": "48.25",
+          "North": "50.05"
+        }
+      }
+    },
+    {
+      "Event": "Toward the Périers-St. Lô Road",
+      "Sub-event": "2d SS Panzer Division",
+      "Sub-event_summary": "The 2d SS Panzer Division was to be relieved for rehabilitation.",
+      "Sub-event_fulltext": {
+        "Paragraph_53": "The Germans in the Taute-Vire area were attempting to reorganize. The 17th SS Panzer Grenadier Division, which had taken a severe battering, was being reinforced by a battalion of the 6th Parachute Regiment. Panzer Lehr, after its unsuccessful counterattack, was being moved into the line to relieve the 352d Division, which was to be shifted to a quiet sector. The 2d SS Panzer Division was to be relieved for rehabilitation. The Germans thus expected to hold their positions with fewer troops. The U.S. attack on 15 July was not entirely a surprise to the Germans, who had noted the movement of the 9th Division across the Vire et Taute Canal and had deduced the general American intention. But the Germans had not expected the attack so soon, and the troops in the line were still not completely reorganized."
+      },
+      "Footnote_References": "",
+      "Place_Name": "Taute-Vire area",
+      "Dates": {
+        "Date_group_of_event": "After 11 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "APPROX 120000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "2d SS Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "2d SS Panzer Division",
+          "Name": "Heinz Lammerding",
+          "Rank": "SS-Brigadeführer",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Heinz_Lammerding",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Taute-Vire area",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Taute-Vire area",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.52",
+          "East": "0.22",
+          "South": "48.25",
+          "North": "50.05"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "51",
+      "Footnote_Number": "51",
+      "Footnote_Text": "LXXXIV Corps KTB, 15 Jul; Seventh Army KTB, 15 Jul.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "LXXXIV Corps War Diary, 15 Jul; Seventh Army War Diary, 15 Jul"
+    },
+    {
+      "Footnote": "52a",
+      "Footnote_Number": "52a",
+      "Footnote_Text": "9th Div AAR, Jul",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "9th Division After Action Report, Jul"
+    },
+    {
+      "Footnote": "52b",
+      "Footnote_Number": "52b",
+      "Footnote_Text": "VII Corps AAR, Jul",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "VII Corps After Action Report, Jul"
+    },
+    {
+      "Footnote": "53a",
+      "Footnote_Number": "53a",
+      "Footnote_Text": "30th Div AAR, Jul",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "30th Division After Action Report, Jul"
+    },
+    {
+      "Footnote": "53b",
+      "Footnote_Number": "53b",
+      "Footnote_Text": "VII Corps AAR, Jul",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "VII Corps After Action Report, Jul"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn7.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

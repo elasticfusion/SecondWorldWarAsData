@@ -1,0 +1,840 @@
+{
+  "Events": [
+    {
+      "Event": "The Second Thrust Toward Coutances",
+      "Sub-event": "Withholding and Commitment of the 3d Armored Division",
+      "Sub-event_summary": "On the night of 26 July 1944, the 3d Armored Division was withheld due to uncertainty in the COBRA penetration but was committed the next morning to attack through the Marigny-St. Gilles gap toward Carantilly and Canisy, then west to Montpinchon and block south of Coutances.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "When night came on 26 July, the second day of Operation COBRA, General Collins still had one uncommitted unit, the 3d Armored Division (less CCB). Although scheduled to enter the fight on 26 July along with the other two armored columns, the 3d Armored had been withheld because of the uncertainty about the extent of the COBRA penetration. It was located in the VII Corps center where it might be used either to defend against counterattack or to reinforce success at any point within the corps.",
+        "Paragraph_2": "When operations on 26 July left no doubt that a clear penetration had been made, General Collins told the commander, General Watson, to begin executing his original mission the next morning, 27 July. *(See [Map V](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg).)* Employing General Hickey's Combat Command A (with a battalion of the 1st Division's 26th Infantry attached), the 3d Armored Division was to attack through the middle of the Marigny-St. Gilles gap to the vicinity of Carantilly and Canisy. At Cerisy-la-Salle the division was to turn to the west, secure Montpinchon, cut the north-south highway about half way between Coutances and Gavray, and set up blocking positions south of Coutances on high ground overlooking the roads leading south to Gavray and Bréhal."
+      },
+      "Footnote_References": [
+        1,
+        2
+      ],
+      "Place_Name": [
+        "Marigny-St. Gilles gap",
+        "Carantilly",
+        "Canisy",
+        "Cerisy-la-Salle",
+        "Montpinchon",
+        "Coutances",
+        "Gavray",
+        "Bréhal"
+      ],
+      "Dates": [
+        {
+          "Date_group_of_event": "26 July 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+          "Zulu_date_group_of_event": "262100ZJUL44"
+        },
+        {
+          "Date_group_of_event": "27 July 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+          "Zulu_date_group_of_event": "270600ZJUL44"
+        }
+      ],
+      "TOE": {
+        "Unit": "3d Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": [
+          {
+            "Unit": "VII Corps",
+            "Commander": "J. Lawton Collins",
+            "Name": "J. Lawton Collins",
+            "Rank": "Lieutenant General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+            "Biographical_reference_Capture_Date": "2025-12-23"
+          }
+        ],
+        "Subordinates": [
+          {
+            "Unit": "3d Armored Division",
+            "Name": "Leroy H. Watson",
+            "Rank": "Major General",
+            "Date": "1944-07-01",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Leroy_H._Watson",
+            "Biographical_reference_Capture_Date": "2025-12-23"
+          },
+          {
+            "Unit": "Combat Command A",
+            "Name": "Doyle O. Hickey",
+            "Rank": "Brigadier General",
+            "Date": "1944-07-01",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Doyle_Overton_Hickey",
+            "Biographical_reference_Capture_Date": "2025-12-23"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://warfarehistorynetwork.com/wp-content/uploads/2022/08/W-Cobra-MAP-4C-Jan07.jpg",
+          "Description": "Historical map of Operation COBRA",
+          "License": "Unknown"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Coutances",
+          "Place_GPS_coordinate": "49.05 N, 1.44 W",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Saint_Lo_and_Vicinity_-_Operation_Cobra.jpg/640px-Saint_Lo_and_Vicinity_-_Operation_Cobra.jpg",
+          "ExternalMapLinkLicence": "Public Domain",
+          "ExternalMapLinkCaptureDate": "2025-12-23"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Coutances",
+          "Place_GPS_coordinate": "49.05 N, 1.44 W",
+          "Weather_text": "Fair weather with scattered clouds, temperatures around 20-25°C, suitable for military operations.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.81,
+            "East": -0.07,
+            "South": 48.15,
+            "North": 49.95
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The Second Thrust Toward Coutances",
+      "Sub-event": "Initial Advance and Obstacles on 27 July",
+      "Sub-event_summary": "CCA divided into three task forces advanced on 27 July but encountered obstacles like bomb craters, traffic, a strongpoint southeast of Marigny losing four tanks, and resistance in Carantilly-Canisy area, halting short of Cerisy-la-Salle after dark.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "This was basically a defensive mission. In making a wide envelopment en route to Coutances, the 3d Armored Division was to thwart the northward movement of German reinforcements against the 1st Division and its attached CCB. On the other hand, should COBRA thoroughly disorganize the Germans and force their withdrawal, the 3d Armored Division would be in position to block the southern exits from Coutances. If the VIII Corps reached Coutances ahead of the 3d Armored Division, General Watson was to halt at the Coutances-Gavray road in order to circumvent traffic congestion between VII and VIII Corps forces in a subsequent exploitation of COBRA. Because on 26 July a deep exploitation hardly seemed likely, General Collins told General Watson to destroy all bridges over the Sienne River not previously knocked out by air bombardment.",
+        "Paragraph_4": "Dividing CCA into three task forces-each basically a battalion of tanks and one of armored infantry--General Hickey sent the comand across the Périers-St. Lô highway in column early on 27 July. The troops were to drive forward aggressively, outflanking or bypassing resistance and avoiding hedgerow fighting. Though the road net was not the best for rapid armored advance, little opposition was expected because the 4th Division already had passed through the area. With Operation COBRA well on the way to success, there seemed no reason why the armored column should not move quickly to the village of Cerisy-la-Salle, then swing to the west.",
+        "Paragraph_5": "This line of thought did not take into account certain obstacles--bomb craters, wrecked vehicles, and traffic congestion. The leading task force met a well-organized strongpoint southeast of Marigny around noon of 27 July and lost four of its medium tanks. While the head of the column sought to disengage, the rest of the armor jammed up along the roads to the rear for a distance of almost ten miles. Though the point finally broke contact and bypassed the resistance (which the 12th Infantry of the 4th Division cleared later in the day), another obstacle developed in the Carantilly-Canisy region. Here CCA's advance units encountered several German tanks and antitank guns deployed along a railroad embankment. Prevented from bypassing this resistance because of inadequate roads, the leading task force had no choice but to fight. Heavy fire from CCA's tanks eventually subdued the defenses, but again the bulk of the column had to wait impotently for several hours along the roads to the rear. Traffic congestion and more enemy pockets prompted a halt shortly after dark.",
+        "Paragraph_6": "The advance had been disappointing. The third task force in the column was still far back in the vicinity of Marigny and St. Gilles, the second was in the Carantilly-Canisy area, and the head of the combat command was more than three miles short of Cerisy-la-Salle, the pivot point for the westward thrust toward Coutances."
+      },
+      "Footnote_References": [
+        3,
+        4
+      ],
+      "Place_Name": [
+        "Coutances",
+        "Sienne River",
+        "Périers-St. Lô highway",
+        "Marigny",
+        "Carantilly-Canisy",
+        "St. Gilles",
+        "Cerisy-la-Salle"
+      ],
+      "Dates": [
+        {
+          "Date_group_of_event": "27 July 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+          "Zulu_date_group_of_event": "APPROX 270600ZJUL44"
+        },
+        {
+          "Date_group_of_event": "noon 27 July 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+          "Zulu_date_group_of_event": "271100ZJUL44"
+        }
+      ],
+      "TOE": {
+        "Unit": "3d Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": [
+          {
+            "Unit": "VII Corps",
+            "Commander": "J. Lawton Collins",
+            "Name": "J. Lawton Collins",
+            "Rank": "Lieutenant General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+            "Biographical_reference_Capture_Date": "2025-12-23"
+          }
+        ],
+        "Subordinates": [
+          {
+            "Unit": "3d Armored Division",
+            "Name": "Leroy H. Watson",
+            "Rank": "Major General",
+            "Date": "1944-07-01",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Leroy_H._Watson",
+            "Biographical_reference_Capture_Date": "2025-12-23"
+          },
+          {
+            "Unit": "Combat Command A",
+            "Name": "Doyle O. Hickey",
+            "Rank": "Brigadier General",
+            "Date": "1944-07-01",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Doyle_Overton_Hickey",
+            "Biographical_reference_Capture_Date": "2025-12-23"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Sherman tank",
+              "Identifier": "M4",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+              "Web_Image_Reference": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=10159635259485842",
+              "Web_Reference_Capture_Date": "2025-12-23"
+            }
+          ],
+          "Allied_Destroyed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Sherman tank",
+              "Identifier": "M4",
+              "Quantity": 4,
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+              "Web_Image_Reference": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=10159635259485842",
+              "Web_Reference_Capture_Date": "2025-12-23"
+            }
+          ],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "unknown",
+              "Quantity": "several",
+              "Web_Reference": "https://en.wikipedia.org/wiki/17th_SS_Panzergrenadier_Division_G%C3%B6tz_von_Berlichingen",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "2025-12-23"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Antitank gun",
+              "Identifier": "unknown",
+              "Quantity": "several",
+              "Web_Reference": "https://en.wikipedia.org/wiki/17th_SS_Panzergrenadier_Division_G%C3%B6tz_von_Berlichingen",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "2025-12-23"
+            }
+          ],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "unknown",
+              "Quantity": "several",
+              "Web_Reference": "https://en.wikipedia.org/wiki/17th_SS_Panzergrenadier_Division_G%C3%B6tz_von_Berlichingen",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "2025-12-23"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Antitank gun",
+              "Identifier": "unknown",
+              "Quantity": "several",
+              "Web_Reference": "https://en.wikipedia.org/wiki/17th_SS_Panzergrenadier_Division_G%C3%B6tz_von_Berlichingen",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "2025-12-23"
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://i.redd.it/u9skmaopk2c71.jpg",
+          "Description": "American troops of the 3rd Armored Division in France 1944",
+          "License": "Unknown"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Marigny",
+          "Place_GPS_coordinate": "49.1 N, 1.24 W",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Saint_Lo_Breakthrough.jpg/330px-Saint_Lo_Breakthrough.jpg",
+          "ExternalMapLinkLicence": "Public Domain",
+          "ExternalMapLinkCaptureDate": "2025-12-23"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Marigny",
+          "Place_GPS_coordinate": "49.1 N, 1.24 W",
+          "Weather_text": "Fair weather with scattered clouds, temperatures around 20-25°C, suitable for military operations.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.61,
+            "East": 0.13,
+            "South": 48.2,
+            "North": 50.0
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The Second Thrust Toward Coutances",
+      "Sub-event": "Terrain Importance and Plan Change on Evening of 27 July",
+      "Sub-event_summary": "Recognizing the importance of Cerisy-la-Salle and Montpinchon for controlling the road net, General Hickey adjusted the plan to turn west earlier on a broad front to avoid exposure and secure the terrain, with task forces targeting Montpinchon, Cerisy-la-Salle, and a direct thrust to Coutances.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "The villages of Cerisy-la-Salle, on a hill almost 400 feet high, and Montpinchon, on a mound about 425 feet high two miles to the west and on the other side of a steep-walled valley, dominate the surrounding terrain in general and in particular the road net westward to Coutances. The 3d Armored Division commander, General Watson, had assumed that COBRA would develop so rapidly that CCA would occupy Cerisy-la-Salle without difficulty. Plans had thus been prepared for operations only in the area west of that village--along the Montpinchon-Coutances axis.",
+        "Paragraph_8": "On the evening of 27 July, the situation demanded a change. CCA had started a day late, and its approach march had been disappointingly slow. In addition, there were indications that the Germans were in the process of establishing a front line facing eastward to cover a withdrawal through Coutances. Should they institute a full-scale withdrawal, they would inevitably try to pass through the Montpinchon-",
+        "Paragraph_9": "Cerisy-la-Salle region and hold the commanding terrain. If CCA followed the original plan and passed through Cerisy-la-Salle in column, it would continue to move across the German front and be exposed to flanking fire. It might even get involved in an engagement at Cerisy-la-Salle or Montpinchon that might prevent the armor from reaching Coutances in time to block German withdrawal through that important road center. Thus, a quicker way to Coutances had to be found, but at the same time Cerisy-la-Salle and Montpinchon had to be seized and secured to deny the Germans dominating terrain, which in their hands would facilitate their escape from the Coutances area."
+      },
+      "Footnote_References": [],
+      "Place_Name": [
+        "Cerisy-la-Salle",
+        "Montpinchon",
+        "Coutances"
+      ],
+      "Dates": [
+        {
+          "Date_group_of_event": "evening 27 July 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+          "Zulu_date_group_of_event": "271900ZJUL44"
+        }
+      ],
+      "TOE": {
+        "Unit": "3d Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": [
+          {
+            "Unit": "VII Corps",
+            "Commander": "J. Lawton Collins",
+            "Name": "J. Lawton Collins",
+            "Rank": "Lieutenant General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+            "Biographical_reference_Capture_Date": "2025-12-23"
+          }
+        ],
+        "Subordinates": [
+          {
+            "Unit": "3d Armored Division",
+            "Name": "Leroy H. Watson",
+            "Rank": "Major General",
+            "Date": "1944-07-01",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Leroy_H._Watson",
+            "Biographical_reference_Capture_Date": "2025-12-23"
+          },
+          {
+            "Unit": "Combat Command A",
+            "Name": "Doyle O. Hickey",
+            "Rank": "Brigadier General",
+            "Date": "1944-07-01",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Doyle_Overton_Hickey",
+            "Biographical_reference_Capture_Date": "2025-12-23"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Cerisy-la-Salle",
+          "Place_GPS_coordinate": "49.0269 N, 1.2811 W",
+          "Map_Reference": "Map VI",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VI.jpg",
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Cerisy-la-Salle",
+          "Place_GPS_coordinate": "49.0269 N, 1.2811 W",
+          "Weather_text": "Fair weather with scattered clouds, temperatures around 20-25°C, suitable for military operations.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.65,
+            "East": 0.09,
+            "South": 48.13,
+            "North": 49.92
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The Second Thrust Toward Coutances",
+      "Sub-event": "Actions and Disappointment on 28 July",
+      "Sub-event_summary": "On 28 July, the main effort from Carantilly was delayed until midafternoon due to traffic, slowed by terrain and resistance near Savigny, which was eliminated the next day; task forces at Cerisy-la-Salle and Montpinchon faced tenacious resistance from the 17th SS Panzer Grenadier Division, weakening only at night.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "General Hickey's solution, which General Watson approved, was to start his turn westward toward Coutances at once and to move on a broad front. The leading task force was to turn west from Canisy, bypass Cerisy-la-Salle on the north, and drive to Montpinchon. The second task force in the CCA column was to continue to Cerisy-la-Salle and capture the high ground there. The last task force in the column was to assume the CCA main effort, swing westward from Carantilly, and head straight for Coutances. *(See [Map VI](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VI.jpg) .)*",
+        "Paragraph_11": "Despite hopes for success, CCA was due for another day of disappointment on 28 July. Because of traffic congestion, the main effort from Carantilly did not get started until midafternoon. Even then terrain broken by hedgerows and small hills as well as a dearth of good roads slowed the advance markedly. Clearing isolated resistance, the task force in late afternoon reached a point about five miles west of Carantilly only to run into a German pocket near Savigny, part of the same one that the 1st Division's 26th Infantry had encountered a few hundred yards to the north. Together, the 26th Infantry and CCA eliminated the pocket, but not until the following day.",
+        "Paragraph_12": "In the meantime, the task forces moving on Cerisy-la-Salle and Montpinchon had made few gains. Troops of the *17th SS Panzer Grenadier Division* held the commanding terrain tenaciously and, from good positions on the hedgerowed slopes of both hills, refused to give way, even in the face of bombing and strafing by sixteen planes. The resistance at Cerisy-la-Salle and Montpinchon weakened only when night afforded the Germans concealment for withdrawal. The next day, 29 July, when the two task forces of CCA renewed their attacks, the opposition had virtually vanished. Moving together, the task forces continued with little difficulty to the north-south Coutances-Gavray highway."
+      },
+      "Footnote_References": [],
+      "Place_Name": [
+        "Canisy",
+        "Cerisy-la-Salle",
+        "Montpinchon",
+        "Carantilly",
+        "Coutances",
+        "Savigny",
+        "Coutances-Gavray highway"
+      ],
+      "Dates": [
+        {
+          "Date_group_of_event": "28 July 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+          "Zulu_date_group_of_event": "APPROX 281400ZJUL44"
+        }
+      ],
+      "TOE": {
+        "Unit": "3d Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": [
+          {
+            "Unit": "VII Corps",
+            "Commander": "J. Lawton Collins",
+            "Name": "J. Lawton Collins",
+            "Rank": "Lieutenant General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+            "Biographical_reference_Capture_Date": "2025-12-23"
+          }
+        ],
+        "Subordinates": [
+          {
+            "Unit": "3d Armored Division",
+            "Name": "Leroy H. Watson",
+            "Rank": "Major General",
+            "Date": "1944-07-01",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Leroy_H._Watson",
+            "Biographical_reference_Capture_Date": "2025-12-23"
+          },
+          {
+            "Unit": "Combat Command A",
+            "Name": "Doyle O. Hickey",
+            "Rank": "Brigadier General",
+            "Date": "1944-07-01",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Doyle_Overton_Hickey",
+            "Biographical_reference_Capture_Date": "2025-12-23"
+          },
+          {
+            "Unit": "17th SS Panzer Grenadier Division",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "1944-07-01",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/17th_SS_Panzergrenadier_Division_G%C3%B6tz_von_Berlichingen",
+            "Biographical_reference_Capture_Date": "2025-12-23"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://warfarehistorynetwork.com/wp-content/uploads/2022/08/W-Cobra-MAP-4C-Jan07.jpg",
+          "Description": "Historical map of Operation COBRA",
+          "License": "Unknown"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Savigny",
+          "Place_GPS_coordinate": "49.0506 N, 1.3375 W",
+          "Map_Reference": "Map VI",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VI.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "Public Domain",
+          "ExternalMapLinkCaptureDate": "2025-12-23"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Savigny",
+          "Place_GPS_coordinate": "49.0506 N, 1.3375 W",
+          "Weather_text": "Fair weather with scattered clouds, temperatures around 20-25°C, suitable for air support.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.71,
+            "East": -0.0,
+            "South": 48.15,
+            "North": 49.95
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The Second Thrust Toward Coutances",
+      "Sub-event": "Advance on 29 July and Outcome",
+      "Sub-event_summary": "On 29 July, opposition vanished, allowing CCA to advance to the Coutances-Gavray highway; however, like the 1st Division, they failed to encircle German forces as the Germans had escaped, thwarting the original COBRA intent.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "Like the 1st Division, CCA had not crossed the Cotentin in time to ensnare the German forces. The Germans had escaped and thus had thwarted the original COBRA intent. The Americans were not sure whether their threat of encirclement had made the Germans pull out or whether the pressure of the VIII Corps had driven them out before the trap could be sprung."
+      },
+      "Footnote_References": [],
+      "Place_Name": [
+        "Coutances-Gavray highway",
+        "Cotentin"
+      ],
+      "Dates": [
+        {
+          "Date_group_of_event": "29 July 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+          "Zulu_date_group_of_event": "290600ZJUL44"
+        }
+      ],
+      "TOE": {
+        "Unit": "3d Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": [
+          {
+            "Unit": "VII Corps",
+            "Commander": "J. Lawton Collins",
+            "Name": "J. Lawton Collins",
+            "Rank": "Lieutenant General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+            "Biographical_reference_Capture_Date": "2025-12-23"
+          }
+        ],
+        "Subordinates": [
+          {
+            "Unit": "3d Armored Division",
+            "Name": "Leroy H. Watson",
+            "Rank": "Major General",
+            "Date": "1944-07-01",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Leroy_H._Watson",
+            "Biographical_reference_Capture_Date": "2025-12-23"
+          },
+          {
+            "Unit": "Combat Command A",
+            "Name": "Doyle O. Hickey",
+            "Rank": "Brigadier General",
+            "Date": "1944-07-01",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Doyle_Overton_Hickey",
+            "Biographical_reference_Capture_Date": "2025-12-23"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Cotentin",
+          "Place_GPS_coordinate": "49.3 N, 1.5 W",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Saint_Lo_Breakthrough.jpg/330px-Saint_Lo_Breakthrough.jpg",
+          "ExternalMapLinkLicence": "Public Domain",
+          "ExternalMapLinkCaptureDate": "2025-12-23"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Cotentin",
+          "Place_GPS_coordinate": "49.3 N, 1.5 W",
+          "Weather_text": "Fair weather with scattered clouds, temperatures around 20-25°C, suitable for military operations.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.87,
+            "East": -0.13,
+            "South": 48.4,
+            "North": 50.2
+          }
+        }
+      ]
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "1",
+      "Footnote_Number": "1",
+      "Footnote_Text": "3d Armd Div Ltr of Instrs, 26 Jul (confirming oral orders issued by the corps commander on the evening of 25 July).",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "3d Armd Div Ltr of Instrs, 26 Jul"
+    },
+    {
+      "Footnote": "2a",
+      "Footnote_Number": "2a",
+      "Footnote_Text": "FUSA Outline Plan COBRA, 13 Jul",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "FUSA Outline Plan COBRA, 13 Jul"
+    },
+    {
+      "Footnote": "2b",
+      "Footnote_Number": "2b",
+      "Footnote_Text": "VII Corps FO 6 (rev), 20 Jul",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "VII Corps FO 6 (rev), 20 Jul"
+    },
+    {
+      "Footnote": "2c",
+      "Footnote_Number": "2c",
+      "Footnote_Text": "3d Armd Div Amendment to FO 4, 20 Jul",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "3d Armd Div Amendment to FO 4, 20 Jul"
+    },
+    {
+      "Footnote": "2d",
+      "Footnote_Number": "2d",
+      "Footnote_Text": "Ltr, Destruction of Bridges, 22 Jul",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Ltr, Destruction of Bridges, 22 Jul"
+    },
+    {
+      "Footnote": "2e",
+      "Footnote_Number": "2e",
+      "Footnote_Text": "Memo, 23 Jul (an extract of VII Corps Msg, 23 Jul)",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Memo, 23 Jul"
+    },
+    {
+      "Footnote": "2f",
+      "Footnote_Number": "2f",
+      "Footnote_Text": "Ltr of Instrs, 24 Jul",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Ltr of Instrs, 24 Jul"
+    },
+    {
+      "Footnote": "3a",
+      "Footnote_Number": "3a",
+      "Footnote_Text": "3d Armd Div CCA AAR, Jul",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "3d Armd Div CCA AAR, Jul"
+    },
+    {
+      "Footnote": "3b",
+      "Footnote_Number": "3b",
+      "Footnote_Text": "Warning Order, 19 Jul",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Warning Order, 19 Jul"
+    },
+    {
+      "Footnote": "3c",
+      "Footnote_Number": "3c",
+      "Footnote_Text": "3d Armd Div FO 4, 19 Jul",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "3d Armd Div FO 4, 19 Jul"
+    },
+    {
+      "Footnote": "3d",
+      "Footnote_Number": "3d",
+      "Footnote_Text": "FO 5, 20 Jul",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "FO 5, 20 Jul"
+    },
+    {
+      "Footnote": "3e",
+      "Footnote_Number": "3e",
+      "Footnote_Text": "G-3 Per Rpt 34, 28 Jul",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "G-3 Per Rpt 34, 28 Jul"
+    },
+    {
+      "Footnote": "4",
+      "Footnote_Number": "4",
+      "Footnote_Text": "3d Armd Div G-3 Per Rpt 33, 27 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "3d Armd Div G-3 Per Rpt 33, 27 Jul"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn14.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-23",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+  "Source_Link_Capture_Date": "2025-12-23"
+}

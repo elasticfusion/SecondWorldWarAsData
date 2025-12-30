@@ -1,0 +1,3503 @@
+{
+  "Events": [
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "XV Corps Captures le Mans",
+      "Sub-event_summary": "General Haislip's XV Corps captured le Mans on 8 August using the 5th Armored Division and the 79th and 90th Infantry Divisions, preparing for a drive north to Alençon and then to Carrouges and Sées.",
+      "Sub-event_fulltext": {
+        "Paragraph_151": "General Haislip's XV Corps had taken le Mans on 8 August with the 5th Armored and the 79th and 90th Infantry Divisions, and soon afterwards it was ready to drive north. The initial corps objective, thirty miles north of le Mans, was the town of Alençon--the great crossroads of the Rouen-Bordeaux and Rennes-Paris highways. The final objective was eleven miles beyond Alençon, a fifteen-mile stretch of the east-west road connecting the towns of Carrouges and Sées."
+      },
+      "Footnote_References": [],
+      "Place_Name": "le Mans",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "XV Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "Third Army",
+            "Commander": "Wade H. Haislip",
+            "Name": "Wade H. Haislip",
+            "Rank": "Major General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Wade_H._Haislip",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [
+            {
+              "Unit": "5th Armored Division",
+              "Name": "Lunsford E. Oliver",
+              "Rank": "Major General",
+              "Date": "080000BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Lunsford_E._Oliver",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "79th Infantry Division",
+              "Name": "Ira T. Wyche",
+              "Rank": "Major General",
+              "Date": "080000BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/79th_Infantry_Division_(United_States)",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "90th Infantry Division",
+              "Name": "Raymond S. McLain",
+              "Rank": "Major General",
+              "Date": "080000BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/90th_Infantry_Division_(United_States)",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "le Mans",
+        "Place_GPS_coordinate": "48.0061, 0.1996",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:Operation_Cobra,_July_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "le Mans",
+        "Place_GPS_coordinate": "48.0061, 0.1996",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.1754,
+          "East": 1.5746,
+          "South": 47.1061,
+          "North": 48.9061
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "XV Corps Flanks Open",
+      "Sub-event_summary": "In driving north along the le Mans-Alençon-Argentan axis, XV Corps had both flanks open, with light resistance on the right by 106th Cavalry Group, and a 25-mile gap on the left to Mayenne.",
+      "Sub-event_fulltext": {
+        "Paragraph_152": "In driving north along the le Mans-Alencron-Argentan axis, XV Corps would have both flanks open. On the right, elements of the 106th Cavalry Group during the following few days would roam almost at will and meet only the slightest resistance. On the left, a gap of about twenty-five miles would separate the corps from the closest American units at Mayenne.[54](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn54) *[](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-16.jpg)*"
+      },
+      "Footnote_References": [
+        "54"
+      ],
+      "Place_Name": "Mayenne",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "106th Cavalry Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XV Corps",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": "Unknown",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/106th_Cavalry_Regiment",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-16.jpg",
+          "Description": "Map 16: XV Corps, 9-12 August 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Mayenne",
+        "Place_GPS_coordinate": "48.3031, -0.6136",
+        "Map_Reference": "Map 16",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-16.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Mayenne",
+        "Place_GPS_coordinate": "48.3031, -0.6136",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.9886,
+          "East": 0.7614,
+          "South": 47.4031,
+          "North": 49.2031
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Patton Reinforces XV Corps",
+      "Sub-event_summary": "To increase XV Corps striking power, Patton gave Haislip the 2d French Armored Division, ordering to lead with armor (5th U.S. and 2d French), which was experienced, eager, commanded by Maj. Gen. Jacques Philippe Leclerc, fought in Africa, re-equipped in England for OVERLORD, assembled south of Avranches, alerted for Mortain, then to le Mans and attached to XV Corps on 9 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_153": "To increase the striking power of the XV Corps, Patton gave Haislip the 2d French Armored Division and ordered Haislip to lead with his armor, which would mean the 5th U.S. and the 2d French Armored Divisions. Much was expected of the French troops, for they were experienced in combat and eager to liberate their country. Commanded by Maj. Gen. Jacques Philippe Leclerc, the division had fought in Africa before being brought to England in the spring of 1944 expressly to represent French forces in Operation OVERLORD. Re-equipped with American matériel, the division arrived on the Continent and assembled just south of Avranches during the early days of August. It had been alerted briefly for possible employment at Mortain before being ordered to le Mans where, on 9 August, it was attached to the XV Corps.[55](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn55)"
+      },
+      "Footnote_References": [
+        "55"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING AUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "BEGINNING AUG44"
+      },
+      "TOE": {
+        "Unit": "2d French Armored Division",
+        "Unit_Nationality": "FR",
+        "Command_Structure": {
+          "Unit": "XV Corps",
+          "Commander": "Jacques Philippe Leclerc",
+          "Name": "Jacques Philippe Leclerc",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Jacques_Philippe_Leclerc_de_Hauteclocque",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Experienced and eager",
+        "Equipments": {
+          "Supply": "Re-equipped with American matériel"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3617",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3617",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.7367,
+          "East": 0.0133,
+          "South": 47.7844,
+          "North": 49.5844
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "80th Division Protects Left Rear",
+      "Sub-event_summary": "To protect XV Corps deep left and rear, Patton assigned the 80th Division, newly arrived under Maj. Gen. Horace L. McBride, to clear Evron area, facing few Germans but fluid situation and oscillating attachments.",
+      "Sub-event_fulltext": {
+        "Paragraph_154": "To protect the XV Corps deep left and rear, General Patton drew upon the 80th Division, newly arrived on the Continent and under the command of Maj. Gen. Horace L. McBride. The 80th Division was to clear the Evron area, where General Weaver's 90th Division task force had uncovered considerable resistance while driving on le Mans. Few Germans remained, and the 80th carried out its assignment without much trouble. The few difficulties came mainly from the fluid situation prevailing on that part of the front. For several days the division oscillated between attachment to the XX and to the XV Corps, and such matters as corps control, boundaries, and objectives were rather vague.[56](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn56)"
+      },
+      "Footnote_References": [
+        "56"
+      ],
+      "Place_Name": "Evron",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "80th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "Horace L. McBride",
+          "Name": "Horace L. McBride",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Horace_L._McBride",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Newly arrived, fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Evron",
+        "Place_GPS_coordinate": "48.1564, -0.3997",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Evron",
+        "Place_GPS_coordinate": "48.1564, -0.3997",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.7747,
+          "East": 0.9753,
+          "South": 47.2564,
+          "North": 49.0564
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Road Net Determines Zone",
+      "Sub-event_summary": "The road net between le Mans and Argentan determined the XV Corps zone of attack, with French and 90th on left to Alençon-Carrouges, 5th and 79th on right to Mamers-Sées.",
+      "Sub-event_fulltext": {
+        "Paragraph_155": "The road net between le Mans and Argentan determined the XV Corps zone of attack. Haislip committed the 2d French Armored Division, followed by the 90th Division, on the left and directed the two units to move along an axis through Alençon to Carrouges; the 5th Armored Division, followed by the 79th, was to move through Mamers to Sées. No cohesive front faced the corps. Intelligence was lacking.[57](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn57)"
+      },
+      "Footnote_References": [
+        "57"
+      ],
+      "Place_Name": "Mamers",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "2d French Armored Division",
+          "Unit_Nationality": "FR",
+          "Command_Structure": {
+            "Unit": "XV Corps",
+            "Commander": "Jacques Philippe Leclerc",
+            "Name": "Jacques Philippe Leclerc",
+            "Rank": "Major General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Jacques_Philippe_Leclerc_de_Hauteclocque",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "90th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "XV Corps",
+            "Commander": "Raymond S. McLain",
+            "Name": "Raymond S. McLain",
+            "Rank": "Major General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/90th_Infantry_Division_(United_States)",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "5th Armored Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "XV Corps",
+            "Commander": "Lunsford E. Oliver",
+            "Name": "Lunsford E. Oliver",
+            "Rank": "Major General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Lunsford_E._Oliver",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "79th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "XV Corps",
+            "Commander": "Ira T. Wyche",
+            "Name": "Ira T. Wyche",
+            "Rank": "Major General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/79th_Infantry_Division_(United_States)",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p501.jpg",
+          "Description": "Mamers, where American forces met little resistance.",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Mamers",
+        "Place_GPS_coordinate": "48.35, 0.3667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Mamers",
+        "Place_GPS_coordinate": "48.35, 0.3667",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.0083,
+          "East": 1.7417,
+          "South": 47.45,
+          "North": 49.25
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Preparation for Attack",
+      "Sub-event_summary": "While French entered corps zone on 9 August, 5th Armored secured line of departure and cleared assembly areas for French. Corps engineers constructed two bridges over Sarthe near le Mans. Attack started early 10 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_156": "While the French force was entering the corps zone on 9 August, the 5th Armored Division in compliance with Haislip's orders, was securing the line of departure for the attack to the north and clearing initial assembly areas for the French. The corps engineers were constructing two bridges over the Sarthe near le Mans to facilitate entry of the French troops into their zone of advance. Early on 10 August all was in readiness for the attack."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Sarthe River",
+      "Dates": {
+        "Date_group_of_event": "100000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "092300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "5th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XV Corps",
+          "Commander": "Lunsford E. Oliver",
+          "Name": "Lunsford E. Oliver",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Lunsford_E._Oliver",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Sarthe River",
+        "Place_GPS_coordinate": "48.0061, 0.1996",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Sarthe River",
+        "Place_GPS_coordinate": "48.0061, 0.1996",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.1754,
+          "East": 1.5746,
+          "South": 47.1061,
+          "North": 48.9061
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "German Defense by LXXXI Corps",
+      "Sub-event_summary": "LXXXI Corps defended with 708th Division (poor quality, hurt by 90th), 9th Panzer (less Panther battalion, some committed west), no units on east flank, backed by remnants of Panzer Lehr (negligible) and 352d (reconstitution), acquiring kampfgruppe of 6th Parachute Division but not in time.",
+      "Sub-event_fulltext": {
+        "Paragraph_157": "The German decision to commit *Panzer Group Eberbach* in the Alençon area was not to be made for another day, and thus on 10 August the *LXXXI Corps* was defending the le Mans-Alençon axis. The corps had two divisions in the line: the*708th,* with most of its strength west of the Sarthe River (where it had been badly hurt by the 90th Division), seemed \"doomed to failure\" by its poor fighting quality; the *9th Panzer* (less its Panther battalion, diverted to the Falaise defenses) deployed its well-trained troops more directly in the path of the American advance but had some elements committed west of the Sarthe and was to have difficulty concentrating for employment as an entity. On the east flank, the corps commander felt \"there were no units worth mentioning.\" Backing up the line were remnants of *Panzer Lehr,* consisting almost entirely of supply forces and thus of \"negligible combat strength,\" and remnants of the *352d Division,* which had been pulled out of the *Seventh Army* line for wholesale re-constitution. The corps was about to acquire a regimental-sized kampfgruppe of the *6th Parachute Division,* moving west from central France, but the unit could not reach the sector in time to meet the initial American thrust.[58](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn58)"
+      },
+      "Footnote_References": [
+        "58"
+      ],
+      "Place_Name": "Sarthe River",
+      "Dates": {
+        "Date_group_of_event": "100000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "092300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "LXXXI Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Army Group B",
+            "Commander": "Friedrich-August Schack",
+            "Name": "Friedrich-August Schack",
+            "Rank": "General der Infanterie",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Friedrich-August_Schack",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [
+            {
+              "Unit": "708th Infantry Division",
+              "Name": "Unknown",
+              "Rank": "Unknown",
+              "Date": "100000BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/708th_Infantry_Division_(Wehrmacht)",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "9th Panzer Division",
+              "Name": "Friedrich Wilhelm von Mellenthin",
+              "Rank": "Generalleutnant",
+              "Date": "100000BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/9th_Panzer_Division_(Wehrmacht)",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "Panzer Lehr Division",
+              "Name": "Fritz Bayerlein",
+              "Rank": "Generalleutnant",
+              "Date": "100000BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Panzer_Lehr_Division",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "352d Infantry Division",
+              "Name": "Dietrich Kraiss",
+              "Rank": "Generalleutnant",
+              "End_Date": "020000BAUG44",
+              "End_Status": "KIA",
+              "Biographical_reference": "https://en.wikipedia.org/wiki/352nd_Infantry_Division",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "6th Parachute Division",
+              "Name": "Richard Schimpf",
+              "Rank": "Generalleutnant",
+              "Date": "100000BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/6th_Fallschirmj%C3%A4ger_Division",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Sarthe River",
+        "Place_GPS_coordinate": "48.0061, 0.1996",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Sarthe River",
+        "Place_GPS_coordinate": "48.0061, 0.1996",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.1754,
+          "East": 1.5746,
+          "South": 47.1061,
+          "North": 48.9061
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Action on 10 August",
+      "Sub-event_summary": "On 10 August, the two armored divisions attacked abreast, facing sharp tank skirmishes, enemy artillery, and traffic congestion, taking light casualties but knocking out 36 tanks claimed by Germans, outflanking 9th Panzer, moving 15 miles halfway to Alençon, threatening command posts, leading to withdrawal.",
+      "Sub-event_fulltext": {
+        "Paragraph_158": "The two armored divisions of XV Corps jumped off abreast for a day of action characterized by sharp tank skirmishes, harassing enemy artillery fire, and traffic congestion. Taking relatively light casualties (though the *9th Panzer* and *352d Divisions* together claimed to have knocked out thirty-six tanks), the Americans outflanked the *9th Panzer Division* and moved forward about fifteen miles, or about halfway to Alençon. The command posts of the *9th Panzer* and *Panzer Lehr Divisions* at Fresnay-sur-Sarthe came under fire. Both units withdrew to the north.[59](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn59)"
+      },
+      "Footnote_References": [
+        "59"
+      ],
+      "Place_Name": "Fresnay-sur-Sarthe",
+      "Dates": {
+        "Date_group_of_event": "100000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "092300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "9th Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXI Corps",
+          "Commander": "Friedrich Wilhelm von Mellenthin",
+          "Name": "Friedrich Wilhelm von Mellenthin",
+          "Rank": "Generalleutnant",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Friedrich_von_Mellenthin",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Fresnay-sur-Sarthe",
+        "Place_GPS_coordinate": "48.2814, 0.0222",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Fresnay-sur-Sarthe",
+        "Place_GPS_coordinate": "48.2814, 0.0222",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.3528,
+          "East": 1.3972,
+          "South": 47.3814,
+          "North": 49.1814
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Concern Over Fôret de Perseigne",
+      "Sub-event_summary": "Fôret de Perseigne, a wooded area across the corps front, seemed to offer concealment for two German divisions and supplies, with increasing roadblocks and artillery prompting Haislip to order bypass on both sides, interdict exits with artillery, request air strike with incendiary bombs, but Germans had evacuated.",
+      "Sub-event_fulltext": {
+        "Paragraph_159": "The Fôret de Perseigne, a densely wooded area extending almost ten miles across the corps front between Alençon and Mamers, had seemed to SHAEF to offer excellent concealment for at least two German divisions and extensive supply installations, and intelligence officers warned the XV Corps of this possibility. More frequent roadblocks, utilizing tanks rather than antitank guns, and concentrated artillery fire encountered by the corps on 11 August appeared to bear out this concern, prompting Haislip to order his armored divisions to bypass the forest on both sides.[60](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn60) To cover the resultant separation of his columns, Haislip ordered three artillery battalions to interdict the exits from the forest and requested an air strike on the forest with incendiary oil bombs to burn and smoke out enemy forces. As it turned out, the Germans had evacuated the woods. French and American armor bypassed the area without undue interference.[61](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn61)"
+      },
+      "Footnote_References": [
+        "60",
+        "61"
+      ],
+      "Place_Name": "Fôret de Perseigne",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "SHAEF Intelligence",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": "Unknown",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Fôret de Perseigne",
+        "Place_GPS_coordinate": "48.35, 0.3",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Fôret de Perseigne",
+        "Place_GPS_coordinate": "48.35, 0.3",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.075,
+          "East": 1.675,
+          "South": 47.45,
+          "North": 49.25
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "German Decision for Panzer Group Eberbach",
+      "Sub-event_summary": "On 11 August, the German decision to commit Panzer Group Eberbach in the Alençon area was made, with LXXXI Corps protecting the assembly area for the projected attack.",
+      "Sub-event_fulltext": {
+        "Paragraph_160": "On 11 August the Germans were coming to their decision to have *Panzer Group Eberbach* launch a massive counterattack against the XV Corps left flank with armored divisions pulled out of the Mortain salient. The *LXXXI Corps,* its main forces the *9th Panzer* and *708th Divisions,* was to protect the assembly area f or the projected attack. Eberbach visited Alençon that afternoon and found the sector in confusion. The *LXXXI Corps* command post was threatened by the American advance. Rear area service service troops were fleeing northward to the accompaniment of nearby blasts from the guns of American tanks. Burning vehicles, knocked out by Allied planes and tanks, littered the countryside. The *9th Panzer Division* had been reduced to the point where Eberbach estimated it consisted of only a battalion of infantry, a battalion of artillery, and perhaps a dozen tanks. A bakery company was taking defensive positions at Sées."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Alençon",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "Panzer Group Eberbach",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Army Group B",
+            "Commander": "Hans Eberbach",
+            "Name": "Hans Eberbach",
+            "Rank": "General der Panzertruppe",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Eberbach",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "9th Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "LXXXI Corps",
+            "Commander": "Friedrich Wilhelm von Mellenthin",
+            "Name": "Friedrich Wilhelm von Mellenthin",
+            "Rank": "Generalleutnant",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Friedrich_von_Mellenthin",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Reduced to battalion of infantry, battalion of artillery, dozen tanks",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.432856, 0.091266",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.432856, 0.091266",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance; good flying weather mentioned later.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.283734,
+          "East": 1.466266,
+          "South": 47.532856,
+          "North": 49.332856
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Eberbach Orders Defense",
+      "Sub-event_summary": "Eberbach ordered antiaircraft batteries at Argentan to prepare for defensive ground action.",
+      "Sub-event_fulltext": {
+        "Paragraph_161": "Eberbach ordered antiaircraft batteries at Argentan to prepare immediately for defensive ground action."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Panzer Group Eberbach",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Hans Eberbach",
+          "Name": "Hans Eberbach",
+          "Rank": "General der Panzertruppe",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Eberbach",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Antiaircraft batteries",
+            "Identifier": "Various",
+            "Quantity": "Unknown",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Image_License": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.75, -0.02",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.75, -0.02",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.395,
+          "East": 1.355,
+          "South": 47.85,
+          "North": 49.65
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "French Capture Alençon Bridges",
+      "Sub-event_summary": "In an audacious thrust that night, a French task force drove to the Sarthe River at Alençon and early on 12 August captured the bridges intact. The town was not defended.",
+      "Sub-event_fulltext": {
+        "Paragraph_162": "French and American troops took advantage of German confusion to press forward. Even though the terrain impeded armored mobility, General Leclerc reminded his units that speed, maneuver, and daring must mark their operations. In an audacious thrust that night, a French task force drove to the Sarthe River at Alençon and early on 12 August captured the bridges there intact. The town was not defended.[62](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn62)"
+      },
+      "Footnote_References": [
+        "62"
+      ],
+      "Place_Name": "Alençon",
+      "Dates": {
+        "Date_group_of_event": "120000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "2d French Armored Division",
+        "Unit_Nationality": "FR",
+        "Command_Structure": {
+          "Unit": "XV Corps",
+          "Commander": "Jacques Philippe Leclerc",
+          "Name": "Jacques Philippe Leclerc",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Jacques_Philippe_Leclerc_de_Hauteclocque",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.432856, 0.091266",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.432856, 0.091266",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.283734,
+          "East": 1.466266,
+          "South": 47.532856,
+          "North": 49.332856
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "5th Armored Secures Sées",
+      "Sub-event_summary": "That same morning, after bypassing Alençon on the east and rushing through Mamers against slight resistance, the 5th Armored Division secured Sées.",
+      "Sub-event_fulltext": {
+        "Paragraph_163": "That same morning, after having bypassed Alençon on the east and rushed through Mamers against slight resistance, General Oliver's 5th Armored Division secured the town of Sées."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Sées",
+      "Dates": {
+        "Date_group_of_event": "120000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "5th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XV Corps",
+          "Commander": "Lunsford E. Oliver",
+          "Name": "Lunsford E. Oliver",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Lunsford_E._Oliver",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Sées",
+        "Place_GPS_coordinate": "48.6, 0.1667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Sées",
+        "Place_GPS_coordinate": "48.6, 0.1667",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.2083,
+          "East": 1.5417,
+          "South": 47.7,
+          "North": 49.5
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Haislip Establishes Argentan Objective",
+      "Sub-event_summary": "On evening of 11 August, Haislip established Argentan as new corps objective, with 5th Armored to secure from northwest of Sées, French to take Carrouges and close line between, facing northwest.",
+      "Sub-event_fulltext": {
+        "Paragraph_164": "Patton's instructions to Haislip on 8 August had directed the XV Corps to drive to the Carrouges--Sées line and prepare for a further advance northward. On the basis of the \"further advance\" inferentially authorized, General Haislip, on the evening of 11 August, established Argentan as the new corps objective. While the 5th Armored Division turned to the northwest from Sées to secure Argentan, the 2d French Armored Division was to take Carrouges, close on a line between Carrouges and Argentan, and face generally northwest. If the Canadians reached Argentan as instructed, the Germans west of the Falaise-Argentan-Alençon line would be encircled, and XV Corps, with two armored divisions in the line and two infantry divisions (the 79th and 90th, which were following) in support, would hold a strong shoulder between Alençon and Argentan.[63](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn63)"
+      },
+      "Footnote_References": [
+        "63"
+      ],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "112300BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112200ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "XV Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "Third Army",
+            "Commander": "Wade H. Haislip",
+            "Name": "Wade H. Haislip",
+            "Rank": "Major General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Wade_H._Haislip",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "79th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "XV Corps",
+            "Commander": "Ira T. Wyche",
+            "Name": "Ira T. Wyche",
+            "Rank": "Major General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/79th_Infantry_Division_(United_States)",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "90th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "XV Corps",
+            "Commander": "Raymond S. McLain",
+            "Name": "Raymond S. McLain",
+            "Rank": "Major General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/90th_Infantry_Division_(United_States)",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.75, -0.02",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.75, -0.02",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.395,
+          "East": 1.355,
+          "South": 47.85,
+          "North": 49.65
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Obstacle of Fôret d'Ecouves",
+      "Sub-event_summary": "Fôret d'Ecouves blocked southern approaches to Argentan, plausible for Germans to hold to keep gap open for withdrawal, expected to defend southern shoulder.",
+      "Sub-event_fulltext": {
+        "Paragraph_165": "There seemed to be one serious obstacle that might hinder the maneuver: the Fôret d'Ecouves blocked the southern approaches to Argentan. If the Germans were to prevent encirclement, they had to keep a gap open between Falaise and Alençon so that their troops might withdraw eastward toward Dreux and Paris. It was plausible then to expect the Germans to try to hold this prominent terrain feature on the southern shoulder of the gap.[64](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn64)"
+      },
+      "Footnote_References": [
+        "64"
+      ],
+      "Place_Name": "Fôret d'Ecouves",
+      "Dates": {
+        "Date_group_of_event": "120000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Fôret d'Ecouves",
+        "Place_GPS_coordinate": "48.5833, 0.0833",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Fôret d'Ecouves",
+        "Place_GPS_coordinate": "48.5833, 0.0833",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.2917,
+          "East": 1.4583,
+          "South": 47.6833,
+          "North": 49.4833
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Leclerc's Plan for Fôret d'Ecouves",
+      "Sub-event_summary": "Haislip instructed Leclerc to pass west of the forest, but Leclerc sent one combat command east, one through, one west, converging at Ecouché, disregarding boundary and order, using road reserved for 5th Armored.",
+      "Sub-event_fulltext": {
+        "Paragraph_166": "General Haislip had instructed Leclerc to pass west of the forest. But Leclerc decided to send one combat command east of the woods, while another went through the forest and the third bypassed it on the west. He envisioned all three columns converging at Ecouché, a town five miles southwest of Argentan on the final Carrouges-Argentan objective line. There was one drawback to this plan: the combat command bypassing the Fôret d'Ecouves on the right (east) would trespass on the main highway from Alençon to Argentan through Sées, which had been reserved for the 5th U.S. Armored Division. Leclerc nevertheless disregarded his division boundary and Haislip's order and executed his plan. The three French combat commands partially cleared the forest and fought their way to within sight of Ecouché and the Carrouges-Argentan line."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Ecouché",
+      "Dates": {
+        "Date_group_of_event": "120000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "2d French Armored Division",
+        "Unit_Nationality": "FR",
+        "Command_Structure": {
+          "Unit": "XV Corps",
+          "Commander": "Jacques Philippe Leclerc",
+          "Name": "Jacques Philippe Leclerc",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Jacques_Philippe_Leclerc_de_Hauteclocque",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Ecouché",
+        "Place_GPS_coordinate": "48.7167, -0.1167",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Ecouché",
+        "Place_GPS_coordinate": "48.7167, -0.1167",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.4917,
+          "East": 1.2583,
+          "South": 47.8167,
+          "North": 49.6167
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Delay for 5th Armored Division",
+      "Sub-event_summary": "French troops on Alençon-Sées-Argentan highway delayed 5th Armored's attack toward Argentan by six hours due to blocked gasoline trucks, jumping off late afternoon when Germans interposed a new unit, making little progress.",
+      "Sub-event_fulltext": {
+        "Paragraph_167": "When French troops usurped the Alençon--Sées--Argentan highway on 12 August, the 5th Armored Division, fortunately, had already taken Sées. Unfortunately, a 5th Armored Division combat command north of Sées--at Mortree, five miles southeast of Argentan-- had to postpone its attack toward Argentan for six hours. Only after the French column cleared the road could gasoline trucks blocked south of Sées come forward to refuel the command. The attack did not jump off until late afternoon, and by then the Germans had interposed a new unit between the armor and Argentan. The attack, which if launched six hours earlier might have resulted in capture of Argentan, made little progress."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Mortree",
+      "Dates": {
+        "Date_group_of_event": "120000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "5th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XV Corps",
+          "Commander": "Lunsford E. Oliver",
+          "Name": "Lunsford E. Oliver",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Lunsford_E._Oliver",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Gasoline trucks blocked, refuel delayed"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mortree",
+        "Place_GPS_coordinate": "48.7, 0.0833",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Mortree",
+        "Place_GPS_coordinate": "48.7, 0.0833",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.2917,
+          "East": 1.4583,
+          "South": 47.8,
+          "North": 49.6
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Panzer Group Eberbach Assumes Command",
+      "Sub-event_summary": "On 12 August, Panzer Group Eberbach assumed command in Argentan sector, XLVII Panzer Corps arrived, took control of 9th Panzer remnants in Ecouves forest, sent strong infantry battalion of 116th Panzer to Sées reaching Mortree to block 5th Armored.",
+      "Sub-event_fulltext": {
+        "Paragraph_168": "That day, 12 August, *Panzer Group Eberbach* assumed command in the Argentan sector. The *XLVII Panzer Corps* headquarters, having turned over its responsibility at Mortain to the *LVIII Panzer Corps,* arrived at Argentan. Since the *LXXXI Corps* headquarters had been severed from its divisions in the Argentan sector by the American attack and was out of contact with them, the *XLVII Panzer Corps* took control of the remnants of the *9th Panzer Division* in the Ecouves forest. When a strong infantry battalion of the *116th Panzer Division,* which was moving from the Mortain sector, became available early in the afternoon, the *XLVII Panzer Corps* sent it toward Sées. The battalion reached Mortree in time to block the 5th Armored Division attack."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "120000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "Panzer Group Eberbach",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Army Group B",
+            "Commander": "Hans Eberbach",
+            "Name": "Hans Eberbach",
+            "Rank": "General der Panzertruppe",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Eberbach",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [
+            {
+              "Unit": "XLVII Panzer Corps",
+              "Name": "Hans von Funck",
+              "Rank": "General der Panzertruppe",
+              "Date": "120000BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_von_Funck",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "LVIII Panzer Corps",
+              "Name": "Walter Krüger",
+              "Rank": "General der Panzertruppe",
+              "Date": "120000BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_Kr%C3%BCger_(Wehrmacht_general)",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "116th Panzer Division",
+              "Name": "Gerhard von Schwerin",
+              "Rank": "Generalleutnant",
+              "Date": "120000BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Gerhard_von_Schwerin",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.75, -0.02",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.75, -0.02",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.395,
+          "East": 1.355,
+          "South": 47.85,
+          "North": 49.65
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "116th Panzer Division Arrival",
+      "Sub-event_summary": "The entire 116th Panzer Division moved to Argentan during night of 12 August, XLVII Panzer Corps committed it piecemeal to thin defense south of Argentan, 708th to transfer to Seventh Army, LXXXI Corps under Fifth Panzer Army to cover east flank.",
+      "Sub-event_fulltext": {
+        "Paragraph_169": "The entire *116th Panzer Division* moved to Argentan during the night of 12 August, and the *XLVII Panzer Corps* committed it piecemeal to build up a thin line of defense south of Argentan. The *708th Division,* \"literally pulverized,\" was to be transferred on 13 August to the *Seventh Army.* The *LXXXI Corps,* which had only radio contact with the remnants of the *352dDivision* (sent to the Chartres area for rehabilitation), with the newly arriving *331st Division,* and with the kampfgruppe of the *6th Parachute Division,* was placed under control of the *I SS Panzer Corps* with the mission of covering Eberbach's east flank and blocking an American drive into the center of France along a potential front of about one hundred miles.[65](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn65)"
+      },
+      "Footnote_References": [
+        "65"
+      ],
+      "Place_Name": "Chartres",
+      "Dates": {
+        "Date_group_of_event": "122300BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "122200ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "116th Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "XLVII Panzer Corps",
+            "Commander": "Gerhard von Schwerin",
+            "Name": "Gerhard von Schwerin",
+            "Rank": "Generalleutnant",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Gerhard_von_Schwerin",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "708th Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Seventh Army",
+            "Commander": "Unknown",
+            "Name": "Unknown",
+            "Rank": "Unknown",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/708th_Infantry_Division_(Wehrmacht)",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Pulverized",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "352d Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "LXXXI Corps",
+            "Commander": "Dietrich Kraiss",
+            "Name": "Dietrich Kraiss",
+            "Rank": "Generalleutnant",
+            "End_Date": "020000BAUG44",
+            "End_Status": "KIA",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/352nd_Infantry_Division",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Remnants",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "331st Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "LXXXI Corps",
+            "Commander": "Unknown",
+            "Name": "Unknown",
+            "Rank": "Unknown",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "6th Parachute Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "LXXXI Corps",
+            "Commander": "Richard Schimpf",
+            "Name": "Richard Schimpf",
+            "Rank": "Generalleutnant",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/6th_Fallschirmj%C3%A4ger_Division",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "Fifth Panzer Army",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Army Group B",
+            "Commander": "Josef Dietrich",
+            "Name": "Josef Dietrich",
+            "Rank": "Oberstgruppenführer",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Sepp_Dietrich",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Chartres",
+        "Place_GPS_coordinate": "48.4439, 1.4892",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Chartres",
+        "Place_GPS_coordinate": "48.4439, 1.4892",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": 0.1142,
+          "East": 2.8642,
+          "South": 47.5439,
+          "North": 49.3439
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "1st SS and 2d Panzer Arrival",
+      "Sub-event_summary": "Elements of 1st SS and 2d Panzer arrived early 13 August despite congestion, air raids, fuel shortages, communications troubles; 1st SS artillery first without infantry, then signal, tanks, infantry next day; 2d Panzer at half strength, other half delayed.",
+      "Sub-event_fulltext": {
+        "Paragraph_170": "Elements of the *1st SS* and *2d Panzer Divisions* had reached the Argentan sector early on 13 August despite road congestion, air raids, fuel shortages, and communications troubles. The artillery of the *1st SS* arrived first without infantry protection, then came the Signal battalion, later, tanks; the infantry would not arrive until the following day. The *2d Panzer Division* arrived in better condition, but only at half strength; the other half was to require an additional day for the road march. With the *116th Panzer Division* holding well at Argentan, Eberbach directed the *2d* into the Ecouché area and committed the *1st SS* in defense of the ground between Carrouges and la Ferte-Mace. Although these dispositions might have seemed adequate on paper, their actual strength was slight. Eberbach estimated that the *1st SS* had thirty tanks, the *2d* twenty-five, and the *116th* fifteen. The *9th Panzer Division* had been practically destroyed in the Fôret d'Ecouves.[71](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn71)"
+      },
+      "Footnote_References": [
+        "71"
+      ],
+      "Place_Name": "Ecouché",
+      "Dates": {
+        "Date_group_of_event": "130000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "122300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "1st SS Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Panzer Group Eberbach",
+            "Commander": "Otto Kumm",
+            "Name": "Otto Kumm",
+            "Rank": "Brigadeführer",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/1st_SS_Panzer_Division_Leibstandarte_SS_Adolf_Hitler",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Fuel shortages",
+            "Axis_Employed": {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "Various",
+              "Quantity": 30,
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          }
+        },
+        {
+          "Unit": "2d Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Panzer Group Eberbach",
+            "Commander": "Heinrich Freiherr von Lüttwitz",
+            "Name": "Heinrich Freiherr von Lüttwitz",
+            "Rank": "General der Panzertruppe",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/2nd_Panzer_Division_(Wehrmacht)",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Half strength",
+          "Equipments": {
+            "Supply": "Fuel shortages",
+            "Axis_Employed": {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "Various",
+              "Quantity": 25,
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          }
+        },
+        {
+          "Unit": "116th Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Panzer Group Eberbach",
+            "Commander": "Gerhard von Schwerin",
+            "Name": "Gerhard von Schwerin",
+            "Rank": "Generalleutnant",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Gerhard_von_Schwerin",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Fuel shortages",
+            "Axis_Employed": {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "Various",
+              "Quantity": 15,
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Ecouché",
+        "Place_GPS_coordinate": "48.7167, -0.1167",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Ecouché",
+        "Place_GPS_coordinate": "48.7167, -0.1167",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance; excellent flying weather mentioned.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.4917,
+          "East": 1.2583,
+          "South": 47.8167,
+          "North": 49.6167
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Developments Force Piecemeal Commitment",
+      "Sub-event_summary": "Developments forced Eberbach to commit piecemeal the panzer units earmarked for striking force in urgent defense.",
+      "Sub-event_fulltext": {
+        "Paragraph_171": "Thus, developments had forced Eberbach to commit piecemeal the panzer units that were earmarked as his striking force in the more urgent task of bolstering the badly shattered southern flank of *Army Group B.* On 13 August events canceled Kluge's plan to inflict a crushing blow on the U.S. XV Corps."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "130000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "122300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0, -1.0",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0, -1.0",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance; excellent flying weather mentioned.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.374,
+          "East": 0.374,
+          "South": 48.1,
+          "North": 49.9
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Dietrich Warns of Encirclement",
+      "Sub-event_summary": "On morning of 13 August, Dietrich warned that if Fifth Panzer Army and Seventh Army front not withdrawn immediately, the army group would lose both armies, as resupply would soon be impossible, enemy could fire artillery into the pocket from all sides.",
+      "Sub-event_fulltext": {
+        "Paragraph_172": "It was clearly apparent to the German command that three weak panzer divisions would not be able to maintain for long, if at all, the slender defensive line established to oppose the XV Corps. On the morning of 13 August Dietrich, the *Fifth Panzer Army* commander, stated officially for the first time what in retrospect all commanders later claimed to have thought--that it was time to begin to escape the Allied encirclement. \"If the front held by the *[Fifth] Panzer Army* and the *Seventh Army* is not withdrawn immediately,\" he warned, and if every effort is not made to move the forces toward the east and out of the threatened encirclement, the army group will have to write off both armies. Within a very short time resupplying the troops with ammunition and fuel will no longer be possible. Therefore, immediate measures are necessary to move to the east before such movement is definitely too late. It will soon be possible for the enemy to fire into the pocket with artillery from all sides.[72](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn72)"
+      },
+      "Footnote_References": [
+        "72"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "130000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "122300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Fifth Panzer Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Josef Dietrich",
+          "Name": "Josef Dietrich",
+          "Rank": "Oberstgruppenführer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Sepp_Dietrich",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Resupply with ammunition and fuel soon impossible"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0, -1.0",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0, -1.0",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance; excellent flying weather mentioned.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.374,
+          "East": 0.374,
+          "South": 48.1,
+          "North": 49.9
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Bradley Halts Advance",
+      "Sub-event_summary": "Contrary to expectations, the defensive line held due to cessation of American attack early afternoon 13 August when Bradley stopped further north movement, Patton informed Haislip not to go beyond Argentan, recall elements north, assemble for other operations.",
+      "Sub-event_fulltext": {
+        "Paragraph_173": "Yet, contrary to expectations, the defensive line at Argentan did hold. It held not because of German strength but because of a cessation of the American attack. Early in the afternoon of 13 August the XV Corps attack came to an abrupt and surprising halt. General Bradley stopped further movement to the north. Patton had to inform Haislip not to go beyond Argentan. Haislip was to recall any elements that might be \"in the vicinity of Falaise or to the north of Argentan.\" Instead of pressing the attack toward the Canadians, the XV Corps was to assemble and prepare for further operations in another direction.[73](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn73)"
+      },
+      "Footnote_References": [
+        "73"
+      ],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "131300BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "131200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "12th Army Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.75, -0.02",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.75, -0.02",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.395,
+          "East": 1.355,
+          "South": 47.85,
+          "North": 49.65
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Patton Searches for Reinforcements",
+      "Sub-event_summary": "Meanwhile, Patton was searching for additional forces to attach to the corps.",
+      "Sub-event_fulltext": {
+        "Paragraph_174": "With a definite mission to keep moving, Haislip was pleased when the 2d French Armored Division on 13 August finished encircling and clearing the Fôret d'Ecouves. Leclerc took Carrouges and Ecouché, then built up a line between Carrouges and Argentan. A French patrol entered Argentan that afternoon and reached the center of the town, bringing the inhabitants short-lived hope of liberation, but German tanks soon forced the patrol to retire. That same morning the 5th Armored Division tried to advance north toward Falaise, but all efforts to get to Argentan or around its eastern outskirts failed. German guns well sited and skillfully concealed on dominating ground north of Argentan wrought a surprising amount of damage on the French and American attack formations.[70](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn70)"
+      },
+      "Footnote_References": [
+        "70"
+      ],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "130000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "122300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.576956,
+          "East": 1.173044,
+          "South": 47.993548,
+          "North": 49.793548
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Kluge's Modified Attack Plan",
+      "Sub-event_summary": "On 12 August evening, Kluge modified plan for attack on 14 August, shifting axis east to le Mele-sur-Sarthe, then north to destroy Americans, noting XV Corps might be north of Argentan-Laigle, forces include 1st SS, 2d, 116th Panzer, 9th elements, two werfer brigades, heavy artillery, reinforced by 10th SS.",
+      "Sub-event_fulltext": {
+        "Paragraph_175": "Loss of Alençon and Sées completely changed the situation for the Germans. Kluge had suggested an attack against the XV Corps spearheads. Hitler had wanted Eberbach to attack well behind the spearheads. Either attack, if launched, might well have dealt the U.S. corps a crippling blow. Instead, the American advance upsetting German offensive plans, it had already deprived the *Seventh Army* of its supply base, thereby making Hausser's forces entirely dependent for logistical support on the *Fifth Panzer Army.* The ammunition and fuel supply situation, as a consequence, was \"dreadfully serious.\" Only three main roads were available for supply and troop movements. Even these the Germans could use only at night because of Allied aircraft and excellent flying weather. All the roads were so congested that vehicular traffic moved at a walk. Some committed divisions existed in name alone, and all were far below authorized strengths. On 12 August the French and American armored divisions claimed almost a hundred tanks destroyed and nearly fifteen hundred prisoners taken. Most alarming, the Germans could no longer disregard the fact that if the Canadians reached Falaise and the Americans reached Argentan, only thirteen miles would separate them from achieving a literal encirclement of the German forces on the western front. With this menace a distinct possibility, Eberbach redoubled his efforts to establish a stable defense at Argentan.[66](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn66)"
+      },
+      "Footnote_References": [
+        "66"
+      ],
+      "Place_Name": "le Mele-sur-Sarthe",
+      "Dates": {
+        "Date_group_of_event": "122300BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "122200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Seventh Army",
+            "Name": "Paul Hausser",
+            "Rank": "Oberstgruppenführer",
+            "Date": "122300BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "Fifth Panzer Army",
+            "Name": "Josef Dietrich",
+            "Rank": "Oberstgruppenführer",
+            "Date": "122300BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Sepp_Dietrich",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "Far below authorized strengths",
+        "Equipments": {
+          "Supply": "Dreadfully serious ammunition and fuel situation"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 1500
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "le Mele-sur-Sarthe",
+        "Place_GPS_coordinate": "48.5, 0.35",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "le Mele-sur-Sarthe",
+        "Place_GPS_coordinate": "48.5, 0.35",
+        "Weather_text": "Excellent flying weather.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.025,
+          "East": 1.725,
+          "South": 47.6,
+          "North": 49.4
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Patton Authorizes Advance to Falaise",
+      "Sub-event_summary": "Early 13 August, Patton authorized Haislip to push slowly toward Falaise along Argentan-Falaise road, continue until contact with Allies, Patton searching for additional forces.",
+      "Sub-event_fulltext": {
+        "Paragraph_176": "With a definite mission to keep moving, Haislip was pleased when the 2d French Armored Division on 13 August finished encircling and clearing the Fôret d'Ecouves. Leclerc took Carrouges and Ecouché, then built up a line between Carrouges and Argentan. A French patrol entered Argentan that afternoon and reached the center of the town, bringing the inhabitants short-lived hope of liberation, but German tanks soon forced the patrol to retire. That same morning the 5th Armored Division tried to advance north toward Falaise, but all efforts to get to Argentan or around its eastern outskirts failed. German guns well sited and skillfully concealed on dominating ground north of Argentan wrought a surprising amount of damage on the French and American attack formations.[70](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn70)"
+      },
+      "Footnote_References": [
+        "70"
+      ],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "130000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "122300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.576956,
+          "East": 1.173044,
+          "South": 47.993548,
+          "North": 49.793548
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "French Division Clears Fôret d'Ecouves",
+      "Sub-event_summary": "On 13 August, 2d French Armored finished encircling and clearing Fôret d'Ecouves, Leclerc took Carrouges and Ecouché, built line between, French patrol entered Argentan but forced to retire by German tanks.",
+      "Sub-event_fulltext": {
+        "Paragraph_177": "With a definite mission to keep moving, Haislip was pleased when the 2d French Armored Division on 13 August finished encircling and clearing the Fôret d'Ecouves. Leclerc took Carrouges and Ecouché, then built up a line between Carrouges and Argentan. A French patrol entered Argentan that afternoon and reached the center of the town, bringing the inhabitants short-lived hope of liberation, but German tanks soon forced the patrol to retire. That same morning the 5th Armored Division tried to advance north toward Falaise, but all efforts to get to Argentan or around its eastern outskirts failed. German guns well sited and skillfully concealed on dominating ground north of Argentan wrought a surprising amount of damage on the French and American attack formations.[70](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn70)"
+      },
+      "Footnote_References": [
+        "70"
+      ],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "130000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "122300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "2d French Armored Division",
+        "Unit_Nationality": "FR",
+        "Command_Structure": {
+          "Unit": "XV Corps",
+          "Commander": "Jacques Philippe Leclerc",
+          "Name": "Jacques Philippe Leclerc",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Jacques_Philippe_Leclerc_de_Hauteclocque",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.75, -0.02",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.75, -0.02",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.395,
+          "East": 1.355,
+          "South": 47.85,
+          "North": 49.65
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "5th Armored Attempts Advance to Falaise",
+      "Sub-event_summary": "That same morning, 5th Armored tried to advance north toward Falaise but failed to reach Argentan or eastern outskirts, German guns causing damage.",
+      "Sub-event_fulltext": {
+        "Paragraph_178": "That same morning the 5th Armored Division tried to advance north toward Falaise, but all efforts to get to Argentan or around its eastern outskirts failed. German guns well sited and skillfully concealed on dominating ground north of Argentan wrought a surprising amount of damage on the French and American attack formations.[70](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn70)"
+      },
+      "Footnote_References": [
+        "70"
+      ],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "130000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "122300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "5th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XV Corps",
+          "Commander": "Lunsford E. Oliver",
+          "Name": "Lunsford E. Oliver",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Lunsford_E._Oliver",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.576956,
+          "East": 1.173044,
+          "South": 47.993548,
+          "North": 49.793548
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Kluge Issues Modified Order",
+      "Sub-event_summary": "On evening of 12 August, Kluge issued modified order shifting attack axis east toward le Mele-sur-Sarthe-Mortagne, then north to destroy Americans, noting XV Corps might be beyond Argentan-Laigle, forces include 1st SS, 2d, 116th Panzer, elements 9th, two werfer brigades, heavy artillery, reinforced by 10th SS.",
+      "Sub-event_fulltext": {
+        "Paragraph_179": "On 12 August evening, Kluge modified plan for attack on 14 August, shifting axis east to le Mele-sur-Sarthe, then north to destroy Americans, noting XV Corps might be north of Argentan-Laigle, forces include 1st SS, 2d, 116th Panzer, 9th elements, two werfer brigades, heavy artillery, reinforced by 10th SS."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Mortagne",
+      "Dates": {
+        "Date_group_of_event": "122300BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "122200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Werfer brigade",
+            "Identifier": "Nebelwerfer",
+            "Quantity": 2,
+            "Web_Reference": "https://en.wikipedia.org/wiki/Nebelwerfer",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/Nebelwerfer#/media/File:Bundesarchiv_Bild_101I-300-1878-25,_Frankreich,_Nebelwerfer.jpg",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mortagne",
+        "Place_GPS_coordinate": "48.5333, 0.5333",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Mortagne",
+        "Place_GPS_coordinate": "48.5333, 0.5333",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -0.8417,
+          "East": 1.9083,
+          "South": 47.6333,
+          "North": 49.4333
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Haislip Notified to Advance Slowly",
+      "Sub-event_summary": "Early 13 August, Patton informed Haislip to push slowly on Falaise along Argentan-Falaise road until contact with Allies.",
+      "Sub-event_fulltext": {
+        "Paragraph_180": "Very early on 13 August he received word from Patton to \"push on slowly in the direction of Falaise.\" The axis of advance and the left boundary were both to be the Argentan-Falaise road. When the XV Corps reached Falaise, Haislip was to \"continue to push on slowly until . .&bnbsp; contact [with] our Allies\" was made.[69](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn69) Meanwhile, Patton was searching for additional forces he could attach to the corps."
+      },
+      "Footnote_References": [
+        "69"
+      ],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "130000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "122300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "XV Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "Wade H. Haislip",
+          "Name": "Wade H. Haislip",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Wade_H._Haislip",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.576956,
+          "East": 1.173044,
+          "South": 47.993548,
+          "North": 49.793548
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Kluge's Plan Canceled by Events",
+      "Sub-event_summary": "On 13 August, events canceled Kluge's plan for crushing blow on XV Corps.",
+      "Sub-event_fulltext": {
+        "Paragraph_181": "On 13 August events canceled Kluge's plan to inflict a crushing blow on the U.S. XV Corps."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "130000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "122300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0, -1.0",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0, -1.0",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance; excellent flying weather mentioned.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.374,
+          "East": 0.374,
+          "South": 48.1,
+          "North": 49.9
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the South",
+      "Sub-event": "Bradley Stops Further Movement",
+      "Sub-event_summary": "Early afternoon 13 August, XV Corps attack halted abruptly when Bradley stopped further north movement, Patton informed Haislip not to go beyond Argentan, recall elements near Falaise or north of Argentan, assemble for other operations.",
+      "Sub-event_fulltext": {
+        "Paragraph_182": "Yet, contrary to expectations, the defensive line at Argentan did hold. It held not because of German strength but because of a cessation of the American attack. Early in the afternoon of 13 August the XV Corps attack came to an abrupt and surprising halt. General Bradley stopped further movement to the north. Patton had to inform Haislip not to go beyond Argentan. Haislip was to recall any elements that might be \"in the vicinity of Falaise or to the north of Argentan.\" Instead of pressing the attack toward the Canadians, the XV Corps was to assemble and prepare for further operations in another direction.[73](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn73)"
+      },
+      "Footnote_References": [
+        "73"
+      ],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "131300BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "131200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "12th Army Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.75, -0.02",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.75, -0.02",
+        "Weather_text": "No specific weather mentioned, but operations proceeded without noted hindrance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.395,
+          "East": 1.355,
+          "South": 47.85,
+          "North": 49.65
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "54",
+      "Footnote_Number": "54",
+      "Footnote_Text": "106th Cav Gp AAR, Aug.",
+      "Footnote_Referenced_Source": "106th Cav Gp AAR, Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "106th Cavalry Group After Action Report, August"
+    },
+    {
+      "Footnote": "55a",
+      "Footnote_Number": "55",
+      "Footnote_Text": "TUSA Dir, 8 Aug, Confirming oral orders, TUSA Dir File",
+      "Footnote_Referenced_Source": "TUSA Dir, 8 Aug, Confirming oral orders, TUSA Dir File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Third Army Directive File"
+    },
+    {
+      "Footnote": "55b",
+      "Footnote_Number": "55",
+      "Footnote_Text": "XV Corps Dir, 8 Aug, Confirming oral orders, XV Corps Dir File",
+      "Footnote_Referenced_Source": "XV Corps Dir, 8 Aug, Confirming oral orders, XV Corps Dir File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "XV Corps Directive File"
+    },
+    {
+      "Footnote": "55c",
+      "Footnote_Number": "55",
+      "Footnote_Text": "2d French Armd Div G-3 Jnl, 8 Aug",
+      "Footnote_Referenced_Source": "2d French Armd Div G-3 Jnl, 8 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "2d French Armored Division G-3 Journal, 8 Aug"
+    },
+    {
+      "Footnote": "55d",
+      "Footnote_Number": "55",
+      "Footnote_Text": "XIX Corps Dir, 8 Aug, Confirming oral orders, XIX Corps Dir File",
+      "Footnote_Referenced_Source": "XIX Corps Dir, 8 Aug, Confirming oral orders, XIX Corps Dir File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "XIX Corps Directive File"
+    },
+    {
+      "Footnote": "55e",
+      "Footnote_Number": "55",
+      "Footnote_Text": "Msg, Bradley to Patton, 8 Aug, 12th AGp Dir File.",
+      "Footnote_Referenced_Source": "Msg, Bradley to Patton, 8 Aug, 12th AGp Dir File.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "12th Army Group Directive File"
+    },
+    {
+      "Footnote": "56a",
+      "Footnote_Number": "56",
+      "Footnote_Text": "80th Div AAR, Aug",
+      "Footnote_Referenced_Source": "80th Div AAR, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "80th Div After Action Report, August"
+    },
+    {
+      "Footnote": "56b",
+      "Footnote_Number": "56",
+      "Footnote_Text": "TUSA Dir, 8 Aug, Confirming oral orders, TUSA Dir File",
+      "Footnote_Referenced_Source": "TUSA Dir, 8 Aug, Confirming oral orders, TUSA Dir File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Third Army Directive File"
+    },
+    {
+      "Footnote": "56c",
+      "Footnote_Number": "56",
+      "Footnote_Text": "XV Corps Dir, 8 Aug, Confirming oral orders, XV Corps Dir File",
+      "Footnote_Referenced_Source": "XV Corps Dir, 8 Aug, Confirming oral orders, XV Corps Dir File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "XV Corps Directive File"
+    },
+    {
+      "Footnote": "56d",
+      "Footnote_Number": "56",
+      "Footnote_Text": "XX Corps Dir, 8 Aug, Confirming oral orders, XX Corps Dir File.",
+      "Footnote_Referenced_Source": "XX Corps Dir, 8 Aug, Confirming oral orders, XX Corps Dir File.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "XX Corps Directive File"
+    },
+    {
+      "Footnote": "57a",
+      "Footnote_Number": "57",
+      "Footnote_Text": "XV Corps Dir, 8 Aug, Confirming oral orders, XV Corps Dir File",
+      "Footnote_Referenced_Source": "XV Corps Dir, 8 Aug, Confirming oral orders, XV Corps Dir File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "XV Corps Directive File"
+    },
+    {
+      "Footnote": "57b",
+      "Footnote_Number": "57",
+      "Footnote_Text": "TUSA Dir, 8 Aug, Confirming oral orders, TUSA Dir File",
+      "Footnote_Referenced_Source": "TUSA Dir, 8 Aug, Confirming oral orders, TUSA Dir File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Third Army Directive File"
+    },
+    {
+      "Footnote": "57c",
+      "Footnote_Number": "57",
+      "Footnote_Text": "XV Corps G-2 Per Rpt 56, 9 Aug.",
+      "Footnote_Referenced_Source": "XV Corps G-2 Per Rpt 56, 9 Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "XV Corps G-2 Periodic Report 56"
+    },
+    {
+      "Footnote": "58a",
+      "Footnote_Number": "58",
+      "Footnote_Text": "MS # B-728 (Gersdorff)",
+      "Footnote_Referenced_Source": "MS # B-728 (Gersdorff)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-728"
+    },
+    {
+      "Footnote": "58b",
+      "Footnote_Number": "58",
+      "Footnote_Text": "AGp B, Operationsbefehle, 10 Aug.",
+      "Footnote_Referenced_Source": "AGp B, Operationsbefehle, 10 Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Army Group B Operations Orders, 10 Aug"
+    },
+    {
+      "Footnote": "59a",
+      "Footnote_Number": "59",
+      "Footnote_Text": "5th Armd Div AAR, Aug",
+      "Footnote_Referenced_Source": "5th Armd Div AAR, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "5th Armored Division After Action Report, August"
+    },
+    {
+      "Footnote": "59b",
+      "Footnote_Number": "59",
+      "Footnote_Text": "2d French Armd Div AAR, Aug",
+      "Footnote_Referenced_Source": "2d French Armd Div AAR, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "2d French Armored Division After Action Report, August"
+    },
+    {
+      "Footnote": "59c",
+      "Footnote_Number": "59",
+      "Footnote_Text": "XV Corps AAR, Aug",
+      "Footnote_Referenced_Source": "XV Corps AAR, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "XV Corps After Action Report, August"
+    },
+    {
+      "Footnote": "59d",
+      "Footnote_Number": "59",
+      "Footnote_Text": "MS # B-728 (Gersdorff).",
+      "Footnote_Referenced_Source": "MS # B-728 (Gersdorff).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-728"
+    },
+    {
+      "Footnote": "60a",
+      "Footnote_Number": "60",
+      "Footnote_Text": "SHAEF G-2 Weekly Intel Summary 21, 12 Aug",
+      "Footnote_Referenced_Source": "SHAEF G-2 Weekly Intel Summary 21, 12 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "SHAEF G-2 Weekly Intelligence Summary 21"
+    },
+    {
+      "Footnote": "60b",
+      "Footnote_Number": "60",
+      "Footnote_Text": "XV Corps G-2 Per Rpt 57, 10 Aug.",
+      "Footnote_Referenced_Source": "XV Corps G-2 Per Rpt 57, 10 Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "XV Corps G-2 Periodic Report 57"
+    },
+    {
+      "Footnote": "61a",
+      "Footnote_Number": "61",
+      "Footnote_Text": "XV Corps AAR, Aug",
+      "Footnote_Referenced_Source": "XV Corps AAR, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "XV Corps After Action Report, August"
+    },
+    {
+      "Footnote": "61b",
+      "Footnote_Number": "61",
+      "Footnote_Text": "5th Armd Div AAR, Aug",
+      "Footnote_Referenced_Source": "5th Armd Div AAR, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "5th Armored Division After Action Report, August"
+    },
+    {
+      "Footnote": "61c",
+      "Footnote_Number": "61",
+      "Footnote_Text": "2d French Armd Div AAR, Aug.",
+      "Footnote_Referenced_Source": "2d French Armd Div AAR, Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "2d French Armored Division After Action Report, August"
+    },
+    {
+      "Footnote": "62a",
+      "Footnote_Number": "62",
+      "Footnote_Text": "2d French Armd Div AAR, Aug",
+      "Footnote_Referenced_Source": "2d French Armd Div AAR, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "2d French Armored Division After Action Report, August"
+    },
+    {
+      "Footnote": "62b",
+      "Footnote_Number": "62",
+      "Footnote_Text": "TUSA G-2 Per Rpt 61, 11 Aug",
+      "Footnote_Referenced_Source": "TUSA G-2 Per Rpt 61, 11 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Third Army G-2 Periodic Report 61"
+    },
+    {
+      "Footnote": "62c",
+      "Footnote_Number": "62",
+      "Footnote_Text": "MS # B-728 (Gersdorff).",
+      "Footnote_Referenced_Source": "MS # B-728 (Gersdorff).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-728"
+    },
+    {
+      "Footnote": "63a",
+      "Footnote_Number": "63",
+      "Footnote_Text": "XV Corps AAR, Aug",
+      "Footnote_Referenced_Source": "XV Corps AAR, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "XV Corps After Action Report, August"
+    },
+    {
+      "Footnote": "63b",
+      "Footnote_Number": "63",
+      "Footnote_Text": "5th Armd Div AAR, Aug",
+      "Footnote_Referenced_Source": "5th Armd Div AAR, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "5th Armored Division After Action Report, August"
+    },
+    {
+      "Footnote": "63c",
+      "Footnote_Number": "63",
+      "Footnote_Text": "2d French Armd Div AAR, Aug.",
+      "Footnote_Referenced_Source": "2d French Armd Div AAR, Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "2d French Armored Division After Action Report, August"
+    },
+    {
+      "Footnote": "64",
+      "Footnote_Number": "64",
+      "Footnote_Text": "TUSA G-2 Per Rpt 62, 12 Aug.",
+      "Footnote_Referenced_Source": "TUSA G-2 Per Rpt 62, 12 Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Third Army G-2 Periodic Report 62"
+    },
+    {
+      "Footnote": "65a",
+      "Footnote_Number": "65",
+      "Footnote_Text": "MS # B-728 (Gersdorff)",
+      "Footnote_Referenced_Source": "MS # B-728 (Gersdorff)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-728"
+    },
+    {
+      "Footnote": "65b",
+      "Footnote_Number": "65",
+      "Footnote_Text": "MS # B-179 (Hausser).",
+      "Footnote_Referenced_Source": "MS # B-179 (Hausser).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-179"
+    },
+    {
+      "Footnote": "66a",
+      "Footnote_Number": "66",
+      "Footnote_Text": "MS # B-728 (Gersdorff)",
+      "Footnote_Referenced_Source": "MS # B-728 (Gersdorff)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-728"
+    },
+    {
+      "Footnote": "66b",
+      "Footnote_Number": "66",
+      "Footnote_Text": "MS # B-179 (Hausser)",
+      "Footnote_Referenced_Source": "MS # B-179 (Hausser)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-179"
+    },
+    {
+      "Footnote": "66c",
+      "Footnote_Number": "66",
+      "Footnote_Text": "MS # B-445 (Krueger)",
+      "Footnote_Referenced_Source": "MS # B-445 (Krueger)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-445"
+    },
+    {
+      "Footnote": "66d",
+      "Footnote_Number": "66",
+      "Footnote_Text": "5th Armd Div AAR, Aug",
+      "Footnote_Referenced_Source": "5th Armd Div AAR, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "5th Armored Division After Action Report, August"
+    },
+    {
+      "Footnote": "66e",
+      "Footnote_Number": "66",
+      "Footnote_Text": "2d French Armd Div AAR, Aug.",
+      "Footnote_Referenced_Source": "2d French Armd Div AAR, Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "2d French Armored Division After Action Report, August"
+    },
+    {
+      "Footnote": "67",
+      "Footnote_Number": "67",
+      "Footnote_Text": "Msg, Kluge to Eberbach, 12 Aug, AGp B Operationsbefehle.",
+      "Footnote_Referenced_Source": "Msg, Kluge to Eberbach, 12 Aug, AGp B Operationsbefehle.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Army Group B Operations Orders, 12 Aug"
+    },
+    {
+      "Footnote": "68",
+      "Footnote_Number": "68",
+      "Footnote_Text": "Msg, Haislip to Patton, 11 Aug, TUSA G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "Msg, Haislip to Patton, 11 Aug, TUSA G-3 Jnl and File.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Third Army G-3 Journal and File"
+    },
+    {
+      "Footnote": "69",
+      "Footnote_Number": "69",
+      "Footnote_Text": "Msg, Patton to Haislip, 13 Aug, TUSA G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "Msg, Patton to Haislip, 13 Aug, TUSA G-3 Jnl and File.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Third Army G-3 Journal and File"
+    },
+    {
+      "Footnote": "70a",
+      "Footnote_Number": "70",
+      "Footnote_Text": "5th Armd Div AAR, Aug",
+      "Footnote_Referenced_Source": "5th Armd Div AAR, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "5th Armored Division After Action Report, August"
+    },
+    {
+      "Footnote": "70b",
+      "Footnote_Number": "70",
+      "Footnote_Text": "2d French Armd Div AAR, Aug",
+      "Footnote_Referenced_Source": "2d French Armd Div AAR, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "2d French Armored Division After Action Report, August"
+    },
+    {
+      "Footnote": "70c",
+      "Footnote_Number": "70",
+      "Footnote_Text": "XV Corps AAR, Aug",
+      "Footnote_Referenced_Source": "XV Corps AAR, Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "XV Corps After Action Report, August"
+    },
+    {
+      "Footnote": "70d",
+      "Footnote_Number": "70",
+      "Footnote_Text": "TUSA G-2 Per Rpt 63, 13 Aug.",
+      "Footnote_Referenced_Source": "TUSA G-2 Per Rpt 63, 13 Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Third Army G-2 Periodic Report 63"
+    },
+    {
+      "Footnote": "71a",
+      "Footnote_Number": "71",
+      "Footnote_Text": "MS # B-728 (Gersdorff)",
+      "Footnote_Referenced_Source": "MS # B-728 (Gersdorff)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-728"
+    },
+    {
+      "Footnote": "71b",
+      "Footnote_Number": "71",
+      "Footnote_Text": "MS # A-922 (Eberbach).",
+      "Footnote_Referenced_Source": "MS # A-922 (Eberbach).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # A-922"
+    },
+    {
+      "Footnote": "72",
+      "Footnote_Number": "72",
+      "Footnote_Text": "Dietrich to Kluge, 13 Aug, quoted in MS # B-728 (Gersdorff).",
+      "Footnote_Referenced_Source": "Dietrich to Kluge, 13 Aug, quoted in MS # B-728 (Gersdorff).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-728"
+    },
+    {
+      "Footnote": "73a",
+      "Footnote_Number": "73",
+      "Footnote_Text": "Msg, Patton to Haislip, 13 Aug, TUSA G-3 Jnl and File",
+      "Footnote_Referenced_Source": "Msg, Patton to Haislip, 13 Aug, TUSA G-3 Jnl and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Third Army G-3 Journal and File"
+    },
+    {
+      "Footnote": "73b",
+      "Footnote_Number": "73",
+      "Footnote_Text": "Bradley, A Soldier's Story, pp. 376-77.",
+      "Footnote_Referenced_Source": "Bradley, A Soldier's Story, pp. 376-77.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Book",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "A Soldier's Story, pp. 376-77"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

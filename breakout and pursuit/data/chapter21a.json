@@ -1,0 +1,1349 @@
+{
+  "Events": [
+    {
+      "Event": "The Decision at St. Malo",
+      "Sub-event": "Creation of Task Force A",
+      "Sub-event_summary": "General Patton created Task Force A to secure vital railway bridges in Brittany to preserve the Brest-Rennes railroad for military cargo transport.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "Anticipating quick capture of Brest, General Patton had acted to preserve the Brest-Rennes railroad as a fast means of transporting military cargo into the interior of France. The railway, running generally along the Brittany north shore, could be cut quite easily by destroying any of several important bridges. Patton had created Task Force A to secure the vital bridges before the Germans could demolish them.",
+        "Paragraph_2": "Task Force A had a strength of about 3,500 men. Its headquarters, the 1st Tank Destroyer Brigade, controlled the 6th Tank Destroyer Group, the 15th Cavalry Group, and the 159th Engineer Battalion. The task force commander, General Earnest, had requested an infantry attachment, but no infantry was available during the hectic early days of August. The possibility that Task Force A would make contact with a substantial number of French Resistance forces provided hope that the FFI would perform such infantry functions as line of communications guard and command post security."
+      },
+      "Footnote_References": [
+        1
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "Early August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Task Force A",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "1st Tank Destroyer Brigade",
+            "Name": "Herbert L. Earnest",
+            "Rank": "Brigadier General",
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Herbert_L._Earnest",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "6th Tank Destroyer Group",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "15th Cavalry Group",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "159th Engineer Battalion",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "About 3500 men",
+        "Equipments": {
+          "Supply": "Rations for six days, fuel for 250 miles, basic ammunition load, water chlorination tablets",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Tank Destroyers",
+            "Identifier": "Unknown",
+            "Quantity": "Unknown",
+            "Web_Reference": "https://tankdestroyer.net/units/brigades/leach/leach",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+          "Description": "Map VIII showing Brittany campaign",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000, -3.0000",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000, -3.0000",
+        "Weather_text": "Typical summer weather in Brittany during August 1944: mild temperatures around 18-22°C, occasional showers, generally clear conditions suitable for operations.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.0000",
+          "East": "-2.0000",
+          "South": "47.0000",
+          "North": "49.0000"
+        }
+      }
+    },
+    {
+      "Event": "The Decision at St. Malo",
+      "Sub-event": "Conference on 1 August",
+      "Sub-event_summary": "General Earnest announced Patton's expectations for Task Force A to secure railway bridges and assist in capturing Brest, outlining the route and objectives.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "At a conference with his principal subordinates on 1 August, General Earnest announced that Patton expected Task Force A to \"race to the sea\" to secure the main railway bridges and incidentally help the 6th Armored Division capture Brest. Proceeding from Avranches through Dol-de-Bretagne, Dinan, Guingamp, and Morlaix, the task force was to bypass resistance except at the bridges. Three structures near St. Brieuc and two near Morlaix comprised the specific objectives. All task force units were to carry rations for six days, fuel for two hundred and fifty miles, a basic ammunition load transportable in organic vehicles, and water chlorination tablets."
+      },
+      "Footnote_References": [
+        2
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "1 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Task Force A",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "About 3500 men",
+        "Equipments": {
+          "Supply": "Rations for six days, fuel for 250 miles, basic ammunition load, water chlorination tablets",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3569",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://www.d-daytoursnormandy.com/wp-content/uploads/2021/03/Advance-into-Brittany-Map-1024x757.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3569",
+        "Weather_text": "Mild summer conditions in Normandy/Brittany area on 1 August 1944: temperatures around 20°C, partly cloudy, no significant weather impact on operations.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.3569",
+          "East": "-0.3569",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    },
+    {
+      "Event": "The Decision at St. Malo",
+      "Sub-event": "Advance and Resistance near Dol-de-Bretagne on 3 August",
+      "Sub-event_summary": "Task Force A entered Brittany, encountered resistance near Dol-de-Bretagne, lost the cavalry commander, and decided to bypass the town.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "Through the Avranches-Pontaubault bottleneck by early 3 August, Task Force A entered Brittany and struck resistance almost immediately at a point two miles short of Dol-de-Bretagne. The cavalry commander was lost at once, his jeep later found riddled with machine gun bullets. Since the task force was supposedly following the 6th Armored Division as far as Dinan, meeting opposition was somewhat of a surprise even though General Earnest had expected that small enemy units might hit the task force's flanks. Learning from civilians that Dol was strongly defended, Earnest decided to bypass the town on the south and continue westward. He requested VIII Corps to send infantry to reduce the bypassed Dol defenses."
+      },
+      "Footnote_References": [
+        3
+      ],
+      "Place_Name": "Dol-de-Bretagne",
+      "Dates": {
+        "Date_group_of_event": "3 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "030000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "15th Cavalry Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Task Force A",
+          "Commander": "Herbert L. Earnest",
+          "Name": "Herbert L. Earnest",
+          "Rank": "Brigadier General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Herbert_L._Earnest",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Jeep",
+            "Identifier": "Willys MB",
+            "Quantity": "1",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Willys_MB",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "Jeep",
+            "Identifier": "Willys MB",
+            "Quantity": "1",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Willys_MB",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 1,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=879732902038407",
+          "Description": "Soldiers of the U.S. 83rd Infantry Division in Saint-Malo area, August 1944",
+          "License": "Fair Use"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Dol-de-Bretagne",
+        "Place_GPS_coordinate": "48.5500, -1.7500",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Dol-de-Bretagne",
+        "Place_GPS_coordinate": "48.5500, -1.7500",
+        "Weather_text": "Historical weather in Dol-de-Bretagne on 3 August 1944: Mild temperatures around 20°C, partly cloudy, no major precipitation recorded.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7500",
+          "East": "-0.7500",
+          "South": "47.6500",
+          "North": "49.4500"
+        }
+      }
+    },
+    {
+      "Event": "The Decision at St. Malo",
+      "Sub-event": "Probe Toward St. Malo and Encounter at Miniac",
+      "Sub-event_summary": "General Middleton instructed Task Force A to probe St. Malo; the column split, encountered resistance at Miniac, overcame it, but faced heavy resistance south of Châteauneuf.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "Interested in the strength of the St. Malo defenses, General Middleton instructed Earnest to probe northward toward St. Malo even as he drove westward toward Dinan. Beyond Dol-de-Bretagne, Earnest therefore split his column. The heads of both columns struck defensive positions about seven miles west of Dol, near Miniac. Some disorder occurred among U.S. troops engaging in combat for the first time, but Earnest quickly restored discipline and directed his cavalry to dismount and launch an infantry attack. Enemy resistance was quickly broken, but as the task force tried to push toward St. Malo, increasingly heavy resistance developed south of Châteauneuf-d'Ille-et-Vilaine."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Miniac",
+      "Dates": {
+        "Date_group_of_event": "3 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "031200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Task Force A",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://breakthroughassault.co.uk/wp-content/smush-webp/2023/10/image-44.png.webp",
+          "Description": "Illustration of Task Force A in Brittany",
+          "License": "Fair Use"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Miniac",
+        "Place_GPS_coordinate": "48.5160, -1.9000",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Miniac",
+        "Place_GPS_coordinate": "48.5160, -1.9000",
+        "Weather_text": "Similar to Dol-de-Bretagne, mild and partly cloudy on 3 August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.9000",
+          "East": "-0.9000",
+          "South": "47.6160",
+          "North": "49.4160"
+        }
+      }
+    },
+    {
+      "Event": "The Decision at St. Malo",
+      "Sub-event": "Call for Help from Task Force A",
+      "Sub-event_summary": "Facing strong enemy forces, General Earnest requested urgent reinforcements from VIII Corps and 6th Armored Division.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "Since the strong enemy forces defending the St. Malo-Châteauneuf-Dol area might involve Task Force A in an action that would prevent a rapid westward drive, General Earnest radioed for help. Aware that the VIII Corps had alerted the 83d Infantry Division for action in Brittany and believing that the 6th Armored Division was not far away, he called upon both the corps and the armored division in the hope that one would respond. \"Please reply, need urgent,\" he radioed. \"Rush troops.\""
+      },
+      "Footnote_References": [
+        4
+      ],
+      "Place_Name": "Châteauneuf-d'Ille-et-Vilaine",
+      "Dates": {
+        "Date_group_of_event": "3 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "031600ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Robert C. Macon",
+          "Name": "Robert C. Macon",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_C._Macon",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Full division strength, approximately 14,000",
+        "Equipments": {
+          "Supply": "Standard infantry division supply",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Châteauneuf-d'Ille-et-Vilaine",
+        "Place_GPS_coordinate": "48.5610, -1.9270",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/1/11/Bomb_exploding_during_the_Battle_of_Saint-Malo_August_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Châteauneuf-d'Ille-et-Vilaine",
+        "Place_GPS_coordinate": "48.5610, -1.9270",
+        "Weather_text": "Historical weather on 3 August 1944: Mild, around 20°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.9270",
+          "East": "-0.9270",
+          "South": "47.6610",
+          "North": "49.4610"
+        }
+      }
+    },
+    {
+      "Event": "The Decision at St. Malo",
+      "Sub-event": "330th Infantry Secures Dol-de-Bretagne",
+      "Sub-event_summary": "The 330th Infantry of the 83d Division advanced to Dol-de-Bretagne and secured the town on 4 August after delaying the attack.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "Infantrymen were in fact approaching Dol-de-Bretagne on the afternoon of 3 August, for early that morning Middleton had ordered the 83d Division to hurry a regiment to Pontorson so that the regiment alone or the entire division, according to the way the situation developed, could follow the 6th Armored Division to Brest. The 330th Infantry reached Pontorson that afternoon and continued to Dol. Extensive defensive positions around Dol, including wire entanglements and antitank ditches, prompted the regiment to delay its attack until the morning of 4 August, but then the town was quickly secured."
+      },
+      "Footnote_References": [
+        5
+      ],
+      "Place_Name": "Dol-de-Bretagne",
+      "Dates": {
+        "Date_group_of_event": "4 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "040000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "330th Infantry",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "Robert C. Macon",
+          "Name": "Robert C. Macon",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_C._Macon",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Regiment strength, approximately 3000",
+        "Equipments": {
+          "Supply": "Standard infantry supply",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://kb8tt.net/brothers/McDonald-medics.jpg",
+          "Description": "Medics of 83d Division in Brittany",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Dol-de-Bretagne",
+        "Place_GPS_coordinate": "48.5500, -1.7500",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Dol-de-Bretagne",
+        "Place_GPS_coordinate": "48.5500, -1.7500",
+        "Weather_text": "Historical weather in Dol-de-Bretagne on 4 August 1944: Temperatures around 20°C, mild breeze, possible light rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7500",
+          "East": "-0.7500",
+          "South": "47.6500",
+          "North": "49.4500"
+        }
+      }
+    },
+    {
+      "Event": "The Decision at St. Malo",
+      "Sub-event": "Severe Opposition Encountered by Task Force A on 4 August",
+      "Sub-event_summary": "Task Force A faced severe opposition including coastal guns and naval fire while pushing toward Châteauneuf on 4 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Although the 330th Infantry moved west beyond Dol-de-Bretagne for several miles without meeting resistance on 4 August, Task Force A pushing north that afternoon toward Châteauneuf-d'Ille-et-Vilaine encountered severe opposition, including fire from coastal guns and naval vessels in the St. Malo area."
+      },
+      "Footnote_References": [
+        6
+      ],
+      "Place_Name": "Châteauneuf-d'Ille-et-Vilaine",
+      "Dates": {
+        "Date_group_of_event": "4 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "041200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Task Force A",
+        "Unit_Nationality": "US",
+        "Command_Structure": {},
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Coastal Guns",
+            "Identifier": "Unknown",
+            "Quantity": "Unknown",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Image_License": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/1/11/Bomb_exploding_during_the_Battle_of_Saint-Malo_August_1944.jpg",
+          "Description": "Bomb exploding during the Battle of Saint-Malo, August 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Châteauneuf-d'Ille-et-Vilaine",
+        "Place_GPS_coordinate": "48.5610, -1.9270",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Châteauneuf-d'Ille-et-Vilaine",
+        "Place_GPS_coordinate": "48.5610, -1.9270",
+        "Weather_text": "Mild conditions on 4 August 1944, temperatures 18-22°C, breezy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.9270",
+          "East": "-0.9270",
+          "South": "47.6610",
+          "North": "49.4610"
+        }
+      }
+    },
+    {
+      "Event": "The Decision at St. Malo",
+      "Sub-event": "Middleton's Concern and Initial Decision",
+      "Sub-event_summary": "General Middleton expressed concern over German forces at St. Malo as a threat to lines of communication and favored immediate action.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "By this time a decision had to be made on St. Malo. General Bradley at first had specifically ordered the capture of St. Malo. When General Patton made no provision for its capture, Bradley had more or less acquiesced in Patton's concept of clearing the entire peninsula before getting involved in siege operations at the port cities. General Middleton, however, was becoming increasingly concerned over the large concentration of German troops in the St. Malo area. Bypassing the strongpoint in favor of more distant and alluring goals would not eliminate what might develop into a threat against the long lines of communication that would have to be established in Brittany. Allowing strong German forces to remain active at St. Malo would be like permitting a sore to develop into a cancer. Middleton favored immediate surgery."
+      },
+      "Footnote_References": [
+        7
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "4 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "040000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Corps level",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+          "Description": "Map of St. Malo area during WWII",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "Mild coastal weather on 4 August 1944, temperatures 18-21°C, breezy with possible fog.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "The Decision at St. Malo",
+      "Sub-event": "Assignment to 83d Division and Patton's View",
+      "Sub-event_summary": "Middleton assigned the capture of St. Malo to the 83d Division, but Patton limited it to one regiment, believing in token defense.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "General Middleton's inability to obtain the 6th Armored Division to help Task Force A and the 330th Infantry prompted him to give the assignment of capturing St. Malo to General Macon and the 83d Division. Then Middleton learned that Patton was unwilling to let more than one regiment of the 83d participate in the attack, for Patton believed that the Germans would make only a token defense of St. Malo. Patton wanted the 83d Division to follow the 6th Armored to Brest and Task Force A to sweep the Brittany north shore."
+      },
+      "Footnote_References": [
+        8
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "4 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "040000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Robert C. Macon",
+          "Name": "Robert C. Macon",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_C._Macon",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "330th Infantry",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Division strength approx 14000",
+        "Equipments": {
+          "Supply": "Standard WWII US Infantry Division TOE",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "105-mm Howitzer",
+            "Identifier": "M101",
+            "Quantity": "Unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M101_howitzer",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "Coastal weather on 4 August 1944: 18-21°C, breezy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "The Decision at St. Malo",
+      "Sub-event": "Developments on 4 August and Order for Full Division",
+      "Sub-event_summary": "German withdrawal suggested token defense, but Task Force A's experience indicated stronger defenses; Middleton ordered the full 83d Division for a coordinated attack.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "Developments in the St. Malo region on the morning of 4 August seemed to support Patton's view, since Germans manning outpost positions that comprised the outer defenses of the St. Malo fortress withdrew north toward Châteauneuf, a move that appeared to presage a show of force before capitulation. The experience of Task Force A that afternoon led to quite the opposite conclusion. The Germans had evidently withdrawn to consolidate and strengthen their defenses. Whatever the German intentions, it was obvious that the Americans needed additional troops around St. Malo. Hoping that immediate, resolute action might achieve the desired result, Middleton ordered Macon to bring the entire 83d Division into the area to make a co-ordinated attack in conjunction with Task Force A. If St. Malo fell at once, Middleton would attach a motorized infantry battalion of the 83d Division to Task Force A and send Earnest off to fulfill his original mission."
+      },
+      "Footnote_References": [
+        9
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "4 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "040000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {},
+        "Subordinates": [],
+        "Personnel": "Full division",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "Mild on 4 August 1944, 18-22°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "The Decision at St. Malo",
+      "Sub-event": "Attack on 5 August and Release of Task Force A",
+      "Sub-event_summary": "The attack on 5 August showed St. Malo would take time; Middleton released Task Force A with reinforcements to continue its mission.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "The result of the attack on 5 August proved that the reduction of St. Malo would take some time. Unwilling to hold Task Force A any longer, Middleton ordered Earnest to break contact during the night of 5 August and on the following morning to continue his mission of sweeping Brittany's north shore. In exchange for a platoon of tank destroyers that Earnest left with the 83d Division, he secured a motorized infantry battalion and a battery of 105-mm. howitzers. A medical collecting company from corps would join the task force on 8 August."
+      },
+      "Footnote_References": [
+        10
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "5 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "050000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Task Force A",
+        "Unit_Nationality": "US",
+        "Command_Structure": {},
+        "Subordinates": [
+          {
+            "Unit": "Motorized Infantry Battalion",
+            "Name": null,
+            "Rank": null,
+            "Date": "6 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "105-mm Howitzer Battery",
+            "Name": null,
+            "Rank": null,
+            "Date": "6 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "Medical Collecting Company",
+            "Name": null,
+            "Rank": null,
+            "Date": "8 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "About 3500 plus attachments",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "105-mm Howitzer",
+            "Identifier": "M2A1",
+            "Quantity": "Battery (4-6 guns)",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M101_howitzer",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://ghostarmy.org/images/thearchive/ga838-operation-brittany_orig.jpg",
+          "Description": "Operation Brittany related image, August 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "Historical weather in St. Malo on 5 August 1944: Mild, 18-22°C, possible showers.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "The Decision at St. Malo",
+      "Sub-event": "Effect of Diversion on Task Force A",
+      "Sub-event_summary": "The diversion to St. Malo delayed Task Force A's westward drive by about forty-eight hours.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "In the matter of time, the effect of the diversion to St. Malo on Task Force A was double that imposed on the 6th Armored Division; it delayed Earnest's westward drive about forty-eight hours."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "3-5 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "BEGINNING AUG44"
+      },
+      "TOE": {
+        "Unit": "Task Force A",
+        "Unit_Nationality": "US",
+        "Command_Structure": {},
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "General August 1944 conditions: Mild, occasional rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "1a",
+      "Footnote_Number": "1",
+      "Footnote_Text": "The sources for this section are the VIII Corps G-3 Journal and File and the Task Force A After Action Report and Journal, August.",
+      "Footnote_Referenced_Source": "VIII Corps G-3 Journal and File; Task Force A After Action Report and Journal, August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps records for August 1944"
+    },
+    {
+      "Footnote": "1b",
+      "Footnote_Number": "1",
+      "Footnote_Text": "Unless otherwise noted, documents referred to in this chapter are in the VIII Corps G-3 Journal and File.",
+      "Footnote_Referenced_Source": "VIII Corps G-3 Journal and File",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps records for August 1944"
+    },
+    {
+      "Footnote": "2a",
+      "Footnote_Number": "2",
+      "Footnote_Text": "TF A AAR, Aug, and FO 1, 2 Aug",
+      "Footnote_Referenced_Source": "Task Force A After Action Report, August; Field Order 1, 2 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Task Force A records"
+    },
+    {
+      "Footnote": "2b",
+      "Footnote_Number": "2",
+      "Footnote_Text": "VIII Corps FO 9, 1 Aug, and Spec Map.",
+      "Footnote_Referenced_Source": "VIII Corps Field Order 9, 1 August, and Special Map",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps Field Orders"
+    },
+    {
+      "Footnote": "3a",
+      "Footnote_Number": "3",
+      "Footnote_Text": "Ltr, Earnest to OCMH, 6 May 54, OCMH Files",
+      "Footnote_Referenced_Source": "Letter, Earnest to OCMH, 6 May 1954",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request correspondence files"
+    },
+    {
+      "Footnote": "3b",
+      "Footnote_Number": "3",
+      "Footnote_Text": "Msg, Earnest to Middleton, 1030, 3 Aug.",
+      "Footnote_Referenced_Source": "Message, Earnest to Middleton, 1030, 3 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "4a",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Msgs, Earnest to Middleton and Grow, 1600, 3 Aug",
+      "Footnote_Referenced_Source": "Messages, Earnest to Middleton and Grow, 1600, 3 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "4b",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Msg, Earnest to Middleton, 1930, 3 Aug",
+      "Footnote_Referenced_Source": "Message, Earnest to Middleton, 1930, 3 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "4c",
+      "Footnote_Number": "4",
+      "Footnote_Text": "TF A Jnl, entry 1255, 3 Aug.",
+      "Footnote_Referenced_Source": "Task Force A Journal, entry 1255, 3 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Task Force A journal"
+    },
+    {
+      "Footnote": "5a",
+      "Footnote_Number": "5",
+      "Footnote_Text": "VIII Corps G-3 Sec Memo, 0630, 3 Aug",
+      "Footnote_Referenced_Source": "VIII Corps G-3 Section Memo, 0630, 3 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request G-3 memos"
+    },
+    {
+      "Footnote": "5b",
+      "Footnote_Number": "5",
+      "Footnote_Text": "330th Inf AAR, Aug, Telecon, Col Conrad R. Boyle and Col Evans. 0945, 4 Aug, 83d Div G-2, G-3 Jnl.",
+      "Footnote_Referenced_Source": "330th Infantry After Action Report, August; Telephone Conversation, Col Conrad R. Boyle and Col Evans, 0945, 4 August, 83d Division G-2, G-3 Journal",
+      "Web_Link": "https://83rdinfdivdocs.org/documents/330thIR/AAR/AAR_330_AUG1944.pdf",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "6",
+      "Footnote_Number": "6",
+      "Footnote_Text": "TF A G-3 Sitrep 4, 1330, 4 Aug.",
+      "Footnote_Referenced_Source": "Task Force A G-3 Situation Report 4, 1330, 4 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request situation reports"
+    },
+    {
+      "Footnote": "7a",
+      "Footnote_Number": "7",
+      "Footnote_Text": "12th AGp Ltrs of Instr 1 and 2, 29 Jul and 3 Aug",
+      "Footnote_Referenced_Source": "12th Army Group Letters of Instruction 1 and 2, 29 July and 3 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 12th Army Group instructions"
+    },
+    {
+      "Footnote": "7b",
+      "Footnote_Number": "7",
+      "Footnote_Text": "see above, Ch. XVII. Middleton may have discussed this with Bradley when the army group commander visited the corps command post on 2 August. See Bradley, Soldier's Story, pp. 362-63.",
+      "Footnote_Referenced_Source": "Chapter XVII; Bradley, Soldier's Story, pp. 362-63",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "8a",
+      "Footnote_Number": "8",
+      "Footnote_Text": "Msg, Middleton to Macon, 4 Aug",
+      "Footnote_Referenced_Source": "Message, Middleton to Macon, 4 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "8b",
+      "Footnote_Number": "8",
+      "Footnote_Text": "83d Div G-2, G-3 Jnl, entries 1110 and 1130, 4 Aug.",
+      "Footnote_Referenced_Source": "83d Division G-2, G-3 Journal, entries 1110 and 1130, 4 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division journals"
+    },
+    {
+      "Footnote": "9",
+      "Footnote_Number": "9",
+      "Footnote_Text": "VIII Corps Msg, 4 Aug.",
+      "Footnote_Referenced_Source": "VIII Corps Message, 4 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps messages"
+    },
+    {
+      "Footnote": "10a",
+      "Footnote_Number": "10",
+      "Footnote_Text": "Msg, Middleton to Earnest, 5 Aug",
+      "Footnote_Referenced_Source": "Message, Middleton to Earnest, 5 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "10b",
+      "Footnote_Number": "10",
+      "Footnote_Text": "VIII Corps Msg, 2400, 5 Aug, and AAR, Aug",
+      "Footnote_Referenced_Source": "VIII Corps Message, 2400, 5 August, and After Action Report, August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps AAR"
+    },
+    {
+      "Footnote": "10c",
+      "Footnote_Number": "10",
+      "Footnote_Text": "TF A FO 3, 1159, 5 Aug.",
+      "Footnote_Referenced_Source": "Task Force A Field Order 3, 1159, 5 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Task Force A field orders"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

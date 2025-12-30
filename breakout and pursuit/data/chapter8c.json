@@ -1,0 +1,2956 @@
+{
+  "Events": [
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Planning and Postponement of the Attack East of the Vire",
+      "Sub-event_summary": "The attack on St. Lô was postponed to 11 July to allow additional troops, including the 35th Division, to participate and ensure sufficient strength.",
+      "Sub-event_fulltext": {
+        "Paragraph_27": "The attack directly toward St. Lô, by that part of the XIX Corps east of the Vire River, should logically have followed soon after the successive corps attacks in the Cotentin--those of the VIII Corps on 3 July, the VII on 4 July, and the XIX Corps bridgehead operation launched on 7 July. Although General Bradley had tentatively extended the pattern of his offensive by scheduling the direct attack toward St Lô for 9 July, considerations twice caused him to postpone the effort, each time for twenty-four hours. The first was his hope that commitment of armor west of the Vire would promote quick capture of the high ground west of St. Lô. The second was his feeling that additional troops were needed east of the Vire. Though the 29th Division, regarded as a good outfit, had formed the left of the XIX Corps early in July, Bradley believed, on the basis of combat experience in June, that a single division deployed on a wide front was not strong enough to take St. Lô. At least one additional division would be necessary in order to mount an attack that could be supported in depth.",
+        "Paragraph_28": "Whether the 35th Division, designated for attachment to the XIX Corps, would reach France in time to participate at the beginning of the attack was the question. Though advance elements of the division had relieved portions of the 30th Division and freed them for their bridgehead operations on 7 July, it would take \"very strenuous efforts\" to get all of the division's men and equipment into position to take over the right portion of the 29th Division zone. Not until 11 July was the 35th Division ready to attack.",
+        "Paragraph_29": "A scant four miles north of St. Lô, the 29th and 35th Divisions held positions across an eight-mile front--from la Meauffe through Villiers-Fossard to the Couvains-Calvaire road. St. Lô was in the center of the projected corps zone of operations. In order to secure St. Lô, the divisions would have to advance to the river line west of the city and to the Bérigny road, the eastward exit from the city.",
+        "Paragraph_30": "The divisions were to attack abreast in narrow zones. The boundary separating them ran from Villiers-Fossard along the western base of Hill 122 to the loop of the Vire River. The 35th on the right was to move to the two-mile stretch of the Vire immediately northwest of St. Lô; the 29th was to take the city. While one battalion of medium artillery supported the XIX Corps attack west of the Vire, the remainder of the corps artillery--four battalions of 155-mm. howitzers and a battalion each of 4.5-inch guns and 8-inch howitzers--was to assist the attack on St. Lô. General Corlett attached an additional battalion of medium artillery to the 29th Division, which was to make the main effort of the corps."
+      },
+      "Footnote_References": ["16", "17", "18"],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "APPROX 090000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "APPROX 090000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "XIX Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Charles Corlett",
+          "Name": "Charles Corlett",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "29th Infantry Division",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "155-mm howitzer",
+            "Identifier": "M1917",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M1917_155_mm_howitzer",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M1917_155mm_howitzer.jpg",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "Map III",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MapIII.jpg",
+        "ExternalMapLink": "https://history.army.mil/books/wwii/100-13/st-lo_map1.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "29th Division's Preparation and Plan",
+      "Sub-event_summary": "General Gerhardt planned to outflank Hill 122 by seizing the Martinville ridge with the 116th Infantry, while the 115th made a diversionary effort and the 175th was in reserve.",
+      "Sub-event_fulltext": {
+        "Paragraph_31": "The 29th Division was a veteran unit with D-Day experience on OMAHA Beach. Commanded by Maj. Gen. Charles H. Gerhardt, it had taken Isigny and attempted to capture St. Lô in June. While awaiting the reopening of offensive operations, General Gerhardt had organized small tank-infantry-engineer teams and rehearsed their co-ordinated action according to a plan that assigned an infantry squad and one tank to each hedgerowed field and an engineer squad to each infantry platoon or three fields. He directed the division ordnance company to weld iron prongs to his tanks so that they could ram holes in the hedgerow banks to facilitate the placing of demolitions. He also experimented with the technique of infantry crossing the center of the fields rather than moving along hedgerows.",
+        "Paragraph_32": "By these means, and with heavy artillery support, he hoped--even though replacements had not brought all of his infantry battalions back to authorized strength--to make a rapid, sustained advance.",
+        "Paragraph_33": "Bombed from the air and shelled from the ground, St. Lô was in ruins. To avoid not only the costly fighting involved in rooting Germans from the crumbling houses but also the task of clearing the rubble-clogged streets, General Gerhardt designated high ground near the city rather than St. Lô itself as the immediate objectives: Hill 122 north of the town and just inside the division right boundary, the Martinville ridge to the east, the heights southeast of St. Lô. With these in his possession and with the 2d Division holding Hill 192, Gerhardt hoped that by threatening to encircle the city he could compel the Germans to evacuate.",
+        "Paragraph_34": "Two of the three heights General Gerhardt deemed necessary for his purpose were within striking distance--Hill 122 and the Martinville ridge. Although possession of Hill 122 would give the 29th Division a more direct avenue of approach to the city--the Isigny-St. Lô highway, which enters St. Lô from the northeast--Gerhardt preferred not to attack it directly. Second only to Hill 192 in importance in the St. Lô area, Hill 122 was a bastion of the German defensive line, a position that anchored fortifications on a two-mile ridge extending north to Carillon. The Germans were sensitive to a threat against this height, since its plateaulike crest ends abruptly at a steep slope near the edge of the northern outskirts of St. Lô. From the top of the slope, the city lies exposed and vulnerable.",
+        "Paragraph_35": "General Gerhardt preferred to make his main effort on the left (east). He therefore deployed the 115th Infantry (Col. Godwin Ordway, Jr.) across a broad front, north and northeast of Hill 122, on the division right. Even though all three infantry battalions were in the line, a gap of several hundred yards separated two of them. The reason for such thin deployment was Gerhardt's plan to make his main effort to secure the Martinville ridge. By holding this eminence east of St. Lô, U.S. troops would threaten the Germans on Hill 122 with encirclement and isolation from the south. In a potentially untenable position, the Germans on Hill 122 would have to withdraw through St.Lô before the Americans entered the city and cut their route of escape. As the Germans withdrew the Americans could decimate them with artillery fire. Occupation of both Hill 122 and the high ground southeast of St. Lô would then be a simple matter.",
+        "Paragraph_36": "Assuming that the 2d Division would take Hill 192 and thus secure his flank and rear, General Gerhardt directed the 116th Infantry (Col. Charles D. W. Can-ham) to slip south on a narrow front near the division left boundary to the Martinville ridge. There the regiment would turn right (west) and descend the ridge toward the eastern edge of town. The 115th Infantry was to make a diversionary effort down the Isigny-St. Lô road toward Hill 122 and protect the division right flank. The 175th Infantry (Col. Ollie W. Reed) was to be prepared to exploit success--either on the Martinville Ridge or, if despite contrary expectation the 115th met little resistance from Hill 122,along the Isigny-St. Lô axis."
+      },
+      "Footnote_References": ["19", "20"],
+      "Place_Name": "Martinville Ridge",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "29th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Charles H. Gerhardt",
+          "Name": "Charles H. Gerhardt",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Gerhardt",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "115th Infantry",
+          "Name": "Godwin Ordway, Jr.",
+          "Rank": "Col.",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "Infantry battalions not at full strength",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Tank with iron prongs",
+            "Identifier": "M4 Sherman Hedgecutter",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Rhino_tank",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Rhino_tank.jpg",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p147.jpg",
+          "Description": "Image from the battle for St. Lô, Martinville Ridge area.",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Martinville Ridge",
+        "Place_GPS_coordinate": "49.12 N, -1.05 W",
+        "Map_Reference": "Map 9",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map9.jpg",
+        "ExternalMapLink": "https://history.army.mil/books/wwii/100-13/st-lo_map1.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Martinville Ridge",
+        "Place_GPS_coordinate": "49.12 N, -1.05 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.05,
+          "East": -0.05,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "German Diversionary Feint on 11 July",
+      "Sub-event_summary": "The II Parachute Corps launched a diversionary feint, disrupting the 115th Infantry and inflicting over 100 casualties, delaying the attack until afternoon.",
+      "Sub-event_fulltext": {
+        "Paragraph_37": "General Gerhardt's scheme was almost disarranged just before daybreak on 11 July when the II Parachute Corps launched a diversionary feint in support of the Panzer Lehr attack west of the Vire.",
+        "Paragraph_38": "A German patrol cut the communication wires of the 115th Infantry. Enemy artillery and mortars opened fire. Two paratroop companies supported by engineers struck the thinly deployed troops of the 115th, overran the American lines, encircled part of an infantry battalion, and drove a company of 4.2-inch mortarmen from their positions. Without communication and direction from higher headquarters, heavy mortar support, or knowledge of the extent of the German effort, small groups fought isolated engagements in the early morning light. At 0730, judging that they had done their duty by Panzer Lehr, the German assault companies broke contact and withdrew to their former positions. What was essentially a raid alerted the 29th Division to the possibility that German reserves had been massed in depth for counterattack and would be in position to make a strong defense of St. Lô. The raid also inflicted more than a hundred casualties on the 115th and disrupted its scheduled jump-off. Regimental reorganization took the remainder of the morning, and Colonel Ordway did not launch his attack down the Isigny-St. Lô road until afternoon. As anticipated, little advance was made in the face of strong enemy fire directed from Hill 122."
+      },
+      "Footnote_References": ["21", "22"],
+      "Place_Name": "Hill 122",
+      "Dates": {
+        "Date_group_of_event": "110400BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "110200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "115th Infantry",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "29th Infantry Division",
+          "Commander": "Godwin Ordway, Jr.",
+          "Name": "Godwin Ordway, Jr.",
+          "Rank": "Col.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "Thinly deployed",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "4.2-inch mortar",
+            "Identifier": "M2",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M2_4.2-inch_mortar",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M2_4.2_inch_mortar.jpg",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Artillery",
+            "Identifier": "unknown",
+            "Quantity": "unknown",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 100,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=409577731211497",
+          "Description": "Map of the Battle of St. Lô, including Martinville Ridge.",
+          "License": "Unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.13 N, -1.08 W",
+        "Map_Reference": "Map 9",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map9.jpg",
+        "ExternalMapLink": "https://history.army.mil/books/wwii/100-13/st-lo_map1.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.13 N, -1.08 W",
+        "Weather_text": "Haze limiting visibility on the morning of 11 July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.16,
+          "South": 48.23,
+          "North": 50.03
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Advance on Martinville Ridge on 11 July",
+      "Sub-event_summary": "The 116th Infantry advanced to the Martinville ridge after German opposition weakened following the capture of Hill 192, setting up blocking positions.",
+      "Sub-event_fulltext": {
+        "Paragraph_39": "Meanwhile, General Gerhardt had been able to get his main effort under way on the division left flank early that morning when two battalions of the 116th Infantry jumped off in column behind a heavy artillery preparation. The hedgerows made it difficult to locate the exact sources of enemy fire, and progress was slow against determined resistance. As 4.2-inch mortars fired on the Martinville ridge and tanks knocked out a self-propelled gun on the Calvaire road, the infantry finally got past its first major obstacle, a sunken road heavily protected by antipersonnel mines. The regiment still had gained only six hedgerows in five hours when, suddenly, as the 2d Division secured the crest of Hill 192, the German opposition gave way. The 116th Infantry then moved rapidly south to the Martinville ridge, turned right (west), and began to move down the ridge toward St. Lô.",
+        "Paragraph_40": "As soon as the assaulting troops surged forward, Colonel Canham, the regimental commander, committed his reserve battalion. By the end of the day this battalion, with a company of tanks in close support, had set up blocking positions on the division left flank. Entrenched on the south slope of the Martinville ridge, the battalion overlooked the Bérigny road."
+      },
+      "Footnote_References": ["23"],
+      "Place_Name": "Martinville Ridge",
+      "Dates": {
+        "Date_group_of_event": "110600BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "110400ZJUL44"
+      },
+      "TOE": {
+        "Unit": "116th Infantry",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "29th Infantry Division",
+          "Commander": "Charles D. W. Canham",
+          "Name": "Charles D. W. Canham",
+          "Rank": "Col.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_D._W._Canham",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "4.2-inch mortar",
+            "Identifier": "M2",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M2_4.2-inch_mortar",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M2_4.2_inch_mortar.jpg",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Self-propelled gun",
+            "Identifier": "unknown",
+            "Quantity": 1,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Self-propelled gun",
+            "Identifier": "unknown",
+            "Quantity": 1,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p171.jpg",
+          "Description": "Image from the battle on Martinville Ridge during the St. Lô campaign.",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Martinville Ridge",
+        "Place_GPS_coordinate": "49.12 N, -1.05 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://history.army.mil/books/wwii/100-13/st-lo_map1.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Martinville Ridge",
+        "Place_GPS_coordinate": "49.12 N, -1.05 W",
+        "Weather_text": "Haze limiting visibility on the morning of 11 July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.05,
+          "East": -0.05,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Challenges and Adjustments on 11 July",
+      "Sub-event_summary": "The exposed flank on the Martinville ridge led to heavy casualties, prompting General Gerhardt to adjust the plan to take St. Lô directly.",
+      "Sub-event_fulltext": {
+        "Paragraph_41": "The plan had one drawback. As soon as the 116th had turned the axis of attack from the south to the west, its left flank had become exposed; men moving across the open fields and orchards of the southern face of the Martinville ridge came under observed German fire from high ground south of the Bérigny road. Having in effect sought defilade from the fires of Hill 122 against the north face of the Martinville ridge, the Americans had come under enfilading fire from the south, shelling that harassed movement and depleted ranks. As a result the 29th Division on 11 July lost almost 500 men.",
+        "Paragraph_42": "If Gerhardt persisted with his original scheme of maneuver and brought the bulk of the division down the Martinville ridge, he would send his men through a gantlet of German fire. But because control of the southern face of the Martinville ridge would protect his flank against attack across the Bérigny highway and because an approach to St. Lô from the east still held out the promise of quickly dislodging the Germans on Hill 122, General Gerhardt decided to continue. He became convinced, however, that as long as the Germans had control of the hills north and south of St. Lô, they were not likely to give up the city. Thus he had to take St. Lô by direct assault and occupy the town. On the evening of 11 July he instructed Colonel Canham to \"push on, if possible take St. Lô.\"",
+        "Paragraph_43": "Encroaching darkness helped to thwart the attempt."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Martinville Ridge",
+      "Dates": {
+        "Date_group_of_event": "111800BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "111600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "29th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Charles H. Gerhardt",
+          "Name": "Charles H. Gerhardt",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Gerhardt",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Artillery",
+            "Identifier": "unknown",
+            "Quantity": "unknown",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 500,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Martinville Ridge",
+        "Place_GPS_coordinate": "49.12 N, -1.05 W",
+        "Map_Reference": "Map 9",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map9.jpg",
+        "ExternalMapLink": "https://history.army.mil/books/wwii/100-13/st-lo_map1.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Martinville Ridge",
+        "Place_GPS_coordinate": "49.12 N, -1.05 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.05,
+          "East": -0.05,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "German Reaction on 11 July",
+      "Sub-event_summary": "German forces suffered heavy losses and established a new defensive line, with the 3d Parachute Division reduced to 35% strength.",
+      "Sub-event_fulltext": {
+        "Paragraph_44": "With the American scheme of maneuver revealed by a captured field order, German commanders during the morning of 11 July had been unworried by the American attack. By noontime the outlook had changed. They had lost the top of Hill 192, and the Panzer Lehr attack west of the Vire River had fizzled. The considerable American pressure, not only in the St. Lô region but all across the Cotentin, was having a cumulative effect that could not be wished away. Trying to retain possession of the St. Lô defenses, the II Parachute Corps reported that its entire front had \"burst into flame.\" A strong volume of effective artillery fire had by nightfall of 11 July reduced the 3d Parachute Division to 35 percent of its authorized strength. The kampfgruppe of the 353d Division, fighting alongside the paratroopers, had shrunk from almost 1,000 men to 180. Approving commitment of the last reserve battalion of the 3d Parachute Division, Meindl, the corps commander, requested that a regiment of the 5th Parachute Division, arriving at this time from Brittany, be sent to reinforce his sector. Hausser, the Seventh Army commander, refused, judging that the Panzer Lehr defeat made the region west of St. Lô more critical. Hausser insisted, nevertheless, that the Martinville ridge be held at all costs. In response, Meindl remarked that someone was soon going to have to come up with a brilliant plan if they were to counter the American pressure. Meanwhile, Meindl established a new line during the night. The positions extended north across the Bérigny highway and over the Martinville ridge to tie in with Hill 122, and faced eastward to meet the threat that had developed on the Martinville ridge."
+      },
+      "Footnote_References": ["24"],
+      "Place_Name": "Martinville Ridge",
+      "Dates": {
+        "Date_group_of_event": "111200BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "111000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "3d Parachute Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "II Parachute Corps",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "Reduced to 35% authorized strength",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Martinville Ridge",
+        "Place_GPS_coordinate": "49.12 N, -1.05 W",
+        "Map_Reference": "Map 9",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map9.jpg",
+        "ExternalMapLink": "https://history.army.mil/books/wwii/100-13/st-lo_map1.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Martinville Ridge",
+        "Place_GPS_coordinate": "49.12 N, -1.05 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.05,
+          "East": -0.05,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Stagnation on 12 July",
+      "Sub-event_summary": "The 29th Division made little progress on 12 July, with heavy artillery fire preventing advance and causing another 500 casualties.",
+      "Sub-event_fulltext": {
+        "Paragraph_45": "On the second day of attack, 12 July, the 29th division made little progress. On the right the 115th Infantry, extended over a broad front, without a reserve, and under the eyes of the Germans on Hill 122, did little more than maintain pressure and sustain casualties. On the left, the 175th Infantry was unable--because of German artillery fire-to pass through the 116th and get into position for a drive down the Martinville ridge. German artillery and mortar fire immobilized the division and again inflicted almost 500 casualties."
+      },
+      "Footnote_References": ["25"],
+      "Place_Name": "Martinville Ridge",
+      "Dates": {
+        "Date_group_of_event": "120000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "112200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "29th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Charles H. Gerhardt",
+          "Name": "Charles H. Gerhardt",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Gerhardt",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "175th Infantry",
+          "Name": "Ollie W. Reed",
+          "Rank": "Col.",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Artillery",
+            "Identifier": "unknown",
+            "Quantity": "unknown",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 500,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Martinville Ridge",
+        "Place_GPS_coordinate": "49.12 N, -1.05 W",
+        "Map_Reference": "Map 9",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map9.jpg",
+        "ExternalMapLink": "https://history.army.mil/books/wwii/100-13/st-lo_map1.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Martinville Ridge",
+        "Place_GPS_coordinate": "49.12 N, -1.05 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.05,
+          "East": -0.05,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross Award to Carl J. Frantz",
+      "Sub-event_summary": "S. Sgt. Carl J. Frantz was awarded the DSC for actions on 11 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_related": "Actions on 11 July."
+      },
+      "Footnote_References": ["39"],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "110000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "110000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Haze limiting visibility on the morning of 11 July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross Award to Irvin F. Conley",
+      "Sub-event_summary": "T. Sgt. Irvin F. Conley was awarded the DSC for actions on 13 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_related": "Actions on 13 July."
+      },
+      "Footnote_References": ["39"],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "130000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "130000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross Award to Harold D. Snyder",
+      "Sub-event_summary": "T. Sgt. Harold D. Snyder was awarded the DSC for actions on 17 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_related": "Actions on 17 July."
+      },
+      "Footnote_References": ["39"],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "170000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "170000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross Award to Vernon W. Pickett",
+      "Sub-event_summary": "1st Lt. Vernon W. Pickett was awarded the DSC for his defensive action, likely on 16 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_related": "Defensive action on 16 July."
+      },
+      "Footnote_References": ["37"],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "160000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "160000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross Award to Joseph P. Fuller",
+      "Sub-event_summary": "T. Sgt. Joseph P. Fuller received the DSC for heroic action, likely on 17 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_related": "Heroic action on 17 July."
+      },
+      "Footnote_References": ["38"],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "170000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "170000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross Award to Buster E. Brown",
+      "Sub-event_summary": "Pfc. Buster E. Brown received the DSC for heroic action, likely on 17 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_related": "Heroic action on 17 July."
+      },
+      "Footnote_References": ["38"],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "170000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "170000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Continued Difficulties and Losses",
+      "Sub-event_summary": "The 29th Division faced serious drain from losses of nearly 1,000 men in two days.",
+      "Sub-event_fulltext": {
+        "Paragraph_46": "Losing nearly 1,000 men in two days was a serious drain on the"
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "END JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "END JUL44"
+      },
+      "TOE": {
+        "Unit": "29th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Charles H. Gerhardt",
+          "Name": "Charles H. Gerhardt",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Gerhardt",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 1000,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "Map 9",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map9.jpg",
+        "ExternalMapLink": "https://history.army.mil/books/wwii/100-13/st-lo_map1.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Attack on 17 July and Change of Plan",
+      "Sub-event_summary": "On 17 July, the 115th Infantry advanced to the northeastern outskirts of St. Lô, prompting General Gerhardt to shift the main effort to the 115th for the entry into the city on 18 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_47": "On the afternoon of 17 July, after the 35th Division had firmly established its control over Hill 122, General Gerhardt concluded that the 115th Infantry and not the regiments on the Martinville ridge really held the key to St. Lô. To insert the key, General Gerhardt had somehow to get the regiment to the gates of the city. He therefore directed Colonel Ordway to advance the 115th to the northeastern outskirts of St. Lô. The advance depended almost wholly upon the battalion in the regimental center. \"Expend the whole battalion if necessary,\" General Gerhardt ordered, \"but it's got to get there.\" An hour later he repeated the same order.",
+        "Paragraph_48": "By nightfall of 17 July the troops of the entire 115th Infantry were near the northeastern fringe of the city, but getting there had brought them to the point of almost complete exhaustion. Convinced beyond doubt that the only feasible point of entry to St. Lô was the northeastern gate, General Gerhardt changed his week-long scheme of maneuver. For operations on 18 July, he ordered the two regiments on the left—those on the Martinville ridge—to hold in place while the 115th made the main effort into the city."
+      },
+      "Footnote_References": ["46"],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "171200BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "171000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "115th Infantry",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "29th Infantry Division",
+          "Commander": "Godwin Ordway, Jr.",
+          "Name": "Godwin Ordway, Jr.",
+          "Rank": "Col.",
+          "End_Date": "17 JUL44",
+          "End_Status": "Relieved",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "Map 9",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map9.jpg",
+        "ExternalMapLink": "https://history.army.mil/books/wwii/100-13/st-lo_map1.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "German Withdrawal from St. Lô",
+      "Sub-event_summary": "German commanders approved withdrawal from St. Lô on 17 July due to American pressure, with the main forces retiring during the night.",
+      "Sub-event_fulltext": {
+        "Paragraph_50": "If these conversations revealed a tension among American commanders, those occurring among German officers disclosed even greater concern. Seventh Army had called Army Group B in the midafternoon of 17 July, and Hausser requested not only permission to withdraw in the St. Lô sector but also an answer by 1800 that day. There was some double talk about withdrawing to a line north of St. Lô, but this was not feasible in terms of the terrain. A withdrawal meant retirement to the heights just south of the city, though combat outposts could be retained north of St. Lô.",
+        "Paragraph_51": "The request was rather surprising because under Hitler's standing order to hold fast, permission to withdraw was a prerogative of OKW. Yet more surprising was the army group reply to the Seventh Army. The operations officer of Army Group B stated that, after discussion, the staff had decided that forwarding Hausser's request to OB WEST for further transmittal to OKW was not practical. \"You take whatever measures you think are necessary,\" the operations officer advised; \"if you have to withdraw, go ahead; just report to us afterwards that the enemy penetrated your main line of resistance in several places and that you barely succeeded in re-establishing a new line to the rear.\"",
+        "Paragraph_52": "Several reasons made a withdrawal necessary. American capture of Hill 122 and the attrition of the German troops in that sector exposed St. Lô from the north. The shortage of troops along the entire St. Lô front made it impossible for the II Parachute Corps to re-establish a defensive line north of the city. Underscoring the difficult, even hopeless, situation at St. Lô were the events that had occurred on the other side of the Vire: the 30th Division advance through Pont-Hébert to Rampan, the failure of the abortive Panzer Lehr counterattack on 15 July that did no more than delay the 30th Division advance, and the mistaken notion that U.S. troops had crossed the river at Rampan to infiltrate the rear of the 352d Division. All added up to the uncomfortable threat of American encirclement of St. Lô from the west.",
+        "Paragraph_53": "As though this was not bad enough, Rommel, the Army Group B commander, while driving forward to visit the front on the afternoon of 17 July, incurred a severe skull fracture in an automobile accident brought on by strafing from an Allied plane. That evening, when the news became known to the Germans, the OB WEST commander, Kluge, assumed command of Army Group B as well. By this time, Army Group B had passed Hausser's withdrawal request to OB WEST, which informed Jodl at OKW that troops were pulling back to hills north of St. Lô. Kluge tried to avert a complete withdrawal, but though he ordered Hausser to keep the Americans out of the city, he could find no reserves to reinforce the St. Lô sector.",
+        "Paragraph_54": "The 5th Parachute Division, which had arrived from Brittany several days earlier, was already committed to reinforce Panzer Lehr. The 275th Division, which was following the paratroopers, would not arrive in the St. Lô region for another day. Panzer Group West, which might have furnished troops, was expecting a strong British attack in the Caen area, and Kluge dared not disturb Eberbach's dispositions. Reluctantly, Kluge permitted Hausser to withdraw.",
+        "Paragraph_55": "Undetected by the Americans, the main forces retired that night leaving strong combat outposts north of St. Lô."
+      },
+      "Footnote_References": ["50", "51", "52", "53"],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "171500BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "171300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "II Parachute Corps",
+          "Name": "Eugen Meindl",
+          "Rank": "General",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Eugen_Meindl",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "Shortage of troops",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "Map 9",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map9.jpg",
+        "ExternalMapLink": "https://history.army.mil/books/wwii/100-13/st-lo_map1.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Entry into St. Lô on 18 July",
+      "Sub-event_summary": "Task Force C entered St. Lô on 18 July, securing key points, with the 35th Division also advancing, leading to the capture of the city.",
+      "Sub-event_fulltext": {
+        "Paragraph_55": "On the morning of 18 July, after an artillery preparation, the 115th Infantry attacked. Since Hill 122 was no longer a point of embarrassment, the regiment made good progress. At noon Colonel Ednie was hammering on the gate. \"I believe this is the time to alert that Task Force,\" he advised General Gerhardt. The division commander no longer doubted. \"Everything's shaping up now,\" he informed General Cota, \"so I think you'd better get moving.\"",
+        "Paragraph_56": "Forty minutes later General Gerhardt transmitted another order to General Cota. He wanted the body of Major Howie to accompany the first U.S. troops into town. The act was to be not only a gesture of honor and respect to the fallen but also a visible reminder to the members of the task force of all their comrades who had given their lives in a task not yet completed. The choice of Major Howie's body was particularly apt, for Howie, who had taken command of a battalion only three days before his death, represented the qualities of courage and sacrifice that had made the drive to the gates of St. Lô possible. The triumph belonged to the dead as well as to the living, and through Major Howie the fallen were to participate in the culmination of the effort.",
+        "Paragraph_57": "At 1500, 18 July, General Cota's Task Force C departed its assembly area near the division left boundary, crossed the division zone, and began to roll down the Isigny-St. Lô highway. Like a left halfback making a wide run around right end, the task force picked up its interference as it approached the line of scrimmage—the 1st Battalion, 115th Infantry, which was closest to the goal. Silencing an antitank gun just outside the town, passing through harassing artillery and scattered rifle fire, and breaking through a roadblock, the task force entered the northeast portion of St. Lô at 1800 of the eighth day of the battle. Quickly seizing a square near the cemetery and organizing it as a base of operations, Task Force C moved rapidly through the rubble-choked streets to points of importance. Small groups occupied key road junctions, squares, and bridges. One hour after the task force entered the town it was apparent that only scattered German resistance remained to be cleared. The bridges over the Vire were still intact.",
+        "Paragraph_58": "About the time the 29th Division task force began its drive into St. Lô, the 35th Division completed its assignment. Colonel Byrne's 320th Infantry mopped up bypassed enemy in the center of the division zone, Colonel Emery's 137th Infantry reached the bank of the Vire River between the loop and the bend, and Colonel Miltonberger's 134th Infantry moved down the south slope of Hill 122 to the northern edge of St. Lô. Because the division boundary did not permit the 35th to enter into town, General Baade requested a boundary change. The XIX Corps G-3 first checked with General Gerhardt: \"We have another division crying for part of St. Lô,\" he reported. \"OK,\" General Gerhardt said, \"let them go to it.\" Despite General Gerhardt's largess, the corps commander was reluctant to condone the possibility of confusion and lack of control that might result from intermingling troops of the two divisions in the city. He decided not to shift the boundary, yet some 35th Division troops inevitably entered St. Lô and moved a short way into town."
+      },
+      "Footnote_References": ["55", "56", "57", "58"],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "181500BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "181300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Task Force C",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "29th Infantry Division",
+          "Commander": "Norman Cota",
+          "Name": "Norman Cota",
+          "Rank": "Brig. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Norman_Cota",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "1st Battalion, 115th Infantry",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Antitank gun",
+            "Identifier": "unknown",
+            "Quantity": 1,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Antitank gun",
+            "Identifier": "unknown",
+            "Quantity": 1,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p171.jpg",
+          "Description": "U.S. troops entering St. Lô.",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "Map 9",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map9.jpg",
+        "ExternalMapLink": "https://history.army.mil/books/wwii/100-13/st-lo_map1.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "German Counterattack and Final Capture",
+      "Sub-event_summary": "German counterattack failed, and St. Lô was secured, with the announcement of its capture.",
+      "Sub-event_fulltext": {
+        "Paragraph_64": "Although St. Lô was taken, it was by no means safe. German artillery smashed into the town. Surprised and embarrassed by the speed with which the Americans had taken the city, Hausser ordered Meindl to have the 352d Division retake the town, but refused Meindl's request for part of the 275th Division, which had just arrived from Brittany and was in the Seventh Army reserve behind Panzer Lehr. The 352d Division, which had tried to hold the Vire bridges by fighting in St. Lô with too few men, mounted a counterattack but was too weak to expel the Americans. Hausser and Meindl both later blamed an announcement by the Wehrmacht on the afternoon of 18 July of the withdrawal as the stimulus that had caused the final American assault. Actually, however, they had been unable to secure additional troops and they had feared that U.S. forces west of the Vire would outflank St. Lô from the west; both commanders in reality had been forced by American pressure to pull the II Parachute Corps back.",
+        "Paragraph_65": "To maintain contact and determine the extent of the withdrawal, General Corlett instructed the 113th Cavalry Group to pass through the city. The cavalry received such a volume of antitank, mortar, and artillery fire 500 yards south of St. Lô that it became evident at once that the Germans had retired only to the high ground less than a mile to the south. The 352d Division counterattack"
+      },
+      "Footnote_References": ["61"],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "181900BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "181700ZJUL44"
+      },
+      "TOE": {
+        "Unit": "352d Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "II Parachute Corps",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "Too few men",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Antitank gun",
+            "Identifier": "unknown",
+            "Quantity": "unknown",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "Map 9",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map9.jpg",
+        "ExternalMapLink": "https://history.army.mil/books/wwii/100-13/st-lo_map1.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0,
+          "East": -0.18,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "16a",
+      "Footnote_Number": "16a",
+      "Footnote_Text": "Telecon, Corlett and Gerhardt, 0825, 8 Jul, 29th Div G-3 Jnl",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Corlett and Gerhardt, 0825, 8 Jul"
+    },
+    {
+      "Footnote": "16b",
+      "Footnote_Number": "16b",
+      "Footnote_Text": "Ltr, Eisenhower to Marshall, 5 Jul, Pogue Files",
+      "Footnote_Referenced_Source": "Pogue Files",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Ltr, Eisenhower to Marshall, 5 Jul"
+    },
+    {
+      "Footnote": "17a",
+      "Footnote_Number": "17a",
+      "Footnote_Text": "35th Div CofS Memo, 9 Jul, 35th Div G-3 Jnl",
+      "Footnote_Referenced_Source": "35th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "35th Div CofS Memo, 9 Jul"
+    },
+    {
+      "Footnote": "17b",
+      "Footnote_Number": "17b",
+      "Footnote_Text": "XIX Corps Ltr of Instrs, 7 Jul",
+      "Footnote_Referenced_Source": "XIX Corps Ltr of Instrs",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "7 Jul"
+    },
+    {
+      "Footnote": "17c",
+      "Footnote_Number": "17c",
+      "Footnote_Text": "XIX Corps and 29th Div Msgs, 0712 and 1200, 10 Jul, XIX Corps G-3 Jnl",
+      "Footnote_Referenced_Source": "XIX Corps G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "XIX Corps and 29th Div Msgs, 0712 and 1200, 10 Jul"
+    },
+    {
+      "Footnote": "18",
+      "Footnote_Number": "18",
+      "Footnote_Text": "XIX Corps Arty AAR, Jul",
+      "Footnote_Referenced_Source": "XIX Corps Arty AAR",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Jul"
+    },
+    {
+      "Footnote": "19",
+      "Footnote_Number": "19",
+      "Footnote_Text": "The Div Comdr's After Combat Battle Notes, 29 Div AAR, Jul",
+      "Footnote_Referenced_Source": "29 Div AAR",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "The Div Comdr's After Combat Battle Notes, Jul"
+    },
+    {
+      "Footnote": "20",
+      "Footnote_Number": "20",
+      "Footnote_Text": "29th Div FO 18, 4 Jul; 29th Div Arty FO 2, 4 Jul; 116th Inf FO 10, 5 Jul",
+      "Footnote_Referenced_Source": "29th Div FO 18",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "4 Jul; 29th Div Arty FO 2, 4 Jul; 116th Inf FO 10, 5 Jul"
+    },
+    {
+      "Footnote": "21",
+      "Footnote_Number": "21",
+      "Footnote_Text": "See above, Ch. VII",
+      "Footnote_Referenced_Source": "Ch. VII",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "22",
+      "Footnote_Number": "22",
+      "Footnote_Text": "29th Div AAR, Jul and Extract from the Battle Report of the 3d Parachute Division Operations, 10-20 Jul; XIX Corps Cml Sec Rpt, XIX Corps AAR, Jul",
+      "Footnote_Referenced_Source": "29th Div AAR",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Jul and Extract from the Battle Report of the 3d Parachute Division Operations, 10-20 Jul; XIX Corps Cml Sec Rpt, Jul"
+    },
+    {
+      "Footnote": "23",
+      "Footnote_Number": "23",
+      "Footnote_Text": "Garth, St.-Lô, p. 58",
+      "Footnote_Referenced_Source": "Garth, St.-Lô",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "p. 58"
+    },
+    {
+      "Footnote": "24a",
+      "Footnote_Number": "24a",
+      "Footnote_Text": "Telecons, Pemsel to Meindl, 1900, 11 Jul, and Blauensteiner to Helmdach, 1140, 12 Jul, Seventh Army Tel Msgs",
+      "Footnote_Referenced_Source": "Seventh Army Tel Msgs",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Telecons, Pemsel to Meindl, 1900, 11 Jul, and Blauensteiner to Helmdach, 1140, 12 Jul"
+    },
+    {
+      "Footnote": "24b",
+      "Footnote_Number": "24b",
+      "Footnote_Text": "Seventh Army KTB (Draft), 11 Jul",
+      "Footnote_Referenced_Source": "Seventh Army KTB (Draft)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "11 Jul"
+    },
+    {
+      "Footnote": "24c",
+      "Footnote_Number": "24c",
+      "Footnote_Text": "Daily Sitrep, 12 Jul, AGp B Tagesmeldungen",
+      "Footnote_Referenced_Source": "AGp B Tagesmeldungen",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Daily Sitrep, 12 Jul"
+    },
+    {
+      "Footnote": "24d",
+      "Footnote_Number": "24d",
+      "Footnote_Text": "MS # B-455 (Ziegelmann)",
+      "Footnote_Referenced_Source": "MS # B-455 (Ziegelmann)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Foreign Military Studies, B-455"
+    },
+    {
+      "Footnote": "25a",
+      "Footnote_Number": "25a",
+      "Footnote_Text": "29th Div G-3 Jnl, 1215 and 1558, 11 Jul, and 1707, 12 Jul",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "1215 and 1558, 11 Jul, and 1707, 12 Jul"
+    },
+    {
+      "Footnote": "26",
+      "Footnote_Number": "26",
+      "Footnote_Text": "29th Div G-3 Jnl, 0955, 13 Jul",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "0955, 13 Jul"
+    },
+    {
+      "Footnote": "27a",
+      "Footnote_Number": "27a",
+      "Footnote_Text": "29th Div FO 20, 12 Jul",
+      "Footnote_Referenced_Source": "29th Div FO 20",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "12 Jul"
+    },
+    {
+      "Footnote": "27b",
+      "Footnote_Number": "27b",
+      "Footnote_Text": "29th Div Arty AAR, Jul",
+      "Footnote_Referenced_Source": "29th Div Arty AAR",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Jul"
+    },
+    {
+      "Footnote": "28a",
+      "Footnote_Number": "28a",
+      "Footnote_Text": "Interv with Lt Col Beckley by Capt Franklin Ferris, CI 106",
+      "Footnote_Referenced_Source": "CI 106",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Interv with Lt Col Beckley by Capt Franklin Ferris"
+    },
+    {
+      "Footnote": "28b",
+      "Footnote_Number": "28b",
+      "Footnote_Text": "35th Div G-3 Jnl, 9 Jul",
+      "Footnote_Referenced_Source": "35th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "9 Jul"
+    },
+    {
+      "Footnote": "29a",
+      "Footnote_Number": "29a",
+      "Footnote_Text": "35th Div FO 2, 10 Jul, and AAR, Jul",
+      "Footnote_Referenced_Source": "35th Div FO 2",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "10 Jul, and AAR, Jul"
+    },
+    {
+      "Footnote": "30",
+      "Footnote_Number": "30",
+      "Footnote_Text": "35th Div G-3 Jnl, 1820, 11 Jul",
+      "Footnote_Referenced_Source": "35th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "1820, 11 Jul"
+    },
+    {
+      "Footnote": "31",
+      "Footnote_Number": "31",
+      "Footnote_Text": "James A. Huston, Biography of A Battalion (Gering, Nebraska: Courier Press, 1950), p. 14. The volume gives an excellent account of operations as seen from the point of view of a battalion staff officer.",
+      "Footnote_Referenced_Source": "James A. Huston, Biography of A Battalion",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "p. 14"
+    },
+    {
+      "Footnote": "32a",
+      "Footnote_Number": "32a",
+      "Footnote_Text": "See Telecon, 12 Jul, 35th Div G-3 Jnl File",
+      "Footnote_Referenced_Source": "35th Div G-3 Jnl File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, 12 Jul"
+    },
+    {
+      "Footnote": "33",
+      "Footnote_Number": "33",
+      "Footnote_Text": "MS # B-439 (Ziegelmann)",
+      "Footnote_Referenced_Source": "MS # B-439 (Ziegelmann)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Foreign Military Studies, B-439"
+    },
+    {
+      "Footnote": "34a",
+      "Footnote_Number": "34a",
+      "Footnote_Text": "MS # B-455 (Ziegelmann)",
+      "Footnote_Referenced_Source": "MS # B-455 (Ziegelmann)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Foreign Military Studies, B-455"
+    },
+    {
+      "Footnote": "34b",
+      "Footnote_Number": "34b",
+      "Footnote_Text": "Hodgson, R-54",
+      "Footnote_Referenced_Source": "Hodgson, R-54",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "R-54"
+    },
+    {
+      "Footnote": "35",
+      "Footnote_Number": "35",
+      "Footnote_Text": "35th Div AAR, Jul",
+      "Footnote_Referenced_Source": "35th Div AAR",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Jul"
+    },
+    {
+      "Footnote": "36",
+      "Footnote_Number": "36",
+      "Footnote_Text": "Memo, 15 Jul, 35th Div G-3 Jnl",
+      "Footnote_Referenced_Source": "35th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Memo, 15 Jul"
+    },
+    {
+      "Footnote": "37",
+      "Footnote_Number": "37",
+      "Footnote_Text": "35th Div G-3 Jnl, 1145, 16 Jut. 1st Lt. Vernon W. Pickett was awarded the DSC for his defensive action.",
+      "Footnote_Referenced_Source": "35th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "1145, 16 Jul"
+    },
+    {
+      "Footnote": "38a",
+      "Footnote_Number": "38a",
+      "Footnote_Text": "XIX Corps Msg, 1720, 16 Jul, FUSA G-3 Jnl",
+      "Footnote_Referenced_Source": "FUSA G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "XIX Corps Msg, 1720, 16 Jul"
+    },
+    {
+      "Footnote": "38b",
+      "Footnote_Number": "38b",
+      "Footnote_Text": "35th Div Rpt of Situation, 0930, 17 Jul, XIX Corps G-3 Jnl and File. T. Sgt. Joseph P. Fuller and Pfc. Buster E. Brown received the DSC for heroic action.",
+      "Footnote_Referenced_Source": "XIX Corps G-3 Jnl and File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "35th Div Rpt of Situation, 0930, 17 Jul"
+    },
+    {
+      "Footnote": "39",
+      "Footnote_Number": "39",
+      "Footnote_Text": "S. Sgt. Carl J. Frantz, T. Sgt. Irvin F. Conley, and T. Sgt. Harold D. Snyder were awarded the DSC for actions on 11, 13, and 17 July, respectively.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "40",
+      "Footnote_Number": "40",
+      "Footnote_Text": "29th Div G-3 Jnl, 1130, 15 Jul",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "1130, 15 Jul"
+    },
+    {
+      "Footnote": "41",
+      "Footnote_Number": "41",
+      "Footnote_Text": "29th Div G-3 Jnl, 0920, 15 Jul",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "0920, 15 Jul"
+    },
+    {
+      "Footnote": "42",
+      "Footnote_Number": "42",
+      "Footnote_Text": "29th Div G-3 Jnl, 1357, 2055, and 2225, 15 Jul; 29th Div Msg, 1201, 15 Jul, XIX Corps G-3 Jnl and File",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "1357, 2055, and 2225, 15 Jul; 29th Div Msg, 1201, 15 Jul, XIX Corps G-3 Jnl and File"
+    },
+    {
+      "Footnote": "43",
+      "Footnote_Number": "43",
+      "Footnote_Text": "Colonel Dwyer replaced Colonel Canham, who was promoted to brigadier general and transferred to the 8th Division as the assistant division commander.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "44",
+      "Footnote_Number": "44",
+      "Footnote_Text": "29th Div G-3 Jnl, 1335, 16 Jul, and 1256, 17 Jul",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "1335, 16 Jul, and 1256, 17 Jul"
+    },
+    {
+      "Footnote": "45",
+      "Footnote_Number": "45",
+      "Footnote_Text": "Lt. Col. Robert H. George, Ninth Air Force, April to November 1944, USAF Hist Study 36 (Maxwell Air Force Base, Alabama, Air University, 1945). p. 118.",
+      "Footnote_Referenced_Source": "Lt. Col. Robert H. George, Ninth Air Force, April to November 1944",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "p. 118"
+    },
+    {
+      "Footnote": "46",
+      "Footnote_Number": "46",
+      "Footnote_Text": "29th Div G-3 Jnl, 1216, 17 Jul",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "1216, 17 Jul"
+    },
+    {
+      "Footnote": "47a",
+      "Footnote_Number": "47a",
+      "Footnote_Text": "29th Div G-3 Jnl, 1456 and 1545, 17 Jul",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "1456 and 1545, 17 Jul"
+    },
+    {
+      "Footnote": "48a",
+      "Footnote_Number": "48a",
+      "Footnote_Text": "XIX Corps Msg 2245, 17 Jul, XIX Corps G-3 Jnl and File",
+      "Footnote_Referenced_Source": "XIX Corps G-3 Jnl and File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "XIX Corps Msg 2245, 17 Jul"
+    },
+    {
+      "Footnote": "48b",
+      "Footnote_Number": "48b",
+      "Footnote_Text": "Ltr of Instr, 2300, 17 Jul",
+      "Footnote_Referenced_Source": "Ltr of Instr",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "2300, 17 Jul"
+    },
+    {
+      "Footnote": "49",
+      "Footnote_Number": "49",
+      "Footnote_Text": "29th Div G-3 Jnl, 0638 and 0641, 18 Jul",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "0638 and 0641, 18 Jul"
+    },
+    {
+      "Footnote": "50",
+      "Footnote_Number": "50",
+      "Footnote_Text": "Telecon, Pemsel to Tempelhoff, 1520, 17 Jul, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Telecon, Pemsel to Tempelhoff, 1520, 17 Jul"
+    },
+    {
+      "Footnote": "51",
+      "Footnote_Number": "51",
+      "Footnote_Text": "Telecon, Tempelhoff to Pemsel, 1750, 17 Jul, Seventh Army Tel Msgs, and 1755, AGp B KTB",
+      "Footnote_Referenced_Source": "Seventh Army Tel Msgs",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Telecon, Tempelhoff to Pemsel, 1750, 17 Jul, and 1755, AGp B KTB"
+    },
+    {
+      "Footnote": "52",
+      "Footnote_Number": "52",
+      "Footnote_Text": "Telecon, Speidel to Pemsel, 2155, 17 Jul, Seventh Army Tel Msgs; Hodgson, R-54",
+      "Footnote_Referenced_Source": "Seventh Army Tel Msgs",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Telecon, Speidel to Pemsel, 2155, 17 Jul; Hodgson, R-54"
+    },
+    {
+      "Footnote": "53a",
+      "Footnote_Number": "53a",
+      "Footnote_Text": "Telecons, Kluge and Rommel, 2040, 16 Jul, OB WEST KTB, and Speidel to Pemsel, 2200, 17 Jul, AGp B KTB",
+      "Footnote_Referenced_Source": "OB WEST KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Telecons, Kluge and Rommel, 2040, 16 Jul, and Speidel to Pemsel, 2200, 17 Jul, AGp B KTB"
+    },
+    {
+      "Footnote": "54",
+      "Footnote_Number": "54",
+      "Footnote_Text": "29th Div G-3 Jnl, 0725 and 0901, 18 Jul",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "0725 and 0901, 18 Jul"
+    },
+    {
+      "Footnote": "55",
+      "Footnote_Number": "55",
+      "Footnote_Text": "29th Div G-3 Jnl, 1147 and 1149, 18 Jul",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "1147 and 1149, 18 Jul"
+    },
+    {
+      "Footnote": "56",
+      "Footnote_Number": "56",
+      "Footnote_Text": "29th Div G-3 Jnl, 1236, 18 Jul",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "1236, 18 Jul"
+    },
+    {
+      "Footnote": "57",
+      "Footnote_Number": "57",
+      "Footnote_Text": "29th Div G-3 Jnl, 0517, 19 Jul",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "0517, 19 Jul"
+    },
+    {
+      "Footnote": "58",
+      "Footnote_Number": "58",
+      "Footnote_Text": "29th Div G-3 Jnl, 1615, 18 Jul; Penciled note, n.d., 35th Div G-3 Jnl File, 18 Jul; 134th Infantry Regiment, Combat History of World War II, compiled by Butler Buchanan Miltonberger (Baton Rouge, Louisiana: Army and Navy Publishing Company, 1946), p. 44.",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "1615, 18 Jul; Penciled note, n.d., 35th Div G-3 Jnl File, 18 Jul; 134th Infantry Regiment, Combat History of World War II, p. 44"
+    },
+    {
+      "Footnote": "59",
+      "Footnote_Number": "59",
+      "Footnote_Text": "Telecon, Pemsel to Tempelhoff, 2110, 17 Jul, Seventh Army Tel Msgs",
+      "Footnote_Referenced_Source": "Seventh Army Tel Msgs",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Telecon, Pemsel to Tempelhoff, 2110, 17 Jul"
+    },
+    {
+      "Footnote": "60a",
+      "Footnote_Number": "60a",
+      "Footnote_Text": "29th Div G-3 Jnl, 1830, 2028, 2048, 18 Jul, and Msg, 2100, 18 Jul, XIX Corps G-3 Jnl and File",
+      "Footnote_Referenced_Source": "29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "1830, 2028, 2048, 18 Jul, and Msg, 2100, 18 Jul, XIX Corps G-3 Jnl and File"
+    },
+    {
+      "Footnote": "60b",
+      "Footnote_Number": "60b",
+      "Footnote_Text": "FUSA, Spec Sitrep, 0045, 19 Jul",
+      "Footnote_Referenced_Source": "FUSA",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Spec Sitrep, 0045, 19 Jul"
+    },
+    {
+      "Footnote": "61a",
+      "Footnote_Number": "61a",
+      "Footnote_Text": "Telecon, Hausser to Pemsel, 1950, 18 Jul, Seventh Army Tel Msgs",
+      "Footnote_Referenced_Source": "Seventh Army Tel Msgs",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Telecon, Hausser to Pemsel, 1950, 18 Jul"
+    },
+    {
+      "Footnote": "61b",
+      "Footnote_Number": "61b",
+      "Footnote_Text": "Seventh Army KTB (Draft) and Tel Msgs, 17 and 18 Jul",
+      "Footnote_Referenced_Source": "Seventh Army KTB (Draft)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "and Tel Msgs, 17 and 18 Jul"
+    },
+    {
+      "Footnote": "61c",
+      "Footnote_Number": "61c",
+      "Footnote_Text": "Hodgson, R-54",
+      "Footnote_Referenced_Source": "Hodgson, R-54",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "R-54"
+    },
+    {
+      "Footnote": "62",
+      "Footnote_Number": "62",
+      "Footnote_Text": "XIX Corps Memo, 19 Jul, XIX Corps G-3 Jnl and File",
+      "Footnote_Referenced_Source": "XIX Corps G-3 Jnl and File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "XIX Corps Memo, 19 Jul"
+    },
+    {
+      "Footnote": "63a",
+      "Footnote_Number": "63a",
+      "Footnote_Text": "35th Div Msg, 1019, 19 Jul, XIX Corps G-3 Jnl",
+      "Footnote_Referenced_Source": "XIX Corps G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "35th Div Msg, 1019, 19 Jul"
+    },
+    {
+      "Footnote": "63b",
+      "Footnote_Number": "63b",
+      "Footnote_Text": "Huston, Biography of A Battalion, pp. 23-46",
+      "Footnote_Referenced_Source": "Huston, Biography of A Battalion",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "pp. 23-46"
+    },
+    {
+      "Footnote": "64",
+      "Footnote_Number": "64",
+      "Footnote_Text": "A legend had also been born. In 1953 a roadside sign in St. Lô read: \". . . This martyred city was liberated the 26th [ sic. ] of July 1944 by Major Howie, killed at the head of his troops. . . .\"",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn8.html",
+  "Source_Footnote_Link_Capture_Date": "December 21, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+  "Source_Link_Capture_Date": "December 21, 2025"
+}

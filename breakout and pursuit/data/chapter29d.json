@@ -1,0 +1,382 @@
+{
+  "Events": [
+    {
+      "Event": "French Resistance and FFI Challenge in Paris",
+      "Sub-event": "FFI Strength and Limitations in Paris Area",
+      "Sub-event_summary": "Approximately 20,000 men in Paris area belonged to FFI, but few possessed weapons due to limited Allied parachute deliveries. Resistance conducted systematic sabotage and harassment (destroying road signs, planting tire-puncturing devices, cutting communications, burning gasoline depots, attacking isolated Germans), but open warfare against German armed forces remained highly limited.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "The challenge, although serious, was far from formidable. Perhaps 20,000 men in the Paris area belonged to the FFI, but few actually had weapons since the Allies had parachuted only small quantities of military goods to them. While the Resistance had been able to carry on a somewhat systematic program of sabotage and harassment--destroying road signs, planting devices designed to puncture automobile tires, cutting communications lines, burning gasoline depots, and attacking isolated Germans--for the FFI to engage German armed forces in open warfare was quite another matter."
+      },
+      "Footnote_References": [21],
+      "Place_Name": ["Paris"],
+      "Dates": {
+        "Date_group_of_event": "Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "French Forces of the Interior (FFI)",
+        "Unit_Nationality": "FR"
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "French Resistance and FFI Challenge in Paris",
+      "Sub-event": "Resistance Leadership Efforts to Avert Open Hostilities and Truce Negotiation (19 August)",
+      "Sub-event_summary": "Resistance leaders sought to prevent open warfare fearing German guns and reprisals against civilians. Swedish Consul General Raoul Nordling negotiated with Choltitz, securing release of several thousand political prisoners earlier on 19 August. Nordling learned Choltitz willing to discuss truce; armistice arranged that night, initially few hours, later extended indefinitely.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "The leaders of the Resistance in Paris, recognizing the havoc that German guns could bring to an overtly insubordinate civilian population and fearing widespread and bloody reprisals, sought to avert open hostilities. They were fortunate in securing the good offices of Mr. Raoul Nordling, the Swedish consul general, who volunteered to negotiate with Choltitz. Nordling had that very day succeeded in persuading Choltitz not to deport but to release from detention camps, hospitals, and prisons several thousand political prisoners. The agreement, which \"represented the first capitulation of Germany,\" was a matter of considerable import that \"was not lost either on the Resistance or on the people of Paris.\" Having established a personal relationship with Choltitz that promised to be valuable, Nordling was able to learn on the evening of 19 August that Choltitz was willing to discuss conditions of a truce with the Resistance. That night an armistice was arranged, at first to last only a few hours, later extended by mutual consent for an indefinite period."
+      },
+      "Footnote_References": [22],
+      "Place_Name": ["Paris"],
+      "Dates": {
+        "Date_group_of_event": "19 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "19 Aug 1944 (BST)"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "French Resistance and FFI Challenge in Paris",
+      "Sub-event": "Truce Terms and Mutual Advantages (19 August onward)",
+      "Sub-event_summary": "Truce allowed Resistance members treated as soldiers with certain city parts as Resistance territory; Germans retained free passage in designated sections. No boundaries drawn, leading to uncertain sectors and uneasy noninterference. French gained time to avoid German repression, preserve city, and doubt defensive capability. Germans maintained order, attended primary blocking mission, and exploited Resistance factionalism to weaken unity against common enemy.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "Without even a date of expiration, the arrangement was nebulous. Choltitz agreed to treat Resistance members as soldiers and to regard certain parts of the city as Resistance territory. In return, he secured Resistance admission that certain sections of Paris were to be free for German use, for the unhampered passage of German troops. Yet no boundaries were drawn, and neither Germans nor French were certain of their respective sectors. Thus, an uneasy noninterference obtained.",
+        "Paragraph_19": "The advantages for both parties were clear. The French Resistance leaders were uncertain when Allied troops would arrive, anxious to prevent German repressive measures, aware of Resistance weakness to the extent of doubting their own ability to defend the public buildings seized, and finally hopeful of preserving the capital from physical damage.",
+        "Paragraph_20": "For the Germans, the cessation of hostilities per se fulfilled Choltitz' mission of maintaining order within the capital and enabled him to attend to his primary mission of blocking the approaches to the city. Having known for a long time of the attempts to subordinate the Resistance to the Allied military command, the Germans guessed that sabotage directly unrelated to Allied military operations was \"mainly the work of communist groups.\" It was therefore reasonable for Choltitz to assume that the disorder in Paris on 19 August, which had no apparent connection with developments on the front, was the work of a few extremists. Since part of his mission was to keep order among the population and since the police were no longer performing their duties, Choltitz felt that the simplest way of restoring order was to halt the gunfire in the streets. To prevent what might develop into indiscriminate rioting, he was willing to come to an informal truce, \"an understanding,\" as he termed it."
+      },
+      "Footnote_References": [23, 24, 25],
+      "Place_Name": ["Paris"],
+      "Dates": {
+        "Date_group_of_event": "19 Aug 1944 onward",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "19 Aug 1944 onward (BST)"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "French Resistance and FFI Challenge in Paris",
+      "Sub-event": "Choltitz Exploitation of Resistance Factionalism and Strength Assessment (Mid-August)",
+      "Sub-event_summary": "Choltitz exploited Resistance factionalism to simplify control and weaken unity against Germans. Believed insurrection partly struggle for political power in power vacuum after Pétain government ceased functioning. Feared Communists taking city before Americans arrived. Relied on truce rather than force due to unwillingness to endanger civilians or insufficient strength. Planned coordinated attack on Resistance headquarters halted; listened to neutral consulates and gathered provisional units including Panzer Lehr tank company.",
+      "Sub-event_fulltext": {
+        "Paragraph_21": "A more subtle reason also lay behind Choltitz' action. Aware of the factionalism in the French Resistance movement, he tried to play one group off against the other to simplify his problem of control. Choltitz believed that since the insurrectionists directed their immediate efforts toward seizing government buildings and communications facilities, the insurrection was at least in part the opening of an undisguised struggle for political power within France. The Pétain government no longer functioned in Paris (Pétainist officials with whom the Germans were accustomed to work no longer answered their telephones), and in this vacuum there was bound to be a struggle for power among the Resistance factions. \"The Resistance had reason to fear,\" a German official wrote not long afterwards, \"that the Communists would take possession of the city before the Americans arrived.\" By concluding a truce, Choltitz hoped to destroy the cement that held the various French groups together against their common enemy and thus leave them free to destroy themselves.",
+        "Paragraph_22": "That Choltitz felt it necessary to use these means rather than force to suppress the insurrection indicated one of two things--either he was unwilling to endanger the lives of women and children or he no longer had the strength to cope with the Resistance. He later admitted to both. In any event, French underground activities had become so annoying that Choltitz' staff had planned a coordinated attack on widely dispersed Resistance headquarters for the very day the insurrection broke out, but Choltitz himself had suddenly prohibited the action. Instead of resorting to force, he listened to representations in favor of peace from the neutral Swedish and Swiss consulates. Meanwhile, should civil disturbance become worse, Choltitz gathered provisional units to augment his strength, securing, among other units, a tank company of Panzer Lehr."
+      },
+      "Footnote_References": [26, 27, 28],
+      "Place_Name": ["Paris"],
+      "Dates": {
+        "Date_group_of_event": "mid-Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "mid-Aug 1944 (CET)"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr",
+        "Unit_Nationality": "DE"
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "French Resistance and FFI Challenge in Paris",
+      "Sub-event": "Model Assessment and Hitler Reaffirmation of Paris Defense (20 August)",
+      "Sub-event_summary": "Choltitz informed Model of weakness. Hitler advised Model on 20 August Paris bastion of Seine-Yonne line. Model replied plan unfeasible due to delayed 348th Division arrival. Model prioritized Seine over Paris, planned alternate defense north/east of city. Jodl repeated Hitler's instructions to defend Paris regardless of devastation. Hitler issued 'field of ruins' order: Paris defense decisive militarily/politically, loss means France lost; hold west of city, counter revolt sharply (including executions); prepare Seine bridges for demolition; Paris must fall only as field of ruins.",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "Choltitz apparently informed Model, the new chief of OB WEST and Army Group B, of his weakness, for when Hitler on 20 August advised Model that Paris was to become the bastion of the Seine-Yonne River line, Model replied that the plan was not feasible. Although Model had arranged to move the 348th Division to Paris, he did not think these troops could arrive quickly enough to hold the city against the external Allied threat and the internal Resistance disturbance. Apparently having misunderstood Hitler's desire, Model decided that the Seine was more important than Paris. Since the Seine flows through the city, defending at the river would necessitate a main line of resistance inside the capital. With the civil populace in a state of hardly disguised revolt, he did not believe Choltitz could keep civil order and at the same time defend against an Allied attack with the strength at hand. Model therefore revealed to OKW that he had ordered an alternate line of defense to be reconnoitred north and east of Paris.",
+        "Paragraph_24": "Model's action seemed inexcusable since the order to create a fortress city implied that Paris was important enough in Hitler's judgment to warrant a defense to the last man. Furthermore, Hitler had explicitly stated on 20 August, \"If necessary, the fighting in and around Paris will be conducted without regard to the destruction of the city.\" Jodl therefore repeated Hitler's instructions and ordered Model to defend at Paris, not east of it, even if the defense brought devastation to the capital and its people.",
+        "Paragraph_25": "Hitler himself left no doubt as to his wishes when he issued his famous \"field of ruins\" order: The defense of the Paris bridgehead is of decisive military and political importance. Its loss dislodges the entire coastal front north of the Seine and removes the base for the V-weapons attacks against England. In history the loss of Paris always means the loss of France. Therefore the Fuehrer repeats his order to hold the defense zone in advance [west] of the city. . . . Within the city every sign of incipient revolt must be countered by the sharpest means . . . [including] public execution of ringleaders. . . . The Seine bridges will be prepared for demolition. Paris must not fall into the hands of the enemy except as a field of ruins."
+      },
+      "Footnote_References": [29, 30, 31],
+      "Place_Name": ["Paris", "Seine River", "Yonne River"],
+      "Dates": {
+        "Date_group_of_event": "20 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "20 Aug 1944 (CET)"
+      },
+      "TOE": {
+        "Unit": "First Army",
+        "Unit_Nationality": "DE"
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    }
+  ],
+  "Footnotes": {
+    "Footnote": [
+      {
+        "Footnote": "16",
+        "Footnote_Number": 16,
+        "Footnote_Text": "See, for example, F. F. F. (Forces Françaises de l'Intérieur), pp. 1-2.",
+        "Footnote_Referenced_Source": "Forces Françaises de l'Intérieur (FFI) records, pp. 1-2",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "17",
+        "Footnote_Number": 17,
+        "Footnote_Text": "See, for example, F. F. F. (Forces Françaises de l'Intérieur), pp. 3-5.",
+        "Footnote_Referenced_Source": "Forces Françaises de l'Intérieur (FFI) records, pp. 3-5",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "18",
+        "Footnote_Number": 18,
+        "Footnote_Text": "See, for example, F. F. F. (Forces Françaises de l'Intérieur), pp. 6-8.",
+        "Footnote_Referenced_Source": "Forces Françaises de l'Intérieur (FFI) records, pp. 6-8",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "19",
+        "Footnote_Number": 19,
+        "Footnote_Text": "SHAEF GO 1, 6 Jun 44.",
+        "Footnote_Referenced_Source": "SHAEF General Order 1, 6 June 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "20",
+        "Footnote_Number": 20,
+        "Footnote_Text": "Koenig Msg, 17 Jul 44.",
+        "Footnote_Referenced_Source": "General Koenig Message, 17 July 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "21",
+        "Footnote_Number": 21,
+        "Footnote_Text": "FFI Rpt, Paris, Aug.",
+        "Footnote_Referenced_Source": "FFI Report, Paris, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "22",
+        "Footnote_Number": 22,
+        "Footnote_Text": "Nordling, Sauvez Paris, pp. 45-46.",
+        "Footnote_Referenced_Source": "Raoul Nordling, Sauvez Paris (Paris: Éditions de la Table Ronde, 1958), pp. 45-46",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "23",
+        "Footnote_Number": 23,
+        "Footnote_Text": "Choltitz, Brennender Paris, pp. 20-21.",
+        "Footnote_Referenced_Source": "Dietrich von Choltitz, Brennender Paris (Vowinckel Verlag, 1951), pp. 20-21",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "24",
+        "Footnote_Number": 24,
+        "Footnote_Text": "OB WEST, KTB, 19 Aug.",
+        "Footnote_Referenced_Source": "OB WEST War Diary, 19 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "German records series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "25",
+        "Footnote_Number": 25,
+        "Footnote_Text": "Choltitz, Brennender Paris, p. 22.",
+        "Footnote_Referenced_Source": "Dietrich von Choltitz, Brennender Paris (Vowinckel Verlag, 1951), p. 22",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "26",
+        "Footnote_Number": 26,
+        "Footnote_Text": "Choltitz, Brennender Paris, pp. 23-24.",
+        "Footnote_Referenced_Source": "Dietrich von Choltitz, Brennender Paris (Vowinckel Verlag, 1951), pp. 23-24",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "27",
+        "Footnote_Number": 27,
+        "Footnote_Text": "MS # B-034 (Schramm).",
+        "Footnote_Referenced_Source": "German Manuscript B-034 (Schramm)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "28",
+        "Footnote_Number": 28,
+        "Footnote_Text": "Choltitz, Brennender Paris, pp. 25-26.",
+        "Footnote_Referenced_Source": "Dietrich von Choltitz, Brennender Paris (Vowinckel Verlag, 1951), pp. 25-26",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "29",
+        "Footnote_Number": 29,
+        "Footnote_Text": "OB WEST, KTB, 20 Aug.",
+        "Footnote_Referenced_Source": "OB WEST War Diary, 20 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "German records series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "30",
+        "Footnote_Number": 30,
+        "Footnote_Text": "OB WEST, KTB, 20 Aug.",
+        "Footnote_Referenced_Source": "OB WEST War Diary, 20 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "German records series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "31",
+        "Footnote_Number": 31,
+        "Footnote_Text": "OB WEST, KTB, 20 Aug.",
+        "Footnote_Referenced_Source": "OB WEST War Diary, 20 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "German records series",
+        "Source_Type": "DE"
+      }
+    ]
+  },
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn29.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-29",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+  "Source_Link_Capture_Date": "2025-12-29"
+}

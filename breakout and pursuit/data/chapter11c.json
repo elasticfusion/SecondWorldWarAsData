@@ -1,0 +1,1129 @@
+{
+  "Events": [
+    {
+      "Event": "Preparations for Operation COBRA - The Plot Against Hitler",
+      "Sub-event": "Assassination Attempt on Hitler",
+      "Sub-event_summary": "A dramatic attempt was made on Hitler's life on 20 July during the lull between GOODWOOD and COBRA, announced by Hitler as a conspiracy by a small clique of officers.",
+      "Sub-event_fulltext": {
+        "Paragraph_69": "During the lull over the battlefield in the west that followed GOODWOOD and preceded COBRA, and while defeats in the east gave the Germans increasing worry over the eventual outcome of the war, a dramatic attempt was made on Hitler's life on 20 July. In a speech the following day, Hitler himself released the news to the world. \"A very small clique of ambitious, unscrupulous and stupid officers\" he announced, \"made a conspiracy to kill me, and at the same time to seize hold of the German Supreme Command.\""
+      },
+      "Footnote_References": [
+        "[43]"
+      ],
+      "Place_Name": "Rastenburg",
+      "Dates": {
+        "Date_group_of_event": "201200BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "201000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "German Supreme Command",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "German Supreme Command",
+          "Commander": "Adolf Hitler",
+          "Name": "Adolf Hitler",
+          "Rank": "Fuehrer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Adolf_Hitler",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Bomb",
+              "Identifier": null,
+              "Quantity": 1,
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 1,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_DE_Killed": 0,
+          "Civilian_DE_Wounded": 0,
+          "Civilian_DE_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Wolfsschanze_Explosion.jpg",
+          "Description": "Aftermath of the explosion at Wolf's Lair",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Rastenburg",
+        "Place_GPS_coordinate": "54.0806, 21.4936",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Wolf%27s_Lair#/media/File:Wolfsschanze_luftbild.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Rastenburg",
+        "Place_GPS_coordinate": "54.0806, 21.4936",
+        "Weather_text": "Hot weather for the region, warm temperatures around 25-30°C, clear conditions.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "20.5936",
+          "East": "22.3936",
+          "South": "53.1806",
+          "North": "54.9806"
+        }
+      }
+    },
+    {
+      "Event": "Preparations for Operation COBRA - The Plot Against Hitler",
+      "Sub-event": "Suppression of the Revolt and Appointments",
+      "Sub-event_summary": "Allied intelligence reported a cabal of Army officers attempted to assassinate Hitler with a bomb to seize power; Hitler suppressed the revolt, appointing Himmler as Commander of Home Forces and Guderian as chief of staff of OKH.",
+      "Sub-event_fulltext": {
+        "Paragraph_70": "Within a short time Allied intelligence officers had pieced together a remarkably accurate account of the occurrence: a cabal of high-ranking Army officers had tried to assassinate Hitler with a bomb in order to seize political power in Germany. The bomb had inflicted only minor wounds on Hitler, and the Fuehrer moved swiftly to suppress the revolt. He named Heinrich Himmler--already Reich Minister of Interior, Reichsfuehrer of the SS (and Waffen-SS), and Chief of the Gestapo and German Police--Commander of the Home Forces and gave him control of the military replacement system. Hitler replaced the ailing Generaloberst Kurt Zeitzler, chief of staff of OKH and vaguely implicated in the conspiracy, with Generaloberst Heinz Guderian. High-ranking officers of Army, Air Force, and Navy were quick to reaffirm their loyalty to Hitler. The immediate result of the conspiracy was to tighten centralized control of the military in Hitler's hands."
+      },
+      "Footnote_References": [
+        "[44]"
+      ],
+      "Place_Name": "Rastenburg",
+      "Dates": {
+        "Date_group_of_event": "200000BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "192200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "OKH",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKH",
+          "Commander": "Heinz Guderian",
+          "Name": "Heinz Wilhelm Guderian",
+          "Rank": "Generaloberst",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Heinz_Guderian",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Home Forces",
+            "Name": "Heinrich Himmler",
+            "Rank": "Reichsfuehrer-SS",
+            "Date": "210000BJUL44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Heinrich_Himmler",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_DE_Killed": 0,
+          "Civilian_DE_Wounded": 0,
+          "Civilian_DE_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Rastenburg",
+        "Place_GPS_coordinate": "54.0806, 21.4936",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Rastenburg",
+        "Place_GPS_coordinate": "54.0806, 21.4936",
+        "Weather_text": "Hot weather for the region, warm temperatures around 25-30°C, clear conditions.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "20.5936",
+          "East": "22.3936",
+          "South": "53.1806",
+          "North": "54.9806"
+        }
+      }
+    },
+    {
+      "Event": "Preparations for Operation COBRA - The Plot Against Hitler",
+      "Sub-event": "Allied Intelligence Interpretation",
+      "Sub-event_summary": "Allied intelligence interpreted the Putsch as stemming from the belief that Germany had lost the war, aimed at seizing power to negotiate with the Allies.",
+      "Sub-event_fulltext": {
+        "Paragraph_71": "Allied intelligence had not only the facts but a plausible interpretation. The cause of the Putsch was \"undoubtedly the belief . . . that Germany had lost the war.\"",
+        "Paragraph_72": "That a \"military clique,\" as Hitler calls them, should have been plotting to liquidate him is encouraging; that they should have chosen this moment is exhilarating.... The very fact that plotters reckoned that the time was ripe for a venture so complicated as the assassination of the Fuehrer argues that they had good reason to hope for success. . . . There seems ... no reason to disbelieve Hitler's assertion that it was an Army Putsch cut to the 1918 pattern and designed to seize power in order to come to terms with the Allies. For, from the military point of view, the rebels must have argued, what other course is open? How else save something, at least, from the chaos? How else save the face of the German Army, and, more important still, enough of its blood to build another for the next war?"
+      },
+      "Footnote_References": [
+        "[45]",
+        "[46]"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "250000BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "242200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army G-2",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Nelson Bradley",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "First U.S. Army G-2",
+            "Name": "Benjamin A. Dickson",
+            "Rank": "Colonel",
+            "Date": null,
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Benjamin_A._Dickson",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.3333, -0.5667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.3333, -0.5667",
+        "Weather_text": "Rainy and cloudy conditions in mid-July 1944, with improving weather by late July.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.4667",
+          "East": "0.3333",
+          "South": "48.4333",
+          "North": "50.2333"
+        }
+      }
+    },
+    {
+      "Event": "Preparations for Operation COBRA - The Plot Against Hitler",
+      "Sub-event": "Colonel Dickson's Assessment",
+      "Sub-event_summary": "Colonel Dickson believed the Hitler government would suppress opposition, and only military defeat would bring down Hitler, suggesting a breakthrough in Normandy.",
+      "Sub-event_fulltext": {
+        "Paragraph_73": "Colonel Dickson, the First Army G-2, believed that the Hitler government would remain in office by suppressing all opposition ruthlessly. He saw no evidence to suppose that the existing German Government would be overthrown by internal revolution or by revolt of one or more of the German field armies. He was certain that only the military defeat and the surrender of the German armies in the field would bring about the downfall of Hitler. The first step toward that goal was to intensify \"the confusion and doubt in the mind of the German soldier in Normandy\" by \"an Allied break-through on the First Army front at this time, which would threaten to cut him off from the homeland, [and which] would be a decisive blow to the German Seventh Army.\""
+      },
+      "Footnote_References": [
+        "[47]"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "240000BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn47",
+        "Zulu_date_group_of_event": "232200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army G-2",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army G-2",
+          "Commander": "Benjamin A. Dickson",
+          "Name": "Benjamin Abbott Dickson",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Benjamin_A._Dickson",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.3333, -0.5667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.3333, -0.5667",
+        "Weather_text": "Rainy and cloudy conditions in mid-July 1944, with improving weather by late July.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.4667",
+          "East": "0.3333",
+          "South": "48.4333",
+          "North": "50.2333"
+        }
+      }
+    },
+    {
+      "Event": "Preparations for Operation COBRA - The Plot Against Hitler",
+      "Sub-event": "State of the German Seventh Army",
+      "Sub-event_summary": "The Seventh Army had no future except hoping for a miracle, buoyed by V1 and V2, with discipline replaced by apathy.",
+      "Sub-event_fulltext": {
+        "Paragraph_74": "On its knees, the Seventh Army had no future \"save in the fact that so long as the battle continues the miracle may still take place. Buoyed up by accounts of what V1 had done, no less than by the promise of V2, and still imbued with a discipline that has been impaired only by the substitution of apathy for enthusiasm, the German soldier is still on the [Nazi] party's side.\""
+      },
+      "Footnote_References": [
+        "[48]"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "END JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "END JUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Impaired discipline, apathy",
+        "Equipments": {
+          "Supply": "Buoyed by V1 and V2",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "V-1 flying bomb",
+              "Identifier": "Fi 103",
+              "Quantity": null,
+              "Web_Reference": "https://en.wikipedia.org/wiki/V-1_flying_bomb",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/1/13/V-1_flying_bomb.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "V-2 rocket",
+              "Identifier": "A-4",
+              "Quantity": null,
+              "Web_Reference": "https://en.wikipedia.org/wiki/V-2_rocket",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/0/09/V-2_rocket.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.3333, -0.5667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.3333, -0.5667",
+        "Weather_text": "Rainy and cloudy conditions in mid-July 1944, with improving weather by late July.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.4667",
+          "East": "0.3333",
+          "South": "48.4333",
+          "North": "50.2333"
+        }
+      }
+    },
+    {
+      "Event": "Preparations for Operation COBRA - The Plot Against Hitler",
+      "Sub-event": "Involvement in the West",
+      "Sub-event_summary": "Few officers in the west were implicated; a small group in Paris staged a coup, but overall loyalty to Hitler prevailed.",
+      "Sub-event_fulltext": {
+        "Paragraph_75": "The fact was that very few officers in the west were implicated in the plot against Hitler. A small but important group in the headquarters of the Military Governor of France at Paris staged a coup that was successful for several hours, but except for isolated individuals who knew of the conspiracy, and rarer still those who were in sympathy with it, the military elsewhere on the Western Front were overwhelmingly loyal to Hitler, even though some might be doubtful of the eventual outcome of the war. Those who did play some small role in the plot had not deliberately or unconsciously hindered field operations by treasonable conduct. The conspiracy had virtually no effect on the military situation in the west. The combat soldier in the \"you-or-me\" life-and-death struggle was too busy trying to remain alive."
+      },
+      "Footnote_References": [
+        "[49]"
+      ],
+      "Place_Name": "Paris",
+      "Dates": {
+        "Date_group_of_event": "200000BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "192200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Military Governor of France",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Paris",
+        "Place_GPS_coordinate": "48.8566, 2.3522",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/20_July_plot#/media/File:Paris_20_July_plot_map.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 4.0",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Paris",
+        "Place_GPS_coordinate": "48.8566, 2.3522",
+        "Weather_text": "Mild summer weather in July 1944, temperatures around 22°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "1.4522",
+          "East": "3.2522",
+          "South": "47.9566",
+          "North": "49.7566"
+        }
+      }
+    },
+    {
+      "Event": "Preparations for Operation COBRA - The Plot Against Hitler",
+      "Sub-event": "Aftermath and Consequences",
+      "Sub-event_summary": "Officers pledged loyalty, impressed by Hitler's survival; efficiency increased under Himmler, but suspicions led to fates like Rommel's suicide, Speidel's imprisonment, Kluge's suspicion.",
+      "Sub-event_fulltext": {
+        "Paragraph_76": "The higher officers pledged their continuing loyalty to Hitler. All Germans were more or less impressed with the miracle that had saved Hitler's life.",
+        "Paragraph_77": "As a result of the Putsch, the efficiency of the German war machine under Hitler increased, for Himmler took immediate steps to unify the military replacement system and eventually improved it. The Putsch also intensified Hitler's unfounded suspicion that mediocrity among his military commanders might in reality be treason. Rommel, recuperating at home from an injury received in Normandy, was eventually incriminated and forced to commit suicide. Speidel, the Army Group B chief of staff, was later imprisoned on evidence that indicated involvement. Kluge, the principal commander in the west, fell under suspicion nearly a month later when battlefield reverses in Normandy seemed to give substance to whispered accusations of his friendliness with known conspirators. Thus the Putsch, while giving Hitler the opportunity to consolidate military control even more in his own hands, pointed a blunt warning that the symptoms of military defeat were spreading an infectious distrust and suspicion among the higher echelons of the German military organization."
+      },
+      "Footnote_References": [
+        "[50]",
+        "[51]"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "APPROX 240900BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 240700ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Erwin Rommel",
+          "Name": "Johannes Erwin Eugen Rommel",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "141000BOCT44",
+          "End_Status": "Suicide",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Erwin_Rommel",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Army Group B Chief of Staff",
+            "Name": "Hans Speidel",
+            "Rank": "General",
+            "Date": null,
+            "End_Date_of_command": null,
+            "End_Status": "Imprisoned",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Speidel",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          },
+          {
+            "Unit": "OB WEST",
+            "Name": "Günther von Kluge",
+            "Rank": "Generalfeldmarschall",
+            "Date": null,
+            "End_Date_of_command": "190000BAUG44",
+            "End_Status": "Suicide",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": "Improved military replacement system",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.3333, -0.5667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.3333, -0.5667",
+        "Weather_text": "Rainy and cloudy conditions in mid-July 1944, with improving weather by late July.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.4667",
+          "East": "0.3333",
+          "South": "48.4333",
+          "North": "50.2333"
+        }
+      }
+    },
+    {
+      "Event": "Preparations for Operation COBRA - The Plot Against Hitler",
+      "Sub-event": "Impact on Battlefield Planning",
+      "Sub-event_summary": "The plot ended half-hearted planning for an offensive near Caen; Rommel estimated Normandy front could hold only weeks.",
+      "Sub-event_fulltext": {
+        "Paragraph_78": "On the battlefield in Normandy the half-hearted planning for an offensive action near Caen in August came to an end. Even before GOODWOOD had violently disrupted German operational planning, Rommel, just before his near-fatal accident, had estimated that the Germans could hold the Normandy front only a few more weeks at the maximum."
+      },
+      "Footnote_References": [
+        "[52]"
+      ],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "150000BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn52",
+        "Zulu_date_group_of_event": "142200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Erwin Rommel",
+          "Name": "Johannes Erwin Eugen Rommel",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": null,
+          "End_Status": "WIA",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Erwin_Rommel",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1829, -0.3707",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Battle_for_Caen#/media/File:Battle_of_Caen_1944.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 3.0",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1829, -0.3707",
+        "Weather_text": "Rainy and cloudy conditions in mid-July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.2707",
+          "East": "0.5293",
+          "South": "48.2829",
+          "North": "50.0829"
+        }
+      }
+    },
+    {
+      "Event": "Preparations for Operation COBRA - The Plot Against Hitler",
+      "Sub-event": "Kluge's Letter to Hitler",
+      "Sub-event_summary": "Kluge endorsed Rommel's view in a letter to Hitler, warning of impending crack in defenses due to air superiority and insufficient replacements.",
+      "Sub-event_fulltext": {
+        "Paragraph_79": "Several days later Kluge endorsed Rommel's view. In a letter to Hitler he stated the hard facts clearly: In the face of the total enemy air superiority, we can adopt no tactics to compensate for the annihilating power of air except to retire from the battle field. . . . I came here with the firm resolve to enforce your command to stand and hold at all cost. The price of that policy is the steady and certain destruction of our troops. . . . The flow of materiel and personnel replacements is insufficient, and artillery and antitank weapons and ammunition are far from adequate. . . . Because the main force of our defense lies in the willingness of our troops to fight, then concern for the immediate future of this front is more than justified. . . . Despite all our efforts, the moment is fast approaching when our hard-pressed defenses will crack. When the enemy has erupted into open terrain, the inadequate mobility of our forces will make orderly and effective conduct of the battle hardly possible."
+      },
+      "Footnote_References": [
+        "[53]"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "210000BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn53",
+        "Zulu_date_group_of_event": "202200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "OB WEST",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Insufficient replacements",
+        "Equipments": {
+          "Supply": "Insufficient materiel, artillery, antitank weapons, ammunition",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.3333, -0.5667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.3333, -0.5667",
+        "Weather_text": "Rainy and cloudy conditions in mid-July 1944, with improving weather by late July.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.4667",
+          "East": "0.3333",
+          "South": "48.4333",
+          "North": "50.2333"
+        }
+      }
+    },
+    {
+      "Event": "Preparations for Operation COBRA - The Plot Against Hitler",
+      "Sub-event": "Doubts and Planning for Withdrawal",
+      "Sub-event_summary": "GOODWOOD confirmed opinions, leading to doubts on offensive planning; uncertainty about Patton; Jodl proposed withdrawal planning, Hitler agreed.",
+      "Sub-event_fulltext": {
+        "Paragraph_80": "When GOODWOOD seemed to confirm Rommel's and Kluge's opinions, OKW became doubtful of the value of planning an offensive. Until the Germans learned where Patton was, they could not dispel their uncertainty about Allied intentions and consequently could not intelligently plan offensive action or weaken the Pas-de-Calais forces to bolster the Normandy front. On 23 July, immediately upon receipt of Kluge's letter, Jodl proposed to Hitler that it might be time to begin planning for an eventual withdrawal from France. Surprisingly enough, Hilter agreed."
+      },
+      "Footnote_References": [
+        "[54]"
+      ],
+      "Place_Name": "Pas-de-Calais",
+      "Dates": {
+        "Date_group_of_event": "230000BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "222200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "OKW",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Alfred Jodl",
+          "Name": "Alfred Josef Ferdinand Jodl",
+          "Rank": "Generaloberst",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Alfred_Jodl",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Pas-de-Calais",
+        "Place_GPS_coordinate": "50.95, 1.85",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Pas-de-Calais",
+        "Place_GPS_coordinate": "50.95, 1.85",
+        "Weather_text": "Similar to Normandy, rainy and cloudy in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "0.95",
+          "East": "2.75",
+          "South": "50.05",
+          "North": "51.85"
+        }
+      }
+    },
+    {
+      "Event": "Preparations for Operation COBRA - The Plot Against Hitler",
+      "Sub-event": "Transition to COBRA",
+      "Sub-event_summary": "Before withdrawal planning proceeded, Operation COBRA commenced.",
+      "Sub-event_fulltext": {
+        "Paragraph_81": "But before anything came of this conversation, COBRA raised its head."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "250000BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "242200ZJUL44"
+      },
+      "TOE": {
+        "Unit": null,
+        "Unit_Nationality": null,
+        "Command_Structure": [],
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.3333, -0.5667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.3333, -0.5667",
+        "Weather_text": "Rainy and cloudy conditions in mid-July 1944, with improving weather by late July.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.4667",
+          "East": "0.3333",
+          "South": "48.4333",
+          "North": "50.2333"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "43",
+      "Footnote_Number": "43",
+      "Footnote_Text": "Hitler Speech, 21 Jul, FUSA G-3 Jnl File, 23 Jul.",
+      "Footnote_Referenced_Source": "Hitler Speech",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Hitler Speech, 21 July 1944, First U.S. Army G-3 Journal File, 23 July 1944"
+    },
+    {
+      "Footnote": "44",
+      "Footnote_Number": "44",
+      "Footnote_Text": "FUSA G-2 Est 11, 24 Jul; see Hodgson, R-57, for a detailed bibliographical account of the Putsch and also for the reaction in the west; see Wilmot, Struggle For Europe, pp. 366ff., for a good account of the revolt.",
+      "Footnote_Referenced_Source": "FUSA G-2 Est 11; Hodgson, R-57; Wilmot, Struggle For Europe",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "First U.S. Army G-2 Estimate 11, 24 July 1944; Hodgson Report R-57; Wilmot, The Struggle for Europe (1952), pp. 366ff."
+    },
+    {
+      "Footnote": "45",
+      "Footnote_Number": "45",
+      "Footnote_Text": "FUSA G-2 Est 11, 24 Jul.",
+      "Footnote_Referenced_Source": "FUSA G-2 Est 11",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives and Records Administration, College Park, MD",
+      "NonDigital_Library_References": "First U.S. Army G-2 Estimate 11, 24 July 1944"
+    },
+    {
+      "Footnote": "46",
+      "Footnote_Number": "46",
+      "Footnote_Text": "Hitler and His Generals, App. B to 15 (S) Inf Div Intel Summary 30, n.d., reprinted in SHAEF Weekly Intel Summary 18, n.d., V Corps G-3 Jnl File.",
+      "Footnote_Referenced_Source": "Hitler and His Generals",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives and Records Administration, College Park, MD",
+      "NonDigital_Library_References": "Hitler and His Generals, Appendix B to 15 (Scottish) Infantry Division Intelligence Summary 30, reprinted in SHAEF Weekly Intelligence Summary 18, V Corps G-3 Journal File"
+    },
+    {
+      "Footnote": "47",
+      "Footnote_Number": "47",
+      "Footnote_Text": "FUSA G-2 Est 11, 24 Jul.",
+      "Footnote_Referenced_Source": "FUSA G-2 Est 11",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives and Records Administration, College Park, MD",
+      "NonDigital_Library_References": "First U.S. Army G-2 Estimate 11, 24 July 1944"
+    },
+    {
+      "Footnote": "48",
+      "Footnote_Number": "48",
+      "Footnote_Text": "Hitler and His Generals, cited above, n. 46.",
+      "Footnote_Referenced_Source": "Hitler and His Generals",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives and Records Administration, College Park, MD",
+      "NonDigital_Library_References": "Hitler and His Generals, as cited in footnote 46"
+    },
+    {
+      "Footnote": "49",
+      "Footnote_Number": "49",
+      "Footnote_Text": "See XIX Corps G-2 Per Rpt 55, Annex 3, Study of the Morale of the German Troops on XIX Corps Front, 9 Aug.",
+      "Footnote_Referenced_Source": "XIX Corps G-2 Per Rpt 55",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives and Records Administration, College Park, MD",
+      "NonDigital_Library_References": "XIX Corps G-2 Periodic Report 55, Annex 3, Study of the Morale of the German Troops on XIX Corps Front, 9 August 1944"
+    },
+    {
+      "Footnote": "50a",
+      "Footnote_Number": "50a",
+      "Footnote_Text": "See Constantine FitzGibbon, 20 July (New York: W.W. Norton &Co., 1956) and John Wheeler-Bennett, The Nemesis of Power (London: Macmillan & Co. Ltd., 1953) for accounts of the Putsch.",
+      "Footnote_Referenced_Source": "FitzGibbon, 20 July",
+      "Web_Link": "https://archive.org/details/20july0000cons",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "50b",
+      "Footnote_Number": "50b",
+      "Footnote_Text": "See Constantine FitzGibbon, 20 July (New York: W.W. Norton &Co., 1956) and John Wheeler-Bennett, The Nemesis of Power (London: Macmillan & Co. Ltd., 1953) for accounts of the Putsch.",
+      "Footnote_Referenced_Source": "Wheeler-Bennett, The Nemesis of Power",
+      "Web_Link": "https://archive.org/details/nemesisofpowerge0000whee",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "51",
+      "Footnote_Number": "51",
+      "Footnote_Text": "Hodgson, R-57; OB WEST, a Study in Command, I, 123ff; MS # B-272 (Blumentritt).",
+      "Footnote_Referenced_Source": "Hodgson, R-57; OB WEST, a Study in Command; MS # B-272",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+      "NonDigital_Library_References": "Hodgson Report R-57; OB WEST, a Study in Command, Vol I, pp. 123ff; Manuscript B-272 (Blumentritt)"
+    },
+    {
+      "Footnote": "52",
+      "Footnote_Number": "52",
+      "Footnote_Text": "Wilhelm Ritter von Schramm, Der 20, Juli in Paris (Bad Woerishofen, Germany: 1953), p. 77; Speidel, Invasion 1944, pp. 113-17.",
+      "Footnote_Referenced_Source": "Schramm, Der 20, Juli in Paris; Speidel, Invasion 1944",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": "Wilhelm Ritter von Schramm, Der 20. Juli in Paris (1953); Hans Speidel, Invasion 1944 (1950)"
+    },
+    {
+      "Footnote": "53",
+      "Footnote_Number": "53",
+      "Footnote_Text": "Ltr, Kluge to Hitler, 21 Jul, OB WEST la Nr. 5895/44 and 5896/44 g.Kdos. Chefs, and enclosure, Betrachtungen zur Lage, signed Rommel, 15 Jul, AGp B Lagebeurteilungen und Wochenmeldungen.",
+      "Footnote_Referenced_Source": "Ltr, Kluge to Hitler",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives and Records Administration, College Park, MD",
+      "NonDigital_Library_References": "Letter, Kluge to Hitler, 21 July 1944, OB WEST Ia Nr. 5895/44 and 5896/44 g.Kdos. Chefs; Enclosure, Betrachtungen zur Lage, signed Rommel, 15 July 1944, Army Group B Lagebeurteilungen und Wochenmeldungen"
+    },
+    {
+      "Footnote": "54",
+      "Footnote_Number": "54",
+      "Footnote_Text": "Der Westen (Schramm), pp. 68-69; Speidel, Invasion 1944, pp. 115-16; Gestapo Rpt to Bormann, 30 Jul, EAP 105/22, 275-76; Hodgson, R-54 and R-57.",
+      "Footnote_Referenced_Source": "Der Westen (Schramm); Speidel, Invasion 1944; Gestapo Rpt; Hodgson, R-54 and R-57",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+      "NonDigital_Library_References": "Der Westen (Schramm), pp. 68-69; Speidel, Invasion 1944, pp. 115-16; Gestapo Report to Bormann, 30 July 1944, EAP 105/22, pp. 275-76; Hodgson Reports R-54 and R-57"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html",
+  "Source_Footnote_Link_Capture_Date": "December 21, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+  "Source_Link_Capture_Date": "December 21, 2025"
+}

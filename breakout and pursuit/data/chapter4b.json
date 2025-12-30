@@ -1,0 +1,1609 @@
+{
+  "Events": [
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "German Intentions and Observations",
+      "Sub-event_summary": "Germans observed Allied preparations from high ground near la Haye-du-Puits, expecting an attack but nearly surprised due to prior defensive developments.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "The Germans had no intention of falling back. From the high ground near la Haye-du-Puits, so dominating that observers on the crests could watch Allied shipping off the invasion beaches, Germans studied the preparations for the attack they had been expecting for almost two weeks. They were ready. Yet despite their readiness, they were almost taken by surprise. The state of affairs harked back to the development of the LXXXIV Corps defenses west of the Prairies Marécageuses de Gorges."
+      },
+      "Footnote_References": [],
+      "Place_Name": "la Haye-du-Puits, Prairies Marécageuses de Gorges",
+      "Dates": {
+        "Date_group_of_event": "Late June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "END jun44"
+      },
+      "TOE": {
+        "Unit": "LXXXIV Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Dietrich von Choltitz",
+          "Name": "Dietrich von Choltitz",
+          "Rank": "General der Infanterie",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dietrich_von_Choltitz",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown staffing",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.290954, -1.545299",
+        "Map_Reference": "Map 3",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-3.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/en/battle-of-normandy/cities/la-haye-du-puits",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.290954, -1.545299",
+        "Weather_text": "Adverse weather conditions with rain",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.445299,
+          "East": -0.645299,
+          "South": 48.390954,
+          "North": 50.190954
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "Division of LXXXIV Corps Forces",
+      "Sub-event_summary": "Decision to divide forces for Cherbourg defense and southern blocking line across Cotentin.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "In June, just before American troops had cut the Cherbourg peninsula and isolated the port, Rundstedt, Rommel, Dollman, and Fahrmbacher had decided to divide the LXXXIV Corps forces into two groups--one in the north to defend Cherbourg, the other to block American movement south. Their intention had been to leave weak forces in defense of Cherbourg and to build a strong line across the Cotentin from Portbail to the Prairies Marécageuses de Gorges."
+      },
+      "Footnote_References": [11],
+      "Place_Name": "Cherbourg, Cotentin, Portbail, Prairies Marécageuses de Gorges",
+      "Dates": {
+        "Date_group_of_event": "June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jun44"
+      },
+      "TOE": {
+        "Unit": "LXXXIV Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Friedrich Dollmann",
+          "Name": "Friedrich Dollmann",
+          "Rank": "Generaloberst",
+          "End_Date": "28 June 1944",
+          "End_Status": "Died",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Friedrich_Dollmann",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Portbail",
+        "Place_GPS_coordinate": "49.335, -1.698",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.normandie-visite.com/port-bail/",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Portbail",
+        "Place_GPS_coordinate": "49.335, -1.698",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.598,
+          "East": -0.798,
+          "South": 48.435,
+          "North": 50.235
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "Hitler's Disruption of Plans",
+      "Sub-event_summary": "Hitler insisted on strong Cherbourg defense, weakening southern troops; Hellmich killed, Koenig takes command.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "By insisting on compliance with original plans for a forceful defense of Cherbourg, however, Hitler had disrupted the German commanders' plan. As a result, the troops in the south were weaker than had been hoped. The designated chief of the forces in the south (Generalleutnant Heinz Hellmich of the 243d Division) was killed in action on 17 June, and Col. Eugen Koenig (the acting commander of the 91st Infantry Division, whose general had died on 6 June) became the local commander responsible for erecting a defense to halt the expected drive to the south."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Cherbourg",
+      "Dates": {
+        "Date_group_of_event": "17 June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "170000Zjun44"
+      },
+      "TOE": {
+        "Unit": "243d Infantry Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "Heinz Hellmich",
+          "Name": "Heinz Hellmich",
+          "Rank": "Generalleutnant",
+          "End_Date": "17 June 1944",
+          "End_Status": "KIA",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Heinz_Hellmich",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Weakened forces",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 1,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.6337, -1.6221",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.dday-overlord.com/en/battle-of-normandy/cities/cherbourg",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.6337, -1.6221",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5221,
+          "East": -0.7221,
+          "South": 48.7337,
+          "North": 50.5337
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "Koenig's Forces Composition",
+      "Sub-event_summary": "Koenig had 3,500 combat effectives from various units, including Osttruppen, with adequate artillery; Choltitz doubted their holding capability.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "Koenig had had available a total of about 3,500 combat effective soldiers of several units: remnants of the 91st and 243d Divisions, a kampfgruppe of the 265th Division (from Brittany), and miscellaneous elements including Osttruppen, non-German volunteers from eastern Europe. Together, the troops composed about half the effective combat strength of a fresh infantry division. With these few forces, but with adequate artillery in support, Koenig had fashioned a line that utilized marshland as a defensive barrier. When Choltitz had taken command of the LXXXIV Corps, he had soon come to the conclusion that he could not depend on Koenig to hold for long."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jun44"
+      },
+      "TOE": {
+        "Unit": "Group Koenig",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "Eugen Koenig",
+          "Name": "Eugen Koenig",
+          "Rank": "Colonel",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/91st_Infantry_Division_(Wehrmacht)",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "91st Infantry Division (remnants)",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "243d Infantry Division (remnants)",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "265th Infantry Division (kampfgruppe)",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "Osttruppen",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "Approximately 3,500 combat effective, half strength of fresh division",
+        "Equipments": {
+          "Supply": "Adequate artillery support",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.2020, -2.9326",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Brittany_(administrative_region)",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.2020, -2.9326",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -3.8326,
+          "East": -2.0326,
+          "South": 47.3020,
+          "North": 49.1020
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "American Penetration by 82d Airborne",
+      "Sub-event_summary": "82d Airborne Division penetrated the marsh line as early as 12 June.",
+      "Sub-event_fulltext": {
+        "Paragraph_20": "American paratroopers of the 82d Airborne Division had actually penetrated the marsh line as early as 12 June."
+      },
+      "Footnote_References": [12],
+      "Place_Name": "marsh line",
+      "Dates": {
+        "Date_group_of_event": "12 June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "120000Zjun44"
+      },
+      "TOE": {
+        "Unit": "82d Airborne Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Matthew Ridgway",
+          "Name": "Matthew Ridgway",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Matthew_Ridgway",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Prairies Marécageuses de Gorges",
+        "Place_GPS_coordinate": "49.25, -1.45",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Prairies Marécageuses de Gorges",
+        "Place_GPS_coordinate": "49.25, -1.45",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.35,
+          "East": -0.55,
+          "South": 48.35,
+          "North": 50.15
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "Weaknesses in Koenig's Defenses",
+      "Sub-event_summary": "Koenig's forces too weak to eliminate penetration, Osttruppen unreliable.",
+      "Sub-event_fulltext": {
+        "Paragraph_21": "Koenig's forces were too weak to eliminate the penetration or to hold the positions already seriously threatened. The Osttruppen were not always reliable."
+      },
+      "Footnote_References": [13],
+      "Place_Name": "",
+      "Dates": {
+        "Date_group_of_event": "June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jun44"
+      },
+      "TOE": {
+        "Unit": "Osttruppen",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Group Koenig",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Unreliable",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {}
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "Choltitz's Reserve Positions",
+      "Sub-event_summary": "Choltitz established reserves on Montgardon ridge and Mont Castre with 353d and 77th Divisions, regarding them as main line, Koenig's as outpost.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "Besides, Choltitz felt that the high ground near la Haye-du-Puits was better defensive terrain. He therefore had his reserve units--the 353d Division, which had just arrived from Brittany, and remnants of the 77th Division establish positions on the Montgardon ridge and on Mont Castre. The ridge defenses, sometimes called the Mahlmann Line after the commander of the 353d, were hastily organized because of anxiety that the Americans might attack at any moment. When the positions were established, Choltitz regarded them as his main line of resistance. Thinking of Koenig's troops as manning an outpost line, he expected them to resist as long as possible and eventually to fall back to the ridge line."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Montgardon ridge, Mont Castre, Brittany",
+      "Dates": {
+        "Date_group_of_event": "June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jun44"
+      },
+      "TOE": {
+        "Unit": "353d Infantry Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "Erich Mahlmann",
+          "Name": "Erich Mahlmann",
+          "Rank": "Generalleutnant",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://de.wikipedia.org/wiki/Erich_Mahlmann",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fresh from Brittany",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Montgardon ridge",
+        "Place_GPS_coordinate": "49.25, -1.58",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.dday-overlord.com/en/battle-of-normandy/cities/montgardon",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Montgardon ridge",
+        "Place_GPS_coordinate": "49.25, -1.58",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.48,
+          "East": -0.68,
+          "South": 48.35,
+          "North": 50.15
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "Rundstedt's Recommendation",
+      "Sub-event_summary": "Rundstedt recommended main line at Ay and Sèves Rivers water line as rally point.",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "In contrast with Choltitz's idea, Rundstedt had recommended that the main line of resistance be established even farther back--at the water line formed by the Ay and Sèves Rivers. Although Choltitz did not place troops there, he considered the water line a convenient rally point in case withdrawal from the la Haye-du-Puits positions became necessary."
+      },
+      "Footnote_References": [14],
+      "Place_Name": "Ay River, Sèves River",
+      "Dates": {
+        "Date_group_of_event": "June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jun44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "OB West",
+          "Commander": "Gerd von Rundstedt",
+          "Name": "Gerd von Rundstedt",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Gerd_von_Rundstedt",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Ay River",
+        "Place_GPS_coordinate": "49.23, -1.55",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Ay River",
+        "Place_GPS_coordinate": "49.23, -1.55",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.45,
+          "East": -0.65,
+          "South": 48.33,
+          "North": 50.13
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "Hitler's Designation of Main Line",
+      "Sub-event_summary": "Hitler designated Koenig's positions as main line to prevent withdrawal, making 353d appear unoccupied.",
+      "Sub-event_fulltext": {
+        "Paragraph_24": "Hitler, who disapproved of all defensive lines behind the front because he feared they invited withdrawal, wanted Koenig's positions to be held firmly. To inculcate the idea of holding fast, he had Koenig's defenses designated the main line of resistance. With Koenig's marsh line marked on maps as the main defenses in the area, the fresh troops of the 353d Division seemed unoccupied."
+      },
+      "Footnote_References": [],
+      "Place_Name": "",
+      "Dates": {
+        "Date_group_of_event": "June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jun44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "Adolf Hitler",
+          "Name": "Adolf Hitler",
+          "Rank": "Führer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Adolf_Hitler",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {}
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "Orders to Move 353d Division",
+      "Sub-event_summary": "OKW ordered 353d to replace panzer grenadiers, reducing Mahlmann Line to rally line manned by 77th kampfgruppe.",
+      "Sub-event_fulltext": {
+        "Paragraph_25": "In order to use them, OKW ordered Hausser to have Choltitz move the 353d to replace the panzer grenadiers in the eastern portion of the corps sector. The panzer grenadiers were to disengage and become a mobile reserve for the Seventh Army. With the 353d scheduled to depart the high ground around la Haye-du-Puits, Choltitz had to reduce the Mahlmann Line to the reality of a rally line manned entirely by the kampfgruppe of the 77th."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Périers",
+      "Dates": {
+        "Date_group_of_event": "Late June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "END jun44"
+      },
+      "TOE": {
+        "Unit": "77th Infantry Division (remnants)",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/77th_Infantry_Division_(Wehrmacht)",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Remnants",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers",
+        "Place_GPS_coordinate": "49.186, -1.407",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.dday-overlord.com/en/battle-of-normandy/cities/periers",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers",
+        "Place_GPS_coordinate": "49.186, -1.407",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.307,
+          "East": -0.507,
+          "South": 48.286,
+          "North": 50.086
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "Troop Movements by 3 July",
+      "Sub-event_summary": "By 3 July, 77th moved to Mont Castre, 353d moving to Périers; attack during flux.",
+      "Sub-event_fulltext": {
+        "Paragraph_26": "By 3 July the 77th Division troops had moved to the eastern part of Mont Castre, while the 353d was moving from ridge positions to assembly near Périers. The VIII Corps attack thus occurred at a time of flux."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Mont Castre, Périers",
+      "Dates": {
+        "Date_group_of_event": "3 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "77th Infantry Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.27, -1.48",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.dday-overlord.com/en/battle-of-normandy/cities/mont-castre",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.27, -1.48",
+        "Weather_text": "Rain",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.38,
+          "East": -0.58,
+          "South": 48.37,
+          "North": 50.17
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "German Assumption and Initial Response",
+      "Sub-event_summary": "LXXXIV Corps fired on assembly areas, Seventh Army thought reconnaissance due to rain.",
+      "Sub-event_fulltext": {
+        "Paragraph_27": "Members of the LXXXIV Corps staff had correctly assumed, from the noise of tank motors they heard during the night of 2 July, that an American attack was in the making, and they had laid interdictory fires on probable assembly areas. But judging that the rain would delay the jump-off--on the basis that bad weather neutralized American air power--the Seventh Army staff mistakenly labeled the VIII Corps offensive only a reconnaissance in force with tank support."
+      },
+      "Footnote_References": [],
+      "Place_Name": "",
+      "Dates": {
+        "Date_group_of_event": "Night 2 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "022200Zjul44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Weather_text": "Rain",
+        "Spatial_Bounding_Box Coordinates": {}
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "Recall of 353d Division",
+      "Sub-event_summary": "Upon realizing the attack, Hausser and Choltitz recalled 353d to high ground around la Haye-du-Puits.",
+      "Sub-event_fulltext": {
+        "Paragraph_28": "The real American intention soon became apparent to both headquarters, however, and Hausser and Choltitz recalled the 353d Division from Périers and repositioned the men on the high ground about la Haye-du-Puits."
+      },
+      "Footnote_References": [15],
+      "Place_Name": "la Haye-du-Puits, Périers",
+      "Dates": {
+        "Date_group_of_event": "3 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "353d Infantry Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "Erich Mahlmann",
+          "Name": "Erich Mahlmann",
+          "Rank": "Generalleutnant",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://de.wikipedia.org/wiki/Erich_Mahlmann",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers",
+        "Place_GPS_coordinate": "49.186, -1.407",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Périers",
+        "Place_GPS_coordinate": "49.186, -1.407",
+        "Weather_text": "Rain",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.307,
+          "East": -0.507,
+          "South": 48.286,
+          "North": 50.086
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "Establishment of Main Line at High Ground",
+      "Sub-event_summary": "Despite Hitler's desires, high ground positions became the main line of resistance.",
+      "Sub-event_fulltext": {
+        "Paragraph_29": "Hitler's desires notwithstanding, these positions became the main line of resistance."
+      },
+      "Footnote_References": [],
+      "Place_Name": "la Haye-du-Puits",
+      "Dates": {
+        "Date_group_of_event": "3 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.290954, -1.545299",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.290954, -1.545299",
+        "Weather_text": "Rain",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.445299,
+          "East": -0.645299,
+          "South": 48.390954,
+          "North": 50.190954
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "German Defenses in Depth - Group Koenig",
+      "Sub-event_summary": "Group Koenig fanned out in front with various divisions and volunteers, supported by adequate artillery including miscellaneous pieces.",
+      "Sub-event_fulltext": {
+        "Paragraph_30": "As a result of the last-minute changes that occurred on 3 July, the Germans opposing VIII Corps were able to defend from positions in depth. Fanned out in front was Group Koenig, with parts of the 91st, the 265th, and the 243d Divisions on the flanks, and east European volunteers (including a large contingent of Russians) generally holding the center. Artillery support was more than adequate--the entire division artillery of the 243d, plus two cannon companies, five antitank companies, a complete tank destroyer battalion, and an assortment of miscellaneous howitzers, rocket launchers, antiaircraft batteries, captured Russian guns, and several old French light tanks."
+      },
+      "Footnote_References": [],
+      "Place_Name": "",
+      "Dates": {
+        "Date_group_of_event": "3 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "Group Koenig",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "Eugen Koenig",
+          "Name": "Eugen Koenig",
+          "Rank": "Colonel",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "More than adequate artillery",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Division Artillery",
+              "Identifier": "243d Div Arty",
+              "Quantity": "Entire",
+              "Web_Reference": "https://en.wikipedia.org/wiki/243rd_Static_Infantry_Division_(Wehrmacht)",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Cannon Companies",
+              "Identifier": "",
+              "Quantity": "2",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": ""
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Antitank Companies",
+              "Identifier": "",
+              "Quantity": "5",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": ""
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank Destroyer Battalion",
+              "Identifier": "",
+              "Quantity": "1 complete",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": ""
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Howitzers",
+              "Identifier": "",
+              "Quantity": "Assortment",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": ""
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Rocket Launchers",
+              "Identifier": "Nebelwerfer",
+              "Quantity": "Assortment",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Nebelwerfer",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/3/3d/Nebelwerfer_41_150mm_Rocket_Launcher.jpg",
+              "Web_Image_License": "Public domain",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Antiaircraft Batteries",
+              "Identifier": "88mm Flak",
+              "Quantity": "Assortment",
+              "Web_Reference": "https://en.wikipedia.org/wiki/8.8_cm_Flak_18/36/37/41",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/0/0e/88mm_flak_37.jpg",
+              "Web_Image_License": "Public domain",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "RU",
+              "Name": "Captured Guns",
+              "Identifier": "",
+              "Quantity": "Several",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": ""
+            },
+            {
+              "Origination_Country": "FR",
+              "Name": "Light Tanks",
+              "Identifier": "Renault R35",
+              "Quantity": "Several old",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Renault_R35",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Renault_R35_1.jpg",
+              "Web_Image_License": "Public domain",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.normandie44lamemoire.com/wp-content/uploads/2014/06/La-Haye-du-Puits-1944.jpg",
+          "Description": "German artillery position near La Haye-du-Puits, 1944",
+          "License": "Public domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {}
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "Rear Defenses - 353d and Kampfgruppe",
+      "Sub-event_summary": "Behind Koenig, 353d and its kampfgruppe defended Montgardon ridge and Mont Castre; 2d SS Panzer in reserve south of St. Lô.",
+      "Sub-event_fulltext": {
+        "Paragraph_31": "Behind Group Koenig, the 353d and a kampfgruppe of the 353d were to defend the high ground of the Montgardon ridge and Mont Castre. The 2d SS Panzer Division, assembling well south of St. Lô in Seventh Army reserve, was able to move, if needed, to meet a serious threat near la Haye-du-Puits."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Montgardon ridge, Mont Castre, St. Lô",
+      "Dates": {
+        "Date_group_of_event": "3 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "2d SS Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Heinrich von Lüttwitz",
+          "Name": "Heinrich von Lüttwitz",
+          "Rank": "Generalleutnant",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Heinrich_von_L%C3%BCttwitz",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Assembling",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Panzer",
+              "Identifier": "Panther",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/2nd_SS_Panzer_Division_Das_Reich",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/9/98/Panther_tank_in_Normandy_1944.jpg",
+              "Web_Image_License": "Public domain",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.dday-overlord.com/en/battle-of-normandy/cities/saint-lo",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162, -1.0903",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.9903,
+          "East": -0.1903,
+          "South": 48.2162,
+          "North": 50.0162
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Defenses",
+      "Sub-event": "Additional Reserves - 5th Parachute Division",
+      "Sub-event_summary": "15th Regiment of 5th Parachute Division near Périers, under OKW but potentially available for emergency.",
+      "Sub-event_fulltext": {
+        "Paragraph_32": "Even closer, in the center of the LXXXIV Corps sector, south of Périers, was one regiment (the 15th) of the 5th Parachute Division (still in Brittany). Although under OKW control, it could probably be used in an emergency to augment the la Haye-du-Puits defenses. All together, the German forces were far from being a pushover."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Périers, Brittany",
+      "Dates": {
+        "Date_group_of_event": "3 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "5th Parachute Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Gustav Wilke",
+          "Name": "Gustav Wilke",
+          "Rank": "Generalmajor",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/5th_Fallschirmj%C3%A4ger_Division",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "15th Parachute Regiment",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "Still in Brittany",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers",
+        "Place_GPS_coordinate": "49.186, -1.407",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Périers",
+        "Place_GPS_coordinate": "49.186, -1.407",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.307,
+          "East": -0.507,
+          "South": 48.286,
+          "North": 50.086
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "Footnote 11a",
+      "Footnote_Number": "11a",
+      "Footnote_Text": "Harrison, Cross-Channel Attack, pp. 413ff",
+      "Footnote_Referenced_Source": "Cross-Channel Attack",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Normandy/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "Footnote 11b",
+      "Footnote_Number": "11b",
+      "Footnote_Text": "Hodgson, R-24, R-34, and R-49.",
+      "Footnote_Referenced_Source": "Hodgson Reports",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "R-24, R-34, R-49"
+    },
+    {
+      "Footnote": "Footnote 12",
+      "Footnote_Number": "12",
+      "Footnote_Text": "Harrison, Cross-Channel Attack, p. 402.",
+      "Footnote_Referenced_Source": "Cross-Channel Attack",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Normandy/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "Footnote 13",
+      "Footnote_Number": "13",
+      "Footnote_Text": "Telecon, Choltitz to Hausser, 30 Jun, Seventh Army Tel Msgs.",
+      "Footnote_Referenced_Source": "Seventh Army Telephone Messages",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Choltitz to Hausser, 30 Jun"
+    },
+    {
+      "Footnote": "Footnote 14a",
+      "Footnote_Number": "14a",
+      "Footnote_Text": "Pz Lehr Div Ib KTB, Allg. Anlagen, Annex 241",
+      "Footnote_Referenced_Source": "Panzer Lehr Division War Diary",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Pz Lehr Div Ib KTB, Allg. Anlagen, Annex 241"
+    },
+    {
+      "Footnote": "Footnote 14b",
+      "Footnote_Number": "14b",
+      "Footnote_Text": "see MS # B-418 (Choltitz) for an account of LXXXIV Corps activity, 18 Jun to 15 Jul.",
+      "Footnote_Referenced_Source": "Manuscript B-418",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # B-418 (Choltitz)"
+    },
+    {
+      "Footnote": "Footnote 14c",
+      "Footnote_Number": "14c",
+      "Footnote_Text": "Choltitz, Soldat unter Soldaten, p. 187 is rather confused.",
+      "Footnote_Referenced_Source": "Soldat unter Soldaten",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "Footnote 15a",
+      "Footnote_Number": "15a",
+      "Footnote_Text": "Seventh Army and AGp B KTB's, 3 Jul",
+      "Footnote_Referenced_Source": "Seventh Army and Army Group B War Diaries",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "KTB, 3 Jul"
+    },
+    {
+      "Footnote": "Footnote 15b",
+      "Footnote_Number": "15b",
+      "Footnote_Text": "Tagesmeldungen, OB WEST KTB, Anlage 433.",
+      "Footnote_Referenced_Source": "OB West Daily Reports",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Tagesmeldungen, KTB, Anlage 433"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn4.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

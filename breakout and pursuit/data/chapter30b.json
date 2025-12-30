@@ -1,0 +1,619 @@
+{
+  "Events": [
+    {
+      "Event": "The Problems at Brest",
+      "Sub-event": "German Withdrawal to Fortress Ports and VIII Corps Containment Role (Early August)",
+      "Sub-event_summary": "Brittany became VIII Corps responsibility upon entry via Avranches on 1 August. Most Germans retreated to Hitler-designated fortress ports: St. Malo, Brest, Lorient, St. Nazaire. Interior held only small detachments hiding by day and moving to ports by night. Middleton tasked with containing fortresses until reduction possible.",
+      "Sub-event_fulltext": {
+        "Paragraph_14": "Brittany had become the province of General Middleton and the VIII Corps when they entered the peninsula by way of Avranches on the first day of August. Before the first week was over, the majority of the Germans had fled the interior portions and taken refuge in ports designated by Hitler as fortresses: St. Malo, Brest, Lorient, and St. Nazaire. The only enemy forces in the interior were small detachments that hid by day and attempted to reach a fortress port by night.",
+        "Paragraph_15": "Though the Germans inside the fortresses displayed little penchant for sallying forth, they had to be contained until means to eliminate them became available. Excluding those at St. Malo and a small force at Paimpol, Middleton estimated that approximately 35,000 Germans (about 10,000 field forces and 25,000 naval, marine, and miscellaneous garrison troops) remained in Brittany. He judged that about 16,000 troops (half of which were field forces) garrisoned Brest, 9,500 the Lorient area (including Concarneau and Belle-Isle), and 9,500 St. Nazaire."
+      },
+      "Footnote_References": [12],
+      "Place_Name": ["Brittany", "Avranches", "St. Malo", "Brest", "Lorient", "St. Nazaire", "Paimpol", "Concarneau", "Belle-Isle"],
+      "Dates": {
+        "Date_group_of_event": "01 Aug 1944 - mid-Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-30.html",
+        "Zulu_date_group_of_event": "01 Aug 1944 - mid-Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": {
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "VIII Corps",
+            "Name": "Troy H. Middleton",
+            "Rank": "Major General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3904 N, 4.4861 W"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3904 N, 4.4861 W",
+          "Weather_text": "Not specified in source; typical early August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -6.4861, "East": -2.4861, "South": 47.3904, "North": 49.3904}
+        }
+      ]
+    },
+    {
+      "Event": "The Problems at Brest",
+      "Sub-event": "VIII Corps Overextension and Reinforcement Allocation (Mid-August)",
+      "Sub-event_summary": "Middleton guarded 250-mile southern flank as gap widened between Brittany and Third Army. Received erroneous message to take Melun bridgehead; replied overstretched. Lost 4th Armored to XII Corps; covered Nantes-Angers with 2d Cavalry Group and 80th Division regiment. Bradley transferred 2d and 29th Divisions (pinched out near Tinchebray) and two Ranger battalions to reinforce Brest operation. 83d Division to shift to Loire patrolling post-St. Malo; 8th Division and Task Force A plus FFI (Colonel Eon) for Brest periphery.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "Middleton's primary mission, after the fall of St. Malo, would be the capture of Brest, but the forces then available to him were insufficient for this and his other tasks. The whirlpool that was sucking Allied forces eastward to the Seine and beyond left the VIII Corps with responsibility for a widening gap between its forces in Brittany and the southern flank of the Third Army. Eventually Middleton guarded a southern flank two hundred and fifty miles long. When he received, because of a typographical error, a telegram intended for the VII Corps, telling him to \"take over the Melun bridgehead\" on the Seine, he replied, \"Can't do it; stretched too far already.\"",
+        "Paragraph_17": "Having lost the 4th Armored Division to the XII Corps, Middleton covered the Nantes-Angers area with the 2d Cavalry Group and a regiment of the 80th Division. He had the bulk of the 6th Armored Division at Lorient, a small combat command of the 6th and a few 8th Division troops at Brest. With Task Force A clearing the Paimpol area, the 83d Division heavily engaged at St. Malo, and the 8th Division protecting Rennes, the capture of Brest and the protection of an ever-extending front along the Loire River were beyond the capacities of the corps. To permit the 83d Division (upon the reduction of St. Malo) to assume the less wearing mission of patrolling the Loire River, and to reinforce the 8th Division and Task Force A scheduled for action at Brest (several thousand FFI members under Colonel Eon were also available for action on the periphery of Brest), Bradley transferred from the First Army to Middleton the 2d and 29th Divisions, which had been pinched out near Tinchebray during the reduction of the Argentan-Falaise pocket, and two Ranger battalions, which had been performing rear-area guard duty."
+      },
+      "Footnote_References": [13, 14],
+      "Place_Name": ["Brest", "St. Malo", "Lorient", "Nantes", "Angers", "Rennes", "Paimpol", "Tinchebray", "Argentan-Falaise pocket"],
+      "Dates": {
+        "Date_group_of_event": "Early Aug 1944 - mid-Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-30.html",
+        "Zulu_date_group_of_event": "Early Aug 1944 - mid-Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": {
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "VIII Corps",
+            "Name": "Troy H. Middleton",
+            "Rank": "Major General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3904 N, 4.4861 W"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3904 N, 4.4861 W",
+          "Weather_text": "Not specified in source; typical early August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -6.4861, "East": -2.4861, "South": 47.3904, "North": 49.3904}
+        }
+      ]
+    },
+    {
+      "Event": "The Problems at Brest",
+      "Sub-event": "6th Armored Division Static Role and Partial Release (Late August)",
+      "Sub-event_summary": "Grow (6th Armored commander) chafed at containment at Lorient; requested exploitation of division characteristics. Middleton retained armored reserve. Grow appealed to Patton; CCB dispatched to Orléans via Loire clearing. CCB forced Germans from north bank at Saumur; no further opposition north of Loire. CCB reached Montargis.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "At Lorient General Grow, the 6th Armored Division commander, chafed under his static containment mission and wrote Middleton \"a plea for the characteristics of the Division to be exploited to the maximum at the earliest practicable date.\" Middleton appreciated Grow's eagerness to get into the main operational stream outside Brittany, but considered the presence of an armored reserve essential. Grow then went to see Patton, who told Grow to move a combat command to Orléans; on the way, the troops were to clear small German groups that were still a nuisance along the Loire River. At least part of the 6th Armored Division would thus be closer to the main body of the Third Army and more quickly available to Patton. CCB started out of Brittany on 28 August, forced a small group of Germans on the north bank to evacuate to Saumur, found no other enemy forces north of the Loire River, and eventually moved to Montargis."
+      },
+      "Footnote_References": [15, 16],
+      "Place_Name": ["Lorient", "Orléans", "Saumur", "Montargis"],
+      "Dates": {
+        "Date_group_of_event": "Late Aug 1944 - 28 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-30.html",
+        "Zulu_date_group_of_event": "Late Aug 1944 - 28 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "6th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": {
+            "Name": "Troy H. Middleton",
+            "Rank": "Major General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "6th Armored Division",
+            "Name": "Robert W. Grow",
+            "Rank": "Major General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_W._Grow"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Lorient, France",
+          "Place_GPS_coordinate": "47.7483 N, 3.3667 W"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Lorient, France",
+          "Place_GPS_coordinate": "47.7483 N, 3.3667 W",
+          "Weather_text": "Not specified in source; typical late August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -5.3667, "East": -1.3667, "South": 46.7483, "North": 48.7483}
+        }
+      ]
+    },
+    {
+      "Event": "The Problems at Brest",
+      "Sub-event": "Force Assembly and Ammunition Shortage (18–25 August)",
+      "Sub-event_summary": "Communications Zone relieved 8th Division at Rennes (18 August); 2d Division arrived Landerneau (19 August); 29th Division assembled south of Lannilis (23 August). Task Force A and FFI (Colonel Eon) nearby. Middleton ready for Brest attack upon supply stocking. Severe artillery ammunition shortage; initial estimate 8,700 tons plus 11,600 replenishment for three days. Third Army allotted ~5,000 tons total, underestimating garrison and force commitment. Bradley/Patton authorized 8,000 tons (six days) after Middleton visit 23 August. Supplies delayed; attack suspended. Priority established 10 September; 25,000 tons stocked by termination.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "Meanwhile forces gathered for the attack on Brest. The Communications Zone headquarters took responsibility for Rennes and relieved the 8th Division, which reached Plabennec by 18 August. The 2d Division arrived at Landerneau on 19 August, and the 29th Division assembled just south of Lannilis four days later. With Task Force A and contingents of the FFI also nearby, Middleton was ready to commence his operation against Brest as soon as adequate supplies could be stocked.",
+        "Paragraph_20": "Adequate supplies were as much a problem for Middleton as they were for the commanders driving east from the Seine. By far the most serious shortage for the siege-type action about to take place at Brest was in artillery ammunition. The shortage was already plaguing the corps at St. Malo, and on 10 August Middleton had warned the Third Army that he foresaw heavy ammunition expenditures at Brest. Patton promised that even though the Third Army might be rationed in ammunition, he would see to it that the VIII Corps was supplied. When the army requested formal estimates of the Brest requirements, Middleton based his reply on the St. Malo experience and on the expectation of using an armored division and three infantry divisions supported by thirteen battalions of corps artillery. He requested an initial stock of 8,700 tons of ammunition, plus a replenishment allowance of 11,600 tons for the first three days.",
+        "Paragraph_21": "The Third Army staff considered the request excessive on two grounds. It anticipated that only two divisions and ten corps artillery battalions would take part in the operation against Brest, and it believed that the corps had overestimated the strength of the enemy garrison and its will to resist. Setting 1 September as the target date for the fall of Brest, Third Army allotted only about 5,000 tons for the entire operation--less than a quarter of what Middleton considered essential for the first three days. As it turned out, three divisions and a separate task force supported by eighteen corps artillery battalions--division artillery and tank destroyer battalions brought the total to thirty-four battalions--were eventually to take part in the battle, a force that further emphasized the discrepancy between requirements and stocks.",
+        "Paragraph_22": "Third Army's unwillingness to send more than 5,000 tons of ammunition to the VIII Corps reflected the critical nature of supply transportation for the main Third Army drive to the east. In addition, co-ordination between Third Army and VIII Corps was difficult because of the growing distance between the two headquarters. On 25 August the army and corps command posts were two hundred and seventy miles apart. Hoping to alleviate the difficulties, Third Army arranged to have the Brittany Base Section of the Communications Zone provide direct administrative support to VIII Corps. A slight increase in ammunition stocks resulted.",
+        "Paragraph_23": "When Generals Bradley and Patton visited the VIII Corps headquarters on 23 August, General Middleton convinced them he needed more ammunition. They immediately authorized 8,000 tons, which they thought would be sufficient for six days, the length of time they considered reasonable for the operation. Expecting the ammunition to be delivered, Middleton launched his attack on 25 August. When all the authorized supplies did not arrive, he had to suspend operations. Three days later he learned that what he had regarded as minimum, Bradley and Patton had considered adequate.",
+        "Paragraph_24": "As a result of better co-ordination, better arrangements for ship and rail transportation to the Brest area were made on 29 August. Still, not until 7 September did the corps have enough ammunition stocks to permit resumption of a sustained full-scale attack. Even then, so many agencies were involved that no one knew the exact status of supply or what was en route or on order. Hoping nevertheless that a steady flow of ammunition had been established, Middleton launched another attack on 8 September. He was not disappointed. By 10 September Bradley had assigned the Brest operation first priority on supply. When the operation finally terminated, 25,000 tons of ammunition were in the corps supply point, much of which was later reshipped to the active front, hundreds of miles away."
+      },
+      "Footnote_References": [17, 18],
+      "Place_Name": ["Brest", "Rennes", "Plabennec", "Landerneau", "Lannilis"],
+      "Dates": {
+        "Date_group_of_event": "18 Aug 1944 - 10 Sep 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-30.html",
+        "Zulu_date_group_of_event": "18 Aug 1944 - 10 Sep 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": {
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "VIII Corps",
+            "Name": "Troy H. Middleton",
+            "Rank": "Major General"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p637.jpg",
+          "Description": "Supplies for Brest. Trucks leaving LST near Morlaix for Brest.",
+          "License": "Public domain (US Government publication)"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3904 N, 4.4861 W"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3904 N, 4.4861 W",
+          "Weather_text": "Not specified in source; typical late August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -6.4861, "East": -2.4861, "South": 47.3904, "North": 49.3904}
+        }
+      ]
+    },
+    {
+      "Event": "The Problems at Brest",
+      "Sub-event": "Ninth Army Assumption of Brittany Responsibility (10 September)",
+      "Sub-event_summary": "Ninth Army (Simpson) assumed Brittany responsibility from Third Army 10 September at Rennes. Mission: protect 12th Army Group southern flank, conduct Brittany operations, receive/process/train arriving units. Simpson took direct control of 6th Armored and 83d Divisions (not at Brest). 94th Division (Malony) accelerated to Brittany to release 6th Armored. 6th Armored moved east to Third Army mid-September after 94th assumed Lorient guarding.",
+      "Sub-event_fulltext": {
+        "Paragraph_25": "Another headquarters became involved in the Brest operation on 10 September, when VIII Corps passed from Third Army control to Lt. Gen. William H. Simpson's Ninth U.S. Army, operational five days earlier at Rennes. The Ninth Army assumed responsibility for protecting the southern flank of the 12th Army Group and for conducting operations in Brittany. In addition it had the task of receiving, processing, and training units arriving in France. General Bradley had thought of inserting the Ninth Army into the line during the pursuit east of Paris, but the speed of the advance and logistical difficulties prompted him to assign it to Brittany. To permit Middleton to give undivided attention to Brest, General Simpson placed the 6th Armored and 83d Divisions, which were not involved at Brest, directly under his own control. Almost immediately afterwards, when Bradley called for troops to augment the forces in the pursuit, Simpson accelerated the movement into Brittany of the 94th Division, commanded by Maj. Gen. Harry J. Malony, in order to release the 6th Armored Division. Around the middle of September, after the newly arrived division assumed the job of guarding Lorient, the 6th Armored Division finally moved eastward to rejoin the Third Army."
+      },
+      "Footnote_References": [20],
+      "Place_Name": ["Brest", "Rennes", "Lorient"],
+      "Dates": {
+        "Date_group_of_event": "10 Sep 1944 - mid-Sep 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-30.html",
+        "Zulu_date_group_of_event": "10 Sep 1944 - mid-Sep 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "Ninth U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": {
+            "Name": "Omar N. Bradley",
+            "Rank": "Lieutenant General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "Ninth U.S. Army",
+            "Name": "William H. Simpson",
+            "Rank": "Lieutenant General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/William_H._Simpson"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p640.jpg",
+          "Description": "General Middleton confers with General Simpson (left) and General Stroh (right) near Brest.",
+          "License": "Public domain (US Government publication)"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3904 N, 4.4861 W"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3904 N, 4.4861 W",
+          "Weather_text": "Not specified in source; typical early September regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -6.4861, "East": -2.4861, "South": 47.3904, "North": 49.3904}
+        }
+      ]
+    },
+    {
+      "Event": "The Problems at Brest",
+      "Sub-event": "Terrain and Defensive Works at Brest",
+      "Sub-event_summary": "Brest fortress city of 80,000 on northern shore of landlocked roadstead. Naval base with repair shops, drydocks, quays, barracks, U-boat pens. Gently rolling plateau with hills, ridges, valleys, streams. Defenses: trenches, concrete pillboxes, casemates, gun emplacements, barbed wire, mine fields, antitank ditches. Incorporated pre-Franco-Prussian forts, Vauban 17th-century fortress ramparts (35 ft high, 15 ft thick, moat). Dual-purpose antiaircraft guns, naval guns from sunk ships. Coastal/field artillery on Daoulas/Quelern provided support. Heavy guns near le Conquet for sea/land defense.",
+      "Sub-event_fulltext": {
+        "Paragraph_26": "A fortress city of 80,000 people situated on the northern shore of an excellent landlocked roadstead of ninety square miles, Brest had been a major base of the French Navy. Because it was primarily a naval base and remote from the industrial centers of France, Brest had never attained commercial importance. In World War I, the American Expeditionary Force had used it as the principal port for the direct movement of troops from the United States to France. Though the cargo-handling facilities were not as good as at other French ports, Brest offered the Allies an excellent deep water harbor. The railroad from Brest to Rennes, along the north shore of Brittany, had been captured in good condition, and supplies discharged at Brest could easily be transported to the troops in the interior of France.",
+        "Paragraph_27": "Conscious of the deficiency of unloading equipment at Brest and of the probability that the Germans would destroy all facilities before letting the port fall into Allied hands, the Allies had drawn plans for constructing a port complex at Quiberon Bay. Yet in order to use not only Quiberon but also Lorient, St. Nazaire, and Nantes, the Allies first had to clear the sea lanes around the Brittany tip--that is, eliminate the German naval base at Brest and seize the submarine pens there.",
+        "Paragraph_28": "In the same way that the Allies thought the fall of St. Malo would weaken the German will to resist at the other port cities, they hoped that the reduction of Brest would affect the morale of the garrisons at Lorient and St. Nazaire. After Brest, the Allies intended to attack Lorient \"if it was still holding out.\"",
+        "Paragraph_29": "Thus it came about that as the Allies plunged into pursuit of the retreating enemy east of the Seine, more than fifty thousand U.S. troops became involved in siege operations against the fortress of Brest, three hundred miles west of the front."
+      },
+      "Footnote_References": [9, 10, 11],
+      "Place_Name": ["Brest", "Quiberon Bay", "Lorient", "St. Nazaire", "Nantes", "Rennes"],
+      "Dates": {
+        "Date_group_of_event": "Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-30.html",
+        "Zulu_date_group_of_event": "Aug 1944 (BST)"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3904 N, 4.4861 W"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3904 N, 4.4861 W",
+          "Weather_text": "Not specified in source; typical August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -6.4861, "East": -2.4861, "South": 47.3904, "North": 49.3904}
+        }
+      ]
+    },
+    {
+      "Event": "The Problems at Brest",
+      "Sub-event": "German Garrison and Command Structure at Brest",
+      "Sub-event_summary": "Approximately 30,000 troops defended Brest (twice U.S. estimate). Core: 2d Paratroop Division (tough young soldiers). Commander: Ramcke (Crete airborne veteran); fortress commander. Chief of staff: Colonel von der Mosel (former fortress commander). Generalmajor Josef Rauch (343d Static Division) commanded Daoulas/Crozon sectors. Ordered by Hitler to hold last man; Ramcke determined to do so, tying down Allied forces and ammunition.",
+      "Sub-event_fulltext": {
+        "Paragraph_30": "Approximately thirty thousand troops defended Brest, nearly twice the number estimated by the Americans. The core of the defense was the 2d Paratroop Division, composed of tough young soldiers. Their commander, Ramcke, who had gained prominence in the German airborne attack on Crete in 1940, was also the fortress commander. His chief of staff was Colonel von der Mosel who, before Ramcke's appointment, had commanded the fortress. Generalmajor Josef Rauch, the commander of the 343d (Static) Division, was charged with the Daoulas and Crozon sectors.",
+        "Paragraph_31": "Ordered by Hitler to hold to the last man, Ramcke was determined to do so. If he needed to justify resistance that could count victory only in the number of days the garrison held out, Ramcke could feel that the Allied forces he tied down at Brest and the ammunition he caused the Allies to expend there would constitute just that much less that could be brought to bear on the German homeland. Having evacuated all the French civilians who might encumber his defense, Ramcke used his paratroopers as nuclei to stiffen the defense of strongpoints held by the miscellaneous naval and static personnel of the garrison."
+      },
+      "Footnote_References": [23, 24],
+      "Place_Name": ["Brest", "Daoulas", "Crozon"],
+      "Dates": {
+        "Date_group_of_event": "Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-30.html",
+        "Zulu_date_group_of_event": "Aug 1944 (CET)"
+      },
+      "TOE": {
+        "Unit": "2d Paratroop Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Brest Fortress",
+          "Commander": {
+            "Name": "Hermann-Bernhard Ramcke",
+            "Rank": "Generalleutnant",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Hermann-Bernhard_Ramcke"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "343d Static Division",
+            "Name": "Josef Rauch",
+            "Rank": "Generalmajor"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p639.jpg",
+          "Description": "Ancient Wall and Moat on land side, inner fortress at Brest.",
+          "License": "Public domain (US Government publication)"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3904 N, 4.4861 W"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3904 N, 4.4861 W",
+          "Weather_text": "Not specified in source; typical August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -6.4861, "East": -2.4861, "South": 47.3904, "North": 49.3904}
+        }
+      ]
+    },
+    {
+      "Event": "The Problems at Brest",
+      "Sub-event": "Initial Raids and Readiness for Siege (13–18 August)",
+      "Sub-event_summary": "Between 13 August (6th Armored displacement from Brest to Lorient) and 18 August (8th Division bulk arrival), limited Allied presence allowed German garrison raids on countryside. Raids ended as U.S. forces gathered. VIII Corps command post moved to Lesneven (15 miles from Brest) 18 August for siege. Bradley/Patton anticipated quick capitulation; Middleton expected St. Malo-like resistance. 12th Army Group planners concluded garrison would fight to last man.",
+      "Sub-event_fulltext": {
+        "Paragraph_32": "Between 13 August, when the 6th Armored Division had started to displace from Brest to Lorient, and 18 August, when the bulk of the 8th Division began to arrive near Brest, the presence of little more than a combat command of Allied troops near Brest led the German garrison to make raids on the countryside. These came to an end as U.S. forces gathered. On 18 August the VIII Corps command post moved one hundred and twenty miles to Lesneven, fifteen miles from Brest, to undertake the siege of the fortress. Though Bradley and Patton thought the Germans would soon capitulate, Middleton figured that Brest would be little different from St. Malo. Several days before the operation began, planners at the 12th Army Group also concluded that the Brest garrison would probably fight to the last man."
+      },
+      "Footnote_References": [25, 26],
+      "Place_Name": ["Brest", "Lorient", "Lesneven"],
+      "Dates": {
+        "Date_group_of_event": "13 Aug 1944 - 18 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-30.html",
+        "Zulu_date_group_of_event": "13 Aug 1944 - 18 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": {
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "VIII Corps",
+            "Name": "Troy H. Middleton",
+            "Rank": "Major General"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p640.jpg",
+          "Description": "General Middleton confers with General Simpson (left) and General Stroh (right) near Brest.",
+          "License": "Public domain (US Government publication)"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3904 N, 4.4861 W"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Brest, France",
+          "Place_GPS_coordinate": "48.3904 N, 4.4861 W",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": -6.4861, "East": -2.4861, "South": 47.3904, "North": 49.3904}
+        }
+      ]
+    }
+  ],
+  "Footnotes": {
+    "Footnote": [
+      {
+        "Footnote": "12",
+        "Footnote_Number": 12,
+        "Footnote_Text": "VIII Corps AAR, Aug.",
+        "Footnote_Referenced_Source": "VIII Corps After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "13",
+        "Footnote_Number": 13,
+        "Footnote_Text": "VIII Corps Msgs, Aug.",
+        "Footnote_Referenced_Source": "VIII Corps Messages, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "14",
+        "Footnote_Number": 14,
+        "Footnote_Text": "Msg, 12th AGp to First Army, 19 Aug 44.",
+        "Footnote_Referenced_Source": "Message, 12th Army Group to First Army, 19 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "15",
+        "Footnote_Number": 15,
+        "Footnote_Text": "6th Armd Div AAR, Aug.",
+        "Footnote_Referenced_Source": "6th Armored Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "16",
+        "Footnote_Number": 16,
+        "Footnote_Text": "6th Armd Div AAR, Aug.",
+        "Footnote_Referenced_Source": "6th Armored Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "17",
+        "Footnote_Number": 17,
+        "Footnote_Text": "Msg, VIII Corps to Third Army, 10 Aug 44.",
+        "Footnote_Referenced_Source": "Message, VIII Corps to Third Army, 10 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "18",
+        "Footnote_Number": 18,
+        "Footnote_Text": "COMZ G-4 Hist Rpt.",
+        "Footnote_Referenced_Source": "Communications Zone G-4 Historical Report",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "19",
+        "Footnote_Number": 19,
+        "Footnote_Text": "VIII Corps AAR, Aug.",
+        "Footnote_Referenced_Source": "VIII Corps After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "20",
+        "Footnote_Number": 20,
+        "Footnote_Text": "Ninth Army AAR, Sep.",
+        "Footnote_Referenced_Source": "Ninth U.S. Army After Action Report, September 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "21",
+        "Footnote_Number": 21,
+        "Footnote_Text": "VIII Corps AAR, Aug.",
+        "Footnote_Referenced_Source": "VIII Corps After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "22",
+        "Footnote_Number": 22,
+        "Footnote_Text": "MS # B-034 (Schramm).",
+        "Footnote_Referenced_Source": "German Manuscript B-034 (Schramm)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "23",
+        "Footnote_Number": 23,
+        "Footnote_Text": "MS # B-034 (Schramm).",
+        "Footnote_Referenced_Source": "German Manuscript B-034 (Schramm)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "24",
+        "Footnote_Number": 24,
+        "Footnote_Text": "MS # B-034 (Schramm).",
+        "Footnote_Referenced_Source": "German Manuscript B-034 (Schramm)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "25",
+        "Footnote_Number": 25,
+        "Footnote_Text": "6th Armd Div AAR, Aug.",
+        "Footnote_Referenced_Source": "6th Armored Division After Action Report, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "26",
+        "Footnote_Number": 26,
+        "Footnote_Text": "12th AGp G-2 Est, Aug.",
+        "Footnote_Referenced_Source": "12th Army Group G-2 Estimate, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      }
+    ]
+  },
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn30.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-29",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-30.html",
+  "Source_Link_Capture_Date": "2025-12-29"
+}

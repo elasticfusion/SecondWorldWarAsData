@@ -1,0 +1,1397 @@
+{
+  "Events": [
+    {
+      "Event": "The Offensive Launched - Poterie Ridge",
+      "Sub-event": "82d Airborne Division Composition and Leadership",
+      "Sub-event_summary": "Overview of the 82d Airborne Division's role, composition, losses, and leadership under Maj. Gen. Matthew B. Ridgway and Brig. Gen. James M. Gavin.",
+      "Sub-event_fulltext": {
+        "Paragraph_33": "In the VIII Corps attack, the 82d Airborne Division had the relatively modest role of securing a limited objective before departing the Continent for England. Having fought on French soil since D Day, the airborne division had lost about half its combat strength. Yet it still was an effective fighting unit, with three parachute infantry regiments and one glider infantry regiment forming the principal division components.",
+        "Paragraph_34": "The troops had been carefully selected for airborne training only after meeting special physical and mental standards. The division had participated in World War II longer than most units in the European theater, and its members regarded with pride their achievements in Sicily and Italy. To an esprit de corps that sometimes irritated others by its suggestion of superiority, the aggressive veterans added a justifiable respect and admiration for their leaders. Maj. Gen. Matthew B. Ridgway, the division commander, displayed an uncanny ability for appearing at the right place at the right time. His inspiring presence, as well as that of the assistant division commander, Brig. Gen. James M. Gavin, was responsible in no small degree for the efficiency of the unit. 17"
+      },
+      "Footnote_References": [17],
+      "Place_Name": "",
+      "Dates": {
+        "Date_group_of_event": "3 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "82d Airborne Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Matthew B. Ridgway",
+          "Name": "Matthew B. Ridgway",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Matthew_Ridgway",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Assistant Division Commander",
+            "Name": "James M. Gavin",
+            "Rank": "Brigadier General",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/James_M._Gavin",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "505th Parachute Infantry Regiment",
+            "Name": "William Ekman",
+            "Rank": "Lieutenant Colonel",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://www.tracesofwar.com/persons/34382/Ekman-William-Emmett-Bill.htm",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "508th Parachute Infantry Regiment",
+            "Name": "Roy E. Lindquist",
+            "Rank": "Colonel",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Roy_E._Lindquist",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "507th Parachute Infantry Regiment",
+            "Name": "Edson D. Raff",
+            "Rank": "Colonel",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Edson_Raff",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "325th Glider Infantry Regiment",
+            "Name": "Harry L. Lewis",
+            "Rank": "Colonel",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://www.tracesofwar.com/persons/38199/Lewis-Harry-L.htm",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "Lost about half combat strength since D-Day, still effective",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {}
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Poterie Ridge",
+      "Sub-event": "Attack Plan and Terrain",
+      "Sub-event_summary": "Plan to sweep westward to take hills east of St. Sauveur-le-Vicomte--la Haye-du-Puits road, in hedgerowed lowland terrain.",
+      "Sub-event_fulltext": {
+        "Paragraph_35": "In the center of the VIII Corps sector, the 82d Airborne Division held a line across the tip of a \"peninsula\" of dry ground. In order to commit a maximum number of troops at once, General Ridgway planned to sweep his sector by attacking westward--between marshland on the north and the la Haye-du-Puits--Carentan road on the south--to take the hills just east of the St. Sauveur-le-Vicomte--la Haye-du-Puits road, which separated the airborne division's zone from that of the 79th Division. The terrain was hedgerowed lowland, with half a dozen tiny settlements and many farmhouses scattered throughout the countryside; there were no main roads, only rural routes and sunken lanes."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Sauveur-le-Vicomte, la Haye-du-Puits",
+      "Dates": {
+        "Date_group_of_event": "3 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "82d Airborne Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Matthew B. Ridgway",
+          "Name": "Matthew B. Ridgway",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Matthew_Ridgway",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Sauveur-le-Vicomte",
+        "Place_GPS_coordinate": "49.386916, -1.529958",
+        "Map_Reference": "Map 3",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-3.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/en/battle-of-normandy/cities/saint-sauveur-le-vicomte",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Sauveur-le-Vicomte",
+        "Place_GPS_coordinate": "49.386916, -1.529958",
+        "Weather_text": "Heavy rainfall",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.429958,
+          "East": -0.629958,
+          "South": 48.486916,
+          "North": 50.286916
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Poterie Ridge",
+      "Sub-event": "Initial Advances on Right Flank",
+      "Sub-event_summary": "Successful advances by 505th, 508th, and 507th Parachute Infantry Regiments on Hill 131, capturing prisoners with low casualties.",
+      "Sub-event_fulltext": {
+        "Paragraph_36": "In the early hours of 3 July, even before the artillery preparation that signaled the start of the First Army offensive, a combat patrol made a surprise thrust. Guided by a young Frenchman who had served similarly in the past, a reinforced company of the 505th Parachute Infantry (Lt. Col. William Ekman) slipped silently along the edge of the swamp and outflanked German positions on the north slope of Hill 131. At daybreak the company was in the midst of a German outpost manned by Osttruppen. Startled, the outpost withdrew. The main body of the regiment arrived by midmorning and gained the north and east slopes of the hill. Four hours later the 505th was at the St. Sauveur-le-Vicomte--la Haye-du-Puits road and in possession of the northern portion of the division objective. The regiment had taken 146 prisoners and had lost 4 dead, 25 wounded, and 5 missing.",
+        "Paragraph_37": "The 508th Parachute Infantry (Col. Roy E. Lindquist) had similar success in gaining the southeast face of Hill 131, and a battalion of the 507th Parachute Infantry (Col. Edson D. Raff) cleared its assigned sector. The leading units moved so rapidly that they bypassed enemy troops who were unaware that an attack was in progress. Though the U.S. follow-up forces had the unexpected and nasty task of clearing small isolated groups, the leading units were at the base of the objective by noon and several hours later were ensconced on the slope. Casualties were few. 18"
+      },
+      "Footnote_References": [18],
+      "Place_Name": "Hill 131",
+      "Dates": {
+        "Date_group_of_event": "3 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "505th Parachute Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "82d Airborne Division",
+          "Commander": "William Ekman",
+          "Name": "William Ekman",
+          "Rank": "Lieutenant Colonel",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://www.tracesofwar.com/persons/34382/Ekman-William-Emmett-Bill.htm",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 4,
+          "Allied_US_WIA": 25,
+          "Allied_US_Missing": 5,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 146
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 131",
+        "Place_GPS_coordinate": "49.3, -1.55",
+        "Map_Reference": "Map 3",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-3.jpg",
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-3.jpg",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hill 131",
+        "Place_GPS_coordinate": "49.3, -1.55",
+        "Weather_text": "Heavy rainfall",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.45,
+          "East": -0.65,
+          "South": 48.4,
+          "North": 50.2
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Poterie Ridge",
+      "Sub-event": "325th Glider Infantry Advance Stopped",
+      "Sub-event_summary": "325th Glider Infantry advanced a mile but stopped due to mines, mud, and German fire from Mont Castre.",
+      "Sub-event_fulltext": {
+        "Paragraph_38": "On the left the story was different. Making the main division effort, the 325th Glider Infantry (Col. Harry L. Lewis) was to move west to the base of the Poterie ridge, then up and down across each of the triplet hills. After a slow start caused by enemy mines, the regiment moved rapidly for a mile. At this point the advance stopped--two miles short of the eastern slope of the Poterie ridge. One supporting tank had hit a mine, three others were floundering in mudholes, and German fire rained down from the slopes of Mont Castre, off the left flank. 19"
+      },
+      "Footnote_References": [19],
+      "Place_Name": "Poterie ridge, Mont Castre",
+      "Dates": {
+        "Date_group_of_event": "3 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "325th Glider Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "82d Airborne Division",
+          "Commander": "Harry L. Lewis",
+          "Name": "Harry L. Lewis",
+          "Rank": "Colonel",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://www.tracesofwar.com/persons/38199/Lewis-Harry-L.htm",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Tank",
+              "Identifier": "M4 Sherman",
+              "Quantity": "4 supporting",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/5/51/M4_Sherman_tank_-_Flickr_-_Joost_J_Bakker_IJmuiden.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Tank",
+              "Identifier": "M4 Sherman",
+              "Quantity": "1 hit mine, 3 in mud",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.flickr.com/photos/spzabt/albums/72157644965341880/",
+          "Description": "Photos of Normandy including airborne areas",
+          "License": "CC BY-NC-ND 2.0"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Poterie ridge",
+        "Place_GPS_coordinate": "49.29513, -1.49297",
+        "Map_Reference": "Map 3",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-3.jpg",
+        "ExternalMapLink": "http://theminiaturespage.com/boards/msg.mv?id=517508",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Poterie ridge",
+        "Place_GPS_coordinate": "49.29513, -1.49297",
+        "Weather_text": "Heavy rainfall",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.39297,
+          "East": -0.59297,
+          "South": 48.39513,
+          "North": 50.19513
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Poterie Ridge",
+      "Sub-event": "Award to Pfc. James L. Geach",
+      "Sub-event_summary": "Pfc. James L. Geach awarded DSC for using bazooka to force enemy tanks to withdraw during 325th advance.",
+      "Sub-event_fulltext": {
+        "Paragraph_38": "On the left the story was different. Making the main division effort, the 325th Glider Infantry (Col. Harry L. Lewis) was to move west to the base of the Poterie ridge, then up and down across each of the triplet hills. After a slow start caused by enemy mines, the regiment moved rapidly for a mile. At this point the advance stopped--two miles short of the eastern slope of the Poterie ridge. One supporting tank had hit a mine, three others were floundering in mudholes, and German fire rained down from the slopes of Mont Castre, off the left flank. 19"
+      },
+      "Footnote_References": [19],
+      "Place_Name": "Poterie ridge",
+      "Dates": {
+        "Date_group_of_event": "3 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "Company G, 325th Glider Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "325th Glider Infantry Regiment",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Pfc. James L. Geach",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Bazooka",
+              "Identifier": "M1 Rocket Launcher",
+              "Quantity": "1",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Bazooka",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/1/1f/M1A1_Bazooka.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "",
+              "Quantity": "2",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Poterie ridge",
+        "Place_GPS_coordinate": "49.29513, -1.49297",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Poterie ridge",
+        "Place_GPS_coordinate": "49.29513, -1.49297",
+        "Weather_text": "Heavy rainfall",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.39297,
+          "East": -0.59297,
+          "South": 48.39513,
+          "North": 50.19513
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Poterie Ridge",
+      "Sub-event": "Adjustment of Plan",
+      "Sub-event_summary": "Ridgway recognized the difference in resistance and adjusted plan to use 325th position as pivot for wheeling movement.",
+      "Sub-event_fulltext": {
+        "Paragraph_39": "It did not take long for General Ridgway to recognize the reason for easy success of the regiments on the right and the difficulty of the 325th. While the parachute regiments on the right were rolling up the German outpost line, the glider men had struck the forward edge of the German main line of resistance. At the same time, they were exposed to observed enfilading fire from Mont Castre.",
+        "Paragraph_40": "To deal with this situation, Ridgway directed the 325th commander to advance to the eastern edge of the Poterie ridge. Using this position as a pivot, the other regiments of the division were to wheel southward from their earlier objectives and hit the triplet hills from the north in frontal attacks."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Mont Castre, Poterie ridge",
+      "Dates": {
+        "Date_group_of_event": "3 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "82d Airborne Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Matthew B. Ridgway",
+          "Name": "Matthew B. Ridgway",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Matthew_Ridgway",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Map_Reference": "Map 3",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-3.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/en/battle-of-normandy/cities/mont-castre",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.287, -1.466",
+        "Weather_text": "Heavy rainfall",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.366,
+          "East": -0.566,
+          "South": 48.387,
+          "North": 50.187
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Poterie Ridge",
+      "Sub-event": "Evening Attack by 325th",
+      "Sub-event_summary": "325th renewed attack evening 3 July, advanced 1.5 miles but halted 600 yards short; no success on 4 July morning.",
+      "Sub-event_fulltext": {
+        "Paragraph_41": "Colonel Lewis renewed the attack during the evening of 3 July, and although the glider men advanced over a mile and a half, they were still 600 yards short of their objective when resistance and darkness forced a halt two hours before midnight.",
+        "Paragraph_42": "When another effort on the morning of 4 July brought no success, General Ridgway ordered the wheeling movement by the other regiments to begin. Each battalion of the 508th was to attack one of the triplet hills while the 505th moved south along the division boundary to protect the open right flank."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Poterie ridge",
+      "Dates": {
+        "Date_group_of_event": "3 July 1944 evening",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "031800Zjul44"
+      },
+      "TOE": {
+        "Unit": "325th Glider Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "82d Airborne Division",
+          "Commander": "Harry L. Lewis",
+          "Name": "Harry L. Lewis",
+          "Rank": "Colonel",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://www.tracesofwar.com/persons/38199/Lewis-Harry-L.htm",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Poterie ridge",
+        "Place_GPS_coordinate": "49.29513, -1.49297",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Poterie ridge",
+        "Place_GPS_coordinate": "49.29513, -1.49297",
+        "Weather_text": "Heavy rainfall",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.39297,
+          "East": -0.59297,
+          "South": 48.39513,
+          "North": 50.19513
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Poterie Ridge",
+      "Sub-event": "Wheeling Movement and Delays",
+      "Sub-event_summary": "Delays in wheeling movement due to route disputes and enemy fire from Poterie ridge and Mont Castre.",
+      "Sub-event_fulltext": {
+        "Paragraph_43": "Problems immediately arose when two battalions of the 508th and the glider regiment disputed the use of a covered route of approach. Because of the delay involved in co-ordinating the route and because of withering fire from both the Poterie ridge and Mont Castre, the two battalions made little progress during the day."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Poterie ridge, Mont Castre",
+      "Dates": {
+        "Date_group_of_event": "4 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "040000Zjul44"
+      },
+      "TOE": {
+        "Unit": "508th Parachute Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "82d Airborne Division",
+          "Commander": "Roy E. Lindquist",
+          "Name": "Roy E. Lindquist",
+          "Rank": "Colonel",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Roy_E._Lindquist",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Poterie ridge",
+        "Place_GPS_coordinate": "49.29513, -1.49297",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Poterie ridge",
+        "Place_GPS_coordinate": "49.29513, -1.49297",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.39297,
+          "East": -0.59297,
+          "South": 48.39513,
+          "North": 50.19513
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Poterie Ridge",
+      "Sub-event": "Assault on Hill 95",
+      "Sub-event_summary": "Third battalion of 508th assaulted Hill 95 with artillery support, gained crest but withdrew after counterattack.",
+      "Sub-event_fulltext": {
+        "Paragraph_44": "The third battalion, on the other hand, had by noon gained a position from which it could assault the westernmost eminence, Hill 95. Following an artillery preparation reinforced by corps guns, two rifle companies made a double envelopment while the third attacked frontally. The battalion gained the crest of the hill but, unable to resist the inevitable counterattack that came before positions could be consolidated, withdrew 800 yards and re-formed. 20"
+      },
+      "Footnote_References": [20],
+      "Place_Name": "Hill 95",
+      "Dates": {
+        "Date_group_of_event": "4 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "040000Zjul44"
+      },
+      "TOE": {
+        "Unit": "508th Parachute Infantry Regiment (third battalion)",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "82d Airborne Division",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 95",
+        "Place_GPS_coordinate": "49.28, -1.5",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Hill 95",
+        "Place_GPS_coordinate": "49.28, -1.5",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.4,
+          "East": -0.6,
+          "South": 48.38,
+          "North": 50.18
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Poterie Ridge",
+      "Sub-event": "505th Protects Flank",
+      "Sub-event_summary": "505th moved south to protect flank, reached base of Hill 95, contacted 79th Division.",
+      "Sub-event_fulltext": {
+        "Paragraph_45": "Meanwhile, troops of the 505th moved south along the division boundary, advancing cautiously. Reaching the base of Hill 95 that evening, the regiment made contact with the 79th Division and set up positions to control the St. Sauveur-le-Vicomte--la Haye-du-Puits road."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Hill 95",
+      "Dates": {
+        "Date_group_of_event": "4 July 1944 evening",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "041800Zjul44"
+      },
+      "TOE": {
+        "Unit": "505th Parachute Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "82d Airborne Division",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 95",
+        "Place_GPS_coordinate": "49.28, -1.5",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Hill 95",
+        "Place_GPS_coordinate": "49.28, -1.5",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.4,
+          "East": -0.6,
+          "South": 48.38,
+          "North": 50.18
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Poterie Ridge",
+      "Sub-event": "Night Attack on Poterie Ridge",
+      "Sub-event_summary": "Night attack on 4 July: 325th secured eastern slope, 508th recaptured Hill 95, 507th assaulted easternmost hill.",
+      "Sub-event_fulltext": {
+        "Paragraph_46": "His battalions now in direct frontal contact with the German positions but operating at a disadvantage under German observation, General Ridgway ordered a night attack. As darkness fell on 4 July, the men moved up the hedgerowed and unfamiliar slopes of the Poterie ridge. The 325th Glider Infantry secured its objective on the eastern slope of the ridge with little difficulty. The battalion of the 508th Parachute Infantry that had taken Hill 95 during the afternoon only to lose it walked up the slope and secured the crest by dawn. A newly committed battalion of the 507th Parachute Infantry, moving against the easternmost hill, had trouble maintaining control in the darkness, particularly after making contact with the enemy around midnight. Withdrawing to reorganize, the battalion commander sent a rifle company to envelop the hill from the east while he led the remainder of his force in a flank approach from the west. Several hours after daylight on 5 July the two parties met on the ridge line. The Germans had withdrawn."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Poterie ridge, Hill 95",
+      "Dates": {
+        "Date_group_of_event": "4 July 1944 night",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "042200Zjul44"
+      },
+      "TOE": {
+        "Unit": "507th Parachute Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "82d Airborne Division",
+          "Commander": "Edson D. Raff",
+          "Name": "Edson D. Raff",
+          "Rank": "Colonel",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Edson_Raff",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.facebook.com/photo.php?fbid=916165230543815&set=a.636929861800688&id=100064510397319",
+          "Description": "82nd Airborne in Normandy July 1944",
+          "License": "Facebook content"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Poterie ridge",
+        "Place_GPS_coordinate": "49.29513, -1.49297",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Poterie ridge",
+        "Place_GPS_coordinate": "49.29513, -1.49297",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.39297,
+          "East": -0.59297,
+          "South": 48.39513,
+          "North": 50.19513
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Poterie Ridge",
+      "Sub-event": "Assault on Center Hill",
+      "Sub-event_summary": "Battalion of 507th assaulted center hill, engaged in close-range battle, consolidated position by afternoon 5 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_47": "Another battalion of the 507th moved against the center hill of the Poterie ridge, with one company in the lead as a combat patrol. Reaching the crest without interference and assuming that the Germans had retired, the advance company crossed the ridge line and formed a defensive perimeter on the south slope. Daybreak revealed that the men were in a German bivouac area, and a confused battle took place at close range. The remainder of the battalion, which had stayed on the north slope, hurried forward at the sound of gunfire to find friend and foe intermingled on the ridge. Not until afternoon of 5 July did the battalion establish a consolidated position."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Poterie ridge",
+      "Dates": {
+        "Date_group_of_event": "5 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "050000Zjul44"
+      },
+      "TOE": {
+        "Unit": "507th Parachute Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "82d Airborne Division",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Poterie ridge",
+        "Place_GPS_coordinate": "49.29513, -1.49297",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Poterie ridge",
+        "Place_GPS_coordinate": "49.29513, -1.49297",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.39297,
+          "East": -0.59297,
+          "South": 48.39513,
+          "North": 50.19513
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Poterie Ridge",
+      "Sub-event": "Securing Poterie Ridge",
+      "Sub-event_summary": "Division reported Hill 95 and Poterie ridge secure by afternoon 5 July, maintaining contact with neighboring divisions.",
+      "Sub-event_fulltext": {
+        "Paragraph_48": "During the afternoon the 82d Airborne Division reported Hill 95 captured and the Poterie ridge secure. Small isolated German pockets remained to be cleared, but this was a minor task easily accomplished. Maintaining contact with the 79th Division on the right and establishing contact with the 90th Division in the valley between the Poterie ridge and Mont Castre on the left, the 82d Airborne Division assumed defensive positions."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Poterie ridge, Hill 95, Mont Castre",
+      "Dates": {
+        "Date_group_of_event": "5 July 1944 afternoon",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "051200Zjul44"
+      },
+      "TOE": {
+        "Unit": "82d Airborne Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Poterie ridge",
+        "Place_GPS_coordinate": "49.29513, -1.49297",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Poterie ridge",
+        "Place_GPS_coordinate": "49.29513, -1.49297",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.39297,
+          "East": -0.59297,
+          "South": 48.39513,
+          "North": 50.19513
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Poterie Ridge",
+      "Sub-event": "Results and Casualties",
+      "Sub-event_summary": "Division advanced 4 miles in 3 days, destroyed 500 enemy, captured 772, equipment; heavy casualties especially in 325th.",
+      "Sub-event_fulltext": {
+        "Paragraph_49": "In advancing the line about four miles in three days, the airborne division had destroyed about 500 enemy troops, taken 772 prisoners, and captured or destroyed two 75-mm. guns, two 88-mm. antitank guns, and a 37-mm. antitank weapon. The gains had not been without serious cost. The 325th Glider Infantry, which was authorized 135 officers and 2,838 men and had an effective strength of 55 officers and 1,245 men on 2 July, numbered only 41 officers and 956 men four days later; the strongest rifle company had 57 men, while one company could count only 12. Casualties sustained by this regiment were the highest, but the depletion of all units attested to the accuracy of German fire directed from superior ground. 21"
+      },
+      "Footnote_References": [21],
+      "Place_Name": "",
+      "Dates": {
+        "Date_group_of_event": "3-5 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "325th Glider Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "82d Airborne Division",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Authorized 135 officers 2838 men; 2 Jul: 55 officers 1245 men; 6 Jul: 41 officers 956 men",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Gun",
+              "Identifier": "75mm",
+              "Quantity": "2",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Antitank Gun",
+              "Identifier": "88mm",
+              "Quantity": "2",
+              "Web_Reference": "https://en.wikipedia.org/wiki/8.8_cm_PaK_43",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/6/68/88mm_Pak_43-41.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Antitank Weapon",
+              "Identifier": "37mm",
+              "Quantity": "1",
+              "Web_Reference": "https://en.wikipedia.org/wiki/3.7_cm_PaK_36",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/1/1c/Pak_36.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 289,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 500,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 772
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {}
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Poterie Ridge",
+      "Sub-event": "Final Clearing",
+      "Sub-event_summary": "All enemy pockets cleared by morning 7 July, troops in rain-filled trenches awaiting return to England.",
+      "Sub-event_fulltext": {
+        "Paragraph_50": "By the morning of 7 July, all enemy pockets had been cleared in front of the airborne division. Lying in the rain-filled slit trenches, the men \"began to sweat out the much-rumored trip to England.\""
+      },
+      "Footnote_References": [],
+      "Place_Name": "",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944 morning",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "070000Zjul44"
+      },
+      "TOE": {
+        "Unit": "82d Airborne Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Weather_text": "Rain-filled trenches",
+        "Spatial_Bounding_Box Coordinates": {}
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "Footnote 17",
+      "Footnote_Number": "17",
+      "Footnote_Text": "The account of operations is taken from the official records of the division and the regiments.",
+      "Footnote_Referenced_Source": "Official records",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Division and regiment records"
+    },
+    {
+      "Footnote": "Footnote 18",
+      "Footnote_Number": "18",
+      "Footnote_Text": "The account of tactical operations is based upon the official records (the After Action Reports, operations orders, periodic reports, and journals) of the units involved.",
+      "Footnote_Referenced_Source": "Official records",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "AARs, ops orders, per rpts, jnls"
+    },
+    {
+      "Footnote": "Footnote 19",
+      "Footnote_Number": "19",
+      "Footnote_Text": "Pfc. James L. Geach of the 325th Glider Infantry, though he had never handled a rocket launcher, seized a bazooka and fired several rounds, forcing two enemy tanks to withdraw. He was awarded the DSC.",
+      "Footnote_Referenced_Source": "DSC award",
+      "Web_Link": "https://valor.militarytimes.com/recipient/recipient-22146/",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "Footnote 20",
+      "Footnote_Number": "20",
+      "Footnote_Text": "William G. Lord, II, History of the 508th Parachute Infantry (Washington: Infantry Journal, Inc., 1948), p. 37.",
+      "Footnote_Referenced_Source": "History of the 508th Parachute Infantry",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "Footnote 21a",
+      "Footnote_Number": "21a",
+      "Footnote_Text": "Maj. Roland G. Ruppenthal. Utah Beach to Cherbourg, AFA Series (Washington, 1947), p. 129",
+      "Footnote_Referenced_Source": "Utah Beach to Cherbourg",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Utah/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "Footnote 21b",
+      "Footnote_Number": "21b",
+      "Footnote_Text": "Harrison, Cross-Channel Attack, pp. 402-03.",
+      "Footnote_Referenced_Source": "Cross-Channel Attack",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Normandy/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn4.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

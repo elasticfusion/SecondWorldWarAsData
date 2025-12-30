@@ -1,0 +1,1782 @@
+{
+  "Events": [
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "VII Corps Outflanks German Left",
+      "Sub-event_summary": "On 1 August 1944, the VII Corps outflanked the German left when the 3d Armored Division's Combat Command A crossed the Sée River at Brécey, moving east toward Mortain to clear the Avranches corridor for the Third Army.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "On the First U.S. Army right, the VII Corps had outflanked the German left by 1 August when troops of the 3d Armored Division's Combat Command A (attached to the 1st Division) pushed across the Sée River at Brécey. Between Brécey and Avranches, a distance of ten miles, yawned the gap through which the Third Army skittered toward Brittany, and since the Third Army would take responsibility for holding the Avranches corridor open, VII Corps had to move east to get out of the way. The VII Corps moved toward Mortain, a road center near commanding ground twenty miles east of Avranches between the Sée and the Sélune.<sup>[13](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn13)</sup> [](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-13.jpg)"
+      },
+      "Footnote_References": [
+        "13"
+      ],
+      "Place_Name": "Brécey",
+      "Dates": {
+        "Date_group_of_event": "010000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "312300Zjul44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Joseph Lawton Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "3d Armored Division Combat Command A",
+            "Name": "",
+            "Rank": "",
+            "Date": "010000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brécey",
+        "Place_GPS_coordinate": "48.7256, -1.1653",
+        "Map_Reference": "Map 13",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-13.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_L%C3%BCttich#/media/File:Operation_Luttich_1944_en.svg",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brécey",
+        "Place_GPS_coordinate": "48.7256, -1.1653",
+        "Weather_text": "Warm summer weather with high humidity and ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.53,
+          "East": 0.2,
+          "South": 47.83,
+          "North": 49.63
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "1st Division Orders and Objectives",
+      "Sub-event_summary": "General Collins ordered General Huebner to envelop the enemy's left flank, pinch out the 4th Division, and make contact with the 9th Division while seizing high ground and road centers in the Mortain area.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "General Collins, the VII Corps commander, ordered General Huebner, the 1st Division commander, \"to envelop the enemy's left flank and exploit the breakthrough of his defenses\" by seizing the high ground and road centers in the Mortain area. The 1st Division was to sweep southeastward across the front of and pinch out General Barton's 4th Division, which was attacking south from Villedieu through St. Pois to the Sée River, and was to make contact with General Eddy's 9th Division, which was to attack south toward Sourdeval and the high ground north of Mortain.<sup>[14](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn14)</sup>"
+      },
+      "Footnote_References": [
+        "14"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "010000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "312300Zjul44"
+      },
+      "TOE": {
+        "Unit": "1st Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Clarence R. Huebner",
+          "Name": "Clarence R. Huebner",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Clarence_R._Huebner",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6486, -0.9397",
+        "Map_Reference": "Map 13",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-13.jpg",
+        "ExternalMapLink": "http://www.coulthart.com/134/maps/german-counterattack-mortain-8-7-1944.pdf",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6486, -0.9397",
+        "Weather_text": "Warm summer weather with high humidity and ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.3,
+          "East": 0.42,
+          "South": 47.75,
+          "North": 49.55
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "1st Division Advance to Mortain",
+      "Sub-event_summary": "The 1st Division advanced eastward to Mortain, using CCA of the 3d Armored Division as spearhead, overrunning elements of the 275th Division and capturing several towns, entering Mortain on 3 August 1944 after dispersing the 2d Panzer Division's reconnaissance battalion.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "The 1st Division turned eastward toward Mortain, the attached CCA of the 3d Armored Division acting as a spearhead while the infantry regiments mopped up. Extremely broken terrain, roads twisting and turning around hills and crossing narrow, steep-walled valleys, gave the Germans ample opportunity to ambush. Against them, the 1st Division used fire power liberally, overran elements of the *275th Division,* and took Reffuveille, le Mesnil-Adelée, Juvigny, and St. Barthélemy. On the afternoon of 3 August, the 1st Division entered Mortain after dispersing the reconnaissance battalion of the *2d Panzer Division,* General Huebner immediately outposted the high ground east of town.<sup>[15](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn15)</sup>"
+      },
+      "Footnote_References": [
+        "15"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "031500BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "031400Zaug44"
+      },
+      "TOE": {
+        "Unit": "1st Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Clarence R. Huebner",
+          "Name": "Clarence R. Huebner",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Clarence_R._Huebner",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "3d Armored Division Combat Command A",
+            "Name": "",
+            "Rank": "",
+            "Date": "030000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Reconnaissance battalion equipment",
+              "Identifier": "",
+              "Quantity": "",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p446.jpg",
+          "Description": "Troops Advancing From Juvigny southward toward Mortain.",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6486, -0.9397",
+        "Map_Reference": "Map 13",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-13.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_L%C3%BCttich#/media/File:Operation_Luttich_1944_en.svg",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6486, -0.9397",
+        "Weather_text": "Warm summer weather with high humidity and ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.3,
+          "East": 0.42,
+          "South": 47.75,
+          "North": 49.55
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "Award of DSC to 2d Lt. Harold B. Selleck",
+      "Sub-event_summary": "2d Lt. Harold B. Selleck was awarded the Distinguished Service Cross for extraordinary heroism on 3 August 1944 near Mortain, where he engaged and captured a hostile tank-infantry force, taking over 100 prisoners and a Mark IV tank.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "A representative action in this advance was one in which 2d Lt. Harold B. Selleck of the 26th Infantry, who had been reconnoitering an approach route for his battalion, encountered a hostile tank-infantry force, which opened fire. Selleck deployed his few troops, engaged the enemy, and captured more than a hundred prisoners, a Mark IV tank, and considerable amounts of equipment and supplies. He was awarded the DSC."
+      },
+      "Footnote_References": [
+        "15"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "030000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "022300Zaug44"
+      },
+      "TOE": {
+        "Unit": "26th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "1st Infantry Division",
+          "Commander": "Harold B. Selleck",
+          "Name": "Harold B. Selleck",
+          "Rank": "Second Lieutenant",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://www.legacy.com/us/obituaries/bakersfield/name/harold-selleck-obituary?id=26736214",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Mark IV tank",
+              "Identifier": "PzKpfw IV",
+              "Quantity": "1",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Panzer_IV_Ausf._H,_Mus%C3%A9e_des_Blind%C3%A9s,_France,_pic-2.JPG",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": "100"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6486, -0.9397",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6486, -0.9397",
+        "Weather_text": "Warm summer weather with high humidity and ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.3,
+          "East": 0.42,
+          "South": 47.75,
+          "North": 49.55
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "Contrast in Resistance",
+      "Sub-event_summary": "The easy capture of Mortain contrasted with strong resistance in the St. Pois-Vire line, with patrols reaching Fougerolles-du-Plessis and Barenton, while the Panzer Lehr Division could not prevent advances.",
+      "Sub-event_fulltext": {
+        "Paragraph_20": "The relatively easy capture of Mortain contrasted with operations in the remaining portion of the VII Corps front, where the Germans manned an unbroken defensive line between St. Pois and Vire. The *84th Division* held tenaciously to Sourdeval, a scant six miles north of Mortain, but the remnants of the *Panzer Lehr Division,* which ostensibly covered Mortain, Barenton, and Passais, could not prevent patrols of the 1st Division from reaching Fougerolles-du-Plessis and Barenton, twelve miles south and seven miles southeast of Mortain, respectively."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Sourdeval",
+      "Dates": {
+        "Date_group_of_event": "030000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "022300Zaug44"
+      },
+      "TOE": {
+        "Unit": "84th Infantry Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Sourdeval",
+        "Place_GPS_coordinate": "48.7231, -0.9222",
+        "Map_Reference": "Map 13",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-13.jpg",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Sourdeval",
+        "Place_GPS_coordinate": "48.7231, -0.9222",
+        "Weather_text": "Warm summer weather with high humidity and ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.29,
+          "East": 0.44,
+          "South": 47.82,
+          "North": 49.62
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "1st Division Consolidation at Mortain",
+      "Sub-event_summary": "The 1st Division consolidated positions at Mortain to prevent enemy escape and guard against counterattack, with artillery firing 105 missions on 4 August 1944, misinterpreting German movements as attempts to escape.",
+      "Sub-event_fulltext": {
+        "Paragraph_21": "The natural inclination to push the 1st Division along the path of least resistance, --444-- into exploitation toward the successive objectives of the Domfront-Mayenne and Alençon-le Mans lines, gave way to a more sober calculation. At Mortain t he division positions formed a conspicuous salient on the German left flank and presented a potential threat to the rear of the German units fighting along the St. Pois-Vire line. Aware of the withdrawal of the *2d Panzer* and the *2d SS Panzer Divisions,* American commanders misinterpreted German troop movements as attempts to escape the threat on the flank. While other First Army units exerted pressure from the north, the 1st Division consolidated positions at Mortain to prevent enemy escape and to guard against counterattack from the north. At the same time, the division artillery took numerous targets to the north and northeast under fire, on 4 August alone firing 105 missions, of which 28 were harassing, 14 were against tanks, 15 were counter-battery, 24 were antipersonnel and anti-vehicular, and 5 were interdiction and preparation.<sup>[16](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn16)</sup>"
+      },
+      "Footnote_References": [
+        "16"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "040000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "032300Zaug44"
+      },
+      "TOE": {
+        "Unit": "1st Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Clarence R. Huebner",
+          "Name": "Clarence R. Huebner",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Clarence_R._Huebner",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Artillery",
+              "Identifier": "",
+              "Quantity": "",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6486, -0.9397",
+        "Map_Reference": "Map 13",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-13.jpg",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6486, -0.9397",
+        "Weather_text": "Warm summer weather with high humidity and ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.3,
+          "East": 0.42,
+          "South": 47.75,
+          "North": 49.55
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "1st Division Displacement South",
+      "Sub-event_summary": "On 6 August 1944, the 1st Division displaced south of Mortain across the Sélune River to Gorron and Ambrières-le-Grand, relieving the 90th Division at Mayenne, to cover the XV Corps flank, replaced by the 30th Division at Mortain.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "As the XV Corps, on the right of the VII Corps, began to advance toward Laval and le Mans, General Hodges instructed General Collins to move to the south to cover the XV Corps north flank. In compliance, the 1st Division on 6 August displaced across the Sélune River south of Mortain to Gorron and Ambrières-le-Grand and, having met only slight interference, started to relieve the 90th Division at Mayenne.<sup>[17](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn17)</sup> To replace the 1st Division at Mortain, Hodges shifted the 30th Division from Tessy and XIX Corps control. The 1st Division was then free to exploit eastward from Mayenne toward Alençon in a drive paralleling the XV Corps thrust to le Mans."
+      },
+      "Footnote_References": [
+        "17"
+      ],
+      "Place_Name": "Gorron",
+      "Dates": {
+        "Date_group_of_event": "060000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "052300Zaug44"
+      },
+      "TOE": {
+        "Unit": "1st Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Clarence R. Huebner",
+          "Name": "Clarence R. Huebner",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Clarence_R._Huebner",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Gorron",
+        "Place_GPS_coordinate": "48.4125, -0.8114",
+        "Map_Reference": "Map 13",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-13.jpg",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Gorron",
+        "Place_GPS_coordinate": "48.4125, -0.8114",
+        "Weather_text": "Warm summer weather with high humidity and ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.17,
+          "East": 0.55,
+          "South": 47.51,
+          "North": 49.31
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "4th Division Encounters Resistance at St. Pois",
+      "Sub-event_summary": "The 4th Division struck determined resistance near St. Pois on 2 August 1944, with CCB of the 3d Armored Division awaiting infantry before resuming attack, moving south from Villedieu.",
+      "Sub-event_fulltext": {
+        "Paragraph_23": "In contrast with the 1st Division experience, the 4th Division struck determined resistance in the hills just north and northwest of St. Pois on 2 August. The 3d Armored Division's Combat Command B, attached to the 4th Division and spearheading the attack, was not far from St. Pois, but the armor awaited arrival of the infantry before resuming the attack. The rest of the division moved south from Villedieu in what appeared to resemble a gigantic traffic jam on 2 August but what was in actuality a rapid movement. General Barton had decided that \"the quickest way to get them there [was to] put them all on the road at once.\"<sup>[18](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn18)</sup>"
+      },
+      "Footnote_References": [
+        "18"
+      ],
+      "Place_Name": "St. Pois",
+      "Dates": {
+        "Date_group_of_event": "020000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "012300Zaug44"
+      },
+      "TOE": {
+        "Unit": "4th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Raymond O. Barton",
+          "Name": "Raymond O. Barton",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Raymond_O._Barton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "3d Armored Division Combat Command B",
+            "Name": "",
+            "Rank": "",
+            "Date": "020000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Pois",
+        "Place_GPS_coordinate": "48.7503, -1.0656",
+        "Map_Reference": "Map 13",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-13.jpg",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "St. Pois",
+        "Place_GPS_coordinate": "48.7503, -1.0656",
+        "Weather_text": "Warm summer weather with high humidity and ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.43,
+          "East": 0.3,
+          "South": 47.85,
+          "North": 49.65
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "4th Division Objectives at St. Pois",
+      "Sub-event_summary": "The 4th Division aimed to seize St. Pois, Hill 211, and a bridgehead at Chérencé-le-Roussel, with plans to advance to Gathemo-Sourdeval, but stubborn resistance disrupted this.",
+      "Sub-event_fulltext": {
+        "Paragraph_24": "From the forward positions just north of St. Pois, Barton had to advance about six miles and seize three objectives, each two miles apart: the town of St. Pois, Hill 211, and a bridgehead across the Sée River at Chérencé-le-Roussel.<sup>[19](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn19)</sup> Although General Collins contemplated sending the 4th Division beyond Chérencé-le-Roussel to the high ground north of Mortain in the Gathemo-Sourdeval area, the stubborn resistance in the St. Pois sector disrupted this plan.<sup>[20](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn20)</sup> The *116th Panzer Division* had been hastily withdrawn from the line near Tessy on 1 August to counter the American thrust toward Brécey, and this force had been committed in time to halt CCB and the 4th Division.<sup>[21](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn21)</sup>"
+      },
+      "Footnote_References": [
+        "19",
+        "20",
+        "21"
+      ],
+      "Place_Name": "Chérencé-le-Roussel",
+      "Dates": {
+        "Date_group_of_event": "020000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "012300Zaug44"
+      },
+      "TOE": {
+        "Unit": "116th Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Heinz von Funck",
+          "Name": "Heinz von Funck",
+          "Rank": "General der Panzertruppe",
+          "End_Date": "040000BSTaug44",
+          "End_Status": "Relieved",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Heinz_von_Randow",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Chérencé-le-Roussel",
+        "Place_GPS_coordinate": "48.7094, -1.0156",
+        "Map_Reference": "Map 13",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-13.jpg",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Chérencé-le-Roussel",
+        "Place_GPS_coordinate": "48.7094, -1.0156",
+        "Weather_text": "Warm summer weather with high humidity and ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.38,
+          "East": 0.35,
+          "South": 47.81,
+          "North": 49.61
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "4th Division Flanking Maneuver",
+      "Sub-event_summary": "On 3 August 1944, the 4th Division bypassed St. Pois with a task force, crossing the Sée River at Cuves and establishing a bridgehead at Chérencé-le-Roussel, while regiments attacked toward St. Pois and hills.",
+      "Sub-event_fulltext": {
+        "Paragraph_25": "Impatient to get the three objectives so that the 4th Division might go into reserve for rest as promised, General Barton applied at St. Pois a lesson learned at Villedieu. On 3 August he sent a task force of infantry and armor to bypass St. Pois on the west. Moving about five miles \"without firing a shot,\" the task force crossed the Sée River at Cuves, four miles west of Chérencé-le-Roussel. On the following day CCB and attached infantry fought eastward from Cuves along the south bank of the Sée River, then crossed the river again at Chérencé-le-Roussel and established a bridgehead on the north bank of the Sée. While the task force was thus outflanking and enveloping the enemy, three regiments of the 4th Division attacked abreast from the northwest toward St. Pois. The 12th Infantry on the left strove to gain Hill 232, the 22d Infantry in the center attacked the town of St. Pois, and the 8th Infantry on the right drove on Hill 211. The going was difficult against the guns of the *116th Panzer Division,* and by evening the objectives were still not secured. When the attack was halted and orders given to dig in for the night, the rifle company officers of a battalion of the 8th Infantry requested and secured permission to continue as a measure of respect for their commander, Lt. Col. Erasmus H. Strickland, who had been wounded that day. The assault carried to the crest of Hill 211, and at dawn, 5 August, the regiment was ready to repel the strong but obviously final German counterattack."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Cuves",
+      "Dates": {
+        "Date_group_of_event": "030000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "022300Zaug44"
+      },
+      "TOE": {
+        "Unit": "4th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Raymond O. Barton",
+          "Name": "Raymond O. Barton",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Raymond_O._Barton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "8th Infantry Regiment",
+            "Name": "Erasmus H. Strickland",
+            "Rank": "Lieutenant Colonel",
+            "Date": "040000BSTaug44",
+            "End_Date_of_command": "040000BSTaug44",
+            "End_Status": "WIA",
+            "Biographical_reference": "https://www.findagrave.com/memorial/108585297/erasmus-hardin-strickland",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "12th Infantry Regiment",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "22d Infantry Regiment",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 1,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cuves",
+        "Place_GPS_coordinate": "48.7194, -1.1042",
+        "Map_Reference": "Map 13",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-13.jpg",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Cuves",
+        "Place_GPS_coordinate": "48.7194, -1.1042",
+        "Weather_text": "Warm summer weather with high humidity and ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.47,
+          "East": 0.26,
+          "South": 47.82,
+          "North": 49.62
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "Award of DSC to Pvt. Joseph J. Giordano",
+      "Sub-event_summary": "Pvt. Joseph J. Giordano of the 8th Infantry was awarded the Distinguished Service Cross for heroic action on 5 August 1944 near St. Pois.",
+      "Sub-event_fulltext": {
+        "Paragraph_25": "Pvt. Joseph J. Giordano of the 8th Infantry was awarded the DSC for heroic action on 5 August."
+      },
+      "Footnote_References": [
+        "22"
+      ],
+      "Place_Name": "St. Pois",
+      "Dates": {
+        "Date_group_of_event": "050000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "042300Zaug44"
+      },
+      "TOE": {
+        "Unit": "8th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "4th Infantry Division",
+          "Commander": "Joseph J. Giordano",
+          "Name": "Joseph J. Giordano",
+          "Rank": "Private",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Pois",
+        "Place_GPS_coordinate": "48.7503, -1.0656",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "St. Pois",
+        "Place_GPS_coordinate": "48.7503, -1.0656",
+        "Weather_text": "Warm summer weather with high humidity and ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.43,
+          "East": 0.3,
+          "South": 47.85,
+          "North": 49.65
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "4th Division Completes Mission at St. Pois",
+      "Sub-event_summary": "By 5 August 1944, the 4th Division encircled St. Pois, hastening German withdrawal to Sourdeval with artillery and air support, completing its mission and moving into reserve for rest.",
+      "Sub-event_fulltext": {
+        "Paragraph_26": "Although St. Pois technically remained in German hands that morning, the town was virtually encircled. The Germans began to withdraw to the southeast to protect Sourdeval. From the hills around St. Pois, men of the 4th Division hastened the enemy's departure by bringing down artillery fire and calling in fighter-bombers to attack the columns. The cannon company of the 8th Infantry fired 3,200 shells and burned out three howitzer tubes, the 4.2-inch mortar company depleted all its ammunition stocks, and the 81-mm. mortars expended 3,000 rounds.<sup>[22](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn22)</sup>",
+        "Paragraph_27": "The division mission completed by the end of 5 August, General Barton released CCB to control of the 3d Armored Division, assembled the 4th Division at St. Pois in the VII Corps reserve, and looked forward to giving his troops four --447-- or five days of rest, replete with \"hot showers, hot food, USO shows . . . Red Cross doughnut girls.\"<sup>[23](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn23)</sup>"
+      },
+      "Footnote_References": [
+        "22",
+        "23"
+      ],
+      "Place_Name": "St. Pois",
+      "Dates": {
+        "Date_group_of_event": "050000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "042300Zaug44"
+      },
+      "TOE": {
+        "Unit": "4th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Raymond O. Barton",
+          "Name": "Raymond O. Barton",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Raymond_O._Barton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "105mm howitzer",
+              "Identifier": "M2A1",
+              "Quantity": "",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M101_howitzer",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "4.2-inch mortar",
+              "Identifier": "M2",
+              "Quantity": "",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M2_4.2-inch_mortar",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "81mm mortar",
+              "Identifier": "M1",
+              "Quantity": "",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M1_mortar",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Pois",
+        "Place_GPS_coordinate": "48.7503, -1.0656",
+        "Map_Reference": "Map 13",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-13.jpg",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "St. Pois",
+        "Place_GPS_coordinate": "48.7503, -1.0656",
+        "Weather_text": "Warm summer weather with high humidity and ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.43,
+          "East": 0.3,
+          "South": 47.85,
+          "North": 49.65
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "9th Division Encounters Opposition",
+      "Sub-event_summary": "The 9th Division encountered strong opposition from the 353d Division and remnants, gaining ten miles in two days but slowing in hilly terrain, with resistance stiffening near the Fôret de St. Sever supported by the 394th Assault Gun Brigade.",
+      "Sub-event_fulltext": {
+        "Paragraph_28": "Like the 4th Division, General Eddy's 9th Division encountered strong opposition. Moving from a rest area to assembly near Villebaudon on 1 August, the 9th Division prepared to advance twenty miles to high ground north of Mortain against what appeared to be disorganized enemy forces.<sup>[24](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn24)</sup> Two regiments abreast gained ten miles in two days, a rapid advance for the difficult terrain, but then progress slowed as they moved through hilly hedgerow terrain well defended by the *353d Division* reinforced by the remnants of the *352d Division* and a small task force of the *6th Parachute Regiment.* The 9th Division advance was tedious in the face of numerous mines and strong delaying forces at roadblocks and on critical terrain features. As the division threatened the Fôret de St. Sever, which concealed troops and semipermanent supply installations, resistance stiffened. The newly arrived *394th Assault Gun Brigade,* which had come forward to participate in the counterattack, was subordinated to the *LXXXIV Corps* to protect the Fôret de St. Sever, and the brigade's heavy artillery concentrations and antitank rockets further slowed the 9th Division attack.<sup>[25](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn25)</sup>"
+      },
+      "Footnote_References": [
+        "24",
+        "25"
+      ],
+      "Place_Name": "Villebaudon",
+      "Dates": {
+        "Date_group_of_event": "010000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "312300Zjul44"
+      },
+      "TOE": {
+        "Unit": "9th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Manton S. Eddy",
+          "Name": "Manton S. Eddy",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Manton_S._Eddy",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Villebaudon",
+        "Place_GPS_coordinate": "48.9611, -1.1653",
+        "Map_Reference": "Map 13",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-13.jpg",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Villebaudon",
+        "Place_GPS_coordinate": "48.9611, -1.1653",
+        "Weather_text": "Warm summer weather with high humidity and ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.53,
+          "East": 0.2,
+          "South": 48.06,
+          "North": 49.86
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "9th Division Flanking Attack",
+      "Sub-event_summary": "To speed advance, the 9th Division launched a wide flanking attack on 5 August 1944, sending a regiment through Villedieu-les-Poêles, Brécey, Chérencé-le-Roussel to Gathemo, encircling Germans, with progress at Champ-du-Boult.",
+      "Sub-event_fulltext": {
+        "Paragraph_29": "In order to speed the movement of the 9th Division to the Sée River and beyond to Gathemo, the immediate division objective, General Eddy secured General Collins' approval for a wide flanking attack. He sent a regiment westward through Villedieu-les-Poëles, southward through Brécey, eastward through Chérencé-le-Roussel, and then northeastward to Gathemo to encircle the German troops in the St. Pois-St. Sever-Calvados sector. Contact with the two regiments attacking south would complete a two-pronged squeeze play ending at Gathemo.<sup>[26](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn26)</sup>",
+        "Paragraph_30": "Directed through the 4th and 1st Division sectors, on 5 August the 39th Infantry of the 9th Division passed through the 4th Division bridgehead held by tanks and infantry at Chérencé-le-Roussel and attacked toward the northeast. Although stiff resistance prevented progress, other contingents of the division discovered a soft spot. The 60th Infantry moved with surprising rapidity through hilly hedgerow terrain against occasional artillery and mortar fire. That afternoon, a battalion temporarily gained possession of the crossroads village of Champ-du-Boult, two miles northwest of Gathemo, though a counterattack by the *353d Division* reserve supported by the *6th Parachute Regiment* drove the battalion out.<sup>[27](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn27)</sup>"
+      },
+      "Footnote_References": [
+        "26",
+        "27"
+      ],
+      "Place_Name": "Gathemo",
+      "Dates": {
+        "Date_group_of_event": "050000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "042300Zaug44"
+      },
+      "TOE": {
+        "Unit": "9th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Manton S. Eddy",
+          "Name": "Manton S. Eddy",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Manton_S._Eddy",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "39th Infantry Regiment",
+            "Name": "",
+            "Rank": "",
+            "Date": "050000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "60th Infantry Regiment",
+            "Name": "",
+            "Rank": "",
+            "Date": "050000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Gathemo",
+        "Place_GPS_coordinate": "48.765, -0.976",
+        "Map_Reference": "Map 13",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-13.jpg",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Gathemo",
+        "Place_GPS_coordinate": "48.765, -0.976",
+        "Weather_text": "Warm summer weather with high humidity and ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.34,
+          "East": 0.39,
+          "South": 47.87,
+          "North": 49.67
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "9th Division Continues Attack",
+      "Sub-event_summary": "On 6 August 1944, the 9th Division regained Champ-du-Boult and increased threat to Perriers-en-Beauficel, with consolidation anticipated, but German counterattack occurred as planning for movement south began.",
+      "Sub-event_fulltext": {
+        "Paragraph_31": "Continuing the attack on 6 August, the 9th Division regained Champ-du-Boult in the north and increased the threat to Perriers-en-Beauficel in the south. With only three miles separating the two division hooks, General Collins anticipated quick consolidation. As he began to plan the movement of the 9th to the south to cover the eastward thrust of the XV Corps to le Mans, the Germans counterattacked.<sup>[28](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn28)</sup>"
+      },
+      "Footnote_References": [
+        "28"
+      ],
+      "Place_Name": "Champ-du-Boult",
+      "Dates": {
+        "Date_group_of_event": "060000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "052300Zaug44"
+      },
+      "TOE": {
+        "Unit": "9th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Manton S. Eddy",
+          "Name": "Manton S. Eddy",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Manton_S._Eddy",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Champ-du-Boult",
+        "Place_GPS_coordinate": "48.7931, -1.0068",
+        "Map_Reference": "Map 13",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-13.jpg",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Champ-du-Boult",
+        "Place_GPS_coordinate": "48.7931, -1.0068",
+        "Weather_text": "Warm summer weather with high humidity and ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.37,
+          "East": 0.36,
+          "South": 47.89,
+          "North": 49.69
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "Summary of VII Corps Operations",
+      "Sub-event_summary": "During the first six days of August 1944, VII Corps faced contrasting situations, with opportunity for exploitation on the right but bound to First Army requirements, resulting in slow advances and varying casualties among divisions.",
+      "Sub-event_fulltext": {
+        "Paragraph_32": "During the first six days of August, General Collins had faced contrasting situations on his corps front. On his right, he had essentially the same opportunity for exploitation enjoyed by the Third Army's XV Corps, yet he had been bound to the First Army and its requirements and consequently was unable to capitalize on the fluid situation there. With the exception of the 1st Division, the VII Corps components had taken part in combat that resembled the earlier battle of the hedgerows. Stubborn resistance, skillful withdrawal, and effective delaying action in *bocage* terrain had resulted in a slow and hard advance. Whereas the 1st Division sustained less than 250 casualties between 2 and 7 August, the 3d Armored Division lost almost 300 men, the 4th Division 600, and the 9th Division nearly 850.<sup>[29](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn29)</sup> Although the figures hardly approached the intensity of losses in July, they indicated clearly a major difference in the character of the opposition met on different sectors of the front."
+      },
+      "Footnote_References": [
+        "29"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING aug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "BEGINNING aug44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Joseph Lawton Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 2000,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, -1.0000",
+        "Map_Reference": "Map 13",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-13.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_Breakout_Map,_operations_25_July_to_15_August_1944.svg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, -1.0000",
+        "Weather_text": "Warm summer weather with high humidity and ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.36,
+          "East": 0.36,
+          "South": 48.1,
+          "North": 49.9
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "13a",
+      "Footnote_Number": "13",
+      "Footnote_Text": "First U.S. Army, Report of Operations, 1 August 1944-22 February 1945, 4 Vols. (Washington, 1946), I, 3. (In footnotes throughout the remainder of the volume, all references cited as First U.S. Army, Report of Operations, are to the 1 August 1944-22 February 1945 report. See also footnote 15, Chapter I.)",
+      "Footnote_Referenced_Source": "First U.S. Army, Report of Operations, 1 August 1944-22 February 1945",
+      "Web_Link": "https://history.army.mil/html/books/007/7-4-1/index.html",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "13b",
+      "Footnote_Number": "13",
+      "Footnote_Text": "VII Corps Tactical Study of the Terrain, 17 Jul.",
+      "Footnote_Referenced_Source": "VII Corps Tactical Study of the Terrain",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "VII Corps Tactical Study of the Terrain, 17 Jul"
+    },
+    {
+      "Footnote": "14a",
+      "Footnote_Number": "14",
+      "Footnote_Text": "VII Corps FO 7, 1 Aug",
+      "Footnote_Referenced_Source": "VII Corps FO 7",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "VII Corps FO 7, 1 Aug"
+    },
+    {
+      "Footnote": "14b",
+      "Footnote_Number": "14",
+      "Footnote_Text": "see 4th Div Spec Opn Rpt, St. Pois.",
+      "Footnote_Referenced_Source": "4th Div Spec Opn Rpt, St. Pois",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "4th Div Spec Opn Rpt, St. Pois"
+    },
+    {
+      "Footnote": "15a",
+      "Footnote_Number": "15",
+      "Footnote_Text": "MS # B-725 (Gersdorff)",
+      "Footnote_Referenced_Source": "MS # B-725",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "MS # B-725 (Gersdorff)"
+    },
+    {
+      "Footnote": "15b",
+      "Footnote_Number": "15",
+      "Footnote_Text": "Jules et Gilles Buisson, Mortain et sa Bataille (Rennes, 1947), pp. 47ff",
+      "Footnote_Referenced_Source": "Jules et Gilles Buisson, Mortain et sa Bataille",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Non-digital book",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Mortain et sa Bataille (Rennes, 1947)"
+    },
+    {
+      "Footnote": "15c",
+      "Footnote_Number": "15",
+      "Footnote_Text": "A representative action in this advance was one in which 2d Lt. Harold B. Selleck of the 26th Infantry, who had been reconnoitering an approach route for his battalion, encountered a hostile tank-infantry force, which opened fire. Selleck deployed his few troops, engaged the enemy, and captured more than a hundred prisoners, a Mark IV tank, and considerable amounts of equipment and supplies. He was awarded the DSC.",
+      "Footnote_Referenced_Source": "DSC citation for Harold B. Selleck",
+      "Web_Link": "https://homeofheroes.com/distinguished-service-cross/world-war-ii/distinguished-service-cross/army-s/",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "16",
+      "Footnote_Number": "16",
+      "Footnote_Text": "1st Div AAR, Aug.",
+      "Footnote_Referenced_Source": "1st Div AAR",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "1st Div AAR, Aug"
+    },
+    {
+      "Footnote": "17",
+      "Footnote_Number": "17",
+      "Footnote_Text": "VII Corps Opns Memo 57, 4 Aug.",
+      "Footnote_Referenced_Source": "VII Corps Opns Memo 57",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "VII Corps Opns Memo 57, 4 Aug"
+    },
+    {
+      "Footnote": "18",
+      "Footnote_Number": "18",
+      "Footnote_Text": "4th Div Spec Opn Rpt, St. Pois.",
+      "Footnote_Referenced_Source": "4th Div Spec Opn Rpt, St. Pois",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "4th Div Spec Opn Rpt, St. Pois"
+    },
+    {
+      "Footnote": "19",
+      "Footnote_Number": "19",
+      "Footnote_Text": "VII Corps FO 7, 1 Aug.",
+      "Footnote_Referenced_Source": "VII Corps FO 7",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "VII Corps FO 7, 1 Aug"
+    },
+    {
+      "Footnote": "20",
+      "Footnote_Number": "20",
+      "Footnote_Text": "VII Corps Opns Memo 55, 3 Aug (confirming oral orders, 2 Aug).",
+      "Footnote_Referenced_Source": "VII Corps Opns Memo 55",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "VII Corps Opns Memo 55, 3 Aug"
+    },
+    {
+      "Footnote": "21a",
+      "Footnote_Number": "21",
+      "Footnote_Text": "MS # B-725 (Gersdorff)",
+      "Footnote_Referenced_Source": "MS # B-725",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "MS # B-725 (Gersdorff)"
+    },
+    {
+      "Footnote": "21b",
+      "Footnote_Number": "21",
+      "Footnote_Text": "Hosp Intervs, GL-93 (316), IV.",
+      "Footnote_Referenced_Source": "Hosp Intervs, GL-93 (316)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "Hosp Intervs, GL-93 (316), IV"
+    },
+    {
+      "Footnote": "22a",
+      "Footnote_Number": "22",
+      "Footnote_Text": "4th Div Spec Opn Rpt, St. Pois",
+      "Footnote_Referenced_Source": "4th Div Spec Opn Rpt, St. Pois",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "4th Div Spec Opn Rpt, St. Pois"
+    },
+    {
+      "Footnote": "22b",
+      "Footnote_Number": "22",
+      "Footnote_Text": "4th Div G-3 Jnl, 4-5 Aug. Pvt. Joseph J. Giordano of the 8th Infantry was awarded the DSC for heroic action on 5 August.",
+      "Footnote_Referenced_Source": "4th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "4th Div G-3 Jnl, 4-5 Aug"
+    },
+    {
+      "Footnote": "23a",
+      "Footnote_Number": "23",
+      "Footnote_Text": "VII Corps Notes for CofS, 4 Aug, VII Corps G-3 Jnl and File",
+      "Footnote_Referenced_Source": "VII Corps Notes for CofS",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "VII Corps Notes for CofS, 4 Aug"
+    },
+    {
+      "Footnote": "23b",
+      "Footnote_Number": "23",
+      "Footnote_Text": "Col. Gerden F. Johnson, History of the Twelfth Infantry Regiment in World War II (Boston, 1947), p. 168.",
+      "Footnote_Referenced_Source": "Col. Gerden F. Johnson, History of the Twelfth Infantry Regiment in World War II",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Non-digital book",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "History of the Twelfth Infantry Regiment in World War II (Boston, 1947)"
+    },
+    {
+      "Footnote": "24a",
+      "Footnote_Number": "24",
+      "Footnote_Text": "VII Corps FO 7, 1 Aug",
+      "Footnote_Referenced_Source": "VII Corps FO 7",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "VII Corps FO 7, 1 Aug"
+    },
+    {
+      "Footnote": "24b",
+      "Footnote_Number": "24",
+      "Footnote_Text": "9th Div FO 15, 2 Aug, and AAR, Aug.",
+      "Footnote_Referenced_Source": "9th Div FO 15",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "9th Div FO 15, 2 Aug, and AAR, Aug"
+    },
+    {
+      "Footnote": "25a",
+      "Footnote_Number": "25",
+      "Footnote_Text": "MS # B-725 (Gersdorff)",
+      "Footnote_Referenced_Source": "MS # B-725",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "MS # B-725 (Gersdorff)"
+    },
+    {
+      "Footnote": "25b",
+      "Footnote_Number": "25",
+      "Footnote_Text": "FUSA G-2 Per Rpt 49- 29 Jul.",
+      "Footnote_Referenced_Source": "FUSA G-2 Per Rpt 49",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "FUSA G-2 Per Rpt 49- 29 Jul"
+    },
+    {
+      "Footnote": "26a",
+      "Footnote_Number": "26",
+      "Footnote_Text": "VII Corps Opns Memo 57, 4 Aug",
+      "Footnote_Referenced_Source": "VII Corps Opns Memo 57",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "VII Corps Opns Memo 57, 4 Aug"
+    },
+    {
+      "Footnote": "26b",
+      "Footnote_Number": "26",
+      "Footnote_Text": "Notes for CofS, 4 Aug.",
+      "Footnote_Referenced_Source": "Notes for CofS",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "Notes for CofS, 4 Aug"
+    },
+    {
+      "Footnote": "27a",
+      "Footnote_Number": "27",
+      "Footnote_Text": "9th Div and 39th Inf AAR's, Aug",
+      "Footnote_Referenced_Source": "9th Div and 39th Inf AAR's",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "9th Div and 39th Inf AAR's, Aug"
+    },
+    {
+      "Footnote": "27b",
+      "Footnote_Number": "27",
+      "Footnote_Text": "MS # B-725 (Gersdorff).",
+      "Footnote_Referenced_Source": "MS # B-725",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "MS # B-725 (Gersdorff)"
+    },
+    {
+      "Footnote": "28",
+      "Footnote_Number": "28",
+      "Footnote_Text": "VII Corps Opns Memo 59, 7 Aug (confirming oral orders 6 Aug).",
+      "Footnote_Referenced_Source": "VII Corps Opns Memo 59",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "VII Corps Opns Memo 59, 7 Aug"
+    },
+    {
+      "Footnote": "29",
+      "Footnote_Number": "29",
+      "Footnote_Text": "FUSA Daily G-1 Rpts, Aug.",
+      "Footnote_Referenced_Source": "FUSA Daily G-1 Rpts",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "FUSA Daily G-1 Rpts, Aug"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

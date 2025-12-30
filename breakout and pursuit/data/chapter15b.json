@@ -1,0 +1,1351 @@
+{
+  "Events": [
+    {
+      "Event": "The Post-COBRA Plan",
+      "Sub-event": "Bradley's Decision to Exploit COBRA Success",
+      "Sub-event_summary": "By the evening of 27 July, General Bradley decided to continue the attack to exploit the COBRA breakthrough, prompted by the enemy withdrawal on the Cotentin west coast and strong opposition east of Coutances indicating an attempt to hold open a retreat path for LXXXIV Corps. The Luftwaffe's appearance and Bradley's optimism underscored the favorable situation.",
+      "Sub-event_fulltext": {
+        "Paragraph_[29]": "The Post-COBRA Plan In the COBRA plan, General Bradley had not tried to forecast how the operation might end. Instead, he was prepared to choose his course of action from the actual COBRA results. He could halt the offensive and consolidate his forces or continue his attack to exploit a breakthrough. By the evening of 27 July it was apparent that the success of COBRA warranted a continuation of the attack, and Bradley decided to exploit his gains and broaden and extend his effort.",
+        "Paragraph_[30]": "Specifically, the enemy withdrawal along the west coast of the Cotentin on 27 July--later judged the decisive consequence of COBRA--seemed to offer an opportunity to hasten the withdrawal and turn it into a rout.",
+        "Paragraph_[31]": "The fact that the opposition east of Coutances was so strong appeared particularly significant-- the forces there were obviously trying \"to hold open the door of retreat for the LXXXIV Corps.\" Even the Luftwaffe put in an appearance--a total of thirty planes made eight daylight and sixteen night raids.",
+        "Paragraph_[32]": "The Germans had realized the danger of becoming isolated on the Cotentin west coast and had attempted to escape encirclement by withdrawing. \"To say that . . . [we are] riding high tonight is putting it mildly,\" General Bradley wrote General Eisenhower. \"Things on our front really look good.\""
+      },
+      "Footnote_References": [
+        16,
+        17,
+        18
+      ],
+      "Place_Name": "Coutances",
+      "Dates": {
+        "Date_group_of_event": "272100ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "272000ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "First Army",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "12th Army Group",
+              "Commander": "Omar N. Bradley",
+              "Name": "Omar N. Bradley",
+              "Rank": "Lt Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "LXXXIV Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "Seventh Army",
+              "Commander": "Paul Hausser",
+              "Name": "Paul Hausser",
+              "Rank": "Oberst-Gruppenführer",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Disorganized",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [
+              {
+                "Origination_Country": "DE",
+                "Name": "Aircraft",
+                "Identifier": "Various",
+                "Quantity": "30",
+                "Web_Reference": null,
+                "Web_Image_Reference": null,
+                "Web_Image_License": null,
+                "Web_Reference_Capture_Date": null
+              }
+            ],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.0454 N, -1.4452 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:NormandyBreakout1944.png",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 23, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Coutances",
+          "Place_GPS_coordinate": "49.0454 N, -1.4452 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.4452,
+            "East": -0.4452,
+            "South": 48.0454,
+            "North": 50.0454
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The Post-COBRA Plan",
+      "Sub-event": "Intelligence Assessment of German Situation",
+      "Sub-event_summary": "American intelligence assessed that Germans in the Cotentin were in flight, likely attempting to form a defensive line from Avranches to Vire. Destruction of LXXXIV Corps was imminent, and II Parachute Corps was at risk.",
+      "Sub-event_fulltext": {
+        "Paragraph_[33]": "As judged by American intelligence officers--whose gratification over the COBRA results led to some optimistic exaggeration--the Germans in the Cotentin were in flight by 27 July. The only hope the Germans could have of stemming their retreat was to gain refuge behind the Sée River at Avranches. The \"bits and pieces,\" the \"shattered remnants,\" and the \"battered portions\" of the units in the Cotentin were hardly in shape to make a stand unless fresh troops came forward to reinforce them, and no fresh troops seemed available.",
+        "Paragraph_[34]": "Thus the German course of action would probably be an attempt to erect a hasty defensive line between Avranches and the town of Vire, a line along the south bank of the Sée River and the high ground south of Villedieu-les-Poelës and St. Sever-Calvados. The possibility was also present that the Germans might counterattack from the east with two panzer divisions, but this hardly seemed likely at the moment. The significant conclusion was that \"destruction of LXXXIV Corps is believed at hand, and the destruction of II Parachute Corps is an immediate possibility.\""
+      },
+      "Footnote_References": [
+        19
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "270000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "262300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "II Parachute Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "Seventh Army",
+              "Commander": "Paul Hausser",
+              "Name": "Paul Hausser",
+              "Rank": "Oberst-Gruppenführer",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Shattered",
+          "Equipments": {
+            "Supply": "Shortages likely",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844 N, -1.3569 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.fireandfury.com/scenarios/normons.pdf",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 23, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Avranches",
+          "Place_GPS_coordinate": "48.6844 N, -1.3569 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.3569,
+            "East": -0.3569,
+            "South": 47.6844,
+            "North": 49.6844
+          }
+        },
+        {
+          "Place_Name": "Vire",
+          "Place_GPS_coordinate": "48.8376 N, -0.8889 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8889,
+            "East": 0.1111,
+            "South": 47.8376,
+            "North": 49.8376
+          }
+        },
+        {
+          "Place_Name": "Villedieu-les-Poêles",
+          "Place_GPS_coordinate": "48.8373 N, -1.2213 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.2213,
+            "East": -0.2213,
+            "South": 47.8373,
+            "North": 49.8373
+          }
+        },
+        {
+          "Place_Name": "St. Sever-Calvados",
+          "Place_GPS_coordinate": "48.8380 N, -1.0480 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0480,
+            "East": -0.0480,
+            "South": 47.8380,
+            "North": 49.8380
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The Post-COBRA Plan",
+      "Sub-event": "Bradley's Orders for Exploitation",
+      "Sub-event_summary": "Bradley ordered unrelenting pressure on the Germans to prevent regrouping, relying on corps commanders' judgment and issuing general instructions due to the fluid situation.",
+      "Sub-event_fulltext": {
+        "Paragraph_[35]": "To give the enemy \"no time to regroup and reorganize his forces,\" General Bradley ordered his subordinate commanders to \"maintain unrelenting pressure\" on the Germans.",
+        "Paragraph_[36]": "His great reliance on the judgment of his corps commanders, as well as the fluidity of the situation, led him to formulate his instructions in rather general terms."
+      },
+      "Footnote_References": [
+        20,
+        21
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "280000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "272300ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Normandy",
+          "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0000,
+            "East": 0.0000,
+            "South": 48.0000,
+            "North": 50.0000
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The Post-COBRA Plan",
+      "Sub-event": "Immediate Tasks and Difficulties for VII and VIII Corps",
+      "Sub-event_summary": "The immediate tasks were to destroy German forces north of Coutances and pursue those retreating south. Difficulties included completing COBRA missions, turning VII Corps south, avoiding intermingling, and clearing mines and wrecked vehicles on the coastal road net.",
+      "Sub-event_fulltext": {
+        "Paragraph_[37]": "There was no need for specifics. Two immediate tasks lay ahead. The German forces still north of Coutances had to be destroyed, those retreating to the south had to be pursued. Difficulties were apparent.",
+        "Paragraph_[38]": "On the Cotentin west coast, where German disorganization seemed greatest, the VII and VIII Corps still had to complete their COBRA mission of eliminating the German forces trapped near Coutances. At the time, the VII Corps, which had veered westward toward the coast, now had to turn south. Furthermore, VII Corps threatened to cause confusion by intermingling with VIII Corps units. The VIII Corps, in addition to concern over the approach of the VII Corps toward its zone of advance, faced mines and wrecked vehicles, obstacles that were serious hindrances to a rapid advance in the restricted coastal road net. Time would be needed to regroup both corps and clear the roads, minimum prerequisites, it seemed, for effective exploitation south toward Avranches."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Cotentin west coast",
+      "Dates": {
+        "Date_group_of_event": "APPROX 280900ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "APPROX 280800ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "VII Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "First Army",
+              "Commander": "Omar N. Bradley",
+              "Name": "Omar N. Bradley",
+              "Rank": "Lt Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "VIII Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "First Army",
+              "Commander": "Omar N. Bradley",
+              "Name": "Omar N. Bradley",
+              "Rank": "Lt Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cotentin west coast",
+        "Place_GPS_coordinate": "49.3000 N, -1.7000 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Cotentin west coast",
+          "Place_GPS_coordinate": "49.3000 N, -1.7000 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.7000,
+            "East": -0.7000,
+            "South": 48.3000,
+            "North": 50.3000
+          }
+        },
+        {
+          "Place_Name": "Coutances",
+          "Place_GPS_coordinate": "49.0454 N, -1.4452 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.4452,
+            "East": -0.4452,
+            "South": 48.0454,
+            "North": 50.0454
+          }
+        },
+        {
+          "Place_Name": "Avranches",
+          "Place_GPS_coordinate": "48.6844 N, -1.3569 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.3569,
+            "East": -0.3569,
+            "South": 47.6844,
+            "North": 49.6844
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The Post-COBRA Plan",
+      "Sub-event": "V Corps Situation",
+      "Sub-event_summary": "East of the Vire River, V Corps' offensive was tied to British efforts on its left flank.",
+      "Sub-event_fulltext": {
+        "Paragraph_[39]": "East of the Vire River, where only the V Corps remained, General Gerow's offensive was inevitably tied to British efforts on his left flank."
+      },
+      "Footnote_References": [],
+      "Place_Name": "East of the Vire River",
+      "Dates": {
+        "Date_group_of_event": "APPROX 280900ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "APPROX 280800ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "V Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "First Army",
+              "Commander": "Omar N. Bradley",
+              "Name": "Omar N. Bradley",
+              "Rank": "Lt Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "East of the Vire River",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "East of the Vire River",
+          "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0000,
+            "East": 0.0000,
+            "South": 48.0000,
+            "North": 50.0000
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The Post-COBRA Plan",
+      "Sub-event": "Specific Instructions for XIX Corps",
+      "Sub-event_summary": "Bradley gave precise instructions to XIX Corps to displace west of the Vire, assume part of VII Corps zone, and attack south to an objective encompassing Forêt de St. Sever and Vire.",
+      "Sub-event_fulltext": {
+        "Paragraph_[40]": "Only the XIX Corps received precise instructions from General Bradley. General Corlett was to displace his XIX Corps to the west bank of the Vire and assume responsibility for what had been part of the VII Corps zone. Corlett was to \"attack aggressively\" in a drive south along the west bank of the Vire to a \"goose egg\" Bradley had drawn on a map. The \"goose-egg\" objective was about twenty miles south of le Mesnil-Herman and encompassed the Forêt de St. Sever and the town of Vire."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Forêt de St. Sever",
+      "Dates": {
+        "Date_group_of_event": "APPROX 280900ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "APPROX 280800ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "XIX Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "First Army",
+              "Commander": "Omar N. Bradley",
+              "Name": "Omar N. Bradley",
+              "Rank": "Lt Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Forêt de St. Sever",
+        "Place_GPS_coordinate": "48.8300 N, -1.0500 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Forêt de St. Sever",
+          "Place_GPS_coordinate": "48.8300 N, -1.0500 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0500,
+            "East": -0.0500,
+            "South": 47.8300,
+            "North": 49.8300
+          }
+        },
+        {
+          "Place_Name": "le Mesnil-Herman",
+          "Place_GPS_coordinate": "49.0000 N, -1.1500 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.1500,
+            "East": -0.1500,
+            "South": 48.0000,
+            "North": 50.0000
+          }
+        },
+        {
+          "Place_Name": "Vire",
+          "Place_GPS_coordinate": "48.8376 N, -0.8889 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8889,
+            "East": 0.1111,
+            "South": 47.8376,
+            "North": 49.8376
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The Post-COBRA Plan",
+      "Sub-event": "Importance of Vire as Pivot",
+      "Sub-event_summary": "Securing Vire would deny Germans high terrain for defense and provide a pivot for the American wheeling movement to the east, allowing entry into Brittany.",
+      "Sub-event_fulltext": {
+        "Paragraph_[41]": "If XIX Corps could secure its objective, it would be into and partially through the highest terrain in Normandy--a hill mass extending from Avranches through Vire to Falaise-- and would be able to deny the Germans use of the ground as the basis of a new defensive line. Vire, an important road center less than twenty miles from the base of the Cotentin, would provide the First Army an excellent pivot for the wheeling movement projected a month earlier--the turn to the east that would allow other American forces to enter Brittany."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Vire",
+      "Dates": {
+        "Date_group_of_event": "APPROX 280900ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "APPROX 280800ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.8376 N, -0.8889 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Vire",
+          "Place_GPS_coordinate": "48.8376 N, -0.8889 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8889,
+            "East": 0.1111,
+            "South": 47.8376,
+            "North": 49.8376
+          }
+        },
+        {
+          "Place_Name": "Falaise",
+          "Place_GPS_coordinate": "48.8972 N, -0.2016 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.2016,
+            "East": 0.7984,
+            "South": 47.8972,
+            "North": 49.8972
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The Post-COBRA Plan",
+      "Sub-event": "Preparation for Third Army Activation",
+      "Sub-event_summary": "Patton's Third Army was ready to become operational, leading to new command structure with Bradley commanding 12th Army Group and Hodges First Army. Bradley appointed Hodges and Patton as deputy commanders to facilitate the transition, expecting Third Army commitment around 1 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_[42]": "To take the step into Brittany, General Patton's Third Army headquarters was ready to become operational. When the Third Army became actively involved in operations on the Continent, the projected new U.S. command structure was to go into effect: General Bradley would take command of the 12th Army Group and Lt. Gen. Courtney H. Hodges, the Deputy Commander, First Army, would replace him as the First Army commander. It seemed as though the moment for the change might coincide with the end of the exploitation growing out of COBRA.",
+        "Paragraph_[43]": "So that the U.S. forces could slip neatly into the new command organization at the conclusion of the exploitation, General Bradley made a special arrangement. He asked General Hodges \"to keep close track of\" the three corps on the left. He informally appointed General Patton a second deputy commander and assigned him the mission of supervising the activities of the VIII Corps on the right. The VIII Corps, scheduled to come under control of the Third Army, was to act as a bridge to link the Post-COBRA exploitation and the entrance of U.S. troops into Brittany. The Third Army was expected to be committed and pass into Brittany about 1 August."
+      },
+      "Footnote_References": [
+        22
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000ZAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "APPROX 312300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "Third Army",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "12th Army Group",
+              "Commander": "Omar N. Bradley",
+              "Name": "Omar N. Bradley",
+              "Rank": "Lt Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "VIII Corps",
+              "Name": "Troy H. Middleton",
+              "Rank": "Maj Gen",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "12th Army Group",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "SHAEF",
+              "Commander": "Dwight D. Eisenhower",
+              "Name": "Dwight D. Eisenhower",
+              "Rank": "Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Dwight_D._Eisenhower",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "First Army",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "12th Army Group",
+              "Commander": "Omar N. Bradley",
+              "Name": "Omar N. Bradley",
+              "Rank": "Lt Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000 N, -3.0000 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Brittany",
+          "Place_GPS_coordinate": "48.0000 N, -3.0000 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -4.0000,
+            "East": -2.0000,
+            "South": 47.0000,
+            "North": 49.0000
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The Post-COBRA Plan",
+      "Sub-event": "Montgomery's Diversion - Canadian Attack",
+      "Sub-event_summary": "Montgomery directed a holding attack by 2d Canadian Corps from Caen toward Falaise on 25 July to divert for COBRA, but halted it due to strong resistance. Deception measures were used to protect Caen, drawing Kluge to the front.",
+      "Sub-event_fulltext": {
+        "Paragraph_[44]": "In the meantime, although COBRA and its consequences were an American responsibility, General Montgomery, as the Allied ground commander, was vitally concerned to promote progress on the American front. To create a diversion for COBRA, he had directed General Crerar to launch a holding attack on the Canadian front from Caen toward Falaise. In compliance, the 2d Canadian Corps had attacked on the morning of 25 July, at the same time that COBRA jumped off. The Canadian attack met such resistance, and set off such strong German counterattacks east of the Orne by two panzer divisions, that Montgomery halted the attack at the end of the first day. Enemy strength in the Caen sector was obviously too great for anything less than an all-out offensive effort, which Montgomery was unwilling or unable to mount. On the other hand, the presence of formidable enemy forces near Caen made it necessary for the British to exercise caution. Montgomery still considered holding Caen, the pivot of the entire Allied front in Normandy, his principal task, and to that end he set in motion deception measures and air and artillery activity to keep the enemy off balance and prevent him from making a serious threat against Caen. It was this that had brought Kluge to the Caen front on 27 July at the height of the COBRA action."
+      },
+      "Footnote_References": [
+        23
+      ],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "250600ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "250500ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "2d Canadian Corps",
+          "Unit_Nationality": "CA",
+          "Command_Structure": [
+            {
+              "Unit": "First Canadian Army",
+              "Commander": "Harry Crerar",
+              "Name": "Harry Crerar",
+              "Rank": "Lt Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_Crerar",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "Army Group B",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "OB West",
+              "Commander": "Günther von Kluge",
+              "Name": "Günther von Kluge",
+              "Rank": "Field Marshal",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.1829 N, -0.3707 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Atlantic#/media/File:Operation_Atlantic.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 23, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Caen",
+          "Place_GPS_coordinate": "49.1829 N, -0.3707 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.3707,
+            "East": 0.6293,
+            "South": 48.1829,
+            "North": 50.1829
+          }
+        },
+        {
+          "Place_Name": "Falaise",
+          "Place_GPS_coordinate": "48.8972 N, -0.2016 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.2016,
+            "East": 0.7984,
+            "South": 47.8972,
+            "North": 49.8972
+          }
+        },
+        {
+          "Place_Name": "Orne River",
+          "Place_GPS_coordinate": "49.0000 N, -0.3000 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.3000,
+            "East": 0.7000,
+            "South": 48.0000,
+            "North": 50.0000
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The Post-COBRA Plan",
+      "Sub-event": "Planning Operation BLUECOAT",
+      "Sub-event_summary": "Montgomery ordered Second British Army to attack south from Caumont on 30 July in Operation BLUECOAT to exploit German weakness, prevent reinforcement to the west, and potentially disrupt German withdrawal by denying Mont Pinçon as a pivot, aiming for Vire.",
+      "Sub-event_fulltext": {
+        "Paragraph_[45]": "Despite his preoccupation with Caen, Montgomery endeavored to assist COBRA. Looking elsewhere along the eastern portion of the Allied front, he discovered that there seemed to be little if any German armor in the Caumont sector. He decided that an attack south from Caumont along the British-American boundary by the Second British Army would take advantage of German weakness and be of value. Not only would it help COBRA by preventing the Germans from dispatching forces westward across the Vire River against the Americans, it would also ameliorate the situation at Caen by drawing German armored reserves away from that sector. With the former intention his avowed purpose, Montgomery ordered General Dempsey to attack south from Caumont on 30 July in an operation code-named BLUECOAT.",
+        "Paragraph_[46]": "Like GOODWOOD, the attempted breakthrough effort south of Caen earlier in July, which had raised doubts concerning Montgomery's primary and secondary motives, BLUECOAT had its ambiguous aspects. If the original intention was to hold German forces in place, thus keeping them from crossing the Vire and interfering with COBRA, BLUECOAT came too late to influence the panzer division that Kluge was moving from the Caumont region toward the American front. Yet because of the American success, it seemed likely that the Germans would make a general withdrawal in the Cotentin and try to swing their entire left flank back to Avranches. To do so they needed a firmly held pivot point. A dominating hill complex culminating in Mont Pinçon--five to eight miles south of the Caumont-Villers-Bocage line--in the British zone of advance seemed suitable for this purpose. If the British denied the Germans the potential pivot point and got behind those German forces trying to swing west to face the Americans, the German withdrawal might disintegrate. This became the final purpose of BLUECOAT. With the object of moving from Caumont through the Forêt l'Evêque to the town of Vire, the British were to attack on 30 July."
+      },
+      "Footnote_References": [
+        24
+      ],
+      "Place_Name": "Caumont",
+      "Dates": {
+        "Date_group_of_event": "300600ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "300500ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "Second British Army",
+          "Unit_Nationality": "GB",
+          "Command_Structure": [
+            {
+              "Unit": "21st Army Group",
+              "Commander": "Bernard L. Montgomery",
+              "Name": "Bernard L. Montgomery",
+              "Rank": "Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://en.wikipedia.org/wiki/Operation_Bluecoat#/media/File:Operation_Bluecoat_30_July_-_7_August_1944_map.png",
+          "Description": "Map of Operation Bluecoat",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Caumont",
+        "Place_GPS_coordinate": "49.0909 N, -0.8064 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Bluecoat#/media/File:Operation_Bluecoat_30_July_-_7_August_1944_map.png",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 23, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Caumont",
+          "Place_GPS_coordinate": "49.0909 N, -0.8064 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8064,
+            "East": 0.1936,
+            "South": 48.0909,
+            "North": 50.0909
+          }
+        },
+        {
+          "Place_Name": "Mont Pinçon",
+          "Place_GPS_coordinate": "48.9667 N, -0.6000 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.6000,
+            "East": 0.4000,
+            "South": 47.9667,
+            "North": 49.9667
+          }
+        },
+        {
+          "Place_Name": "Forêt l'Evêque",
+          "Place_GPS_coordinate": "48.8500 N, -0.8500 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8500,
+            "East": 0.1500,
+            "South": 47.8500,
+            "North": 49.8500
+          }
+        },
+        {
+          "Place_Name": "Vire",
+          "Place_GPS_coordinate": "48.8376 N, -0.8889 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8889,
+            "East": 0.1111,
+            "South": 47.8376,
+            "North": 49.8376
+          }
+        }
+      ]
+    },
+    {
+      "Event": "The Post-COBRA Plan",
+      "Sub-event": "Overall Exploitation Plan",
+      "Sub-event_summary": "The plan aimed to intensify German disorganization through pressure on the American front and a British thrust from Caumont, enabling the Allied turning movement and entry into Brittany, requiring securing Vire as a pivot.",
+      "Sub-event_fulltext": {
+        "Paragraph_[47]": "Out of Operation COBRA thus emerged a plan of exploitation, a plan that sought to intensify German disorganization by relentless pressure on the American front and by a quick thrust south from Caumont on the British front. If the plan succeeded, the Allied turning movement toward the southeast would become a reality, and American troops would be able to enter Brittany. For the plan to succeed, the V and XIX Corps of the First Army and the right flank corps of the Second British Army first had to secure a firm pivot point at the town of Vire."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Vire",
+      "Dates": {
+        "Date_group_of_event": "APPROX 280900ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "APPROX 280800ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.8376 N, -0.8889 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Vire",
+          "Place_GPS_coordinate": "48.8376 N, -0.8889 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8889,
+            "East": 0.1111,
+            "South": 47.8376,
+            "North": 49.8376
+          }
+        }
+      ]
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "16",
+      "Footnote_Number": "16",
+      "Footnote_Text": "First U.S. Army, Report of Operations, I, 102.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "First U.S. Army, Report of Operations, Volume I"
+    },
+    {
+      "Footnote": "17",
+      "Footnote_Number": "17",
+      "Footnote_Text": "FUSA G-2 Per Rpt 48, 28 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "First Army G-2 Periodic Report 48, 28 Jul"
+    },
+    {
+      "Footnote": "18",
+      "Footnote_Number": "18",
+      "Footnote_Text": "Ltr, Bradley to Eisenhower, 28 Jul, Pogue Files.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Letter, Bradley to Eisenhower, 28 Jul, Pogue Files"
+    },
+    {
+      "Footnote": "19",
+      "Footnote_Number": "19",
+      "Footnote_Text": "FUSA G-2 Est 12, 28 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "First Army G-2 Estimate 12, 28 Jul"
+    },
+    {
+      "Footnote": "20",
+      "Footnote_Number": "20",
+      "Footnote_Text": "FUSA FO 2, 28 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "First Army Field Order 2, 28 Jul"
+    },
+    {
+      "Footnote": "21",
+      "Footnote_Number": "21",
+      "Footnote_Text": "First U.S. Army, Report of Operations, I, 10406.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "First U.S. Army, Report of Operations, I, 10406"
+    },
+    {
+      "Footnote": "22a",
+      "Footnote_Number": "22",
+      "Footnote_Text": "TUSA AAR, I, Ch. 2;",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Third Army After Action Report, Volume I, Chapter 2"
+    },
+    {
+      "Footnote": "22b",
+      "Footnote_Number": "22",
+      "Footnote_Text": "Ltr, Bradley to Eisenhower, 28 Jul, Pogue Files.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Letter, Bradley to Eisenhower, 28 Jul, Pogue Files"
+    },
+    {
+      "Footnote": "23a",
+      "Footnote_Number": "23",
+      "Footnote_Text": "Montgomery, Normandy to the Baltic, p. 139;",
+      "Footnote_Referenced_Source": "Book",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/UK/UK-NW-Europe/UK-NW-Europe-Index.html",
+      "Web_Link_Capture_Date": "December 23, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "23b",
+      "Footnote_Number": "23",
+      "Footnote_Text": "British Army of the Rhine, Battlefield Tour, Operation BLUECOAT, 8 Corps Operations South of Caumont, 30-31 July 44 (Germany: Printing and Stationery Service, Control Commission for Germany, 1947) (hereafter cited as Operation BLUECOAT), p. 1;",
+      "Footnote_Referenced_Source": "Book",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "British Army of the Rhine",
+      "NonDigital_Library_Address": "The National Archives, Kew, Richmond TW9 4DU, UK",
+      "NonDigital_Library_References": "Battlefield Tour, Operation BLUECOAT"
+    },
+    {
+      "Footnote": "23c",
+      "Footnote_Number": "23",
+      "Footnote_Text": "FUSA G-2 Per Rpt 48, 28 Jul;",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "First Army G-2 Periodic Report 48, 28 Jul"
+    },
+    {
+      "Footnote": "23d",
+      "Footnote_Number": "23",
+      "Footnote_Text": "Stacey, The Canadian Army, pp. 190-93.",
+      "Footnote_Referenced_Source": "Book",
+      "Web_Link": "https://www.canada.ca/en/department-national-defence/services/military-history/history-heritage/official-military-history-lineages/official-histories/book-1997-canadian-army-ww2-victory-campaign.html",
+      "Web_Link_Capture_Date": "December 23, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "24a",
+      "Footnote_Number": "24",
+      "Footnote_Text": "British Army of the Rhine, Operation BLUECOAT, p. 1;",
+      "Footnote_Referenced_Source": "Book",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "British Army of the Rhine",
+      "NonDigital_Library_Address": "The National Archives, Kew, Richmond TW9 4DU, UK",
+      "NonDigital_Library_References": "Operation BLUECOAT"
+    },
+    {
+      "Footnote": "24b",
+      "Footnote_Number": "24",
+      "Footnote_Text": "Conf Notes, 1100, 28 Jul, and 1645, 28 Jul, FUSA G-3 Misc File.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Conference Notes, 1100 and 1645, 28 Jul, First Army G-3 Miscellaneous File"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn15.html",
+  "Source_Footnote_Link_Capture_Date": "December 23, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+  "Source_Link_Capture_Date": "December 23, 2025"
+}

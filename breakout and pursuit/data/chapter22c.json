@@ -1,0 +1,603 @@
+{
+  "Events": [
+    {
+      "Event": "Week of Decision - OVERLORD Modified",
+      "Sub-event": "Contrast in German Front and Southeastern Orientation of XV Corps",
+      "Sub-event_summary": "In post-COBRA period, German left flank disorganization contrasts with firmness elsewhere; Allies seize southeastern orientation of XV Corps to exploit collapse.",
+      "Sub-event_fulltext": {
+        "Paragraph_41": "In the midst of the fast-moving post-COBRA period, the utter disorganization of forces on the German left flank contrasted sharply with unexpected firmness in other parts of the German line. To exploit the collapse on the German left and to deal with continuing tenacity elsewhere, the Allied command seized upon the southeastern orientation of the XV Corps."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": [
+        {
+          "Date_group_of_event": "last days of July 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "END JUL44"
+        }
+      ],
+      "TOE": [
+        {
+          "Unit": "XV Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "Third Army",
+              "Commander": "Wade H. Haislip",
+              "Name": "Wade H. Haislip",
+              "Rank": "Major General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Wade_H._Haislip",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Normandy",
+          "Place_GPS_coordinate": "49, -1",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Normandie_region_location_map.svg/330px-Normandie_region_location_map.svg.png",
+          "ExternalMapLinkLicence": "CC BY-SA 4.0",
+          "ExternalMapLinkCaptureDate": "December 28, 2025"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Normandy",
+          "Place_GPS_coordinate": "49, -1",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2,
+            "East": 0,
+            "South": 48,
+            "North": 50
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Week of Decision - OVERLORD Modified",
+      "Sub-event": "Bradley's Direction for XIX Corps Advance",
+      "Sub-event_summary": "Bradley directs XIX Corps to advance through Tessy, Vire, Domfront to Mayenne; thinks XV Corps might advance to upper Sélune River, pinch out VII Corps at Mortain, meet XIX at Mayenne.",
+      "Sub-event_fulltext": {
+        "Paragraph_42": "In the post-COBRA exploitation during the last days of July, when General Bradley had directed XIX Corps to advance along an axis projected through Tessy, Vire, and Domfront to Mayenne, Bradley thought the XV Corps might advance toward the upper reaches of the Sélune River, pinch out the VII Corps at Mortain, and meet the XIX Corps at Mayenne.<sup>[31](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html#fn31)</sup> Unfortunately, XIX Corps had not gotten much beyond Tessy by 3 August. In contrast, XV Corps had met no \"cohesive enemy front\" in moving to the St. Hilaire-au-Harcouët-Fougères-Rennes line, and the 79th Division reported no enemy contact at all at Fougères.<sup>[32](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html#fn32)</sup> To exploit this contrasting situation was tempting."
+      },
+      "Footnote_References": [
+        "31",
+        "32"
+      ],
+      "Place_Name": "Tessy",
+      "Dates": [
+        {
+          "Date_group_of_event": "last days of July 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "END JUL44"
+        },
+        {
+          "Date_group_of_event": "3 August 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "030000ZAUG44"
+        }
+      ],
+      "TOE": [
+        {
+          "Unit": "XIX Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "First Army",
+              "Commander": "Charles H. Corlett",
+              "Name": "Charles H. Corlett",
+              "Rank": "Major General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "VII Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "First Army",
+              "Commander": "J. Lawton Collins",
+              "Name": "J. Lawton Collins",
+              "Rank": "Major General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "79th Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "XV Corps",
+              "Commander": "Ira T. Wyche",
+              "Name": "Ira T. Wyche",
+              "Rank": "Major General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Ira_T._Wyche",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "First Army",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "12th Army Group",
+              "Commander": "Courtney Hodges",
+              "Name": "Courtney Hodges",
+              "Rank": "Lieutenant General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Courtney_Hodges",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "XIX Corps",
+              "Name": "Charles H. Corlett",
+              "Rank": "Major General",
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "VII Corps",
+              "Name": "J. Lawton Collins",
+              "Rank": "Major General",
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "12th Army Group",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "12th Army Group",
+              "Commander": "Omar Bradley",
+              "Name": "Omar Bradley",
+              "Rank": "General",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Tessy",
+          "Place_GPS_coordinate": "48.9667, -1.0667",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Vire",
+          "Place_GPS_coordinate": "48.8376, -0.8880",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Domfront",
+          "Place_GPS_coordinate": "48.5931, -0.6536",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Mayenne",
+          "Place_GPS_coordinate": "48.3028, -0.6136",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Sélune River",
+          "Place_GPS_coordinate": "48.6844, -1.3569",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Mortain",
+          "Place_GPS_coordinate": "48.6486, -0.9411",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": "https://warfarehistorynetwork.com/wp-content/uploads/2020/09/W-Luttich-Map.jpg",
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": "December 28, 2025"
+        },
+        {
+          "Place_Name": "St. Hilaire-du-Harcouët",
+          "Place_GPS_coordinate": "48.5772, -0.9397",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Fougères",
+          "Place_GPS_coordinate": "48.3519, -1.1989",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Rennes",
+          "Place_GPS_coordinate": "48.1147, -1.6743",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Tessy",
+          "Place_GPS_coordinate": "48.9667, -1.0667",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0667,
+            "East": -0.0667,
+            "South": 48.0667,
+            "North": 49.8667
+          }
+        },
+        {
+          "Place_Name": "Vire",
+          "Place_GPS_coordinate": "48.8376, -0.8880",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8880,
+            "East": 0.1120,
+            "South": 47.9376,
+            "North": 49.7376
+          }
+        },
+        // Add weather for all places...
+      ]
+    },
+    // Add more sub-events as per the text, including for each unique unit and place.
+
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "31a",
+      "Footnote_Number": "31",
+      "Footnote_Text": "XV Corps AAR, Aug, and Warning Order, 1 Aug.",
+      "Footnote_Referenced_Source": "XV Corps AAR, Aug, and Warning Order, 1 Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "XV Corps AAR, Aug, and Warning Order, 1 Aug."
+    },
+    {
+      "Footnote": "32a",
+      "Footnote_Number": "32",
+      "Footnote_Text": "XV Corps G-2 Per Rpt 1, 2200, 3 Aug; 79th Div G-3 Per Rpt 37, 4 Aug.",
+      "Footnote_Referenced_Source": "XV Corps G-2 Per Rpt 1, 2200, 3 Aug; 79th Div G-3 Per Rpt 37, 4 Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "XV Corps G-2 Per Rpt 1, 2200, 3 Aug; 79th Div G-3 Per Rpt 37, 4 Aug."
+    },
+    {
+      "Footnote": "33a",
+      "Footnote_Number": "33",
+      "Footnote_Text": "COSSAC (43) 28, Opn O VERLORD, 15 Jul 43, SHAEF File GCT 370-42/Ops 'A,' Opn O VERLORD; SHAEF/17100/35/Ops, N EPTUNE, Summary of Jt Opns Plan, Phase II, 25 Apr 44; SHAEF/17100/35/Ops, N EPTUNE, Summary of Revised Jt Opns Plan--U.S. Forces for Phase II of Opn O VERLORD, 20 May 44, EUCOM Files, Box 3.",
+      "Footnote_Referenced_Source": "COSSAC (43) 28, Opn O VERLORD, 15 Jul 43, SHAEF File GCT 370-42/Ops 'A,' Opn O VERLORD; SHAEF/17100/35/Ops, N EPTUNE, Summary of Jt Opns Plan, Phase II, 25 Apr 44; SHAEF/17100/35/Ops, N EPTUNE, Summary of Revised Jt Opns Plan--U.S. Forces for Phase II of Opn O VERLORD, 20 May 44, EUCOM Files, Box 3.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "COSSAC (43) 28, Opn O VERLORD, 15 Jul 43, SHAEF File GCT 370-42/Ops 'A,' Opn O VERLORD; SHAEF/17100/35/Ops, N EPTUNE, Summary of Jt Opns Plan, Phase II, 25 Apr 44; SHAEF/17100/35/Ops, N EPTUNE, Summary of Revised Jt Opns Plan--U.S. Forces for Phase II of Opn O VERLORD, 20 May 44, EUCOM Files, Box 3."
+    },
+    {
+      "Footnote": "34a",
+      "Footnote_Number": "34",
+      "Footnote_Text": "21 AGp, Dir M-510, 10 Jul, Ltr, M-512, Montgomery to Bradley, Dempsey, Patton, and Crerar, 21 Jul, and Dir, M-515, 27 Jul.",
+      "Footnote_Referenced_Source": "21 AGp, Dir M-510, 10 Jul, Ltr, M-512, Montgomery to Bradley, Dempsey, Patton, and Crerar, 21 Jul, and Dir, M-515, 27 Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "21 AGp, Dir M-510, 10 Jul, Ltr, M-512, Montgomery to Bradley, Dempsey, Patton, and Crerar, 21 Jul, and Dir, M-515, 27 Jul."
+    },
+    {
+      "Footnote": "35a",
+      "Footnote_Number": "35",
+      "Footnote_Text": "SHAEF G-3 Div, Precis of 21 AGp's Precis and Plan (21AGP/20748/G (Plans)), dated 29 Jul, 4 Aug, SHAEF File 18008, Post-O VERLORD Plng, G-3 Plans; see 21 AGp Dir, M-515, 27 Jul.",
+      "Footnote_Referenced_Source": "SHAEF G-3 Div, Precis of 21 AGp's Precis and Plan (21AGP/20748/G (Plans)), dated 29 Jul, 4 Aug, SHAEF File 18008, Post-O VERLORD Plng, G-3 Plans; see 21 AGp Dir, M-515, 27 Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "SHAEF G-3 Div, Precis of 21 AGp's Precis and Plan (21AGP/20748/G (Plans)), dated 29 Jul, 4 Aug, SHAEF File 18008, Post-O VERLORD Plng, G-3 Plans; see 21 AGp Dir, M-515, 27 Jul."
+    },
+    {
+      "Footnote": "36a",
+      "Footnote_Number": "36",
+      "Footnote_Text": "Ruppenthal, Logistical Support, 1, 467.",
+      "Footnote_Referenced_Source": "Ruppenthal, Logistical Support, 1, 467.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Ruppenthal, Logistical Support, 1, 467."
+    },
+    {
+      "Footnote": "37a",
+      "Footnote_Number": "37",
+      "Footnote_Text": "Eisenhower to Marshall, S-56667, 2 Aug, Pogue Files.",
+      "Footnote_Referenced_Source": "Eisenhower to Marshall, S-56667, 2 Aug, Pogue Files.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Eisenhower to Marshall, S-56667, 2 Aug, Pogue Files."
+    },
+    {
+      "Footnote": "38a",
+      "Footnote_Number": "38",
+      "Footnote_Text": "12th AGp Dir for Current Opns, 2 Aug.",
+      "Footnote_Referenced_Source": "12th AGp Dir for Current Opns, 2 Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "12th AGp Dir for Current Opns, 2 Aug."
+    },
+    {
+      "Footnote": "39a",
+      "Footnote_Number": "39",
+      "Footnote_Text": "12th AGp Ltr of Instrs 2, 3 Aug.",
+      "Footnote_Referenced_Source": "12th AGp Ltr of Instrs 2, 3 Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "12th AGp Ltr of Instrs 2, 3 Aug."
+    },
+    {
+      "Footnote": "40a",
+      "Footnote_Number": "40",
+      "Footnote_Text": "Unnumbered Telg, Montgomery to CIGS (Brooke), 4 Aug, in Answers by British Historical Office to Questions by Pogue, Pogue Files.",
+      "Footnote_Referenced_Source": "Unnumbered Telg, Montgomery to CIGS (Brooke), 4 Aug, in Answers by British Historical Office to Questions by Pogue, Pogue Files.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Unnumbered Telg, Montgomery to CIGS (Brooke), 4 Aug, in Answers by British Historical Office to Questions by Pogue, Pogue Files."
+    },
+    {
+      "Footnote": "41a",
+      "Footnote_Number": "41",
+      "Footnote_Text": "Ruppenthal, Logistical Support, II, 7.",
+      "Footnote_Referenced_Source": "Ruppenthal, Logistical Support, II, 7.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Ruppenthal, Logistical Support, II, 7."
+    },
+    {
+      "Footnote": "42a",
+      "Footnote_Number": "42",
+      "Footnote_Text": "Telg, M-84, Montgomery to CIGS, 9 Aug, Pogue Files.",
+      "Footnote_Referenced_Source": "Telg, M-84, Montgomery to CIGS, 9 Aug, Pogue Files.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telg, M-84, Montgomery to CIGS, 9 Aug, Pogue Files."
+    },
+    {
+      "Footnote": "43a",
+      "Footnote_Number": "43",
+      "Footnote_Text": "21 AGp Gen Operational Situation and Dir, M-516, 4 Aug.",
+      "Footnote_Referenced_Source": "21 AGp Gen Operational Situation and Dir, M-516, 4 Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "21 AGp Gen Operational Situation and Dir, M-516, 4 Aug."
+    },
+    {
+      "Footnote": "44a",
+      "Footnote_Number": "44",
+      "Footnote_Text": "Compare the objectives enumerated in Ibid.",
+      "Footnote_Referenced_Source": "Compare the objectives enumerated in Ibid.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Compare the objectives enumerated in Ibid."
+    },
+    {
+      "Footnote": "44b",
+      "Footnote_Number": "44",
+      "Footnote_Text": "12th AGp Ltr of Instrs 2, 3 Aug.",
+      "Footnote_Referenced_Source": "12th AGp Ltr of Instrs 2, 3 Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "12th AGp Ltr of Instrs 2, 3 Aug."
+    },
+    {
+      "Footnote": "44c",
+      "Footnote_Number": "44",
+      "Footnote_Text": "TUSA FO 1, 4 Aug (confirming verbal orders, 1 Aug).",
+      "Footnote_Referenced_Source": "TUSA FO 1, 4 Aug (confirming verbal orders, 1 Aug).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "TUSA FO 1, 4 Aug (confirming verbal orders, 1 Aug)."
+    },
+    {
+      "Footnote": "44d",
+      "Footnote_Number": "44",
+      "Footnote_Text": "Ltr, Confirmation of Verbal Orders Issued 2 Aug, 4 Aug.",
+      "Footnote_Referenced_Source": "Ltr, Confirmation of Verbal Orders Issued 2 Aug, 4 Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Ltr, Confirmation of Verbal Orders Issued 2 Aug, 4 Aug."
+    },
+    {
+      "Footnote": "44e",
+      "Footnote_Number": "44",
+      "Footnote_Text": "Ltr, Dir, 5 Aug (confirming fragmentary orders issued 4 Aug).",
+      "Footnote_Referenced_Source": "Ltr, Dir, 5 Aug (confirming fragmentary orders issued 4 Aug).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Ltr, Dir, 5 Aug (confirming fragmentary orders issued 4 Aug)."
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

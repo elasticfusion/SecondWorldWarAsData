@@ -1,0 +1,3251 @@
+{
+  "Events": [
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Terrain and Objectives in XIX Corps Zone",
+      "Sub-event_summary": "The XIX Corps positions straddle the Vire River with dissimilar terrain on each side, aiming to capture high ground and St. Lô, with initial attack west of the Vire to threaten the city from that direction.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "The XIX Corps held positions straddling the Vire River, which split the Corps zone into equal parts of dissimilar terrain--Cotentin lowland on the west and rolling country on the east. The difference was accentuated by the fact that the troops on the left (east) were along a front that was several miles in advance of the line on the right. ( Map 5 )",
+        "Paragraph_2": "The corps portion of the First Army objective lay astride the Vire River along the Coutances-St. Lô-Bayeux highway--between the villages of St. Gilles and St. André-de-l'Epine, about four miles southwest and northeast of St. Lô, respectively. The objective included not only the high ground adjacent to the highway but also the city of St. Lô.",
+        "Paragraph_3": "In compliance with the dictates of the terrain, the corps attack was to take place in two steps--first west of the Vire River, the second east of it. The initial effort (on 7 July) was to get troops across the Vire et Taute Canal and the Vire River and push the corps right flank to that part of the objective west of the Vire. Such action would protect the lateral coastal highway between Carentan and Isigny, which was still under occasional hostile fire; but more to the point, it would place troops on the high ground along the Périers-St. Lô highway, which was part of the First Army's Coutances-Caumont objective line. U.S. forces there would outflank St. Lô on the west and threaten the city from that direction.",
+        "Paragraph_4": "Reaching Pont-Hebert, about half way to the objective, would be enough to indicate this menace to the Germans, and at that point the troops on the corps left were to launch their attack east of the Vire. 23"
+      },
+      "Footnote_References": [
+        "23"
+      ],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "XIX Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "Lt. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Adequate",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "Description": "Map 5: Attack of XIX Corps West of the Vire River, 7-10 July 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Weather_text": "Rainy with low clouds, drizzling rain, fog, and mud.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5,
+          "East": 0.26,
+          "South": 48.33,
+          "North": 50.13
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Command of XIX Corps",
+      "Sub-event_summary": "Maj. Gen. Charles H. Corlett commands XIX Corps, bringing experience from Pacific campaigns including Attu and the Marshall Islands.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "The XIX Corps was commanded by Maj. Gen. Charles H. Corlett. A West Pointer whose quiet manner inspired confidence and who had a knack of getting the most from sometimes difficult subordinates, General Corlett had participated in operations on Attu and had led the 7th Division in the successful Marshall Islands campaign in the Pacific. Sent to the European theater as an expert in amphibious warfare, he had brought the XIX Corps from England to France in June. 24"
+      },
+      "Footnote_References": [
+        "24"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "BEGINNING JUN44"
+      },
+      "TOE": {
+        "Unit": "XIX Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Charles H. Corlett",
+          "Name": "Charles H. Corlett",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Experienced commander",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.182 N, -0.37 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.182 N, -0.37 W",
+        "Weather_text": "Rainy conditions in early July 1944",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.76,
+          "East": 1.0,
+          "South": 48.28,
+          "North": 50.08
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Divisions Involved in the Operation",
+      "Sub-event_summary": "XIX Corps controls the 30th Infantry Division for the initial attack, 29th Infantry Division for the later phase, incoming 35th Infantry Division, and rumors of an armored division.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "General Corlett controlled two divisions: the 30th Infantry on the corps right was to make the attack on 7 July to seize the high ground immediately west of St. Lô; the 29th Infantry was to attack later east of the Vire and directly toward St. Lô. The 35th Infantry Division, Map 5. Attack of XIX COrpds West of the Vire River, 7-10 July 194 in the process of arriving in France, was soon to join the XIX Corps for commitment either east or west of the Vire, depending upon the development of the offensive. It was rumored that Corlett was also to receive an armored division for employment west of the Vire, but no confirmation had come through by 7 July. 25"
+      },
+      "Footnote_References": [
+        "25"
+      ],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Charles H. Corlett",
+          "Name": "Charles H. Corlett",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "30th Infantry Division",
+            "Name": "Leland S. Hobbs",
+            "Rank": "Maj. Gen.",
+            "Date": "1942",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "29th Infantry Division",
+            "Name": "Charles H. Gerhardt",
+            "Rank": "Maj. Gen.",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Gerhardt",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "35th Infantry Division",
+            "Name": "Paul W. Baade",
+            "Rank": "Maj. Gen.",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_W._Baade",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "Mostly untested",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "Description": "Map 5: Attack of XIX Corps West of the Vire River, 7-10 July 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Rainy with low clouds, drizzling rain, fog, and mud.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.47,
+          "East": 0.29,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Bringing Up the Right Flank",
+      "Sub-event_summary": "To align the right flank, forces must advance nine miles across moist bottomland to the ridge west of St. Lô, with the 30th Division holding positions along the canal and river.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "General Corlett To bring up his right, General Corlett had to take a large and difficult step. His forces had to advance about nine miles across moist bottomland rising gradually toward the ridge west of St. Lô. The operations were to take place in an area six miles wide, between the Taute and Vire Rivers, which flow north in parallel channels to Carentan and Isigny, respectively. Connecting the two rivers was the Vire et Taute Canal, a shallow east-west waterway joining Carentan and Airel. The canal marked the forward positions at the beginning of July.",
+        "Paragraph_8": "The 30th Division, which held these positions, had arrived in Normandy in mid-June. Most of the division was still untested in battle. Its commander, Maj. Gen. Leland S. Hobbs, who had led the division since 1942, was known to be intensely intolerant of persons he suspected of inefficiency."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "Beginning July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Charles H. Corlett",
+          "Name": "Charles H. Corlett",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "30th Infantry Division",
+            "Name": "Leland S. Hobbs",
+            "Rank": "Maj. Gen.",
+            "Date": "1942",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "Mostly untested in battle",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Moist bottomland, rainy conditions",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.47,
+          "East": 0.29,
+          "South": 48.22,
+          "North": 50.02
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Deployment of 30th Division Regiments",
+      "Sub-event_summary": "All three regiments of the 30th Division are deployed in an arc along the Vire et Taute Canal and Vire River, with the 120th on the canal, and 117th and 119th on the river near Airel.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "All three regiments of the 30th Division were in the line and deployed in an arc along the Vire et Taute Canal and the Vire River. The 120th Infantry held the north bank of the canal, the 117th and 119th Regiments the east bank of the river near Airel. The first problem facing General Hobbs in the forthcoming attack was how to get across the water barrier and establish a bridgehead easily reinforced and expanded."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Airel",
+      "Dates": {
+        "Date_group_of_event": "Beginning July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Charles H. Corlett",
+          "Name": "Charles H. Corlett",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "120th Infantry Regiment",
+            "Name": "Hammond D. Birks",
+            "Rank": "Col.",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "117th Infantry Regiment",
+            "Name": "Henry E. Kelly",
+            "Rank": "Col.",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "119th Infantry Regiment",
+            "Name": "Alfred V. Ednie",
+            "Rank": "Col.",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "In line",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Airel",
+        "Place_GPS_coordinate": "49.214 N, -1.075 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Airel",
+        "Place_GPS_coordinate": "49.214 N, -1.075 W",
+        "Weather_text": "Rainy conditions",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.45,
+          "East": 0.3,
+          "South": 48.31,
+          "North": 50.11
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Description of Crossing Sites",
+      "Sub-event_summary": "The Vire et Taute Canal is shallow but with open marshland, while the Vire River has steep banks and dry ground, with a damaged bridge at Airel offering advantages for crossing.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "The gently sloping banks of the Vire et Taute Canal were only twenty feet apart, and the water in some places was shallow enough to be waded. Nevertheless, a muddy bottom made fording treacherous, and the adjacent terrain was completely open marshland. North of the canal the soft ground between Carentan and Isigny was not suitable for concentrating heavy equipment and large numbers of supporting troops. Two roads had originally crossed the canal, a country road near the Taute River and a tarred highway closer to the Vire, but the bridges had been destroyed.",
+        "Paragraph_11": "The Vire River south of the juncture with the canal, at Airel, had steep banks eight feet high. The river in July was 60 feet wide and the water from 9 to 14 feet deep. Low, flat, and exposed fields 400 yards in width bordered the Vire on each side, but the land was relatively dry. East of the river the ground was firm and had a well-surfaced road network. Where a highway crossed the river near Airel, an arched stone bridge was only slightly damaged.",
+        "Paragraph_12": "Although the size of the canal made it a less obvious obstacle, the river offered several positive advantages for an assault crossing. Getting across the 60-foot river in assault boats was likely to be quicker and less costly than wading the canal. The Germans had flooded both waterways, but their efforts at the Vire were less efficacious. The road network east of the river was better than that north of the canal, and the damaged stone bridge at Airel could be easily repaired. There was little cover and concealment in either of the two areas."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Airel",
+      "Dates": {
+        "Date_group_of_event": "July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Charles H. Corlett",
+          "Name": "Charles H. Corlett",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Prepared for crossing",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Assault boats",
+              "Identifier": null,
+              "Quantity": "40",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Assault_boat",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Assault_boat_training.jpg/220px-Assault_boat_training.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Airel",
+        "Place_GPS_coordinate": "49.214 N, -1.075 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Airel",
+        "Place_GPS_coordinate": "49.214 N, -1.075 W",
+        "Weather_text": "Flooded waterways",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.45,
+          "East": 0.3,
+          "South": 48.31,
+          "North": 50.11
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Bridgehead Objective and Plan",
+      "Sub-event_summary": "The immediate objective is the road intersection near St. Jean-de-Daye, with a two-pronged attack across both water barriers to seize the bridgehead, then move south to high ground west of St. Lô.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "The logical immediate objective of forces establishing a bridgehead was a road intersection near St. Jean-de-Daye, a crossroads equidistant--about three miles--from the canal and the river. The fact that artillery and infantry weapons could support a crossing of either the river or the canal with equal effectiveness influenced General Hobbs' decision to make a two-pronged attack across both water barriers. The division was to move from the north across the canal and from the east across the river to seize a bridgehead defined by the roads that intersected south of St. Jean-de-Daye. Once in possession of the bridgehead, the division would move south to the high ground west of St. Lô."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Jean-de-Daye",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Charles H. Corlett",
+          "Name": "Charles H. Corlett",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Planned for two-pronged attack",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Jean-de-Daye",
+        "Place_GPS_coordinate": "49.228 N, -1.138 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Jean-de-Daye",
+        "Place_GPS_coordinate": "49.228 N, -1.138 W",
+        "Weather_text": "Rainy conditions",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.51,
+          "East": 0.25,
+          "South": 48.33,
+          "North": 50.13
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Main Effort Across Vire River",
+      "Sub-event_summary": "The 117th Infantry is selected for the main effort across the Vire River using assault boats, followed by the 119th Infantry, aiming to clear the hamlet and advance to St. Jean-de-Daye.",
+      "Sub-event_fulltext": {
+        "Paragraph_14": "To cross the Vire River in the division main effort, General Hobbs selected the 117th Infantry (Col. Henry E. Kelly), a regiment that had demonstrated river crossings at The Infantry School, Fort Benning, Georgia. The 117th Infantry was to move across the open terrain at the edge of the river just before daybreak and at dawn was to embark in assault boats several hundred yards north of the Airel stone bridge. Three assault waves were to be ferried across the river on a 400-yard front while bridges were being prepared to accommodate the rest of the troops.",
+        "Paragraph_15": "If the bridges were not ready at the end of the third assault wave, the infantry was to continue crossing in boats until enough bridges were placed to permit foot and vehicular passage. Upon reaching the far shore, the infantry was to clear the hamlet at the western end of the Airel bridge, get astride the road leading west, and move uphill toward the St. Jean-de-Daye crossroads. As soon as the entire regiment was across the river, Col. Alfred V. Ednie's 119th Infantry was to follow."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070430ZJUL44"
+      },
+      "TOE": {
+        "Unit": "117th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "117th Infantry Regiment",
+            "Name": "Henry E. Kelly",
+            "Rank": "Col.",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "119th Infantry Regiment",
+            "Name": "Alfred V. Ednie",
+            "Rank": "Col.",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Trained in river crossings",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Assault boats",
+              "Identifier": null,
+              "Quantity": "40",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Assault_boat",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Assault_boat_training.jpg/220px-Assault_boat_training.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Airel",
+        "Place_GPS_coordinate": "49.214 N, -1.075 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Airel",
+        "Place_GPS_coordinate": "49.214 N, -1.075 W",
+        "Weather_text": "Dawn conditions, rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.45,
+          "East": 0.3,
+          "South": 48.31,
+          "North": 50.11
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Crossing at Vire et Taute Canal",
+      "Sub-event_summary": "The 120th Infantry is to cross the canal on foot in the afternoon, with the 113th Cavalry Group following to protect the flank, and one battalion in reserve making a feint.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "At the canal, Col. Hammond D. Birks was to send the 120th Infantry across the water on foot in the early afternoon of the day of attack. The crossing site was to be at the destroyed bridge on the highway leading south to St. Jean-de-Daye. The land was sufficiently dry for about 400 yards on each side of the bridge site to permit deploying two battalions abreast. After wading the canal, the battalions were to drive south. In the wake of the infantry, Col. William S. Biddle's 113th Cavalry Group was to cross and turn west toward the Taute River to protect the 30th Division's right flank. The third battalion of the 120th Infantry was to remain on the north bank of the canal at the country road near the Taute River. Designated as the corps reserve, the battalion was to support the regimental crossing by fire, make a crossing feint of its own, and check any German attempt to make a countercrossing. 26"
+      },
+      "Footnote_References": [
+        "26"
+      ],
+      "Place_Name": "Vire et Taute Canal",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "071330ZJUL44"
+      },
+      "TOE": {
+        "Unit": "120th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "120th Infantry Regiment",
+            "Name": "Hammond D. Birks",
+            "Rank": "Col.",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "113th Cavalry Group",
+            "Name": "William S. Biddle",
+            "Rank": "Col.",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Deployed two battalions abreast",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire et Taute Canal",
+        "Place_GPS_coordinate": "49.3 N, -1.2 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire et Taute Canal",
+        "Place_GPS_coordinate": "49.3 N, -1.2 W",
+        "Weather_text": "Rainy afternoon",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.58,
+          "East": 0.18,
+          "South": 48.4,
+          "North": 50.2
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Role of Engineers",
+      "Sub-event_summary": "The 105th Engineer Combat Battalion is tasked with assisting infantry and handling major assignments at both the river and canal for bridging and crossing support.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "As in almost all opposed bridgehead operations, much depended upon the work of the division engineers, in this case the 105th Engineer Combat Battalion (Lt. Col. Carroll H. Dunn). In addition to assisting the infantry with demolitions, flame throwers, and mine removal, the engineers had major assignments at both the river and the canal. 27"
+      },
+      "Footnote_References": [
+        "27"
+      ],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "105th Engineer Combat Battalion",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "105th Engineer Combat Battalion",
+            "Name": "Carroll H. Dunn",
+            "Rank": "Lt. Col.",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Demolitions",
+              "Identifier": null,
+              "Quantity": null,
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": null
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Flame throwers",
+              "Identifier": "M2 flamethrower",
+              "Quantity": null,
+              "Web_Reference": "https://en.wikipedia.org/wiki/M2_flamethrower",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/M2-2_flamethrower.jpg/220px-M2-2_flamethrower.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5,
+          "East": 0.26,
+          "South": 48.33,
+          "North": 50.13
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Engineering Tasks at Vire River",
+      "Sub-event_summary": "Engineers are to blow gaps in hedgerows, supply assault boats and crews, build scaling ladders, and construct various bridges including footbridge, ponton, treadway, and repair the stone bridge at Airel.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "At the river the engineers were to blow gaps for infantry passage through the last hedgerow before the water. They were to supply 40 assault boats and crews of four men per boat. Three men of each crew were to paddle the boats across while the fourth remained on the east bank to pull the boat back by rope for the next wave. To help the infantrymen mount the steep bank on the far side, the engineers were to build scaling ladders with special hooks.",
+        "Paragraph_19": "In addition, the division engineers, with the help of corps engineers, were to span the river with a variety of bridges. First priority was given to a footbridge; next, a ponton infantry support bridge was to be placed across the river to permit the organic division vehicles to cross. Afterwards, a floating treadway was to be installed and the stone bridge at Airel was to be repaired for the heavy vehicular traffic of the armor and artillery units. When all three vehicular bridges were in operation, General Hobbs planned to use the stone structure and the treadway for oneway traffic moving west into the bridgehead, the ponton bridge for traffic moving east out of it."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Airel",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "105th Engineer Combat Battalion",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Prepared for bridging",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Ponton bridge",
+              "Identifier": null,
+              "Quantity": "1",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Ponton_bridge",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Ponton_bridge.jpg/220px-Ponton_bridge.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Floating treadway bridge",
+              "Identifier": null,
+              "Quantity": "1",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Treadway_bridge",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Treadway_bridge.jpg/220px-Treadway_bridge.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Airel",
+        "Place_GPS_coordinate": "49.214 N, -1.075 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Airel",
+        "Place_GPS_coordinate": "49.214 N, -1.075 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.45,
+          "East": 0.3,
+          "South": 48.31,
+          "North": 50.11
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Engineering Tasks at the Canal",
+      "Sub-event_summary": "Engineers are to lay duckboards for footbridges and litter bearers, install treadway bridging, and repair the destroyed structure for vehicular passage, anticipating long hand-carry hauls for casualties.",
+      "Sub-event_fulltext": {
+        "Paragraph_20": "At the canal the engineers were to lay duckboards as footbridges for the men of the heavy weapons companies and also for the litter bearers evacuating casualties. Medical planners expected long hand-carry hauls at both the river and the canal because the lack of existing vehicular bridges and the absence of cover in the areas bordering the water precluded the use of jeeps fitted with litter racks. 28",
+        "Paragraph_21": "For eventual vehicular passage at the canal the engineers were to install a section of treadway bridging and repair the destroyed structure at the crossing site."
+      },
+      "Footnote_References": [
+        "28"
+      ],
+      "Place_Name": "Vire et Taute Canal",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "105th Engineer Combat Battalion",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Prepared",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Duckboards",
+              "Identifier": null,
+              "Quantity": null,
+              "Web_Reference": "https://en.wikipedia.org/wiki/Duckboard",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Duckboards_WWI.jpg/220px-Duckboards_WWI.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Treadway bridging",
+              "Identifier": null,
+              "Quantity": "1 section",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Treadway_bridge",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Treadway_bridge.jpg/220px-Treadway_bridge.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire et Taute Canal",
+        "Place_GPS_coordinate": "49.3 N, -1.2 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire et Taute Canal",
+        "Place_GPS_coordinate": "49.3 N, -1.2 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.58,
+          "East": 0.18,
+          "South": 48.4,
+          "North": 50.2
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Expected German Resistance",
+      "Sub-event_summary": "Intelligence expects strong resistance from three regimental-sized organizations, including SS panzer grenadiers, Kampfgruppe Heinz, and Kampfgruppe Kentner, with assault guns and good observation, likely to conduct tenacious defense with counterattacks.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "American G-2 officers expected both crossings to meet strong resistance. Intelligence indicated three regimental-sized organizations deployed between the Taute and Vire Rivers: a regiment of the 17th SS Panzer Grenadier Division , three battalions of the 275th Division formed into Kampfgruppe Heinz , and elements of the 266th Division supported by troops of the 352d Division organized into Kampfgruppe Kentner --all under the local operational control of the panzer grenadiers, which in turn functioned under LXXXIV Corps .",
+        "Paragraph_23": "German tanks had not been noted in the region, but an assault gun battalion with about three dozen 75-mm. and 105-mm. pieces in support of the infantry had been observed. Occupying ground that rises gradually toward the south, the Germans had good observation of the entire area. They had rested, reorganized, and increased their supply levels during several weeks of inactivity, and had maintained a strong counter-reconnaissance screen that inhibited American patrolling. Their probable course of action, as judged by intelligence, was to be a tenacious defense employing strong local counterattacks. 29",
+        "Paragraph_24": "This estimate, in marked contrast with the optimistic appraisals made several days earlier by the VII and VIII Corps, was in error. Whereas the two U.S. corps on the First Army right had underestimated the opposition, the XIX Corps overestimated the German strength."
+      },
+      "Footnote_References": [
+        "29"
+      ],
+      "Place_Name": "Taute River",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "17th SS Panzer Grenadier Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "Dietrich von Choltitz",
+          "Name": "Dietrich von Choltitz",
+          "Rank": "Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dietrich_von_Choltitz",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Kampfgruppe Heinz",
+            "Name": null,
+            "Rank": null,
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "Kampfgruppe Kentner",
+            "Name": null,
+            "Rank": null,
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Rested and reorganized",
+        "Equipments": {
+          "Supply": "Increased levels",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Assault gun",
+              "Identifier": "StuG III",
+              "Quantity": "36",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Sturmgesch%C3%BCtz_III",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/StuG_III_Ausf._G_alkett_1.jpg/220px-StuG_III_Ausf._G_alkett_1.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Taute River",
+        "Place_GPS_coordinate": "49.25 N, -1.25 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Taute River",
+        "Place_GPS_coordinate": "49.25 N, -1.25 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.63,
+          "East": 0.13,
+          "South": 48.35,
+          "North": 50.15
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Actual German Forces",
+      "Sub-event_summary": "Contrary to estimates, by 7 July the German forces had been reduced, with only Kampfgruppe Heinz and a small part of SS panzer grenadiers opposing, though with advantages in observation and terrain.",
+      "Sub-event_fulltext": {
+        "Paragraph_25": "The XIX Corps had actually faced strong German forces on 3 July. An attack between the Taute and the Vire on that date would have met a considerable force of German reserves. The SS panzer grenadier regiment in full force, supported by Kampfgruppe Heinz , would have opposed the water crossings; the 353d Division would have contributed units for a counterattack; and the 15th Parachute Regiment near Périers and the 2d SS Panzer Division near St. Lô would have been available for commitment.",
+        "Paragraph_26": "By 7 July, however, almost the entire SS panzer grenadier division was fighting on the Carentan-Périers isthmus. The 353d Division and the 15th Parachute Regiment were engaged on Mont Castre and at la Haye-du-Puits. The 2d SS Panzer Division was largely committed at la Haye-du-Puits and north of Périers. Kampfgruppe Kentner was east of the Vire and a part of the II Parachute Corps . Thus, the only units ready to oppose the 30th Division between the Taute and the Vire were Kampfgruppe Heinz and a small part of the SS panzer grenadiers. These forces nevertheless possessed positive advantages in superior observation and terrain readily adaptable to defense. 30"
+      },
+      "Footnote_References": [
+        "30"
+      ],
+      "Place_Name": "Carentan-Périers Isthmus",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Kampfgruppe Heinz",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "Dietrich von Choltitz",
+          "Name": "Dietrich von Choltitz",
+          "Rank": "Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dietrich_von_Choltitz",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Three battalions",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Carentan-Périers Isthmus",
+        "Place_GPS_coordinate": "49.25 N, -1.3 W",
+        "Map_Reference": "Map 4",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Carentan-Périers Isthmus",
+        "Place_GPS_coordinate": "49.25 N, -1.3 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.68,
+          "East": 0.08,
+          "South": 48.35,
+          "North": 50.15
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Fire Power Plan",
+      "Sub-event_summary": "To overcome resistance, dive bombers and extensive artillery support from multiple battalions are planned, including a rolling barrage to precede the troops.",
+      "Sub-event_fulltext": {
+        "Paragraph_32": "To overcome the expected resistance, General Hobbs called upon a tremendous amount of fire power. Dive bombers were to blast the German positions and potential routes of reinforcement. An elaborate artillery plan (drawn by Brig. Gen. George Shea, the XIX Corps Artillery commander) utilized the division artillery, the corps artillery, and the artillery of a nearby armored division. In all, eight field artillery battalions, including one of 8-inch howitzers, were to augment the organic division artillery. In addition, the 92d Chemical and the 823d Tank Destroyer Battalions were to deliver indirect fire. All buildings suspected of housing enemy strongpoints were to be destroyed. A rolling or creeping barrage was to precede the foot troops, the fire to advance 100 yards every five minutes. \"Hug the artillery barrage,\" General Hobbs instructed his subordinate commanders, \"it will carry us through.\""
+      },
+      "Footnote_References": [],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "XIX Corps Artillery",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Charles H. Corlett",
+          "Name": "Charles H. Corlett",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "XIX Corps Artillery",
+            "Name": "George Shea",
+            "Rank": "Brig. Gen.",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Adequate",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "8-inch howitzers",
+              "Identifier": "M1",
+              "Quantity": "1 battalion",
+              "Web_Reference": "https://en.wikipedia.org/wiki/240_mm_howitzer_M1",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/240mm-howitzer-negro-crew-italy-041944.jpg/220px-240mm-howitzer-negro-crew-italy-041944.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5,
+          "East": 0.26,
+          "South": 48.33,
+          "North": 50.13
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Preparation and Training for Hedgerow Tactics",
+      "Sub-event_summary": "The division practices river crossings, bridge construction, and hedgerow tactics, emphasizing coordination, extended formations, and use of weapons like TNT, dozers, white phosphorus, and bazookas.",
+      "Sub-event_fulltext": {
+        "Paragraph_33": "In preparing to execute the plan, the division applied itself to perfecting the techniques of getting across the water. The 117th Infantry conducted practice crossings, and each officer and noncommissioned leader in the regiment studied the terrain and the plan on a large sand table model of the area. The engineers practiced the details of bridge construction, made ready the assault boats, and assembled the required equipment. At the same time, the bulk of the division studied and practiced hedgerow tactics. General Hobbs emphasized the necessity of achieving close infantry, armor, and engineer co-ordination. He stressed the need to keep moving. Since bunching up or building up a firing line along a hedge or a landmark was an \"invitation for casualties,\" he insisted on extended formations. During their training period the men found that the light machine gun was not the best weapon to support infantry attacks in the hedgerows. They discovered that two 15-pound charges of TNT in burlap bags opened a gap in a hedgerow bank large enough for a tank. Learning that without demolition 50 percent of the hedgerow dikes could be breached by engineer tank dozers, the division attached dozers to the tank units. The men were reminded that the Germans particularly feared white phosphorus shells, which were highly effective against hedgerow positions. They were instructed to use the bazooka as more than a antitank weapon since its rocket head, when employed in high-angle fire and against a hard object, was almost as effective against personnel as the 60-mm. mortar shell."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "25 June - 7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "250000ZJUN44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Charles H. Corlett",
+          "Name": "Charles H. Corlett",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Training in hedgerow tactics",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Tank dozer",
+              "Identifier": null,
+              "Quantity": null,
+              "Web_Reference": "https://en.wikipedia.org/wiki/Bulldozer",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Bulldozer_on_tank.jpg/220px-Bulldozer_on_tank.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Bazooka",
+              "Identifier": "M1",
+              "Quantity": null,
+              "Web_Reference": "https://en.wikipedia.org/wiki/Bazooka",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Bazooka.jpg/220px-Bazooka.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.182 N, -0.37 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.182 N, -0.37 W",
+        "Weather_text": "Inclement weather preventing aerial photography",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.76,
+          "East": 1.0,
+          "South": 48.28,
+          "North": 50.08
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Lessons from Initial Combat",
+      "Sub-event_summary": "From early combat, the division learns to locate and flank or bypass enemy main lines, though German camouflage and weather hinder reconnaissance.",
+      "Sub-event_fulltext": {
+        "Paragraph_34": "The division also studied the lessons of its first minor combat action a few weeks earlier. The troops determined that the proper way to advance was to locate the enemy's main line of resistance, then drive to it and roll it up from the flank, neutralize it, or bypass it. This would eliminate the necessity of feeling out every hedge in the kind of slow deliberate advance that increased the effectiveness of the enemy's prearranged fires. But applying the technique was not easy. The excellent German camouflage made it extremely difficult to find the enemy positions. So inclement was the weather between 25 June and 7 July that not one aerial photographic mission could be flown."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "25 June - 7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "250000ZJUN44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Charles H. Corlett",
+          "Name": "Charles H. Corlett",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Learning from combat",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.182 N, -0.37 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.182 N, -0.37 W",
+        "Weather_text": "Inclement weather preventing aerial missions",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.76,
+          "East": 1.0,
+          "South": 48.28,
+          "North": 50.08
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Division Readiness",
+      "Sub-event_summary": "The attached 743d Tank Battalion reports all tanks ready, engineers are prepared, and General Hobbs is satisfied with the division's readiness for the attack.",
+      "Sub-event_fulltext": {
+        "Paragraph_35": "The 30th Division completed its attack preparations during the first days of July. The attached 743d Tank Battalion reported all its tanks--52 mediums and 17 light--ready for combat; the engineers made known their readiness; the infantry seemed to be set. General Hobbs was satisfied that the division would make a good showing."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "1 July - 6 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "010000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "743d Tank Battalion",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Ready for combat",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Medium tank",
+              "Identifier": "M4 Sherman",
+              "Quantity": "52",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/M4_Sherman_tank_-_Flickr_-_Joost_J_Bakker_IJmuiden.jpg/220px-M4_Sherman_tank_-_Flickr_-_Joost_J_Bakker_IJmuiden.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Light tank",
+              "Identifier": "M5 Stuart",
+              "Quantity": "17",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M5_Stuart",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/M5_Stuart_tank.jpg/220px-M5_Stuart_tank.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.182 N, -0.37 W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.182 N, -0.37 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.76,
+          "East": 1.0,
+          "South": 48.28,
+          "North": 50.08
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Weather Impact on Attack Start",
+      "Sub-event_summary": "Rain on 7 July cancels air strikes and grounds observation planes, but the attack proceeds with artillery preparation.",
+      "Sub-event_fulltext": {
+        "Paragraph_36": "On the morning of 7 July it rained. All air strikes were canceled. The artillery observation planes remained on the ground. At 0300 one battalion of the 117th Infantry moved out of its assembly area one mile east of the Vire River."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "117th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Moving to assembly",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Weather_text": "Rain, low clouds, drizzling rain, fog, mud",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5,
+          "East": 0.26,
+          "South": 48.33,
+          "North": 50.13
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "The Assault Crossing of Vire River",
+      "Sub-event_summary": "Under artillery support, the first assault wave crosses the Vire River in boats despite enemy fire, with subsequent waves following.",
+      "Sub-event_fulltext": {
+        "Paragraph_37": "Low clouds obscured the moon. A drizzling rain fell. Fog hovered over the ground. The brush dripped moisture, and the earth became mud. The corps artillery began its preparation at 0330 by firing on distant targets. Forty-five minutes later the division artillery, tank destroyers, and 4.2-inch mortars began to fire at close-in enemy installations and troop concentration areas. At the line of departure--the last hedgerow before the river--engineer guides met the two infantry assault companies at 0430. Picking up their rubber assault boats and scaling ladders, the infantrymen and engineers moved through holes already blasted in the hedgerow and walked along prepared paths to the water. Organized into groups of twelve, the men carried their craft in addition to their weapons, ammunition, and combat packs. They slid down the slick clay bank and lowered their boats into the stream. Because of the sharp angle of launching, most of the craft shipped some water. The riflemen climbed aboard; the men of the weapons platoons placed their mortars and machine guns in the boats and swam alongside to avoid swamping them.",
+        "Paragraph_38": "Shortly after 0430, as artillery shells slammed into the ground ahead, the first assault wave of thirty-two boats crossed the Vire River. Ten minutes later the men were scrambling up the bank on the far side and heading for the first hedgerow in enemy territory. A single hostile machine gun opened fire. As the engineers on the east bank of the river began pulling on their ropes to haul the boats back, enemy artillery and mortar shells began crashing into the stream. Under this shelling the second and third infantry assault waves paddled across the river."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070430ZJUL44"
+      },
+      "TOE": {
+        "Unit": "117th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Assault companies",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Rubber assault boats",
+              "Identifier": null,
+              "Quantity": "32 for first wave",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Assault_boat",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Assault_boat_training.jpg/220px-Assault_boat_training.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": null,
+          "Allied_US_WIA": null,
+          "Allied_US_Missing": null,
+          "Allied_US_Unspecified_Casualties": null,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": null,
+          "Axis_DE_WIA": null,
+          "Axis_DE_Missing": null,
+          "Axis_DE_Unspecified_Casualties": null,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Weather_text": "Drizzling rain, fog, mud",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5,
+          "East": 0.26,
+          "South": 48.33,
+          "North": 50.13
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Installation of Footbridge",
+      "Sub-event_summary": "Engineers install a footbridge under enemy fire, repairing damage multiple times, completing it at 0600 despite casualties.",
+      "Sub-event_fulltext": {
+        "Paragraph_39": "As the first assault wave pulled away from the near shore, the first critical task of the supporting engineers began--installing a footbridge. Having carried preconstructed sections of the footbridge to the edge of the water, a platoon of engineers had installed six bays when enemy artillery struck the bays and a group of engineers carrying additional duckboard sections. The shells killed four men and wounded four. Though the platoon repaired the bays and set them in place again, enemy artillery tore the bridge loose from its moorings and wounded several more men. Doggedly, the engineers swam into the river to secure the bridge again. About 0600 the footbridge at last was in. Assault boats no longer were needed for the crossing. In the process, the engineer platoon had lost about twenty men, half its strength."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "105th Engineer Combat Battalion",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Platoon lost half strength",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Footbridge",
+              "Identifier": null,
+              "Quantity": "1",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 4,
+          "Allied_US_WIA": 16,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5,
+          "East": 0.26,
+          "South": 48.33,
+          "North": 50.13
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Repair of Airel Stone Bridge",
+      "Sub-event_summary": "Engineers repair the stone bridge at Airel under fire, using treadway sections to cover gaps, completing it by 0900 for vehicular traffic.",
+      "Sub-event_fulltext": {
+        "Paragraph_40": "On the far shore, the two leading rifle companies moved quickly to the southwest across the hedgerowed fields for a thousand yards. A rifle company that had landed in the second wave moved south against the hamlet on the west side of the Airel bridge and took it after a short, sharp engagement. By about 0830, the first battalion of the 117th Infantry to cross had met strong but scattered resistance and was astride its axis of advance, ready to drive west to the St. Jean-de-Daye road intersection. On the near bank of the Vire, engineers continued their bridging efforts. At 0700 they removed bodies and a wrecked truck from the Airel bridge and began demining the stone structure and its eastern approaches. Harassing rifle fire ceased after American infantrymen cleared the hamlet across the river. An engineer officer and six men began to repair the two large holes in the bridge roadbed. Though this provided sufficient space for jeeps to make a careful crossing, the bridge had to be capable of bearing heavier traffic--the tank battalion attached to the division had been given first priority for use of the bridge. Under fire from enemy mortars and artillery, which smoke shells fired by the division artillery failed to discourage, a small engineer group maneuvered two trucks fitted with special Brockway bodies to the river. These vehicles not only carried treadway sections but also had hydraulic booms to lift the treadways off and set them in place. Heaving and prying six tons of steel into place, the engineers laid the treadways over the damaged span and by 0900 had covered the gaps in the roadway. The operation took thirteen minutes. Five minutes later a bulldozer crossed the stone bridge and cleared rubble from the streets of the hamlet while engineers swept the western approaches for mines. Vehicles soon began to cross."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Airel",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070900ZJUL44"
+      },
+      "TOE": {
+        "Unit": "105th Engineer Combat Battalion",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Under fire",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Brockway truck with hydraulic boom",
+              "Identifier": null,
+              "Quantity": "2",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Brockway_Motor_Company",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Brockway_truck.jpg/220px-Brockway_truck.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Bulldozer",
+              "Identifier": null,
+              "Quantity": "1",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Bulldozer",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Bulldozer_on_tank.jpg/220px-Bulldozer_on_tank.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": null,
+          "Allied_US_WIA": null,
+          "Allied_US_Missing": null,
+          "Allied_US_Unspecified_Casualties": null,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": null,
+          "Axis_DE_WIA": null,
+          "Axis_DE_Missing": null,
+          "Axis_DE_Unspecified_Casualties": null,
+          "Axis_DE_Prisoner_of_War": null
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Airel",
+        "Place_GPS_coordinate": "49.214 N, -1.075 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Airel",
+        "Place_GPS_coordinate": "49.214 N, -1.075 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.45,
+          "East": 0.3,
+          "South": 48.31,
+          "North": 50.11
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Construction of Additional Bridges",
+      "Sub-event_summary": "Engineers construct an infantry support bridge and a floating treadway bridge, completing the vehicular entrances into the bridgehead despite casualties from enemy fire.",
+      "Sub-event_fulltext": {
+        "Paragraph_41": "At 0730 another group of engineers had started constructing an infantry support bridge for the vehicles organic to the division. They completed it in an hour at a cost of fifteen casualties from enemy artillery fire. Another engineer crew commenced work at 0845 on a floating treadway bridge, which was in place by noon. The efforts of the engineers gave the division one footbridge and the three planned vehicular entrances into the bridgehead, two of which were capable of sustaining heavy traffic. Without these bridges, the infantry on the far bank might have been unable to sustain offensive operations for long."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "071200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "105th Engineer Combat Battalion",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Suffered casualties",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Infantry support bridge",
+              "Identifier": "Ponton",
+              "Quantity": "1",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Ponton_bridge",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Ponton_bridge.jpg/220px-Ponton_bridge.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Floating treadway bridge",
+              "Identifier": null,
+              "Quantity": "1",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Treadway_bridge",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Treadway_bridge.jpg/220px-Treadway_bridge.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": null,
+          "Allied_US_WIA": 15,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5,
+          "East": 0.26,
+          "South": 48.33,
+          "North": 50.13
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Advance of 117th Infantry",
+      "Sub-event_summary": "All battalions of the 117th Infantry cross the Vire River by 1000, advancing west against scattered resistance from Kampfgruppe Heinz toward St. Jean-de-Daye.",
+      "Sub-event_fulltext": {
+        "Paragraph_42": "All three battalions of Colonel Kelly's 117th Infantry were across the Vire River before 1000 on 7 July. Meeting scattered delaying action from Kampfgruppe Heinz, the regiment advanced west toward St. Jean-de-Daye."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Jean-de-Daye",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "071000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "117th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "117th Infantry Regiment",
+            "Name": "Henry E. Kelly",
+            "Rank": "Col.",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Advanced against resistance",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": null,
+          "Allied_US_WIA": null,
+          "Allied_US_Missing": null,
+          "Allied_US_Unspecified_Casualties": null,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": null,
+          "Axis_DE_WIA": null,
+          "Axis_DE_Missing": null,
+          "Axis_DE_Unspecified_Casualties": null,
+          "Axis_DE_Prisoner_of_War": null
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Jean-de-Daye",
+        "Place_GPS_coordinate": "49.228 N, -1.138 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Jean-de-Daye",
+        "Place_GPS_coordinate": "49.228 N, -1.138 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.51,
+          "East": 0.25,
+          "South": 48.33,
+          "North": 50.13
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Award of Distinguished Service Cross to Lt. Col. Arthur H. Fuller",
+      "Sub-event_summary": "Lt. Col. Arthur H. Fuller awarded the DSC for his actions during the Vire River crossing on 7 July 1944.",
+      "Sub-event_fulltext": {
+        "Paragraph_42": "All three battalions of Colonel Kelly's 117th Infantry were across the Vire River before 1000 on 7 July. Meeting scattered delaying action from Kampfgruppe Heinz, the regiment advanced west toward St. Jean-de-Daye. 41"
+      },
+      "Footnote_References": [
+        "41"
+      ],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "117th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "2nd Battalion, 117th Infantry Regiment",
+            "Name": "Arthur H. Fuller",
+            "Rank": "Lt. Col.",
+            "Date": "July 1944",
+            "End_Date": "9 September 1944",
+            "End_Status": "KIA",
+            "Biographical_reference": "https://www.honorstates.org/index.php?id=77136",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "Heroic action",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5,
+          "East": 0.26,
+          "South": 48.33,
+          "North": 50.13
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "119th Infantry Crosses and Protects Flank",
+      "Sub-event_summary": "A battalion of the 119th Infantry crosses at 1015 to protect the left flank, with tanks and tank destroyers following around noon.",
+      "Sub-event_fulltext": {
+        "Paragraph_43": "At 1015 a battalion of Colonel Ednie's 119th Infantry crossed the Airel bridge and moved to protect the left flank of the bridgehead. Tanks and tank destroyers began rolling across about noon. As the Vire River bridgehead broadened, Colonel Birks prepared to launch the 120th Infantry across the Vire et Taute Canal at 1330. When artillery turned an increased volume of fire on the German positions along the canal just before the scheduled jump-off time, plans temporarily went awry. Instead of wading the canal as instructed, the assault companies decided to wait for engineers to install footbridges. The engineers, having miscalculated the width of the waterway, found it difficult to lay their duckboards. Confusion developed at the line of departure, an occurrence furthered by incoming enemy artillery, mortar, and small arms fire."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Airel",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "071015ZJUL44"
+      },
+      "TOE": {
+        "Unit": "119th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "119th Infantry Regiment",
+            "Name": "Alfred V. Ednie",
+            "Rank": "Col.",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Protecting flank",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Tanks",
+              "Identifier": "M4 Sherman",
+              "Quantity": null,
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/M4_Sherman_tank_-_Flickr_-_Joost_J_Bakker_IJmuiden.jpg/220px-M4_Sherman_tank_-_Flickr_-_Joost_J_Bakker_IJmuiden.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Tank destroyers",
+              "Identifier": "M10",
+              "Quantity": null,
+              "Web_Reference": "https://en.wikipedia.org/wiki/M10_tank_destroyer",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/M10_tank_destroyer.jpg/220px-M10_tank_destroyer.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": null,
+          "Allied_US_WIA": null,
+          "Allied_US_Missing": null,
+          "Allied_US_Unspecified_Casualties": null,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": null,
+          "Axis_DE_WIA": null,
+          "Axis_DE_Missing": null,
+          "Axis_DE_Unspecified_Casualties": null,
+          "Axis_DE_Prisoner_of_War": null
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Airel",
+        "Place_GPS_coordinate": "49.214 N, -1.075 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Airel",
+        "Place_GPS_coordinate": "49.214 N, -1.075 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.45,
+          "East": 0.3,
+          "South": 48.31,
+          "North": 50.11
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Delay in Canal Crossing",
+      "Sub-event_summary": "The 120th Infantry's crossing at the canal is delayed due to confusion with footbridges and enemy fire.",
+      "Sub-event_fulltext": {
+        "Paragraph_43": "As the Vire River bridgehead broadened, Colonel Birks prepared to launch the 120th Infantry across the Vire et Taute Canal at 1330. When artillery turned an increased volume of fire on the German positions along the canal just before the scheduled jump-off time, plans temporarily went awry. Instead of wading the canal as instructed, the assault companies decided to wait for engineers to install footbridges. The engineers, having miscalculated the width of the waterway, found it difficult to lay their duckboards. Confusion developed at the line of departure, an occurrence furthered by incoming enemy artillery, mortar, and small arms fire."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Vire et Taute Canal",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "071330ZJUL44"
+      },
+      "TOE": {
+        "Unit": "120th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "120th Infantry Regiment",
+            "Name": "Hammond D. Birks",
+            "Rank": "Col.",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Delayed by confusion",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": null,
+          "Allied_US_WIA": null,
+          "Allied_US_Missing": null,
+          "Allied_US_Unspecified_Casualties": null,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": null,
+          "Axis_DE_WIA": null,
+          "Axis_DE_Missing": null,
+          "Axis_DE_Unspecified_Casualties": null,
+          "Axis_DE_Prisoner_of_War": null
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire et Taute Canal",
+        "Place_GPS_coordinate": "49.3 N, -1.2 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire et Taute Canal",
+        "Place_GPS_coordinate": "49.3 N, -1.2 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.58,
+          "East": 0.18,
+          "South": 48.4,
+          "North": 50.2
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Crossing of Vire et Taute Canal",
+      "Sub-event_summary": "The leading men of the 120th Infantry plunge into the canal about fifteen minutes late, advancing south under enemy fire.",
+      "Sub-event_fulltext": {
+        "Paragraph_44": "About fifteen minutes late, the leading men of the two attacking battalions finally plunged into the canal"
+      },
+      "Footnote_References": [],
+      "Place_Name": "Vire et Taute Canal",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "071345ZJUL44"
+      },
+      "TOE": {
+        "Unit": "120th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Attacking battalions",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": null,
+          "Allied_US_WIA": null,
+          "Allied_US_Missing": null,
+          "Allied_US_Unspecified_Casualties": null,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": null,
+          "Axis_DE_WIA": null,
+          "Axis_DE_Missing": null,
+          "Axis_DE_Unspecified_Casualties": null,
+          "Axis_DE_Prisoner_of_War": null
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire et Taute Canal",
+        "Place_GPS_coordinate": "49.3 N, -1.2 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire et Taute Canal",
+        "Place_GPS_coordinate": "49.3 N, -1.2 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.58,
+          "East": 0.18,
+          "South": 48.4,
+          "North": 50.2
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Award of Distinguished Service Cross to Pfc. Frank D. Kimbrough",
+      "Sub-event_summary": "Pfc. Frank D. Kimbrough, Company A, 117th Infantry, posthumously awarded the DSC for his actions during the bridgehead operation.",
+      "Sub-event_fulltext": {
+        "Paragraph_nn": "Pfc. Frank D. Kimbrough, Co. A, 117th Inf., posthumously received the DSC for his action."
+      },
+      "Footnote_References": [
+        "42"
+      ],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "070000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Company A, 117th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "117th Infantry Regiment",
+          "Commander": "Henry E. Kelly",
+          "Name": "Henry E. Kelly",
+          "Rank": "Col.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Posthumous award",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 1,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.2286 N, -1.1367 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5,
+          "East": 0.26,
+          "South": 48.33,
+          "North": 50.13
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Bridgehead Expansion and Casualties",
+      "Sub-event_summary": "The bridgehead expands, with the division capturing over 200 prisoners and suffering less than 300 casualties, indicating light enemy resistance.",
+      "Sub-event_fulltext": {
+        "Paragraph_nn": "By late afternoon the 30th Division was in possession of the bridgehead area around St. Jean-de-Daye. The division had captured more than 200 prisoners. Casualties were less than 300 for the day. The light losses and the ease with which the bridgehead had been established indicated that the Germans had not been able to hold the area in strength. (See Map 5.)"
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Jean-de-Daye",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "071800ZJUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Charles H. Corlett",
+          "Name": "Charles H. Corlett",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Successful expansion",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": null,
+          "Allied_US_WIA": null,
+          "Allied_US_Missing": null,
+          "Allied_US_Unspecified_Casualties": "less than 300",
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": null,
+          "Axis_DE_WIA": null,
+          "Axis_DE_Missing": null,
+          "Axis_DE_Unspecified_Casualties": null,
+          "Axis_DE_Prisoner_of_War": "more than 200"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "Description": "Map 5: Attack of XIX Corps West of the Vire River, 7-10 July 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Jean-de-Daye",
+        "Place_GPS_coordinate": "49.228 N, -1.138 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Jean-de-Daye",
+        "Place_GPS_coordinate": "49.228 N, -1.138 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.51,
+          "East": 0.25,
+          "South": 48.33,
+          "North": 50.13
+        }
+      }
+    },
+    {
+      "Event": "The Vire and Taute Bridgehead",
+      "Sub-event": "Attachment of 3d Armored Division",
+      "Sub-event_summary": "Due to the successful crossing, General Bradley attaches the 3d Armored Division to XIX Corps for a powerdrive to the high ground west of St. Lô, with the 30th Division in support.",
+      "Sub-event_fulltext": {
+        "Paragraph_54": "So successful was the river crossing that even before the assault was made across the canal it was rumored that the armored division earlier predicted for the XIX Corps would be forthcoming for employment in the bridgehead. (42)",
+        "Paragraph_55": "That afternoon General Corlett thought that if he did get the armored division, he would put it across the Vire, pass it through the infantry, and direct it south to the corps objective, the ridge west of St. Lô. (43)",
+        "Paragraph_56": "That evening the rumor became fact. General Bradley had decided that if only a light enemy screen protected the ground between the Vire and the Taute Rivers, as seemed likely, armored commitment in the bridgehead was in order. (44)",
+        "Paragraph_57": "Ten minutes after General Corlett learned that General Bradley had attached the 3d Armored Division to XIX Corps, Corlett was telling the armored division commander to cross the Vire River at Airel, move southwest through the 30th Division, and make a \"powerdrive\" toward the high ground west of St. Lô. The 30th Division was to follow rapidly in support.",
+        "Paragraph_58": "Not long afterwards, contingents of armor were moving toward the stone bridge at Airel.",
+        "Paragraph_59": "Although the two corps on the First Army right wing appeared halted, it looked as though the XIX Corps between the Taute and the Vire had only begun to advance. If this development were exploited adroitly, the entire First Army offensive might pick up speed."
+      },
+      "Footnote_References": [
+        "42",
+        "43",
+        "44"
+      ],
+      "Place_Name": "Airel",
+      "Dates": {
+        "Date_group_of_event": "7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+        "Zulu_date_group_of_event": "071900ZJUL44"
+      },
+      "TOE": {
+        "Unit": "3d Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Charles H. Corlett",
+          "Name": "Charles H. Corlett",
+          "Rank": "Maj. Gen.",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "3d Armored Division",
+            "Name": "Maurice Rose",
+            "Rank": "Maj. Gen.",
+            "Date": "July 1944",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Maurice_Rose",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "Full staffed",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Airel",
+        "Place_GPS_coordinate": "49.214 N, -1.075 W",
+        "Map_Reference": "Map 5",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/wp-content/uploads/2021/05/carte-normandie-juillet-1944-1.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Airel",
+        "Place_GPS_coordinate": "49.214 N, -1.075 W",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.45,
+          "East": 0.3,
+          "South": 48.31,
+          "North": 50.11
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "23a",
+      "Footnote_Number": "23",
+      "Footnote_Text": "Ltr, Corlett to OCMH, 19 Jan 54",
+      "Footnote_Referenced_Source": "Ltr, Corlett to OCMH, 19 Jan 54",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "Letter from Maj. Gen. Corlett to Office of the Chief of Military History, dated 19 January 1954"
+    },
+    {
+      "Footnote": "23b",
+      "Footnote_Number": "23",
+      "Footnote_Text": "XIX Corps FO 4, 2 Jul (rescinding FO 4, 28 Jun).",
+      "Footnote_Referenced_Source": "XIX Corps FO 4, 2 Jul (rescinding FO 4, 28 Jun).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "XIX Corps Field Order 4, dated 2 July 1944"
+    },
+    {
+      "Footnote": "24a",
+      "Footnote_Number": "24",
+      "Footnote_Text": "Ltr, Corlett to OCMH, 2 Sep 53",
+      "Footnote_Referenced_Source": "Ltr, Corlett to OCMH, 2 Sep 53",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "Letter from Maj. Gen. Corlett to Office of the Chief of Military History, dated 2 September 1953"
+    },
+    {
+      "Footnote": "24b",
+      "Footnote_Number": "24",
+      "Footnote_Text": "see Philip A. Crowl and Edmund G. Love, Seizure of the Gilberts and Marshalls, UNITED STATES ARMY IN WORLD WAR II (Washington, 1955).",
+      "Footnote_Referenced_Source": "Philip A. Crowl and Edmund G. Love, Seizure of the Gilberts and Marshalls, UNITED STATES ARMY IN WORLD WAR II (Washington, 1955).",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-P-Gilberts/index.html",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "25a",
+      "Footnote_Number": "25",
+      "Footnote_Text": "XIX Corps FO 5, 7 Jul, and Ltr, Corlett to OCMH, 19 Jan 54.",
+      "Footnote_Referenced_Source": "XIX Corps FO 5, 7 Jul, and Ltr, Corlett to OCMH, 19 Jan 54.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "XIX Corps Field Order 5, dated 7 July 1944; Letter from Maj. Gen. Corlett to Office of the Chief of Military History, dated 19 January 1954"
+    },
+    {
+      "Footnote": "26a",
+      "Footnote_Number": "26",
+      "Footnote_Text": "30th Div FO 6, 4 Jul; 30th Div AAR, Jul.",
+      "Footnote_Referenced_Source": "30th Div FO 6, 4 Jul; 30th Div AAR, Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "30th Division Field Order 6, dated 4 July 1944; 30th Division After Action Report, July 1944"
+    },
+    {
+      "Footnote": "27a",
+      "Footnote_Number": "27",
+      "Footnote_Text": "30th Div Engr Office AAR, Jul; 105th Engr Combat Bn AAR, Jul; 30th Div G-3 Jnl and Files, Jul; Ltr, Hobbs to OCMH, 7 Oct 53; Ltrs, Dunn to OCMH, 20 Dec 53 and 25 Jan 54.",
+      "Footnote_Referenced_Source": "30th Div Engr Office AAR, Jul; 105th Engr Combat Bn AAR, Jul; 30th Div G-3 Jnl and Files, Jul; Ltr, Hobbs to OCMH, 7 Oct 53; Ltrs, Dunn to OCMH, 20 Dec 53 and 25 Jan 54.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "30th Division Engineer Office After Action Report, July 1944; 105th Engineer Combat Battalion After Action Report, July 1944; 30th Division G-3 Journal and Files, July 1944; Letter from Maj. Gen. Hobbs to Office of the Chief of Military History, dated 7 October 1953; Letters from Lt. Col. Dunn to Office of the Chief of Military History, dated 20 December 1953 and 25 January 1954"
+    },
+    {
+      "Footnote": "28a",
+      "Footnote_Number": "28",
+      "Footnote_Text": "30th Div Surgeon AAR, Jul.",
+      "Footnote_Referenced_Source": "30th Div Surgeon AAR, Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "30th Division Surgeon After Action Report, July 1944"
+    },
+    {
+      "Footnote": "29a",
+      "Footnote_Number": "29",
+      "Footnote_Text": "XIX Corps AAR, Jul; 30th Div AAR, Jul; 30th Div G-2 Periodic Rpt 22, 6 Jul.",
+      "Footnote_Referenced_Source": "XIX Corps AAR, Jul; 30th Div AAR, Jul; 30th Div G-2 Periodic Rpt 22, 6 Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "XIX Corps After Action Report, July 1944; 30th Division After Action Report, July 1944; 30th Division G-2 Periodic Report 22, dated 6 July 1944"
+    },
+    {
+      "Footnote": "30a",
+      "Footnote_Number": "30",
+      "Footnote_Text": "MS # B-445 (Meindl); MS # B-845 (von Kluge); MS # B-642 (Krause); MS # B-443 (Kuntzen); MS # B-179 (Geyr).",
+      "Footnote_Referenced_Source": "MS # B-445 (Meindl); MS # B-845 (von Kluge); MS # B-642 (Krause); MS # B-443 (Kuntzen); MS # B-179 (Geyr).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "Manuscripts # B-445 (Meindl), # B-845 (von Kluge), # B-642 (Krause), # B-443 (Kuntzen), # B-179 (Geyr)"
+    },
+    {
+      "Footnote": "31a",
+      "Footnote_Number": "31",
+      "Footnote_Text": "30th Div G-3 Jnl, 7 Jul; 117th Inf AAR, Jul.",
+      "Footnote_Referenced_Source": "30th Div G-3 Jnl, 7 Jul; 117th Inf AAR, Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "30th Division G-3 Journal, 7 July 1944; 117th Infantry After Action Report, July 1944"
+    },
+    {
+      "Footnote": "32a",
+      "Footnote_Number": "32",
+      "Footnote_Text": "117th Inf AAR, Jul; Ltr, Hobbs to OCMH, 7 Oct 53; Ltr, Dunn to OCMH, 20 Dec 53; 105th Engr Combat Bn AAR, Jul.",
+      "Footnote_Referenced_Source": "117th Inf AAR, Jul; Ltr, Hobbs to OCMH, 7 Oct 53; Ltr, Dunn to OCMH, 20 Dec 53; 105th Engr Combat Bn AAR, Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "117th Infantry After Action Report, July 1944; Letter from Maj. Gen. Hobbs to Office of the Chief of Military History, dated 7 October 1953; Letter from Lt. Col. Dunn to Office of the Chief of Military History, dated 20 December 1953; 105th Engineer Combat Battalion After Action Report, July 1944"
+    },
+    {
+      "Footnote": "33a",
+      "Footnote_Number": "33",
+      "Footnote_Text": "30th Div G-3 Jnl, 7 Jul; 30th Div AAR, Jul.",
+      "Footnote_Referenced_Source": "30th Div G-3 Jnl, 7 Jul; 30th Div AAR, Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "30th Division G-3 Journal, 7 July 1944; 30th Division After Action Report, July 1944"
+    },
+    {
+      "Footnote": "34a",
+      "Footnote_Number": "34",
+      "Footnote_Text": "30th Div AAR, Jul; 30th Div G-2 Jnl, Jul.",
+      "Footnote_Referenced_Source": "30th Div AAR, Jul; 30th Div G-2 Jnl, Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "30th Division After Action Report, July 1944; 30th Division G-2 Journal, July 1944"
+    },
+    {
+      "Footnote": "35a",
+      "Footnote_Number": "35",
+      "Footnote_Text": "30th Div AAR, Jul; Ltr, Hobbs to OCMH, 7 Oct 53.",
+      "Footnote_Referenced_Source": "30th Div AAR, Jul; Ltr, Hobbs to OCMH, 7 Oct 53.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "30th Division After Action Report, July 1944; Letter from Maj. Gen. Hobbs to Office of the Chief of Military History, dated 7 October 1953"
+    },
+    {
+      "Footnote": "36a",
+      "Footnote_Number": "36",
+      "Footnote_Text": "30th Div G-3 Jnl, 7 Jul; 117th Inf AAR, Jul; Ltr, Dunn to OCMH, 20 Dec 53.",
+      "Footnote_Referenced_Source": "30th Div G-3 Jnl, 7 Jul; 117th Inf AAR, Jul; Ltr, Dunn to OCMH, 20 Dec 53.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "30th Division G-3 Journal, 7 July 1944; 117th Infantry After Action Report, July 1944; Letter from Lt. Col. Dunn to Office of the Chief of Military History, dated 20 December 1953"
+    },
+    {
+      "Footnote": "37a",
+      "Footnote_Number": "37",
+      "Footnote_Text": "117th Inf AAR, Jul; 105th Engr Combat Bn AAR, Jul; Ltr, Dunn to OCMH, 20 Dec 53; 30th Div G-3 Jnl, 7 Jul.",
+      "Footnote_Referenced_Source": "117th Inf AAR, Jul; 105th Engr Combat Bn AAR, Jul; Ltr, Dunn to OCMH, 20 Dec 53; 30th Div G-3 Jnl, 7 Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "117th Infantry After Action Report, July 1944; 105th Engineer Combat Battalion After Action Report, July 1944; Letter from Lt. Col. Dunn to Office of the Chief of Military History, dated 20 December 1953; 30th Division G-3 Journal, 7 July 1944"
+    },
+    {
+      "Footnote": "38a",
+      "Footnote_Number": "38",
+      "Footnote_Text": "Ltr, Dunn to OCMH, 20 Dec 53; 105th Engr Combat Bn AAR, Jul.",
+      "Footnote_Referenced_Source": "Ltr, Dunn to OCMH, 20 Dec 53; 105th Engr Combat Bn AAR, Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "Letter from Lt. Col. Dunn to Office of the Chief of Military History, dated 20 December 1953; 105th Engineer Combat Battalion After Action Report, July 1944"
+    },
+    {
+      "Footnote": "39a",
+      "Footnote_Number": "39",
+      "Footnote_Text": "117th Inf AAR, Jul; 105th Engr Combat Bn AAR, Jul; Ltr, Dunn to OCMH, 20 Dec 53; 30th Div G-3 Jnl, 7 Jul.",
+      "Footnote_Referenced_Source": "117th Inf AAR, Jul; 105th Engr Combat Bn AAR, Jul; Ltr, Dunn to OCMH, 20 Dec 53; 30th Div G-3 Jnl, 7 Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "117th Infantry After Action Report, July 1944; 105th Engineer Combat Battalion After Action Report, July 1944; Letter from Lt. Col. Dunn to Office of the Chief of Military History, dated 20 December 1953; 30th Division G-3 Journal, 7 July 1944"
+    },
+    {
+      "Footnote": "40a",
+      "Footnote_Number": "40",
+      "Footnote_Text": "117th Inf AAR, Jul; 105th Engr Combat Bn AAR, Jul; Ltr, Dunn to OCMH, 20 Dec 53; 30th Div G-3 Jnl, 7 Jul.",
+      "Footnote_Referenced_Source": "117th Inf AAR, Jul; 105th Engr Combat Bn AAR, Jul; Ltr, Dunn to OCMH, 20 Dec 53; 30th Div G-3 Jnl, 7 Jul.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "117th Infantry After Action Report, July 1944; 105th Engineer Combat Battalion After Action Report, July 1944; Letter from Lt. Col. Dunn to Office of the Chief of Military History, dated 20 December 1953; 30th Division G-3 Journal, 7 July 1944"
+    },
+    {
+      "Footnote": "41a",
+      "Footnote_Number": "41",
+      "Footnote_Text": "Lt. Col. Arthur H. Fuller of the 117th Infantry received the DSC.",
+      "Footnote_Referenced_Source": "Lt. Col. Arthur H. Fuller of the 117th Infantry received the DSC.",
+      "Web_Link": "https://archive.org/stream/WorkHorseOfTheWesternFront/WorkHorseOfTheWesternFront_djvu.txt",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "42a",
+      "Footnote_Number": "42",
+      "Footnote_Text": "Pfc. Frank D. Kimbrough, Co. A, 117th Inf., posthumously received the DSC for his action.",
+      "Footnote_Referenced_Source": "Pfc. Frank D. Kimbrough, Co. A, 117th Inf., posthumously received the DSC for his action.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "Citation for Pfc. Frank D. Kimbrough, Distinguished Service Cross, posthumous"
+    },
+    {
+      "Footnote": "43a",
+      "Footnote_Number": "43",
+      "Footnote_Text": "XIX Corps AAR, Jul; Ltr, Corlett to OCMH, 19 Jan 54.",
+      "Footnote_Referenced_Source": "XIX Corps AAR, Jul; Ltr, Corlett to OCMH, 19 Jan 54.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "XIX Corps After Action Report, July 1944; Letter from Maj. Gen. Corlett to Office of the Chief of Military History, dated 19 January 1954"
+    },
+    {
+      "Footnote": "44a",
+      "Footnote_Number": "44",
+      "Footnote_Text": "XIX Corps FO 5, 1900, 7 Jul (confirming verbal orders), and Special Map \"A\";",
+      "Footnote_Referenced_Source": "XIX Corps FO 5, 1900, 7 Jul (confirming verbal orders), and Special Map \"A\";",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "XIX Corps Field Order 5, dated 7 July 1944"
+    },
+    {
+      "Footnote": "44b",
+      "Footnote_Number": "44",
+      "Footnote_Text": "Ltr, Corlett to OCMH, 19 Jan 54, OCMH Files.",
+      "Footnote_Referenced_Source": "Ltr, Corlett to OCMH, 19 Jan 54, OCMH Files.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "Letter from Maj. Gen. Corlett to Office of the Chief of Military History, dated 19 January 1954"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn5.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

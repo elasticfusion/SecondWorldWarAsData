@@ -1,0 +1,1676 @@
+{
+  "Events": [
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "Accidental Timing and Launch of Canadian Attack",
+      "Sub-event_summary": "Twenty-four hours after the German counterattack toward Avranches, the First Canadian Army launched a massive attack southeast toward Falaise from positions three miles south of Caen. The timing was accidental but highly fortunate.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "Twenty-four hours after the Germans counterattacked toward Avranches, the First Canadian Army, from positions three miles south of Caen, launched a massive attack southeast toward Falaise.",
+        "Paragraph_2": "The timing was accidental, but it could hardly have been more fortunate."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "072300BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "First Canadian Army",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "General Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "II Canadian Corps",
+            "Name": "Guy Granville Simonds",
+            "Rank": "Lt. Gen.",
+            "Date": "072300BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Guy_Simonds",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://commons.wikimedia.org/wiki/File:Operation_Totalize_map,_7%E2%80%9310_August_1944.jpg",
+          "Description": "Map of Operation Totalize, 7–10 August 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.182863, -0.370679",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:Operation_Totalize_map,_7%E2%80%9310_August_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.182863, -0.370679",
+        "Weather_text": "No specific weather details provided for this sub-event.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.74496,
+          "East": 1.00676,
+          "South": 48.28398,
+          "North": 50.08262
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "Preparation and Initial Objectives of Canadian Attack",
+      "Sub-event_summary": "The Canadian attack had been in preparation for almost a week, aiming at least to wear down enemy units or at most to disrupt the anticipated German withdrawal to the Seine.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "The Canadian attack had been in preparation for almost a week, its object at the least to wear down enemy units, at the most to unhinge the German withdrawal to the Seine that General Montgomery expected."
+      },
+      "Footnote_References": [
+        "1"
+      ],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "312300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "First Canadian Army",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "General Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.182863, -0.370679",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.182863, -0.370679",
+        "Weather_text": "No specific weather details provided for this sub-event.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.74496,
+          "East": 1.00676,
+          "South": 48.28398,
+          "North": 50.08262
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "Change in Perspective Due to German Thrust",
+      "Sub-event_summary": "The German thrust toward Avranches altered the situation, expanding Montgomery's view on the Canadian effort's role, transforming it into his primary instrument for destroying German forces.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "The German thrust toward Avranches, changing the situation, widened Montgomery's perspective on the role of the Canadian effort.",
+        "Paragraph_5": "The Canadian attack now became his main instrument of destruction."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "070000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "062300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "21st Army Group",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Allied Expeditionary Force",
+          "Commander": "General Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3617",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3617",
+        "Weather_text": "No specific weather details provided for this sub-event.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.736,
+          "East": 0.012,
+          "South": 47.785,
+          "North": 49.584
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "Objectives and Terrain Description",
+      "Sub-event_summary": "The Canadians were tasked with breaking through German positions astride the Caen-Falaise road and advancing toward Falaise, twenty-one miles southeast of Caen. The road was arrow-straight for the first fifteen miles, rising gradually from sea level to over six hundred feet, across open wheat fields with occasional villages, woods, and orchards, and infrequent hedgerows.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "The Canadians were to \"break through the German positions astride the road Caen-Falaise,\" and advance toward Falaise, twenty-one miles southeast of Caen.",
+        "Paragraph_7": "For the first fifteen miles the road was \"arrow-straight,\" rising \"gradually, sometimes almost imperceptibly, but steadily,\" from little more than sea level to more than six hundred feet in height.",
+        "Paragraph_8": "\"Up this long, smooth, dangerous slope the Canadians were to fight,\" across acres of waving wheat broken by an occasional village, a patch of woods, an occasional orchard--through an area where only an infrequent hedgerow or belt of trees lined the side roads.",
+        "Paragraph_9": "The ground was good for employing armor, but solidly built villages and the woods provided defenders excellent natural centers of resistance."
+      },
+      "Footnote_References": [
+        "2",
+        "3"
+      ],
+      "Place_Name": "Caen-Falaise Road",
+      "Dates": {
+        "Date_group_of_event": "072300BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "First Canadian Army",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "General Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://en.m.wikipedia.org/wiki/File:Operation_Totalize,_7%E2%80%938_August_1944_%E2%80%93_first_phase_map.jpg",
+          "Description": "Map of Operation Totalize first phase",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.m.wikipedia.org/wiki/File:Operation_Totalize,_7%E2%80%938_August_1944_%E2%80%93_first_phase_map.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Weather_text": "No specific weather details provided for this sub-event.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.578,
+          "East": 1.174,
+          "South": 47.994,
+          "North": 49.793
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "German Defensive Forces",
+      "Sub-event_summary": "Three German divisions—the 272d Infantry, 89th Infantry, and 12th SS Panzer—manned two defensive lines in depth, supported by fifty 88-mm antiaircraft pieces sited for antitank action and about sixty dug-in tanks and self-propelled guns.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "Three German divisions--the 272d and 89th Infantry and the 12th SS Panzer--manned two defensive lines in depth.",
+        "Paragraph_11": "Fifty 88-mm. antiaircraft pieces, sited for antitank action, supplemented about sixty dug-in tanks and self-propelled guns."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caen-Falaise Road",
+      "Dates": {
+        "Date_group_of_event": "072300BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072200ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "272d Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "LXXXVI Corps",
+            "Commander": "Friedrich-August Schack",
+            "Name": "Friedrich-August Schack",
+            "Rank": "General der Infanterie",
+            "End_Date": "030000BSEP44",
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Friedrich-August_Schack",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "89th Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "LXXXVI Corps",
+            "Commander": "Conrad-Oskar Heinrichs",
+            "Name": "Conrad-Oskar Heinrichs",
+            "Rank": "Generalleutnant",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Conrad-Oskar_Heinrichs",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "12th SS Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "I SS Panzer Corps",
+            "Commander": "Kurt Meyer",
+            "Name": "Kurt Meyer",
+            "Rank": "Brigadeführer",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Kurt_Meyer",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Axis_Employed": [
+              {
+                "Origination_Country": "DE",
+                "Name": "88-mm antiaircraft gun",
+                "Identifier": "Flak 88",
+                "Quantity": 50,
+                "Web_Reference": "https://en.wikipedia.org/wiki/8.8_cm_Flak_18/36/37/41",
+                "Web_Image_Reference": "https://en.wikipedia.org/wiki/8.8_cm_Flak_18/36/37/41#/media/File:Flak_36_Duxford.jpg",
+                "Web_Image_License": "Public Domain",
+                "Web_Reference_Capture_Date": "December 28, 2025"
+              },
+              {
+                "Origination_Country": "DE",
+                "Name": "Tanks and self-propelled guns",
+                "Identifier": "Various",
+                "Quantity": 60,
+                "Web_Reference": "https://en.wikipedia.org/wiki/12th_SS_Panzer_Division_Hitlerjugend",
+                "Web_Image_Reference": null,
+                "Web_Image_License": null,
+                "Web_Reference_Capture_Date": "December 28, 2025"
+              }
+            ]
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen-Falaise Road",
+        "Place_GPS_coordinate": "49.038, -0.286",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Caen-Falaise Road",
+        "Place_GPS_coordinate": "49.038, -0.286",
+        "Weather_text": "No specific weather details provided for this sub-event.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.66,
+          "East": 1.088,
+          "South": 48.139,
+          "North": 49.937
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "Crerar's Plan for the Attack",
+      "Sub-event_summary": "To overcome the strong defenses, General Crerar decided to combine overwhelming air support with ground penetration under cover of darkness. After heavy bomber strikes, tanks would lead the attack, followed by infantrymen in armored personnel carriers converted by Lt. Gen. G. G. Simonds, known as Kangaroos, to mop up.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "To overcome these strong defenses, General Crerar decided to combine overwhelming air support with ground penetration under the cover of darkness.",
+        "Paragraph_13": "After a strike by heavy bombers, tanks were to lead the attack.",
+        "Paragraph_14": "Infantrymen riding in armored personnel carriers (self-propelled gun carriages specially converted for troop transport by Lt. Gen. G. G. Simonds, the corps commander, and later called Kangaroos), were to follow the tanks and detruck at appropriate points to mop up."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "072300BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "First Canadian Army",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Henry Duncan Graham Crerar",
+          "Name": "Henry Duncan Graham Crerar",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_Crerar",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "II Canadian Corps",
+            "Name": "Guy Granville Simonds",
+            "Rank": "Lt. Gen.",
+            "Date": "072300BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Guy_Simonds",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": {
+            "Origination_Country": "CA",
+            "Name": "Kangaroo APC",
+            "Identifier": "Converted self-propelled gun carriage",
+            "Quantity": "Unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Kangaroo_(armoured_personnel_carrier)",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/Kangaroo_(armoured_personnel_carrier)#/media/File:Kangaroo_APC.jpg",
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.182863, -0.370679",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.182863, -0.370679",
+        "Weather_text": "Planned under cover of darkness.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.74496,
+          "East": 1.00676,
+          "South": 48.28398,
+          "North": 50.08262
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "Air Bombardment on 7 August",
+      "Sub-event_summary": "An hour before midnight on 7 August, more than a thousand RAF planes blasted bomb zones flanking the assault area, with fighter-bombers prepared to drop over 5,000 tons of bombs. Despite poor visibility from darkness, weather, smoke, and dust, where only two-thirds of the planes dropped their loads, the bombardment was more effective than in Operation GOODWOOD.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "An hour before midnight, 7 August, more than a thousand RAF planes were ready to blast bomb zones flanking the projected ground assault area, and fighter-bombers were prepared to loose more than 5,000 tons of bombs on the assault area.",
+        "Paragraph_16": "Even though darkness, weather, smoke, and dust made visibility so poor that only two-thirds of the planes dropped their loads, the bombardment was more effective than that in Operation GOODWOOD, less than three weeks earlier."
+      },
+      "Footnote_References": [
+        "4"
+      ],
+      "Place_Name": "Caen-Falaise Road",
+      "Dates": {
+        "Date_group_of_event": "072200BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072100ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Royal Air Force",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Allied Expeditionary Air Force",
+          "Commander": "Air Chief Marshal Sir Trafford Leigh-Mallory",
+          "Name": "Trafford Leigh-Mallory",
+          "Rank": "Air Chief Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Trafford_Leigh-Mallory",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": {
+            "Origination_Country": "GB",
+            "Name": "Heavy bombers",
+            "Identifier": "Various (Lancaster, Halifax, etc.)",
+            "Quantity": "1000+",
+            "Web_Reference": "https://en.wikipedia.org/wiki/RAF_Bomber_Command",
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen-Falaise Road",
+        "Place_GPS_coordinate": "49.038, -0.286",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Caen-Falaise Road",
+        "Place_GPS_coordinate": "49.038, -0.286",
+        "Weather_text": "Darkness, weather, smoke, and dust leading to poor visibility.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.66,
+          "East": 1.088,
+          "South": 48.139,
+          "North": 49.937
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "Artillery Support and Initial Ground Advance",
+      "Sub-event_summary": "On the ground, 720 artillery pieces shelled the enemy and lit the battlefield with flares. Bofors fired tracer bullets to mark the attack direction, and searchlights provided artificial moonlight as two divisions moved out shortly before midnight, preceded by flail tanks to detonate mines and engineers to clear routes through minefields, with eight columns of armor advancing toward Falaise.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "On the ground, 720 artillery pieces were available to shell the enemy and light the battlefield with flares.",
+        "Paragraph_18": "While Bofors fired tracer bullets to mark the direction of the attack and searchlights provided \"artificial moonlight,\" two divisions moved out shortly before midnight.",
+        "Paragraph_19": "Preceded by tanks with flailing mechanisms to detonate enemy mines and by engineers who were to establish routes through German mine fields, eight columns of armor (each with four vehicles abreast) moved toward Falaise."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "072300BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "First Canadian Army",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Henry Duncan Graham Crerar",
+          "Name": "Henry Duncan Graham Crerar",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_Crerar",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "GB",
+              "Name": "Artillery pieces",
+              "Identifier": "Various",
+              "Quantity": 720,
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Origination_Country": "GB",
+              "Name": "Bofors gun",
+              "Identifier": "40 mm Bofors",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Bofors_40_mm_gun",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/Bofors_40_mm_gun#/media/File:Bofors_40mm_gun_on_Hazemeyer_triaxial_mounting.jpg",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Origination_Country": "CA",
+              "Name": "Flail tank",
+              "Identifier": "Sherman Crab",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Mine_flail",
+              "Web_Image_Reference": "https://commons.wikimedia.org/wiki/File:Sherman_crab_flail_tank.jpg",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Weather_text": "Artificial moonlight provided by searchlights.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.578,
+          "East": 1.174,
+          "South": 47.994,
+          "North": 49.793
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "Challenges and Success in Night Advance",
+      "Sub-event_summary": "Dense clouds of dust mixed with ground mist obscured vision, leading to collisions and units losing their way despite advancing in low gear at one hundred yards a minute. However, the confusion affected the defenders more, allowing the Canadians to gain their first objectives and penetrate three miles by dawn on 8 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_20": "Dense clouds of dust mixed with ground mist obscured vision.",
+        "Paragraph_21": "Although the assault troops crawled in low gear at one hundred yards a minute, collisions occurred and units lost their way.",
+        "Paragraph_22": "Yet the confusion that enveloped the attackers was less than that covering the defenders.",
+        "Paragraph_23": "By dawn of 8 August the Canadians had gained their first objectives; they had penetrated the German lines for a distance of three miles."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "080500BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "080400ZAUG44"
+      },
+      "TOE": {
+        "Unit": "First Canadian Army",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Henry Duncan Graham Crerar",
+          "Name": "Henry Duncan Graham Crerar",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_Crerar",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Weather_text": "Dense clouds of dust mixed with ground mist.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.578,
+          "East": 1.174,
+          "South": 47.994,
+          "North": 49.793
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "Bogging Down at Lay-Back Position",
+      "Sub-event_summary": "The attack bogged down upon striking a solid line of defense known as a lay-back position.",
+      "Sub-event_fulltext": {
+        "Paragraph_24": "Off to a good start, the attack bogged down as the Canadians struck a solid line of defense, a \"lay-back position.\""
+      },
+      "Footnote_References": [
+        "5"
+      ],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "First Canadian Army",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Henry Duncan Graham Crerar",
+          "Name": "Henry Duncan Graham Crerar",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_Crerar",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Weather_text": "No specific weather details provided for this sub-event.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.578,
+          "East": 1.174,
+          "South": 47.994,
+          "North": 49.793
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "Commitment of Fresh Armored Divisions",
+      "Sub-event_summary": "To break through, the Canadians committed two fresh but inexperienced armored divisions, including the 1st Polish Armored Division. At this point, issues arose, with the new divisions showing typical shortcomings of green units.",
+      "Sub-event_fulltext": {
+        "Paragraph_25": "To break through, the Canadians committed two fresh but inexperienced armored divisions, one of which was the 1st Polish Armored Division.",
+        "Paragraph_26": "At that point everything seemed to go wrong.",
+        "Paragraph_27": "The new divisions displayed the usual shortcomings of green units."
+      },
+      "Footnote_References": [
+        "6"
+      ],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "1st Polish Armored Division",
+        "Unit_Nationality": "PL",
+        "Command_Structure": {
+          "Unit": "II Canadian Corps",
+          "Commander": "Stanisław Maczek",
+          "Name": "Stanisław Maczek",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Stanis%C5%82aw_Maczek",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Inexperienced",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Weather_text": "No specific weather details provided for this sub-event.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.578,
+          "East": 1.174,
+          "South": 47.994,
+          "North": 49.793
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "Friendly Air Attack Casualties",
+      "Sub-event_summary": "An air attack delivered by bombers flying across the front like a creeping barrage resulted in 25 killed and 131 wounded, including a division commander, mostly among Polish troops.",
+      "Sub-event_fulltext": {
+        "Paragraph_28": "An air attack, delivered by bombers flying across the front and moving progressively forward like a creeping barrage, killed 25 men and wounded 131 (including a division commander), mostly Polish troops."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "1st Polish Armored Division",
+        "Unit_Nationality": "PL",
+        "Command_Structure": {
+          "Unit": "II Canadian Corps",
+          "Commander": "Stanisław Maczek",
+          "Name": "Stanisław Maczek",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Stanis%C5%82aw_Maczek",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Inexperienced",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_PL_KIA": 25,
+          "Allied_PL_WIA": 131,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Weather_text": "No specific weather details provided for this sub-event.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.578,
+          "East": 1.174,
+          "South": 47.994,
+          "North": 49.793
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "Continued Ground Attack and Loss of Momentum",
+      "Sub-event_summary": "The ground attack continued through 8 and 9 August, gaining five more miles, but then momentum ceased. The Canadian Army had advanced eight miles, but an equal distance remained to Falaise.",
+      "Sub-event_fulltext": {
+        "Paragraph_29": "Although the ground attack continued through 8 and 9 August for a gain of five more miles, momentum then ceased.",
+        "Paragraph_30": "The attack had carried the Canadian Army eight miles forward, but the same distance still separated it from Falaise."
+      },
+      "Footnote_References": [
+        "7"
+      ],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "090000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "082300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "First Canadian Army",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Henry Duncan Graham Crerar",
+          "Name": "Henry Duncan Graham Crerar",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_Crerar",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://commons.wikimedia.org/wiki/File:Operation_Totalize_map,_7%E2%80%9310_August_1944.jpg",
+          "Description": "Map showing advance during Operation Totalize",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:Operation_Totalize_map,_7%E2%80%9310_August_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Weather_text": "No specific weather details provided for this sub-event.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.578,
+          "East": 1.174,
+          "South": 47.994,
+          "North": 49.793
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "Second British Army Exerting Pressure",
+      "Sub-event_summary": "Meanwhile, the Second British Army, attacking since 30 June from positions south of Caumont, continued to exert pressure while turning southeastward between Thury-Harcourt and Vire toward Falaise and Flers.",
+      "Sub-event_fulltext": {
+        "Paragraph_31": "Meanwhile, the Second British Army, attacking since 30 June from positions south of Caumont, continued to exert pressure while turning between Thury-Harcourt and Vire southeastward toward Falaise and Flers."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caumont",
+      "Dates": {
+        "Date_group_of_event": "300000BJUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "292300ZJUN44"
+      },
+      "TOE": {
+        "Unit": "Second British Army",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Miles Dempsey",
+          "Name": "Miles Dempsey",
+          "Rank": "Lt Gen",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Miles_Dempsey",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caumont",
+        "Place_GPS_coordinate": "49.0403, -0.6786",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Caumont",
+        "Place_GPS_coordinate": "49.0403, -0.6786",
+        "Weather_text": "No specific weather details provided for this sub-event.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.053,
+          "East": 0.696,
+          "South": 48.141,
+          "North": 49.94
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "Changing Purposes of British Offensive",
+      "Sub-event_summary": "The original purpose was to pivot the line to keep pace with the Americans; later to deny the enemy time to organize a withdrawal to the Seine; and finally, after the Mortain counterattack, to crush the German forces holding the north flank of the counterattack toward Avranches.",
+      "Sub-event_fulltext": {
+        "Paragraph_32": "The original idea of the offensive was to pivot the line in order to keep pace with the Americans; later the purpose was changed to deny the enemy time to organize a withdrawal to the Seine; and finally, after the Mortain counterattack, to crush the German forces that were trying to hold the north flank of the counterattack toward Avranches."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Thury-Harcourt",
+      "Dates": {
+        "Date_group_of_event": "070000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "062300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Second British Army",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Miles Dempsey",
+          "Name": "Miles Dempsey",
+          "Rank": "Lt Gen",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Miles_Dempsey",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Thury-Harcourt",
+        "Place_GPS_coordinate": "48.985531, -0.478593",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Thury-Harcourt",
+        "Place_GPS_coordinate": "48.985531, -0.478593",
+        "Weather_text": "No specific weather details provided for this sub-event.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.854,
+          "East": 0.897,
+          "South": 48.086,
+          "North": 49.885
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "Relentless Attack on German Corps",
+      "Sub-event_summary": "Despite changing purposes, the attack continued relentlessly, grinding down the LXXIV Corps and necessitating its reinforcement by elements of the II SS Panzer Corps.",
+      "Sub-event_fulltext": {
+        "Paragraph_33": "Despite the changing purpose of the offensive, the attack itself continued relentlessly, grinding down the LXXIV Corps and making necessary its reinforcement by elements of the II SS Panzer Corps."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Vire",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING AUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "BEGINNING AUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "LXXIV Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Fifth Panzer Army",
+            "Commander": "Erich Straube",
+            "Name": "Erich Straube",
+            "Rank": "General",
+            "End_Date": "161000BDEC44",
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Erich_Straube",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "II SS Panzer Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Fifth Panzer Army",
+            "Commander": "Wilhelm Bittrich",
+            "Name": "Wilhelm Bittrich",
+            "Rank": "Obergruppenführer",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Wilhelm_Bittrich",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.8376, -0.8891",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.8376, -0.8891",
+        "Weather_text": "No specific weather details provided for this sub-event.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.264,
+          "East": 0.486,
+          "South": 47.938,
+          "North": 49.737
+        }
+      }
+    },
+    {
+      "Event": "Envelopment from the North",
+      "Sub-event": "Terrain Challenges and Nature of British Advance",
+      "Sub-event_summary": "British forces pushed through rough terrain devoid of good roads, resulting in a slow, hard advance lacking glamor but inexorable, increasing German concern over the developing situation.",
+      "Sub-event_fulltext": {
+        "Paragraph_34": "British forces pushed through a region not particularly suited for offense, an area of rough terrain devoid of good roads.",
+        "Paragraph_35": "It was a slow, hard advance, destitute of glamor and newspaper headlines, but it was inexorable, and it increased German concern over the way the situation was developing."
+      },
+      "Footnote_References": [
+        "8"
+      ],
+      "Place_Name": "Flers",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING AUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "BEGINNING AUG44"
+      },
+      "TOE": {
+        "Unit": "Second British Army",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Miles Dempsey",
+          "Name": "Miles Dempsey",
+          "Rank": "Lt Gen",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Miles_Dempsey",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXV.jpg",
+          "Description": "Map of Encirclement",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Flers",
+        "Place_GPS_coordinate": "48.7500, -0.5667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXV.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Flers",
+        "Place_GPS_coordinate": "48.7500, -0.5667",
+        "Weather_text": "No specific weather details provided for this sub-event.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.941,
+          "East": 0.808,
+          "South": 47.851,
+          "North": 49.649
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "1",
+      "Footnote_Number": "1",
+      "Footnote_Text": "21 AGp Operational Situation and Dir, M-516, 4 Aug; see above, Ch. XXII .",
+      "Footnote_Referenced_Source": "21 AGp Operational Situation and Dir, M-516, 4 Aug; see above, Ch. XXII .",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort Lesley J. McNair, Washington, D.C.",
+      "NonDigital_Library_References": "United States Army in World War II series"
+    },
+    {
+      "Footnote": "2a",
+      "Footnote_Number": "2",
+      "Footnote_Text": "British Army of the Rhine, Battlefield Tour: Operation T OTALIZE , 2 Canadian Corps Operations Astride the Road Caen-Falaise: 7-8 August 1944 (Germany: Printing and Stationery Service, Control Commission for Germany, 1947) (hereafter cited as British Army of the Rhine, Operation T OTALIZE ) , p. 9. The following account, except as otherwise noted, is taken from this source, which gives a detailed report of plans, preparations, intelligence, and execution, and includes excellent maps;",
+      "Footnote_Referenced_Source": "British Army of the Rhine, Battlefield Tour: Operation T OTALIZE , 2 Canadian Corps Operations Astride the Road Caen-Falaise: 7-8 August 1944",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Printing and Stationery Service, Control Commission for Germany, 1947",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Battlefield Tour series"
+    },
+    {
+      "Footnote": "2b",
+      "Footnote_Number": "2",
+      "Footnote_Text": "see also Stacey, Canadian Army, pp. 188ff .;",
+      "Footnote_Referenced_Source": "Stacey, Canadian Army, pp. 188ff .",
+      "Web_Link": "https://www.canada.ca/en/department-national-defence/services/military-history/history-heritage/official-military-history-lineages/official-histories/book-1994-canadian-army-war.html",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "2c",
+      "Footnote_Number": "2",
+      "Footnote_Text": "and Montgomery, Normandy to the Baltic, pp. 154ff.",
+      "Footnote_Referenced_Source": "Montgomery, Normandy to the Baltic, pp. 154ff.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Book",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Montgomery, Normandy to the Baltic"
+    },
+    {
+      "Footnote": "3",
+      "Footnote_Number": "3",
+      "Footnote_Text": "Stacey, Canadian Army, p. 188 .",
+      "Footnote_Referenced_Source": "Stacey, Canadian Army, p. 188 .",
+      "Web_Link": "https://www.canada.ca/en/department-national-defence/services/military-history/history-heritage/official-military-history-lineages/official-histories/book-1994-canadian-army-war.html",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "4a",
+      "Footnote_Number": "4",
+      "Footnote_Text": "AAF III, p. 252;",
+      "Footnote_Referenced_Source": "AAF III, p. 252;",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort Lesley J. McNair, Washington, D.C.",
+      "NonDigital_Library_References": "Army Air Forces in World War II, Volume III"
+    },
+    {
+      "Footnote": "4b",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 2200, 8 Aug, Fifth Panzer Army KTB ;",
+      "Footnote_Referenced_Source": "Telecon, Kluge and Eberbach, 2200, 8 Aug, Fifth Panzer Army KTB ;",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Fifth Panzer Army War Diary"
+    },
+    {
+      "Footnote": "4c",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Leigh-Mallory, \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946.",
+      "Footnote_Referenced_Source": "Leigh-Mallory, \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946.",
+      "Web_Link": "https://www.thegazette.co.uk/London/issue/37838/supplement/63",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "5",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Montgomery, Normandy to the Baltic, p. 157.",
+      "Footnote_Referenced_Source": "Montgomery, Normandy to the Baltic, p. 157.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Book",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Montgomery, Normandy to the Baltic"
+    },
+    {
+      "Footnote": "6",
+      "Footnote_Number": "6",
+      "Footnote_Text": "Many Poles had been equipped and trained in England with British aid. They were troops that had escaped Poland after the defeat in 1939 and had reached England by way of Norway, Hungary, France, and other lands, or volunteer units (formed in France and the Middle East), which after the French surrender in 1940 escaped to England in a variety of ways. See F. C. Anstruther, Poland's Part in the War (Glasgow: The Polish Library, 1944), a pamphlet, 39 pp.",
+      "Footnote_Referenced_Source": "F. C. Anstruther, Poland's Part in the War (Glasgow: The Polish Library, 1944), a pamphlet, 39 pp.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Book",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Poland's Part in the War"
+    },
+    {
+      "Footnote": "7a",
+      "Footnote_Number": "7",
+      "Footnote_Text": "AAF III, pp. 250-51 ;",
+      "Footnote_Referenced_Source": "AAF III, pp. 250-51 ;",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort Lesley J. McNair, Washington, D.C.",
+      "NonDigital_Library_References": "Army Air Forces in World War II, Volume III"
+    },
+    {
+      "Footnote": "7b",
+      "Footnote_Number": "7",
+      "Footnote_Text": "[Ackerman], Employment of Strategic Bombers in a Tactical Role, pp. 86-88;",
+      "Footnote_Referenced_Source": "[Ackerman], Employment of Strategic Bombers in a Tactical Role, pp. 86-88;",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort Lesley J. McNair, Washington, D.C.",
+      "NonDigital_Library_References": "Employment of Strategic Bombers in a Tactical Role"
+    },
+    {
+      "Footnote": "7c",
+      "Footnote_Number": "7",
+      "Footnote_Text": "Wilmot, Struggle for Europe, pp. 410ff.",
+      "Footnote_Referenced_Source": "Wilmot, Struggle for Europe, pp. 410ff.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Book",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Struggle for Europe"
+    },
+    {
+      "Footnote": "8a",
+      "Footnote_Number": "8",
+      "Footnote_Text": "Second British Army Opns, 21 Jul-9 Sep 44, a chronological rcd submitted to Hist Sec USFET by Maj. D. P. Draycott, G (Ops) Rcds, Hq BAOR, 2 Nov 45, and Info furnished Hist Sec USFET by 21 AGp, 9 Aug 45, ML-2251;",
+      "Footnote_Referenced_Source": "Second British Army Opns, 21 Jul-9 Sep 44, a chronological rcd submitted to Hist Sec USFET by Maj. D. P. Draycott, G (Ops) Rcds, Hq BAOR, 2 Nov 45, and Info furnished Hist Sec USFET by 21 AGp, 9 Aug 45, ML-2251;",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort Lesley J. McNair, Washington, D.C.",
+      "NonDigital_Library_References": "ML-2251"
+    },
+    {
+      "Footnote": "8b",
+      "Footnote_Number": "8",
+      "Footnote_Text": "MS # B-840 (Eberbach).",
+      "Footnote_Referenced_Source": "MS # B-840 (Eberbach).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-840"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

@@ -1,0 +1,270 @@
+Use this as a requirments document.
+
+Review these documents in detail and restrict yourself to these documents:
+
+Chapter XXI - St. Malo and the North Shore
+
+SourceLink='https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html'
+Footnotelink='https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html'
+
+Limit to Event Section:
+  - Sweeping the North Shore
+
+Text in Markdown:
+
+```
+> ### *Sweeping the North Shore*
+>
+> Slipping out of the St. Malo area during darkness, Task Force A bypassed Dinan on the south and moved westward on 6 August toward St. Brieuc, thirty miles from Dinan.<sup>[11](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html#fn11)</sup> Contact was made that afternoon with FFI groups commanded by Colonel Eon, who was already in possession of St. Brieuc. Task Force A found the three bridges near the town intact, and General Earnest detailed an engineer company to guard
+
+*\--391--*
+
+<a id="page392"></a>
+
+* * *
+
+> them and to operate a prisoner of war enclosure.<sup>[12](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html#fn12)</sup>
+>
+> At Châtelaudren, ten miles west of St. Brieuc, Task Force A quickly overran about a company of Germans on the morning of 7 August and, accompanied by men of the French Resistance, continued five miles beyond toward Guingamp. Mine fields and antitank obstacles outside Guingamp prompted a halt. Part of the cavalry and some FFI had meanwhile made a wide detour to envelop Guingamp from the south and after infiltrating the town reported that some Germans remained but that the greater part of the garrison had withdrawn to the west. These reports and the fact that the main body of the task force had received no fire from the positions east of Guingamp encouraged General Earnest to attack despite the late hour. Against light resistance the task force took the town.<sup>[13](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html#fn13)</sup>
+>
+> The most important bridge on the double-track railway was at Morlaix, thirty miles west of Guingamp. It was an arched stone structure some thousand feet in length and two hundred feet in height, the largest railroad viaduct in France.<sup>[14](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html#fn14)</sup> Suspecting that strong German forces would be in Morlaix, General Earnest endeavored to make contact with the 6th Armored Division so that he might call for help if necessary. "Where is Six Armored Division right flank?" he radioed Middleton. Middleton's reply of necessity was rather vague.<sup>[15](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html#fn15)</sup> As the task force approached Morlaix, Earnest tried without success to reach the armored division by radio.
+>
+> German troops of the *266th Division* had indeed occupied Morlaix, but early on 8 August the Germans departed the town to seek refuge in Brest. Driving toward Morlaix that same morning, Task Force A encountered only about a hundred Germans deployed around a château just east of the town. Taking the strongpoint by surprise, the Americans entered Morlaix and found the railroad viaduct intact.<sup>[16](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html#fn16)</sup>
+>
+> On the following morning, 9 August, the task force took a bridge south of Morlaix, and General Earnest reported that he had completed his mission. FFI detachments guarding the main highways between Dinan and Landivisiau had extended their control over the smaller roads. Task Force A captured more than 1,200 Germans; FFI, about 300. American and French losses were small.<sup>[17](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html#fn17)</sup>
+>
+> Earnest was preparing to join the 6th Armored Division at Brest when Middleton radioed him a new mission. The task force was to return to Morlaix and proceed from there northeast to the coast to secure the beaches of the bay of St. Michel-en-Grève, where cargo arriving
+
+*\--392--*
+
+<a id="page393"></a>
+
+* * *
+
+> from England was to be unloaded.<sup>[18](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html#fn18)</sup> German strongpoints had earlier commanded the beach, but only mines and angle-iron obstacles remained. Earnest's troops met no opposition as they extended their control over St. Michel-en-Grève on 11 August. Three LST's hove into sight that day and prepared to unload supplies. To insure security for supply operations, the task force patrolled the coastal region, cleared disorganized German troops from the area, and took more than a thousand prisoners; losses totaled 25.<sup>[19](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html#fn19)</sup>
+>
+> Middleton considered recalling Task Force A to St. Malo, but the FFI commander, Eon, persuaded him otherwise. A German garrison near Paimpol still held coastal forts overlooking the western approaches to the bay of St. Brieuc, thereby denying the Allies use of the St. Brieuc port and allowing the Germans to furnish the Channel Island troops with foodstuffs procured on the mainland. Eon proposed to clear the Paimpol area and requested a display of American force during his attack. Middleton gave Eon a thousand gallons of gasoline to transport about 2,500 FFI troops and instructed Earnest to send along a few armored cars, some tank destroyers, and perhaps a battery of artillery. Expecting the FFI to carry the brunt of the combat, Middleton cautioned Earnest against forming a Franco-American force under a single commander. French and Americans were to share the profits of the venture, the Americans to get the prisoners, the FFI the captured arms and equipment.<sup>[20](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html#fn20)</sup>
+>
+> The extent of the German opposition soon drew Task Force A into what developed into a four-day engagement. After reducing a strongpoint near Lezardrieux (three miles west of Paimpol) and taking 430 prisoners, the Americans and the French launched an attack against Paimpol, cleared the town by noon, 17 August, and captured more than 2,000 prisoners and much equipment. At the same time, a reinforced battalion of the 8th Division in an independent action on 15 August cleared the Cap Frehel area, midway between Dinan and St. Brieuc, by firing a few white phosphorus rounds of 4.2-inch mortar and rounding up 300 prisoners.
+>
+> The north shore had been swept clear, an achievement that belonged largely to Task Force A. The task force had secured a useable communications net between Dinan and Landivisiau. Although the railroad was of little worth because the port of Brest was not in American hands, the Task Force A operation was significant in a later context. To a large extent it made possible the logistical support for the major effort subsequently to be exerted to capture Brest.
+```Refer to $SourceLink for absolute paragraph identification.
+
+JSON should always be outputted to a markdown code box.
+Create JSON file that contains the following fields:
+
+Events:
+	- Event:
+	- Sub-event:
+	- Sub-event_summary:
+	- Sub-event_fulltext:
+		  - Paragraph_[19]
+		  - Paragraph_[20]
+		  - Paragraph_[nn]
+		- Footnote_References:
+		- Place_Name
+		- Dates:
+			- Date_group_of_event
+			- Source_date_group_of_event
+			- Zulu_date_group_of_event
+		TOE:
+			- Unit:
+			- Unit_Nationality: [ ISO 3166 Alpha-2 ]
+			- Command_Structure:
+				  - Unit
+				  - Commander
+				  - Name
+				  - Rank
+				  - End_Date
+				  - End_Status
+				  - Biographical_reference
+				  - Biographical_reference_Capture_Date
+			- Subordinates:
+				  - Unit
+				  - Name
+				  - Rank
+				  - Date
+				  - End_Date_of_command
+				  - End_Status
+				  - Biographical_reference
+				  - Biographical_reference_Capture_Date
+			- Personnel:
+			- Equipments:
+				- Supply
+				- Allied_Employed:
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Reference_Capture_Date
+				- Allied_Destroyed:
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Reference_Capture_Date
+				- Axis_Employed
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Image_License
+						- Web_Reference_Capture_Date
+				- Axis_Destroyed:
+					- Origination_Country: [ ISO 3166 Alpha-2 ]
+						- Name
+						- Identifier
+						- Quantity
+						- Web_Reference
+						- Web_Image_Reference
+						- Web_Reference_Capture_Date
+		Casualties:
+			- Allied:
+				- Allied_[ISO 3166 Alpha-2]_KIA
+				- Allied_[ISO 3166 Alpha-2]_WIA
+				- Allied_[ISO 3166 Alpha-2]_Missing
+				- Allied_[ISO 3166 Alpha-2]_Unspecified_Casualties
+				- Allied_[ISO 3166 Alpha-2]_Prisoner_of_War
+			- Axis:
+				- Axis_[ISO 3166 Alpha-2]_KIA
+				- Axis_[ISO 3166 Alpha-2]_WIA
+				- Axis_[ISO 3166 Alpha-2]_Missing
+				- Axis_[ISO 3166 Alpha-2]_Unspecified_Casualties
+				- Axis_[ISO 3166 Alpha-2]_Prisoner_of_War
+			- Civilian:
+				- Civilian_[ISO 3166 Alpha-2]_Killed
+				- Civilian_[ISO 3166 Alpha-2]_Wounded
+				- Civilian_[ISO 3166 Alpha-2]_Unspecified_Casualties
+		Media:
+			- Link
+			- Description
+			- License
+		Place:
+			- Place_Name
+			- Place_GPS_coordinate
+			- Map_Reference
+			- Map_Link
+			- ExternalMapLink
+			- ExternalMapLinkLicence
+			- ExternalMapLinkCaptureDate
+		Weather:
+			- Place_Name
+			- Place_GPS_coordinate
+			- Weather_text
+			- Spatial_Bounding_Box Coordinates
+Footnotes:
+	Footnote:
+		- Footnote_Number
+		- Footnote_Text
+		- Footnote_Referenced_Source
+		- Web_Link
+		- Web_Link_Capture_Date
+		- NonDigital_Library_Source
+		- NonDigital_Library_Address
+		- NonDigital_Library_References
+Source_Footnote_Link: $Footnotelink
+Source_Footnote_Link_Capture_Date:
+Source_Link: $SourceLink
+Source_Link_Capture_Date:With the following specifications:
+
+Specifications:
+	- Prefer Grokipedia sources over Wikipedia
+	- Use Wikipedia Sources whe Grokipedia has no entries.
+	- Create as many unique entries as there are events and sub-events
+	- [ISO 3166 Alpha-2] = ISO 3166 Alpha-2 code
+	- When incorporating links to non-'https://www.ibiblio.org/' sites include current date/time of the inclusion.
+TOE:
+	- Unit(s) 
+	- Unit_Nationality
+	- Commander_Name
+	- Commander_Rank
+	- TOE.Commmand Structure.Commander.End_Status = Relieved, WIA or KIA:
+		  -If the the commander status did not change during the event, ignore the field
+		  - TOE.Commmand Structure.Commander.End_Date = last day of command
+		  - List multiple commanders, if a commander is relieved, wounded or killed.
+		  - Attempt to ascertain what the the unit be being discussed is attached to.  For example, a battalion might be attached to a division.  A division to a Corp.
+		  - A feature of European Theater is that sub-units might be shifted around.  So they are date sensitive.
+		  - Include the commander of higher unit if it can be determined.
+		Biographical_reference:
+			- Add a link to https://grokipedia.com/ if it exists
+		  	- If not add a link to Wikipedia if it exists
+	- Equipment Example:
+		Name:
+			- Sherman
+		Identifier:
+		- M4
+	- Personnel: Was the unit fully staffed?
+	- Supply:
+		- Were there supply shortages?
+Events:
+	- Evaluate every paragraph, group paragraphs together as an event.
+	- 'Event' is a mandatory field
+	- A sub-event is classified as an event that occurs at roughly the same Place/Date and should be treated a unique entry with the same event.
+	- Sub-event_fulltext.Paragraph_[nn] (for example, it should document the absolute paragraph for all paragraphs in the entire $SourceLink and include all text used in analysis.
+	- The goal of paragraph number is to be able to easily find the paragraph in the original document.
+	- Awards such as Distinguished Service Cross (DSC) and Medal of Honor (MoH) should be treated as sub-events:
+		- For all awards, attempt to retrieve the original citation
+	- Unique Locations are sub-events
+	- Unique military units mentioned are to be classified as sub-events
+	- A summary of the the sub event should be included.
+Place:
+	- The GPS coordinates should be are close to the location as possible
+	- Map_reference, is applicable when the text indicate a Map image
+	Maplink:
+		- See: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/:
+		- Roman Numeral identified Maps are at the section:  "Maps I-XLIII are in Inverse Order Inside Back Cover"
+		- Maps with regular numbers are at the section:  "MAPS"
+	ExternalMapLink: Search for maps directly related to the event/sub-event.
+Weather:
+	- Every Place name should have a corresponding Weather record
+	- Spatial Bounding Box Coordinates example:
+		- West: -180.0
+		- East: 180.0
+		- South: -90.0
+		- North: 90.0
+	- A Spatial Bounding Box Coordinates should be created using the Place.Place_GPS_coordinate as the center point and going outwards 100 kilometers.
+Time and Date:
+	- The "Date_group_of_event" is always as published in the text.
+	- For date keep a consistent format:
+		- DDHHMMZmmmYY, using the Date-time group as specified in: https://web.archive.org/web/20170321080040/http://www.gwg.nga.mil/ntb/baseline/docs/2500a/2500a.pdf
+	Assumptions about Dates and Times:
+		- All date times in the text are British Double Summer Time (BDST) until 15 Jul 1944
+		- From 15 Jul 1944 and forward, assume British Summer Time (BST)
+		- 'Zulu_date_group_of_event' is a conversion from BDST and BST to Universal Time
+	For imprecise dates and times use:
+		- For imprecise dates use: "BEGINNING mmmYY" or "END mmmYY"
+		- Imprecise times, use  "APPROX 240900Z mmmYY"
+	For "Source_of_date_group_of_event":
+		- Default to use of "Source Link: $SourceLink if it exists.
+		- Use Grok to search the web for Date.Date_group_of_event if the value is empty.
+		- Populate Date.Source_date_group_of_event with the source link that Grok found.
+Casualties Specification:
+	- KIA = Killed in Action
+	- WIA = Wounded in Action
+	- PoW = Prisoner of War
+	- MIA = Missing in Action
+	- If Casualties are unknown, set the value to '0'
+Media:
+	- External media confirmed to be related to the event
+	- Time of media creation should be concurrent to the event
+	- If there is a license associated with media, it should be noted
+SourceLink: $SourceLink
+Footnotes:
+	- $Footnotelink
+	- If an event has a footnote, follow that that link and place it into Footnote "Source:" field
+	- If the footnote has a link, note the link
+	- If a footnote lists multiple documents, each document should be in it's own individual JSON structure.  For example, footnote 1 references two works, the first would be 1a and the second would be 1b.
+	- If a footnote source lists a document, attempt to find that document online.   Only include the document is if it quoted in it's entirety or has substantial excerpts.
+	- Attach footnotes to the appropriate sub-event and incorporate into the sub-event JSON stanza.
+	- Award recipients, should always have an individual footnote.
+	- Note that documents attributed to '"NonDigital_Library_Source": "OCMH"' have often been moved to either the National Archive or The U.S. Army Heritage and Education Center (USAHEC)
+	For non-Digital documents:
+		- Find the library
+		- The address of the of the library
+		- NonDigital_Library_References is the information required to ask the library to retrieve the information

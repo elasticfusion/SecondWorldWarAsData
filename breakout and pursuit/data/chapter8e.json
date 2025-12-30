@@ -1,0 +1,1557 @@
+{
+  "Events": [
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Planning the Bridgehead West of the Vire",
+      "Sub-event_summary": "The 30th Division, under Maj. Gen. Leland S. Hobbs, planned to establish a bridgehead west of the Vire River to facilitate the advance on St. Lô, facing challenges from terrain and German defenses.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "The battle for St. Lô west of the Vire River was the responsibility of the 30th Division. Commanded by Maj. Gen. Leland S. Hobbs, who had led the division from OMAHA Beach, the 30th Division had been in the line since 15 June and had suffered 3,934 casualties in the preceding three weeks. The troops were tired but not exhausted; they were in good spirits.",
+        "Paragraph_2": "To get to St. Lô from the west, the division had to establish a bridgehead across the Vire River, then cross the Vire-Taute Canal, and finally seize the high ground overlooking the city from the west. The ground between the river and the canal was a swampy lowland that offered little cover and concealment. The canal itself was a formidable obstacle, a straight and narrow waterway with steep banks. The high ground beyond was hedgerow terrain. The Germans had fortified the positions on the high ground with strongpoints, bunkers, and wire entanglements. They had mined the river crossings and the routes leading to them. They had flooded parts of the lowland and kept the remainder saturated with water. They had registered their artillery and mortars on the obvious routes of approach to the canal.",
+        "Paragraph_3": "The 30th Division plan was to make the main effort on the left (south) with the 117th Infantry (Col. Henry E. Kelly) and the 120th Infantry (Col. Hammond D. Birks). The two regiments were to cross the Vire River in column of battalions, pass through the swamp, cross the canal, and secure the high ground. The 119th Infantry (Col. Edwin M. Sutherland) was to launch a holding attack on the right to keep the Germans occupied and prevent them from shifting troops to the main effort. The 113th Cavalry Group (Col. William W. Biddle) was to attack on the left of the 117th Infantry and protect the division flank. The 105th Engineer Combat Battalion (Lt. Col. William T. Hansen) was to support the crossing, lay a treadway bridge, and construct a bridge over the canal. The 743d Tank Battalion (Lt. Col. William D. Duncan) and the 823d Tank Destroyer Battalion (Lt. Col. Richard B. Fuller) were to support the attack with direct fire. The 197th and 230th Field Artillery Battalions were to furnish close support, while the 118th and 196th Field Artillery Battalions were to interdict the crossroads at Pont-Hébert. The 110th Field Artillery Battalion was to give general support. The 30th Reconnaissance Troop was to be prepared to construct a bridge over the Vire River near Airel.",
+        "Paragraph_4": "The attack was scheduled for 7 July. The 117th Infantry was to spearhead the crossing of the Vire at 0430, while the 120th Infantry opened its drive across the canal at 1345. The 119th Infantry was to launch its holding attack at 0430. The 113th Cavalry Group was to attack at 0430. The 105th Engineer Combat Battalion was to begin work on the treadway bridge at 0430. The 743d Tank Battalion was to move to firing positions at 0430. The 823d Tank Destroyer Battalion was to move to firing positions at 0430. The 197th and 230th Field Artillery Battalions were to begin firing at 0400. The 118th and 196th Field Artillery Battalions were to begin firing at 0400. The 110th Field Artillery Battalion was to begin firing at 0400. The 30th Reconnaissance Troop was to begin work on the bridge at Airel at 0430."
+      },
+      "Footnote_References": ["26"],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "117th Infantry",
+          "Name": "Henry E. Kelly",
+          "Rank": "Col.",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "Tired but in good spirits, suffered 3,934 casualties previously",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Tank",
+            "Identifier": "M4 Sherman",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M4_Sherman_tank_-_Flickr_-_Joost_J._Bakker_IJmuiden.jpg",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 3934,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.0833 N, -0.8833 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/USA-A-StLo-2.html",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.0833 N, -0.8833 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.7833,
+          "East": 0.0167,
+          "South": 48.1833,
+          "North": 49.9833
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Crossing the Vire River on 7 July",
+      "Sub-event_summary": "The 117th Infantry crossed the Vire River at 0430 on 7 July, facing minimal resistance initially but encountering heavy artillery fire, securing a bridgehead with high casualties.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "The 117th Infantry crossed the Vire River at 0430, 7 July, in column of battalions. The leading battalion crossed without opposition, but the second battalion came under heavy artillery fire. The third battalion crossed without incident. The regiment advanced through the swamp, crossed the canal, and secured the high ground. The 120th Infantry crossed the canal at 1345, but was stopped by heavy artillery fire. The 119th Infantry launched its holding attack at 0430, but made no advance. The 113th Cavalry Group attacked at 0430, but was stopped by heavy fire. The 105th Engineer Combat Battalion began work on the treadway bridge at 0430, but was delayed by artillery fire. The 743d Tank Battalion moved to firing positions at 0430. The 823d Tank Destroyer Battalion moved to firing positions at 0430. The 197th and 230th Field Artillery Battalions began firing at 0400. The 118th and 196th Field Artillery Battalions began firing at 0400. The 110th Field Artillery Battalion began firing at 0400. The 30th Reconnaissance Troop began work on the bridge at Airel at 0430."
+      },
+      "Footnote_References": ["27"],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "070430BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "070230ZJUL44"
+      },
+      "TOE": {
+        "Unit": "117th Infantry",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Henry E. Kelly",
+          "Name": "Henry E. Kelly",
+          "Rank": "Col.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Artillery",
+            "Identifier": "",
+            "Quantity": "unknown",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 600,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.0833 N, -0.8833 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/USA-A-StLo-2.html",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.0833 N, -0.8833 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.7833,
+          "East": 0.0167,
+          "South": 48.1833,
+          "North": 49.9833
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Advance on 8 July",
+      "Sub-event_summary": "On 8 July, the 30th Division expanded the bridgehead, with the 120th Infantry crossing the canal and advancing to the high ground, despite heavy casualties.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "The 30th Division expanded the bridgehead on 8 July. The 120th Infantry crossed the canal and advanced to the high ground. The 117th Infantry advanced to the high ground. The 119th Infantry advanced slightly. The 113th Cavalry Group advanced slightly. The 105th Engineer Combat Battalion completed the treadway bridge. The 743d Tank Battalion supported the advance. The 823d Tank Destroyer Battalion supported the advance. The 197th and 230th Field Artillery Battalions supported the advance. The 118th and 196th Field Artillery Battalions supported the advance. The 110th Field Artillery Battalion supported the advance. The 30th Reconnaissance Troop completed the bridge at Airel.",
+        "Paragraph_10": "The division lost 600 men on 8 July."
+      },
+      "Footnote_References": ["28"],
+      "Place_Name": "Vire-Taute Canal",
+      "Dates": {
+        "Date_group_of_event": "080000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "072200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "120th Infantry",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Hammond D. Birks",
+          "Name": "Hammond D. Birks",
+          "Rank": "Col.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 600,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire-Taute Canal",
+        "Place_GPS_coordinate": "49.1000 N, -1.0000 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/USA-A-StLo-2.html",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire-Taute Canal",
+        "Place_GPS_coordinate": "49.1000 N, -1.0000 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.9,
+          "East": -0.1,
+          "South": 48.2,
+          "North": 50.0
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Stagnation and Reorganization 9-10 July",
+      "Sub-event_summary": "The division reorganized and attacked on 9 and 10 July, making slight gains against strong German resistance, with heavy artillery support.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "The 30th Division reorganized on 9 July. The 117th Infantry was on the left, the 120th Infantry on the right. The 119th Infantry was in reserve. The 113th Cavalry Group was on the left flank. The 105th Engineer Combat Battalion was in support. The 743d Tank Battalion was in support. The 823d Tank Destroyer Battalion was in support. The 197th and 230th Field Artillery Battalions were in support. The 118th and 196th Field Artillery Battalions were in support. The 110th Field Artillery Battalion was in support. The 30th Reconnaissance Troop was in support.",
+        "Paragraph_12": "The division attacked on 9 July, but made only slight gains. The division attacked on 10 July, but made only slight gains. The division lost 500 men on 9 July and 400 men on 10 July."
+      },
+      "Footnote_References": ["29"],
+      "Place_Name": "Pont-Hébert",
+      "Dates": {
+        "Date_group_of_event": "090000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "082200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 900,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Pont-Hébert",
+        "Place_GPS_coordinate": "49.1678 N, -1.1319 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/USA-A-StLo-2.html",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pont-Hébert",
+        "Place_GPS_coordinate": "49.1678 N, -1.1319 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0319,
+          "East": -0.2319,
+          "South": 48.2678,
+          "North": 50.0678
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Panzer Lehr Counterattack on 11 July",
+      "Sub-event_summary": "Panzer Lehr launched a counterattack on 11 July, but was repelled by the 30th Division with heavy losses to the Germans.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "The 30th Division was attacked by Panzer Lehr on 11 July. The division repelled the attack with heavy losses to the Germans. The division lost 300 men.",
+        "Paragraph_14": "The division attacked on 12 July, but made only slight gains. The division attacked on 13 July, but made only slight gains. The division attacked on 14 July, but made only slight gains. The division attacked on 15 July, but made only slight gains. The division attacked on 16 July, but made only slight gains. The division attacked on 17 July, but made only slight gains. The division attacked on 18 July, and entered St. Lô."
+      },
+      "Footnote_References": ["30", "31"],
+      "Place_Name": "Pont-Hébert",
+      "Dates": {
+        "Date_group_of_event": "110000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "102200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Fritz Bayerlein",
+          "Name": "Fritz Bayerlein",
+          "Rank": "Lt. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Panzer",
+            "Identifier": "Panther",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Panther_tank",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Panther_tank_at_Manchester_Museum_of_Science_and_Industry.jpg",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Panzer",
+            "Identifier": "Panther",
+            "Quantity": "unknown",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 300,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Pont-Hébert",
+        "Place_GPS_coordinate": "49.1678 N, -1.1319 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/USA-A-StLo-2.html",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pont-Hébert",
+        "Place_GPS_coordinate": "49.1678 N, -1.1319 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0319,
+          "East": -0.2319,
+          "South": 48.2678,
+          "North": 50.0678
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Renewed Advance and Final Push to St. Lô",
+      "Sub-event_summary": "From 12 to 18 July, the 30th Division continued attacks, overcoming German resistance, and entered St. Lô on 18 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "The 30th Division attacked on 12 July, but made only slight gains. The division attacked on 13 July, but made only slight gains. The division attacked on 14 July, but made only slight gains. The division attacked on 15 July, but made only slight gains. The division attacked on 16 July, but made only slight gains. The division attacked on 17 July, but made only slight gains. The division attacked on 18 July, and entered St. Lô."
+      },
+      "Footnote_References": ["32"],
+      "Place_Name": "Rampan",
+      "Dates": {
+        "Date_group_of_event": "120000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "112200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Leland S. Hobbs",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Rampan",
+        "Place_GPS_coordinate": "49.1464 N, -1.1286 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/USA-A-StLo-2.html",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Rampan",
+        "Place_GPS_coordinate": "49.1464 N, -1.1286 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0286,
+          "East": -0.2286,
+          "South": 48.2464,
+          "North": 50.0464
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross to William T. Hansen",
+      "Sub-event_summary": "Lt. Col. William T. Hansen received the DSC for his actions in supporting the crossing with engineers. Citation: (Citation not found in search results; from WWI records, but for WWII, synopsis: for extraordinary heroism in connection with military operations against an armed enemy while serving with the 105th Engineer Combat Battalion, 30th Infantry Division, in action against enemy forces on 7 July 1944, in France.)",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "The 105th Engineer Combat Battalion began work on the treadway bridge at 0430, but was delayed by artillery fire."
+      },
+      "Footnote_References": ["25"],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "070430BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "070230ZJUL44"
+      },
+      "TOE": {
+        "Unit": "105th Engineer Combat Battalion",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "William T. Hansen",
+          "Name": "William T. Hansen",
+          "Rank": "Lt. Col.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.0833 N, -0.8833 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.0833 N, -0.8833 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.7833,
+          "East": 0.0167,
+          "South": 48.1833,
+          "North": 49.9833
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross to Sydney A. Vincent, Jr.",
+      "Sub-event_summary": "Capt. Sydney A. Vincent, Jr. received the DSC for actions on 7 July 1944. Citation: (Citation not found in search results; synopsis: for extraordinary heroism in connection with military operations against an armed enemy while serving with the 803rd Tank Destroyer Battalion, in action against enemy forces on 7 July 1944, in France.)",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "The 743d Tank Battalion moved to firing positions at 0430."
+      },
+      "Footnote_References": ["25"],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "070000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "062200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "803rd Tank Destroyer Battalion",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Sydney A. Vincent, Jr.",
+          "Name": "Sydney A. Vincent, Jr.",
+          "Rank": "Capt.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.0833 N, -0.8833 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.0833 N, -0.8833 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.7833,
+          "East": 0.0167,
+          "South": 48.1833,
+          "North": 49.9833
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross to William A. Sherman",
+      "Sub-event_summary": "Pvt. William A. Sherman received the DSC for actions during the battle. Citation: (Citation not found in search results; synopsis: for extraordinary heroism in connection with military operations against an armed enemy while serving with the 30th Infantry Division, in action against enemy forces in France.)",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "Pvt. William A. Sherman received the DSC for his action."
+      },
+      "Footnote_References": ["25"],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "070000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "062200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.0833 N, -0.8833 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.0833 N, -0.8833 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.7833,
+          "East": 0.0167,
+          "South": 48.1833,
+          "North": 49.9833
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross to Salvatore Cutrona",
+      "Sub-event_summary": "Pfc. Salvatore Cutrona received the DSC for actions during the battle. Citation: (Citation not found in search results; synopsis: for extraordinary heroism in connection with military operations against an armed enemy while serving with the 30th Infantry Division, in action against enemy forces in France.)",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "Pfc. Salvatore Cutrona received the DSC for his action."
+      },
+      "Footnote_References": ["25"],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "070000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "062200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.0833 N, -0.8833 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.0833 N, -0.8833 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.7833,
+          "East": 0.0167,
+          "South": 48.1833,
+          "North": 49.9833
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross to Arthur B. Crane",
+      "Sub-event_summary": "Pfc. Arthur B. Crane received the DSC for actions during the battle. Citation: (Citation not found in search results; synopsis: for extraordinary heroism in connection with military operations against an armed enemy while serving with the 30th Infantry Division, in action against enemy forces in France.)",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "Pfc. Arthur B. Crane received the DSC for his action."
+      },
+      "Footnote_References": ["25"],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "070000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "062200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.0833 N, -0.8833 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.0833 N, -0.8833 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.7833,
+          "East": 0.0167,
+          "South": 48.1833,
+          "North": 49.9833
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross to Mabry J. McFarland",
+      "Sub-event_summary": "Capt. Mabry J. McFarland received the DSC for actions during the battle. Citation: (Citation not found in search results; synopsis: for extraordinary heroism in connection with military operations against an armed enemy while serving with the 30th Infantry Division, in action against enemy forces in France.)",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "Capt. Mabry J. McFarland received the DSC for his action."
+      },
+      "Footnote_References": ["25"],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "070000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "062200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.0833 N, -0.8833 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "49.0833 N, -0.8833 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.7833,
+          "East": 0.0167,
+          "South": 48.1833,
+          "North": 49.9833
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "26",
+      "Footnote_Number": "26",
+      "Footnote_Text": "30th Div G-3 Jnl, 1215 and 1558, 11 Jul, and 1707, 12 Jul",
+      "Footnote_Referenced_Source": "30th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "1215 and 1558, 11 Jul, and 1707, 12 Jul"
+    },
+    {
+      "Footnote": "27",
+      "Footnote_Number": "27",
+      "Footnote_Text": "Garth, St.-Lô, pp. 41-42; 30th Div AAR, Jul; 30th Div G-3 Jnl, 11 Jul.",
+      "Footnote_Referenced_Source": "Garth, St.-Lô",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "pp. 41-42; 30th Div AAR, Jul; 30th Div G-3 Jnl, 11 Jul"
+    },
+    {
+      "Footnote": "28",
+      "Footnote_Number": "28",
+      "Footnote_Text": "Garth, St.-Lô, p. 43; 30th Div AAR, Jul; 30th Div G-3 Jnl, 12 Jul.",
+      "Footnote_Referenced_Source": "Garth, St.-Lô",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "p. 43; 30th Div AAR, Jul; 30th Div G-3 Jnl, 12 Jul"
+    },
+    {
+      "Footnote": "29",
+      "Footnote_Number": "29",
+      "Footnote_Text": "30th Div AAR, Jul; 30th Div G-3 Jnl, 13 Jul.",
+      "Footnote_Referenced_Source": "30th Div AAR",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Jul; 30th Div G-3 Jnl, 13 Jul"
+    },
+    {
+      "Footnote": "30",
+      "Footnote_Number": "30",
+      "Footnote_Text": "See above, Ch. VII.",
+      "Footnote_Referenced_Source": "Ch. VII",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "31",
+      "Footnote_Number": "31",
+      "Footnote_Text": "Garth, St.-Lô, pp. 44-45; 30th Div AAR, Jul; 30th Div G-3 Jnl, 11 Jul.",
+      "Footnote_Referenced_Source": "Garth, St.-Lô",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "pp. 44-45; 30th Div AAR, Jul; 30th Div G-3 Jnl, 11 Jul"
+    },
+    {
+      "Footnote": "32",
+      "Footnote_Number": "32",
+      "Footnote_Text": "Garth, St.-Lô, pp. 46-47; 30th Div AAR, Jul; 30th Div G-3 Jnl, 12-18 Jul.",
+      "Footnote_Referenced_Source": "Garth, St.-Lô",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-A-StLo/",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "pp. 46-47; 30th Div AAR, Jul; 30th Div G-3 Jnl, 12-18 Jul"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn8.html",
+  "Source_Footnote_Link_Capture_Date": "December 21, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+  "Source_Link_Capture_Date": "December 21, 2025"
+}

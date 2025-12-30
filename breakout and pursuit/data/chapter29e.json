@@ -1,0 +1,398 @@
+{
+  "Events": [
+    {
+      "Event": "French Aims in the Liberation of Paris",
+      "Sub-event": "Resistance Appeals for Immediate Aid and De Gaulle Concerns (Mid-August 1944)",
+      "Sub-event_summary": "Resistance leaders in Paris radioed exterior Resistance for help, alarming Frenchmen outside with reports of disorder and urgent pleas for military entry into the capital. De Gaulle and provisional government worried extremist agitation might provoke German violence or place unreliable Resistance elements in power. Left-wing parties influential in Paris Resistance, including FFI commander. French commanders within OVERLORD framework advocated immediate aid, arguing riot becoming revolution could make Paris needless battleground diverting Allied troops.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "Resistance leaders in Paris had meanwhile radioed the exterior Resistance for help, thereby alarming Frenchmen outside Paris by reports, perhaps exaggerated, of disorder in the city and by urgent pleas that military forces enter the capital at once. De Gaulle and his provisional government had long been worried that extremist agitation not only might bring violent German reaction but also might place unreliable Resistance elements in the capital in political power. The parties of the left were particularly influential in the Paris Resistance movement, to the extent that the FFI commander of Paris belonged to one of them. Conscious of the dictum that he who holds Paris holds France and sensitive to the tradition of Paris as a crucible of revolution, its population ever ready to respond to the cry \"Aux barricades!\" the French commanders within the OVERLORD framework advocated sending aid to Paris immediately. Their argument was that if riot became revolution, Paris might become a needless battleground pulling Allied troops from other operations."
+      },
+      "Footnote_References": [32, 33],
+      "Place_Name": ["Paris"],
+      "Dates": {
+        "Date_group_of_event": "mid-Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "mid-Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "French Forces of the Interior (FFI)",
+        "Unit_Nationality": "FR"
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "French Aims in the Liberation of Paris",
+      "Sub-event": "Failed Arms Airdrop and Cancellation (22–23 August)",
+      "Sub-event_summary": "Immediate hope lay in parachuting arms/ammunition into Paris to strengthen FFI resistance and seize key points facilitating Allied entry. Despite reluctance to arm urban population and concern over heavy Paris antiaircraft defenses, airdrop scheduled for 22 August. Thick fog over British airfields postponed drop. British radio premature announcement of Paris liberation on 23 August led SHAEF to cancel operation.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "An immediate hope lay in parachuting arms and ammunition into the city. This would enable the FFI to resist more effectively and perhaps permit the Resistance to seize tactically important points that would facilitate Allied entry. Despite a natural reluctance to arm urban people and SHAEF's concern that the heavy antiaircraft defenses of Paris might make an air mission costly, an airdrop of military equipment was scheduled for 22 August. When a thick fog that day covered all British airfields, the drop was postponed. On the following day, when the British radio made a premature announcement that Paris had already been liberated, SHAEF canceled the operation."
+      },
+      "Footnote_References": [34],
+      "Place_Name": ["Paris"],
+      "Dates": {
+        "Date_group_of_event": "22 Aug 1944 - 23 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "22 Aug 1944 - 23 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "French Forces of the Interior (FFI)",
+        "Unit_Nationality": "FR"
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; thick fog reported over British airfields on 22 August 1944.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "French Aims in the Liberation of Paris",
+      "Sub-event": "Allied Promise of 2d French Armored Division Role and Leclerc Impatience",
+      "Sub-event_summary": "SHAEF agreed pre-invasion to include French division in OVERLORD troop list for re-occupation of Paris. 2d French Armored Division selected. Koenig reminded Eisenhower pre-invasion and early August of promise. Leclerc (commander) impatient from Argentan (over 100 miles away) while American troops nearer Paris. Leclerc requested movement to Paris as early as 14 August; Patton assured honor but kept division engaged.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "The decisive solution obviously lay in getting Allied troops into the capital, for which provision had been made in Allied plans as early as 1943. SHAEF had agreed to include a French division on the OVERLORD troop list \"primarily so that there may be an important French formation present at the re-occupation of Paris.\" The 2d French Armored Division had been selected. Just before the cross-Channel attack and again early in August, the French military chief, General Koenig, had reminded General Eisenhower of the Allied promise to use that unit to liberate Paris. Its entry into the capital would be a symbolic restoration of French pride as well as the preparation for de Gaulle's personal entry into Paris, symbolic climax of the French Resistance. When the situation seemed propitious for these events to take place, General Leclerc's armored division was at Argentan, more than a hundred miles away, while American troops were less than twenty-five miles from the center of the capital. If the French could persuade General Eisenhower to liberate Paris at once, would he be able to honor his promise to employ Leclerc?",
+        "Paragraph_19": "General Eisenhower had no intention of changing the plan to bypass Paris, as Generals de Gaulle and Koenig discovered when they conferred with him on 21 August, but he repeated his promise to use Leclerc's division at the liberation. Although the French had agreed to abide by General Eisenhower's decisions on the conduct of the war in return for Allied recognition of a de facto government headed by de Gaulle, General Alphonse Juin that same day, 21 August, carried a letter from de Gaulle to the Supreme Commander to threaten politely that if General Eisenhower did not send troops to Paris at once, de Gaulle might have to do so himself. The threat was important, for de Gaulle was the potential head of the French government and would theoretically stand above the Supreme Commander on the same level with President Roosevelt and Prime Minister Churchill.",
+        "Paragraph_20": "Leclerc, who was conscious of the historic mission reserved for him, had long been impatient for orders to move to Paris. As early as 14 August, when he learned that Patton was sending part of the XV Corps (but not the 2d French Armored Division) eastward from Argentan, Leclerc had requested the corps commander to query the Third Army commander as to when the French division was to go to Paris. Leclerc's explanation--\"It is political\"--availed little, for the army chief of staff bluntly ordered that Leclerc was to remain where he was. Two days later Leclerc wrote Patton suggesting that since the situation at Argentan had become quiet, the 2d French Armored Division might commence to assemble for its projected march on Paris. That evening he visited Patton's headquarters, where he saw Bradley as well as Patton, and gained cordial assurance from both that he would have the honor of liberating the capital. Patton laughingly turned to General Wood, who was also present and who had been pressing for permission to lead his 4th Armored Division to Paris. \"You see, Wood,\" Patton supposedly said, \"he \[Leclerc\] is a bigger pain in the neck than you are.\" Patton nevertheless announced his intention of moving Leclerc to Dreux as soon as possible.",
+        "Paragraph_21": "Unfortunately for Leclerc's hopes, the last stage of operations to close the Argentan-Falaise pocket had started, and his armored division found itself again engaged, eventually under the control of the First U.S. Army and General Gerow's V Corps. Although Leclerc was not told, Bradley and Patton on 19 August agreed once more that only the French division would \"be allowed to go into Paris,\" probably under First Army control. Leclerc fretted and bombarded V Corps headquarters with requests premised on the expectation of a momentary call to Paris--for example, he attempted to secure the release of the French combat command attached to the 90th Division. For his part, General Gerow saw no reason to employ the French division any differently from his American units, for Paris was no specific concern of his."
+      },
+      "Footnote_References": [35, 36, 37, 38, 39, 40, 41, 42],
+      "Place_Name": ["Paris", "Argentan", "Dreux"],
+      "Dates": {
+        "Date_group_of_event": "1943 - 21 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "1943 - 21 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "2d French Armored Division",
+        "Unit_Nationality": "FR",
+        "Command_Structure": {
+          "Unit": "V Corps",
+          "Commander": {
+            "Name": "Leonard T. Gerow",
+            "Rank": "Major General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "2d French Armored Division",
+            "Name": "Jacques-Philippe Leclerc",
+            "Rank": "General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Philippe_Leclerc_de_Hautclocque"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "French Aims in the Liberation of Paris",
+      "Sub-event": "Leclerc Independent Reconnaissance Detachment to Paris (21–22 August)",
+      "Sub-event_summary": "Leclerc, impatient and citing historic mission, dispatched small force (~150 men, 10 light tanks, 10 armored cars, 10 personnel carriers) under Major Guillebon toward Paris on evening 21 August for route reconnaissance and to represent provisional government/French Army if Allies entered without 2d French Armored. Guillebon ostensibly reconnoitered but prepared to accompany liberating troops. Leclerc explained to de Gaulle limited by food/fuel subordination. On 22 August Leclerc sent G-2 Major Repiton to Gerow justifying action for maintaining order until French authorities arrival. Gerow viewed breach of discipline, ordered recall of Guillebon, and emphasized division under his command for all purposes.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "Invited by General Hodges to lunch on 20 August, Leclerc seized upon the occasion for \"arguments, which he presented incessantly,\" that roads and traffic and plans notwithstanding, his division should run for Paris at once. He said he needed no maintenance, equipment, or personnel, but a few minutes later admitted that he needed all three. General Hodges \"was not impressed with him or his arguments, and let him understand that he was to stay put\" until he received orders to move.",
+        "Paragraph_23": "When British troops on 21 August moved across the V Corps front and V Corps divisions began to withdraw to assembly areas south of Argentan, Leclerc saw no justification for remaining so far distant from his ultimate objective. \"We shall not stop,\" he had said in 1941, \"until the French flag flies over Strasbourg and Metz,\" and along the route to these capitals of Alsace and Lorraine, Paris was a holy place. He persuaded himself that Gerow was sympathetic to his wishes, and though the corps commander was powerless to authorize Leclerc's march on Paris, Leclerc convinced himself that as the sole commander of French regular military forces in Operation OVERLORD, he was entitled to certain prerogatives involving national considerations. Furthermore, since Koenig, who anticipated that the 2d Armored would liberate Paris sooner or later, had appointed Leclerc provisional military governor of the capital, Leclerc felt that this gave him authority to act. With at least an arguable basis for moving on Paris, Leclerc on the evening of 21 August (the same day that Eisenhower had rejected de Gaulle's request) dispatched a small force of about 150 men--ten light tanks, ten armored cars, ten personnel carriers--under a Major Guillebon toward the capital. Guillebon ostensibly was to reconnoiter routes to Paris, but should the Allies decide to enter the city without the 2d French Armored Division, Guillebon was to accompany the liberating troops as the representative of the provisional government and the French Army. Writing to de Gaulle that evening, Leclerc explained, \"Unfortunately, I cannot do the same thing for the bulk of my division because of matters of food and fuels\" (furnished by the U.S. Army) and because of respect for the \"rules of military subordination.\"",
+        "Paragraph_24": "Knowing that Guillebon could not reach Paris undetected, Leclerc sent his G-2, Maj. Philippe H. Repiton, to Gerow on the morning of 22 August to explain his act on the following basis: insurrection in the capital made it necessary for an advance military detachment to be there to maintain order until the arrival of regular French political authorities. Guillebon's absence, Leclerc pointed out, did not compromise the ability of the division to fulfill any combat mission assigned by the corps. Gerow, who was thoroughly a soldier and who had received a peremptory message from the Third Army asking what French troops were doing outside their sector, saw only Leclerc's breach of discipline. \"I desire to make it clear to you,\" Gerow wrote Leclerc in a letter he handed personally to Repiton, \"that the 2d Armored Division (French) is under my command for all purposes and no part of it will be employed by you except in the execution of missions assigned by this headquarters.\" He directed Leclerc to recall Guillebon.",
+        "Paragraph_25": "Unwilling to comply, Leclerc sought higher authority by taking a plane to the First Army headquarters. There he learned that General Bradley was conferring with General Eisenhower on the question of Paris. Leclerc decided to await the outcome of the conference."
+      },
+      "Footnote_References": [43, 44, 45, 46, 47, 48, 49],
+      "Place_Name": ["Paris", "Argentan", "Dreux"],
+      "Dates": {
+        "Date_group_of_event": "14 Aug 1944 - 22 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "14 Aug 1944 - 22 Aug 1944 (BST)"
+      },
+      "TOE": {
+        "Unit": "2d French Armored Division",
+        "Unit_Nationality": "FR",
+        "Command_Structure": {
+          "Unit": "V Corps",
+          "Commander": {
+            "Name": "Leonard T. Gerow",
+            "Rank": "Major General"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "2d French Armored Division",
+            "Name": "Jacques-Philippe Leclerc",
+            "Rank": "General",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Philippe_Leclerc_de_Hautclocque"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    }
+  ],
+  "Footnotes": {
+    "Footnote": [
+      {
+        "Footnote": "32",
+        "Footnote_Number": 32,
+        "Footnote_Text": "FFI Rpt, Paris, Aug.",
+        "Footnote_Referenced_Source": "FFI Report, Paris, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "33",
+        "Footnote_Number": 33,
+        "Footnote_Text": "See, for example, F. F. F. (Forces Françaises de l'Intérieur), pp. 9-11.",
+        "Footnote_Referenced_Source": "Forces Françaises de l'Intérieur (FFI) records, pp. 9-11",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "34",
+        "Footnote_Number": 34,
+        "Footnote_Text": "SHAEF Msg, 23 Aug 44.",
+        "Footnote_Referenced_Source": "SHAEF Message, 23 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "35",
+        "Footnote_Number": 35,
+        "Footnote_Text": "SHAEF Planning Draft, 13 May 44.",
+        "Footnote_Referenced_Source": "SHAEF Planning Draft, 13 May 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "36",
+        "Footnote_Number": 36,
+        "Footnote_Text": "Koenig Msgs, Jun-Aug 44.",
+        "Footnote_Referenced_Source": "General Koenig Messages, June-August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "37",
+        "Footnote_Number": 37,
+        "Footnote_Text": "Juin Ltr to Eisenhower, 21 Aug 44.",
+        "Footnote_Referenced_Source": "General Alphonse Juin Letter to Eisenhower, 21 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "38",
+        "Footnote_Number": 38,
+        "Footnote_Text": "Leclerc Ltr to Patton, 16 Aug 44.",
+        "Footnote_Referenced_Source": "General Leclerc Letter to Patton, 16 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "39",
+        "Footnote_Number": 39,
+        "Footnote_Text": "Patton, War as I Knew It, p. 123.",
+        "Footnote_Referenced_Source": "George S. Patton, War as I Knew It (Boston: Houghton Mifflin Company, 1947), p. 123",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "40",
+        "Footnote_Number": 40,
+        "Footnote_Text": "Msg, TUSA to V Corps, 19 Aug 44.",
+        "Footnote_Referenced_Source": "Message, Third Army to V Corps, 19 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "41",
+        "Footnote_Number": 41,
+        "Footnote_Text": "Bradley, A Soldier's Story, p. 377.",
+        "Footnote_Referenced_Source": "Omar N. Bradley, A Soldier's Story (New York: Henry Holt and Company, 1951), p. 377",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "42",
+        "Footnote_Number": 42,
+        "Footnote_Text": "Msg, V Corps to 2d Fr Armd Div, 22 Aug 44.",
+        "Footnote_Referenced_Source": "Message, V Corps to 2d French Armored Division, 22 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "43",
+        "Footnote_Number": 43,
+        "Footnote_Text": "Hodges Diary, 20 Aug 44.",
+        "Footnote_Referenced_Source": "General Courtney H. Hodges Diary, 20 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "44",
+        "Footnote_Number": 44,
+        "Footnote_Text": "Leclerc, Leclerc et la 2e DB, p. 12.",
+        "Footnote_Referenced_Source": "General Leclerc records, Leclerc et la 2e DB, p. 12",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "45",
+        "Footnote_Number": 45,
+        "Footnote_Text": "Msg, V Corps to 2d Fr Armd Div, 22 Aug 44.",
+        "Footnote_Referenced_Source": "Message, V Corps to 2d French Armored Division, 22 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      },
+      {
+        "Footnote": "46",
+        "Footnote_Number": 46,
+        "Footnote_Text": "Koenig Msg to Leclerc, Aug 44.",
+        "Footnote_Referenced_Source": "General Koenig Message to Leclerc, August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "47",
+        "Footnote_Number": 47,
+        "Footnote_Text": "Leclerc Msg to de Gaulle, 21 Aug 44.",
+        "Footnote_Referenced_Source": "General Leclerc Message to de Gaulle, 21 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "48",
+        "Footnote_Number": 48,
+        "Footnote_Text": "Leclerc Msg to de Gaulle, 21 Aug 44.",
+        "Footnote_Referenced_Source": "General Leclerc Message to de Gaulle, 21 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "FR"
+      },
+      {
+        "Footnote": "49",
+        "Footnote_Number": 49,
+        "Footnote_Text": "Msg, V Corps to 2d Fr Armd Div, 22 Aug 44.",
+        "Footnote_Referenced_Source": "Message, V Corps to 2d French Armored Division, 22 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "US"
+      }
+    ]
+  },
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn29.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-29",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+  "Source_Link_Capture_Date": "2025-12-29"
+}

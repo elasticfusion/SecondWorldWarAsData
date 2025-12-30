@@ -1,0 +1,1130 @@
+{
+  "Events": [
+    {
+      "Event": "German Plans",
+      "Sub-event": "Hitler's Meeting at Wolfschanze",
+      "Sub-event_summary": "On the last day of July 1944, Adolf Hitler met with Alfred Jodl at the Wolfschanze command post in East Prussia to discuss the depressing global situation facing Germany, including concerns in Italy, the Balkans, Hungary, the Eastern Front, and France. Influenced by the recent assassination attempt on 20 July, Hitler decided to personally direct the war and plan a withdrawal from France using fragmentary orders to prevent compromise.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "Meeting on the last day of July with Jodl in the Wolfschanze, the Fuehrer's command post in East Prussia, Hitler faced a depressing situation. In Italy, he felt, German forces were usefully tying down numerically superior Allied troops, but elsewhere Hitler found little consolation. As he put it, his principal worry was defection in the Balkan area; his most anxious concern was the potential capitulation of Hungary; his most pressing military need was stability on the Eastern Front in the Baltic and Polish regions; his immediate problem was the situation in France.",
+        "Paragraph_4": "Over all the situation reports and staff studies that Hitler consulted hovered the shadow of the plot that on 20 July had come close to destroying his life. Despite vigorous measures to uproot the conspiracy, he could not be sure of its extent. He suspected considerable defection within the ranks of the German generals and general staff and was certain that disloyalty to his person existed on subordinate echelons as well. Tormented by a lack of confidence in the military, Hitler decided to direct the war increasingly from his own headquarters. He himself would plan a withdrawal from France. He would have OKW issue only fragmentary orders at the proper time to insure compliance with his master plan. In that way he would not reveal the plan in its entirety to someone who might compromise its success.",
+        "Paragraph_5": "Hitler's basic plan to meet the American breakout at the end of July was to secure a temporary stabilization of the"
+      },
+      "Footnote_References": [],
+      "Place_Name": "Wolfschanze",
+      "Dates": {
+        "Date_group_of_event": "last day of July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "312359ZJUL44"
+      },
+      "TOE": {
+        "Unit": "OKW",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Adolf Hitler",
+          "Name": "Adolf Hitler",
+          "Rank": "Fuehrer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Adolf_Hitler",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "OKW Operations Staff",
+            "Name": "Alfred Jodl",
+            "Rank": "Generaloberst",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://grokipedia.com/page/Alfred_Jodl",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/2/24/Adolf_Hitler%27s_Bunker_in_Wolfsschanze.JPG",
+          "Description": "Wolf's Lair headquarters WWII",
+          "License": "unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Wolfschanze",
+        "Place_GPS_coordinate": "54.0806,21.4936",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Wolfschanze",
+        "Place_GPS_coordinate": "54.0806,21.4936",
+        "Weather_text": "No specific data for 31 Jul 1944; typical summer weather in East Prussia: temperatures around 20-25°C, possible rain as noted in historical records.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "19.9636",
+          "East": "23.0236",
+          "South": "53.1806",
+          "North": "54.9806"
+        }
+      }
+    },
+    {
+      "Event": "German Plans",
+      "Sub-event": "Hitler's Basic Plan and Fortress Policy",
+      "Sub-event_summary": "Hitler aimed to stabilize the front for 6-10 weeks to organize new defenses, ordering the destruction of French transportation facilities and implementing the fortress policy to deny Allies major ports and retain submarine bases. Fortresses included Dunkerque, Calais, Boulogne, Le Havre, Cherbourg, St. Malo, Brest, Lorient, and St. Nazaire, with orders to hold to the last man and destroy harbors.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "front while intermediate rally lines and new defensive positions were being organized in the rear. To organize new defenses in protection of Germany and to await the fruition of new production and troop training schedules, Hitler needed six weeks at the least, ten weeks at the most. To gain the time he needed, he struck two blows at the Allied logistical apparatus. He ordered all withdrawing troops to destroy transportation facilities in France--locomotives, railway lines, marshaling yards, machine shops, and bridges--a plan already abetted by Allied bombardment. And he ordered his fortress policy into effect to deny the Allies the major ports they needed and to retain for the German Navy bases for submarine warfare against Allied shipping.",
+        "Paragraph_7": "2 In 1943 OKW had designated as fortresses all the Atlantic harbors that had been extensively fortified. To each was assigned an especially dependable commander who took an oath to defend his fortress to the death. Among the fortresses were the port cities Dunkerque, Calais, Boulogne, Le Havre, Cherbourg, St. Malo, Brest, Lorient, and St. Nazaire. 3 Of these, Cherbourg had fallen in June, and at the end of July, as American troops seized Avranches and Pontaubault at the base of the Cotentin, the principal ports of Brittany--St. Malo, Brest, Lorient, and St. Nazaire--were threatened. (See Maps I , VIII , XII .)",
+        "Paragraph_8": "Having been vexed by the failure of the Cherbourg garrison to hold out as long as he expected, Hitler tried to make certain that his fortress commanders in Brittany and in the Pas-de-Calais would not similarly disappoint him. Hoping to deny the Allies the ports he recognized as vital to the success not only of Overlord but also of the entire Allied campaign in western Europe, Hitler specifically ordered the fortresses held \"to the last man, to the last cartridge.\" Although this Hitlerian phrase was later to become trite and even farcical, it was a serious manifesto. Hitler's argument was that, since the forces guarding the fortresses were static troops, they could not be employed effectively in the war of movement the Americans were certain to initiate in August. Since they could not conduct mobile operations, they were to fight to the finish within the ports, destroying the harbors in the process. The garrison forces would thus not only destroy the base of the logistical machinery--ports of entry--that the Allies had to erect in order to wage effective war, they would also tie down Allied forces that might otherwise be used in the decisive battle inevitably to be fought on the western approaches to Germany."
+      },
+      "Footnote_References": [
+        2,
+        3
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "end of July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "END JUL44"
+      },
+      "TOE": {
+        "Unit": "OKW",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Adolf Hitler",
+          "Name": "Adolf Hitler",
+          "Rank": "Fuehrer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Adolf_Hitler",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "await the fruition of new production and troop training schedules",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://themaparchive.com/wp-content/uploads/2017/08/products-Ax00539.jpg",
+          "Description": "Map of Brittany fortresses 1944 WWII",
+          "License": "unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Map_Reference": "Maps I, VIII, XII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "https://themaparchive.com/product/overrunning-brittany-37-august-1944/",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Weather_text": "No specific data for end of July 1944; typical summer weather in Brittany: mild temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.35",
+          "East": "-1.65",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "German Plans",
+      "Sub-event": "Unpopularity of Fortress Policy at OB WEST",
+      "Sub-event_summary": "The fortress policy was unpopular at OB WEST due to the expected loss of 180,000 to 280,000 men. Kluge, commanding both OB WEST and Army Group B, focused on tactical affairs, rendering OB WEST ineffective. Hitler instructed Kluge to ignore U.S. forces in Brittany and focus on the threat toward the Seine.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "At OB WEST, this policy was markedly unpopular. Feeling that Hitler's implementation of the fortress policy meant the inevitable loss of from 180,000 to 280,000 men and their equipment, the OB WEST staff believed that the static troops in the Pas-de-Calais area at least--assuming that the groups in Brittany were already lost for future operations--could be used to better advantage",
+        "Paragraph_10": "in reinforcing the new defensive positions to be erected in the rear of the Normandy front. But since Kluge was in command of Army Group B as well as of OB WEST and since he was in actuality giving most of his attention to tactical affairs at the army group level and below, OB WEST exerted no vital influence on operations. For all practical purposes it had become a message center that transmitted orders and reports up and down the chain of command. More to the point, whatever OB WEST's recommendations, Hitler had already made his decision. He told Kluge to pay no attention to the U.S. forces entering Brittany. 4 Instead, Kluge was to devote his efforts to stemming the American threat eastward toward the Seine."
+      },
+      "Footnote_References": [
+        4
+      ],
+      "Place_Name": "France",
+      "Dates": {
+        "Date_group_of_event": "end of July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "END JUL44"
+      },
+      "TOE": {
+        "Unit": "OB WEST",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Army Group B",
+            "Name": "Günther von Kluge",
+            "Rank": "Generalfeldmarschall",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://grokipedia.com/page/G%C3%BCnther_von_Kluge",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "180,000 to 280,000 men potentially lost",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "France",
+        "Place_GPS_coordinate": "46.0000,2.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "France",
+        "Place_GPS_coordinate": "46.0000,2.0000",
+        "Weather_text": "No specific data; typical summer weather in France: temperatures 20-25°C, variable conditions.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "0.65",
+          "East": "3.35",
+          "South": "45.1",
+          "North": "46.9"
+        }
+      }
+    },
+    {
+      "Event": "German Plans",
+      "Sub-event": "Kluge's Request for Division Movements on 1 August",
+      "Sub-event_summary": "During the early hours of 1 August, Kluge requested permission to move the 2d Parachute Division from Brest and the 319th Infantry Division from the Channel Islands to the mainland. Hitler refused to evacuate the Channel Islands but allowed the 2d Parachute Division to move. However, the paratroopers returned to Brest when threatened with isolation.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "During the early hours of 1 August, Kluge had asked Hitler's permission to bring the 2d Parachute Division eastward from Brest and the 319th Infantry Division from the Channel Islands of Jersey and Guernsey to the mainland to deny the Americans entry into Brittany. Hitler refused to evacuate the Channel Islands but granted permission for Kluge to use the 2d Parachute Division. Although the paratroopers started to move eastward, it soon became apparent that they would be too late to affect developments in Brittany. Threatened with isolation from Brest by a U.S. armored division, the paratroopers slipped back into the port city. 5 By midmorning of 1 August, the Germans learned that U.S. forces were moving freely south of Pontaubault. By noon they had reports that Americans were in Pontorson and Dol-de-Bretagne and that two batteries of a German assault gun brigade committed against the armored spearheads had been destroyed, principally, they thought, by fighter-bombers. 6 By evening there was no hope of stopping the influx of American troops into Brittany."
+      },
+      "Footnote_References": [
+        5,
+        6
+      ],
+      "Place_Name": "Brest",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "APPROX 010200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "2d Parachute Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Sturmgeschütz III",
+              "Identifier": "StuG III",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Sturmgesch%C3%BCtz_III",
+              "Web_Image_Reference": "https://www.alamy.com/stock-photo/ww2-german-assault-guns.html",
+              "Web_Image_License": "unknown",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Assault Gun",
+              "Identifier": "StuG III",
+              "Quantity": 6,
+              "Web_Reference": "https://en.wikipedia.org/wiki/Sturmgesch%C3%BCtz_III",
+              "Web_Image_Reference": "https://www.alamy.com/stock-photo/ww2-german-assault-guns.html",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://warfarehistorynetwork.com/wp-content/uploads/2021/10/Brittany-121Inf-Map-2.jpg",
+          "Description": "Map of Brittany fortresses 1944 WWII",
+          "License": "unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Brest",
+        "Place_GPS_coordinate": "48.3904,-4.4861",
+        "Map_Reference": "Maps I, VIII, XII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://warfarehistorynetwork.com/article/the-battle-for-brittany-tested-americas-tactical-doctrine/",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brest",
+        "Place_GPS_coordinate": "48.3904,-4.4861",
+        "Weather_text": "No specific data for 1 Aug 1944; typical summer weather in Brest: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-5.8361",
+          "East": "-3.1361",
+          "South": "47.4904",
+          "North": "49.2904"
+        }
+      }
+    },
+    {
+      "Event": "German Plans",
+      "Sub-event": "Reports of American Movements on 1 August",
+      "Sub-event_summary": "By midmorning of 1 August, Germans learned of U.S. forces moving south of Pontaubault. By noon, reports of Americans in Pontorson and Dol-de-Bretagne, and two batteries of a German assault gun brigade destroyed by fighter-bombers. By evening, no hope of stopping American influx into Brittany.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "Although Kluge was aware of the meaning of these events, Hausser, the Seventh Army commander, tried to minimize the gravity of the situation by maintaining that \"only armored elements have broken through [and that] so far there has been no exploitation of the breakthrough with massed forces.\" He admitted that several columns of American tanks, with sixty tanks in each column, had been reported near Villedieu-les-Poëles, and that \"they must be somewhere in the area south of Avranches.\" Despite this, he still felt that he could stabilize his part of a front between Avranches and Caen."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Pontaubault",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "011000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "Oberst-Gruppenführer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Assault Gun Brigade",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Assault Gun",
+              "Identifier": "StuG III",
+              "Quantity": 6,
+              "Web_Reference": "https://www.alamy.com/stock-photo/ww2-german-assault-guns.html",
+              "Web_Image_Reference": "https://www.alamy.com/stock-photo/ww2-german-assault-guns.html",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.alamy.com/stock-photo/ww2-german-assault-guns.html",
+          "Description": "images of German assault guns WWII destroyed",
+          "License": "unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Pontaubault",
+        "Place_GPS_coordinate": "48.6298,-1.3497",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Pontaubault",
+        "Place_GPS_coordinate": "48.6298,-1.3497",
+        "Weather_text": "No specific data for 1 Aug 1944; typical summer weather in Pontaubault: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.6997",
+          "East": "0.0003",
+          "South": "47.7298",
+          "North": "49.5298"
+        }
+      }
+    },
+    {
+      "Event": "German Plans",
+      "Sub-event": "Hausser and Kluge's Assessments on 1 August",
+      "Sub-event_summary": "Hausser minimized the situation, claiming only armored elements had broken through without massed exploitation. Kluge realistically assessed the need to stop the flow of American forces southward, turning attention to securing additional units for the Normandy front.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "Kluge evaluated the situation more realistically. Although he was talking to Hausser, he seemed to be speaking more to himself: \"We have got to stop the flow [of American forces] from Avranches southward.\" This was his principal concern. Figuring that the 2d Parachute Division would have to fight in Brittany and could not therefore be used to bolster the front in Normandy, Kluge turned his attention to the problem of securing additional German",
+        "Paragraph_14": "units from other places in the west to help stabilize the Normandy front. 7 With OB WEST, Army Group B, and the Seventh Army in no position to look after Brittany, the task devolved upon the XXV Corps. Designated the commander of the forces in Brittany, Fahrmbacher, the XXV Corps commander, was delegated the job of directing what was to become the battle of the fortresses, a campaign independent of the action developing in Normandy. 8 Fahrmbacher, who, as the temporary LXXXIV Corps commander, had met the Americans in the Cotentin in June, was ill-prepared to face them again in Brittany."
+      },
+      "Footnote_References": [
+        7,
+        8
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "012130ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "Oberst-Gruppenführer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844,-1.3611",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844,-1.3611",
+        "Weather_text": "No specific data for 1 Aug 1944; typical summer weather in Avranches: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7111",
+          "East": " -0.0111",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    },
+    {
+      "Event": "German Plans",
+      "Sub-event": "Forces in Brittany",
+      "Sub-event_summary": "Of 100,000 troops in Brittany at the beginning of June, less than one third remained by end of July. Units sent to Normandy included 3d and 5th Parachute Divisions, 77th, 353d, and 275th Infantry Divisions, and kampfgruppen from 265th and 266th Divisions. Defenders included 2d Parachute and 343d Infantry Divisions near Brest, weak 266th near Morlaix, 265th at Lorient, St. Nazaire, and Nantes, plus other units. Reinforcements from Normandy included 77th and 91st Divisions.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "Of the army field forces of 100,000 troops in Brittany at the beginning of June, less than one third remained at the end of July. The others, the best-armed and best-trained units, had been sent to Normandy--the 3d and 5th Parachute Divisions, the 77th, 353d, and 275th Infantry Divisions, and two mobile kampfgruppen of regimental size (from the 265th and 266th Divisions). Since the 319th Division on the Channel Islands would not see action on the mainland, the defenders of Brittany consisted of the 2d Parachute Division and the static 343d Infantry Division near Brest, weak elements of the static 266th Division (perhaps in regimental strength) near Morlaix, and the remaining parts of the static 265th Division at Lorient, St. Nazaire, and Nantes.",
+        "Paragraph_16": "Augmenting these troops were antiaircraft batteries, coastal artillery units, antitank groups, engineers, and Navy and Air Force personnel. 9 To reinforce them came units and stragglers fleeing from Normandy--in particular the 77th and 91st Divisions, which carried with them assorted remnants of once-proud outfits. These headed for the St. Malo area, whence Fahrmbacher dispatched the 77th toward Pontaubault and the 91st to defend Rennes. 10 As Fahrmbacher understood the fortress policy, the fortress commanders of St. Malo, Brest, Lorient, and St. Nazaire were to protect the submarine bases, prevent the Americans from using the ports, and contain as much of the American force as possible. Although each fortress commander had no garrison troops organized as such under his direct control, he commanded all the units and individuals of all the services within the fortress. The commanders of the field force troops had charge of activity outside the fortresses. Only after they were forced to retire within the limits of the fortresses did they come under the control of the fortress commanders."
+      },
+      "Footnote_References": [
+        9,
+        10
+      ],
+      "Place_Name": "Brest",
+      "Dates": {
+        "Date_group_of_event": "end of July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "END JUL44"
+      },
+      "TOE": {
+        "Unit": "XXV Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "XXV Corps",
+          "Commander": "Wilhelm Fahrmbacher",
+          "Name": "Wilhelm Fahrmbacher",
+          "Rank": "General der Artillerie",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Wilhelm_Fahrmbacher",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "2d Parachute Division",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "343d Infantry Division",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "266th Division",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "265th Division",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "77th Division",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "91st Division",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "less than 33,333 remaining of 100,000",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Antiaircraft batteries",
+              "Identifier": "unknown",
+              "Quantity": "unknown",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": null
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Coastal artillery units",
+              "Identifier": "unknown",
+              "Quantity": "unknown",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": null
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Antitank groups",
+              "Identifier": "unknown",
+              "Quantity": "unknown",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brest",
+        "Place_GPS_coordinate": "48.3904,-4.4861",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://warfarehistorynetwork.com/article/the-battle-for-brittany-tested-americas-tactical-doctrine/",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brest",
+        "Place_GPS_coordinate": "48.3904,-4.4861",
+        "Weather_text": "No specific data for end of July 1944; typical summer weather in Brest: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-5.8361",
+          "East": "-3.1361",
+          "South": "47.4904",
+          "North": "49.2904"
+        }
+      }
+    },
+    {
+      "Event": "German Plans",
+      "Sub-event": "Fortification of Port Cities",
+      "Sub-event_summary": "Fortification began in 1942, focused on submarine installations, headquarters, battery positions, combat installations at landing points, and finally the land front. Emphasis on sea-facing Atlantic Wall neglected land defenses, which were deemed inadequate by fortress commanders in August 1944.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "Fortification of the port cities had begun in 1942 in response to the major threat of Allied invasion from the sea. The main construction work had at first been concentrated on the submarine installations, then on headquarters and battery positions for coastal artillery and flak, next on combat installations at possible landing points, and finally on the land front proper. So much time, effort, and concrete had gone into the",
+        "Paragraph_18": "Atlantic Wall installations, which, at the insistence of the Navy, had been faced toward the sea, that the land front, according to Army planners, was neglected. The fortress commanders who faced the Allied ground forces in August 1944 believed their landward defenses far from adequate."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "BEGINNING AUG44"
+      },
+      "TOE": {
+        "Unit": "Fortress Commanders",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Fortress Commanders",
+          "Commander": "unknown",
+          "Name": "unknown",
+          "Rank": "unknown",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Coastal artillery",
+              "Identifier": "unknown",
+              "Quantity": "unknown",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": null
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Flak",
+              "Identifier": "unknown",
+              "Quantity": "unknown",
+              "Web_Reference": null,
+              "Web_Image_Reference": null,
+              "Web_Image_License": null,
+              "Web_Reference_Capture_Date": null
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XII.jpg",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Weather_text": "No specific data for August 1944; typical summer weather in Brittany: mild temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.35",
+          "East": "-1.65",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "German Plans",
+      "Sub-event": "Fahrmbacher's Movements and Command Changes",
+      "Sub-event_summary": "Upon reports of American invasion, Fahrmbacher moved XXV Corps headquarters from Pontivy to Lorient on 3 August. On 7 August, he did not take command of Brest due to cut land contact and confidence in the local commander. He did not control St. Malo. By mid-August, no unified command in Brittany; troops abandoned interior for fortresses.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "Upon reports that the Americans had invaded the interior of Brittany and that armored columns were racing toward the port cities, Fahrmbacher and his XXV Corps headquarters moved on 3 August from Pontivy to Lorient.",
+        "Paragraph_20": "Four days later, on 7 August, when Kluge ordered Fahrmbacher to take command of Brest, Fahrmbacher did not carry out the order because land contact between Lorient and Brest had already been cut, because no preparations had been made for sea communications, and because he felt that the fortress commander of Brest was competent to conduct his own independent defense. Nor did Fahrmbacher exercise control over the action developing around St. Malo; he had no way"
+      },
+      "Footnote_References": [],
+      "Place_Name": "Lorient",
+      "Dates": {
+        "Date_group_of_event": "3 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "030000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "XXV Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "XXV Corps",
+          "Commander": "Wilhelm Fahrmbacher",
+          "Name": "Wilhelm Fahrmbacher",
+          "Rank": "General der Artillerie",
+          "End_Date": "10 August 1944",
+          "End_Status": "Assumed fortress command",
+          "Biographical_reference": "https://grokipedia.com/page/Wilhelm_Fahrmbacher",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 1,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Lorient",
+        "Place_GPS_coordinate": "47.7483,-3.3667",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Lorient",
+        "Place_GPS_coordinate": "47.7483,-3.3667",
+        "Weather_text": "No specific data for 3 Aug 1944; typical summer weather in Lorient: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.7167",
+          "East": "-2.0167",
+          "South": "46.8483",
+          "North": "48.6483"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "1",
+      "Footnote_Number": "1",
+      "Footnote_Text": "Ltrs, Eisenhower to Montgomery, 31 Jul and 2 Aug, SGS SHAEF File 381, OVERLORD, 1 (a).",
+      "Footnote_Referenced_Source": "SGS SHAEF File 381, OVERLORD, 1 (a)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "SGS SHAEF File 381, OVERLORD, 1 (a)"
+    },
+    {
+      "Footnote": "2a",
+      "Footnote_Number": "2",
+      "Footnote_Text": "Hitler Conf, \"Besprechung des Fuehrers mit Generaloberst Jodl am 31.7.1944,\" in captured German documents",
+      "Footnote_Referenced_Source": "captured German documents",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Hitler Conf, \"Besprechung des Fuehrers mit Generaloberst Jodl am 31.7.1944,\""
+    },
+    {
+      "Footnote": "2b",
+      "Footnote_Number": "2",
+      "Footnote_Text": "Jodl diary, 31 Jul",
+      "Footnote_Referenced_Source": "Jodl diary",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Jodl diary, 31 Jul"
+    },
+    {
+      "Footnote": "2c",
+      "Footnote_Number": "2",
+      "Footnote_Text": "Der Westen (Schramm)",
+      "Footnote_Referenced_Source": "Der Westen (Schramm)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Der Westen (Schramm)"
+    },
+    {
+      "Footnote": "2d",
+      "Footnote_Number": "2",
+      "Footnote_Text": "MS # - 731 (Fahrmbacher)",
+      "Footnote_Referenced_Source": "MS # - 731 (Fahrmbacher)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "MS # 731 (Fahrmbacher)"
+    },
+    {
+      "Footnote": "2e",
+      "Footnote_Number": "2",
+      "Footnote_Text": "Pogue, Supreme Command, pp. 201-03",
+      "Footnote_Referenced_Source": "Pogue, Supreme Command",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Pogue, Supreme Command, pp. 201-03"
+    },
+    {
+      "Footnote": "2f",
+      "Footnote_Number": "2",
+      "Footnote_Text": "Blumenson and Hodgson, \"Hitler Versus his Generals in the West,\" U.S. Naval Institute Proceedings (December, 1956)",
+      "Footnote_Referenced_Source": "Blumenson and Hodgson, \"Hitler Versus his Generals in the West,\" U.S. Naval Institute Proceedings (December, 1956)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Blumenson and Hodgson, \"Hitler Versus his Generals in the West,\" U.S. Naval Institute Proceedings (December, 1956)"
+    },
+    {
+      "Footnote": "2g",
+      "Footnote_Number": "2",
+      "Footnote_Text": "Hitler Directive # 40, 23 March 1942, translated in Appendix C to Harrison, Cross-Channel Attack, pp. 459-63",
+      "Footnote_Referenced_Source": "Hitler Directive # 40, 23 March 1942",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Hitler Directive # 40, 23 March 1942, translated in Appendix C to Harrison, Cross-Channel Attack, pp. 459-63"
+    },
+    {
+      "Footnote": "3",
+      "Footnote_Number": "3",
+      "Footnote_Text": "OB WEST, a Study in Command, I, 22.",
+      "Footnote_Referenced_Source": "OB WEST, a Study in Command, I, 22",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "OB WEST, a Study in Command, I, 22"
+    },
+    {
+      "Footnote": "4",
+      "Footnote_Number": "4",
+      "Footnote_Text": "OB WEST KTB, 1 Aug, Anlage 1050; Der Westen (Schramm), p. 79; OB WEST, a Study in Command, I, 1, 118ff.",
+      "Footnote_Referenced_Source": "OB WEST KTB, 1 Aug, Anlage 1050; Der Westen (Schramm), p. 79; OB WEST, a Study in Command, I, 1, 118ff",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "OB WEST KTB, 1 Aug, Anlage 1050; Der Westen (Schramm), p. 79; OB WEST, a Study in Command, I, 1, 118ff"
+    },
+    {
+      "Footnote": "5",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Kluge Telecon, 0230, 1 Aug, AGp B KTB; H. B. Ramcke, Fallschirmjaeger, Damals und Danach (Frankfurt: Lorch-Verlag, c. 1951), pp. 30-46; Hodgson, R-58; see below, Ch. XX.",
+      "Footnote_Referenced_Source": "Kluge Telecon, 0230, 1 Aug, AGp B KTB; H. B. Ramcke, Fallschirmjaeger, Damals und Danach (Frankfurt: Lorch-Verlag, c. 1951), pp. 30-46; Hodgson, R-58; see below, Ch. XX",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Kluge Telecon, 0230, 1 Aug, AGp B KTB; H. B. Ramcke, Fallschirmjaeger, Damals und Danach (Frankfurt: Lorch-Verlag, c. 1951), pp. 30-46; Hodgson, R-58"
+    },
+    {
+      "Footnote": "6",
+      "Footnote_Number": "6",
+      "Footnote_Text": "Telecons, Speidel and Gersdorff, 1020, 1 Aug, AGp B KTB, and Tempelhoff and Zimmerman, 1155, 1 Aug, OB WEST KTB, Anlage 999.",
+      "Footnote_Referenced_Source": "Telecons, Speidel and Gersdorff, 1020, 1 Aug, AGp B KTB, and Tempelhoff and Zimmerman, 1155, 1 Aug, OB WEST KTB, Anlage 999",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Telecons, Speidel and Gersdorff, 1020, 1 Aug, AGp B KTB, and Tempelhoff and Zimmerman, 1155, 1 Aug, OB WEST KTB, Anlage 999"
+    },
+    {
+      "Footnote": "7",
+      "Footnote_Number": "7",
+      "Footnote_Text": "Telecon, Kluge and Hausser, 2130, 1 Aug, OB WEST KTB, Anlage 1015.",
+      "Footnote_Referenced_Source": "Telecon, Kluge and Hausser, 2130, 1 Aug, OB WEST KTB, Anlage 1015",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Telecon, Kluge and Hausser, 2130, 1 Aug, OB WEST KTB, Anlage 1015"
+    },
+    {
+      "Footnote": "8",
+      "Footnote_Number": "8",
+      "Footnote_Text": "OB WEST, a Study in Command, I, 133. LXXIV Corps had been pulled out of Brittany on 25 July to take over a portion of the front facing the British. MS # B-722 (Gersdorff).",
+      "Footnote_Referenced_Source": "OB WEST, a Study in Command, I, 133. LXXIV Corps had been pulled out of Brittany on 25 July to take over a portion of the front facing the British. MS # B-722 (Gersdorff)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "OB WEST, a Study in Command, I, 133; MS # B-722 (Gersdorff)"
+    },
+    {
+      "Footnote": "9",
+      "Footnote_Number": "9",
+      "Footnote_Text": "MS # 731 (Fahrmbacher); OB WEST KTB, 2 Aug; Hodgson, R-34; OB WEST, a Study in Command, I, 40.",
+      "Footnote_Referenced_Source": "MS # 731 (Fahrmbacher); OB WEST KTB, 2 Aug; Hodgson, R-34; OB WEST, a Study in Command, I, 40",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "MS # 731 (Fahrmbacher); OB WEST KTB, 2 Aug; Hodgson, R-34; OB WEST, a Study in Command, I, 40"
+    },
+    {
+      "Footnote": "10",
+      "Footnote_Number": "10",
+      "Footnote_Text": "MS # 731 (Fahrmbacher) is the basic source of this section.",
+      "Footnote_Referenced_Source": "MS # 731 (Fahrmbacher)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "MS # 731 (Fahrmbacher)"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn18.html",
+  "Source_Footnote_Link_Capture_Date": "December 24, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+  "Source_Link_Capture_Date": "December 24, 2025"
+}

@@ -1,0 +1,882 @@
+{
+  "Events": [
+    {
+      "Event": "In Search of a Panacea",
+      "Sub-event": "Recognition of the Stalemate",
+      "Sub-event_summary": "The dramatic divergence between projected phase lines and actual beachhead extent prompted discussions on dissolving the stalemate, with SHAEF planners considering proposals to break out, making ideas highly pertinent in mid-July for attaining maneuver room and Breton ports.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "The dramatic divergence between the phase lines projected by the OVERLORD plan for certain dates and the actual extent of the OVERLORD beachhead on those dates led to inevitable discussion in the Allied camp on how to dissolve the apparent stalemate.[1]",
+        "Paragraph_2": "Having considered even before the invasion the possibility that the Germans might contain the OVERLORD forces, SHAEF planners had formulated various proposals on how to break out of a stabilized front. In mid-July ideas of this nature became extremely pertinent. Attaining maneuver room and the Breton ports remained objectives as valid as they were elusive."
+      },
+      "Footnote_References": [
+        "1"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "APPROX 150000BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-10.html",
+        "Zulu_date_group_of_event": "APPROX 141800ZJUL44"
+      },
+      "TOE": {
+        "Unit": "SHAEF",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Allied Expeditionary Force",
+          "Commander": "Dwight D. Eisenhower",
+          "Name": "Dwight D. Eisenhower",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "21 Army Group",
+            "Name": "Bernard Montgomery",
+            "Rank": "Field Marshal",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          },
+          {
+            "Unit": "U.S. First Army Group",
+            "Name": "Omar Bradley",
+            "Rank": "General",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": "Not specified",
+        "Equipments": {
+          "Supply": "Not specified",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Normandy",
+          "Place_GPS_coordinate": "49.0 N, 1.0 W",
+          "Map_Reference": "",
+          "Map_Link": "",
+          "ExternalMapLink": "https://media.defense.gov/2019/Jun/06/2002141488/-1/-1/0/190606-F-FF340-1004.GIF",
+          "ExternalMapLinkLicence": "Public Domain",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Normandy",
+          "Place_GPS_coordinate": "49.0 N, 1.0 W",
+          "Weather_text": "Cool and windy with periods of rain, deteriorating in late July.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.35,
+            "East": 0.35,
+            "South": 48.1,
+            "North": 49.9
+          }
+        }
+      ]
+    },
+    {
+      "Event": "In Search of a Panacea",
+      "Sub-event": "Evaluation of Subsidiary Amphibious and Airborne Operations",
+      "Sub-event_summary": "Subsidiary amphibious or airborne operations were considered but deemed unpromising due to limitations in force size, naval involvement, coastal defenses, surprise, and resource availability.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "An obvious solution for dissolving the stalemate was to launch a subsidiary amphibious operation outside the OVERLORD beachhead area either by seaborne or by air-transported troops. Yet neither impressed the planners with prospects of success. If the original OVERLORD assault failed to achieve the desired results, how could a smaller force--four divisions was the maximum force immediately available--do better?[2]",
+        "Paragraph_4": "The necessity of heavy naval involvement (including the use of carriers), difficult and long naval approaches, strong coastal defenses, and the improbability of achieving tactical surprise also discouraged recommendations for amphibious assaults outside the OVERLORD beachhead.[3]",
+        "Paragraph_5": "The same was true of plans for airborne operations to dissolve an OVERLORD stalemate. The airborne divisions, committed on the Continent in June, had been delayed in their return to the United Kingdom, and their dispersed locations there, which made unit training difficult, plus a lack of suitable training areas, hindered preparations for immediate commitment. The demands on troop carrier units for air supply prevented effective troop carrier exercises. The need at the end of July to divert almost 400 transport aircraft to the Mediterranean for the invasion of southern France (scheduled for 15 August) made a large-scale airborne operation in support of OVERLORD impossible before late August or early September. Finally, airborne troops dropped outside a stabilized beachhead might possibly require amphibious reinforcement.[4]"
+      },
+      "Footnote_References": [
+        "2",
+        "3",
+        "4"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "APPROX 150000BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-10.html",
+        "Zulu_date_group_of_event": "APPROX 141800ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Airborne Divisions",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Dwight D. Eisenhower",
+          "Name": "Dwight D. Eisenhower",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Not specified",
+        "Equipments": {
+          "Supply": "Not specified",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Transport Aircraft",
+              "Identifier": "",
+              "Quantity": "400",
+              "Web_Reference": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-10.html",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Normandy",
+          "Place_GPS_coordinate": "49.0 N, 1.0 W",
+          "Map_Reference": "",
+          "Map_Link": "",
+          "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Map_of_the_D-Day_landings.svg/2151px-Map_of_the_D-Day_landings.svg.png",
+          "ExternalMapLinkLicence": "CC BY-SA 4.0",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Mediterranean",
+          "Place_GPS_coordinate": "35.0 N, 18.0 E",
+          "Map_Reference": "",
+          "Map_Link": "",
+          "ExternalMapLink": "",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": ""
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Normandy",
+          "Place_GPS_coordinate": "49.0 N, 1.0 W",
+          "Weather_text": "Cool and windy with periods of rain, deteriorating in late July.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.35,
+            "East": 0.35,
+            "South": 48.1,
+            "North": 49.9
+          }
+        }
+      ]
+    },
+    {
+      "Event": "In Search of a Panacea",
+      "Sub-event": "Planning Focused on Brittany",
+      "Sub-event_summary": "Planning for subsidiary operations focused on Brittany to secure ports, with U.S. 1st Army Group and Third Army planning, spurred by Eisenhower's interest, but hazards outweighed potential gains.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "Despite the disadvantages and difficulties of amphibious and airborne operations in support of OVERLORD, Allied planners in June and July continued to explore the possibilities because no other solution was discernible. Since the basic planning already completed for future Allied operations beyond the OVERLORD lodgment area assumed Allied possession of the Breton ports, the planners of subsidiary operations to break the stalemate invariably looked toward Brittany.[5]",
+        "Paragraph_7": "Of four major combat plans considered by the U.S. 1st Army Group, three focused on Brittany as the target area.[6]",
+        "Paragraph_8": "Invasion of Brittany was also the central theme of the U.S. Third Army planning in June and July.",
+        "Paragraph_9": "General Eisenhower gave impetus to this planning by indicating his specific interest in airborne and amphibious operations \"involving every likely objective\" in Brittany.[7]",
+        "Paragraph_10": "Yet all the proposed operations seemed to present hazards incommensurate with potential gains.[8]"
+      },
+      "Footnote_References": [
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-10.html",
+        "Zulu_date_group_of_event": "BEGINNING JUN44"
+      },
+      "TOE": {
+        "Unit": "U.S. 1st Army Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Dwight D. Eisenhower",
+          "Name": "Dwight D. Eisenhower",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "U.S. Third Army",
+            "Name": "George S. Patton",
+            "Rank": "General",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": "Not specified",
+        "Equipments": {
+          "Supply": "Not specified",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://media.defense.gov/2019/Jun/06/2002141488/-1/-1/0/190606-F-FF340-1004.GIF",
+          "Description": "Map depicting allied invasion of Normandy during WW2",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Brittany",
+          "Place_GPS_coordinate": "48.0 N, 3.0 W",
+          "Map_Reference": "",
+          "Map_Link": "",
+          "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+          "ExternalMapLinkLicence": "Public Domain",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Quiberon Bay",
+          "Place_GPS_coordinate": "47.5 N, 3.0 W",
+          "Map_Reference": "",
+          "Map_Link": "",
+          "ExternalMapLink": "",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": ""
+        },
+        {
+          "Place_Name": "Brest",
+          "Place_GPS_coordinate": "48.3904 N, 4.4861 W",
+          "Map_Reference": "",
+          "Map_Link": "",
+          "ExternalMapLink": "",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": ""
+        },
+        {
+          "Place_Name": "St. Malo",
+          "Place_GPS_coordinate": "48.6482 N, 2.0075 W",
+          "Map_Reference": "",
+          "Map_Link": "",
+          "ExternalMapLink": "",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": ""
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Brittany",
+          "Place_GPS_coordinate": "48.0 N, 3.0 W",
+          "Weather_text": "Cool, rainy and overcast, similar to autumn weather.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -4.35,
+            "East": -1.65,
+            "South": 47.1,
+            "North": 48.9
+          }
+        }
+      ]
+    },
+    {
+      "Event": "In Search of a Panacea",
+      "Sub-event": "Decision Against Subsidiary Operations",
+      "Sub-event_summary": "The search for a panacea ended after pressure for assaults on Quiberon Bay and Brest, with Admiral Ramsay's objections leading Eisenhower to prioritize buildup in the beachhead over sideshow excursions.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "The search for a panacea to relieve the stalemate came to an end soon after 21 Army Group planners began to press Allied naval sections for definite amphibious assault plans against Quiberon Bay and Brest. Because Quiberon and Brest were Breton ports vital to the American build-up, the U.S. 1st Army Group raised few objections to the British pressure. Admiral Sir Bertram H. Ramsay, the Allied naval commander, thus found himself obliged to consider operations he was unwilling to recommend because formidable enemy coastal defenses and the presence of German U-boat bases would subject naval vessels to unacceptable risk. Ramsay reminded Eisenhower that, before the invasion, ground commanders had rejected the idea of subsidiary airborne operations because they might weaken the main OVERLORD effort. Amphibious operations, he suggested, might have the same result. Accepting the implicit recommendation, General Eisenhower decided, \"The principal pressure is to be kept on buildup in the beachhead, with sideshow excursions to be held down to those which will show profit with small investment.\"[9]",
+        "Paragraph_12": "It was already apparent that no sideshow investment promised a reasonable profit."
+      },
+      "Footnote_References": [
+        "9"
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "APPROX 150000BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-10.html",
+        "Zulu_date_group_of_event": "APPROX 141800ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Allied Naval Forces",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Dwight D. Eisenhower",
+          "Name": "Dwight D. Eisenhower",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Allied Naval Command",
+            "Name": "Bertram H. Ramsay",
+            "Rank": "Admiral",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Bertram_Ramsay",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": "Not specified",
+        "Equipments": {
+          "Supply": "Not specified",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://api.army.mil/e2/c/-images/2010/07/25/80980/army.mil-80980-2010-07-23-150732.jpg",
+          "Description": "Gen. Omar Bradley (left), Commanding General, U.S. First Army, listens as Gen. J. Lawton Collins, Commanding General, VII Corps, describes how his corps broke through German lines west of St. Lo, France.",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Quiberon Bay",
+          "Place_GPS_coordinate": "47.5 N, 3.0 W",
+          "Map_Reference": "",
+          "Map_Link": "",
+          "ExternalMapLink": "https://onwar.com/wwii/maps/wfront/14c4p79.jpg",
+          "ExternalMapLinkLicence": "Public Domain",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Brest",
+          "Place_GPS_coordinate": "48.3904 N, 4.4861 W",
+          "Map_Reference": "",
+          "Map_Link": "",
+          "ExternalMapLink": "",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": ""
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Brittany",
+          "Place_GPS_coordinate": "48.0 N, 3.0 W",
+          "Weather_text": "Cool, rainy and overcast, similar to autumn weather.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -4.35,
+            "East": -1.65,
+            "South": 47.1,
+            "North": 48.9
+          }
+        }
+      ]
+    },
+    {
+      "Event": "In Search of a Panacea",
+      "Sub-event": "Release of the 28th Division",
+      "Sub-event_summary": "Planning continued, but the release of the 28th Division from reserve and its movement to the Continent indicated a decision against subsidiary operations.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "Although planning for subsidiary operations did not cease, two events indicated that a final decision had been made against them: the movement of a division from England to the Continent and the publication of a new plan of action.",
+        "Paragraph_14": "The 28th Division, trained for amphibious operations and originally scheduled for the OVERLORD assault, had remained in England in SHAEF reserve, ready to execute a subsidiary amphibious operation if necessary. The only amphibiously trained force still uncommitted twenty days after the invasion, the 28th Division was released by SHAEF to the 1st U.S. Army Group on 26 June with the condition that it be used only in an amphibious assault. On 13 July SHAEF withdrew the restriction, and ten days later the division moved to the Continent to augment the land forces already committed.[10]"
+      },
+      "Footnote_References": [
+        "10"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "260000BJUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-10.html",
+        "Zulu_date_group_of_event": "252200ZJUN44"
+      },
+      "TOE": {
+        "Unit": "28th Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "SHAEF Reserve",
+          "Commander": "Lloyd D. Brown",
+          "Name": "Lloyd D. Brown",
+          "Rank": "Major General",
+          "End_Date": "300000BJUL44",
+          "End_Status": "Relieved",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Lloyd_D._Brown",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Not specified",
+        "Equipments": {
+          "Supply": "Not specified",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "United Kingdom",
+          "Place_GPS_coordinate": "51.5074 N, 0.1278 W",
+          "Map_Reference": "",
+          "Map_Link": "",
+          "ExternalMapLink": "",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": ""
+        },
+        {
+          "Place_Name": "Normandy",
+          "Place_GPS_coordinate": "49.0 N, 1.0 W",
+          "Map_Reference": "",
+          "Map_Link": "",
+          "ExternalMapLink": "https://media.defense.gov/2019/Jun/06/2002141488/-1/-1/0/190606-F-FF340-1004.GIF",
+          "ExternalMapLinkLicence": "Public Domain",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Normandy",
+          "Place_GPS_coordinate": "49.0 N, 1.0 W",
+          "Weather_text": "Cool and windy with periods of rain, deteriorating in late July.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.35,
+            "East": 0.35,
+            "South": 48.1,
+            "North": 49.9
+          }
+        }
+      ]
+    },
+    {
+      "Event": "In Search of a Panacea",
+      "Sub-event": "Development of the COBRA Plan",
+      "Sub-event_summary": "Bradley proposed breaking out through a ground offensive supported by massive air power, leading to the COBRA plan, concentrating on the main OVERLORD operation.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "The release of the 28th Division coincided with the appearance of a new operational plan presented by General Bradley and enthusiastically received by General Eisenhower. Bradley proposed to break out of the German containment and obtain maneuver room and eventually the Breton ports through a ground offensive supported by massive air power. A project that would concentrate on the main OVERLORD operation, Bradley's plan followed the advice of SHAEF planners, who had concluded long before that the best way to break a stalemate was by marshaling air power in support of a land offensive mounted from within the stabilized beachhead.[11]",
+        "Paragraph_16": "Having searched for a new idea since the second week in July, when the First Army had begun to display definite signs of bogging down in the Cotentin, General Bradley had begun to envision an operation that combined concentrated land power and an overwhelming bombardment from the air. By 11 July General Bradley had conceived the idea; two days later the idea became the First Army's plan. It was called COBRA.[12]"
+      },
+      "Footnote_References": [
+        "11",
+        "12"
+      ],
+      "Place_Name": "Cotentin",
+      "Dates": {
+        "Date_group_of_event": "110000BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-10.html",
+        "Zulu_date_group_of_event": "102200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "First Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "U.S. 1st Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Not specified",
+        "Equipments": {
+          "Supply": "Not specified",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Cobra_Coutances.jpg",
+          "Description": "U.S. armored division passing through Coutances, France, during Operation Cobra",
+          "License": "Public Domain"
+        },
+        {
+          "Link": "https://warfarehistorynetwork.com/wp-content/uploads/Operation-Cobra-After-D-Day3.jpg",
+          "Description": "General Omar Bradley (center), commander of the U.S. 12th Army Group, meets with Lieutenant General J. Lawton Collins (left), commander of VII Corps, and Major General Leonard T. Gerow (right), commander of V Corps, in July 1944 to plan the breakout from Normandy.",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Cotentin",
+          "Place_GPS_coordinate": "49.5 N, 1.5 W",
+          "Map_Reference": "",
+          "Map_Link": "",
+          "ExternalMapLink": "",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": ""
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Cotentin",
+          "Place_GPS_coordinate": "49.5 N, 1.5 W",
+          "Weather_text": "Cool and windy with periods of rain, deteriorating in late July.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.85,
+            "East": 0.85,
+            "South": 48.6,
+            "North": 50.4
+          }
+        }
+      ]
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote_Number": "1a",
+      "Footnote_Text": "Guingand, Operation Victory, p. 397.",
+      "Footnote_Referenced_Source": "Operation Victory by Francis de Guingand",
+      "Web_Link": "https://archive.org/details/operationvictory0000degu",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote_Number": "1b",
+      "Footnote_Text": "Maps showing the planned phase lines for certain dates and the actual beachhead established are to be found on pages 358 and 391. General Bradley was not in favor of dating phase lines, a British custom.",
+      "Footnote_Referenced_Source": "Internal note",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Maps in Operation Victory"
+    },
+    {
+      "Footnote_Number": "1c",
+      "Footnote_Text": "Interv by author with Gen Collins, Washington. 30 Mar 56.",
+      "Footnote_Referenced_Source": "Interview with Gen Collins",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Interv by author with Gen Collins, Washington. 30 Mar 56."
+    },
+    {
+      "Footnote_Number": "2",
+      "Footnote_Text": "SHAEF/17100/40/Ops (Third Draft), Strategic Reserves for OVERLORD, 17 May 44, SHAEF Air Staff File.",
+      "Footnote_Referenced_Source": "SHAEF/17100/40/Ops (Third Draft), Strategic Reserves for OVERLORD, 17 May 44",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "SHAEF Air Staff File"
+    },
+    {
+      "Footnote_Number": "3",
+      "Footnote_Text": "PS SHAEF (44), 21 (Final), 10 Jun 44, NEPTUNE, Stabilization of the NEPTUNE Area, and App. A, SGS SHAEF File 381, Post-OVERLORD Plng.",
+      "Footnote_Referenced_Source": "PS SHAEF (44), 21 (Final), 10 Jun 44, NEPTUNE, Stabilization of the NEPTUNE Area",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "SGS SHAEF File 381, Post-OVERLORD Plng"
+    },
+    {
+      "Footnote_Number": "4a",
+      "Footnote_Text": "James A. Huston, Airborne Operations, OCMH MS, p. 278;",
+      "Footnote_Referenced_Source": "Airborne Operations by James A. Huston",
+      "Web_Link": "https://archive.org/details/outofblueusarmya0000hust",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote_Number": "4b",
+      "Footnote_Text": "Memo, Eisenhower for Smith, 6 Jul, SHAEF G-3 File 24533/Ops, Future Opns.",
+      "Footnote_Referenced_Source": "Memo, Eisenhower for Smith, 6 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "SHAEF G-3 File 24533/Ops, Future Opns"
+    },
+    {
+      "Footnote_Number": "5",
+      "Footnote_Text": "See, for example, PS SHAEF (44) 11, Post-NEPTUNE Courses of Action After Capture of Lodgment Area, 3 May 44, SGS SHAEF File 381, Post-OVERLORD Plng; SHAEF Msgs to AGWAR for JPS, 22 Jun, 3, 13, 20, and 27 Jul, SHAEF G-3 File 381-2, 17264/1, SHAEF Weekly Plng Cables; SHAEF/17409/Ops, Status of Plng, 21 AGp, 16 Jun, SHAEF File GCT/322-17/OPS (A), 21 AGp, Gen; PS SHAEF (44) 20, SHAEF G-3 Div, Outline Plan for Air Landing Opn in the Brittany Peninsula, 13, 16, and 19 Jul, and AEAF/T3.22536/Air, Final Draft, App. B, both in SHAEF G-3 File 24533/Ops, Future Opns; AEAF, Airborne Opns to Further 'OVERLORD', 6 Jul, and SHAEF/24500/3/Ops, 14 Jul, both in SGS SHAEF File 373/2, Employment of Airborne Forces in Opn OVERLORD; Montgomery, Normandy to the Baltic, p. 124.",
+      "Footnote_Referenced_Source": "Multiple SHAEF documents and Montgomery, Normandy to the Baltic",
+      "Web_Link": "https://ia600508.us.archive.org/29/items/in.ernet.dli.2015.183410/2015.183410.Normandy-To-The-Baltic.pdf",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "SGS SHAEF File 381, Post-OVERLORD Plng; SHAEF G-3 File 381-2, 17264/1, SHAEF Weekly Plng Cables; etc."
+    },
+    {
+      "Footnote_Number": "6",
+      "Footnote_Text": "LUCKY STRIKE: to exploit eastward in Normandy; SWORDHILT: to secure port facilities in Brittany; BENEFICIARY: to seize the Breton port of St. Malo; HANDS UP: to seize the Quiberon Bay area in Brittany with airborne troops and Ranger/Commando forces, assisted by the FFI. 12th AGp Rpt of Opns, v, 11.",
+      "Footnote_Referenced_Source": "12th AGp Rpt of Opns, v, 11",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "12th AGp Rpt of Opns, v, 11"
+    },
+    {
+      "Footnote_Number": "7",
+      "Footnote_Text": "TUSA AAR, I, Chs. 1 and 2.",
+      "Footnote_Referenced_Source": "TUSA AAR, I, Chs. 1 and 2",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "TUSA AAR, I, Chs. 1 and 2"
+    },
+    {
+      "Footnote_Number": "8",
+      "Footnote_Text": "Memo, Eisenhower for Smith, 6 Jul, SGS SHAEF G-3 File 24533/Ops, Future Opns.",
+      "Footnote_Referenced_Source": "Memo, Eisenhower for Smith, 6 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "SGS SHAEF G-3 File 24533/Ops, Future Opns"
+    },
+    {
+      "Footnote_Number": "9a",
+      "Footnote_Text": "SHAEF G-3 Div Ltr, Opn in Brittany, 29 Jun, SHAEF G-3 File 24533/Ops, Future Opns;",
+      "Footnote_Referenced_Source": "SHAEF G-3 Div Ltr, Opn in Brittany, 29 Jun",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "SHAEF G-3 File 24533/Ops, Future Opns"
+    },
+    {
+      "Footnote_Number": "9b",
+      "Footnote_Text": "Ruppenthal, Logistical Support, I, 468.",
+      "Footnote_Referenced_Source": "Logistical Support of the Armies by Roland G. Ruppenthal",
+      "Web_Link": "https://history.army.mil/portals/143/Images/Publications/catalog/7-2.pdf",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote_Number": "10a",
+      "Footnote_Text": "Butcher Diary, 11 Jul;",
+      "Footnote_Referenced_Source": "Butcher Diary",
+      "Web_Link": "https://archive.org/details/in.ernet.dli.2015.59546",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote_Number": "10b",
+      "Footnote_Text": "Huston, Airborne Opns, pp. 198-99.",
+      "Footnote_Referenced_Source": "Airborne Operations by James A. Huston",
+      "Web_Link": "https://archive.org/details/outofblueusarmya0000hust",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote_Number": "11a",
+      "Footnote_Text": "SHAEF/17100/44/Ops, Strategic Reserves for OVERLORD, 6 Jun, and SHAEF/17100/44/Ops (A), SHAEF G-3 Div, Release of 28th Inf Div, 26 Jun and 13 Jul, both in SHAEF File GCT 322-12/Ops (A), SHAEF Reserve;",
+      "Footnote_Referenced_Source": "SHAEF/17100/44/Ops, Strategic Reserves for OVERLORD, 6 Jun",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "SHAEF File GCT 322-12/Ops (A), SHAEF Reserve"
+    },
+    {
+      "Footnote_Number": "11b",
+      "Footnote_Text": "Ruppenthal, Logistical Support, I, 457.",
+      "Footnote_Referenced_Source": "Logistical Support of the Armies by Roland G. Ruppenthal",
+      "Web_Link": "https://history.army.mil/portals/143/Images/Publications/catalog/7-2.pdf",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote_Number": "12",
+      "Footnote_Text": "PS SHAEF (44) 21 (Final), 10 Jun, NEPTUNE, Stabilization of the NEPTUNE Area, SGS SHAEF File 381, Post-OVERLORD Plng.",
+      "Footnote_Referenced_Source": "PS SHAEF (44) 21 (Final), 10 Jun, NEPTUNE, Stabilization of the NEPTUNE Area",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "SGS SHAEF File 381, Post-OVERLORD Plng"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn10.html",
+  "Source_Footnote_Link_Capture_Date": "December 21, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-10.html",
+  "Source_Link_Capture_Date": "December 21, 2025"
+}

@@ -1,0 +1,2663 @@
+{
+  "Events": [
+    {
+      "Event": "Advance to Rennes and Initial Engagement",
+      "Sub-event": "Thrust from Pontaubault to Rennes",
+      "Sub-event_summary": "On the afternoon of 1 August 1944, General Wood's 4th Armored Division advanced southwestward from Pontaubault toward Rennes, reaching the northern outskirts by early evening where they encountered strong opposition.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "On the afternoon of 1 August, General Wood's 4th Armored Division thrust southwestward from Pontaubault toward Rennes, the capital of Brittany. On the eastern edge of the province, at the base of the peninsula, and about midway between the north and south shores, Rennes is the commercial center that links Brittany to the interior of France. A city of over 80,000 inhabitants, Rennes is the hub of an extensive road network. No less than ten main highways converge there. Sixty miles southwest of Rennes are Vannes and Quiberon. Sixty miles south by southwest is St. Nazaire. Sixty miles due south is Nantes. To the southeast are Châteaubriant and Angers, towns on the roads to Orléans, Chartres, and even Paris. *[](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg)*",
+        "Paragraph_2": "For the 4th Armored Division, Rennes was about the halfway point between Avranches and Quiberon. Whether Rennes was to be a stopover, as General Middleton, the VIII Corps commander, expected, or whether the 4th Armored Division was to continue to the southwest in a rapid drive to Quiberon, as General Patton anticipated, was not quite clear. The corps commander had instructed General Wood only to take Rennes, but when the Third Army took control, Patton ordered Wood to go beyond Rennes to Quiberon in order to seal off the entire Brittany peninsula.",
+        "Paragraph_3": "With the fluid situation and precarious communication emphasizing the need for initiative on the division level, General Wood felt that he had wide latitude in interpreting and executing his assignment.<sup>[1](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn1)</sup>",
+        "Paragraph_4": "From Pontaubault the 4th Armored Division's CCA raced forty miles southwest on the afternoon of 1 August, reaching the northern outskirts of Rennes by early evening. There the advance guard struck surprisingly strong opposition. An assault by a company of armored infantry supported by twenty-five Sherman tanks failed to penetrate the enemy positions, and the leading units of CCA withdrew several miles under the cover of smoke to organize a stronger attack.<sup>[2](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn2)</sup>"
+      },
+      "Footnote_References": [
+        1,
+        2
+      ],
+      "Place_Name": "Rennes",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "011300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "CCA",
+            "Name": "Bruce C. Clarke",
+            "Rank": "Colonel",
+            "Date": "1 August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://grokipedia.com/page/Bruce_C._Clarke",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Fully staffed armored division",
+        "Equipments": {
+          "Supply": "Adequate at start",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Sherman Tank",
+            "Identifier": "M4",
+            "Quantity": 25,
+            "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:TankshermanM4.jpg",
+            "Web_Reference_Capture_Date": "December 24, 2025"
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "Sherman Tank",
+            "Identifier": "M4",
+            "Quantity": 0,
+            "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:TankshermanM4.jpg",
+            "Web_Reference_Capture_Date": "December 24, 2025"
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "88-mm Antiaircraft Gun",
+            "Identifier": "Flak 88",
+            "Quantity": "Unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/8.8_cm_Flak_18/36/37/41",
+            "Web_Image_Reference": "https://commons.wikimedia.org/wiki/File:German_Flak_88_(8.8cm_Anti-Aircraft_Gun)_(WWII)_(52222181534).jpg",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 24, 2025"
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "88-mm Antiaircraft Gun",
+            "Identifier": "Flak 88",
+            "Quantity": 0,
+            "Web_Reference": "https://en.wikipedia.org/wiki/8.8_cm_Flak_18/36/37/41",
+            "Web_Image_Reference": "https://commons.wikimedia.org/wiki/File:German_Flak_88_(8.8cm_Anti-Aircraft_Gun)_(WWII)_(52222181534).jpg",
+            "Web_Reference_Capture_Date": "December 24, 2025"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1836318067092220",
+          "Description": "US Soldiers & Vehicles with VIII Corps enter Rennes in Brittany ...",
+          "License": "Unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Rennes",
+        "Place_GPS_coordinate": "48.117266, -1.6777926",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Rennes",
+        "Place_GPS_coordinate": "48.117266, -1.6777926",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.77",
+          "East": "-0.43",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "Advance to Rennes and Initial Engagement",
+      "Sub-event": "German Defense at Rennes Airport",
+      "Sub-event_summary": "Two Luftwaffe companies with 88-mm guns and supporting infantry stopped the American advance at the Rennes airport.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "Two Luftwaffe companies manning 88-mm. antiaircraft guns in defense of the Rennes airport had stopped CCA. In support of the antiaircraft gunners were perhaps a hundred infantrymen with eight machine guns and three antitank guns. Elsewhere in the city were a f ew troops from a naval torpedo and spare parts depot and a company of infantry. Although the city had not been",
+        "Paragraph_6": "*--357--* <a id=\"page358\"></a> * * * fortified as a strongpoint, the Germans recognized its value as a communications center and sought to hold it. At the same time that Fahrmbacher had sent a kampfgruppe under Bacherer toward Pontaubault to stop the American breakout, he dispatched a small force of the *91st Division* to Rennes. Under the command of a lieutenant colonel, the force reached the city just before the Americans appeared, but too late to participate in the action at the airport. Expecting a further American effort against the city, the *91st Division* troops prepared to resist. As they were doing so, two German Army replacement battalions numbering about 1,900 men reached Rennes from le Mans. Issued machine guns and *panzerfausts,* the replacement troops hastily took to the field in the northern outskirts of the city."
+      },
+      "Footnote_References": [
+        3
+      ],
+      "Place_Name": "Rennes Airport",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "011800ZAUG44"
+      },
+      "TOE": {
+        "Unit": "91st Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "Wilhelm Fahrmbacher",
+          "Name": "Wilhelm Fahrmbacher",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Wilhelm_Fahrmbacher",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "91st Division",
+            "Name": "Eugen König",
+            "Rank": "Generalleutnant",
+            "Date": "10 June 1944",
+            "End_Date_of_command": "10 August 1944",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Eugen_K%C3%B6nig",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "About 1,900 replacement troops plus Luftwaffe and navy personnel",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Panzerfaust",
+            "Identifier": "Panzerfaust",
+            "Quantity": "Unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Panzerfaust",
+            "Web_Image_Reference": "https://www.alamy.com/stock-photo/panzerfaust-german.html",
+            "Web_Image_License": "Royalty-Free",
+            "Web_Reference_Capture_Date": "December 24, 2025"
+          },
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 20
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://c8.alamy.com/comp/2HX5DM4/falaise-germans-march-to-prison-camp-this-long-line-of-german-prisoners-captured-by-british-and-canadian-troops-in-the-falaise-pooket-of-northern-france-is-marched-along-to-a-prisoner-of-war-camp-under-escort-of-peep-riding-troopers-august-28-1944-photo-by-associated-press-photo-2HX5DM4.jpg",
+          "Description": "August 1944 france ww2 hi-res stock photography and images",
+          "License": "Royalty-Free"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Rennes",
+        "Place_GPS_coordinate": "48.117266, -1.6777926",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Rennes",
+        "Place_GPS_coordinate": "48.117266, -1.6777926",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.77",
+          "East": "-0.43",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "Reinforcements and Second Assault",
+      "Sub-event": "Air and Artillery Preparation and Night Assault",
+      "Sub-event_summary": "During the evening of 1 August, P-47 Thunderbolts and artillery shelled the defenses, followed by a two-hour fight where the Germans held, causing CCA to withdraw.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "The German reinforcements had arrived just in time. During the evening of 1 August about thirty P-47 Thunderbolts attacked the Rennes defenses and American artillery shelled the flak positions in preparation for a full-scale assault by the combat command. In a two-hour fight, terminating shortly before midnight, the Germans held. CCA withdrew."
+      },
+      "Footnote_References": [
+        3
+      ],
+      "Place_Name": "Rennes",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "012200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "P-47 Thunderbolt",
+            "Identifier": "P-47",
+            "Quantity": 30,
+            "Web_Reference": "https://en.wikipedia.org/wiki/Republic_P-47_Thunderbolt",
+            "Web_Image_Reference": "https://airandspace.si.edu/collection-objects/republic-p-47d-30-ra-thunderbolt/nasm_A19600306000",
+            "Web_Reference_Capture_Date": "December 24, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=10175314823375206",
+          "Description": "FRANCE FORGOTTEN D-DAY - AUGUST 1944 ! On August 15, 1944, while ...",
+          "License": "Unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Rennes",
+        "Place_GPS_coordinate": "48.117266, -1.6777926",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://omniatlas.com/maps/europe/19440830/",
+        "ExternalMapLinkLicence": "Creative Commons",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Rennes",
+        "Place_GPS_coordinate": "48.117266, -1.6777926",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.77",
+          "East": "-0.43",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "German Reinforcements and Defense Preparation",
+      "Sub-event": "Arrival of Koenig and Assault Guns",
+      "Sub-event_summary": "The defenders were reinforced by Koenig of the 91st Division with two assault guns, preparing for an all-out defense.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "The defenders, who knocked out eleven American tanks and took twenty prisoners, were reinforced later that night when Koenig, the *91st Division* commander, arrived in the city with two assault guns. Taking command of the Rennes garrison, Koenig prepared for an all-out defense.<sup>[3](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn3)</sup>"
+      },
+      "Footnote_References": [
+        3
+      ],
+      "Place_Name": "Rennes",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "012300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "91st Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Garrison of about 2,000",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Assault Gun",
+            "Identifier": "StuG",
+            "Quantity": 2,
+            "Web_Reference": "https://en.wikipedia.org/wiki/Sturmgesch%C3%BCtz_III",
+            "Web_Image_Reference": "https://commons.wikimedia.org/wiki/Category:Sturmgesch%C3%BCtz_III",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 24, 2025"
+          },
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 20
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Rennes",
+        "Place_GPS_coordinate": "48.117266, -1.6777926",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Rennes",
+        "Place_GPS_coordinate": "48.117266, -1.6777926",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.77",
+          "East": "-0.43",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "Planning and Reinforcement for Capture of Rennes",
+      "Sub-event": "Assessment and Request for Supplies and Reinforcements",
+      "Sub-event_summary": "On 2 August, General Wood realized the defenses were stronger than anticipated and requested supplies, reinforcements, and air support.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "Realizing on the morning of 2 August that the defenses of Rennes were stronger than anticipated, General Wood concluded that the 4th Armored Division was not going to be able to roll through the city as it had through Avranches. On the contrary, CCA troops on high ground about five miles north of Rennes were being shelled by mortars and artillery in such volume that they expected a counterattack. With the division strung out along the fifty-mile stretch between Avranches and Rennes and short of gasoline, ammunition, and rations, Wood decided that he needed additional supplies and a seasoned infantry regimental combat team to help him take Rennes. \"Want them now,\" he radioed Middleton, \"repeat now.\"<sup>[4](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn4)</sup>",
+        "Paragraph_10": "General Wood also wanted two more air support parties. He had *not* received any air support until late afternoon of 1 August, and he requested \"constant air cover,\" specifically \"dawn to dusk fighter bomber support.\" General Middleton promised to do his best to supply 4th Armored Division needs and ordered Wood to secure all roads leading into Rennes after he captured the city. Wood said he would do so as soon as supplies, services, and reinforcements arrived. \"These urgently needed now--repeat now. Must have infantry combat team if town is to be taken.\"<sup>[5](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn5)</sup>"
+      },
+      "Footnote_References": [
+        4,
+        5
+      ],
+      "Place_Name": "Rennes",
+      "Dates": {
+        "Date_group_of_event": "2 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "020900ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Division stretched over 50 miles",
+        "Equipments": {
+          "Supply": "Short of gasoline, ammunition, and rations",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Rennes",
+        "Place_GPS_coordinate": "48.117266, -1.6777926",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.ibiblio.org/hyperwar/NHC/NewPDFs/USArmy/USArmy%2C%25204th%2520Armd%2520Div%2520Encirclement%2520Of%2520Nancy.pdf",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Rennes",
+        "Place_GPS_coordinate": "48.117266, -1.6777926",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.77",
+          "East": "-0.43",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "Planning and Reinforcement for Capture of Rennes",
+      "Sub-event": "Attachment of 13th Infantry and Truck Companies",
+      "Sub-event_summary": "The 8th Division's 13th Infantry was reattached to the 4th Armored Division, with truck companies for transport, advancing toward Rennes on 2 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "The logical support was Maj. Gen. Donald A. Stroh's 8th Division, which had followed the 4th Armored Division in the Cotentin. Ordered to be ready to reinforce the armor when necessary and relieve it from the task of eliminating major strongpoints and occupying *--358--* <a id=\"page359\"></a> * * * critical terrain, the 8th Division was to act as a clearing force in order to prevent the 4th Armored Division from getting unnecessarily involved in action that would neutralize its mobility and striking power. On 2 August General Middleton reattached to the armored division the 13th Infantry, which had been attached to General Wood's command in Avranches but which had since reverted to parental control. To move the infantry, the corps commander also made available four Quartermaster truck companies he had secured from Third Army. Early that evening the regiment began advancing toward Rennes.<sup>[6](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn6)</sup>",
+        "Paragraph_12": "Meanwhile, after the 6th Armored Division passed through Avranches and Pontaubault for its drive toward Brest, the remainder of the 4th Armored Division had moved south of Pontaubault on 2 August and assembled north of Rennes. There the whole division awaited supplies, services, and reinforcement. To keep the Germans off balance, Wood launched a series of small infantry attacks during the day."
+      },
+      "Footnote_References": [
+        6
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "2 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "022000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "8th Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "13th Infantry",
+            "Name": "",
+            "Rank": "",
+            "Date": "2 August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "Seasoned infantry regimental combat team",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3569",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6001",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3569",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.5",
+          "East": "-0.2",
+          "South": "47.78",
+          "North": "49.58"
+        }
+      }
+    },
+    {
+      "Event": "Bypass and Encirclement of Rennes",
+      "Sub-event": "Conception of Eastern Maneuver",
+      "Sub-event_summary": "General Wood conceived a plan to bypass Rennes to the west, positioning the division for an eastward drive toward Châteaubriant and Angers, while blocking the peninsula.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "Learning on the evening of 2 August that the 13th Infantry was en route to Rennes, General Wood conceived a spectacular idea. It already seemed evident to him that the main action in western Europe would take place not in Brittany but in central France. Few enemy forces remained in Brittany, so why proceed westward to the Atlantic ocean and a dead end? Securing Rennes was important. Blocking the base of the Brittany peninsula south of Rennes was important too. If these missions could be combined with a maneuver that would place the 4th Armored Division in position to drive eastward rather than westward, the division would be able to make a more vital contribution to victory. Instead of being relegated to a subsidiary role in Brittany, which might become the backwash of the war, the division would join the main Allied force for the kill. The proper direction, General Wood believed, was eastward to Chartres.<sup>[7](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn7)</sup>",
+        "Paragraph_14": "How best to do this was the question.",
+        "Paragraph_15": "Since part of the 8th Division was coming forward from Avranches to assault Rennes, General Wood decided the 4th Armored Division should bypass the city. The armor could not bypass Rennes on the east without overstepping the corps boundary, so Wood ordered it to make a wide arc around the western edge of the city, an arc wide enough to avoid the Rennes defenses. The division would arrive south of Rennes with the heads of its columns facing eastward. Châteaubriant, thirty miles southeast of Rennes, would be the next logical objective, and forty miles east of Châteaubriant the city of Angers on the Loire River would come within armored range.",
+        "Paragraph_16": "It seemed to General Wood that this maneuver still would accomplish the important parts of his mission. The initial drive would encircle Rennes and isolate it on three sides. At the end of the movement, the division would be half way between Rennes and Nantes and thus constitute a blocking force along the base of the Brittany peninsula. If the maneuver were carried through to its logical conclusion and the 4th Armored Division went to Angers, the *--359--* <a id=\"page360\"></a> * * * Brittany peninsula would be blocked at its base, not along a line from Rennes southwestward to Quiberon Bay but along a line from Rennes southeastward to Angers. This seemed to be only a slight modification of current plans even though the scheme ignored Quiberon Bay."
+      },
+      "Footnote_References": [
+        7
+      ],
+      "Place_Name": "Châteaubriant",
+      "Dates": {
+        "Date_group_of_event": "2 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "022200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Châteaubriant",
+        "Place_GPS_coordinate": "47.7171, -1.3748",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Châteaubriant",
+        "Place_GPS_coordinate": "47.7171, -1.3748",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.47",
+          "East": "-0.28",
+          "South": "46.81",
+          "North": "48.62"
+        }
+      }
+    },
+    {
+      "Event": "Bypass and Encirclement of Rennes",
+      "Sub-event": "Execution of Bypass Maneuver",
+      "Sub-event_summary": "On 3 August, the division bypassed Rennes to the west, reaching Bain-de-Bretagne and Derval, cutting seven main roads.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "General Wood sent General Middle-ton his proposal on the morning of 3 August in the form of a hastily sketched overlay showing the planned routes of advance and a message stating that Wood \"strongly\" recommended that the 4th Armored Division be permitted to \"push on to Angers.\" Anticipating no objections to his plan, Wood ordered the plan executed.<sup>[8](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn8)</sup>",
+        "Paragraph_18": "General Wood's proposal, sent by messenger to General Middleton, left the division command post just before the arrival of a routine field order that VIII Corps had issued the previous evening. The corps order reiterated General Wood's mission clearly. The 4th Armored Division was to capture Rennes and establish positions from Rennes southwestward to Quiberon in order to block the movement of hostile forces into or out of Brittany. Receipt of the corps order left General Wood no alternative but to rescind his own. In a new division order he acknowledged his mission as being exactly that stated by corps. Apparently as an afterthought, he alerted the division to prepare for an advance on Châteaubriant, southeast of Rennes.<sup>[9](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn9)</sup> The afterthought was in reality the significant point, for the division had already embarked on the wide sweep westward around Rennes.",
+        "Paragraph_19": "Early on the morning of 3 August, two columns had started to outflank Rennes. CCA moved along an inner arc between fifteen and thirty miles from the center of the city. CCB swept along an outer arc. By late afternoon the heads of the columns had arrived at Bain-de-Bretagne and Derval, thirty and forty miles south of Rennes, respectively. The armor had covered somewhere between sixty and a hundred miles against almost no opposition. Tankers had dashed through small roadblocks and dispersed fragmentary enemy units. Together, the combat commands had cut seven of the ten main roads centering on Rennes. Half way between Rennes and Nantes, the columns represented a rather effective blocking force at the base of the Brittany peninsula.<sup>[10](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn10)</sup>"
+      },
+      "Footnote_References": [
+        8,
+        9,
+        10
+      ],
+      "Place_Name": "Bain-de-Bretagne",
+      "Dates": {
+        "Date_group_of_event": "3 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "030600ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "CCB",
+            "Name": "Holmes E. Dager",
+            "Rank": "Brigadier General",
+            "Date": "3 August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Holmes_E._Dager",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Bain-de-Bretagne",
+        "Place_GPS_coordinate": "47.8442, -1.6849",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Bain-de-Bretagne",
+        "Place_GPS_coordinate": "47.8442, -1.6849",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.78",
+          "East": "-0.59",
+          "South": "46.94",
+          "North": "48.75"
+        }
+      }
+    },
+    {
+      "Event": "Bypass and Encirclement of Rennes",
+      "Sub-event": "Acceptance and Modification of Mission",
+      "Sub-event_summary": "Middleton accepted the maneuver but instructed to secure Rennes before continuing east; Wood reported progress and requested orders for Angers.",
+      "Sub-event_fulltext": {
+        "Paragraph_20": "Even before Wood's maneuver became a *fait accompli,* Middleton accepted it, perhaps on the basis that the encirclement would cut the roads leading out of Rennes. He acknowledged the maneuver by reporting it and thereby implying approval. But the implicit approval went only so far as the first part of Wood's plan. That afternoon, Middleton instructed Wood to \"Secure Rennes before you continue\"-- presumably before continuing toward the east.<sup>[11](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn11)</sup>",
+        "Paragraph_21": "Meanwhile, Wood was reporting his progress during the afternoon of 3 August with unabating optimism. When he expected to reach Bain-de-Bretagne *--360--* <a id=\"page361\"></a> * * * and Derval in a matter of hours, he notified Middleton that he was planning to push one column to Châteaubriant. Three hours later he reported with some exaggeration that Rennes was entirely surrounded, that the city was apparently in the process of being demolished by the Germans, and that his columns were ready to move on Châteaubriant that night. Requesting orders, he recommended Angers as his next objective. Half an hour later, he informed Middleton that he was starting to move toward Châteaubriant and might even take Angers. Suddenly, however, he acknowledged receipt of \"a new mission: . . . blocking enemy retreat from Rennes.\"<sup>[12](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn12)</sup>"
+      },
+      "Footnote_References": [
+        11,
+        12
+      ],
+      "Place_Name": "Angers",
+      "Dates": {
+        "Date_group_of_event": "3 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "031300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Angers",
+        "Place_GPS_coordinate": "47.4784, -0.5632",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Angers",
+        "Place_GPS_coordinate": "47.4784, -0.5632",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.66",
+          "East": "0.54",
+          "South": "46.57",
+          "North": "48.38"
+        }
+      }
+    },
+    {
+      "Event": "Capture of Rennes",
+      "Sub-event": "Blocking and Infantry Attack",
+      "Sub-event_summary": "The armored columns turned northeast to block escape routes while the 13th Infantry attacked Rennes from the north on 3 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "Whether receipt of Middleton's instruction to secure Rennes prompted Wood's sudden acknowledgment or not, the fact was that Wood needed Rennes before he could proceed eastward--not only to eliminate a threat to his potential left rear but also to open a supply route for his division. He therefore halted his columns and directed them to turn northeastward to block the escape routes southeast of Rennes while the attached 13th Infantry attacked the city from the north. Pushing a dozen miles or so east and northeast of Bain-de-Bretagne and Derval, the heads of the combat commands on 4 August cut the main roads southeast of Rennes and captured and destroyed some of the German units squeezed out of the city by pressure from the north.<sup>[13](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn13)</sup>",
+        "Paragraph_23": "Hurrying toward Rennes during the night of 2 August, the 13th Infantry could not be in position to assault the city from the north the next day. The regimental commander therefore requested a postponement until the morning of 4 August so that he could plan and execute a co-ordinated attack together with armored elements still north of Rennes. Impatient to capture Rennes, General Wood insisted that the infantry attack on the afternoon of 3 August. In compliance, the leading infantry battalion launched the attack from route column march, formation. In the face of small arms, automatic weapons, and antiaircraft fire, the battalion forced an entrance into the northeastern outskirts of Rennes.<sup>[14](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn14)</sup>"
+      },
+      "Footnote_References": [
+        13,
+        14
+      ],
+      "Place_Name": "Rennes",
+      "Dates": {
+        "Date_group_of_event": "3 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "031500ZAUG44"
+      },
+      "TOE": {
+        "Unit": "13th Infantry",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "8th Division",
+          "Commander": "Donald A. Stroh",
+          "Name": "Donald A. Stroh",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Donald_A._Stroh",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1173953364760615",
+          "Description": "In this August 1944 image from the Museum's Digital Collections ...",
+          "License": "Unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Rennes",
+        "Place_GPS_coordinate": "48.117266, -1.6777926",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Rennes",
+        "Place_GPS_coordinate": "48.117266, -1.6777926",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.77",
+          "East": "-0.43",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "Capture of Rennes",
+      "Sub-event": "German Withdrawal from Rennes",
+      "Sub-event_summary": "The Germans withdrew from Rennes during the night of 3 August, moving to St. Nazaire, with the 13th Infantry entering the city on 4 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_24": "Their defensive positions penetrated, their casualties at 60 dead and 130 wounded, and the city almost encircled by U.S. armored units, the Germans prepared to depart Rennes. Hausser, the *Seventh Army* commander, gave permission at 2300 for withdrawal during the night. After burning supplies and installations, the garrison of about 2,000 Germans left at 0300, 4 August. In two march groups, both with motorized and foot troops, they moved along small roads and cross-country, reaching St. Nazaire five days later. They encountered practically no Americans because American troops were racing along the main highways.<sup>[15](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn15)</sup>",
+        "Paragraph_25": "The 13th Infantry marched into Rennes on the morning of 4 August and accepted the kisses and wines of the liberated inhabitants. On the heels of the regiment came the remainder of the 8th Division, which earlier had expected to follow the 6th Armored Division to *--361--* <a id=\"page362\"></a> * * * Brest. Reassuming control of the 13th Infantry, General Stroh took responsibility for providing security for Rennes. Deployed to block all entrances into the city, the 8th Division became the VIII Corps reserve.<sup>[16](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn16)</sup>"
+      },
+      "Footnote_References": [
+        15,
+        16
+      ],
+      "Place_Name": "St. Nazaire",
+      "Dates": {
+        "Date_group_of_event": "4 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "040300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "8th Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 60,
+          "Axis_DE_WIA": 130,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1836318193758874",
+          "Description": "US Soldiers & Vehicles with VIII Corps enter Rennes in Brittany ...",
+          "License": "Unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Saint-Nazaire",
+        "Place_GPS_coordinate": "47.2764, -2.2137",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Saint-Nazaire_pocket",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Saint-Nazaire",
+        "Place_GPS_coordinate": "47.2764, -2.2137",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.31",
+          "East": "-1.11",
+          "South": "46.38",
+          "North": "48.17"
+        }
+      }
+    },
+    {
+      "Event": "Mission Clarification and Move to Vilaine",
+      "Sub-event": "Compromise Decision on Mission",
+      "Sub-event_summary": "Middleton ordered the division to block the Vilaine River bridges, allowing potential eastward movement while sealing the area.",
+      "Sub-event_fulltext": {
+        "Paragraph_26": "Meanwhile, General Middleton had been pondering the proper mission of the 4th Armored Division. Though tempted to send it eastward toward Châteaubriant, he could not ignore Quiberon Bay. Yet the entire situation--not only in Brittany but all along the Allied front--was in a state of flux. All sorts of changes in the Allied plan were being rumored, and it seemed possible that the campaign might sweep so irresistibly eastward as to drag with it the entire VIII Corps. With this in mind, Middleton made a compromise decision on the evening of 3 August. He ordered Wood to block the bridges on the Vilaine River from Rennes to the coast.<sup>[17](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn17)</sup> The Vilaine flows generally southwestward from Rennes and empties into the ocean about half way between St. Nazaire and Vannes. Two main highways cross the river--one at Redon, the other at la Roche-Bernard. By blocking the bridges at these towns and elsewhere, the 4th Armored Division would seal off the Rennes-Quiberon area. At the same time the division would also be ready to continue toward the east should that course of action become desirable and possible.",
+        "Paragraph_27": "General Wood failed to get Middle-ton's message. \"Have received no mission repeat have received no mission,\" he radioed the corps commander during the night of 3 August. \"Reply urgent repeat reply urgent.\""
+      },
+      "Footnote_References": [
+        17
+      ],
+      "Place_Name": "Vilaine River",
+      "Dates": {
+        "Date_group_of_event": "3 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "032200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {},
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Redon",
+        "Place_GPS_coordinate": "47.6517, -2.0847",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Redon",
+        "Place_GPS_coordinate": "47.6517, -2.0847",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.18",
+          "East": "-0.99",
+          "South": "46.75",
+          "North": "48.55"
+        }
+      }
+    },
+    {
+      "Event": "Mission Clarification and Move to Vilaine",
+      "Sub-event": "Personal Conference and Compromise",
+      "Sub-event_summary": "On 4 August, Middleton met Wood and agreed to block roads south of Rennes, secure Vilaine bridges, and use reconnaissance.",
+      "Sub-event_fulltext": {
+        "Paragraph_28": "Deciding that it was time to see the division commander and make sure he understood the situation, Middleton drove to Wood's headquarters on 4 August.<sup>[18](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn18)</sup>",
+        "Paragraph_29": "Wood threw his arms around the corps commander in welcome.",
+        "Paragraph_30": "\"What's the matter?\" Middleton asked with dry humor. \"Have you lost your division?\"",
+        "Paragraph_31": "\"No!\" Wood replied. It was worse than that. \"They\"--meaning the Allied command--\"they are winning the war the wrong way.\"",
+        "Paragraph_32": "Though Wood almost persuaded the corps commander that he ought to be allowed to go to the east without restriction, the result of the personal conference was a compromise. Without disarranging his dispositions oriented eastward, Wood agreed to block all the roads south of Rennes, to dispatch part of one combat command westward to secure the Vilaine River bridges near Redon, and to make maximum use of reconnaissance units to secure the Vilaine River line.<sup>[19](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn19)</sup>"
+      },
+      "Footnote_References": [
+        18,
+        19
+      ],
+      "Place_Name": "Redon",
+      "Dates": {
+        "Date_group_of_event": "4 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "041000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {},
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "La Roche-Bernard",
+        "Place_GPS_coordinate": "47.518693, -2.3",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "La Roche-Bernard",
+        "Place_GPS_coordinate": "47.518693, -2.3",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.4",
+          "East": "-1.2",
+          "South": "46.62",
+          "North": "48.42"
+        }
+      }
+    },
+    {
+      "Event": "Move to Vannes and Lorient",
+      "Sub-event": "Supply Resolution and Move to Vannes",
+      "Sub-event_summary": "With gasoline available after opening supply route through Rennes, CCA drove to Vannes on 5 August, capturing it intact with FFI assistance.",
+      "Sub-event_fulltext": {
+        "Paragraph_33": "The same day VIII Corps issued a list of the missions assigned to its combat components. The list confirmed the arrangements decided upon by Middleton and Wood. Sent to the Third Army headquarters as a routine matter, the information did not escape the sharp glance of Maj. Gen. Hugh J. Gaffey, the army chief of staff. He immediately *--362--* <a id=\"page363\"></a> * * * sent Middleton a memorandum to point out that General Patton \"assumes that in addition to blocking the roads . . ., you are pushing the bulk of the [4th Armored] division to the west and southwest to the Quiberon area, including the towns of Vannes and Lorient, in accordance with the Army plan.\" The assumption notwithstanding, Gaffey at once ordered Patton's Household Cavalry to relay a message directly to Wood (and to Middleton for information) to the effect that the 4th Armored Division was expected to move to Vannes and Lorient, unequivocally to the west. Without comment, the corps headquarters noted the action and recorded the mission.<sup>[20](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn20)</sup>",
+        "Paragraph_34": "By this time the question on the proper mission of the armored division was not the only factor affecting its movements. The division was virtually out of gas. Had the combat commands south of Rennes been obliged to move suddenly, half their vehicles would have had to remain in place.",
+        "Paragraph_35": "When the combat commands had begun their wide sweep around Rennes, the division trains had been left north of that city. Supply trucks that could have carried gasoline had been sent back to Avranches to bring the 13th Infantry forward. Not until the afternoon of 4 August, after the infantry occupied Rennes, was a direct supply route opened for the armored division; gasoline then became available.<sup>[21](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn21)</sup>",
+        "Paragraph_36": "The uncertainty over the mission resolved and gasoline once more plentiful, Wood on the morning of 5 August ordered CCA to drive the seventy miles westward to Vannes. The leading units of CCA departed at 1400 and swept into Vannes seven hours later. A battalion of the FFI that had already captured the Vannes airfield guided the column to the best approaches. So swift and surprising was the advance that the Germans in the town were unable to prepare demolitions. The combat command seized the bridges and other important installations intact.<sup>[22](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn22)</sup>"
+      },
+      "Footnote_References": [
+        20,
+        21,
+        22
+      ],
+      "Place_Name": "Vannes",
+      "Dates": {
+        "Date_group_of_event": "5 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "051400ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "Hugh J. Gaffey",
+          "Name": "Hugh J. Gaffey",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Hugh_Joseph_Gaffey",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "Gasoline became available",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vannes",
+        "Place_GPS_coordinate": "47.658236, -2.760847",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Vannes",
+        "Place_GPS_coordinate": "47.658236, -2.760847",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.86",
+          "East": "-1.66",
+          "South": "46.75",
+          "North": "48.56"
+        }
+      }
+    },
+    {
+      "Event": "Move to Vannes and Lorient",
+      "Sub-event": "Counterattack and Advance to Auray and Hennebont",
+      "Sub-event_summary": "On 6 August, a German counterattack from Auray was repelled, and CCA advanced to Auray and Hennebont near Lorient.",
+      "Sub-event_fulltext": {
+        "Paragraph_37": "Though the capture of Vannes cut the Brittany peninsula at its base, some fighting remained. On the following day, 6 August, the enemy launched a surprise counterattack from Auray and drove back CCA's outposts. A task force had to attack to re-establish the positions. To remove the root of the trouble, the task force continued to Auray, clearing the town the next morning. Thereupon the CCA commander, Colonel Clarke, sent a strong task force westward fifteen miles beyond Auray to seize a bridge at Hennebont, near Lorient. Led by light tanks, the column raced through artillery fire and found that the Germans had just destroyed the Hennebont bridge. Making a detour two miles to the north and crossing the Blavet River at Lochrist, CCA made contact with CCB near Lorient."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Auray",
+      "Dates": {
+        "Date_group_of_event": "6 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "060800ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {},
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.history.navy.mil/bin/imageDownload?image=/content/dam/museums/nmusn/Photography/NARA%20II/80-G/80-G-50000/80-G-59470.tif&rendition=cq5dam.web.1280.1280.jpeg",
+          "Description": "80-G-59470: Invasion of Southern France, August 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Auray",
+        "Place_GPS_coordinate": "47.6704, -2.9840",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Auray",
+        "Place_GPS_coordinate": "47.6704, -2.9840",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.08",
+          "East": "-1.89",
+          "South": "46.77",
+          "North": "48.57"
+        }
+      }
+    },
+    {
+      "Event": "Move to Vannes and Lorient",
+      "Sub-event": "Engagement at Lorient",
+      "Sub-event_summary": "CCB reached Lorient on 7 August, encountering strong defenses, with heavy artillery fire at Pont-Scorff causing casualties.",
+      "Sub-event_fulltext": {
+        "Paragraph_38": "While CCA had taken Vannes and Auray, General Dager's CCB had driven directly toward Lorient. Reaching the outskirts of the city on the morning of 7 August and finding strong defenses, CCB detoured to the north to attack *--363--* <a id=\"page364\"></a> * * * through a seemingly undefended approach from the northwest, through the village of Pont-Scorff. The move turned out to be a mistake. As the advance guard entered the village, German artillery fire fell in alarming proportions. The artillery fire killed 20 men, wounded 85, destroyed 5 half-tracks, 6 jeeps, 2 trucks, and 2 armored cars, and damaged a score of other vehicles.",
+        "Paragraph_39": "The arrival of CCA in the Lorient region enabled the combat commands to establish a thin line around Lorient from Hennebont to Pont-Scorff. From positions for the most part out of range of German artillery, the division probed the Lorient defenses, trying to develop a feasible avenue of approach, but by 9 August it seemed clear that the Germans in Lorient were too strong for an armored division alone to reduce. Antitank ditches and mine fields were covered by interlocking bands of fire from what the division estimated to be 500 field pieces including antitank, antiaircraft, coastal defense, and naval guns supplied with large stores of ammunition. Flak was so heavy that artillery planes could not get off the ground for observation. The FFI reported that the Germans had a great supply of provisions in the fortress city, including herds of cattle, and could therefore hold out for a long time. To be assured of success, an attack against Lorient would need support from the sea so that the Quiberon peninsula and Belle-Isle might first be neutralized.<sup>[23](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn23)</sup>"
+      },
+      "Footnote_References": [
+        23
+      ],
+      "Place_Name": "Lorient",
+      "Dates": {
+        "Date_group_of_event": "7 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "070800ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {},
+        "Subordinates": [
+          {
+            "Unit": "CCB",
+            "Name": "Holmes E. Dager",
+            "Rank": "Brigadier General",
+            "Date": "7 August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Holmes_E._Dager",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "Half-track",
+            "Identifier": "M3 Half-track",
+            "Quantity": 5,
+            "Web_Reference": "https://en.wikipedia.org/wiki/M3_Half-track",
+            "Web_Image_Reference": "https://commons.wikimedia.org/wiki/Category:M3_Half-track",
+            "Web_Reference_Capture_Date": "December 24, 2025"
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Artillery Pieces",
+            "Identifier": "Various",
+            "Quantity": 500,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 20,
+          "Allied_US_WIA": 85,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=10175314823375206",
+          "Description": "FRANCE FORGOTTEN D-DAY - AUGUST 1944 ! On August 15, 1944, while ...",
+          "License": "Unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Lorient",
+        "Place_GPS_coordinate": "47.7481, -3.365",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Saint-Nazaire_pocket",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Lorient",
+        "Place_GPS_coordinate": "47.7481, -3.365",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.47",
+          "East": "-2.26",
+          "South": "46.85",
+          "North": "48.65"
+        }
+      }
+    },
+    {
+      "Event": "At Lorient and Communications",
+      "Sub-event": "Instructions to Contain Lorient",
+      "Sub-event_summary": "Middleton instructed Wood not to engage in a fight for Lorient unless attacked, to take a secure position and watch developments.",
+      "Sub-event_fulltext": {
+        "Paragraph_40": "Concerned lest the 4th Armored Division become embroiled in static warfare at Lorient, General Wood was gratified to receive word from Middleton to hold the armor at arm's length from the fortress. \"Do not become involved in a fight for Lorient unless enemy attacks,\" Middleton instructed. \"Take a secure position and merely watch developments.\"<sup>[24](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn24)</sup>",
+        "Paragraph_41": "Actually, the fortress of Lorient was not as impregnable as it appeared to the Americans. The senior German commander in Lorient, Fahrmbacher, was seriously concerned lest a strong attack by the U.S. armor carry his position. Had Wood attacked between 6 and 9 August, Fahrmbacher later stated, the fortress would probably have fallen. The defenses of Lorient had not yet been organized; entire sectors were still unoccupied; many of the troops were untrained. Even the chain of command had not yet been firmly established. Preparations had been made for a garrison of 12,000 men in Lorient, but instead, there were about 25,000 Germans, plus 10,000 French civilians who constituted a potential Trojan horse and a certain drain on supplies. Rather than the 500 guns estimated by the Americans, Fahrmbacher had 197 guns in the fortress and 80 antitank pieces. By 10 August, when Fahrmbacher felt that he had erected an adequate, if provisional, defense, the American pressure decreased to the point that he no longer expected an attack.<sup>[25](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn25)</sup>"
+      },
+      "Footnote_References": [
+        24,
+        25
+      ],
+      "Place_Name": "Lorient",
+      "Dates": {
+        "Date_group_of_event": "9 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "090000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Lorient Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "Wilhelm Fahrmbacher",
+          "Name": "Wilhelm Fahrmbacher",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Wilhelm_Fahrmbacher",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "25,000 Germans, untrained many",
+        "Equipments": {
+          "Supply": "Great supply of provisions, herds of cattle",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Guns",
+            "Identifier": "Various",
+            "Quantity": 197,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Lorient",
+        "Place_GPS_coordinate": "47.7481, -3.365",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Lorient",
+        "Place_GPS_coordinate": "47.7481, -3.365",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.47",
+          "East": "-2.26",
+          "South": "46.85",
+          "North": "48.65"
+        }
+      }
+    },
+    {
+      "Event": "Communications and Decisions on Future Actions",
+      "Sub-event": "Request to Turn East",
+      "Sub-event_summary": "Wood radioed Patton hoping to turn east after taking Lorient, but reported resistance and requested infantry support.",
+      "Sub-event_fulltext": {
+        "Paragraph_42": "The resistance marked by the intense artillery fire on 7 August at Pont-Scorff was the first that could not be bypassed since the 4th Armored Division's commitment in Brittany. At Lorient, the division was at the end of a blind alley. Having no place to go was a cruel blow to General Wood, who had not abandoned the idea of driving eastward. On the evening of 6 August General Wood had radioed a message direct to General Patton: \"Dear George: Have Vannes, will have Lorient this evening. Vannes intact, hope Lorient the same. Trust we can turn around and get headed in right direction soon.\"<sup>[26](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn26)</sup>",
+        "Paragraph_43": "Still optimistic, though somewhat subdued after CCB was halted near Lorient the following morning, Wood reported his situation to Middleton with candor:",
+        "Paragraph_44": "> Hoped to argue Boche into surrender of Lorient. However he still resists. Am attacking him from two sides. He may fold up. He has considerable fixed fortifications and can resist strongly if he wishes. If so, this is a job for infantry and guns. We should be allowed to reassemble and get ready to hit again in a more profitable direction, namely to Paris. Believe infantry division should be sent here at once for this job.<sup>[27](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn27)</sup>"
+      },
+      "Footnote_References": [
+        26,
+        27
+      ],
+      "Place_Name": "Lorient",
+      "Dates": {
+        "Date_group_of_event": "6 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "062000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Lorient",
+        "Place_GPS_coordinate": "47.7481, -3.365",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Lorient",
+        "Place_GPS_coordinate": "47.7481, -3.365",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.47",
+          "East": "-2.26",
+          "South": "46.85",
+          "North": "48.65"
+        }
+      }
+    },
+    {
+      "Event": "Communications and Decisions on Future Actions",
+      "Sub-event": "Decision to Contain and Wait",
+      "Sub-event_summary": "Patton decided to contain Lorient until other ports were taken, with Wood disappointed and requesting relief.",
+      "Sub-event_fulltext": {
+        "Paragraph_45": "Patton had already made the decision. \"Dear John,\" Middleton informed Wood in a letter he signed \"Troy,\" \"George was here this P.M. and made the following decision: When you take your objective, remain in that vicinity and await orders.\" If Wood could not take Lorient without help, Middleton continued, he was to hold in place until a decision could be made on the amount of assistance he was to get. The reason, Middleton explained, was the obscurity that surrounded the developments not only in Brittany but on the larger front. It was possible that the American force driving toward Brest might also need help, and Patton did not want troops moved both east and west at the same time until the situation became clearer.<sup>[28](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn28)</sup>",
+        "Paragraph_46": "Terribly disappointed, Wood replied, \"Am being left pretty far out on this limb.\" Still later he grumbled, \"Can achieve impossible but not yet up to miracles. Boche does not intend to fold up.\" He radioed his belief that at least one infantry division supported by corps artillery, additional air power, and naval forces would be required to reduce Lorient. Finally, \"My division requires overhaul for further operations at similar speeds,\" he radioed. \"Request decision. Repeat request decision.\"<sup>[29](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn29)</sup>",
+        "Paragraph_47": "The decision that General Wood wanted was an admission by corps or army that another unit would relieve the 4th Armored Division at Lorient and an indication as to when the relief might take place. The 8th Division was supposed to have followed the 4th Armored Division into Brittany. When would it arrive at Lorient and allow Wood to get under way to the east? Why didn't the 8th come forward immediately from Rennes? Believing that the decision to move his armored division \"away from the pursuit of a disorganized enemy\" and toward Lorient \"was one of the great mistakes of the war,\" and feeling certain that \"a rapid *--365--* <a id=\"page366\"></a> * * * move toward Chartres . . . would have been of immense value,\" he could not understand why the powerful mobile forces under his command were allowed to stand before a fortress city.<sup>[30](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn30)</sup>"
+      },
+      "Footnote_References": [
+        28,
+        29,
+        30
+      ],
+      "Place_Name": "Lorient",
+      "Dates": {
+        "Date_group_of_event": "7 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "071300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {},
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brest",
+        "Place_GPS_coordinate": "48.3904, -4.4861",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Brest",
+        "Place_GPS_coordinate": "48.3904, -4.4861",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-5.59",
+          "East": "-3.38",
+          "South": "47.49",
+          "North": "49.29"
+        }
+      }
+    },
+    {
+      "Event": "Communications and Decisions on Future Actions",
+      "Sub-event": "Clarification of Brittany Situation",
+      "Sub-event_summary": "Middleton instructed not to get involved at Lorient, and forwarded request to Patton for clarification.",
+      "Sub-event_fulltext": {
+        "Paragraph_48": "What Wood did not know was that, the forces in Brittany had become stepchildren. As he had expected, the main action of the European campaign was developing east of Brittany, and Patton and Middleton lacked sufficient resources to develop the Brittany operation as they wished. Yet as soon as Middleton received Wood's request for a decision on the 4th Armored Division's future course of action, he replied, both by radio and by liaison plane, instructing Wood not to get involved in a battle at Lorient.<sup>[31](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn31)</sup> At the same time he forwarded Wood's request to Patton, hoping thereby to get clarification of the entire Brittany situation and the future role of the VIII Corps.<sup>[32](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn32)</sup>",
+        "Paragraph_49": "At a conference late on 8 August, Patton informed Middleton that the VIII Corps still had the job of clearing the Brittany peninsula. Securing the ports of St. Malo and Brest had priority over the capture of Lorient. Thus, Wood would have to contain Lorient until St. Malo and Brest were taken. Only then could the far-flung forces of the VIII Corps in Brittany be assembled to help Wood \"take Lorient out of the picture.\" The difficulty was that Middleton could not do everything at the same time. Given the forces at his disposal and his widely separated objectives, he could do no more than proceed from one task to another. Wood would have to wait until the corps got around to his particular problem.<sup>[33](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn33)</sup>"
+      },
+      "Footnote_References": [
+        31,
+        32,
+        33
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "8 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "082200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {},
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Saint-Malo",
+        "Place_GPS_coordinate": "48.6493, -2.0257",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Saint-Malo",
+        "Place_GPS_coordinate": "48.6493, -2.0257",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.13",
+          "East": "-0.92",
+          "South": "47.75",
+          "North": "49.55"
+        }
+      }
+    },
+    {
+      "Event": "Move to Nantes",
+      "Sub-event": "Dispatch to Nantes",
+      "Sub-event_summary": "On 10 August, CCA moved to Nantes to relieve a task force, capturing the city on 12 August with FFI help.",
+      "Sub-event_fulltext": {
+        "Paragraph_50": "Despite this gloomy outlook, a spark of hope remained for the 4th Armored Division. Patton had told Middleton to send some troops to Nantes to relieve an American task force containing the Germans in that port city. Though Patton expected Middleton to dispatch troops from the 8th Division at Rennes, Middleton preferred to keep the 8th where it was so he could use it to reinforce the attack against St. Malo if necessary. Middleton therefore called upon the 4th Armored Division. He instructed Wood to contain Lorient and remain immobile, but he also told him to send a combat command eastward from Lorient to Nantes. An American unit was guarding Nantes, but Middleton did not know which one it was or exactly where it was. Wood was to locate and relieve the unit at Nantes. Middleton suggested that Wood send some cavalry along to enable the combat command to scout the Loire River east of St. Nazaire and Nantes and make contact with U.S. troops at Angers. The general situation, he added, looked good.<sup>[34](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn34)</sup>",
+        "Paragraph_51": "Good was hardly the word for it. Wood had wanted to go to Angers five days earlier. He sent Colonel Clarke's CCA on the eighty-mile move to Nantes on the morning of 10 August. On the following day CCA relieved a battalion of the 5th Division on the outskirts of the city. That night, heavy explosions in Nantes indicated that the Germans were destroying dumps and installations. *--366--* <a id=\"page367\"></a> * * * French civilians reported the enemy withdrawing. Clarke therefore asked Wood's permission to enter Nantes with light forces.",
+        "Paragraph_52": "Earlier, when Middleton had alerted Wood for the mission of driving to Nantes, he had ordered him categorically: \"Do not become involved in fight in city. Merely prevent any enemy movement to north.\" Four days later, with a combat command at the gates of the city, the opportunity to take Nantes easily was too tempting to resist. Wood gave Clarke permission to attack. During the afternoon of 12 August, helped by men of the FFI, who led the troops safely through mine fields, CCA stormed the city and captured it.<sup>[35](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn35)</sup>"
+      },
+      "Footnote_References": [
+        34,
+        35
+      ],
+      "Place_Name": "Nantes",
+      "Dates": {
+        "Date_group_of_event": "10 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "100900ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {},
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "http://tile.loc.gov/storage-services/service/mbrs/ntscrm/02531087/02531087.jpg",
+          "Description": "World War II color footage--American troops move through northwest ...",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Nantes",
+        "Place_GPS_coordinate": "47.2184, -1.5536",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://blog.fold3.com/wp-content/uploads/2025/07/Screenshot-2025-07-23-at-4.57.04-PM.png",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Nantes",
+        "Place_GPS_coordinate": "47.2184, -1.5536",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.65",
+          "East": "-0.46",
+          "South": "46.32",
+          "North": "48.12"
+        }
+      }
+    },
+    {
+      "Event": "Summary and Reflection",
+      "Sub-event": "Division Achievements and Relief",
+      "Sub-event_summary": "The division passed to another control on 13 August, handing Lorient to 6th Armored on 15 August, driving eastward.",
+      "Sub-event_fulltext": {
+        "Paragraph_53": "Securing Nantes was like getting one's foot in the door. Wood's persistent efforts to drive to the east were about to succeed. A day later, on 13 August, the 4th Armored Division passed from the control of the VIII Corps, and on 15 August Wood handed over the responsibility of containing Lorient to the 6th Armored Division. By that time only a handful of 4th Armored Division troops remained at Lorient, impatient for the relief that would permit them to join the bulk of the division Wood had already sent out of Brittany. General Wood had finally gotten a mission he wanted. The 4th Armored Division was driving eastward.",
+        "Paragraph_54": "During the first two weeks of August, the 4th Armored Division had displayed a constant and consistent aggressiveness. It had performed like cavalry--slashing, side-slipping, and pushing forward. It had effectively exploited a fluid situation by using speed and surprise. Having made a reputation in the Cotentin, the division expanded it in Brittany. During the first twelve days of August, the 4th Armored Division took almost 5,000 prisoners and destroyed or captured almost 250 German vehicles. Against these figures, the division lost 98 killed, 362 wounded, 11 missing; 15 tanks and 20 vehicles.<sup>[36](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn36)</sup>"
+      },
+      "Footnote_References": [
+        36
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "13 August",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "130000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "6th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {},
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 98,
+          "Allied_US_WIA": 362,
+          "Allied_US_Missing": 11,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 5000
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.2020, -2.9326",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.2020, -2.9326",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.03",
+          "East": "-1.83",
+          "South": "47.3",
+          "North": "49.1"
+        }
+      }
+    },
+    {
+      "Event": "Summary and Reflection",
+      "Sub-event": "Assessment of Mission and Achievements",
+      "Sub-event_summary": "Despite not capturing Lorient, the division's aggressiveness and mobility were highlighted, with reflections on strategic decisions.",
+      "Sub-event_fulltext": {
+        "Paragraph_55": "Despite the impressive achievement represented by the number of the enemy destroyed and the amount of the territory liberated, the 4th Armored Division had not taken the port city assigned. Had Middleton and Wood been intent on securing Quiberon, the division might have arrived at Lorient a day or two earlier and perhaps have been in time to capture the fortress simply by smashing a way into the streets of the city; indeed, a serious effort launched immediately after the arrival of the division might still have taken the fortress.",
+        "Paragraph_56": "In mid-August, as the Germans in western Europe seemed to be in the process of complete disintegration, the failure to take Lorient and Quiberon seemed less important than it would have seemed in July. By late September, Lorient and Quiberon were quite forgotten. \"Looking at it with hindsight,\" General Middleton said many years afterward, \"Wood was right, of course. But the high command at the time was absolutely right in . . . [wanting] the ports.\"<sup>[37](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn37)</sup> Wood's trouble was wanting to do the right thing at the wrong time.",
+        "Paragraph_57": "The 4th Armored Division had developed to a high degree of proficiency a reckless ardor for pursuit of a defeated enemy. The *esprit de corps* of the troops matched the supreme confidence of the division commander. It was stimulating to operate deep in enemy territory and report that over a thousand enemy soldiers were ready to surrender but that the division lacked \"the time or the means to collect them.\"<sup>[38](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn38)</sup> It was heady to have such assurance that men of the division could say with profound feeling of the Germans, \"They've got us surrounded again, the poor bastards.\"<sup>[39](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html#fn39)</sup> On the crest of a mounting wave of optimism the 4th Armored Division turned eastward and drove out of Brittany in search of further opportunities, its commander sure at last that he was heading in the right direction."
+      },
+      "Footnote_References": [
+        37,
+        38,
+        39
+      ],
+      "Place_Name": "Quiberon",
+      "Dates": {
+        "Date_group_of_event": "END AUG44",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+        "Zulu_date_group_of_event": "APPROX 312359ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {},
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Quiberon",
+        "Place_GPS_coordinate": "47.4842, -3.1196",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Quiberon",
+        "Place_GPS_coordinate": "47.4842, -3.1196",
+        "Weather_text": "Average temperature around 18°C, mild with some precipitation typical for August in Brittany.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.22",
+          "East": "-2.02",
+          "South": "46.58",
+          "North": "48.39"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "1a",
+      "Footnote_Number": "1",
+      "Footnote_Text": "VIII Corps Opns Instrs, 31 Jul (fragmentary verbal orders), and FO 9, 1600, 1 Aug;",
+      "Footnote_Referenced_Source": "VIII Corps Opns Instrs, 31 Jul (fragmentary verbal orders), and FO 9, 1600, 1 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "1b",
+      "Footnote_Number": "1",
+      "Footnote_Text": "Ltr, Wood to OCMH, 24 Mar 54, OCMH Files.",
+      "Footnote_Referenced_Source": "Ltr, Wood to OCMH, 24 Mar 54, OCMH Files.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "2a",
+      "Footnote_Number": "2",
+      "Footnote_Text": "4th Armd Div AAR, Aug;",
+      "Footnote_Referenced_Source": "4th Armd Div AAR, Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "After Action Report"
+    },
+    {
+      "Footnote": "2b",
+      "Footnote_Number": "2",
+      "Footnote_Text": "Koyen, Fourth Armored Division, p. 21.",
+      "Footnote_Referenced_Source": "Koyen, Fourth Armored Division, p. 21.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "3a",
+      "Footnote_Number": "3",
+      "Footnote_Text": "MS # B-731 (Fahrmbacher);",
+      "Footnote_Referenced_Source": "MS # B-731 (Fahrmbacher);",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives and Records Administration, College Park, MD",
+      "NonDigital_Library_References": "Foreign Military Studies"
+    },
+    {
+      "Footnote": "3b",
+      "Footnote_Number": "3",
+      "Footnote_Text": "Zimmerman Telecon, 1925, 1 Aug, OB WEST KTB, Anlage 1010.",
+      "Footnote_Referenced_Source": "Zimmerman Telecon, 1925, 1 Aug, OB WEST KTB, Anlage 1010.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives and Records Administration, College Park, MD",
+      "NonDigital_Library_References": "Captured German Records"
+    },
+    {
+      "Footnote": "4",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Msg, Wood to Middleton, 0955, 2 Aug.",
+      "Footnote_Referenced_Source": "Msg, Wood to Middleton, 0955, 2 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "5a",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Msgs, Wood to Middleton, 1525, 1 Aug, and 1100 and 1115, 2 Aug;",
+      "Footnote_Referenced_Source": "Msgs, Wood to Middleton, 1525, 1 Aug, and 1100 and 1115, 2 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "5b",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Msgs, Middleton to Wood, 2 and 3 Aug;",
+      "Footnote_Referenced_Source": "Msgs, Middleton to Wood, 2 and 3 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "5c",
+      "Footnote_Number": "5",
+      "Footnote_Text": "VIII Corps G-3 Jnl, 1-3 Aug.",
+      "Footnote_Referenced_Source": "VIII Corps G-3 Jnl, 1-3 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "6a",
+      "Footnote_Number": "6",
+      "Footnote_Text": "8th Div AAR, 8 Jul-4 Aug, and Msg, 2200, 2 Aug;",
+      "Footnote_Referenced_Source": "8th Div AAR, 8 Jul-4 Aug, and Msg, 2200, 2 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "After Action Report"
+    },
+    {
+      "Footnote": "6b",
+      "Footnote_Number": "6",
+      "Footnote_Text": "VIII Corps Msg to Officer in Charge of Truck Co's Furnished by Third Army, 2 Aug.",
+      "Footnote_Referenced_Source": "VIII Corps Msg to Officer in Charge of Truck Co's Furnished by Third Army, 2 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "7",
+      "Footnote_Number": "7",
+      "Footnote_Text": "Ltr, Wood to OCMH, 24 Mar 54.",
+      "Footnote_Referenced_Source": "Ltr, Wood to OCMH, 24 Mar 54.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "8a",
+      "Footnote_Number": "8",
+      "Footnote_Text": "4th Armd Div Plan of Attack and Routes of Advance, 3 Aug, with penciled note, and FO 5, 3 Aug;",
+      "Footnote_Referenced_Source": "4th Armd Div Plan of Attack and Routes of Advance, 3 Aug, with penciled note, and FO 5, 3 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "Field Order"
+    },
+    {
+      "Footnote": "8b",
+      "Footnote_Number": "8",
+      "Footnote_Text": "Ltr, Wood to OCMH, 24 Mar 54.",
+      "Footnote_Referenced_Source": "Ltr, Wood to OCMH, 24 Mar 54.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "9a",
+      "Footnote_Number": "9",
+      "Footnote_Text": "VIII Corps FO 10, 2 Aug;",
+      "Footnote_Referenced_Source": "VIII Corps FO 10, 2 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "Field Order"
+    },
+    {
+      "Footnote": "9b",
+      "Footnote_Number": "9",
+      "Footnote_Text": "4th Armd Div FO 6, 0730, 3 Aug.",
+      "Footnote_Referenced_Source": "4th Armd Div FO 6, 0730, 3 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "Field Order"
+    },
+    {
+      "Footnote": "10",
+      "Footnote_Number": "10",
+      "Footnote_Text": "The Armored School, Armor in the Exploitation, p. 26.",
+      "Footnote_Referenced_Source": "The Armored School, Armor in the Exploitation, p. 26.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Armor in the Exploitation"
+    },
+    {
+      "Footnote": "11a",
+      "Footnote_Number": "11",
+      "Footnote_Text": "VIII Corps Msg, 1000, 3 Aug;",
+      "Footnote_Referenced_Source": "VIII Corps Msg, 1000, 3 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "11b",
+      "Footnote_Number": "11",
+      "Footnote_Text": "Msg, Col John P. Evans to Gen Wood, 1430, 3 Aug.",
+      "Footnote_Referenced_Source": "Msg, Col John P. Evans to Gen Wood, 1430, 3 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "12a",
+      "Footnote_Number": "12",
+      "Footnote_Text": "Msgs, Wood to Middleton, 1315, 1555, 1630, 1821, 3 Aug.",
+      "Footnote_Referenced_Source": "Msgs, Wood to Middleton, 1315, 1555, 1630, 1821, 3 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "13",
+      "Footnote_Number": "13",
+      "Footnote_Text": "The Armored School, Armor in the Exploitation, pp. 26-27.",
+      "Footnote_Referenced_Source": "The Armored School, Armor in the Exploitation, pp. 26-27.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Armor in the Exploitation"
+    },
+    {
+      "Footnote": "14",
+      "Footnote_Number": "14",
+      "Footnote_Text": "13th Inf AAR, Aug.",
+      "Footnote_Referenced_Source": "13th Inf AAR, Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "After Action Report"
+    },
+    {
+      "Footnote": "15",
+      "Footnote_Number": "15",
+      "Footnote_Text": "MS # B-731 (Fahrmbacher).",
+      "Footnote_Referenced_Source": "MS # B-731 (Fahrmbacher).",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives and Records Administration, College Park, MD",
+      "NonDigital_Library_References": "Foreign Military Studies"
+    },
+    {
+      "Footnote": "16a",
+      "Footnote_Number": "16",
+      "Footnote_Text": "8th Div AAR, 8 Jul-4 Aug;",
+      "Footnote_Referenced_Source": "8th Div AAR, 8 Jul-4 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "After Action Report"
+    },
+    {
+      "Footnote": "16b",
+      "Footnote_Number": "16",
+      "Footnote_Text": "VIII Corps G-3 Jnl, 2-4 Aug;",
+      "Footnote_Referenced_Source": "VIII Corps G-3 Jnl, 2-4 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "16c",
+      "Footnote_Number": "16",
+      "Footnote_Text": "Msg, Evans to Wood, 2040, 3 Aug;",
+      "Footnote_Referenced_Source": "Msg, Evans to Wood, 2040, 3 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "16d",
+      "Footnote_Number": "16",
+      "Footnote_Text": "VIII Corps FO 9, 1600, 1 Aug;",
+      "Footnote_Referenced_Source": "VIII Corps FO 9, 1600, 1 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "Field Order"
+    },
+    {
+      "Footnote": "16e",
+      "Footnote_Number": "16",
+      "Footnote_Text": "VIII Corps Msgs to 4th and 6th Armd Divs, 1645, 2 Aug.",
+      "Footnote_Referenced_Source": "VIII Corps Msgs to 4th and 6th Armd Divs, 1645, 2 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "17",
+      "Footnote_Number": "17",
+      "Footnote_Text": "Msg, Evans to Wood, 2040, 3 Aug.",
+      "Footnote_Referenced_Source": "Msg, Evans to Wood, 2040, 3 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "18",
+      "Footnote_Number": "18",
+      "Footnote_Text": "Msg, Wood to Middleton, 0310, 4 Aug, and penned notation by member of the VIII Corps G-3 Sec on the msg.",
+      "Footnote_Referenced_Source": "Msg, Wood to Middleton, 0310, 4 Aug, and penned notation by member of the VIII Corps G-3 Sec on the msg.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "19a",
+      "Footnote_Number": "19",
+      "Footnote_Text": "Review Panel Min, OCMH, 9 May 56;",
+      "Footnote_Referenced_Source": "Review Panel Min, OCMH, 9 May 56;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "19b",
+      "Footnote_Number": "19",
+      "Footnote_Text": "Msg, Wood to Middleton, 1610, 4 Aug.",
+      "Footnote_Referenced_Source": "Msg, Wood to Middleton, 1610, 4 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "20a",
+      "Footnote_Number": "20",
+      "Footnote_Text": "VIII Corps Msgs, 4 and 5 Aug;",
+      "Footnote_Referenced_Source": "VIII Corps Msgs, 4 and 5 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "20b",
+      "Footnote_Number": "20",
+      "Footnote_Text": "Memo, Gaffey to Middleton, 5 Aug;",
+      "Footnote_Referenced_Source": "Memo, Gaffey to Middleton, 5 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "Third Army Files"
+    },
+    {
+      "Footnote": "20c",
+      "Footnote_Number": "20",
+      "Footnote_Text": "Msg, Army Info Patrol with the 4th Armd Div to VIII Corps, 5 Aug.",
+      "Footnote_Referenced_Source": "Msg, Army Info Patrol with the 4th Armd Div to VIII Corps, 5 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "21a",
+      "Footnote_Number": "21",
+      "Footnote_Text": "The Armored School, Armor in the Exploitation, p. 27;",
+      "Footnote_Referenced_Source": "The Armored School, Armor in the Exploitation, p. 27;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Armor in the Exploitation"
+    },
+    {
+      "Footnote": "21b",
+      "Footnote_Number": "21",
+      "Footnote_Text": "Ltr, Wood to OCMH, 24 Mar 54.",
+      "Footnote_Referenced_Source": "Ltr, Wood to OCMH, 24 Mar 54.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "22a",
+      "Footnote_Number": "22",
+      "Footnote_Text": "4th Armd Div AAR, Aug;",
+      "Footnote_Referenced_Source": "4th Armd Div AAR, Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "After Action Report"
+    },
+    {
+      "Footnote": "22b",
+      "Footnote_Number": "22",
+      "Footnote_Text": "TUSA Info Serv Msg, 2330, 5 Aug;",
+      "Footnote_Referenced_Source": "TUSA Info Serv Msg, 2330, 5 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "Third Army Files"
+    },
+    {
+      "Footnote": "22c",
+      "Footnote_Number": "22",
+      "Footnote_Text": "Koyen, Fourth Armored Division, pp. 22-26.",
+      "Footnote_Referenced_Source": "Koyen, Fourth Armored Division, pp. 22-26.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "23a",
+      "Footnote_Number": "23",
+      "Footnote_Text": "4th Armd Div G-3 Per Rpt 24, 9 Aug;",
+      "Footnote_Referenced_Source": "4th Armd Div G-3 Per Rpt 24, 9 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "Periodic Report"
+    },
+    {
+      "Footnote": "23b",
+      "Footnote_Number": "23",
+      "Footnote_Text": "Msg, Wood to Middleton, 2116, 8 Aug.",
+      "Footnote_Referenced_Source": "Msg, Wood to Middleton, 2116, 8 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "24",
+      "Footnote_Number": "24",
+      "Footnote_Text": "Penned Msg, probably in Middleton's hand, on Msg, Wood to Middleton, received at the VIII Corps CP, 1145, 8 Aug.",
+      "Footnote_Referenced_Source": "Penned Msg, probably in Middleton's hand, on Msg, Wood to Middleton, received at the VIII Corps CP, 1145, 8 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "25",
+      "Footnote_Number": "25",
+      "Footnote_Text": "For the rest of the war, Lorient was contained, in turn by the 4th Armored Division until 15 August, by the 6th Armored Division until it was relieved in mid-September by the 94th Division, and finally by the 66th, to whom Fahrmbacher surrendered his troops and the fortress on 10 May 1945. MS # B-731 (Fahrmbacher).",
+      "Footnote_Referenced_Source": "MS # B-731 (Fahrmbacher).",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives and Records Administration, College Park, MD",
+      "NonDigital_Library_References": "Foreign Military Studies"
+    },
+    {
+      "Footnote": "26",
+      "Footnote_Number": "26",
+      "Footnote_Text": "Msg, Wood to Patton, 6 Aug.",
+      "Footnote_Referenced_Source": "Msg, Wood to Patton, 6 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "Third Army Files"
+    },
+    {
+      "Footnote": "27",
+      "Footnote_Number": "27",
+      "Footnote_Text": "Msg, Wood to Middleton, 1000, 7 Aug.",
+      "Footnote_Referenced_Source": "Msg, Wood to Middleton, 1000, 7 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "28",
+      "Footnote_Number": "28",
+      "Footnote_Text": "Ltr, Middleton to Wood, 6 Aug.",
+      "Footnote_Referenced_Source": "Ltr, Middleton to Wood, 6 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "29a",
+      "Footnote_Number": "29",
+      "Footnote_Text": "Msgs, Wood to Middleton, 1300, 7 Aug, 0233 and 2116, 8 Aug, and Msg received at VIII Corps CP, 1100, 8 Aug.",
+      "Footnote_Referenced_Source": "Msgs, Wood to Middleton, 1300, 7 Aug, 0233 and 2116, 8 Aug, and Msg received at VIII Corps CP, 1100, 8 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "30",
+      "Footnote_Number": "30",
+      "Footnote_Text": "Ltr, Wood to OCMH, 24 Mar 54.",
+      "Footnote_Referenced_Source": "Ltr, Wood to OCMH, 24 Mar 54.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "31",
+      "Footnote_Number": "31",
+      "Footnote_Text": "Penned Msg, cited n. 24, above.",
+      "Footnote_Referenced_Source": "Penned Msg, cited n. 24, above.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "32",
+      "Footnote_Number": "32",
+      "Footnote_Text": "Notation on Msg, Wood to Middleton, received at VIII Corps CP, 1100, 8 Aug.",
+      "Footnote_Referenced_Source": "Notation on Msg, Wood to Middleton, received at VIII Corps CP, 1100, 8 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal and File"
+    },
+    {
+      "Footnote": "33",
+      "Footnote_Number": "33",
+      "Footnote_Text": "Memo, Middleton for Wood, 8 Aug.",
+      "Footnote_Referenced_Source": "Memo, Middleton for Wood, 8 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "34a",
+      "Footnote_Number": "34",
+      "Footnote_Text": "Memos, Patton for Gaffey, and Middleton for Wood, 8 Aug.",
+      "Footnote_Referenced_Source": "Memos, Patton for Gaffey, and Middleton for Wood, 8 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "35a",
+      "Footnote_Number": "35",
+      "Footnote_Text": "Evans to Wood, 8 Aug;",
+      "Footnote_Referenced_Source": "Evans to Wood, 8 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "35b",
+      "Footnote_Number": "35",
+      "Footnote_Text": "Memo, Evans for BCT, 5th Div, 8 Aug;",
+      "Footnote_Referenced_Source": "Memo, Evans for BCT, 5th Div, 8 Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "35c",
+      "Footnote_Number": "35",
+      "Footnote_Text": "The Armored School, Armor in the Exploitation, p. 30;",
+      "Footnote_Referenced_Source": "The Armored School, Armor in the Exploitation, p. 30;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Armor in the Exploitation"
+    },
+    {
+      "Footnote": "35d",
+      "Footnote_Number": "35",
+      "Footnote_Text": "4th Armd Div AAR, Aug.",
+      "Footnote_Referenced_Source": "4th Armd Div AAR, Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "After Action Report"
+    },
+    {
+      "Footnote": "36a",
+      "Footnote_Number": "36",
+      "Footnote_Text": "4th Armd Div AAR, Aug;",
+      "Footnote_Referenced_Source": "4th Armd Div AAR, Aug;",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "After Action Report"
+    },
+    {
+      "Footnote": "36b",
+      "Footnote_Number": "36",
+      "Footnote_Text": "Koyen, Fourth Armored Division, p. 26.",
+      "Footnote_Referenced_Source": "Koyen, Fourth Armored Division, p. 26.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "37",
+      "Footnote_Number": "37",
+      "Footnote_Text": "Min of Review Panel, OCMH, 9 May 56.",
+      "Footnote_Referenced_Source": "Min of Review Panel, OCMH, 9 May 56.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "38",
+      "Footnote_Number": "38",
+      "Footnote_Text": "TUSA Memo, Situation as of 0600, 6 Aug.",
+      "Footnote_Referenced_Source": "TUSA Memo, Situation as of 0600, 6 Aug.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 Fourth Avenue, Building 35, Fort McNair, Washington, D.C. 20319-5060",
+      "NonDigital_Library_References": "Third Army Files"
+    },
+    {
+      "Footnote": "39",
+      "Footnote_Number": "39",
+      "Footnote_Text": "Koyen, Fourth Armored Division, p. 13.",
+      "Footnote_Referenced_Source": "Koyen, Fourth Armored Division, p. 13.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn19.html",
+  "Source_Footnote_Link_Capture_Date": "December 24, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-19.html",
+  "Source_Link_Capture_Date": "December 24, 2025"
+}

@@ -1,0 +1,303 @@
+{
+  "Events": [
+    {
+      "Event": "Assessment of German Breakout and Losses from Falaise Pocket",
+      "Sub-event": "German Escape Estimates and Combat Strength",
+      "Sub-event_summary": "Initial German Army Group B reports estimated 40-50% escape (optimistic); later figures indicate 20,000-40,000 men escaped (mostly non-combat troops), with armored divisions reduced to approximately 2,000 men, 62 tanks, and 26 artillery pieces across six of seven divisions. Partial withdrawals occurred days prior due to acute supply shortages.",
+      "Sub-event_fulltext": {
+        "Paragraph_72": "How many Germans escaped? No one knew. At the end of 20 August Army Group B reported that \"approximately from 40 to 50 percent of the encircled units succeeded in breaking out and joining hands with the II SS Panzer Corps.\" This was an optimistic assessment. By the end of the following day, the strength of six of seven armored divisions that had escaped the pocket totaled, as reported at that time, no more than 2,000 men, 62 tanks, and 26 artillery pieces.",
+        "Paragraph_73": "Later estimates of the total number of Germans escaping varied between 20,000 and 40,000 men, but combat troops formed by far the smaller proportion of these troops. The average combat strength of divisions was no more than a few hundred men, even though the over-all strength of some divisions came close to 3,000. The explanation lay in the fact that a partial exodus had begun at least two or three days before the breakout attack--when shortages of ammunition, gasoline, and other supplies had already become acute."
+      },
+      "Footnote_References": ["54"],
+      "Place_Name": "Falaise Pocket, Normandy, France",
+      "Dates": {
+        "Date_group_of_event": "20-21 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "201200ZAug44-212359ZAug44 (BST approximate)"
+      },
+      "TOE": {
+        "Unit": "Army Group B (AGp B)",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": {
+            "Name": "Walter Model",
+            "Rank": "Generalfeldmarschall",
+            "End_Date": null,
+            "End_Status": null
+          }
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": "Acute shortages of ammunition, gasoline, and other supplies prior to and during breakout",
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tanks",
+              "Identifier": "Various",
+              "Quantity": "62 (post-escape across six of seven armored divisions)"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Artillery pieces",
+              "Identifier": "Various",
+              "Quantity": "26 (post-escape across six of seven armored divisions)"
+            }
+          ],
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Various equipment",
+            "Identifier": "N/A",
+            "Quantity": "Majority lost (vast majority of artillery, vehicles, etc.)"
+          }
+        }
+      },
+      "Casualties": {
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": "20000-40000 escaped (primarily non-combat)"
+        }
+      }
+    },
+    {
+      "Event": "Assessment of German Breakout and Losses from Falaise Pocket",
+      "Sub-event": "Material Losses, Early Withdrawals, and Ammunition Discovery",
+      "Sub-event_summary": "Nonessential personnel, vehicles, and unsupplied artillery evacuated early (some to Seine River); most remaining heavy equipment lost or abandoned. On 18 August, overlooked large ammunition stocks discovered in Bois de Feuillet by 271st Division commander.",
+      "Sub-event_fulltext": {
+        "Paragraph_74": "Some divisions acting on their own initiative, others with the approval of corps, had started to send to the rear, in some instances as far east as the Seine River, all nonessential personnel and vehicles, as well as artillery pieces that could not be supplied with ammunition. Ironically, on 18 August, the day after the 271st Division ceased to exist as a fighting unit, the division commander, Generalleutnant Paul Danhauser, discovered large stocks of artillery ammunition of all calibers in the Bois de Feuillet, stocks that had been forgotten, overlooked, or simply abandoned. \"The shock of this discovery,\" Danhauser later wrote, \"brought tears to the eyes of the commander of the artillery regiment whose batteries had expended their last rounds some days ago.\"",
+        "Paragraph_75": "The few batteries sent out of the pocket before the final few days were saved. The rest of the artillery, heavy weapons, and other equipment remaining inside the pocket was almost completely lost--destroyed by Allied fire, by the Germans themselves, or abandoned. One commander estimated, probably with some exaggeration, that not many more than 50 artillery pieces and perhaps that many tanks reached safety. Radios, vehicles, trains, supplies were lost; \"even the number of rescued machine guns was insignificant.\""
+      },
+      "Footnote_References": ["55", "56", "57"],
+      "Place_Name": "Bois de Feuillet, near Falaise Pocket, Normandy, France (approx. 48.85 N, -0.20 W)",
+      "Dates": {
+        "Date_group_of_event": "18 Aug 1944 (discovery); 2-3 days prior to breakout (withdrawals)",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "18 Aug 1944 (BST approximate)"
+      },
+      "TOE": {
+        "Unit": "271st Infantry Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "271st Infantry Division",
+          "Commander": {
+            "Name": "Paul Danhauser",
+            "Rank": "Generalleutnant",
+            "End_Date": null,
+            "End_Status": null
+          }
+        }
+      },
+      "Casualties": {}
+    },
+    {
+      "Event": "Assessment of German Breakout and Losses from Falaise Pocket",
+      "Sub-event": "Morale, Discipline, and Unit Performance",
+      "Sub-event_summary": "Prolonged ordeal led to morale decline, road disorder, panic, mass surrenders, and isolated mutiny; disciplined units (e.g., paratroop elements) maintained cohesion and escaped impressively.",
+      "Sub-event_fulltext": {
+        "Paragraph_76": "\"The losses in material are very high,\" Army Group B reported, \". . . set on fire by enemy fighter-bombers . . . and by massed fires of heavy artillery. All radio stations were silenced, and the army was deprived of its means of command. Yet the performance of the men who fought the breakout battle in the face of overwhelming odds merits the highest praise.\"",
+        "Paragraph_77": "The severe ordeal to which the Germans were subjected for many days-constant air and artillery pounding, exhausting night marches on clogged roads after a day's fighting, shortages of ammunition and supplies--could not be endured indefinitely without affecting troop morale. Many \"unpretty pictures\" were witnessed by German commanders--incredible disorder on the roads where often the right of the strongest prevailed (tankers and paratroopers being the chief offenders); the panic, men with hands up surrendering in droves; at least one case of outright mutiny when a sergeant shot and killed his commanding officer because the commander refused to consent to surrender.",
+        "Paragraph_78": "But the units that were under the firm control of their commanders fought to the limit of their physical and moral endurance and thereby made the escape of a sizable part of the encircled troops possible. One such unit, a paratroop outfit, made quite an impression on men of an SS panzer division when, emerging from the pocket, the paratroopers passed through the tankers smartly, in road formation, singing."
+      },
+      "Footnote_References": ["58", "59"],
+      "Place_Name": "Falaise Pocket roads, Normandy, France",
+      "Dates": {
+        "Date_group_of_event": "Mid-August 1944 (days prior to and during breakout)",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "APPROX 10-21Aug44"
+      }
+    },
+    {
+      "Event": "Assessment of German Breakout and Losses from Falaise Pocket",
+      "Sub-event": "Destruction in the Pocket and Overall Casualties",
+      "Sub-event_summary": "Devastating Allied bombardment caused immense destruction; ~10,000 German dead found on field, ~50,000 captured (~25,000 by Americans, ~25,000 by British/Canadians, including three generals).",
+      "Sub-event_fulltext": {
+        "Paragraph_79": "Behind the men who had fought their way out of the pocket lay an inferno of destruction. The carnage wrought during the final days as the artillery of two Allied armies and the massed air forces pounded the ever-shrinking pocket was perhaps the greatest of the war. The roads and fields were littered with thousands of enemy dead and wounded, wrecked and burning vehicles, smashed artillery pieces, carts laden with the loot of France overturned and smoldering, dead horses and cattle swelling in the summer's heat.",
+        "Paragraph_80": "Of the higher staffs, only the LXXXIV Corps headquarters was missing. Most of the higher commanders, including Hausser, were wounded. When Hausser was evacuated, Funck, the XLVII Panzer Corps commander, took temporary command of the Seventh Army, which was subordinated to the Fifth Panzer Army.",
+        "Paragraph_81": "The Allies did not know exactly how many prisoners they took. From 13 through 17 August it was possible to count them accurately--British and Canadians reported daily figures in excess of a total of 6,000, the First U.S. Army 2,500 for 15 August alone. After 17 August the figures were approximate-- for example, the First Army estimated more than 9,000 on 21 August.",
+        "Paragraph_82": "All together, the Americans probably took about 25,000 prisoners, British and Canadians an equal number. Among the captives were three general officers. In addition to the 50,000 men captured, approximately 10,000 dead were found on the field."
+      },
+      "Footnote_References": ["60", "61", "62", "63"],
+      "Place_Name": "Falaise Pocket, Normandy, France (centered approx. 48.8890 N, -0.1885 W)",
+      "Dates": {
+        "Date_group_of_event": "13-21 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "13-21 Aug 1944"
+      },
+      "Casualties": {
+        "Axis": {
+          "Axis_DE_KIA": "10000 (found on field)",
+          "Axis_DE_Prisoner_of_War": "50000 (total; approx. 25000 US, 25000 British/Canadian)"
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p556.jpg",
+          "Description": "The Pocket Deserted (photograph depicting devastation in the Falaise Pocket area)",
+          "License": null
+        }
+      ]
+    },
+    {
+      "Event": "Assessment of German Breakout and Losses from Falaise Pocket",
+      "Sub-event": "Specific Allied Unit Captures and Destruction Claims",
+      "Sub-event_summary": "Examples include 2d French Armored Division (8,800 prisoners, >100 tanks, >100 artillery pieces, 700 vehicles captured/destroyed) and 90th US Division (>13,000 prisoners, 1,000 horses, extensive equipment destruction including 220 tanks, 160 SP artillery, 700 towed artillery, etc.).",
+      "Sub-event_fulltext": {
+        "Paragraph_83": "As examples of the extent of German losses, the 2d French Armored Division captured 8,800 prisoners and claimed the destruction or capture of more than 100 tanks, over 100 artillery pieces, and 700 vehicles. The 90th Division in four days took over 13,000 prisoners and 1,000 horses; an incomplete inventory of destruction revealed that in addition to 1,800 horses that were dead, 220 tanks, 160 self-propelled artillery pieces, 700 towed artillery pieces, 130 antiaircraft guns, 130 half-track vehicles, 5,000 motor vehicles, and 2,000 wagons had been destroyed or damaged; high-power radio and cryptographic sets, mobile ordnance shops, medical laboratories, and surgical installations had been abandoned."
+      },
+      "Footnote_References": ["64"],
+      "Dates": {
+        "Date_group_of_event": "Mid-August 1944 (four days for 90th Division)",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html"
+      },
+      "TOE": {
+        "Unit": "2d French Armored Division / 90th Infantry Division",
+        "Unit_Nationality": "FR / US"
+      },
+      "Casualties": {
+        "Axis": {
+          "Axis_DE_Prisoner_of_War": "8800 (2d French Armd Div); 13000 (90th Div)"
+        }
+      }
+    },
+    {
+      "Event": "Assessment of German Breakout and Losses from Falaise Pocket",
+      "Sub-event": "Eyewitness Description of Destruction Southwest of Trun",
+      "Sub-event_summary": "American observer detailed overwhelming scene of destruction (dead animals, vehicles, guns, rifles) with no German fortifications evident, attributing it to exhaustion and desperation.",
+      "Sub-event_fulltext": {
+        "Paragraph_84": "An officer who had observed the destruction of the Aisne-Marne, St. Mihiel, and Meuse-Argonne battlefields in World War I and had seen the destruction in London and at St. Lo in World War II, wrote: None of these compared in the effect upon the imagination with what I saw yesterday southwest of Trun. . . . [full extended quote as in source]"
+      },
+      "Footnote_References": ["65"],
+      "Place_Name": "Southwest of Trun, Normandy, France (approx. 48.75 N, -0.02 W)",
+      "Dates": {
+        "Date_group_of_event": "APPROX 20 Aug 1944 (contextual 'yesterday')",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html"
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "54",
+      "Footnote_Number": "54",
+      "Footnote_Text": "AGp B Tagesmeldungen, 20 Aug, dated 0155, 21 Aug, and 21 Aug, dated 2000, 21 Aug, AGp B KTB. Hitler on 23 August ordered OB WEST to submit a report on strengths and losses pertaining both to the divisions that had escaped from the pocket and to those that had not been involved, but this report, if submitted, has not been located. AGp B KTB, Anlagen, 21-23 Aug, p. 1626.",
+      "Footnote_Referenced_Source": "AGp B KTB (Army Group B Command Diary)",
+      "NonDigital_Library_Source": "German military archives",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "55a",
+      "Footnote_Number": "55",
+      "Footnote_Text": "See MS # B-526 (Badinski).",
+      "Footnote_Referenced_Source": "Manuscript B-526 (Badinski)",
+      "NonDigital_Library_Source": "OCMH / US Army Center of Military History or National Archives",
+      "NonDigital_Library_Address": "US Army Center of Military History, Washington, DC",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "55b",
+      "Footnote_Number": "55",
+      "Footnote_Text": "MS # P-179 (Neumann).",
+      "Footnote_Referenced_Source": "Manuscript P-179 (Neumann)",
+      "NonDigital_Library_Source": "OCMH / US Army Center of Military History or National Archives",
+      "NonDigital_Library_Address": "US Army Center of Military History, Washington, DC",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "56",
+      "Footnote_Number": "56",
+      "Footnote_Text": "MS # P-177 (Danhauser).",
+      "Footnote_Referenced_Source": "Manuscript P-177 (Danhauser)",
+      "NonDigital_Library_Source": "OCMH",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "57",
+      "Footnote_Number": "57",
+      "Footnote_Text": "MS # A-922 (Eberbach).",
+      "Footnote_Referenced_Source": "Manuscript A-922 (Eberbach)",
+      "NonDigital_Library_Source": "OCMH",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "58",
+      "Footnote_Number": "58",
+      "Footnote_Text": "AGp B Tagesmeldung, 20 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "59a",
+      "Footnote_Number": "59",
+      "Footnote_Text": "MS # P-159 (Stueckler).",
+      "Footnote_Referenced_Source": "Manuscript P-159 (Stueckler)",
+      "NonDigital_Library_Source": "OCMH",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "59b",
+      "Footnote_Number": "59",
+      "Footnote_Text": "MS # B-526 (Badinski).",
+      "Footnote_Referenced_Source": "Manuscript B-526 (Badinski)",
+      "NonDigital_Library_Source": "OCMH",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "59c",
+      "Footnote_Number": "59",
+      "Footnote_Text": "MS # P-179 (Nettmann).",
+      "Footnote_Referenced_Source": "Manuscript P-179 (Nettmann)",
+      "NonDigital_Library_Source": "OCMH",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "60",
+      "Footnote_Number": "60",
+      "Footnote_Text": "First U.S. Army, Report of Operations, I, 18; see V Corps Operations in the ETO, p. 188, and 90th Div AAR, Aug. Guingand, Operation Victory, page 410, has a vivid description of the destruction.",
+      "Footnote_Referenced_Source": "First US Army Report; V Corps Operations; 90th Div AAR; Guingand book",
+      "NonDigital_Library_Source": "US Army historical files / published works",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "61",
+      "Footnote_Number": "61",
+      "Footnote_Text": "Telecons, 1335 and 1355, 21 Aug, AGp B KTB. Dietrich remained in command of the Fifth Panzer Army and apparently Eberbach several days later took command of the Seventh Army. See AGp B Tagesmeldung, 31 Aug.",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "62",
+      "Footnote_Number": "62",
+      "Footnote_Text": "FUSA G-2 Telecon, 1730, 18 Aug, FUSA G-2 Jnl and File, and AAR, Aug.",
+      "Footnote_Referenced_Source": "First US Army G-2 records and AAR",
+      "NonDigital_Library_Source": "US Army archives",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "63",
+      "Footnote_Number": "63",
+      "Footnote_Text": "V Corps G-2 Est of Enemy Situation 7, 23 Aug; FUSA AAR, Aug; B. H. Liddell Hart, Strategy, The Indirect Approach, p. 317; Sylvan Diary, 20 Aug.",
+      "Footnote_Referenced_Source": "V Corps G-2; FUSA AAR; Liddell Hart book; Sylvan Diary",
+      "NonDigital_Library_Source": "US Army archives / published book",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "64",
+      "Footnote_Number": "64",
+      "Footnote_Text": "2d French Armd Div G-3 Rpt, Opns; 90th Div AAR, Aug.",
+      "Footnote_Referenced_Source": "2d French Armored Div G-3 Report; 90th Div AAR",
+      "NonDigital_Library_Source": "French/US military archives",
+      "Source_Type": "FR/US"
+    },
+    {
+      "Footnote": "65",
+      "Footnote_Number": "65",
+      "Footnote_Text": "12th AGp WD Observers Bd Ltr, AGF Bd Rpt, ETO, No. 208, Visit to Falaise Pocket, 31 Aug.",
+      "Footnote_Referenced_Source": "12th Army Group War Diary / AGF Board Report No. 208",
+      "NonDigital_Library_Source": "US Army archives",
+      "Source_Type": "US"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn27.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-29",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+  "Source_Link_Capture_Date": "2025-12-29"
+}

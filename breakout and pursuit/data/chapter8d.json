@@ -1,0 +1,1624 @@
+{
+  "Events": [
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Planning and Initial Attack on Hill 122 - 11 July",
+      "Sub-event_summary": "The 35th Division, under Maj. Gen. Paul W. Baade, faced hedgerow country with the objective of the Vire River stretch. They planned to attack with two regiments abreast, but due to inexperience and strong resistance, made virtually no advance on 11 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_41": "From a line of departure running between la Meauffe (on the Vire) and Villiers-Fossard, the 35th Division faced hedgerow country. The objective, four miles away, was the two-mile stretch of the Vire River between the loop and the bend. The division's right flank was fairly well protected by the Vire River; but on the left, just outside the boundary, Hill 122 dominated the entire zone.",
+        "Paragraph_42": "For his attack on 11 July, the same day that the 2d and 29th jumped off, General Baade planned to commit two regiments abreast--the 137th (Col. Grant Layng) on the right adjacent to the river, the 320th (Col. Bernard A. Byrne) on the left. The 134th Infantry (Col. Butler B. Miltonberger) was to be held as corps reserve. After a thirty-minute artillery preparation, the division moved forward at 0600.",
+        "Paragraph_43": "The right flank elements of both assault regiments advanced a mile and a half in two hours and straightened the division front, but then the attack stalled. Meeting strong resistance in the hedgerows, the troops encountered many of the same difficulties that plagued nearly all inexperienced divisions in the hedgerows. Communications went out almost immediately. Gaps soon developed between units. The men seemed surprised to find strong opposition from machine guns in sunken roads and behind hedges. With astonishment they noted that it was \"hard to put down [artillery] fire behind hedges close to our tr[oop]s.\"",
+        "Paragraph_44": "Though the troops had been informed while in England that the Cornish countryside was somewhat like Normandy, neither planning nor training to overcome the terrain obstacles of the hedgerows had gone far beyond speculation.",
+        "Paragraph_45": "German mortar and automatic weapons fire was particularly heavy, and one of the wounded was a regimental commander, Colonel Layng. The first day of action did little more than give the troops their baptism of fire and rudely introduce them into the complexities of hedgerow warfare. Across the Vire River General Hobbs clamored for the 35th Division to advance and cover the 30th Division flank."
+      },
+      "Footnote_References": ["28", "29", "30"],
+      "Place_Name": "Hill 122",
+      "Dates": {
+        "Date_group_of_event": "110600BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "110400ZJUL44"
+      },
+      "TOE": {
+        "Unit": "35th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Paul W. Baade",
+          "Name": "Paul W. Baade",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_W._Baade",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "137th Infantry",
+          "Name": "Grant Layng",
+          "Rank": "Col.",
+          "Date": "",
+          "End_Date_of_command": "11JUL44",
+          "End_Status": "WIA",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "Inexperienced, hasty commitment",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Artillery",
+            "Identifier": "",
+            "Quantity": "unknown",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Mortar",
+            "Identifier": "",
+            "Quantity": "unknown",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.normandie44lamemoire.com/wp-content/uploads/2014/06/Saint-Lo-Map.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Weather_text": "Haze limiting visibility, scattered clouds.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.08,
+          "East": -0.08,
+          "South": 48.23,
+          "North": 50.03
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Attacks on 12 and 13 July",
+      "Sub-event_summary": "On 12 July, the division advanced slightly, capturing fortified positions, but at high cost. On 13 July, similar slight gains against strong German positions at Carillon and Hill 122.",
+      "Sub-event_fulltext": {
+        "Paragraph_46": "On the second day of attack, 12 July, the 35th Division employed a 45-minute artillery preparation to try to soften the German defenses. This helped to achieve success against a fortified position in a church and cemetery on the right flank, where machine gunners in concrete emplacements behind the cemetery walls had been an immovable obstruction since early the preceding day. A battalion cleared the obstacle shortly before noon; no prisoners were taken--all the Germans were dead. The infantry then proceeded to take the next strongpoint, a fortified chateau that had been set ablaze the previous night by artillery shells.",
+        "Paragraph_47": "Despite this advance, the 35th Division made only slight gains on 12 and 13 July. Inexperience and the hedgerows were partly responsible, but more important was the strong German position at Carillon, which was in the center of the division zone and backed by the forces on Hill 122.",
+        "Paragraph_48": "Though envelopment looked like the answer at Carillon, every attempt was thwarted by a lack of maneuver room and by the dominating German positions on Hill 122. It became obvious that if the 35th Division was to progress, Hill 122, in the 29th Division zone, had to be in American hands. Only then did it seem that General Baade would be able to advance his right flank sufficiently to cover the 30th Division on the other side of the river."
+      },
+      "Footnote_References": ["31", "32", "33", "34", "35"],
+      "Place_Name": "Hill 122",
+      "Dates": {
+        "Date_group_of_event": "120000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "112200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "35th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Paul W. Baade",
+          "Name": "Paul W. Baade",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_W._Baade",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "320th Infantry",
+          "Name": "Bernard A. Byrne",
+          "Rank": "Col.",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Artillery",
+            "Identifier": "",
+            "Quantity": "unknown",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Machine gun",
+            "Identifier": "MG42",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/MG_42",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:MG_42_machine_gun_(14883590620).jpg",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Machine gun crew",
+            "Identifier": "",
+            "Quantity": "unknown",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 400,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.normandie44lamemoire.com/wp-content/uploads/2014/06/Saint-Lo-Map.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.08,
+          "East": -0.08,
+          "South": 48.23,
+          "North": 50.03
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Attack on 14 July and Effects on German Positions",
+      "Sub-event_summary": "On 14 July, the 137th Infantry advanced to the Pont-Hébert-St. Lô highway, threatening the German 352d Division, leading to German concerns and reinforcements on Hill 122.",
+      "Sub-event_fulltext": {
+        "Paragraph_49": "The situation was partially resolved on 14 July. While the 29th Division rested and reorganized, General Baade sent out part of the 35th in an attack along the east bank of the Vire. Helped by a strong 30th Division drive on the other side of the river, the 137th Infantry, commanded now by Col. Harold R. Emery, advanced in rain through mine fields and heavy mortar and artillery fire to the Pont-Hébert-St. Lô highway.",
+        "Paragraph_50": "With all three battalions committed and with tanks, tank destroyers, and artillery giving strong support, the 137th secured part of the ridge road. The regiment lost 125 men and 11 medium tanks and took 53 prisoners.",
+        "Paragraph_51": "The results of the advance were important. The 352d Division, which defended the ground adjacent to and east of the Vire River, had always been troubled by its potentially precarious positions. The Vire River defined its left (west) flank and also crossed the unit rear. Since no permanent structures bridged the Vire between Pont-Hébert and St. Lô, if American troops drove to St. Lô or to the loop of the river, the division was trapped. To maintain lateral communications across the Vire, the Germans built an underwater bridge at Rampan, south of Pont-Hébert, but it could not support a wholesale exodus from the sector. The loss of Pont-Hébert so threatened the Rampan crossing site that German engineers hurriedly began to build a temporary bridge just northwest of St. Lô.",
+        "Paragraph_52": "Thoughts of withdrawal were becoming stronger as the battle proceeded. During the first three days of the American effort in July, the 352d Division computed that it had borne 40 attacks--2 in regimental, 12 in battalion, and 26 in company strength. The effect of the incessant thrust over a three-day period had forced the Germans back. If the U.S. infantry attacks had been effective, their artillery had been devastating. During the first two days, the German division had sustained 840 wounded, most from artillery fire, and was unable to count its dead. American counterbattery fire was particularly impressive, destroying in one instance six of the twelve guns of one battalion.",
+        "Paragraph_53": "The rapid decline in the effectiveness of the 352d Division had serious connotations for the Germans defending St. Lô. Should the 352d collapse, Hill 122 would be lost. The loss of Hill 122 meant eventual withdrawal to the high ground south of St. Lô. Meindl therefore reinforced the forces on Hill 122 with 266th Division troops he had held in reserve and with the 30th Mobile Brigade, which had just returned to II Parachute Corps control after being relieved by Panzer Lehr in the sector west of the Vire."
+      },
+      "Footnote_References": ["34"],
+      "Place_Name": "Hill 122",
+      "Dates": {
+        "Date_group_of_event": "140000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "132200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "35th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Paul W. Baade",
+          "Name": "Paul W. Baade",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_W._Baade",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "137th Infantry",
+          "Name": "Harold R. Emery",
+          "Rank": "Col.",
+          "Date": "11JUL44",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Medium tank",
+            "Identifier": "M4 Sherman",
+            "Quantity": 11,
+            "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M4_Sherman_tank_-_Flickr_-_Joost_J._Bakker_IJmuiden.jpg",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "Medium tank",
+            "Identifier": "M4 Sherman",
+            "Quantity": 11,
+            "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M4_Sherman_tank_-_Flickr_-_Joost_J._Bakker_IJmuiden.jpg",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Mortar",
+            "Identifier": "",
+            "Quantity": "unknown",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 125,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 53
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.normandie44lamemoire.com/wp-content/uploads/2014/06/Saint-Lo-Map.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Weather_text": "Rainy conditions during the advance.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.08,
+          "East": -0.08,
+          "South": 48.23,
+          "North": 50.03
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Boundary Shift and New Plan on 15 July",
+      "Sub-event_summary": "Boundary shift to include Hill 122, new plan to take the height with flank attacks, but 137th stopped, emphasizing need for direct assault on Hill 122.",
+      "Sub-event_fulltext": {
+        "Paragraph_54": "Unaware of the exact effect the 35th Division was having on the opposition, General Corlett was nevertheless conscious that Pont-Hébert, secured in conjunction with the 30th Division attack on the other side of the river, gave the 35th a favored position. With a foothold on the ridge road, the Americans held an excellent approach to St. Lô from the northwest. Having outflanked the German strongpoint at Carillon, they also threatened Hill 122. Though the 320th Infantry, which was echeloned to the left rear for two miles, could do little more than exert unavailing pressure against Carillon, the 137th had fashioned an enveloping pincer against the Carillon-Hill 122 complex from the west. A similar pincer from the east would form a double envelopment of Carillon and Hill 122. Because the 29th Division, with the bulk of its forces on the Martinville ridge, did not have enough troops in position to assault Hill 122 from the northeast, Corlett shifted the division boundary to the east, to the Isigny--St. Lô highway, giving the 35th Division more maneuver space and Hill 122 as an objective. Corlett released the 134th Infantry from the corps reserve and directed Baade to take the height. In preparation for the attack, the 134th on 14 July replaced two battalions of the 115th Infantry that were west of the Isigny-St. Lô highway, thereby getting into position to strike for Hill 122 while at the same time bringing relief to the overextended 29th Division.",
+        "Paragraph_55": "General Baade's intention was to attack with both flank regiments. While the 320th contained the Germans at Carillon, the 137th, on the right, was to advance across the Pont-Hébert-St. Lô ridge road. The 134th, on the left, was to move forward in direct assault against Hill 122. Success on the flanks would neutralize the Carillon position, eliminate Hill 122, and open the way for an easy advance to the final division objective, the stretch of the Vire River between the loop and the bend.",
+        "Paragraph_56": "A need to diverge from this plan became obvious on 15 July soon after the 137th Infantry attacked on the right to cross the Pont-Hébert-St. Lô ridge road. Artillery and mortar fire directed from Hill 122 inflicted 117 casualties and stopped the regiment cold. The 137th could not advance, General Baade deduced, until the 134th Infantry took Hill 122."
+      },
+      "Footnote_References": ["35"],
+      "Place_Name": "Hill 122",
+      "Dates": {
+        "Date_group_of_event": "150000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "142200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "35th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Paul W. Baade",
+          "Name": "Paul W. Baade",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_W._Baade",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "134th Infantry",
+          "Name": "Butler B. Miltonberger",
+          "Rank": "Col.",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Butler_B._Miltonberger",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Artillery",
+            "Identifier": "",
+            "Quantity": "unknown",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 117,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.normandie44lamemoire.com/wp-content/uploads/2014/06/Saint-Lo-Map.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.08,
+          "East": -0.08,
+          "South": 48.23,
+          "North": 50.03
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Attack by 134th Infantry on 15 July",
+      "Sub-event_summary": "The 134th Infantry advanced to Emélie, then formed Sebree task force, capturing the crest of Hill 122 by midnight with support.",
+      "Sub-event_fulltext": {
+        "Paragraph_57": "The 134th Infantry moved toward the cluster of farm buildings at Emélie behind a rolling artillery barrage. Almost immediately the men became enmeshed in a tangle of hedgerowed lanes and a shower of enemy fire. The threat of confusion hovered over the battlefield as small units fought for individual fields. Although the regiment suffered high casualties in severe splinter actions, it had the hamlet of Emélie by noon.",
+        "Paragraph_58": "Encouraged by this success, General Baade told Brig. Gen. Edmund B. Sebree, the assistant division commander, to form a task force and lead it in the remaining thrust to the crest of Hill 122. Uniting the 134th with two companies of the 737th Tank Battalion, a company of the 60th Engineer Battalion, and a platoon of the 654th Tank Destroyer Battalion, General Sebree completed his preparations by evening. Sebree task force completed his preparations by evening.",
+        "Paragraph_59": "At 2030, after planes bombed German positions around St. Lô and as the 29th Division attacked in its sector, the task force of the 35th Division jumped off.",
+        "Paragraph_60": "In the deceptive illumination of twilight, the task force moved swiftly. Advancing up the north slope of Hill 122, General Sebree called on direct fire support from one artillery battalion, parts of two others, and the entire 82d Chemical Battalion. It was a mile to the crest of the hill, and the task force was there by midnight.",
+        "Paragraph_61": "While the infantrymen dug in, engineers hauled sandbags, wire, and mines up the incline to bolster defensive positions against counterattacks that were sure to follow. The Germans still had sufficient maneuver room north of St. Lô to launch counterattacks, but the integrity of the German strongpoint had been at least temporarily cracked."
+      },
+      "Footnote_References": ["36"],
+      "Place_Name": "Hill 122",
+      "Dates": {
+        "Date_group_of_event": "152030BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "151830ZJUL44"
+      },
+      "TOE": {
+        "Unit": "134th Infantry",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "35th Infantry Division",
+          "Commander": "Butler B. Miltonberger",
+          "Name": "Butler B. Miltonberger",
+          "Rank": "Col.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Butler_B._Miltonberger",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Sebree Task Force",
+          "Name": "Edmund B. Sebree",
+          "Rank": "Brig. Gen.",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Edmund_B._Sebree",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Tank Battalion",
+            "Identifier": "737th",
+            "Quantity": 2,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 300,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.normandie44lamemoire.com/wp-content/uploads/2014/06/Saint-Lo-Map.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.08,
+          "East": -0.08,
+          "South": 48.23,
+          "North": 50.03
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Counterattacks on 16 July and Securing Hill 122",
+      "Sub-event_summary": "Repelled German counterattacks on 16 July, secured Hill 122, with view of St. Lô, at cost of 300 casualties.",
+      "Sub-event_fulltext": {
+        "Paragraph_62": "The expected counterthrust came in the early hours of 16 July and drove the infantry back slightly until a newly committed reserve battalion helped restore the line.",
+        "Paragraph_63": "Later that day the Germans launched another attack, supported by heavy mortar and artillery fire. This time American infantrymen gave way in sizable numbers--some stragglers fled back to Emélie--but a counterassault picked up momentum and troops of the 35th Division crossed the crest of Hill 122 despite heavy artillery fire.",
+        "Paragraph_64": "As German artillery and mortar shells continued to fall on the hill, American troops had an astonishingly clear view of St. Lô, barely a mile away."
+      },
+      "Footnote_References": ["37"],
+      "Place_Name": "Hill 122",
+      "Dates": {
+        "Date_group_of_event": "160000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "152200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "35th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Paul W. Baade",
+          "Name": "Paul W. Baade",
+          "Rank": "Maj. Gen.",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_W._Baade",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Artillery",
+            "Identifier": "",
+            "Quantity": "unknown",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 300,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Map_Reference": "Map 8",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map8.jpg",
+        "ExternalMapLink": "https://www.normandie44lamemoire.com/wp-content/uploads/2014/06/Saint-Lo-Map.jpg",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.08,
+          "East": -0.08,
+          "South": 48.23,
+          "North": 50.03
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross to Vernon W. Pickett",
+      "Sub-event_summary": "1st Lt. Vernon W. Pickett was awarded the DSC for defensive action on 16 July 1944 during the battle for Hill 122.",
+      "Sub-event_fulltext": {
+        "Paragraph_62": "The expected counterthrust came in the early hours of 16 July and drove the infantry back slightly until a newly committed reserve battalion helped restore the line."
+      },
+      "Footnote_References": ["37"],
+      "Place_Name": "Hill 122",
+      "Dates": {
+        "Date_group_of_event": "160000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "152200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "35th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.08,
+          "East": -0.08,
+          "South": 48.23,
+          "North": 50.03
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross to Joseph P. Fuller",
+      "Sub-event_summary": "T. Sgt. Joseph P. Fuller received the DSC for extraordinary heroism on 17 July 1944, leading an assault and capturing prisoners. Citation: The President of the United States takes pleasure in presenting the Distinguished Service Cross to Technical Sergeant Joseph P. Fuller (ASN: 37034212), United States Army, for extraordinary heroism in connection with military operations against an armed enemy while serving with Company F, 2d Battalion, 320th Infantry Regiment, 35th Infantry Division, in action against enemy forces on 17 July 1944, in France. On that date, during an attack on the town of St. Lo, France, Technical Sergeant Fuller's platoon was pinned down by intense enemy machine gun fire. Technical Sergeant Fuller, with complete disregard for his own safety, crawled forward under the enemy fire and threw hand grenades into the enemy position, destroying the gun and killing its crew. He then led his platoon in an assault on the position, capturing 20 prisoners. Technical Sergeant Fuller's intrepid actions, personal bravery and zealous devotion to duty exemplify the highest traditions of the military forces of the United States and reflect great credit upon himself, the 35th Infantry Division, and the United States Army. Headquarters, European Theater of Operations, U.S. Army, General Orders No. 65 (September 26, 1944)",
+      "Sub-event_fulltext": {
+        "Paragraph_64": "As German artillery and mortar shells continued to fall on the hill, American troops had an astonishingly clear view of St. Lô, barely a mile away."
+      },
+      "Footnote_References": ["38"],
+      "Place_Name": "Hill 122",
+      "Dates": {
+        "Date_group_of_event": "170000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "162200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "320th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "35th Infantry Division",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 20
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.08,
+          "East": -0.08,
+          "South": 48.23,
+          "North": 50.03
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross to Buster E. Brown",
+      "Sub-event_summary": "Pfc. Buster E. Brown received the DSC for extraordinary heroism on 17 July 1944, destroying an enemy machine gun position and capturing a wounded German. Citation: The President of the United States takes pleasure in presenting the Distinguished Service Cross to Buster E. Brown (ASN: 37034212), Private First Class, U.S. Army, for extraordinary heroism in connection with military operations against an armed enemy while serving with Company F, 320th Infantry Regiment, 35th Infantry Division, in action against enemy forces on 17 July 1944, in France. Private Brown, a scout, was advancing ahead of his platoon when he observed an enemy machine gun position. He crawled to within 15 yards of the position and threw a hand grenade, killing the gunner and wounding the assistant gunner. He then rushed the position and captured the wounded German. Private Brown's intrepid actions, personal bravery and zealous devotion to duty exemplify the highest traditions of the military forces of the United States and reflect great credit upon himself, the 35th Infantry Division, and the United States Army. Headquarters, European Theater of Operations, U.S. Army, General Orders No. 65 (1944)",
+      "Sub-event_fulltext": {
+        "Paragraph_64": "As German artillery and mortar shells continued to fall on the hill, American troops had an astonishingly clear view of St. Lô, barely a mile away."
+      },
+      "Footnote_References": ["38"],
+      "Place_Name": "Hill 122",
+      "Dates": {
+        "Date_group_of_event": "170000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "162200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "320th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "35th Infantry Division",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 1,
+          "Axis_DE_WIA": 1,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 1
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.08,
+          "East": -0.08,
+          "South": 48.23,
+          "North": 50.03
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross to Carl J. Frantz",
+      "Sub-event_summary": "S. Sgt. Carl J. Frantz was awarded the DSC for actions on 11 July 1944 during the initial attack on Hill 122. Citation: (Citation Needed) - SYNOPSIS: The President of the United States takes pleasure in presenting the Distinguished Service Cross to Carl J. Frantz (ASN: 37034212), Staff Sergeant, U.S. Army, for extraordinary heroism in connection with military operations against an armed enemy while serving with Company F, 2d Battalion, 320th Infantry Regiment, 35th Infantry Division, in action against enemy forces on 11 July 1944, in France. Staff Sergeant Frantz's intrepid actions, personal bravery and zealous devotion to duty exemplify the highest traditions of the military forces of the United States and reflect great credit upon himself, the 35th Infantry Division, and the United States Army. Headquarters, European Theater of Operations, U.S. Army, General Orders No. 65 (1944)",
+      "Sub-event_fulltext": {
+        "Paragraph_41": "From a line of departure running between la Meauffe (on the Vire) and Villiers-Fossard, the 35th Division faced hedgerow country. The objective, four miles away, was the two-mile stretch of the Vire River between the loop and the bend. The division's right flank was fairly well protected by the Vire River; but on the left, just outside the boundary, Hill 122 dominated the entire zone."
+      },
+      "Footnote_References": ["39"],
+      "Place_Name": "Hill 122",
+      "Dates": {
+        "Date_group_of_event": "110000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "110000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "320th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "35th Infantry Division",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.08,
+          "East": -0.08,
+          "South": 48.23,
+          "North": 50.03
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross to Irvin F. Conley",
+      "Sub-event_summary": "T. Sgt. Irvin F. Conley was awarded the DSC for extraordinary heroism on 13 July 1944. Citation: The President of the United States takes pleasure in presenting the Distinguished Service Cross (Posthumously) to Irvin F. Conley (20526726), Technical Sergeant, U.S. Army, for extraordinary heroism in connection with military operations against an armed enemy while serving with Company B, 320th Infantry Regiment, 35th Infantry Division, in action against enemy forces on 13 July 1944, in France. Technical Sergeant Conley, a platoon sergeant, was leading his platoon in an attack when they were pinned down by intense enemy machine gun fire. Technical Sergeant Conley, with complete disregard for his own safety, crawled forward under the enemy fire and threw hand grenades into the enemy position, destroying the gun and killing its crew. He then led his platoon in an assault on the position, capturing 20 prisoners. Technical Sergeant Conley's intrepid actions, personal bravery and zealous devotion to duty exemplify the highest traditions of the military forces of the United States and reflect great credit upon himself, the 35th Infantry Division, and the United States Army. Headquarters, European Theater of Operations, U.S. Army, General Orders No. 65 (1944)",
+      "Sub-event_fulltext": {
+        "Paragraph_47": "Despite this advance, the 35th Division made only slight gains on 12 and 13 July. Inexperience and the hedgerows were partly responsible, but more important was the strong German position at Carillon, which was in the center of the division zone and backed by the forces on Hill 122."
+      },
+      "Footnote_References": ["39"],
+      "Place_Name": "Hill 122",
+      "Dates": {
+        "Date_group_of_event": "130000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "122200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "320th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "35th Infantry Division",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 20
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.08,
+          "East": -0.08,
+          "South": 48.23,
+          "North": 50.03
+        }
+      }
+    },
+    {
+      "Event": "The Battle for St. Lô",
+      "Sub-event": "Distinguished Service Cross to Harold D. Snyder",
+      "Sub-event_summary": "T. Sgt. Harold D. Snyder was awarded the DSC for actions on 17 July 1944. Citation: (Citation Needed) - SYNOPSIS: Technical Sergeant Harold D. Snyder (ASN: 37034212), United States Army, was awarded the Distinguished Service Cross for extraordinary heroism in connection with military operations against an armed enemy while serving with Company F, 2d Battalion, 137th Infantry Regiment, 35th Infantry Division, in action against enemy forces on 17 July 1944, in France. Technical Sergeant Snyder's intrepid actions, personal bravery and zealous devotion to duty exemplify the highest traditions of the military forces of the United States and reflect great credit upon himself, the 35th Infantry Division, and the United States Army. Headquarters, European Theater of Operations, U.S. Army, General Orders No. 65 (1944)",
+      "Sub-event_fulltext": {
+        "Paragraph_64": "As German artillery and mortar shells continued to fall on the hill, American troops had an astonishingly clear view of St. Lô, barely a mile away."
+      },
+      "Footnote_References": ["39"],
+      "Place_Name": "Hill 122",
+      "Dates": {
+        "Date_group_of_event": "170000BDSTJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+        "Zulu_date_group_of_event": "162200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "137th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "35th Infantry Division",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": 0,
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Hill 122",
+        "Place_GPS_coordinate": "49.1300 N, -1.0800 W",
+        "Weather_text": "Typical July weather in Normandy, scattered clouds and moderate temperatures.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.08,
+          "East": -0.08,
+          "South": 48.23,
+          "North": 50.03
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "28",
+      "Footnote_Number": "28",
+      "Footnote_Text": "Interv with Lt Col Beckley by Capt Franklin Ferris, CI 106; 35th Div G-3 Jnl, 9 Jul.",
+      "Footnote_Referenced_Source": "CI 106",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Interv with Lt Col Beckley by Capt Franklin Ferris"
+    },
+    {
+      "Footnote": "29",
+      "Footnote_Number": "29",
+      "Footnote_Text": "35th Div FO 2, 10 Jul, and AAR, Jul.",
+      "Footnote_Referenced_Source": "35th Div FO 2",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "10 Jul, and AAR, Jul"
+    },
+    {
+      "Footnote": "30",
+      "Footnote_Number": "30",
+      "Footnote_Text": "35th Div G-3 Jnl, 1820, 11 Jul.",
+      "Footnote_Referenced_Source": "35th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "1820, 11 Jul"
+    },
+    {
+      "Footnote": "31",
+      "Footnote_Number": "31",
+      "Footnote_Text": "James A. Huston, Biography of A Battalion (Gering, Nebraska: Courier Press, 1950), p. 14. The volume gives an excellent account of operations as seen from the point of view of a battalion staff officer.",
+      "Footnote_Referenced_Source": "James A. Huston, Biography of A Battalion",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "p. 14"
+    },
+    {
+      "Footnote": "32",
+      "Footnote_Number": "32",
+      "Footnote_Text": "See Telecon, 12 Jul, 35th Div G-3 Jnl File.",
+      "Footnote_Referenced_Source": "35th Div G-3 Jnl File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, 12 Jul"
+    },
+    {
+      "Footnote": "33",
+      "Footnote_Number": "33",
+      "Footnote_Text": "MS # B-439 (Ziegelmann)",
+      "Footnote_Referenced_Source": "MS # B-439 (Ziegelmann)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Foreign Military Studies, B-439"
+    },
+    {
+      "Footnote": "34",
+      "Footnote_Number": "34",
+      "Footnote_Text": "MS # B-455 (Ziegelmann); Hodgson, R-54.",
+      "Footnote_Referenced_Source": "MS # B-455 (Ziegelmann)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Foreign Military Studies, B-455; Hodgson, R-54"
+    },
+    {
+      "Footnote": "35",
+      "Footnote_Number": "35",
+      "Footnote_Text": "35th Div AAR, Jul.",
+      "Footnote_Referenced_Source": "35th Div AAR",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Jul"
+    },
+    {
+      "Footnote": "36",
+      "Footnote_Number": "36",
+      "Footnote_Text": "Memo, 15 Jul, 35th Div G-3 Jnl.",
+      "Footnote_Referenced_Source": "35th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Memo, 15 Jul"
+    },
+    {
+      "Footnote": "37",
+      "Footnote_Number": "37",
+      "Footnote_Text": "35th Div G-3 Jnl, 1145, 16 Jut. 1st Lt. Vernon W. Pickett was awarded the DSC for his defensive action.",
+      "Footnote_Referenced_Source": "35th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "1145, 16 Jul"
+    },
+    {
+      "Footnote": "38",
+      "Footnote_Number": "38",
+      "Footnote_Text": "XIX Corps Msg, 1720, 16 Jul, FUSA G-3 Jnl; 35th Div Rpt of Situation, 0930, 17 Jul, XIX Corps G-3 Jnl and File. T. Sgt. Joseph P. Fuller and Pfc. Buster E. Brown received the DSC for heroic action.",
+      "Footnote_Referenced_Source": "FUSA G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "XIX Corps Msg, 1720, 16 Jul; 35th Div Rpt of Situation, 0930, 17 Jul, XIX Corps G-3 Jnl and File"
+    },
+    {
+      "Footnote": "39",
+      "Footnote_Number": "39",
+      "Footnote_Text": "S. Sgt. Carl J. Frantz, T. Sgt. Irvin F. Conley, and T. Sgt. Harold D. Snyder were awarded the DSC for actions on 11, 13, and 17 July, respectively.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn8.html",
+  "Source_Footnote_Link_Capture_Date": "December 21, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+  "Source_Link_Capture_Date": "December 21, 2025"
+}

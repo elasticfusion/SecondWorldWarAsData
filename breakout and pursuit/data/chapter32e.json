@@ -1,0 +1,898 @@
+{
+  "Events": [
+    {
+      "Event": "Fatigue and Equipment Wear Ending the Pursuit",
+      "Sub-event": "Cumulative Effects on Personnel and Armor",
+      "Sub-event_summary": "By early September 1944, Allied troops exhibited fatigue from sustained pursuit. Casualties, though light individually, reduced unit strength cumulatively. Armored divisions suffered severe equipment attrition: one had only one-third of medium tanks combat-ready; another had tanks scattered over 100+ miles due to mechanical failures and fuel shortages. Maintenance delays and spare parts shortages exacerbated issues.",
+      "Sub-event_fulltext": {
+        "Paragraph_87": "Though it was not to become obvious for a week or so, the Allied troops were tired. The pursuit had been wearing on men and equipment. Casualties had not been heavy at any one place, but their cumulative effect reduced the strength of all combat units. Tanks and vehicles had gone so long and so far without proper maintenance and repair that in one armored division less than a third of the authorized number of medium tanks were actually fit for combat.<sup>[68](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn68)</sup> Another had had so many tanks fall out of column because of mechanical failure or lack of gasoline that its equipment was spread over the countryside between Valenciennes and Luxembourg, more than a hundred miles. Since the gasoline shortage prevented transferring vehicles for repair, mobile crews performed on-the-spot adjustments when they were able, but those tanks that needed shop treatment had long to wait.<sup>[69](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn69)</sup> Tank engines had passed the time limit of efficient operation but were hard to replace. Of 190 reserve engines considered necessary for effective combat, one armored division had had only 30 available at the beginning of the pursuit. Replacement tracks were particularly difficult to come by. Ceaseless driving caused vehicles literally to fall apart, and serious shortages of spare parts could not be remedied in the near future.<sup>[70](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn70)</sup>"
+      },
+      "Footnote_References": ["68", "69", "70"],
+      "Place_Name": ["Valenciennes", "Luxembourg"],
+      "Dates": {
+        "Date_group_of_event": "Early Sep 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+        "Zulu_date_group_of_event": "Early Sep 44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army (armored divisions)",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Commander": "Lt. Gen. Courtney H. Hodges",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Courtney_Hodges"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_Unspecified_Casualties": "Cumulative reduction in combat strength (unspecified numbers)"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Valenciennes to Luxembourg area",
+          "Place_GPS_coordinate": "50.3500 N, 3.5167 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 2.5167,
+            "East": 4.5167,
+            "South": 49.35,
+            "North": 51.35
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Western Europe (general pursuit end area)",
+          "Place_GPS_coordinate": "50.0000 N, 4.0000 E",
+          "Weather_text": "No specific weather data in source for early September 1944; fatigue and equipment issues attributed to sustained operations without weather mention.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 3.0,
+            "East": 5.0,
+            "South": 49.0,
+            "North": 51.0
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Logistical Shortfalls and Supply Crisis",
+      "Sub-event": "Transportation and Depot Limitations",
+      "Sub-event_summary": "Transportation could not sustain adequate supply flow (e.g., First Army 1,500 tons/day below requirements by 6 Sep). Armies lived off dwindling capital stocks. Rail reconstruction lagged; motor transport overburdened. Allies needed no prophets to foresee impending famine as they approached German soil.",
+      "Sub-event_fulltext": {
+        "Paragraph_88": "Transportation facilities were unable to maintain an adequate flow of supplies to the front. By 6 September, for example, daily deliveries to the First Army were 1,500 tons (almost one third) below normal daily requirements. With income below operating expenses, the army began to live on its capital; basic loads vanished, reserve stocks virtually disappeared. Although a diminishing arrival of everyday necessities had not",
+        "Paragraph_89": "*--696--* <a id=\"page697\"></a> * * * > actually stopped the sustained drive, the day of reckoning was not far away. The Allies needed no soothsayers to know that an economy of famine awaited them as they moved onto German soil."
+      },
+      "Footnote_References": [],
+      "Place_Name": ["German border"],
+      "Dates": {
+        "Date_group_of_event": "Early Sep 1944 (6 Sep example)",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+        "Zulu_date_group_of_event": "Early Sep 44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Commander": "Lt. Gen. Courtney H. Hodges",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Courtney_Hodges"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "German border area",
+          "Place_GPS_coordinate": "50.8333 N, 6.0833 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 5.0833,
+            "East": 7.0833,
+            "South": 49.8333,
+            "North": 51.8333
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Western Europe (supply lines to German border)",
+          "Place_GPS_coordinate": "50.5000 N, 5.0000 E",
+          "Weather_text": "No specific weather data in source for early September 1944; supply crisis attributed to distance and transport limitations without weather mention.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 4.0,
+            "East": 6.0,
+            "South": 49.5,
+            "North": 51.5
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Persistent Allied Optimism Despite Constraints",
+      "Sub-event": "Continued Hope for Quick Victory",
+      "Sub-event_summary": "Despite supply issues, optimism persisted. First train reached Soissons (6 Sep); regrouping nearly complete. Hodges expected war end with 10 days good weather; later admitted slight delay on Siegfried Line attack. Belief West Wall bluff; end of organized resistance imminent.",
+      "Sub-event_fulltext": {
+        "Paragraph_90": "Yet it seemed as though the Allies only partly appreciated the implications of these conditions, for no admission was made that the pursuit had come to an end. Instead, optimism in most quarters continued, \"tempered only by exasperation over supply shortages.\" The first train arrived in Soissons on 6 September, bringing hope that shortages might soon cease to exist. On that day the regrouping of the First Army forces had been almost completed, and American leaders had expected the drive to the Rhine to gather speed. With ten days of good weather, General Hodges said, he thought the war might well be over as far as organized resistance was concerned. Four days later, however, despite promises that shortages would be only temporary, Hodges admitted, as he awaited shipments of artillery, that the supply situation would undoubtedly delay, at least slightly, a concentrated attack on the Siegfried Line.<sup>[71](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn71)</sup>"
+      },
+      "Footnote_References": ["71"],
+      "Place_Name": ["Soissons", "Siegfried Line"],
+      "Dates": {
+        "Date_group_of_event": "6-10 Sep 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+        "Zulu_date_group_of_event": "06-10 Sep 44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Commander": "Lt. Gen. Courtney H. Hodges",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Courtney_Hodges"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Soissons, France",
+          "Place_GPS_coordinate": "49.3817 N, 3.3236 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 2.3236,
+            "East": 4.3236,
+            "South": 48.3817,
+            "North": 50.3817
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Western Europe (general area)",
+          "Place_GPS_coordinate": "50.0000 N, 4.0000 E",
+          "Weather_text": "Hodges referenced 10 days of good weather needed for victory; no specific adverse weather data for early September 1944 in source.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 3.0,
+            "East": 5.0,
+            "South": 49.0,
+            "North": 51.0
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Overextension and Signs of German Recovery",
+      "Sub-event": "Allied Exhaustion and German Reconstitution",
+      "Sub-event_summary": "Allies overextended on 200-mile front Antwerp-Switzerland; troops exhausted, equipment worn. Opposition stiffened near border; West Wall psychological effect. Eisenhower approved Montgomery's use of First Allied Airborne Army to seize Rhine crossings in Netherlands (10 Sep). Germans achieved 'Miracle of the West' by withdrawing remnants to West Wall; Army Groups B and G juncture formed continuous line North Sea-Swiss border by 10 Sep.",
+      "Sub-event_fulltext": {
+        "Paragraph_91": "Hodges' feeling actually mirrored concern with a question that was beginning to trouble some Allied commanders: Was the pursuit going to peter out before the Allies got through the West Wall and across the Rhine? Certain signs, though not to become clear until later, indicated that this might happen. The Allied forces were overextended along a 200-mile front between Antwerp and Switzerland, the troops exhausted, their equipment badly worn. Continental ports of entry were inadequate, and transportation on the Continent was unequal to the demands placed upon it. As the Allies approached the German border, opposition seemed to stiffen, and the existence of the West Wall had its psychological effects. To insure the establishment of at least one bridgehead beyond the Rhine, General Eisenhower on 10 September approved employment by Field Marshal Montgomery of the Allied strategic reserve, the First Allied Airborne Army, which Montgomery was to use like seven-league boots in an attempt to get across the lower Rhine in the Netherlands.<sup>[72](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn72)</sup>",
+        "Paragraph_92": "Whether Eisenhower drew upon SHAEF's strategic reserve to exploit the success of the pursuit or to propel a dying advance across the Rhine, the act, while perhaps subconsciously admitting the weariness of the Allied troops, sought to take advantage of German disorganization before the Germans could re-form a cohesive line. As the dispersed though optimistic Allied forces approached the West Wall, vague symptoms appeared that the Germans might achieve what they would later call the \"Miracle of the West.\" *Army Group B,* despite the Mons pocket, managed to get what remained of its units east to the West Wall, and *Army Group G* (the *Nineteenth Army* and the *LXIV Corps)* escaped from southern and southwest France with the major part of its combat elements. By 10 September the juncture of *Army Groups B* and G was accomplished, and the front formed a continuous, if not solid, line from the North Sea to the Swiss border.<sup>[73](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn73)</sup> Considering the shortages of men, arms, equipment,",
+        "Paragraph_93": "*--697--* <a id=\"page698\"></a> * * * > and supplies, the condition of the West Wall, and the immensity of the defeat suffered, the German recuperation would later appear incredible."
+      },
+      "Footnote_References": ["72", "73"],
+      "Place_Name": ["Antwerp", "Switzerland", "Netherlands", "Rhine River", "West Wall", "North Sea"],
+      "Dates": {
+        "Date_group_of_event": "10 Sep 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+        "Zulu_date_group_of_event": "10 Sep 44"
+      },
+      "TOE": {
+        "Unit": "First Allied Airborne Army",
+        "Unit_Nationality": "Allied",
+        "Command_Structure": {
+          "Commander": "Lt. Gen. Lewis H. Brereton",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Lewis_H._Brereton"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "West Wall (Siegfried Line), Germany",
+          "Place_GPS_coordinate": "50.8333 N, 6.0833 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 5.0833,
+            "East": 7.0833,
+            "South": 49.8333,
+            "North": 51.8333
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Western Europe (German border area)",
+          "Place_GPS_coordinate": "50.5000 N, 6.0000 E",
+          "Weather_text": "No specific weather data in source for 10 September 1944; German recovery and Allied overextension described without weather-related impediments noted.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 5.0,
+            "East": 7.0,
+            "South": 49.5,
+            "North": 51.5
+          }
+        }
+      ]
+    },
+    {
+      "Event": "German Rear Area Chaos and Improvised Defense",
+      "Sub-event": "Panic and Ad Hoc Organization",
+      "Sub-event_summary": "Early September rear areas panicked: supply installations destroyed/looted without orders. Few heavy weapons; panzer divisions with 5-10 tanks. Model requested 25-30 fresh divisions (4 Sep). Student improvised Albert Canal defense with borrowed/confiscated units/staffs. Rundstedt recalled 5 Sep to OB WEST, restoring theater coordination.",
+      "Sub-event_fulltext": {
+        "Paragraph_94": "During the first few days of September there had been no coherent German defense. Panic infected rear areas. Supply installations were destroyed without orders, fuel depots demolished, ammunition dumps abandoned, ration and supply installations looted by troops and civilians, and reports on the status of supply nonexistent.<sup>[74](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn74)</sup> The retreating units had hardly any heavy weapons. Few of the panzer divisions had more than five to ten tanks in working order. The morale of the troops was depressed by Allied control of the air and by the abundance of Allied matériel, as compared with the inadequate German supplies. On 4 September Model stated that, in order to prop up the entire Western Front before it gave way completely, he needed a minimum of twenty-five fresh infantry divisions and at least five or six panzer divisions.<sup>[75](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn75)</sup>",
+        "Paragraph_95": "Hitler, for his part, showed little appreciation of the difficulties facing *OB WEST* and some lack of knowledge of the situation. Since 28 August, on Hitler's order, *OB WEST* had been planning a counterattack against the southern Allied flank, a strike north in the Troyes area between the Seine and Marne Rivers. On 3 September Hitler instructed *OB WEST* to launch an attack from the Nancy--Langres area toward Reims to roll up the Third Army right flank, to prevent junction of the OVERLORD and DRAGOON forces, and to cut American lines of communication. Reinforcements arriving piecemeal and committed defensively prevented the attack from ever getting under way. As late as 9 September, several days after the Americans had crossed the Meuse and the day after the British had crossed the Albert Canal, Hitler ordered the *Seventh Army* to \"continue to fight a delaying action forward of the West Wall, especially \[at\] the mighty obstacles of the Meuse and the canal west of Maastricht.\"<sup>[76](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn76)</sup> He continued to hope that German counterattacks would cut off Allied armored spearheads and stabilize the front. He felt that the West Wall was at least potentially impregnable. And he guessed that the Allies were outrunning their supplies and would soon have to halt.",
+        "Paragraph_96": "Perhaps the most critical day for the Germans had been 4 September. On that day, as the *Fifteenth Army* withdrew along the French coast generally to the north and as the *Fifth Panzer* and *Seventh Armies* retired generally to the northeast, the Second British Army plunged into the gap between the two forces and captured Antwerp. The news brought consternation to Hitler's headquarters in East Prussia. The possibility that Antwerp would solve the Allied port deficiency was bad enough, but far worse was the fact that only replacement and rear echelon units held the line along the entire Albert Canal from Antwerp to Maastricht. Unless blocked quickly, \"the door to northwestern Germany stood open.\"<sup>[77](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn77)</sup>",
+        "Paragraph_97": "Hitler immediately ordered headquarters of the *First Parachute Army* and Generaloberst Kurt Student, commander of the German parachute troops, to move to the Netherlands and defend the canal lines. *OB WEST,* which had intended to commit the *First Parachute Army* in the Nancy-Langres area in a counterattack against the right flank and rear of Patton's Third Army, ordered Dietrich's *Fifth Panzer Army* headquarters to Nancy for the purpose. Dietrich departed at once, transferring his troops to the *Seventh Army,* newly commanded by General der Panzertruppen Erich Brandenberger.<sup>[78](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn78)</sup> Model ordered the *Fifteenth Army,* cut off by the British thrust to Antwerp, to withdraw part of its troops to the banks of the Schelde estuary (the sixty-mile water entrance to Antwerp); another part to the fortresses of Boulogne, Dunkerque, and Calais for a last-ditch defense; and a third portion to attempt to break through toward the east.<sup>[79](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn79)</sup> Though the latter quickly proved impossible, the presence of German troops in the Channel ports and along the Schelde would prove a headache to the Allies for weeks to come.<sup>[80](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn80)</sup> Meanwhile Student was forming a defense of the Albert Canal as \"an improvisation on the grandest scale,\" and in a few days he succeeded in organizing the semblance of a defensive line by borrowing and",
+        "Paragraph_98": "*--699--* <a id=\"page700\"></a> * * * > confiscating staffs, troops, and matériel from retreating units.<sup>[81](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn81)</sup>"
+      },
+      "Footnote_References": ["74", "75", "76", "77", "78", "79", "80", "81"],
+      "Place_Name": ["Troyes", "Nancy", "Langres", "Reims", "Meuse River", "Antwerp", "Maastricht", "Schelde estuary", "Boulogne", "Dunkerque", "Calais", "Netherlands"],
+      "Dates": {
+        "Date_group_of_event": "4-11 Sep 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+        "Zulu_date_group_of_event": "04-11 Sep 44"
+      },
+      "TOE": {
+        "Unit": "OB WEST",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Commander": "Field Marshal Gerd von Rundstedt (recalled 5 Sep)",
+          "Rank": "Field Marshal",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Gerd_von_Rundstedt"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Army Group B",
+            "Commander": "Field Marshal Walter Model",
+            "Rank": "Field Marshal",
+            "Date": "Sep 1944"
+          },
+          {
+            "Unit": "First Parachute Army",
+            "Commander": "Generaloberst Kurt Student",
+            "Rank": "Generaloberst",
+            "Date": "Sep 1944"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Antwerp, Belgium",
+          "Place_GPS_coordinate": "51.2213 N, 4.4052 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 3.4052,
+            "East": 5.4052,
+            "South": 50.2213,
+            "North": 52.2213
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Netherlands / Belgian border area",
+          "Place_GPS_coordinate": "51.0000 N, 5.0000 E",
+          "Weather_text": "No specific weather data in source for early September 1944; improvised defense and withdrawals described without weather-related impediments noted.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 4.0,
+            "East": 6.0,
+            "South": 50.0,
+            "North": 52.0
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Rundstedt's Return and German Force Assessment",
+      "Sub-event": "Reconstitution and Morale Recovery",
+      "Sub-event_summary": "Rundstedt recalled 5 Sep to OB WEST command. Assessed 48 infantry/15 panzer-type divisions (equivalent 27 infantry/6-7 panzer full strength). Allied opposition estimated 60 divisions. Staffs intact enabled reorganization; by 11 Sep continuous front North Sea-Swiss border reestablished.",
+      "Sub-event_fulltext": {
+        "Paragraph_99": "Hitler on 5 September also recalled Rundstedt whom he had relieved at the beginning of July. While Model remained the *Army Group B* commander, Rundstedt assumed his old post, Commander-in-Chief, West. Though Rundstedt was every bit as pessimistic as Model and canceled plans for counterattacks, his reappearance at *OB WEST* brought a resurgence of morale. Rundstedt was able to direct his attention to the whole Western Front, which Model in his preoccupation with *Army Group B* had been unable to do, and for the first time since 18 July, when Kluge had assumed Rommel's duties in addition to his own, a theater commander was present to co-ordinate the entire defensive effort in the west.",
+        "Paragraph_100": "Counting his forces, Rundstedt found that *Army Groups B* and G consisted of forty-eight infantry and fifteen panzer-type divisions, of which only one quarter could be considered anywhere near full combat strength. He judged their effectiveness to be the equivalent of twenty-seven infantry and six or seven panzer divisions at the most. He estimated that the Allies had sixty in opposition. The silver lining in this dark cloud was the fact that although few units were up to authorized strength, the staffs of all higher headquarters were for the most part intact and able to function. Discipline and reorganization soon revealed that the fabric of command, though stretched and worn, could be made serviceable. By 11 September most of the German units that had been battered, outflanked, encircled, and apparently destroyed had reappeared, in name at least, and were making an honest effort to protect the German border in the west.<sup>[82](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn82)</sup>"
+      },
+      "Footnote_References": ["82"],
+      "Place_Name": ["North Sea", "Swiss border"],
+      "Dates": {
+        "Date_group_of_event": "5-11 Sep 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+        "Zulu_date_group_of_event": "05-11 Sep 44"
+      },
+      "TOE": {
+        "Unit": "OB WEST",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Commander": "Field Marshal Gerd von Rundstedt",
+          "Rank": "Field Marshal",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Gerd_von_Rundstedt"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Army Group B",
+            "Commander": "Field Marshal Walter Model",
+            "Rank": "Field Marshal",
+            "Date": "Sep 1944"
+          },
+          {
+            "Unit": "Army Group G",
+            "Commander": "Generaloberst Johannes Blaskowitz",
+            "Rank": "Generaloberst",
+            "Date": "Sep 1944"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "German western border",
+          "Place_GPS_coordinate": "50.8333 N, 6.0833 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 5.0833,
+            "East": 7.0833,
+            "South": 49.8333,
+            "North": 51.8333
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Western Germany / border area",
+          "Place_GPS_coordinate": "50.8333 N, 6.0833 E",
+          "Weather_text": "No specific weather data in source for 5-11 September 1944; German reorganization described without weather-related impediments noted.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 5.0833,
+            "East": 7.0833,
+            "South": 49.8333,
+            "North": 51.8333
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Casualty Comparison and Allied Optimism",
+      "Sub-event": "Losses and Expectations of Imminent Victory",
+      "Sub-event_summary": "German Western campaign casualties ~500,000 (June-Aug 1944); Allied ~224,000 (6 Jun-11 Sep). Allies landed 2,100,000 men/460,000 vehicles (49 divisions) by 11 Sep. Widespread belief war near end; West Wall weak; organized resistance soon over. Optimism for Rhine crossing and Berlin advance persisted.",
+      "Sub-event_fulltext": {
+        "Paragraph_101": "That they were able to accomplish even this much was miraculous in view of earlier German casualties. During June, July, and August the Germans had lost a minimum of 1,200,000 troops killed, wounded, missing, and captured, casualties of which approximately two thirds had been incurred in the east, where larger masses of men were employed.<sup>[83](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn83)</sup> The *OB WEST* staff later estimated that the campaign in the west, from the invasion to the West Wall, and including southern France, had cost Germany about 500,000 troops, of which about 200,000 had been lost in the coastal fortresses. Matériel losses were impossible to estimate; in addition to battle losses, all equipment permanently installed or lacking mobility was gone.<sup>[84](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn84)</sup>",
+        "Paragraph_102": "In contrast, the Allies had landed more than 2,100,000 men and 460,000 vehicles on the Continent by 11 September, a combat force of forty-nine divisions.<sup>[85](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn85)</sup> Excluding the forces in southern France, where losses were light, Allied casualties from 6 June to 11 September numbered almost 40,000 killed, 164,000 wounded, and 20,000 missing--a total of 224,000, which was less than half the German casualties in the west.<sup>[86](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn86)</sup>",
+        "Paragraph_103": "No wonder Rundstedt warned on 10 September that he needed at least five",
+        "Paragraph_104": "*--700--* <a id=\"page701\"></a> * * * > or six weeks to restore the West Wall and characterized his situation on 11 September as \"continued reduction in combat strength and lack of ammunition.\"<sup>[87](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn87)</sup> SHAEF had observed that the Germans did not seem to have enough men to hold the West Wall, and despite the increasing deterioration of Allied logistics, commanders on all echelons were quite certain that the end of the war was at hand.<sup>[88](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn88)</sup> The troops that had fought in the battle of the hedgerows remembered with some surprise how St. Lo had \"seemed months away and Germany itself almost unattainable.\"<sup>[89](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn89)</sup>",
+        "Paragraph_105": "> There was a quality of madness about the whole debacle of Germany's forces in the West. . . . Isolated garrisons fought as viciously as before, but the central planning and coordination . . . were missing. ... it looked very much as though Adolf Hitler . . . might be forced into surrender long before American and British units reached the Rhine. That was the avowed opinion of allied soldiers on the western front, and German prisoners were of the same mind, often stating that it couldn't last for another week.<sup>[90](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn90)</sup>",
+        "Paragraph_106": "The fact that the Third Army had met increasing resistance in Lorraine hardly seemed as important as the fact that the enemy was in headlong flight before the First U.S. Army. Other developments bolstered this point of view:",
+        "Paragraph_107": "> While it is highly unlikely that Hitler, while he holds the reins of Government in Germany, will ever permit a capitulation of her Army, his position as head of government is becoming daily more unstable, and interior unrest and dissension coupled with the gradual loss of Germany's satellites makes her position less and less stable. This indicates an early end of Herr Hitler.\"<sup>[91](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn91)</sup>",
+        "Paragraph_108": "Most officers believed that the West Wall was only a bluff and that, since the Germans had hardly any troops left, it would take the Allies three days at the most to get through the fortifications. After that, there would remain only the task of mopping up scattered demoralized units inside Germany.<sup>[92](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn92)</sup>",
+        "Paragraph_109": "> The Siegfried Line . . . although a strong natural position, is not what it was bally-hooed to be by the Germans. . . . it will not be too difficult to break. . . . the great expenditure of money, matériel, and time the Germans made on the Siegfried Line is as great a waste as the French Maginot Line proved to be.<sup>[93](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn93)</sup>",
+        "Paragraph_110": "General Bradley reported that Hodges was \"quite optimistic about his ability to push through the Siegfried Line and on to the Rhine,\" and that the \"situation in front of Patton looks very hopeful.\"<sup>[94](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn94)</sup> Field Marshal Montgomery was still thinking of getting on to Berlin. And General Eisenhower, though he may have had reservations, began to consider objectives beyond the Rhine--as far distant as Berlin.<sup>[95](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn95)</sup>",
+        "Paragraph_111": "In most respects, optimism seemed justifiable. Turkey had broken diplomatic relations with Germany in August, and Rumania, Bulgaria, and Finland were negotiating for peace. A repetition of the autumn of 1918, when Bulgaria had defected, and Turkey and",
+        "Paragraph_112": "*--701--* <a id=\"page702\"></a> * * * > Austria had collapsed, appeared at hand. The Allies in September 1944 were beyond the Ghent-Mons-M&ecute;zières-Sedan-Pont-à-Mousson line that the Allies in 1918 had reached by 11 November. To some observers it seemed that the Allies were closer to victory after the pursuit in 1944 than after Marshal Ferdinand Foch's grand autumn offensive, which had preceded German surrender in World War I.",
+        "Paragraph_113": "Everywhere the Allies looked in early September of 1944, they saw success. The Germans in Italy were retreating northward. The Russians were about to enter Germany in the east. In the Pacific the two main lines of Allied advance were converging on the Philippines and landings were about to take place that would immediately precede the invasion of Leyte in October. About the same time that the Japanese in northern India were being driven across the border into Burma, the Allies captured the Burmese city of Myitkyina. At the Quebec conference (OCTAGON) in mid-September, Allied leaders displayed great optimism as they discussed the probability of an immediate occupation of the German satellites, of the Axis-occupied countries, and of Germany itself.<sup>[96](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn96)</sup>",
+        "Paragraph_114": "The end of the war in Europe seemed just around the corner, and General Marshall considered that \"the push on the West Wall is of major importance in the conduct of global war at the moment.\"<sup>[97](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn97)</sup> Allied forces in southern France on 10 September were about to capture Dijon, and that evening the first meeting occurred between reconnaissance troops of the OVERLORD and Anvil-DRAGOON forces. When Lt. Gen. Jacob L. Devers' 6th Army Group became operational under SHAEF control on 15 September, General Eisenhower would command forces along a continuous front from the Netherlands to Switzerland, with three army groups ready to enter Germany. No one seemed to remember Marshal Foch's reply in November 1918, when asked how long it would take to drive the Germans back to the Rhine if they refused the armistice terms, \"Maybe three, maybe four or five months, who knows?\"<sup>[98](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn98)</sup>",
+        "Paragraph_115": "Twenty-six years later, on 10 September 1944, General Bradley designated six critical terrain features on the Rhine River--rather evenly spaced corps objective areas across the 12th Army Group front--as suitable bridgehead sites.<sup>[99](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn99)</sup> Not even the most pessimistic prophet, if a pessimist could have been found in early September, would have ventured the prediction that it would take the Allies much longer than \"three, maybe four or five months\" to gain these objectives. Yet it would be March 1945 before the Allies got across the Rhine River. A cycle similar in some respects to that which had occurred during the period of the breakout and pursuit would have to be repeated before final victory came in Europe.",
+        "Paragraph_116": "*--702--*"
+      },
+      "Footnote_References": ["83", "84", "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98", "99"],
+      "Place_Name": ["West Wall", "Siegfried Line", "Ghent", "Mons", "Mézières", "Sedan", "Pont-à-Mousson", "Rhine River", "Netherlands", "Switzerland", "Dijon"],
+      "Dates": {
+        "Date_group_of_event": "6 Jun - 11 Sep 1944 (casualties); 10 Sep 1944 (Bradley objectives)",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+        "Zulu_date_group_of_event": "06 Jun - 11 Sep 44; 10 Sep 44"
+      },
+      "TOE": {
+        "Unit": "12th Army Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Commander": "Lt. Gen. Omar N. Bradley",
+          "Rank": "Lieutenant General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "40000",
+          "Allied_US_WIA": "164000",
+          "Allied_US_Missing": "20000",
+          "Allied_US_Unspecified_Casualties": "224000 (total Jun-Sep 1944)"
+        },
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": "500000 (Western campaign Jun-Aug 1944); 1200000 (total all fronts Jun-Aug)"
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p698.jpg",
+          "Description": "Dragon's Teeth, the Siegfried Line",
+          "License": "Public domain (U.S. Government publication)"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Rhine River, Germany",
+          "Place_GPS_coordinate": "50.0000 N, 7.0000 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 6.0,
+            "East": 8.0,
+            "South": 49.0,
+            "North": 51.0
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Western Europe / German border",
+          "Place_GPS_coordinate": "50.0000 N, 6.0000 E",
+          "Weather_text": "No specific weather data in source for September 1944; optimism and German recovery described without weather-related impediments noted.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 5.0,
+            "East": 7.0,
+            "South": 49.0,
+            "North": 51.0
+          }
+        }
+      ]
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "68",
+      "Footnote_Number": "68",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 38.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "69",
+      "Footnote_Number": "69",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 38.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "70",
+      "Footnote_Number": "70",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 38.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "71",
+      "Footnote_Number": "71",
+      "Footnote_Text": "First U.S. Army G-3 Jnl, 6, 10 Sep.",
+      "Footnote_Referenced_Source": "First U.S. Army G-3 Journal, 6 and 10 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army G-3 Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "72",
+      "Footnote_Number": "72",
+      "Footnote_Text": "First U.S. Army G-3 Jnl, 10 Sep.",
+      "Footnote_Referenced_Source": "First U.S. Army G-3 Journal, 10 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army G-3 Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "73",
+      "Footnote_Number": "73",
+      "Footnote_Text": "OB WEST, a Study in Command, p. 140.",
+      "Footnote_Referenced_Source": "OB WEST, a Study in Command",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "OCMH Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "74",
+      "Footnote_Number": "74",
+      "Footnote_Text": "MS # B-728 (Emmerich).",
+      "Footnote_Referenced_Source": "German manuscript: Emmerich",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "1 Archives Drive, St. Louis, MO 63138, United States",
+      "NonDigital_Library_References": "Captured German manuscripts series (MS # B-728)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "75",
+      "Footnote_Number": "75",
+      "Footnote_Text": "OB WEST KTB, 4 Sep, Anlage 1880.",
+      "Footnote_Referenced_Source": "OB WEST War Diary, 4 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "1 Archives Drive, St. Louis, MO 63138, United States",
+      "NonDigital_Library_References": "Captured German records (OB WEST KTB, Anlage 1880)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "76",
+      "Footnote_Number": "76",
+      "Footnote_Text": "OB WEST KTB, 3, 9 Sep, Anlagen 1860, 1920.",
+      "Footnote_Referenced_Source": "OB WEST War Diary, 3 and 9 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "1 Archives Drive, St. Louis, MO 63138, United States",
+      "NonDigital_Library_References": "Captured German records (OB WEST KTB, Anlagen 1860, 1920)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "77",
+      "Footnote_Number": "77",
+      "Footnote_Text": "OB WEST KTB, 4 Sep, Anlage 1880.",
+      "Footnote_Referenced_Source": "OB WEST War Diary, 4 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "1 Archives Drive, St. Louis, MO 63138, United States",
+      "NonDigital_Library_References": "Captured German records (OB WEST KTB, Anlage 1880)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "78",
+      "Footnote_Number": "78",
+      "Footnote_Text": "OB WEST KTB, 4 Sep, Anlage 1880.",
+      "Footnote_Referenced_Source": "OB WEST War Diary, 4 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "1 Archives Drive, St. Louis, MO 63138, United States",
+      "NonDigital_Library_References": "Captured German records (OB WEST KTB, Anlage 1880)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "79",
+      "Footnote_Number": "79",
+      "Footnote_Text": "OB WEST KTB, 4 Sep, Anlage 1880.",
+      "Footnote_Referenced_Source": "OB WEST War Diary, 4 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "1 Archives Drive, St. Louis, MO 63138, United States",
+      "NonDigital_Library_References": "Captured German records (OB WEST KTB, Anlage 1880)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "80",
+      "Footnote_Number": "80",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 38.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "81",
+      "Footnote_Number": "81",
+      "Footnote_Text": "MS # B-728 (Emmerich).",
+      "Footnote_Referenced_Source": "German manuscript: Emmerich",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "1 Archives Drive, St. Louis, MO 63138, United States",
+      "NonDigital_Library_References": "Captured German manuscripts series (MS # B-728)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "82",
+      "Footnote_Number": "82",
+      "Footnote_Text": "OB WEST, a Study in Command, p. 140.",
+      "Footnote_Referenced_Source": "OB WEST, a Study in Command",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "OCMH Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "83",
+      "Footnote_Number": "83",
+      "Footnote_Text": "Pogue, Supreme Command, p. 258.",
+      "Footnote_Referenced_Source": "Pogue, The Supreme Command",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "OCMH Files; published U.S. Army in World War II series",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "84",
+      "Footnote_Number": "84",
+      "Footnote_Text": "OB WEST, a Study in Command, p. 140.",
+      "Footnote_Referenced_Source": "OB WEST, a Study in Command",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "OCMH Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "85",
+      "Footnote_Number": "85",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 38.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "86",
+      "Footnote_Number": "86",
+      "Footnote_Text": "Pogue, Supreme Command, p. 258.",
+      "Footnote_Referenced_Source": "Pogue, The Supreme Command",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "OCMH Files; published U.S. Army in World War II series",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "87",
+      "Footnote_Number": "87",
+      "Footnote_Text": "OB WEST KTB, 10, 11 Sep, Anlagen 1940, 1960.",
+      "Footnote_Referenced_Source": "OB WEST War Diary, 10 and 11 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "1 Archives Drive, St. Louis, MO 63138, United States",
+      "NonDigital_Library_References": "Captured German records (OB WEST KTB, Anlagen 1940, 1960)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "88",
+      "Footnote_Number": "88",
+      "Footnote_Text": "First U.S. Army G-2 Est, 11 Sep.",
+      "Footnote_Referenced_Source": "First U.S. Army G-2 Estimate, 11 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army G-2 Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "89",
+      "Footnote_Number": "89",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 38.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "90",
+      "Footnote_Number": "90",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 38.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "91",
+      "Footnote_Number": "91",
+      "Footnote_Text": "First U.S. Army G-2 Est, 11 Sep.",
+      "Footnote_Referenced_Source": "First U.S. Army G-2 Estimate, 11 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army G-2 Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "92",
+      "Footnote_Number": "92",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 38.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "93",
+      "Footnote_Number": "93",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 38.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "94",
+      "Footnote_Number": "94",
+      "Footnote_Text": "First U.S. Army G-3 Jnl, 11 Sep.",
+      "Footnote_Referenced_Source": "First U.S. Army G-3 Journal, 11 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army G-3 Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "95",
+      "Footnote_Number": "95",
+      "Footnote_Text": "First U.S. Army G-3 Jnl, 11 Sep.",
+      "Footnote_Referenced_Source": "First U.S. Army G-3 Journal, 11 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army G-3 Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "96",
+      "Footnote_Number": "96",
+      "Footnote_Text": "Pogue, Supreme Command, p. 258.",
+      "Footnote_Referenced_Source": "Pogue, The Supreme Command",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "OCMH Files; published U.S. Army in World War II series",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "97",
+      "Footnote_Number": "97",
+      "Footnote_Text": "Msg, Marshall to Eisenhower, W-33579, 11 Sep, SGS SHAEF File 381, Post-OVERLORD Plng, I.",
+      "Footnote_Referenced_Source": "Message, Marshall to Eisenhower, 11 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "SGS SHAEF File 381",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "98",
+      "Footnote_Number": "98",
+      "Footnote_Text": "Pogue, Supreme Command, p. 258.",
+      "Footnote_Referenced_Source": "Pogue, The Supreme Command",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "OCMH Files; published U.S. Army in World War II series",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "99",
+      "Footnote_Number": "99",
+      "Footnote_Text": "First U.S. Army G-3 Jnl, 10 Sep.",
+      "Footnote_Referenced_Source": "First U.S. Army G-3 Journal, 10 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army G-3 Files",
+      "Source_Type": "US"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-30",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+  "Source_Link_Capture_Date": "2025-12-30"
+}

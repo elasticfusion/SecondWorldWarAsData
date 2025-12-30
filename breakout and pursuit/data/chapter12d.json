@@ -1,0 +1,1699 @@
+{
+  "Events": [
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "VII Corps Advance on 25 July",
+      "Sub-event_summary": "Infantrymen of the VII Corps attacked at 1100 on 25 July, despite disorganization from bombing errors, to create a protected corridor for exploitation.",
+      "Sub-event_fulltext": {
+        "Paragraph_45": "Hopeful that the C OBRA bombardment on the morning of 25 July had caused widespread devastation on the German main line of resistance but not at all sure that it had, infantrymen of the VII Corps moved out in attack at 1100. Despite the disorganization that the bombing errors had prompted, only two units, a regiment of the 9th Division and a battalion of the 30th Division, were unable to attack on the hour, and these jumped off after only a slight delay."
+      },
+      "Footnote_References": [],
+      "Place_Name": "COBRA area",
+      "Dates": {
+        "Date_group_of_event": "1100 on 25 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251100ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "J. Lawton Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "COBRA area",
+        "Place_GPS_coordinate": "49.1 N, -1.1 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "COBRA area",
+        "Place_GPS_coordinate": "49.1 N, -1.1 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0",
+          "East": "-0.2",
+          "South": "48.2",
+          "North": "50.0"
+        }
+      }
+    },
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "Mission of Infantry Units",
+      "Sub-event_summary": "The infantry was to create a protected corridor, bypass strongpoints, and clear roads for exploitation forces.",
+      "Sub-event_fulltext": {
+        "Paragraph_46": "The infantry units initiating the C OBRA ground attack were to create a protected corridor for those troops scheduled to follow and exploit a breakthrough a breakthrough. Their capture of specific geographical objectives as rapidly as possible. Critical terrain features such as high ground and crossroads that meant control of the corridor had been carefully assigned to each small unit participating in the attack, and the assault troops were to drive to their objectives without regard to the rate of advance of adjacent units. They were to bypass enemy strongpoints, leaving their reduction to others who would come later. Engineers were to assist forward movement by hastily repairing the roads and removing obstacles. All unnecessary traffic was to stay off the roads in the assault area. The attacking units had been stripped of nonessential equipment to reduce column time lengths. The troops carried extra rations to keep supply traffic to a minimum. They were to hold wounded men and prisoners in place whenever possible. They had been issued enough ammunition to last until the exploiting armor passed through them. Commanders or responsible staff officers were to be at unit radios at all times and tuned to the command net for word that the mobile columns were about to begin their exploitation. When that was announced, the infantry was to clear the main roads and allow the exploitation to get under way without impediment."
+      },
+      "Footnote_References": [],
+      "Place_Name": "COBRA area",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "J. Lawton Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed, stripped of nonessential equipment",
+        "Equipments": {
+          "Supply": "Extra rations and ammunition",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "COBRA area",
+        "Place_GPS_coordinate": "49.1 N, -1.1 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "COBRA area",
+        "Place_GPS_coordinate": "49.1 N, -1.1 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0",
+          "East": "-0.2",
+          "South": "48.2",
+          "North": "50.0"
+        }
+      }
+    },
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "Main Infantry Objectives",
+      "Sub-event_summary": "The towns of Marigny and St. Gilles were key objectives for control of the road network.",
+      "Sub-event_fulltext": {
+        "Paragraph_47": "(Map V) The towns of Marigny and St. Gilles were the main infantry objectives. Their capture would signify a penetration of three miles in depth, and their retention would give the VII Corps control of the road network needed for the exploitation. If the air bombardment had destroyed the German defenses, the infantry would reach and secure Marigny and St. Gilles without great difficulty. General Collins would then catapult his armor forward."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Marigny",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "J. Lawton Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+          "Description": "Map V - Breakthrough, 25-27 July 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.1 N, -1.25 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.1 N, -1.25 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.15",
+          "East": "-0.35",
+          "South": "48.2",
+          "North": "50.0"
+        }
+      }
+    },
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "330th Infantry Mission",
+      "Sub-event_summary": "The 330th Infantry was to seize part of the highway and block to the west, securing the pivot for the corps effort.",
+      "Sub-event_fulltext": {
+        "Paragraph_48": "On the VII Corps right (west), the 330th Infantry (detached from the 83d Division) was to seize a part of the Périers-St. Lô highway, including a vital road intersection, and block to the west in order to hamper any German attack from Périers against the corps right flank. In effect, the regiment was to secure and hold the pivot on which the VII Corps main effort was to swing in its turn toward Coutances. Eventually, the 330th Infantry was also to turn westward and join its parent unit and VIII Corps."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "330th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "330th Infantry Challenges",
+      "Sub-event_summary": "The 330th Infantry faced difficult terrain and enemy outside the bombardment area, harassed by fire from Marchesieux.",
+      "Sub-event_fulltext": {
+        "Paragraph_49": "The immediate regimental objective was near the Taute River flats, marshy hedgerowed lowland that was outside the C OBRA bombardment area. Because the 83d Division had been unable a week earlier to force a crossing of the Taute River over the la Varde causeway, Germans still occupied the la Varde peninsula and constituted a threat to the regimental right flank. Dispersed over a large area, without strength in depth, facing hedgerowed lowlands, about to attack enemy troops that had not been affected by the C OBRA bombardment, and harassed by tank destroyer fire from the right rear near Marchesieux, the regiment had a mission as difficult as it was vital."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Taute River flats",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "330th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Taute River flats",
+        "Place_GPS_coordinate": "49.0833 N, -1.1667 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Taute River flats",
+        "Place_GPS_coordinate": "49.0833 N, -1.1667 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0667",
+          "East": "-0.2667",
+          "South": "48.1833",
+          "North": "49.9833"
+        }
+      }
+    },
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "330th Infantry Advance",
+      "Sub-event_summary": "The 330th Infantry advanced rapidly while planes were striking, but was stopped when Germans realized they were unaffected.",
+      "Sub-event_fulltext": {
+        "Paragraph_50": "The advance was rapid so long as fighter-bombers and medium bombers were still striking the C OBRA target area southeast of the regimental positions. In forty minutes the assault battalion advanced 800 yards. When the planes left, the Germans raised their heads from their foxholes, discovered that the saturation bombing had taken place several miles away, and realized that they were not at all hurt. Opening fire from their hedgerow positions and quickly repairing breaks in communication wires caused by a few stray bombs, the soldiers of the regiment that the 5th Parachute Division controlled soon achieved a coordinated defense that stopped the 330th Infantry. At the same time, shells from Marchesieux began to fall on the 330th's right flank. The 330th Infantry could get no farther than a point several hundred yards short of its objective. Counter-battery fire by the 83d Division Artillery seemed to have little effect in reducing the volume of enemy shells. Unless a bombing attack destroyed the Marchesieux emplacements and thus eliminated the threat to the regimental right rear, there seemed little hope that the 330th Infantry would attain its immediate C OBRA objective."
+      },
+      "Footnote_References": [
+        "36"
+      ],
+      "Place_Name": "Marchesieux",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "330th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Marchesieux",
+        "Place_GPS_coordinate": "49.1833 N, -1.3 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Marchesieux",
+        "Place_GPS_coordinate": "49.1833 N, -1.3 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.2",
+          "East": "-0.4",
+          "South": "48.2833",
+          "North": "50.0833"
+        }
+      }
+    },
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "9th Division Advance to Marigny",
+      "Sub-event_summary": "The 9th Division attacked toward Marigny, facing troublesome resistance despite the bombardment.",
+      "Sub-event_fulltext": {
+        "Paragraph_51": "The 9th Division was to attack to Marigny, along the main highway, which was later to serve the principal exploiting thrust. General Eddy's regiments were to peel off to the west in order to uncover the highway and form a strong protective line facing west. The terrain in the zone of advance--low ridges and small marshes--was rather difficult. After some confusion occasioned by the bombing errors, the assault units moved rather quickly through the hostile outpost line north of the Périers-St. Lô highway, containing and bypassing several strongpoints that were still active. Once across the line of departure, the troops were surprised to find increasingly troublesome centers of resistance. Despite the saturation bombing, groups of enemy soldiers were still fighting stubbornly. When the 9th Division shifted its weight to the west and met Germans who had been outside the bombardment carpet, the infantry made little progress."
+      },
+      "Footnote_References": [
+        "37"
+      ],
+      "Place_Name": "Marigny",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "9th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Manton S. Eddy",
+          "Name": "Manton S. Eddy",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.1 N, -1.25 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Marigny",
+        "Place_GPS_coordinate": "49.1 N, -1.25 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.15",
+          "East": "-0.35",
+          "South": "48.2",
+          "North": "50.0"
+        }
+      }
+    },
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "9th Division Progress",
+      "Sub-event_summary": "The 9th Division units did not reach initial objectives, halted by division order despite limited opposition.",
+      "Sub-event_fulltext": {
+        "Paragraph_52": "The assault units of the 9th Division, with several exceptions, did not reach their initial objectives. One battalion that did arrive at its objective was prohibited by division order from continuing lest it get too far ahead of the others. Another battalion, which had advanced a thousand yards down the Marigny road, also received the order to halt and consolidate for the night even though it had encountered only sporadic small arms and long-range artillery fire. The caution that General Eddy was demonstrating illustrated American surprise at the tenacity of the German opposition. Enemy troops that had escaped the bomb blast seemed not at all affected by what had happened to nearby units that had been obliterated in the bombardment."
+      },
+      "Footnote_References": [
+        "38"
+      ],
+      "Place_Name": "Marigny road",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "9th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Manton S. Eddy",
+          "Name": "Manton S. Eddy",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Marigny road",
+        "Place_GPS_coordinate": "49.1 N, -1.25 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Marigny road",
+        "Place_GPS_coordinate": "49.1 N, -1.25 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.15",
+          "East": "-0.35",
+          "South": "48.2",
+          "North": "50.0"
+        }
+      }
+    },
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "4th Division Advance",
+      "Sub-event_summary": "The 4th Division's 8th Infantry attacked, bypassing strongpoints and advancing south, but faced resistance.",
+      "Sub-event_fulltext": {
+        "Paragraph_53": "In the center of the VII Corps sector, General Barton had committed only one regiment of the 4th Division. With but slight disorganization because of the short bombing, the 8th Infantry attacked with two battalions abreast on a 2,000-yard front on good terrain for offensive action. One assault battalion immediately bypassed a German strongpoint north of the Périers--St. Lô highway, the line of departure, and moved rapidly south for a mile and a half against scattered opposition; at nightfall the leading troops were just east of la Chapelle-en-Juger. The other assault battalion struck an orchard full of Germans who had such effective fields of fire that the battalion could not sideslip the obstruction. After a two-hour delay, eighteen supporting tanks, which had temporarily lost contact with the infantry, arrived and blasted the orchard. The resistance disintegrated. The battalion crossed the Périers-St. Lô highway and encountered no opposition for 700 yards, but then two German tanks and a line of enemy soldiers along a sunken road again stopped the battalion. Once more the supporting Shermans had become separated from the infantry. The battalion made a double envelopment of the enemy strongpoint and knocked out the two enemy tanks with bazooka fire. Still the enemy held. After the Shermans finally rumbled up, a few rounds of tank fire destroyed the defense. Receiving a sudden order to seize la Chapelle-en-Juger, the battalion changed direction and gained the edge of town. American artillery fire falling nearby brought the attack to a halt."
+      },
+      "Footnote_References": [
+        "39"
+      ],
+      "Place_Name": "la Chapelle-en-Juger",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "4th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Raymond O. Barton",
+          "Name": "Raymond O. Barton",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Raymond_O._Barton",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "8th Infantry Regiment",
+            "Name": "Unknown",
+            "Rank": "",
+            "Date": "",
+            "End_Date": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Tank",
+              "Identifier": "M4 Sherman",
+              "Quantity": "18",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "Panzer",
+              "Quantity": "2",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "la Chapelle-en-Juger",
+        "Place_GPS_coordinate": "49.1167 N, -1.1833 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "la Chapelle-en-Juger",
+        "Place_GPS_coordinate": "49.1167 N, -1.1833 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0833",
+          "East": "-0.2833",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "30th Division Mission",
+      "Sub-event_summary": "The 30th Division had to clear the road to St. Gilles and establish roadblocks at Vire River bridges.",
+      "Sub-event_fulltext": {
+        "Paragraph_54": "On the corps left, oriented toward St. Gilles, the 30th Division recovered with amazing quickness from the demoralizing effect of the short bombing. Soon after the infantry started forward American planes bombed and strafed the troops again, driving them into ditches and bomb craters. More angry than scared, the men advanced once more. They had a twofold mission. The 30th Division was to clear the road to St. Gilles for the armored thrust to follow and was also to establish roadblocks at the bridges across the Vire River south of St. Lô. The bridges across the Vire had been bombed by tactical aircraft in pre-C OBRA operations, and although some structures were damaged or destroyed, actual possession of the bridge sites by 30th Division infantrymen would enhance the security of the C OBRA east flank."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Gilles",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Leland Hobbs",
+          "Name": "Leland Hobbs",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Gilles",
+        "Place_GPS_coordinate": "49.1 N, -1.1 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Gilles",
+        "Place_GPS_coordinate": "49.1 N, -1.1 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0",
+          "East": "-0.2",
+          "South": "48.2",
+          "North": "50.0"
+        }
+      }
+    },
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "30th Division Two-Pronged Attack",
+      "Sub-event_summary": "General Hobbs mounted a two-pronged attack toward St. Gilles and the Vire River high ground.",
+      "Sub-event_fulltext": {
+        "Paragraph_55": "As the 30th Division veered eastward and uncovered the road to St. Gilles, an armored column, alerted to follow, would drive south to foil German reinforcement from the southeast. General Hobbs thus mounted a two-pronged attack, one thrusting toward St. Gilles, the other pointing toward the high ground inside the horseshoe loop of the Vire River at St. Lô. The minimum assignment for the division was capture of Hébécrevon. Just across the Périers-St. Lô highway, 30th Division troops met a roadblock built around three Mark V tanks. A frontal three-company attack, supported by Shermans, failed to dislodge the roadblock and resulted in the loss of three American tanks. An attempted double envelopment brought infantrymen into contact with additional German centers of resistance. Aggressive reconnaissance and excellent tank-infantry co-ordination were finally responsible for knocking out a dozen armored vehicles and uprooting the German defense."
+      },
+      "Footnote_References": [
+        "40"
+      ],
+      "Place_Name": "Hébécrevon",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Leland Hobbs",
+          "Name": "Leland Hobbs",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Tank",
+              "Identifier": "M4 Sherman",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Tank",
+              "Identifier": "M4 Sherman",
+              "Quantity": "3",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Axis_Employed": [],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "Mark V Panther",
+              "Quantity": "3",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panther_tank",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Armored Vehicle",
+              "Identifier": "Unknown",
+              "Quantity": "12",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hébécrevon",
+        "Place_GPS_coordinate": "49.1167 N, -1.1667 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hébécrevon",
+        "Place_GPS_coordinate": "49.1167 N, -1.1667 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0667",
+          "East": "-0.2667",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "119th Infantry Attack on Hébécrevon",
+      "Sub-event_summary": "The 119th Infantry faced difficulties in attacking Hébécrevon, using tank fire to enter the town at midnight.",
+      "Sub-event_fulltext": {
+        "Paragraph_56": "In attacking Hébécrevon, the 30th Division had to cross a valley, using an unpaved and mined road with precipitous banks, and make a frontal assault against commanding terrain. Because German fire prevented American engineers from clearing the road of mines, tanks could not accompany the infantry. Lack of alternate roads, absence of stream-crossing sites, closeness of adjacent units, and troop congestion precluded maneuver. An air strike seemingly had no effect on the volume of enemy fire. In the early evening the regimental commander of the 119th Infantry sought clarification of what appeared to be a paradoxical mission: was he to seize Hébécrevon or was he to bypass enemy resistance? Both, replied General Hobbs; \"The important thing was to gain control of the crossroad in the town.\" But not until darkness fell were infantrymen and tanks able to move against Hébécrevon. Soldiers acting like seeing-eye dogs led Shermans around bomb craters and through mine fields into positions for direct fire. Their shelling soon had the desired effect. Around midnight American troops entered Hébécrevon."
+      },
+      "Footnote_References": [
+        "41"
+      ],
+      "Place_Name": "Hébécrevon",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "119th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "30th Infantry Division",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": "Colonel",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Tank",
+              "Identifier": "M4 Sherman",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hébécrevon",
+        "Place_GPS_coordinate": "49.1167 N, -1.1667 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hébécrevon",
+        "Place_GPS_coordinate": "49.1167 N, -1.1667 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0667",
+          "East": "-0.2667",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "Overall Ground Attack Assessment",
+      "Sub-event_summary": "The ground attack moved the line a mile south, but American attitude was not elated due to unexpected resistance.",
+      "Sub-event_fulltext": {
+        "Paragraph_57": "The ground attack following the C OBRA bombardment on 25 July moved the VII Corps across the Périers-St. Lô highway but not much farther. Although crossing the highway was no mean achievement, the prevailing American attitude was far from elation. The immediate verdict of American commanders judging the effectiveness of the C OBRA air strike was virtually unanimous: the bombardment had had almost no effect on the enemy. German artillery fire on 25 July had been light when compared to that of the previous day, but still the volume had been strong. The difference could be ascribed to low ammunition stocks or to the disruption of communications: the \"enemy artillery,\" Americans believed, \"was not touched by our bombing.\""
+      },
+      "Footnote_References": [],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "J. Lawton Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "Perceived Effectiveness of Bombardment",
+      "Sub-event_summary": "Commanders initially believed the bombardment had no effect, but it had weakened the Germans more than realized.",
+      "Sub-event_fulltext": {
+        "Paragraph_58": "The truth of the matter was that \"saturation\" bombing had not saturated the entire target. Some American units had moved rapidly through areas in which the German defenses had obviously been neutralized by the bombardment. Others had met resistance they had not expected. The disappointment resulted in the main from over-anticipation and over-confidence in the results of the bombardment. Many American troops had expected the bombardment to eliminate resistance in the target area; they thought that all the Germans would be killed or wounded; they had looked forward to the prospect of strolling through the bomb target area. The fact that some enemy groups had survived and were able to fight seemed to prove that the air bombardment had failed to achieve its purpose. The troops apparently had not realized that air bombardment and artillery fire, even under the most favorable conditions, do not completely destroy the enemy, but by inflicting heavy losses weaken him physically and morally, disorganize his defenses, and make him vulnerable to infantry attack."
+      },
+      "Footnote_References": [],
+      "Place_Name": "COBRA area",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "J. Lawton Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "Heavy losses from bombardment",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "COBRA area",
+        "Place_GPS_coordinate": "49.1 N, -1.1 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "COBRA area",
+        "Place_GPS_coordinate": "49.1 N, -1.1 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0",
+          "East": "-0.2",
+          "South": "48.2",
+          "North": "50.0"
+        }
+      }
+    },
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "Bombing Errors Impact",
+      "Sub-event_summary": "Bombing errors heightened discouragement, but the bombardment had actually weakened the Germans.",
+      "Sub-event_fulltext": {
+        "Paragraph_59": "The bombing errors that had taken American lives heightened the sense of discouragement. Comparatively few bombs had produced heavy casualties. Only gradually did the attitude of depression change. The bombing of American troops, it developed, \"was not as bad as it seemed at first.\" It had not materially disrupted the ground attack. The bombardment had had, after all, knocked a hole in the German defenses. German prisoners were visibly shaken and dazed. Steel bomb fragments had shredded light vehicles, perforated heavy equipment, cut tank treads, splintered trees, smashed houses, and shattered communications in the enemy sector."
+      },
+      "Footnote_References": [],
+      "Place_Name": "COBRA area",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "J. Lawton Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "COBRA area",
+        "Place_GPS_coordinate": "49.1 N, -1.1 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "COBRA area",
+        "Place_GPS_coordinate": "49.1 N, -1.1 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0",
+          "East": "-0.2",
+          "South": "48.2",
+          "North": "50.0"
+        }
+      }
+    },
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "Geographical Advance Assessment",
+      "Sub-event_summary": "The attack gained little terrain, explained by habits of caution from previous battles.",
+      "Sub-event_fulltext": {
+        "Paragraph_60": "Judged from the point of view of geographical advance, the ground attack had nevertheless gained relatively little terrain. The VII Corps had advanced the line only about a mile south of the Périers--St. Lô highway. That this was the case, even though only isolated and uncoordinated German groups remained to contest the advance, could be explained partially by the fact that the initial disappointment itself had nullified to a large extent General Bradley's injunction to be bold. The battle of the hedgerows during the preceding weeks had inflicted its psychological toll on the combat forces. Habits of caution could not be dissipated by an air strike or by an order. The presence of German defenders per se implied stubborn and skillful opposition."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "J. Lawton Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Ground Attack in Operation COBRA",
+      "Sub-event": "Success Assessment",
+      "Sub-event_summary": "The attack succeeded better than realized, creating a hole in German defenses unknown to Americans but known to Germans.",
+      "Sub-event_fulltext": {
+        "Paragraph_61": "The ground attack had actually succeeded better than anyone supposed. The VII Corps infantrymen had destroyed almost all the Germans who survived the bombardment, but the Germans knew this better than the Americans. It would have been hard to convince the 330th Infantry, for example, which had not yet crossed the Périers-St. Lô highway, that a yawning hole existed before the VII Corps. The 9th Division also was far short of Marigny; the committed regiment of the 4th Division had not reached la Chapelle-en-Juger; the 30th Division was short of St. Gilles. Yet the VII Corps had opened a hole in the German defenses. The question was whether the Americans would recognize the hole in time to exploit it."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Périers-St. Lô highway",
+      "Dates": {
+        "Date_group_of_event": "25 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+        "Zulu_date_group_of_event": "251300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "J. Lawton Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "Almost all destroyed",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Map_Reference": "Map V",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/Map-V.png",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway",
+        "Place_GPS_coordinate": "49.1167 N, -1.0903 W",
+        "Weather_text": "Not specified",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.9903",
+          "East": "-0.1903",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "36a",
+      "Footnote_Number": "36",
+      "Footnote_Text": "330th Inf AAR, Jul",
+      "Footnote_Referenced_Source": "330th Inf AAR, Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "36b",
+      "Footnote_Number": "36",
+      "Footnote_Text": "83d Div G-3 Jnl, 25 Jul",
+      "Footnote_Referenced_Source": "83d Div G-3 Jnl, 25 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "36c",
+      "Footnote_Number": "36",
+      "Footnote_Text": "83d Div AAR, Jul",
+      "Footnote_Referenced_Source": "83d Div AAR, Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "36d",
+      "Footnote_Number": "36",
+      "Footnote_Text": "83d Div G-3 Per Rpt 52, 25 Jul",
+      "Footnote_Referenced_Source": "83d Div G-3 Per Rpt 52, 25 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "36e",
+      "Footnote_Number": "36",
+      "Footnote_Text": "Interv with CO, Co B, 8th Inf CI 30 (4th Div)",
+      "Footnote_Referenced_Source": "Interv with CO, Co B, 8th Inf CI 30 (4th Div)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "36f",
+      "Footnote_Number": "36",
+      "Footnote_Text": "30th Div AAR, Jul",
+      "Footnote_Referenced_Source": "30th Div AAR, Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "36g",
+      "Footnote_Number": "36",
+      "Footnote_Text": "University of Oklahoma Research Institute, Technical Memo, ORO-T-202, Disaster in Battle, 25 Aug 52, passim",
+      "Footnote_Referenced_Source": "University of Oklahoma Research Institute, Technical Memo, ORO-T-202, Disaster in Battle, 25 Aug 52, passim",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "37a",
+      "Footnote_Number": "37",
+      "Footnote_Text": "9th Div G-3 Jnl, 25 Jul",
+      "Footnote_Referenced_Source": "9th Div G-3 Jnl, 25 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "37b",
+      "Footnote_Number": "37",
+      "Footnote_Text": "Interv with CO, Co B, 8th Inf CI 30 (4th Div)",
+      "Footnote_Referenced_Source": "Interv with CO, Co B, 8th Inf CI 30 (4th Div)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "37c",
+      "Footnote_Number": "37",
+      "Footnote_Text": "4th Div G-3 Jnl and File, 25 Jul",
+      "Footnote_Referenced_Source": "4th Div G-3 Jnl and File, 25 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "37d",
+      "Footnote_Number": "37",
+      "Footnote_Text": "30th Div G-3 Jnl and File, 25 Jul",
+      "Footnote_Referenced_Source": "30th Div G-3 Jnl and File, 25 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "37e",
+      "Footnote_Number": "37",
+      "Footnote_Text": "VII Corps G-3 Jnl and File, 25 Jul",
+      "Footnote_Referenced_Source": "VII Corps G-3 Jnl and File, 25 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "37f",
+      "Footnote_Number": "37",
+      "Footnote_Text": "FUSA AAR, Jul",
+      "Footnote_Referenced_Source": "FUSA AAR, Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "37g",
+      "Footnote_Number": "37",
+      "Footnote_Text": "Collins Talk",
+      "Footnote_Referenced_Source": "Collins Talk",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "38a",
+      "Footnote_Number": "38",
+      "Footnote_Text": "30th Div G-3 Jnl and File, 25 Jul",
+      "Footnote_Referenced_Source": "30th Div G-3 Jnl and File, 25 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "38b",
+      "Footnote_Number": "38",
+      "Footnote_Text": "VII Corps G-3 Jnl and File, 25 Jul",
+      "Footnote_Referenced_Source": "VII Corps G-3 Jnl and File, 25 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "38c",
+      "Footnote_Number": "38",
+      "Footnote_Text": "FUSA AAR, Jul",
+      "Footnote_Referenced_Source": "FUSA AAR, Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "38d",
+      "Footnote_Number": "38",
+      "Footnote_Text": "Collins Talk",
+      "Footnote_Referenced_Source": "Collins Talk",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "39a",
+      "Footnote_Number": "39",
+      "Footnote_Text": "Telecon, Hobbs and Collins, 2130, 25 Jul, 30th Div G-3 Jnl and File",
+      "Footnote_Referenced_Source": "Telecon, Hobbs and Collins, 2130, 25 Jul, 30th Div G-3 Jnl and File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "40a",
+      "Footnote_Number": "40",
+      "Footnote_Text": "30th Div G-3 Jnl and File, 25 Jul",
+      "Footnote_Referenced_Source": "30th Div G-3 Jnl and File, 25 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    },
+    {
+      "Footnote": "41a",
+      "Footnote_Number": "41",
+      "Footnote_Text": "Telecon, Hobbs and Collins, 2130, 25 Jul, 30th Div G-3 Jnl and File",
+      "Footnote_Referenced_Source": "Telecon, Hobbs and Collins, 2130, 25 Jul, 30th Div G-3 Jnl and File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OCMH Files"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn12.html",
+  "Source_Footnote_Link_Capture_Date": "December 21, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+  "Source_Link_Capture_Date": "December 21, 2025"
+}

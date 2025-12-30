@@ -1,0 +1,989 @@
+{
+  "Events": [
+    {
+      "Event": "The American Point of View on the July Offensive in Normandy",
+      "Sub-event": "End of the Offensive and Territorial Gains",
+      "Sub-event_summary": "The First Army's July offensive ended on 19 July with limited territorial gains along the Lessay-Périers-St. Lô-Caumont line, achieving disappointing results despite heroic efforts.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "The First Army's July offensive came to an end on 19 July, the day after the capture of St. Lô. Despite the fact that the operations had moved U.S. troops to the southern edge of the Cotentin swampland--along the Lessay-Périers-St. Lô-Caumont line--the results were disappointing.",
+        "Paragraph_2": "Heroic exertion seemed, on the surface, to have accomplished little. With twelve divisions, the First Army in seventeen days had advanced only about seven miles in the region west of the Vire and little more than half that distance east of the river.",
+        "Paragraph_3": "Not only was the distance gained disappointing, the newly established Lessay-Caumont line was less than satisfactory. The VIII Corps physically occupied neither Lessay nor Périers; the VII Corps did not actually possess the Périers-St. Lô highway; and the city of St. Lô remained under enemy artillery and mortar fire for more than a week after its capture by the XIX Corps.[1]"
+      },
+      "Footnote_References": "1",
+      "Place_Name": "St. Lô",
+      "Dates": {
+        "Date_group_of_event": "19 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-9.html",
+        "Zulu_date_group_of_event": "190000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "First Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Nelson Bradley",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "VIII Corps",
+            "Name": "Troy H. Middleton",
+            "Rank": "Major General",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          },
+          {
+            "Unit": "VII Corps",
+            "Name": "J. Lawton Collins",
+            "Rank": "Major General",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          },
+          {
+            "Unit": "XIX Corps",
+            "Name": "Charles H. Corlett",
+            "Rank": "Major General",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": "High casualty rates, particularly among infantrymen",
+        "Equipments": {
+          "Supply": "Satisfactory delivery of supplies",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "105mm howitzer",
+            "Identifier": "M101A1",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M101_howitzer",
+            "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/M101A1_howitzer.jpg/800px-M101A1_howitzer.jpg",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "40000",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": {
+        "Link": "https://49fe30bb3aa7406c16dc-5c968119d095dc32d807923c59347cc2.ssl.cf1.rackcdn.com/2004.311.054_1.jpg",
+        "Description": "American soldiers fighting in hedgerows in France in July 1944",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "St. Lô",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "Map III: The Battle of St Lo, 11-18 July 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-III.jpg",
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6003",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Greater amount of cloud, wind, and rain than recorded since 1900, nullifying Allied air superiority on many days.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.21,
+          "North": 50.01
+        }
+      }
+    },
+    {
+      "Event": "The American Point of View on the July Offensive in Normandy",
+      "Sub-event": "Casualties and Combat Fatigue",
+      "Sub-event_summary": "The First Army sustained approximately 40,000 casualties in July, with 90 percent being infantrymen, and additional combat fatigue cases amounting to 25 to 33 percent of physical wounds.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "To reach positions along the Lessay-Caumont line, the First Army had sustained approximately 40,000 casualties during July, of which 90 percent were infantrymen. A rifle company after a week of combat often numbered less than one hundred men; sometimes it resembled a reinforced platoon. Casualties among infantry officers in the line companies were particularly high in the hedgerow country, where small-unit initiative and individual leadership figured so largely. Of all the infantry company officers in one regiment that had entered Normandy shortly after D Day, only four lieutenants remained by the third week in July, and all four by then were commanding rifle companies.[2]",
+        "Paragraph_5": "The majority of the casualties were caused by shell fragments, involving in many cases multiple wounds.[3]",
+        "Paragraph_6": "Many other men suffered combat fatigue. Not always counted in the casualty reports, they nevertheless totaled an additional 25 to 33 percent of the number of men physically wounded. All the divisions made informal provision for treating combat fatigue cases, usually at the regimental collecting stations, and several divisional neuropsychiatrists established exhaustion centers. Working with improvised facilities and without personnel specifically assigned for this purpose, the doctors returned a large percentage of fatigue cases to duty after 24 to 72 hours of rest and sedation. Patients who did not respond were evacuated to one of two First Army combat exhaustion centers--250-bed hospitals eventually expanded to 750 and 1,000 beds.[4]"
+      },
+      "Footnote_References": "2,3,4",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-9.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "8th Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Donald A. Stroh",
+          "Name": "Donald A. Stroh",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Donald_A._Stroh",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Recorded 2,080 battle casualties between 8 and 31 July as having sustained 3,050 wounds.",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "40000",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {},
+        "Civilian": {}
+      },
+      "Media": {
+        "Link": "https://warfarehistorynetwork.com/wp-content/uploads/2020/04/Hedgerows-111-SC-341804.jpg",
+        "Description": "Combat in Normandy's Hedgerows",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5 N, -1.5 W",
+        "Map_Reference": "Map I: Normandy Front, 2 July 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6003",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5 N, -1.5 W",
+        "Weather_text": "Greater amount of cloud, wind, and rain than recorded since 1900, nullifying Allied air superiority on many days.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.87,
+          "East": -0.13,
+          "South": 48.6,
+          "North": 50.4
+        }
+      }
+    },
+    {
+      "Event": "The American Point of View on the July Offensive in Normandy",
+      "Sub-event": "Frustration and Hedgerow Fighting",
+      "Sub-event_summary": "Soldiers experienced frustration, isolation, and difficult transition to battle in the hedgerow country, adopting jungle-like fighting tactics.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "\"We won the battle of Normandy,\" one survivor later said, \"[but] considering the high price in American lives, we lost.\"[5] Not a bitter indictment of the way warfare was conducted in the hedgerows, the statement revealed instead the feeling of despair that touched all who participated. Frustration was the clearest impression. The \"working day\" was determined by daylight, usually from about 0500 to the final wisp of visibility an hour or two before midnight. Patrol action and preparations for the morrow meant that even the few hours of darkness were full of activity. A new morning meant little, for little changed in the dreary landscape of the Norman battleground.[6]",
+        "Paragraph_8": "Over a stretch of such days, you became so dulled by fatigue that the names of the killed and wounded they checked off each night, the names of men who had been your best friends, might have come out of a telephone book for all you knew. All the old values were gone, and if there was a world beyond this tangle of hedgerows . . . , where one barrage could lay out half a company like a giant's club, you never expected to live to see it.[7]",
+        "Paragraph_9": "It seemed incredible that only a few days and a few miles separated the water-filled foxholes from the British pubs, the desolate Cotentin from the English countryside, the sound of battle from the noise of Piccadilly. The hedgerows that surrounded the rectangular Norman fields seemed to isolate the men from all past experience and oppress them with the feeling that they were beings inhabiting another planet. Units separated by a single hedgerow were frequently unaware of each other's presence. Each small group knew only of its own efforts and had but a vague impression that other individuals were similarly engaged.[8]",
+        "Paragraph_10": "The transition from training for war to the reality of battle was difficult and often rapid. Some units incurred casualties before they actually entered combat, as when ships on their way to France occasionally struck mines or when long-range German guns found a mark.[9] Artillery gun crews frequently unloaded the ships that had brought them to the Continent and proceeded at once, even though they were already weary, to support an attack.[10]",
+        "Paragraph_11": "The experience of four and a half newly arrived divisions underscored the problems of transition. In addition to the mistakes made by units, many individuals temporarily forgot the lessons of basic training and failed, for example, to use cover and concealment properly. After a week of action one tank battalion was \"not available for any employment whatsoever because of losses in personnel,\" and the division to which it was attached used instead three 105-mm. self-propelled guns and three 81-mm. mortars mounted on half-tracks. The intricate maze of sunken roads between matted hedgerows emphasized the sense of bewilderment that afflicted those new to the terrors of combat. It was easy to get lost, and some tank crews found it necessary to designate a man to act as navigator. After the initial shock, however, the sights and sounds of life and death in Normandy became familiar. Dulled by fatigue and habit, the men soon accepted their lot as normal.",
+        "Paragraph_12": "Behind . . . [the battalions] the engineers slammed bulldozers through the obstinate hedgerow banks, carving a makeshift supply route up to the forward elements, and everywhere the medics were drafting litter bearers to haul the wounded the long way back.[12]"
+      },
+      "Footnote_References": "5,6,7,8,9,10,12",
+      "Place_Name": "Cotentin",
+      "Dates": {
+        "Date_group_of_event": "July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-9.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "329th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "90th Infantry Division",
+          "Commander": "Unknown",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "High officer casualties, only four lieutenants remaining in one regiment",
+        "Equipments": {
+          "Supply": "Supply shortages in ammunition at times",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Browning automatic rifle",
+            "Identifier": "M1918",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M1918_Browning_automatic_rifle",
+            "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/M1918_bar.jpg/800px-M1918_bar.jpg",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {},
+        "Civilian": {}
+      },
+      "Media": {
+        "Link": "https://www.historynet.com/wp-content/uploads/2021/09/Infantrymen-Normandy-hedgerows.jpg",
+        "Description": "Infantrymen in Normandy hedgerows",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Hedgerow Country",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "Map II: First Army Front West of the Vire River, 8-15 July 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6003",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hedgerow Country",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Rain and mud made ground troops wonder if they would ever be warm and clean again.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.21,
+          "North": 50.01
+        }
+      }
+    },
+    {
+      "Event": "The American Point of View on the July Offensive in Normandy",
+      "Sub-event": "Distinguishing Features of Combat",
+      "Sub-event_summary": "Combat in Normandy was distinguished by the fighting quality of German troops, the nature of the country favoring the defense, and adverse weather conditions.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "Several features distinguished combat in Normandy during July 1944 from combat elsewhere. Very soon General Eisenhower had concluded that three factors were making the battle extremely tough: \"First, as always, the fighting quality of the German soldier; second, the nature of the country; third, the weather.\"[13]",
+        "Paragraph_14": "The fighting quality of the enemy troops encompassed a great range. Russians and Poles employed in combination with Germans formed an \"alloy\" that withstood little pressure despite the exceptional leadership of German commissioned and noncommissioned officers. Non-Germanic troops, who comprised the bulk of the prisoners of war taken by the First Army, seemed to be convinced that Germany could not continue the war much longer, and Americans wondered when all the Germans would come to this realization. But the German troops, as distinguished from the Osttruppen, were good. Not invincible, the regular Wehrmacht units nevertheless had \"staying power,\" while SS forces and paratroopers were a breed apart: \"Elite troops, with an unshakable morale, they asked no quarter and made certain that they gave none. . . .\"[14]",
+        "Paragraph_15": "The Germans had conducted an active defense, mounting local counterattacks with local reserves supported by small groups of tanks. Well-employed mortars and machine guns and roving artillery pieces characterized their stubborn delaying tactics. Generally, during the early part of the month, the Germans seemed reluctant to employ their artillery in volume, but as the month progressed they increasingly used battery and battalion volleys to obtain mass and concentration on fewer targets. When forced to withdraw, the Germans broke contact during darkness and covered their withdrawal with large numbers of automatic weapons in order to delay the advance by forcing the Americans to commit additional units. By the time American attacks made the covering force break contact, another covering force had set up another delaying position, and U.S. troops seemed \"unable to find the solution to this problem.\"[15]",
+        "Paragraph_16": "American commanders had been alert for evidence that would indicate a penetration of the German defenses. Short-lived pursuit had occurred, for example, in the VIII Corps sector when the Germans withdrew in good order from la Haye-du-Puits to the Ay and the Sèves Rivers. But the only real opportunity to exploit a penetration came after the bridgehead was established between the Taute and the Vire Rivers, and this had been muffed. Capture of Hill 192 by V Corps forces had also pierced the German defensive line, but the projected First Army wheeling maneuver on Caumont precluded a deep thrust in the eastern sector of the First Army line. The advance all along the army front had been painful. The Germans gave way so slowly that the July offensive seemed to have failed. The nature of the country favored the Germans. The marshes of the Cotentin canalized American attacks into well-defined corridors. Soggy ground in large part immobilized the mechanized power of U.S. ground forces. The hedgerows subdivided the terrain into small rectangular compartments that the Germans had tied together to provide mutual support. The result was a continuous band of strong-points in great depth all across the front. Handicapped by lack of observation, by the difficulty of maintaining direction, and by the limited ability to use all supporting weapons to maximum advantage, the Americans adopted a form of jungle or Indian fighting in which the individual soldier played a dominant role. Units were assigned frontages according to specific fields and hedgerows rather than by yardage, and distances and intervals between tactical formations were reduced.[16]",
+        "Paragraph_17": "The battleground reminded observers of the tiny battlefields of the American Civil War. Feeling out each hedgerow for the hidden enemy was a tense affair performed at close range. \"Must go forward slowly, as we are doing,\" a regimental commander reported; \"take one hedgerow at a time and clean it up.\" This was standing operating procedure much of the time. At that slow rate, often a single hedgerow per day, the troops \"could see the war lasting for twenty years.\" \"Too many hedges\" and not the enemy was the real deterrent to rapid advance.[17]",
+        "Paragraph_18": "The weather helped the enemy. The amount of cloud, wind, and rain in June and July of 1944 was greater than that recorded at any time since 1900. It nullified Allied air superiority on many days. Although the IX Tactical Air Command flew over 900 air missions for the First Army between 26 June and 24 July, approximately 50 percent of the potential air support could not be employed because of adverse weather conditions.[18]"
+      },
+      "Footnote_References": "13,14,15,16,17,18",
+      "Place_Name": "la Haye-du-Puits",
+      "Dates": {
+        "Date_group_of_event": "26 June - 24 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-9.html",
+        "Zulu_date_group_of_event": "260000ZJUN44 to 240000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "IX Tactical Air Command",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Unknown",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Machine gun",
+            "Identifier": "M1919",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M1919_Browning_machine_gun",
+            "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/M1919a4mg.jpg/800px-M1919a4mg.jpg",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {},
+        "Civilian": {}
+      },
+      "Media": {
+        "Link": "https://normandy-victory-museum.fr/wp-content/uploads/2025/10/Soldats-pendant-La-bataille-des-haies.webp",
+        "Description": "Soldiers during the battle of the hedges",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.2909 N, -1.5453 W",
+        "Map_Reference": "Map V: Breakthrough, 25-27 July 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6003",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.2909 N, -1.5453 W",
+        "Weather_text": "Greater amount of cloud, wind, and rain than recorded since 1900, nullifying Allied air superiority on many days.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.9153,
+          "East": -0.1753,
+          "South": 48.3909,
+          "North": 50.1909
+        }
+      }
+    },
+    {
+      "Event": "The American Point of View on the July Offensive in Normandy",
+      "Sub-event": "Logistics and Supply",
+      "Sub-event_summary": "Despite congestion and adverse weather, supply delivery was satisfactory, with heavy artillery ammunition expenditure and shortages in infantrymen replacements.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "The rain and the sticky, repulsive mud it produced made the ground troops wonder whether they would ever be warm and clean and dry again. Since the depth of the continental beachhead was not much greater in July than it had been in June, the problem of congestion was still acute. Allied army and corps headquarters that had become available on the Continent could not be utilized because of lack of room for the troops they would command. With a single regiment requiring between 14 and 20 miles of road for movement, traffic flowed at a pedestrian rate, often with vehicles bumper to bumper. Macadam roads, the best in Normandy, were few; the great majority of the roads were of gravel. They were all difficult to keep in good repair under the wheels and tracks of heavy military vehicles. In wet weather they were slippery or muddy; during the infrequent periods of sunshine, they quickly became dusty.[19]",
+        "Paragraph_20": "Despite the difficulties of ground transportation, the actual delivery of supplies to the combat forces was generally satisfactory. Short lines of communications, lower consumption rates in gasoline and oil, the absence of the Luftwaffe over the combat zone, and the large volume of supplies brought over the open beaches resulted in a relatively stable logistical situation. Artillery ammunition expenditure was heavy between 4 and 15 July, even though control was being exercised and unrestricted firing forbidden. To compensate for the lack of observation in Normandy, deeper and wider concentrations than normal were fired. Although reserve stocks of ammunition sometimes dropped to low levels on certain types of shells, particularly for the 105-mm. howitzer, the troops were seldom obliged to curtail their firing because of shortages. While artillery, tank destroyer, and antiaircraft personnel replacements were available in unnecessarily large quantities, infantry replacements, particularly riflemen, were in short supply because of the unexpectedly high casualty rates. By the middle of the month the deficiency in infantrymen became so serious that 25,000 rifle replacements were requested from the zone of interior by the fastest transportation possible. Weapons losses--Browning automatic rifles, grenade launchers, bazookas, mortars, and light machine guns--were also higher than anticipated, but replacements arrived through normal channels of resupply from stocks in England. Also, in combat that measured gains in yards rather than in miles, many more small-scale maps were needed. Air shipments of 1:25,000 maps from England remedied the deficiency.[20]"
+      },
+      "Footnote_References": "19,20",
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "4 - 15 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-9.html",
+        "Zulu_date_group_of_event": "040000ZJUL44 to 150000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "First Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Nelson Bradley",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Infantry replacements in short supply, 25,000 requested",
+        "Equipments": {
+          "Supply": "Ammunition shortages at times for 105-mm howitzer",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "105mm self-propelled gun",
+            "Identifier": "M7 Priest",
+            "Quantity": "unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/M7_Priest",
+            "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/M7_Priest_Korea_1951.jpg/800px-M7_Priest_Korea_1951.jpg",
+            "Web_Reference_Capture_Date": "December 21, 2025"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {},
+        "Civilian": {}
+      },
+      "Media": {
+        "Link": "https://cdn11.bigcommerce.com/s-yzgoj/images/stencil/1280x1280/products/1892211/4168609/apisbfgyn__68996.1626394344.jpg?c=2",
+        "Description": "U.S. Soldier in Hedgerows",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Map_Reference": "Map I: Normandy Front, 2 July 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6003",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1162 N, -1.0903 W",
+        "Weather_text": "Rain and sticky mud, slippery or muddy roads in wet weather.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.46,
+          "East": 0.28,
+          "South": 48.21,
+          "North": 50.01
+        }
+      }
+    },
+    {
+      "Event": "The American Point of View on the July Offensive in Normandy",
+      "Sub-event": "Overall Assessment",
+      "Sub-event_summary": "The July offensive, though geographically limited, significantly weakened German forces, setting the stage for their destruction in subsequent weeks.",
+      "Sub-event_fulltext": {
+        "Paragraph_21": "Since the Allies needed to expand the continental foothold in order to gain room for maneuver, airfields, and the increasing quantities of troops and supplies of the build-up, and also to acquire ports of entry, the battle of the hedgerows, in geographical terms, was hardly successful in either the American zone in the Cotentin or the British zone around Caen. Space and port facilities remained the most serious Allied concern. Fulfilling the requirement of Operation Overlord--securing adequate lodgment in northwest France--seemed a long way off.",
+        "Paragraph_22": "In the third week of July, as the First Army regrouped for a new attempt to gain the Coutances-Caumont line, there was little realization that the July offensive had achieved results of vital significance. Allied preoccupation with geography and the undiminished German resistance had combined to obscure the fact that in pressing for geographical gain the Allies had been fulfilling a precept of Clausewitz: destroying the enemy military forces. Allied pressure along a broad front had prevented the enemy from building strong mobile reserves and concentrating them in offensive action against any one point; it had also thinned the forces in contact.[21]",
+        "Paragraph_23": "How close the Germans in Normandy had been brought to destruction was to become apparent with surprising clarity in the next few weeks of warfare."
+      },
+      "Footnote_References": "21",
+      "Place_Name": "Coutances-Caumont",
+      "Dates": {
+        "Date_group_of_event": "Third week July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-9.html",
+        "Zulu_date_group_of_event": "150000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "First Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Nelson Bradley",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Thinned forces",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {},
+        "Civilian": {}
+      },
+      "Media": {
+        "Link": "https://49fe30bb3aa7406c16dc-5c968119d095dc32d807923c59347cc2.ssl.cf1.rackcdn.com/2004.311.054_1.jpg",
+        "Description": "American soldiers fighting in hedgerows in France in July 1944",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Caumont",
+        "Place_GPS_coordinate": "49.0909 N, -0.8064 W",
+        "Map_Reference": "Map I: Normandy Front, 2 July 1944",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "https://ww2db.com/image.php?image_id=6003",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0909 N, -0.8064 W",
+        "Weather_text": "Greater amount of cloud, wind, and rain than recorded since 1900, nullifying Allied air superiority on many days.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.1764,
+          "East": 0.5636,
+          "South": 48.1909,
+          "North": 49.9909
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "1",
+      "Footnote_Number": "1",
+      "Footnote_Text": "The XIX Corps civil affairs detachment could not become operational in St Lô until 29 July, and only then did the French civilian administration begin again to function. XIX Corps AAR, Jul.",
+      "Footnote_Referenced_Source": "XIX Corps AAR, Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "After Action Report, July 1944"
+    },
+    {
+      "Footnote": "2a",
+      "Footnote_Number": "2a",
+      "Footnote_Text": "FUSA Daily Estimated Loss Rpts, Jul, KCRC",
+      "Footnote_Referenced_Source": "FUSA Daily Estimated Loss Rpts, Jul, KCRC",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Daily Estimated Loss Reports, July 1944"
+    },
+    {
+      "Footnote": "2b",
+      "Footnote_Number": "2b",
+      "Footnote_Text": "Ruppenthal, Logistical Support, I, 460",
+      "Footnote_Referenced_Source": "Ruppenthal, Logistical Support, I, 460",
+      "Web_Link": "https://history.army.mil/portals/143/Images/Publications/catalog/7-2.pdf",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "2c",
+      "Footnote_Number": "2c",
+      "Footnote_Text": "30th Div G-3 Jnl, entries 1615 and 1935, 15 Jul, and 2335, 17 Jul",
+      "Footnote_Referenced_Source": "30th Div G-3 Jnl, entries 1615 and 1935, 15 Jul, and 2335, 17 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "G-3 Journal, 30th Infantry Division, July 1944"
+    },
+    {
+      "Footnote": "2d",
+      "Footnote_Number": "2d",
+      "Footnote_Text": "VIII Corps IG Ltr, Rpt of Investigation of 358th Inf Regt, 90th Inf Div, 11 Aug.",
+      "Footnote_Referenced_Source": "VIII Corps IG Ltr, Rpt of Investigation of 358th Inf Regt, 90th Inf Div, 11 Aug",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Inspector General Letter, VIII Corps, 11 Aug 1944"
+    },
+    {
+      "Footnote": "3",
+      "Footnote_Number": "3",
+      "Footnote_Text": "The 8th Division, for instance, recorded 2,080 battle casualties between 8 and 31 July as having sustained 3,050 wounds. 8th Div AAR, 8 Jul-4 Aug.",
+      "Footnote_Referenced_Source": "8th Div AAR, 8 Jul-4 Aug",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Report, 8th Division, July-August 1944"
+    },
+    {
+      "Footnote": "4a",
+      "Footnote_Number": "4a",
+      "Footnote_Text": "First U.S. Army, Report of Operations, I, 95",
+      "Footnote_Referenced_Source": "First U.S. Army, Report of Operations, I, 95",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-First/index.html",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "4b",
+      "Footnote_Number": "4b",
+      "Footnote_Text": "8th Div AAR's, Jul",
+      "Footnote_Referenced_Source": "8th Div AAR's, Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, 8th Division, July 1944"
+    },
+    {
+      "Footnote": "4c",
+      "Footnote_Number": "4c",
+      "Footnote_Text": "XIX Corps AAR's, Jul",
+      "Footnote_Referenced_Source": "XIX Corps AAR's, Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "After Action Reports, XIX Corps, July 1944"
+    },
+    {
+      "Footnote": "4d",
+      "Footnote_Number": "4d",
+      "Footnote_Text": "CI 84 (29th Div).",
+      "Footnote_Referenced_Source": "CI 84 (29th Div)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Combat Interview 84, 29th Division"
+    },
+    {
+      "Footnote": "5",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Raymond J. Guguen, 329th \"Buckshot\" Infantry Regiment (Wolsenbuettel, Germany: Ernst Fischer, 1945), p. 36.",
+      "Footnote_Referenced_Source": "Raymond J. Guguen, 329th \"Buckshot\" Infantry Regiment (Wolsenbuettel, Germany: Ernst Fischer, 1945), p. 36",
+      "Web_Link": "https://core.ac.uk/download/pdf/234781151.pdf",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "6a",
+      "Footnote_Number": "6a",
+      "Footnote_Text": "{ ERAGIMUS == \"We Accomplish\" (np., n.d.) a brief history of the 358th Infantry",
+      "Footnote_Referenced_Source": "{ ERAGIMUS == \"We Accomplish\" (np., n.d.) a brief history of the 358th Infantry",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "358th Infantry History"
+    },
+    {
+      "Footnote": "6b",
+      "Footnote_Number": "6b",
+      "Footnote_Text": "358th Inf Jnl, 9 Jul.",
+      "Footnote_Referenced_Source": "358th Inf Jnl, 9 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "358th Infantry Journal, 9 Jul 1944"
+    },
+    {
+      "Footnote": "7",
+      "Footnote_Number": "7",
+      "Footnote_Text": "314th Infantry Regiment, Through Combat, p. 19.",
+      "Footnote_Referenced_Source": "314th Infantry Regiment, Through Combat, p. 19",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "314th Infantry Regiment History"
+    },
+    {
+      "Footnote": "8",
+      "Footnote_Number": "8",
+      "Footnote_Text": "Typewritten MS, Comment on 82d Div Opn, 82d Abn Div AAR, Jul.",
+      "Footnote_Referenced_Source": "Typewritten MS, Comment on 82d Div Opn, 82d Abn Div AAR, Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "82d Abn Div AAR, Jul 1944"
+    },
+    {
+      "Footnote": "9",
+      "Footnote_Number": "9",
+      "Footnote_Text": "Hewitt, Story of 30th Division, p. 16.",
+      "Footnote_Referenced_Source": "Hewitt, Story of 30th Division, p. 16",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Story of 30th Division"
+    },
+    {
+      "Footnote": "10",
+      "Footnote_Number": "10",
+      "Footnote_Text": "See, for example, 17th FA Gp S-3 Fpty, 3 Jul, VIII Corps G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "17th FA Gp S-3 Fpty, 3 Jul, VIII Corps G-3 Jnl and File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "17th FA Gp Journal, 3 Jul 1944"
+    },
+    {
+      "Footnote": "11a",
+      "Footnote_Number": "11a",
+      "Footnote_Text": "329th Inf AAR, Jul",
+      "Footnote_Referenced_Source": "329th Inf AAR, Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Report, 329th Infantry, July 1944"
+    },
+    {
+      "Footnote": "11b",
+      "Footnote_Number": "11b",
+      "Footnote_Text": "314th Infantry Regiment, Through Combat, p. 22",
+      "Footnote_Referenced_Source": "314th Infantry Regiment, Through Combat, p. 22",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "314th Infantry Regiment History"
+    },
+    {
+      "Footnote": "11c",
+      "Footnote_Number": "11c",
+      "Footnote_Text": "9th Div G-3 Jnl, entry 1430, 17 Jul",
+      "Footnote_Referenced_Source": "9th Div G-3 Jnl, entry 1430, 17 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "G-3 Journal, 9th Division, July 1944"
+    },
+    {
+      "Footnote": "11d",
+      "Footnote_Number": "11d",
+      "Footnote_Text": "XIX Corps Ltr, Notes on Combat Experience, 5 Jul, VIII Corps G-3 Jnl.",
+      "Footnote_Referenced_Source": "XIX Corps Ltr, Notes on Combat Experience, 5 Jul, VIII Corps G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "XIX Corps Letter, 5 Jul 1944; VIII Corps G-3 Journal"
+    },
+    {
+      "Footnote": "12",
+      "Footnote_Number": "12",
+      "Footnote_Text": "314th Infantry Regiment, Through Combat, p. 20.",
+      "Footnote_Referenced_Source": "314th Infantry Regiment, Through Combat, p. 20",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "314th Infantry Regiment History"
+    },
+    {
+      "Footnote": "13",
+      "Footnote_Number": "13",
+      "Footnote_Text": "Ltr, Eisenhower to Marshall, 5 Jul, Pogue Files.",
+      "Footnote_Referenced_Source": "Ltr, Eisenhower to Marshall, 5 Jul, Pogue Files",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Pogue Files, Letter, 5 Jul 1944"
+    },
+    {
+      "Footnote": "14a",
+      "Footnote_Number": "14a",
+      "Footnote_Text": "314th Infantry Regiment, Through Combat, pp. 20-21",
+      "Footnote_Referenced_Source": "314th Infantry Regiment, Through Combat, pp. 20-21",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "314th Infantry Regiment History"
+    },
+    {
+      "Footnote": "14b",
+      "Footnote_Number": "14b",
+      "Footnote_Text": "Telecon, Corlett and Gerhardt, 1833, 1 Jul, 29th Div G-3 Jnl.",
+      "Footnote_Referenced_Source": "Telecon, Corlett and Gerhardt, 1833, 1 Jul, 29th Div G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "29th Div G-3 Journal, 1 Jul 1944"
+    },
+    {
+      "Footnote": "15a",
+      "Footnote_Number": "15a",
+      "Footnote_Text": "30th Div G-2 Est 2, s0 Jul (Incl 2 to Intel Annex 3)",
+      "Footnote_Referenced_Source": "30th Div G-2 Est 2, s0 Jul (Incl 2 to Intel Annex 3)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "G-2 Estimate 2, 30th Division, July 1944"
+    },
+    {
+      "Footnote": "15b",
+      "Footnote_Number": "15b",
+      "Footnote_Text": "VII Corps G-2 Est, 17 Jul",
+      "Footnote_Referenced_Source": "VII Corps G-2 Est, 17 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "G-2 Estimate, VII Corps, 17 Jul 1944"
+    },
+    {
+      "Footnote": "15c",
+      "Footnote_Number": "15c",
+      "Footnote_Text": "Observations of the Div Comdr, 2d Div AAR, Jul.",
+      "Footnote_Referenced_Source": "Observations of the Div Comdr, 2d Div AAR, Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Report, 2d Division, July 1944"
+    },
+    {
+      "Footnote": "16",
+      "Footnote_Number": "16",
+      "Footnote_Text": "First U.S. Army, Report of Operations, I, 122-23.",
+      "Footnote_Referenced_Source": "First U.S. Army, Report of Operations, I, 122-23",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-First/index.html",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "17a",
+      "Footnote_Number": "17a",
+      "Footnote_Text": "30th Div G-3 Jnl, entry 1935, 15 Jul",
+      "Footnote_Referenced_Source": "30th Div G-3 Jnl, entry 1935, 15 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "G-3 Journal, 30th Division, 15 Jul 1944"
+    },
+    {
+      "Footnote": "17b",
+      "Footnote_Number": "17b",
+      "Footnote_Text": "2d Battalion, 329th Infantry, Combat Digest, p. 16",
+      "Footnote_Referenced_Source": "2d Battalion, 329th Infantry, Combat Digest, p. 16",
+      "Web_Link": "https://83rdinfdivdocs.org/documents/329th/various/Combat_Digest_2nd_Battalion_329th_Infantry_Regiment_color.pdf",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "17c",
+      "Footnote_Number": "17c",
+      "Footnote_Text": "First U.S. Army, Report of Operations, I, 86",
+      "Footnote_Referenced_Source": "First U.S. Army, Report of Operations, I, 86",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-First/index.html",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "17d",
+      "Footnote_Number": "17d",
+      "Footnote_Text": "Sylvan Diary, 209 Jun.",
+      "Footnote_Referenced_Source": "Sylvan Diary, 209 Jun",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "William C. Sylvan Diary, June 1944"
+    },
+    {
+      "Footnote": "18a",
+      "Footnote_Number": "18a",
+      "Footnote_Text": "First U.S. Army, Report of Operations, I, 91",
+      "Footnote_Referenced_Source": "First U.S. Army, Report of Operations, I, 91",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-First/index.html",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "18b",
+      "Footnote_Number": "18b",
+      "Footnote_Text": "SHAEF Draft Note for submission to SHAEF G-3 for Release to Public Relations, Meteorological Forecast for Allied Assault on France, June 1944 [14 Aug], SHAEF File GCT 000.0/Ops (A), Meteorological Matters.",
+      "Footnote_Referenced_Source": "SHAEF Draft Note for submission to SHAEF G-3 for Release to Public Relations, Meteorological Forecast for Allied Assault on France, June 1944 [14 Aug], SHAEF File GCT 000.0/Ops (A), Meteorological Matters",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "SHAEF Files"
+    },
+    {
+      "Footnote": "19a",
+      "Footnote_Number": "19a",
+      "Footnote_Text": "8th Div G-3 Jnl, entry 0815, 30 Jul",
+      "Footnote_Referenced_Source": "8th Div G-3 Jnl, entry 0815, 30 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "G-3 Journal, 8th Division, 30 Jul 1944"
+    },
+    {
+      "Footnote": "19b",
+      "Footnote_Number": "19b",
+      "Footnote_Text": "1st Div G-3 Jnl and File, 15-22 Jul",
+      "Footnote_Referenced_Source": "1st Div G-3 Jnl and File, 15-22 Jul",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "G-3 Journal and File, 1st Division, 15-22 Jul 1944"
+    },
+    {
+      "Footnote": "19c",
+      "Footnote_Number": "19c",
+      "Footnote_Text": "Annex B to SHAEF/1062/7/GDP, 17 Jun 44. Topography and Communications, and SHAEF/66876/E, SHAWEF Engr Div Ltr, Effect of Postponing D-Day for OVERLORD, 10 Apr, 44, Shaef File 370.2, Logistic Studies",
+      "Footnote_Referenced_Source": "Annex B to SHAEF/1062/7/GDP, 17 Jun 44. Topography and Communications, and SHAEF/66876/E, SHAWEF Engr Div Ltr, Effect of Postponing D-Day for OVERLORD, 10 Apr, 44, Shaef File 370.2, Logistic Studies",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "SHAEF Files 370.2, Logistic Studies"
+    },
+    {
+      "Footnote": "19d",
+      "Footnote_Number": "19d",
+      "Footnote_Text": "Talk to Directors of QMG's Dept on Visit to Normandy, n.d., SGS SHAEF File 381",
+      "Footnote_Referenced_Source": "Talk to Directors of QMG's Dept on Visit to Normandy, n.d., SGS SHAEF File 381",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "SGS SHAEF File 381"
+    },
+    {
+      "Footnote": "19e",
+      "Footnote_Number": "19e",
+      "Footnote_Text": "Stacey, The Canadian Army, p. 187.",
+      "Footnote_Referenced_Source": "Stacey, The Canadian Army, p. 187",
+      "Web_Link": "https://www.canada.ca/content/dam/themes/defence/caf/militaryhistory/dhh/official/book-1948-army-1939-1945-en.pdf",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "20a",
+      "Footnote_Number": "20a",
+      "Footnote_Text": "Ruppenthal, Logistical Support, I, 439, 442, 461",
+      "Footnote_Referenced_Source": "Ruppenthal, Logistical Support, I, 439, 442, 461",
+      "Web_Link": "https://history.army.mil/portals/143/Images/Publications/catalog/7-2.pdf",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "20b",
+      "Footnote_Number": "20b",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 93-94",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations, I, 93-94",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-First/index.html",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "20c",
+      "Footnote_Number": "20c",
+      "Footnote_Text": "FUSA G-4 Daily Summary Rpt, 11 Jul, FUSA G-3 Jnl.",
+      "Footnote_Referenced_Source": "FUSA G-4 Daily Summary Rpt, 11 Jul, FUSA G-3 Jnl",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "NARA",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "G-4 Daily Summary Report, 11 Jul 1944; FUSA G-3 Journal"
+    },
+    {
+      "Footnote": "21",
+      "Footnote_Number": "21",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 89.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations, I, 89",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-First/index.html",
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn9.html",
+  "Source_Footnote_Link_Capture_Date": "December 21, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-9.html",
+  "Source_Link_Capture_Date": "December 21, 2025"
+}

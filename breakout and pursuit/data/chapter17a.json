@@ -1,0 +1,1103 @@
+{
+  "Events": [
+    {
+      "Event": "The Riesensauerei",
+      "Sub-event": "Kluge's Despair and Conversation with Blumentritt",
+      "Sub-event_summary": "Field Marshal von Kluge expresses despair over the chaotic situation following the American breakthrough at Avranches during a telephone conversation with General Blumentritt, blaming Hausser's decision and highlighting the collapse of the left flank.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "\"It's a madhouse here,\" Kluge cried in despair as he attempted to describe the situation on the morning of 31 July. At the Seventh Army command post in le Mans, Kluge for the second day was for all intents and purposes commanding the LXXXIV Corps and the Seventh Army, in addition to performing his official duties as commander of Army Group B and OB WEST. \"You can't imagine what it's like,\" he told General der Infanterie Guenther Blumentritt, the OB WEST chief of staff, on the telephone. \"Commanders are completely out of contact [with their troops]. Jodl and Warlimont [Hitler's chief advisers at OKW] ought to come down and see what is taking place.\" Who was to blame? The whole mess had started, it seemed to Kluge, \"with Hausser's fatal decision to break out to the southeast. So far, it appears that only the spearheads of various [American] mobile units are through to Avranches. But it is perfectly clear that everything else will follow. Unless I can get infantry and antitank weapons there, the [left] wing can not hold.\" Apropos of that, Blumentritt said, OKW wanted to know the locations of all the alternate and rearward defenses under construction in Normandy. Kluge did not hide his derision. \"All you can do is laugh out loud,\" he replied. \"Don't they read our dispatches? Haven't they been oriented? They must be living on the moon.\" \"Of course,\" Blumentritt agreed smoothly. Kluge's mood changed. \"Someone has to tell the Fuehrer,\" he said, without designating who was to perform the unpleasant task, \"that if the Americans get through at Avranches they will be out of the woods and they'll be able to do what they want.\" The terrible thing, Kluge said, was that there was not much that anyone could do. \"It's a crazy situation.\""
+      },
+      "Footnote_References": [
+        1
+      ],
+      "Place_Name": "le Mans",
+      "Dates": {
+        "Date_group_of_event": "morning of 31 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "310923ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/wiki/Günther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Seventh Army",
+            "Name": "Paul Hausser",
+            "Rank": "SS-Oberst-Gruppenführer",
+            "Date": "31 July 1944",
+            "Biographical_reference": "https://grokipedia.com/wiki/Paul_Hausser",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "LXXXIV Corps",
+            "Name": "Dietrich von Choltitz",
+            "Rank": "General der Infanterie",
+            "Date": "31 July 1944",
+            "Biographical_reference": "https://grokipedia.com/wiki/Dietrich_von_Choltitz",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Unknown staffing levels; commanders out of contact with troops",
+        "Equipments": {
+          "Supply": "Shortages of infantry and antitank weapons noted",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Antitank weapons",
+              "Identifier": "Various",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://c8.alamy.com/comp/2J001KE/ww2-american-advance-in-france-after-d-day-invasion-us-army-m3a1-semi-tracked-armored-personnel-carriers-8th-battalion-american-4th-tank-division-in-a-street-liberated-from-nazi-germany-avranches-france-july-31-1944-2J001KE.jpg",
+          "Description": "US Army M3A1 semi-tracked armored personnel carriers in Avranches, July 31, 1944",
+          "License": "Alamy Stock Photo - Rights Managed"
+        }
+      ],
+      "Place": {
+        "Place_Name": "le Mans",
+        "Place_GPS_coordinate": "48.0061 N, 0.1996 E",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "le Mans",
+        "Place_GPS_coordinate": "48.0061 N, 0.1996 E",
+        "Weather_text": "Clear skies allowing unprecedented U.S. fighter-bomber activity; temperatures around 20-25°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.1704",
+          "East": "1.5696",
+          "South": "47.1061",
+          "North": "48.9061"
+        }
+      }
+    },
+    {
+      "Event": "The Riesensauerei",
+      "Sub-event": "Authorization for Seventh Army Withdrawal",
+      "Sub-event_summary": "Kluge authorizes the Seventh Army to withdraw to a line from Granville to Troisgots.",
+      "Sub-event_fulltext": {
+        "Paragraph_2": "At 0030 on 31 July, Kluge had authorized the Seventh Army to withdraw to a line from Granville to Troisgots."
+      },
+      "Footnote_References": [
+        2
+      ],
+      "Place_Name": "Granville, Troisgots",
+      "Dates": {
+        "Date_group_of_event": "0030 on 31 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "302330ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/wiki/Günther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Granville",
+        "Place_GPS_coordinate": "48.8378 N, -1.5972",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Copyright Military History Matters",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Granville",
+        "Place_GPS_coordinate": "48.8378 N, -1.5972",
+        "Weather_text": "Clear skies allowing unprecedented U.S. fighter-bomber activity; temperatures around 20-25°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.9672",
+          "East": "-0.2272",
+          "South": "47.9378",
+          "North": "49.7378"
+        }
+      }
+    },
+    {
+      "Event": "The Riesensauerei",
+      "Sub-event": "Attempt to Withdraw LXXXIV Corps",
+      "Sub-event_summary": "Kluge attempts to withdraw the LXXXIV Corps farther to the Avranches-Villedieu-les-Poëles line, but messages do not get through; he admits the left flank has collapsed.",
+      "Sub-event_fulltext": {
+        "Paragraph_2": "Thirty minutes later he was trying to get the LXXXIV Corps back still farther, to the Avranches-Villedieu-les-Poëles line, but without much success--for his messages were not getting through. At this time Kluge admitted unequivocably that his left flank had collapsed."
+      },
+      "Footnote_References": [
+        3
+      ],
+      "Place_Name": "Avranches, Villedieu-les-Poëles",
+      "Dates": {
+        "Date_group_of_event": "0100 on 31 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "310000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "LXXXIV Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "Biographical_reference": "https://grokipedia.com/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Communications failures",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=473307335414669",
+          "Description": "Elements of the U.S. 1st Army in Avranches, July 30, 1944",
+          "License": "Facebook - Unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844 N, -1.3611",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844 N, -1.3611",
+        "Weather_text": "Clear skies allowing unprecedented U.S. fighter-bomber activity; temperatures around 20-25°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7311",
+          "East": "0.0089",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    },
+    {
+      "Event": "The Riesensauerei",
+      "Sub-event": "Situation Update at 0920",
+      "Sub-event_summary": "Kluge learns Americans are in Avranches; situation unclear, high losses, unprecedented U.S. air activity; blames Hausser's order, notes line from Bréhal to Cérences ripped open; Villedieu must be held or recaptured.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "At 0920 Kluge learned definitely that the Americans were in Avranches, but other than that the entire situation in the Avranches-Villedieu sector was \"completely unclear.\" The only facts that could be accepted with assurance were that German losses in men and equipment were high and that U.S. fighter-bomber activity was \"unprecedented.\" An \"umbrella\" of planes had covered American tanks advancing on Granville and Avranches. The responsibility for the crisis, he insisted, lay with Hausser's order for the left wing of the LXXXIV Corps to attack to the southeast. He had discovered that Choltitz had protested Hausser's order, and he felt that this futile protest absolved Choltitz from blame for the subsequent disaster. Troops under the control of the 91st Division had established a thin line from Bréhal to Cérences as early as 28 July, but the American penetration on 31 July near Cérences had \"ripped open the whole western front.\" The inevitable conclusion was that \"Villedieu, springboard for movement east and south, is the anchor-point for Brittany, [and] has to be held under all circumstances or else has to be recaptured.\" But Kluge could do no more than draw conclusions; without an organized front and without adequate communications, he was powerless to influence the course of events."
+      },
+      "Footnote_References": [
+        4
+      ],
+      "Place_Name": "Avranches, Villedieu, Granville, Bréhal, Cérences",
+      "Dates": {
+        "Date_group_of_event": "0920 on 31 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "310820ZJUL44"
+      },
+      "TOE": {
+        "Unit": "LXXXIV Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "Biographical_reference": "https://grokipedia.com/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "91st Division",
+            "Name": "Unknown",
+            "Rank": "Unknown",
+            "Date": "31 July 1944"
+          }
+        ],
+        "Personnel": "High losses",
+        "Equipments": {
+          "Supply": "High losses in equipment",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Tanks",
+              "Identifier": "Various (e.g., M4 Sherman)",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://grokipedia.com/wiki/M4_Sherman",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Fighter-bombers",
+              "Identifier": "Various (e.g., P-47 Thunderbolt)",
+              "Quantity": "Umbrella of planes",
+              "Web_Reference": "https://grokipedia.com/wiki/Republic_P-47_Thunderbolt",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://warfarehistorynetwork.com/wp-content/uploads/2019/04/Q-Ike-Monty-157.jpg",
+          "Description": "Allied commanders in Normandy, but relevant to context of breakthrough",
+          "License": "Copyright Warfare History Network"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844 N, -1.3611",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844 N, -1.3611",
+        "Weather_text": "Clear skies allowing unprecedented U.S. fighter-bomber activity; temperatures around 20-25°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7311",
+          "East": "0.0089",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    },
+    {
+      "Event": "The Riesensauerei",
+      "Sub-event": "Worry About Villedieu and Pull Back of Panzer Divisions",
+      "Sub-event_summary": "Kluge worries about Villedieu, allows XLVII Panzer Corps to pull back 2d and 116th Panzer Divisions to Villedieu-Percy line; notes losses in II Parachute Corps including 3d Parachute Division; 21st Panzer Division committed against British.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "Fifteen minutes later, Kluge's greatest worry was still Villedieu. He did not know nor could he find out which side held the town. Suspecting the worst, he agreed to let the XLVII Panzer Corps pull back the 2d and 116th Panzer Divisions to the Villedieu-Percy line. He knew that east of the Vire River, in the withdrawal toward the town of Vire, the II Parachute Corps had lost the greater part of the 3d Parachute Division (including the 15th Parachute Regiment attached to it). He knew also that the 21st Panzer Division, the last reserve division in Normandy, had been committed on the left flank of Panzer Group West, where the 326th Infantry Division had been overrun by the British."
+      },
+      "Footnote_References": [
+        5
+      ],
+      "Place_Name": "Villedieu, Percy, Vire",
+      "Dates": {
+        "Date_group_of_event": "0935 on 31 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "310835ZJUL44"
+      },
+      "TOE": {
+        "Unit": "XLVII Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/wiki/Günther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "2d Panzer Division",
+            "Name": "Unknown",
+            "Rank": "Unknown",
+            "Date": "31 July 1944"
+          },
+          {
+            "Unit": "116th Panzer Division",
+            "Name": "Unknown",
+            "Rank": "Unknown",
+            "Date": "31 July 1944"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://substackcdn.com/image/fetch/$s_!GHHE!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F748c17ff-0fa4-48c9-a4c7-075a548f3566_1800x1383.jpeg",
+          "Description": "Image related to American Army in Normandy",
+          "License": "Substack - Copyright Big Serge Thought"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Villedieu-les-Poêles",
+        "Place_GPS_coordinate": "48.8381 N, -1.2222",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Villedieu-les-Poêles",
+        "Place_GPS_coordinate": "48.8381 N, -1.2222",
+        "Weather_text": "Clear skies allowing unprecedented U.S. fighter-bomber activity; temperatures around 20-25°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.5922",
+          "East": "0.1478",
+          "South": "47.9381",
+          "North": "49.7381"
+        }
+      }
+    },
+    {
+      "Event": "The Riesensauerei",
+      "Sub-event": "Plan to Bring Up Infantry Divisions",
+      "Sub-event_summary": "Kluge considers bringing up the 84th and 89th Infantry Divisions to deal with American armored spearheads at Avranches, but realizes they cannot arrive in time.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "Satisfied that he could do little on the front east of Avranches except hope for the best, Kluge set out to block the Americans at Avranches. At first he thought he could bring up two infantry divisions--the 84th and 89th-- to deal with the small armored spearheads there, but he soon realized that the divisions could not possibly arrive in time."
+      },
+      "Footnote_References": [
+        6
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "31 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "APPROX 311200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "84th Infantry Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/wiki/Günther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844 N, -1.3611",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844 N, -1.3611",
+        "Weather_text": "Clear skies allowing unprecedented U.S. fighter-bomber activity; temperatures around 20-25°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7311",
+          "East": "0.0089",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    },
+    {
+      "Event": "The Riesensauerei",
+      "Sub-event": "Efforts to Hold Pontaubault Bridge",
+      "Sub-event_summary": "Since early morning, Kluge tries to get troops to hold the bridge near Pontaubault but is unsuccessful.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "Since early on the morning of 31 July, when Kluge first faced the difficult and distasteful conclusion that the front was disintegrating, he had tried to get troops to hold the bridge near Pontaubault."
+      },
+      "Footnote_References": [
+        7
+      ],
+      "Place_Name": "Pontaubault",
+      "Dates": {
+        "Date_group_of_event": "early morning of 31 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "APPROX 310610ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/wiki/Günther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Pontaubault",
+        "Place_GPS_coordinate": "48.6300 N, -1.3500",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pontaubault",
+        "Place_GPS_coordinate": "48.6300 N, -1.3500",
+        "Weather_text": "Clear skies allowing unprecedented U.S. fighter-bomber activity; temperatures around 20-25°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7200",
+          "East": "0.0200",
+          "South": "47.7300",
+          "North": "49.5300"
+        }
+      }
+    },
+    {
+      "Event": "The Riesensauerei",
+      "Sub-event": "Order to Fahrmbacher to Strip Brittany Defenses",
+      "Sub-event_summary": "Kluge orders Fahrmbacher of XXV Corps to strip St. Malo area of forces to prevent American influx into Brittany, send mobile troops to hold Pontaubault bridge and counterattack to recapture Avranches; Fahrmbacher handicapped by lack of mobile troops but tries.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "Unsuccessful in this effort, he took the drastic step of stripping the Brittany defenses by ordering Fahrmbacher, who commanded the XXV Corps in Brittany, to denude the St. Malo area of forces in order to prohibit the influx of Americans into Brittany. Specifically, Fahrmbacher was to send all available mobile troops to hold the Pontaubault bridge and from there to launch a counterattack to the north to recapture Avranches. Fahrmbacher was handicapped in two respects. Though there were many unemployed naval and air force troops in his corps sector, he could not order them to assume ground force missions because they were not under his jurisdiction. The troops directly under his control and therefore available to him were generally of two types--static troops guarding the coast line and units that had escaped from the Cotentin after taking heavy losses. Both lacked sufficient transport to make them mobile. Fahrmbacher felt that he could not perform his mission at Avranches, but he tried anyway."
+      },
+      "Footnote_References": [
+        8
+      ],
+      "Place_Name": "St. Malo, Brittany, Pontaubault, Avranches",
+      "Dates": {
+        "Date_group_of_event": "1000 on 31 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "310900ZJUL44"
+      },
+      "TOE": {
+        "Unit": "XXV Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/wiki/Günther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Understrength; static and recovered units lacking mobility",
+        "Equipments": {
+          "Supply": "Lack of transport",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Saint-Malo",
+        "Place_GPS_coordinate": "48.6493 N, -2.0257",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Saint-Malo",
+        "Place_GPS_coordinate": "48.6493 N, -2.0257",
+        "Weather_text": "Clear skies allowing unprecedented U.S. fighter-bomber activity; temperatures around 20-25°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.3957",
+          "East": "-0.6557",
+          "South": "47.7493",
+          "North": "49.5493"
+        }
+      }
+    },
+    {
+      "Event": "The Riesensauerei",
+      "Sub-event": "Dispatch of 77th Division Remnants",
+      "Sub-event_summary": "Fahrmbacher dispatches remnants of 77th Division (battalion strength), reinforced by paratroopers and assault guns under Col. Bacherer to Pontaubault; they arrive late afternoon but Americans are already there.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "Fahrmbacher dispatched toward Pontaubault what remained of the 77th Division, a unit perhaps the equivalent of a battalion in strength, reinforced by assorted paratroopers and a company of assault guns. This force, under Col. Rudolf Bacherer, the 77th Division commander, reached the vicinity of Pontaubault in the late afternoon of 31 July, only to find the Americans already there."
+      },
+      "Footnote_References": [
+        9
+      ],
+      "Place_Name": "Pontaubault",
+      "Dates": {
+        "Date_group_of_event": "late afternoon of 31 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "APPROX 311600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "77th Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "XXV Corps",
+          "Commander": "Wilhelm Fahrmbacher",
+          "Name": "Wilhelm Fahrmbacher",
+          "Rank": "General der Artillerie",
+          "Biographical_reference": "https://grokipedia.com/wiki/Wilhelm_Fahrmbacher",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "77th Division",
+            "Name": "Rudolf Bacherer",
+            "Rank": "Oberst",
+            "Date": "31 July 1944",
+            "Biographical_reference": "https://grokipedia.com/wiki/Rudolf_Bacherer",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Equivalent to a battalion in strength",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Assault guns",
+              "Identifier": "StuG III/IV",
+              "Quantity": "1 company",
+              "Web_Reference": "https://grokipedia.com/wiki/Sturmgeschütz_III",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=761169303107411",
+          "Description": "American advance through Normandy during Operation Cobra",
+          "License": "Facebook - Unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Pontaubault",
+        "Place_GPS_coordinate": "48.6300 N, -1.3500",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pontaubault",
+        "Place_GPS_coordinate": "48.6300 N, -1.3500",
+        "Weather_text": "Clear skies allowing unprecedented U.S. fighter-bomber activity; temperatures around 20-25°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7200",
+          "East": "0.0200",
+          "South": "47.7300",
+          "North": "49.5300"
+        }
+      }
+    },
+    {
+      "Event": "The Riesensauerei",
+      "Sub-event": "Report to Hitler via Warlimont",
+      "Sub-event_summary": "Kluge reports to Hitler through Warlimont that it is not possible to stop the Americans who have broken out of the static defenses.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "Hours before this took place, Kluge had reported to Hitler through Warlimont that he did not think it at all possible to stop the Americans, who had broken out of the strong static defenses that had contained them in July. Hitler's \"stand fast and hold\" tactics, it appeared, had failed."
+      },
+      "Footnote_References": [
+        10
+      ],
+      "Place_Name": "Unknown",
+      "Dates": {
+        "Date_group_of_event": "1045 on 31 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+        "Zulu_date_group_of_event": "310945ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "Biographical_reference": "https://grokipedia.com/wiki/Günther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "http://www.americainwwii.com/images/trapswastika.jpg",
+          "Description": "Image related to German forces in Normandy",
+          "License": "Copyright America in WWII magazine"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844 N, -1.3611",
+        "Map_Reference": "Map 10 Operation COBRA",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-maps.html",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:Operation_Cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844 N, -1.3611",
+        "Weather_text": "Clear skies allowing unprecedented U.S. fighter-bomber activity; temperatures around 20-25°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.7311",
+          "East": "0.0089",
+          "South": "47.7844",
+          "North": "49.5844"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "1",
+      "Footnote_Number": "1",
+      "Footnote_Text": "Telecon, Kluge and Blumentritt, 1023, 31 Jul, OB WEST KTB, Anlage 966.",
+      "Footnote_Referenced_Source": "OB WEST KTB, Anlage 966",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Kriegstagebuch (KTB) OB WEST, Anlage 966"
+    },
+    {
+      "Footnote": "2a",
+      "Footnote_Number": "2",
+      "Footnote_Text": "AGp B Telecon, 0030, 31 Jul, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Army Group B Kriegstagebuch (KTB)"
+    },
+    {
+      "Footnote": "2b",
+      "Footnote_Number": "2",
+      "Footnote_Text": "AGp B Msg, 31 Jul, AGp B Op. Befehle, p. 206.",
+      "Footnote_Referenced_Source": "AGp B Op. Befehle, p. 206",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Army Group B Operations Befehle, page 206"
+    },
+    {
+      "Footnote": "3a",
+      "Footnote_Number": "3",
+      "Footnote_Text": "Telecon, Kluge and Speidel, 0100, 31 Jul, Seventh Army Tel Jnl.",
+      "Footnote_Referenced_Source": "Seventh Army Telephone Journal",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Seventh Army Telephone Journal"
+    },
+    {
+      "Footnote": "3b",
+      "Footnote_Number": "3",
+      "Footnote_Text": "This and the telephone conversations from the Seventh Army Telephone Journal that follow appear also in First U.S. Army. Report of Operations, I, 114ff.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations, I, 114ff",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "First U.S. Army Report of Operations, Volume I, pages 114ff"
+    },
+    {
+      "Footnote": "4a",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Telecon, Kluge and Speidel, 0920, 31 Jul, Seventh Army Tel Jnl",
+      "Footnote_Referenced_Source": "Seventh Army Telephone Journal",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Seventh Army Telephone Journal"
+    },
+    {
+      "Footnote": "4b",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Seventh Army KTB, 28 Jul.",
+      "Footnote_Referenced_Source": "Seventh Army KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Seventh Army Kriegstagebuch (KTB), 28 Jul"
+    },
+    {
+      "Footnote": "5a",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Telecon, Kluge and Gersdorff, 0935, 31 Jul. Seventh Army Tel Jnl",
+      "Footnote_Referenced_Source": "Seventh Army Telephone Journal",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Seventh Army Telephone Journal"
+    },
+    {
+      "Footnote": "5b",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Hodgson, R-54 and R-58.",
+      "Footnote_Referenced_Source": "Hodgson, R-54 and R-58",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Hodgson Reports R-54 and R-58"
+    },
+    {
+      "Footnote": "6",
+      "Footnote_Number": "6",
+      "Footnote_Text": "These divisions reached the Normandy front on 4 and 6 August. Hodgson, R-54.",
+      "Footnote_Referenced_Source": "Hodgson, R-54",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Hodgson Report R-54"
+    },
+    {
+      "Footnote": "7",
+      "Footnote_Number": "7",
+      "Footnote_Text": "Telecon, Kluge and Zimmerman, 0210, 31 Jul, OB WEST KTB, Anlage 952.",
+      "Footnote_Referenced_Source": "OB WEST KTB, Anlage 952",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Kriegstagebuch (KTB) OB WEST, Anlage 952"
+    },
+    {
+      "Footnote": "8a",
+      "Footnote_Number": "8",
+      "Footnote_Text": "Telecon, Kluge and Fahrmbacher, 1000, 31 Jul, Seventh Army Tel Jnl",
+      "Footnote_Referenced_Source": "Seventh Army Telephone Journal",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Seventh Army Telephone Journal"
+    },
+    {
+      "Footnote": "8b",
+      "Footnote_Number": "8",
+      "Footnote_Text": "MS # 731 (Fahrmbacher).",
+      "Footnote_Referenced_Source": "MS #731 (Fahrmbacher)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740",
+      "NonDigital_Library_References": "Foreign Military Studies MS #731 by Wilhelm Fahrmbacher"
+    },
+    {
+      "Footnote": "9a",
+      "Footnote_Number": "9",
+      "Footnote_Text": "Seventh Army Tel Jnl, 31 Jul",
+      "Footnote_Referenced_Source": "Seventh Army Telephone Journal",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Seventh Army Telephone Journal, 31 Jul"
+    },
+    {
+      "Footnote": "9b",
+      "Footnote_Number": "9",
+      "Footnote_Text": "OB WEST, a Study in Command, I, 129-30.",
+      "Footnote_Referenced_Source": "OB WEST, a Study in Command, Volume I, pages 129-30",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OB WEST, a Study in Command, Volume I"
+    },
+    {
+      "Footnote": "10",
+      "Footnote_Number": "10",
+      "Footnote_Text": "Telecon, Kluge and Warlimont, 1045, 31 Jul, Seventh Army Tel Jnl.",
+      "Footnote_Referenced_Source": "Seventh Army Telephone Journal",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Seventh Army Telephone Journal"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn17.html",
+  "Source_Footnote_Link_Capture_Date": "December 24, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+  "Source_Link_Capture_Date": "December 24, 2025"
+}

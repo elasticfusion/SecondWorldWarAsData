@@ -1,0 +1,2724 @@
+{
+  "Events": [
+    {
+      "Event": "Week of Decision - The German Decision",
+      "Sub-event": "Hitler's Assessment of the Global Situation and Threats",
+      "Sub-event_summary": "Hitler evaluates the serious German situation following the American breakthrough at Avranches, considering external defections in the Balkans, Finland, and potential Turkish entry against Germany, internal threats from the July 20th Putsch, Soviet advances on the Eastern Front, and the critical Western Front breakthrough threatening withdrawal from France.",
+      "Sub-event_fulltext": {
+        "Paragraph_2": "The seriousness of the German situation at the time of the American breakthrough to Avranches was not lost on Hitler.<sup>[1](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html#fn1)</sup> The Balkans and Finland were about to be lost, and there were indications that Turkey might soon enter the war against Germany. Hitler considered these events as a kind of external defection over which he had little control. The *Putsch* of July 20th, on the other hand, was an internal defection that threatened him personally, and he was increasingly uneasy over the feeling that disloyalty had permeated the entire German military organization even to the highest levels.",
+        "Paragraph_3": "Soviet advances sent his Eastern Front reeling, but because construction had been started in July on a new defense line stretching from East Prussia to the Carpathians, Hitler hoped that his forces would somehow hold. His main concern lay in the west, for he had long considered the west the vital sector of what had become, at least for the moment, a defensive war.",
+        "Paragraph_4": "The breakthrough on the Western Front posed the ominous possibility that the Germans might have to withdraw from France. With France lost, the threat of Allied penetration of the German homeland would become immediate. The Seine River, with its deep bends and twists, was difficult to defend and could be no more than a temporary rallying position, but between the Seine and the Rhine were a number of historic water obstacles where the Germans could hope to stop the Allies short of the German border. To utilize the water barriers, Jodl sketched a major defensive belt across Belgium and France (and into northern Italy) that consisted of two lines: the Somme-Marne-Saone River line, and the Albert Canal-Meuse River line, both anchored on the Vosges Mountains."
+      },
+      "Footnote_References": [
+        "1"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": [
+        {
+          "Date_group_of_event": "July 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "BEGINNING JUL44"
+        },
+        {
+          "Date_group_of_event": "20 July 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "201200ZJUL44"
+        }
+      ],
+      "TOE": [
+        {
+          "Unit": "OKW",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "OKW",
+              "Commander": "Adolf Hitler",
+              "Name": "Adolf Hitler",
+              "Rank": "Führer",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Adolf_Hitler",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "OKW",
+              "Commander": "Alfred Jodl",
+              "Name": "Alfred Jodl",
+              "Rank": "Generaloberst",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Alfred_Jodl",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Avranches",
+          "Place_GPS_coordinate": "48.6844, -1.3569",
+          "Map_Reference": "Map IX",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Balkans",
+          "Place_GPS_coordinate": "42, 21",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Finland",
+          "Place_GPS_coordinate": "64, 26",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "East Prussia",
+          "Place_GPS_coordinate": "54.5, 21",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Carpathians",
+          "Place_GPS_coordinate": "48, 25",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Seine River",
+          "Place_GPS_coordinate": "49.4339, 0.2067",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Rhine",
+          "Place_GPS_coordinate": "50.9413, 7.0000",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Vosges Mountains",
+          "Place_GPS_coordinate": "48, 7",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Avranches",
+          "Place_GPS_coordinate": "48.6844, -1.3569",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.3569,
+            "East": -0.3569,
+            "South": 47.7844,
+            "North": 49.5844
+          }
+        },
+        {
+          "Place_Name": "Balkans",
+          "Place_GPS_coordinate": "42, 21",
+          "Weather_text": "Varied, but generally warm in summer 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 20,
+            "East": 22,
+            "South": 41,
+            "North": 43
+          }
+        },
+        {
+          "Place_Name": "Finland",
+          "Place_GPS_coordinate": "64, 26",
+          "Weather_text": "Mild summer in 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 25,
+            "East": 27,
+            "South": 63,
+            "North": 65
+          }
+        },
+        {
+          "Place_Name": "East Prussia",
+          "Place_GPS_coordinate": "54.5, 21",
+          "Weather_text": "Warm with rain in July 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 20,
+            "East": 22,
+            "South": 53.5,
+            "North": 55.5
+          }
+        },
+        {
+          "Place_Name": "Carpathians",
+          "Place_GPS_coordinate": "48, 25",
+          "Weather_text": "Mountainous weather, cooler in 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 24,
+            "East": 26,
+            "South": 47,
+            "North": 49
+          }
+        },
+        {
+          "Place_Name": "Seine River",
+          "Place_GPS_coordinate": "49.4339, 0.2067",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -0.7933,
+            "East": 1.2067,
+            "South": 48.5339,
+            "North": 50.3339
+          }
+        },
+        {
+          "Place_Name": "Rhine",
+          "Place_GPS_coordinate": "50.9413, 7.0000",
+          "Weather_text": "Warm summer in 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 6,
+            "East": 8,
+            "South": 50.0413,
+            "North": 51.8413
+          }
+        },
+        {
+          "Place_Name": "Vosges Mountains",
+          "Place_GPS_coordinate": "48, 7",
+          "Weather_text": "Cooler mountainous weather in summer 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 6,
+            "East": 8,
+            "South": 47,
+            "North": 49
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Week of Decision - The German Decision",
+      "Sub-event": "Planning Defensive Lines and Policies Against Allied Logistics",
+      "Sub-event_summary": "Planning of defensive lines using river barriers, repair of the West Wall, redirection of Todt Organization from Atlantic Wall to inland defenses, impressment of civilians, policy to deny ports and destroy transportation if withdrawal necessary, and preparations for reserve forces.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "Behind these lines were the permanent fortifications of the West Wall\n\n*--419--*\n\n<a id=\"page420\"></a>\n\n* * *\n\n(Siegfried Line), protecting the approaches to the German border. Although neglected for four years and partially dismantled, the West Wall in the summer of 1944 was not a negligible defensive factor. Late in July Jodl ordered the West Wall repaired and rearmed and the river lines in France prepared for defense. The Todt Organization was to cease work on the Atlantic Wall and commence construction of defensive positions along the newly projected lines inland. Authority was granted to impress civilians for work on roads and defenses in Belgium and France.",
+        "Paragraph_6": "In addition to the erection of defensive positions, Hitler enunciated on the last day of July a two-point policy directed against Allied logistics. He ordered his forces to deny the Allies ports of entry on the Continent and, if a withdrawal from France became necessary, to destroy the transportation system there by demolishing railroads, bridges, and communications.",
+        "Paragraph_7": "Though withdrawal from France was extremely undesirable, Hitler foresaw the possible necessity of it. He indicated as much by ordering the movement of some units out of the Balkans and Italy for defense of the homeland, thereby accepting the probability of losing the Balkans immediately and the calculated risk of having to withdraw in Italy to the Alps. Hitler also quickened preparations for raising a reserve force within Germany."
+      },
+      "Footnote_References": [
+        "1"
+      ],
+      "Place_Name": "West Wall",
+      "Dates": [
+        {
+          "Date_group_of_event": "late July 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "END JUL44"
+        },
+        {
+          "Date_group_of_event": "last day of July 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "312200ZJUL44"
+        },
+        {
+          "Date_group_of_event": "summer of 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "BEGINNING JUN44"
+        }
+      ],
+      "TOE": [
+        {
+          "Unit": "Todt Organization",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "Todt Organization",
+              "Commander": "Fritz Todt",
+              "Name": "Fritz Todt",
+              "Rank": "Minister",
+              "End_Date": "1942-02-08",
+              "End_Status": "KIA",
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Todt",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "Todt Organization",
+              "Commander": "Albert Speer",
+              "Name": "Albert Speer",
+              "Rank": "Minister",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Albert_Speer",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": "Construction materials redirected",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Pursuit_to_the_West_Wall_1944.jpg/330px-Pursuit_to_the_West_Wall_1944.jpg",
+          "Description": "Map showing pursuit to the West Wall in 1944",
+          "License": "Public domain"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "West Wall",
+          "Place_GPS_coordinate": "49.5, 7.5",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Pursuit_to_the_West_Wall_1944.jpg/330px-Pursuit_to_the_West_Wall_1944.jpg",
+          "ExternalMapLinkLicence": "Public domain",
+          "ExternalMapLinkCaptureDate": "December 28, 2025"
+        },
+        {
+          "Place_Name": "Atlantic Wall",
+          "Place_GPS_coordinate": "49, -1",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Alps",
+          "Place_GPS_coordinate": "47, 11",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "West Wall",
+          "Place_GPS_coordinate": "49.5, 7.5",
+          "Weather_text": "Warm summer in 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 6.5,
+            "East": 8.5,
+            "South": 48.5,
+            "North": 50.5
+          }
+        },
+        {
+          "Place_Name": "Atlantic Wall",
+          "Place_GPS_coordinate": "49, -1",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2,
+            "East": 0,
+            "South": 48,
+            "North": 50
+          }
+        },
+        {
+          "Place_Name": "Alps",
+          "Place_GPS_coordinate": "47, 11",
+          "Weather_text": "Cooler in higher elevations in summer 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 10,
+            "East": 12,
+            "South": 46,
+            "North": 48
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Week of Decision - The German Decision",
+      "Sub-event": "Decision to Fight in Normandy and Hitler's Assumption of Command",
+      "Sub-event_summary": "Hitler decides to continue fighting in Normandy to avoid mobile warfare under unfavorable conditions, assumes direct command with a small staff, orders Kluge to close the gap at Avranches, and forbids looking toward rear defenses.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Stabilizing the Normandy front appeared the only alternative to withdrawal from France. On the credit side, a front line in Normandy would be the shortest and most economical of any possible in the west. On the debit side, failure to stabilize the front in Normandy would--because of Allied air superiority--involve the German forces in mobile warfare under unfavorable conditions.",
+        "Paragraph_9": "Reluctant to accept the hazards of mobile warfare in these circumstances and needing time to prepare rearward defenses, Hitler decided to take the risks and continue to fight in Normandy. Since the war in western Europe had reached a critical stage, he took responsibility for the battle upon himself. Creating a small staff taken from members of the OKW planning section *(WFSt)* to help him, Hitler sought to recreate the conditions of static warfare while at the same time preparing to withdraw in the event of failure. By this move, Hitler in effect assumed the functions of theater commander and filled the virtual vacuum in the chain of command that had existed since Rommel's incapacitation and Kluge's assumption of dual command of *Army Group B* and *OB WEST.* Ordering Kluge to close the gap in the left portion of the German defenses and to anchor the front on Avranches, Hitler forbade the commanders in the field to look backward toward defensive lines in the rear."
+      },
+      "Footnote_References": [
+        "1"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": [
+        {
+          "Date_group_of_event": "early August 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "BEGINNING AUG44"
+        }
+      ],
+      "TOE": [
+        {
+          "Unit": "Army Group B",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "Army Group B",
+              "Commander": "Günther von Kluge",
+              "Name": "Günther von Kluge",
+              "Rank": "Generalfeldmarschall",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "OB WEST",
+              "Name": "Günther von Kluge",
+              "Rank": "Generalfeldmarschall",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "OKW WFSt",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Normandy",
+          "Place_GPS_coordinate": "49, -1",
+          "Map_Reference": "Map IX",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Avranches",
+          "Place_GPS_coordinate": "48.6844, -1.3569",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Normandy",
+          "Place_GPS_coordinate": "49, -1",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2,
+            "East": 0,
+            "South": 48,
+            "North": 50
+          }
+        },
+        {
+          "Place_Name": "Avranches",
+          "Place_GPS_coordinate": "48.6844, -1.3569",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.3569,
+            "East": -0.3569,
+            "South": 47.7844,
+            "North": 49.5844
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Week of Decision - The German Decision",
+      "Sub-event": "OB WEST's Assessment of the Situation",
+      "Sub-event_summary": "OB WEST views the Normandy situation as critical but not desperate, noting no second Allied landing likely, relief from facing bulk of Allied forces, and considers possibilities of withdrawal or stabilization.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "As seen by the staff of *OB WEST,* the situation in Normandy at the beginning of August, while critical, could have been worse.<sup>[2](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html#fn2)</sup> The recent appearance on the Continent of Canadian units and other formations that had been thought to belong to Patton's army group, and the commitment in Normandy of ever-growing numbers of close-support planes indicated that a second large-scale Allied\n\n*--420--*\n\n<a id=\"page421\"></a>\n\n* * *\n\nstrategic landing in western Europe was no longer likely. Also, the Allied breakout from the limited continental lodgment and the development of mobile warfare underscored the fact that the Allies no longer needed to make another landing. The knowledge that the Germans in Normandy already faced the bulk of the Allied forces in western Europe was somewhat of a relief."
+      },
+      "Footnote_References": [
+        "2"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": [
+        {
+          "Date_group_of_event": "beginning of August 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "BEGINNING AUG44"
+        }
+      ],
+      "TOE": [
+        {
+          "Unit": "OB WEST",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "OB WEST",
+              "Commander": "Günther von Kluge",
+              "Name": "Günther von Kluge",
+              "Rank": "Generalfeldmarschall",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Normandy",
+          "Place_GPS_coordinate": "49, -1",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Normandy",
+          "Place_GPS_coordinate": "49, -1",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2,
+            "East": 0,
+            "South": 48,
+            "North": 50
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Week of Decision - The German Decision",
+      "Sub-event": "Alternatives Considered: Withdrawal or Stabilization",
+      "Sub-event_summary": "Consideration of cautious withdrawal to the Seine or stabilizing the front in Normandy by closing the Avranches gap, with Hitler opting for the latter, and Eberbach's suggestion rejected.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "Two possibilities seemed in order. The first was the more cautious: to break off the battle in Normandy and withdraw behind delaying action to the Seine while *Army Group G* evacuated southern France. This would have the virtue of saving the main body of German troops, though admittedly at the expense of heavy losses, especially in matériel. Eberbach later claimed that, when Warlimont visited the front about 1 August, he, Eberbach, suggested an immediate withdrawal to the Seine, a recommendation Warlimont rejected as being \"politically unbearable and tactically impractical.\"<sup>[3](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html#fn3)</sup>",
+        "Paragraph_12": "*OB WEST* could understand OKW's reluctance to withdraw, for pulling back to the Seine would more than likely be the first step toward retirement behind the West Wall. If the Germans did not succeed in holding the relatively short front in Normandy, then only at the West Wall--another relatively short defensive line that could be reinforced-- was there a prospect of success. The consequences of such a decision would be hard to accept--surrender of France with all the political and economic implications of it, loss of long-range projectile bases along the Pas-de-Calais, unfavorable reaction in Italy that might lead to the loss of a region valuable to the German war economy, withdrawals on other fronts to project the homeland.",
+        "Paragraph_13": "The other alternative was to stabilize the front in Normandy. To do so, the breach at Avranches would have to be closed, a step that appeared tactically feasible at the beginning of August. If the gap were not closed, there would be an unavoidable crisis on the front, for the likelihood of being able to pull back across the Seine at that late date would be slim.",
+        "Paragraph_14": "As events developed, Hitler left *OB WEST* no choice. He ordered the forces in the west to continue fighting in Normandy even as Kluge was already trying to remedy the situation at Avranches."
+      },
+      "Footnote_References": [
+        "2",
+        "3"
+      ],
+      "Place_Name": "Seine",
+      "Dates": [
+        {
+          "Date_group_of_event": "about 1 August 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "APPROX 010900ZAUG44"
+        },
+        {
+          "Date_group_of_event": "beginning of August 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "BEGINNING AUG44"
+        }
+      ],
+      "TOE": [
+        {
+          "Unit": "Army Group G",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "Panzer Group West",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "Panzer Group West",
+              "Commander": "Hans Eberbach",
+              "Name": "Hans Eberbach",
+              "Rank": "General der Panzertruppe",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Eberbach",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "OKW",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "OKW",
+              "Commander": "Walter Warlimont",
+              "Name": "Walter Warlimont",
+              "Rank": "General der Artillerie",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_Warlimont",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Seine",
+          "Place_GPS_coordinate": "49.4339, 0.2067",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Pas-de-Calais",
+          "Place_GPS_coordinate": "50.95, 1.85",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Avranches",
+          "Place_GPS_coordinate": "48.6844, -1.3569",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Seine",
+          "Place_GPS_coordinate": "49.4339, 0.2067",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -0.7933,
+            "East": 1.2067,
+            "South": 48.5339,
+            "North": 50.3339
+          }
+        },
+        {
+          "Place_Name": "Pas-de-Calais",
+          "Place_GPS_coordinate": "50.95, 1.85",
+          "Weather_text": "Warm summer weather with occasional rain in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 0.85,
+            "East": 2.85,
+            "South": 50.05,
+            "North": 51.85
+          }
+        },
+        {
+          "Place_Name": "Avranches",
+          "Place_GPS_coordinate": "48.6844, -1.3569",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.3569,
+            "East": -0.3569,
+            "South": 47.7844,
+            "North": 49.5844
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Week of Decision - The German Decision",
+      "Sub-event": "Reinforcements Moving to the Front",
+      "Sub-event_summary": "Kluge's available forces committed by 1 August, with reinforcements including armored and infantry divisions moving to Normandy, some expected to arrive at Avranches during the first week of August.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "Although all of Kluge's available forces in Normandy were committed by the first day of August, one armored and six infantry divisions were on the way to reinforce the front. The *84th* and *85th Divisions* were moving from the Pas-de-Calais toward Falaise. The *89th Division* had just crossed the Seine River, and the *331st Division* was in the process of being ferried across. Parts of the *363d Division* were already in the *Seventh Army* rear and were being committed in the *LXXXIV Corps* sector. From southern France came the *708th Division,* which was crossing the Loire River near Angers, and the *9th Panzer Division,* which was moving toward the Loire for eventual assembly near Alencon. Whether all would get to the front in time to be of use before the situation in the Avranches sector deteriorated completely was the vital question. It appeared that at least three divisions, the *363d,* the *84th,* and the *89th,* would be\n\n*--421--*\n\n<a id=\"page422\"></a>\n\n* * *\n\navailable at Avranches during the first week in August.<sup>[4](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html#fn4)</sup> *([Map IX](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg) )*"
+      },
+      "Footnote_References": [
+        "4"
+      ],
+      "Place_Name": "Pas-de-Calais",
+      "Dates": [
+        {
+          "Date_group_of_event": "first day of August 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "010000ZAUG44"
+        },
+        {
+          "Date_group_of_event": "first week in August 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "APPROX 070000ZAUG44"
+        }
+      ],
+      "TOE": [
+        {
+          "Unit": "84th Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "85th Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "89th Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "331st Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "363d Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "LXXXIV Corps",
+              "Commander": null,
+              "Name": null,
+              "Rank": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "708th Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "9th Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [
+              {
+                "Origination_Country": "DE",
+                "Name": "Panzer V Panther",
+                "Identifier": "Panzer V",
+                "Quantity": "unknown",
+                "Web_Reference": "https://en.wikipedia.org/wiki/Panther_tank",
+                "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Panther_tank_1944.jpg/330px-Panther_tank_1944.jpg",
+                "Web_Image_License": "Public domain",
+                "Web_Reference_Capture_Date": "December 28, 2025"
+              }
+            ],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "Seventh Army",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "Seventh Army",
+              "Commander": "Paul Hausser",
+              "Name": "Paul Hausser",
+              "Rank": "SS-Oberst-Gruppenführer",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "LXXXIV Corps",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            }
+          ],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+          "Description": "Map IX showing German dispositions early August 1944",
+          "License": "Public domain"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Pas-de-Calais",
+          "Place_GPS_coordinate": "50.95, 1.85",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Falaise",
+          "Place_GPS_coordinate": "48.8922, -0.1953",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Seine River",
+          "Place_GPS_coordinate": "49.4339, 0.2067",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Loire River",
+          "Place_GPS_coordinate": "47.4736, -0.5547",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Angers",
+          "Place_GPS_coordinate": "47.4736, -0.5547",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Alencon",
+          "Place_GPS_coordinate": "48.4306, 0.0917",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Avranches",
+          "Place_GPS_coordinate": "48.6844, -1.3569",
+          "Map_Reference": "Map IX",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Pas-de-Calais",
+          "Place_GPS_coordinate": "50.95, 1.85",
+          "Weather_text": "Warm summer weather with occasional rain in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 0.85,
+            "East": 2.85,
+            "South": 50.05,
+            "North": 51.85
+          }
+        },
+        {
+          "Place_Name": "Falaise",
+          "Place_GPS_coordinate": "48.8922, -0.1953",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.1953,
+            "East": 0.8047,
+            "South": 47.9922,
+            "North": 49.7922
+          }
+        },
+        {
+          "Place_Name": "Seine River",
+          "Place_GPS_coordinate": "49.4339, 0.2067",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -0.7933,
+            "East": 1.2067,
+            "South": 48.5339,
+            "North": 50.3339
+          }
+        },
+        {
+          "Place_Name": "Loire River",
+          "Place_GPS_coordinate": "47.4736, -0.5547",
+          "Weather_text": "Warm summer weather in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.5547,
+            "East": 0.4453,
+            "South": 46.5736,
+            "North": 48.3736
+          }
+        },
+        {
+          "Place_Name": "Angers",
+          "Place_GPS_coordinate": "47.4736, -0.5547",
+          "Weather_text": "Warm summer weather in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.5547,
+            "East": 0.4453,
+            "South": 46.5736,
+            "North": 48.3736
+          }
+        },
+        {
+          "Place_Name": "Alencon",
+          "Place_GPS_coordinate": "48.4306, 0.0917",
+          "Weather_text": "Warm summer weather with occasional rain in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -0.9083,
+            "East": 1.0917,
+            "South": 47.5306,
+            "North": 49.3306
+          }
+        },
+        {
+          "Place_Name": "Avranches",
+          "Place_GPS_coordinate": "48.6844, -1.3569",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.3569,
+            "East": -0.3569,
+            "South": 47.7844,
+            "North": 49.5844
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Week of Decision - The German Decision",
+      "Sub-event": "Front Line Situation and Organization",
+      "Sub-event_summary": "Description of the front line, with Panzer Group West (renamed Fifth Panzer Army) mostly quiet except one sector, Seventh Army hard pressed, organization of corps and divisions, placement of XXV Corps under Army Group B, extension of First Army control, and LXXXI Corps to control new divisions on left flank.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "Except at Avranches, the situation along the front was far from desperate. Eberbach's *Panzer Group West,* which was to change its name on 5 August to the *Fifth Panzer Army,* was actively engaged only in one sector. The *LXXXVI Corps,* the I SS *Panzer Corps,* and the *LXXIV Corps* controlled quiet zones, as did the *LVIII Panzer Corps* headquarters, recently brought up from southern France. Only the II SS *Panzer Corps* was fighting hard by 2 August, having committed all three of its divisions against the British attack launched on 30 July south of Caumont toward the town of Vire.",
+        "Paragraph_17": "Hausser's *Seventh Army* front, on the other hand, was hard pressed. In a narrow sector just east of the Vire River, the *II Parachute Corps* had only the *3d Parachute Division* to defend the town of Vire. West of the Vire River to the Foret de St. Sever, the *XLVII Panzer Corps* controlled the *2d Panzer Division* (which had absorbed the *352d Division)* and the *2d SS Panzer Division* (which had absorbed the remnants of *Panzer Lehr* and the *17th SS Panzer Grenadiers).* On the left, *LXXXIV Corps* directed the *353d Division* and the *116th Panzer Division* on a front from the St. Sever forest to the See River. Provisional units, formed from remnants and stragglers (including the *5th Parachute Division)* and operating under the staff of the *275th Division,* covered the gap south of the Sée River and east of Avranches, and the weak *91st Infantry Division* was at Rennes.<sup>[5](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html#fn5)</sup>",
+        "Paragraph_18": "Since the *Seventh Army* (or any other outside ground headquarters) could not exercise effective command of the *XXV Corps* in Brittany, Kluge placed the corps directly under *Army Group B* as a matter of administration. Writing off the *XXV Corps* in this manner in accordance with Hitler's orders emphasized the floating nature of the Normandy left flank. The weak forces at Rennes were obviously unable to offer sustained resistance. A large opening between the Sée and Loire Rivers invited American exploitation eastward toward the Paris-Orleans gap.<sup>[6](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html#fn6)</sup>",
+        "Paragraph_19": "To cover the gap thus exposed, Kluge on 2 August ordered the *First Army* to extend its control northward from the Biscay coast of France to the Loire River, take command of the forces along the Loire, and hold bridgeheads on the north bank at the crossing sites between Nantes and Orleans. On the same day Kluge also ordered the *LXXXI Corps* headquarters to hurry south from the coastal sector between the Seine and the Somme Rivers to take control of the arriving *708th Infantry* and *9th Panzer Divisions* on a refused *Seventh Army* left flank in the Domfront-Alençon sector.<sup>[7](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html#fn7)</sup> With these measures taken, Kluge turned his attention\n\n*--422--*\n\n<a id=\"page423\"></a>\n\n* * *\n\nto regaining Avranches as the new anchor point of the defensive line in Normandy."
+      },
+      "Footnote_References": [
+        "5",
+        "6",
+        "7"
+      ],
+      "Place_Name": "Vire",
+      "Dates": [
+        {
+          "Date_group_of_event": "5 August 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "050000ZAUG44"
+        },
+        {
+          "Date_group_of_event": "2 August 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "020000ZAUG44"
+        },
+        {
+          "Date_group_of_event": "30 July 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "300000ZJUL44"
+        }
+      ],
+      "TOE": [
+        {
+          "Unit": "Fifth Panzer Army",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "Fifth Panzer Army",
+              "Commander": "Hans Eberbach",
+              "Name": "Hans Eberbach",
+              "Rank": "General der Panzertruppe",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Eberbach",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "LXXXVI Corps",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            },
+            {
+              "Unit": "I SS Panzer Corps",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            },
+            {
+              "Unit": "LXXIV Corps",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            },
+            {
+              "Unit": "LVIII Panzer Corps",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            },
+            {
+              "Unit": "II SS Panzer Corps",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            }
+          ],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "Seventh Army",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "Seventh Army",
+              "Commander": "Paul Hausser",
+              "Name": "Paul Hausser",
+              "Rank": "SS-Oberst-Gruppenführer",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "II Parachute Corps",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            },
+            {
+              "Unit": "XLVII Panzer Corps",
+              "Name": "Hans Freiherr von Funck",
+              "Rank": "General der Panzertruppe",
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Freiherr_von_Funck",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "LXXXIV Corps",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            }
+          ],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "3d Parachute Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "II Parachute Corps",
+              "Commander": null,
+              "Name": null,
+              "Rank": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "2d Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "XLVII Panzer Corps",
+              "Commander": null,
+              "Name": null,
+              "Rank": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "2d SS Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "XLVII Panzer Corps",
+              "Commander": null,
+              "Name": null,
+              "Rank": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "353d Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "LXXXIV Corps",
+              "Commander": null,
+              "Name": null,
+              "Rank": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "116th Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "LXXXIV Corps",
+              "Commander": null,
+              "Name": null,
+              "Rank": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "275th Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "91st Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [],
+          "Subordinates": [],
+          "Personnel": "weak",
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "XXV Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "Army Group B",
+              "Commander": null,
+              "Name": null,
+              "Rank": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "First Army",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "LXXXI Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [],
+          "Subordinates": [
+            {
+              "Unit": "708th Infantry Division",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            },
+            {
+              "Unit": "9th Panzer Division",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            }
+          ],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Vire",
+          "Place_GPS_coordinate": "48.8376, -0.8880",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Caumont",
+          "Place_GPS_coordinate": "49.0667, -0.6667",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Foret de St. Sever",
+          "Place_GPS_coordinate": "48.85, -0.95",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "See River",
+          "Place_GPS_coordinate": "48.6, -1.2",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Rennes",
+          "Place_GPS_coordinate": "48.1147, -1.6743",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Brittany",
+          "Place_GPS_coordinate": "48, -3",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Sée River",
+          "Place_GPS_coordinate": "48.6, -1.2",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Loire River",
+          "Place_GPS_coordinate": "47.4736, -0.5547",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Paris-Orleans gap",
+          "Place_GPS_coordinate": "48.8566, 2.3522",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Biscay coast",
+          "Place_GPS_coordinate": "45, -1",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Nantes",
+          "Place_GPS_coordinate": "47.2184, -1.5536",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Orleans",
+          "Place_GPS_coordinate": "47.9029, 1.9093",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Somme Rivers",
+          "Place_GPS_coordinate": "50.2, 1.7",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Domfront-Alençon sector",
+          "Place_GPS_coordinate": "48.5931, -0.6536",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Avranches",
+          "Place_GPS_coordinate": "48.6844, -1.3569",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Vire",
+          "Place_GPS_coordinate": "48.8376, -0.8880",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8880,
+            "East": 0.1120,
+            "South": 47.9376,
+            "North": 49.7376
+          }
+        },
+        {
+          "Place_Name": "Caumont",
+          "Place_GPS_coordinate": "49.0667, -0.6667",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.6667,
+            "East": 0.3333,
+            "South": 48.1667,
+            "North": 49.9667
+          }
+        },
+        {
+          "Place_Name": "Foret de St. Sever",
+          "Place_GPS_coordinate": "48.85, -0.95",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.95,
+            "East": 0.05,
+            "South": 47.95,
+            "North": 49.75
+          }
+        },
+        {
+          "Place_Name": "See River",
+          "Place_GPS_coordinate": "48.6, -1.2",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.2,
+            "East": -0.2,
+            "South": 47.7,
+            "North": 49.5
+          }
+        },
+        {
+          "Place_Name": "Rennes",
+          "Place_GPS_coordinate": "48.1147, -1.6743",
+          "Weather_text": "Warm summer weather in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.6743,
+            "East": -0.6743,
+            "South": 47.2147,
+            "North": 49.0147
+          }
+        },
+        {
+          "Place_Name": "Brittany",
+          "Place_GPS_coordinate": "48, -3",
+          "Weather_text": "Warm summer weather with occasional rain in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -4,
+            "East": -2,
+            "South": 47,
+            "North": 49
+          }
+        },
+        {
+          "Place_Name": "Sée River",
+          "Place_GPS_coordinate": "48.6, -1.2",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.2,
+            "East": -0.2,
+            "South": 47.7,
+            "North": 49.5
+          }
+        },
+        {
+          "Place_Name": "Loire River",
+          "Place_GPS_coordinate": "47.4736, -0.5547",
+          "Weather_text": "Warm summer weather in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.5547,
+            "East": 0.4453,
+            "South": 46.5736,
+            "North": 48.3736
+          }
+        },
+        {
+          "Place_Name": "Paris-Orleans gap",
+          "Place_GPS_coordinate": "48.8566, 2.3522",
+          "Weather_text": "Warm summer weather in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 1.3522,
+            "East": 3.3522,
+            "South": 47.9566,
+            "North": 49.7566
+          }
+        },
+        {
+          "Place_Name": "Biscay coast",
+          "Place_GPS_coordinate": "45, -1",
+          "Weather_text": "Mild coastal weather in summer 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2,
+            "East": 0,
+            "South": 44,
+            "North": 46
+          }
+        },
+        {
+          "Place_Name": "Nantes",
+          "Place_GPS_coordinate": "47.2184, -1.5536",
+          "Weather_text": "Warm summer weather in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.5536,
+            "East": -0.5536,
+            "South": 46.3184,
+            "North": 48.1184
+          }
+        },
+        {
+          "Place_Name": "Orleans",
+          "Place_GPS_coordinate": "47.9029, 1.9093",
+          "Weather_text": "Warm summer weather in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 0.9093,
+            "East": 2.9093,
+            "South": 47.0029,
+            "North": 48.8029
+          }
+        },
+        {
+          "Place_Name": "Somme Rivers",
+          "Place_GPS_coordinate": "50.2, 1.7",
+          "Weather_text": "Warm summer weather with occasional rain in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 0.7,
+            "East": 2.7,
+            "South": 49.3,
+            "North": 51.1
+          }
+        },
+        {
+          "Place_Name": "Domfront-Alençon sector",
+          "Place_GPS_coordinate": "48.5931, -0.6536",
+          "Weather_text": "Warm summer weather with occasional rain in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.6536,
+            "East": 0.3464,
+            "South": 47.6931,
+            "North": 49.4931
+          }
+        },
+        {
+          "Place_Name": "Avranches",
+          "Place_GPS_coordinate": "48.6844, -1.3569",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.3569,
+            "East": -0.3569,
+            "South": 47.7844,
+            "North": 49.5844
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Week of Decision - The German Decision",
+      "Sub-event": "Planning the Counterattack to Regain Avranches",
+      "Sub-event_summary": "Planning and orders for a counterattack to regain Avranches, including withdrawal to shorter line, disengagement of divisions, assembly near Mortain, and attack on 6 August without artillery preparation, aiming for the Cotentin coast.",
+      "Sub-event_fulltext": {
+        "Paragraph_20": "If Avranches were to be regained, a counterattack had to be launched immediately. Where to get the troops for it was the problem, and Hitler provided the solution. On 2 August, in ordering a strong armored counterattack, Hitler authorized a slight withdrawal to a shorter line (Thury-Harcourt through the town of Vire to the western edge of the Forêt de St. Sever). A shortened front and the arrival of new units would give Kluge the means with which to counterattack to Avranches.<sup>[8](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html#fn8)</sup>",
+        "Paragraph_21": "Specifically, Hitler first thought of disengaging the *II SS Panzer Corps* (the *9th SS,* the *10th SS,* and the *21st Panzer Divisions)* for the counterattack, but Kluge felt this impossible because of the British pressure south of Caumont. Kluge recommended that the *XLVII Panzer Corps,* which was nearer the critical sector, make the effort with the *2d* and *2d SS Panzer Divisions* reinforced at first by the *LXXXIV Corps' 116th Panzer Division* and later by the incoming *9th Panzer Division* (after the latter moved from Alençon to Sourdeval near Mortain). Since there was some question whether the *9th* would arrive in Alençon in time to participate, Kluge suggested that additional armor be secured by pulling the *1st SS* or the *12th SS Panzer Division* out of the Caen sector where the British appeared to have become quiet, a risk that Eberbach had agreed to accept. Jodl approved Kluge's proposals.<sup>[9](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html#fn9)</sup>",
+        "Paragraph_22": "This plan accepted, Kluge directed Hausser to launch an attack with the *XLVII Panzer Corps,* using the *2d SS,* the *2d,* and the *116th Panzer Divisions* in an initial effort and the *1st SS Panzer Division* as an exploiting force. The divisions were to be relieved from the line by 6 August through withdrawal to a shorter front.<sup>[10](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html#fn10)</sup>",
+        "Paragraph_23": "While the *LXXIV* and II SS *Panzer Corps* in the *Panzer Group West* sector prepared to withdraw during the night of 3 August in order to disengage the *1st SS Panzer Division,* Hausser planned to disengage the other three divisions from his *Seventh Army* front by executing a three-phase withdrawal. The *2d, 2d SS,* and *116th Panzer Divisions* were to be pulled out of the line in that order on three successive nights starting 3 August and assembled in the area east of Mortain by 6 August. To make this possible, the *II Parachute Corps* was to extend its responsibility to the west to take control of a regiment of the *353d Division,* and the *LXXXIV Corps* was to integrate the arriving *363d* and *84th Divisions* into its front. The *XLVII Panzer Corps,* which was to direct the attack, received the *275th* as left flank cover. With three armored divisions moving abreast in an initial assault and a fourth ready to exploit initial success, the *XLVII Panzer Corps* commander, Funck, was to attack after dark on 6 August without artillery preparation.\n\n*--423--*\n\n<a id=\"page424\"></a>\n\n* * *\n\n[![General Haislip](:/dc3701571f7f4237bea1d8c7b6937846)](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p424.jpg)  \nGeneral Haislip\n\nHis objective was to reach the Cotentin west coast and secure Avranches.<sup>[11](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html#fn11)</sup>"
+      },
+      "Footnote_References": [
+        "8",
+        "9",
+        "10",
+        "11"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": [
+        {
+          "Date_group_of_event": "2 August 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "020000ZAUG44"
+        },
+        {
+          "Date_group_of_event": "night of 3 August 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "032200ZAUG44"
+        },
+        {
+          "Date_group_of_event": "3 August 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "030000ZAUG44"
+        },
+        {
+          "Date_group_of_event": "6 August 1944",
+          "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+          "Zulu_date_group_of_event": "060000ZAUG44"
+        }
+      ],
+      "TOE": [
+        {
+          "Unit": "II SS Panzer Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [],
+          "Subordinates": [
+            {
+              "Unit": "9th SS Panzer Division",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            },
+            {
+              "Unit": "10th SS Panzer Division",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            },
+            {
+              "Unit": "21st Panzer Division",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            }
+          ],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "XLVII Panzer Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "XLVII Panzer Corps",
+              "Commander": "Hans Freiherr von Funck",
+              "Name": "Hans Freiherr von Funck",
+              "Rank": "General der Panzertruppe",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Freiherr_von_Funck",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "2d Panzer Division",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            },
+            {
+              "Unit": "2d SS Panzer Division",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            },
+            {
+              "Unit": "116th Panzer Division",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            },
+            {
+              "Unit": "9th Panzer Division",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            },
+            {
+              "Unit": "1st SS Panzer Division",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            },
+            {
+              "Unit": "275th Division",
+              "Name": null,
+              "Rank": null,
+              "Date": null,
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": null,
+              "Biographical_reference_Capture_Date": null
+            }
+          ],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "12th SS Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [],
+          "Subordinates": [],
+          "Personnel": null,
+          "Equipments": {
+            "Supply": null,
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://warfarehistorynetwork.com/wp-content/uploads/2020/09/W-Luttich-Map.jpg",
+          "Description": "Map of Operation Lüttich, the German counterattack at Mortain",
+          "License": null
+        },
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p424.jpg",
+          "Description": "Photograph of General Haislip",
+          "License": "Public domain"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Thury-Harcourt",
+          "Place_GPS_coordinate": "48.9861, -0.4786",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Vire",
+          "Place_GPS_coordinate": "48.8376, -0.8880",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Forêt de St. Sever",
+          "Place_GPS_coordinate": "48.85, -0.95",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Caumont",
+          "Place_GPS_coordinate": "49.0667, -0.6667",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Alençon",
+          "Place_GPS_coordinate": "48.4306, 0.0917",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Sourdeval",
+          "Place_GPS_coordinate": "48.7167, -0.8833",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Mortain",
+          "Place_GPS_coordinate": "48.6486, -0.9411",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": "https://warfarehistorynetwork.com/wp-content/uploads/2020/09/W-Luttich-Map.jpg",
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": "December 28, 2025"
+        },
+        {
+          "Place_Name": "Caen",
+          "Place_GPS_coordinate": "49.1814, -0.3725",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Cotentin west coast",
+          "Place_GPS_coordinate": "49.5, -1.8",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        },
+        {
+          "Place_Name": "Avranches",
+          "Place_GPS_coordinate": "48.6844, -1.3569",
+          "Map_Reference": null,
+          "Map_Link": null,
+          "ExternalMapLink": null,
+          "ExternalMapLinkLicence": null,
+          "ExternalMapLinkCaptureDate": null
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Thury-Harcourt",
+          "Place_GPS_coordinate": "48.9861, -0.4786",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.4786,
+            "East": 0.5214,
+            "South": 48.0861,
+            "North": 49.8861
+          }
+        },
+        {
+          "Place_Name": "Vire",
+          "Place_GPS_coordinate": "48.8376, -0.8880",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8880,
+            "East": 0.1120,
+            "South": 47.9376,
+            "North": 49.7376
+          }
+        },
+        {
+          "Place_Name": "Forêt de St. Sever",
+          "Place_GPS_coordinate": "48.85, -0.95",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.95,
+            "East": 0.05,
+            "South": 47.95,
+            "North": 49.75
+          }
+        },
+        {
+          "Place_Name": "Caumont",
+          "Place_GPS_coordinate": "49.0667, -0.6667",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.6667,
+            "East": 0.3333,
+            "South": 48.1667,
+            "North": 49.9667
+          }
+        },
+        {
+          "Place_Name": "Alençon",
+          "Place_GPS_coordinate": "48.4306, 0.0917",
+          "Weather_text": "Warm summer weather with occasional rain in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -0.9083,
+            "East": 1.0917,
+            "South": 47.5306,
+            "North": 49.3306
+          }
+        },
+        {
+          "Place_Name": "Sourdeval",
+          "Place_GPS_coordinate": "48.7167, -0.8833",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8833,
+            "East": 0.1167,
+            "South": 47.8167,
+            "North": 49.6167
+          }
+        },
+        {
+          "Place_Name": "Mortain",
+          "Place_GPS_coordinate": "48.6486, -0.9411",
+          "Weather_text": "Warm summer weather with morning fog on 7 August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9411,
+            "East": 0.0589,
+            "South": 47.7486,
+            "North": 49.5486
+          }
+        },
+        {
+          "Place_Name": "Caen",
+          "Place_GPS_coordinate": "49.1814, -0.3725",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.3725,
+            "East": 0.6275,
+            "South": 48.2814,
+            "North": 50.0814
+          }
+        },
+        {
+          "Place_Name": "Cotentin west coast",
+          "Place_GPS_coordinate": "49.5, -1.8",
+          "Weather_text": "Warm summer weather with occasional rain in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.8,
+            "East": -0.8,
+            "South": 48.6,
+            "North": 50.4
+          }
+        },
+        {
+          "Place_Name": "Avranches",
+          "Place_GPS_coordinate": "48.6844, -1.3569",
+          "Weather_text": "Warm summer weather with occasional rain and fog in early August 1944",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.3569,
+            "East": -0.3569,
+            "South": 47.7844,
+            "North": 49.5844
+          }
+        }
+      ]
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "1a",
+      "Footnote_Number": "1",
+      "Footnote_Text": "OKW Besprechung des Fuehrers mil Generaloberst Jodl am 31.7.1944 in der Wolfschanze",
+      "Footnote_Referenced_Source": "OKW Besprechung des Fuehrers mil Generaloberst Jodl am 31.7.1944 in der Wolfschanze",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OKW Besprechung des Fuehrers mil Generaloberst Jodl am 31.7.1944 in der Wolfschanze"
+    },
+    {
+      "Footnote": "1b",
+      "Footnote_Number": "1",
+      "Footnote_Text": "Der Westen (Schramm)",
+      "Footnote_Referenced_Source": "Der Westen (Schramm)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Der Westen (Schramm)"
+    },
+    {
+      "Footnote": "1c",
+      "Footnote_Number": "1",
+      "Footnote_Text": "Memo for Rcd, Warlimont to Eberbach, 3 Aug, Fifth Panzer Army KTB, Annex 248",
+      "Footnote_Referenced_Source": "Memo for Rcd, Warlimont to Eberbach, 3 Aug, Fifth Panzer Army KTB, Annex 248",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Memo for Rcd, Warlimont to Eberbach, 3 Aug, Fifth Panzer Army KTB, Annex 248"
+    },
+    {
+      "Footnote": "1d",
+      "Footnote_Number": "1",
+      "Footnote_Text": "MS # C-099C (Warlimont)",
+      "Footnote_Referenced_Source": "MS # C-099C (Warlimont)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # C-099C (Warlimont)"
+    },
+    {
+      "Footnote": "1e",
+      "Footnote_Number": "1",
+      "Footnote_Text": "Jodl Diary",
+      "Footnote_Referenced_Source": "Jodl Diary",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Jodl Diary"
+    },
+    {
+      "Footnote": "1f",
+      "Footnote_Number": "1",
+      "Footnote_Text": "OB WEST, a Study in Command, pp. 46-47",
+      "Footnote_Referenced_Source": "OB WEST, a Study in Command, pp. 46-47",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OB WEST, a Study in Command, pp. 46-47"
+    },
+    {
+      "Footnote": "1g",
+      "Footnote_Number": "1",
+      "Footnote_Text": "Bauer, Organization of the German Defenses in the West in the Fall of 1944 (1936-44). MS R-20",
+      "Footnote_Referenced_Source": "Bauer, Organization of the German Defenses in the West in the Fall of 1944 (1936-44). MS R-20",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Bauer, Organization of the German Defenses in the West in the Fall of 1944 (1936-44). MS R-20"
+    },
+    {
+      "Footnote": "2a",
+      "Footnote_Number": "2",
+      "Footnote_Text": "OB WEST, a Study in Command, pp. 55ff",
+      "Footnote_Referenced_Source": "OB WEST, a Study in Command, pp. 55ff",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OB WEST, a Study in Command, pp. 55ff"
+    },
+    {
+      "Footnote": "2b",
+      "Footnote_Number": "2",
+      "Footnote_Text": "OB WEST KTB, 30 Jul, and Anlage 943",
+      "Footnote_Referenced_Source": "OB WEST KTB, 30 Jul, and Anlage 943",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OB WEST KTB, 30 Jul, and Anlage 943"
+    },
+    {
+      "Footnote": "3a",
+      "Footnote_Number": "3",
+      "Footnote_Text": "MS # A-022 (Eberbach)",
+      "Footnote_Referenced_Source": "MS # A-022 (Eberbach)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # A-022 (Eberbach)"
+    },
+    {
+      "Footnote": "4a",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Telecons, Kluge and Speidel, 1025, 1 Aug, Gersdorff and Helmdach, 1055, 1 Aug, Tempelhoff and Zimmerman, 1230, 1 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "Telecons, Kluge and Speidel, 1025, 1 Aug, Gersdorff and Helmdach, 1055, 1 Aug, Tempelhoff and Zimmerman, 1230, 1 Aug, AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecons, Kluge and Speidel, 1025, 1 Aug, Gersdorff and Helmdach, 1055, 1 Aug, Tempelhoff and Zimmerman, 1230, 1 Aug, AGp B KTB"
+    },
+    {
+      "Footnote": "4b",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Tempelhoff Telecon, 1220, 1 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "Tempelhoff Telecon, 1220, 1 Aug, AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Tempelhoff Telecon, 1220, 1 Aug, AGp B KTB"
+    },
+    {
+      "Footnote": "4c",
+      "Footnote_Number": "4",
+      "Footnote_Text": "OB WEST KTB, 1 Aug",
+      "Footnote_Referenced_Source": "OB WEST KTB, 1 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OB WEST KTB, 1 Aug"
+    },
+    {
+      "Footnote": "5a",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Situation Maps, 3 and 4 Aug, LXXXI Corps Anlagen zum KTB, 1. Teil (Karten), 2.-24.VIII.44 (CRS 61 659/9)",
+      "Footnote_Referenced_Source": "Situation Maps, 3 and 4 Aug, LXXXI Corps Anlagen zum KTB, 1. Teil (Karten), 2.-24.VIII.44 (CRS 61 659/9)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Situation Maps, 3 and 4 Aug, LXXXI Corps Anlagen zum KTB, 1. Teil (Karten), 2.-24.VIII.44 (CRS 61 659/9)"
+    },
+    {
+      "Footnote": "5b",
+      "Footnote_Number": "5",
+      "Footnote_Text": "MS # B-741 (Ziegelmann)",
+      "Footnote_Referenced_Source": "MS # B-741 (Ziegelmann)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # B-741 (Ziegelmann)"
+    },
+    {
+      "Footnote": "5c",
+      "Footnote_Number": "5",
+      "Footnote_Text": "MS # A-894 (Gersdorff)",
+      "Footnote_Referenced_Source": "MS # A-894 (Gersdorff)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # A-894 (Gersdorff)"
+    },
+    {
+      "Footnote": "5d",
+      "Footnote_Number": "5",
+      "Footnote_Text": "MS # B-445 (Krueger)",
+      "Footnote_Referenced_Source": "MS # B-445 (Krueger)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # B-445 (Krueger)"
+    },
+    {
+      "Footnote": "5e",
+      "Footnote_Number": "5",
+      "Footnote_Text": "MS # B-179 (Hausser)",
+      "Footnote_Referenced_Source": "MS # B-179 (Hausser)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # B-179 (Hausser)"
+    },
+    {
+      "Footnote": "5f",
+      "Footnote_Number": "5",
+      "Footnote_Text": "AGp B KTB, 1 Aug",
+      "Footnote_Referenced_Source": "AGp B KTB, 1 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "AGp B KTB, 1 Aug"
+    },
+    {
+      "Footnote": "5g",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Hodgson, R-54 and R-58",
+      "Footnote_Referenced_Source": "Hodgson, R-54 and R-58",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Hodgson, R-54 and R-58"
+    },
+    {
+      "Footnote": "6a",
+      "Footnote_Number": "6",
+      "Footnote_Text": "A corridor devoid of major natural obstacles, bounded by the Seine and the Loire Rivers.",
+      "Footnote_Referenced_Source": "A corridor devoid of major natural obstacles, bounded by the Seine and the Loire Rivers.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "7a",
+      "Footnote_Number": "7",
+      "Footnote_Text": "MS # B-732 (Hold)",
+      "Footnote_Referenced_Source": "MS # B-732 (Hold)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # B-732 (Hold)"
+    },
+    {
+      "Footnote": "7b",
+      "Footnote_Number": "7",
+      "Footnote_Text": "MS # B-807 (Kuntzen)",
+      "Footnote_Referenced_Source": "MS # B-807 (Kuntzen)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # B-807 (Kuntzen)"
+    },
+    {
+      "Footnote": "7c",
+      "Footnote_Number": "7",
+      "Footnote_Text": "Msg, Seventh Army to LXXXI Corps, 3 Aug, LXXXI Corps Befehle H Gr u. Armee",
+      "Footnote_Referenced_Source": "Msg, Seventh Army to LXXXI Corps, 3 Aug, LXXXI Corps Befehle H Gr u. Armee",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Msg, Seventh Army to LXXXI Corps, 3 Aug, LXXXI Corps Befehle H Gr u. Armee"
+    },
+    {
+      "Footnote": "7d",
+      "Footnote_Number": "7",
+      "Footnote_Text": "Telecon, Gersdorff and Wiese, 0945, 4 Aug, LXXXI Corps KTB",
+      "Footnote_Referenced_Source": "Telecon, Gersdorff and Wiese, 0945, 4 Aug, LXXXI Corps KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Gersdorff and Wiese, 0945, 4 Aug, LXXXI Corps KTB"
+    },
+    {
+      "Footnote": "8a",
+      "Footnote_Number": "8",
+      "Footnote_Text": "Der Westen (Schramm), p. 79",
+      "Footnote_Referenced_Source": "Der Westen (Schramm), p. 79",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Der Westen (Schramm), p. 79"
+    },
+    {
+      "Footnote": "8b",
+      "Footnote_Number": "8",
+      "Footnote_Text": "OB WEST KTB, entry 2330, 2 Aug, and Anlage 1030",
+      "Footnote_Referenced_Source": "OB WEST KTB, entry 2330, 2 Aug, and Anlage 1030",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OB WEST KTB, entry 2330, 2 Aug, and Anlage 1030"
+    },
+    {
+      "Footnote": "8c",
+      "Footnote_Number": "8",
+      "Footnote_Text": "Telecon, Kluge and Buttlar-Brandenfels, 1035, 3 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "Telecon, Kluge and Buttlar-Brandenfels, 1035, 3 Aug, AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Kluge and Buttlar-Brandenfels, 1035, 3 Aug, AGp B KTB"
+    },
+    {
+      "Footnote": "9a",
+      "Footnote_Number": "9",
+      "Footnote_Text": "Telecons, Kluge and Buttlar-Brandenfels, 1035,3 Aug, Kluge and Eberbach, 1135, 3 Aug, and Kluge and Jodl, 1210, 3 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "Telecons, Kluge and Buttlar-Brandenfels, 1035,3 Aug, Kluge and Eberbach, 1135, 3 Aug, and Kluge and Jodl, 1210, 3 Aug, AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecons, Kluge and Buttlar-Brandenfels, 1035,3 Aug, Kluge and Eberbach, 1135, 3 Aug, and Kluge and Jodl, 1210, 3 Aug, AGp B KTB"
+    },
+    {
+      "Footnote": "10a",
+      "Footnote_Number": "10",
+      "Footnote_Text": "Telecon, Kluge and Hausser, 1615, 3 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "Telecon, Kluge and Hausser, 1615, 3 Aug, AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Kluge and Hausser, 1615, 3 Aug, AGp B KTB"
+    },
+    {
+      "Footnote": "10b",
+      "Footnote_Number": "10",
+      "Footnote_Text": "Kluge to Jodl, 1745, 3 Aug, OB WEST KTB, and Anlage 1068",
+      "Footnote_Referenced_Source": "Kluge to Jodl, 1745, 3 Aug, OB WEST KTB, and Anlage 1068",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Kluge to Jodl, 1745, 3 Aug, OB WEST KTB, and Anlage 1068"
+    },
+    {
+      "Footnote": "10c",
+      "Footnote_Number": "10",
+      "Footnote_Text": "AGp B Operationsbefehle, 3 Aug",
+      "Footnote_Referenced_Source": "AGp B Operationsbefehle, 3 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "AGp B Operationsbefehle, 3 Aug"
+    },
+    {
+      "Footnote": "11a",
+      "Footnote_Number": "11",
+      "Footnote_Text": "Msg, Seventh Army to LXXXI Corps, 3 Aug, LXXXI Corps KTB, Anlagen, Befehle Heeres Gruppe, Armee, usw, containing text of Hausser's order",
+      "Footnote_Referenced_Source": "Msg, Seventh Army to LXXXI Corps, 3 Aug, LXXXI Corps KTB, Anlagen, Befehle Heeres Gruppe, Armee, usw, containing text of Hausser's order",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Msg, Seventh Army to LXXXI Corps, 3 Aug, LXXXI Corps KTB, Anlagen, Befehle Heeres Gruppe, Armee, usw, containing text of Hausser's order"
+    },
+    {
+      "Footnote": "11b",
+      "Footnote_Number": "11",
+      "Footnote_Text": "Telecon, Kluge and Gersdorff, 1615, 3 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "Telecon, Kluge and Gersdorff, 1615, 3 Aug, AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Kluge and Gersdorff, 1615, 3 Aug, AGp B KTB"
+    },
+    {
+      "Footnote": "11c",
+      "Footnote_Number": "11",
+      "Footnote_Text": "Der Westen (Schramm)",
+      "Footnote_Referenced_Source": "Der Westen (Schramm)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Der Westen (Schramm)"
+    },
+    {
+      "Footnote": "11d",
+      "Footnote_Number": "11",
+      "Footnote_Text": "OB WEST KTB, 4 Aug",
+      "Footnote_Referenced_Source": "OB WEST KTB, 4 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center (USAHEC), 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OB WEST KTB, 4 Aug"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn22.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

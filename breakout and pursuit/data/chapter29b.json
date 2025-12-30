@@ -1,0 +1,423 @@
+{
+  "Events": [
+    {
+      "Event": "German Hopes for Defense of Paris",
+      "Sub-event": "Hitler Decision to Hold Paris and Initial Preparations (Early August)",
+      "Sub-event_summary": "German high command worried that loss of Paris would publicize reverses. Hitler decided early August to hold the capital due to tactical plans. OKW ordered Kitzinger on 2 August to construct Somme-Marne-Saône defensive positions for potential Normandy withdrawal. Hitler established special Paris command under Army Group B on 7 August, appointing Choltitz as Commanding General and Military Commander of Greater Paris.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "The German high command had long had \"grave worries\" that loss of Paris to the Allies would publicize the extent of the German reverses. Because of this and because of Hitler's tactical plans, the Germans decided at the beginning of August to hold the French capital.",
+        "Paragraph_8": "At the same time that Hitler had conceived the Mortain counterattack, he had had to consider seriously the possible eventuality of withdrawing his forces from Normandy, perhaps from France. To cover the withdrawal, OKW on 2 August ordered General der Flieger Karl Kitzinger, Military Governor of France, to construct and organize defensive positions along the line of the Somme, Marne, and Saône Rivers, to which the forces then in Normandy would retire. To insure a successful withdrawal to the Seine and Marne, Hitler directed OKH to establish a special command at Paris under Army Group B, and on 7 August he appointed Choltitz, former commander of the LXXXIV Corps in the Cotentin, Commanding General and Military Commander of Greater Paris."
+      },
+      "Footnote_References": [7, 8],
+      "Place_Name": ["Paris", "Somme River", "Marne River", "Saône River", "Seine River", "Cotentin"],
+      "Dates": {
+        "Date_group_of_event": "BEGINNING Aug 1944 - 07 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "BEGINNING Aug 1944 - 07 Aug 1944 (CET)"
+      },
+      "TOE": {
+        "Unit": "Greater Paris Command",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": {
+            "Name": "Günther von Kluge",
+            "Rank": "Generalfeldmarschall"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "Greater Paris Command",
+            "Name": "Dietrich von Choltitz",
+            "Rank": "Generalleutnant",
+            "Date": "07 Aug 1944",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Dietrich_von_Choltitz"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical early August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "German Hopes for Defense of Paris",
+      "Sub-event": "Choltitz Initial Mission and Expanded Authority (August 1944)",
+      "Sub-event_summary": "Choltitz initial mission to make Paris \"terror\" for non-helpers, inactivate superfluous services, dispatch rear personnel to front, restore discipline, maintain civilian order. Soon received fortress commander prerogatives: unqualified command of all troops, full civilian authority. Ordered to defend Paris to last man, prepare seventy-odd bridges for demolition, battle outside and inside city to block Allies at Seine.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "Choltitz's mission at first was to make Paris \"the terror of all who are not honest helpers and servants of the front.\" He was to inactivate or evacuate all superfluous military services in Paris, dispatch all rear-area personnel able to bear arms to front-line units, restore discipline among troops accustomed to easy living, and maintain order among the civilian population. Several days later Choltitz received the prerogatives of a fortress commander--unqualified command of the troops of all services in the area and full authority over the civilian inhabitants. Paris was to be defended to the last man. All the seventy-odd bridges within the city limits were to be prepared for demolition. The troops were to battle outside the city as well as inside in order to block the Allies at the Seine."
+      },
+      "Footnote_References": [9, 10],
+      "Place_Name": ["Paris"],
+      "Dates": {
+        "Date_group_of_event": "Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "Aug 1944 (CET)"
+      },
+      "TOE": {
+        "Unit": "Greater Paris Command",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": {
+            "Name": "Günther von Kluge",
+            "Rank": "Generalfeldmarschall"
+          }
+        },
+        "Subordinates": [
+          {
+            "Unit": "Greater Paris Command",
+            "Name": "Dietrich von Choltitz",
+            "Rank": "Generalleutnant",
+            "Date": "Aug 1944",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Dietrich_von_Choltitz"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "German Hopes for Defense of Paris",
+      "Sub-event": "Predecessor Obstacle Line and Choltitz Arrival",
+      "Sub-event_summary": "Boineburg-Lengsfeld constructed obstacle line west/southwest of Paris, believed defensible with available troops (25,000–30,000 from 325th Security Division with light weapons). Judged house-to-house fighting irresponsible due to art treasures destruction. Antiaircraft and security elements occupied positions to block highway approaches before Choltitz arrival.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "Choltitz's predecessor in Paris, Generalleutnant Hans Freiherr von Boineburg-Lengsfeld, whose mission had been merely to maintain \"peace and order,\" had on his own initiative constructed an \"obstacle line\" west and southwest of Paris, which he felt could be defended successfully with the troops at his disposal. He believed that fighting inside Paris would be an act of complete irresponsibility because of the almost certain destruction of irreplaceable art treasures. He judged that his forces--twenty-five to thirty thousand men of the 325th Security Division, armed with light infantry weapons for guard duty--would be able to delay the Allies outside the city and west of the Seine. Just before Choltitz' arrival, antiaircraft and security elements occupied these positions to block the main highway approaches to the capital."
+      },
+      "Footnote_References": [11],
+      "Place_Name": ["Paris"],
+      "Dates": {
+        "Date_group_of_event": "Pre-Aug 1944 - Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "Pre-Aug 1944 - Aug 1944 (CET)"
+      },
+      "TOE": {
+        "Unit": "325th Security Division",
+        "Unit_Nationality": "DE"
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "German Hopes for Defense of Paris",
+      "Sub-event": "Reinforcement with Antitank Elements and Paris-Orléans Gap Screening",
+      "Sub-event_summary": "Hitler desired additional antitank west of Seine. Antitank companies from Army Group G and 6th Parachute, 48th, 338th Divisions moved to Paris-Orléans gap to screen capital and counter American reconnaissance/armor. Colonel Oehmichen arrived from Germany with instructors, reconnaissance battalion, trucks, Panzerfauste to train local units. Program incomplete for halting American drive but reinforced Paris defenses.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "The forces west and southwest of Paris soon grew in strength in response to Hitler's desire for additional antitank weapons west of the Seine. Antitank companies from units in the Army Group G sector and from the 6th Parachute and 48th and 338th Infantry Divisions (all of which were soon to become at least partially involved in the defense of Paris) were to move to the Paris-Orléans gap, screen the capital, and knock out American reconnaissance columns and armored spearheads that were moving eastward from le Mans. Col. Hermann Oehmichen, an antitank expert, arrived from Germany to teach local units the technique of antitank protection. With him he brought a cadre of instructors trained, in antitank defense and demolition, a reconnaissance battalion, a column of light trucks, and a supply of Panzerfauste. Although Oehmichen's program was not completed in time to halt the American drive toward the Paris-Orléans gap, some of his antitank elements reinforced the Paris defenses."
+      },
+      "Footnote_References": [12],
+      "Place_Name": ["Paris-Orléans gap", "le Mans"],
+      "Dates": {
+        "Date_group_of_event": "Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "Aug 1944 (CET)"
+      },
+      "TOE": {
+        "Unit": "Paris-Orléans Gap Forces",
+        "Unit_Nationality": "DE",
+        "Subordinates": [
+          {
+            "Unit": "48th Infantry Division",
+            "Name": null,
+            "Rank": null
+          },
+          {
+            "Unit": "338th Infantry Division",
+            "Name": null,
+            "Rank": null
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "German Hopes for Defense of Paris",
+      "Sub-event": "Defenses West of Paris and Command Appointments (Mid-August)",
+      "Sub-event_summary": "By 16 August defenses west of Paris included 20 batteries of 88-mm antiaircraft guns, 325th Division security troops, provisional units, Normandy stragglers, and 352d Division remnants—totaling about 20,000 men of low quality. Choltitz recommended von Aulock for perimeter command; Kluge promoted Aulock to major general, assigned Oehmichen for antitank coordination. Choltitz retained fortress command inside Paris with 5,000 men, 50 light/medium artillery pieces, 60 planes at le Bourget, under nominal First Army control.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "By 16 August the defenses west of Paris included twenty batteries of 88-mm. antiaircraft guns, security troops of the 325th Division, provisional units consisting of surplus personnel from all branches of the Wehrmacht, and stragglers from Normandy. The remnants of the 352d Division were soon to join them. These troops, all together numbering about 20,000 men, were neither of high quality nor well balanced for combat. Upon the approach of American forces, Choltitz recommended that Lt. Col. Hubertus von Aulock (brother of the St. Malo defender) be placed in command of the perimeter defense west and southwest of Paris. Kluge, still in command of OB WEST and Army Group B, promoted Aulock to the rank of major general, gave him authority, under Choltitz, to reorganize the defenses, and assigned him Oehmichen to co-ordinate the antitank measures. Choltitz, with about 5,000 men and 50 pieces of light and medium artillery inside Paris and about 60 planes based at le Bourget, remained the fortress commander under the nominal control of the First Army."
+      },
+      "Footnote_References": [13],
+      "Place_Name": ["Paris", "le Bourget"],
+      "Dates": {
+        "Date_group_of_event": "16 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "16 Aug 1944 (CET)"
+      },
+      "TOE": {
+        "Unit": "325th Security Division",
+        "Unit_Nationality": "DE"
+      },
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "German Hopes for Defense of Paris",
+      "Sub-event": "Kluge-Choltitz Assessment and Hitler Agreement on Bridges (Mid-August)",
+      "Sub-event_summary": "Kluge and Choltitz agreed around 15 August that Paris could not be defended long with available forces; siege supply impossible; house-to-house fighting purposeless. Bridge destruction would hinder German Seine crossings. Preferred outer ring defense blocking highways. Jodl informed Hitler; on 19 August Hitler agreed bridge destruction error, ordered additional Flak to protect bridges, stressed stopping Allies west/southwest of Paris to retain city for Fifth Panzer-First Army contact.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "When Kluge visited Choltitz around 15 August, the two officers agreed that the capital could not be defended for any length of time with the forces available. In addition, should the city be besieged, the supply problem would be insurmountable. Thus, house-to-house fighting, even assuming the then questionable presence of adequate troops, would serve no useful purpose. Destroying the bridges as ordered, even if sufficient explosives were on hand, was against the best German interest because the Germans could cross the Seine by bridge only at Paris. The better course of action was to defend the outer ring of Paris and block the great arterial highways with obstacles and antitank weapons.",
+        "Paragraph_14": "Jodl probably informed Hitler of at least some of this discussion, for on 19 August Hitler agreed that destruction of the Paris bridges would be an error and ordered additional Flak units moved to the French capital to protect them. Impressed with the need to retain the city in order to guarantee contact between the Fifth Panzer and First Armies, Hitler also instructed Jodl to inform the troops that it was mandatory to stop the Allies west and southwest of Paris."
+      },
+      "Footnote_References": [14],
+      "Place_Name": ["Paris", "Seine River"],
+      "Dates": {
+        "Date_group_of_event": "APPROX 15 Aug 1944 - 19 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "APPROX 15 Aug 1944 - 19 Aug 1944 (CET)"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    },
+    {
+      "Event": "German Hopes for Defense of Paris",
+      "Sub-event": "Defensive Posture and Waiting Period (Mid-August)",
+      "Sub-event_summary": "Americans halted short of Paris gates. Defenders west of city improved positions and waited. Inside Paris, garrison with sufficient tanks and machine guns maintained security of German communications and rear against civilian population.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "Since the Americans had of their own accord stopped short of the gates of Paris, the defenders outside the city improved their positions and waited. Inside the capital the garrison had a sufficient number of tanks and machine guns to command the respect of the civil populace and thereby insure the security of German communications and the rear."
+      },
+      "Footnote_References": [15],
+      "Place_Name": ["Paris"],
+      "Dates": {
+        "Date_group_of_event": "mid-Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+        "Zulu_date_group_of_event": "mid-Aug 1944 (CET)"
+      },
+      "TOE": {},
+      "Casualties": {
+        "Allied": {"Allied_US_KIA": 0, "Allied_US_WIA": 0, "Allied_US_Missing": 0, "Allied_US_Unspecified_Casualties": 0, "Allied_US_Prisoner_of_War": 0},
+        "Axis": {"Axis_DE_KIA": 0, "Axis_DE_WIA": 0, "Axis_DE_Missing": 0, "Axis_DE_Unspecified_Casualties": 0, "Axis_DE_Prisoner_of_War": 0}
+      },
+      "Media": [],
+      "Place": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Paris, France",
+          "Place_GPS_coordinate": "48.8566 N, 2.3522 E",
+          "Weather_text": "Not specified in source; typical mid-August regional conditions included warm temperatures (approximately 20-25°C highs) and variable precipitation.",
+          "Spatial_Bounding_Box Coordinates": {"West": 0.3522, "East": 4.3522, "South": 47.8566, "North": 49.8566}
+        }
+      ]
+    }
+  ],
+  "Footnotes": {
+    "Footnote": [
+      {
+        "Footnote": "7",
+        "Footnote_Number": 7,
+        "Footnote_Text": "OB WEST, KTB, 1 Aug.",
+        "Footnote_Referenced_Source": "OB WEST War Diary, 1 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "German records series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "8",
+        "Footnote_Number": 8,
+        "Footnote_Text": "OB WEST, KTB, 7 Aug.",
+        "Footnote_Referenced_Source": "OB WEST War Diary, 7 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "German records series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "9",
+        "Footnote_Number": 9,
+        "Footnote_Text": "Choltitz, Brennender Paris, p. 15.",
+        "Footnote_Referenced_Source": "Dietrich von Choltitz, Brennender Paris (Vowinckel Verlag, 1951), p. 15",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "10",
+        "Footnote_Number": 10,
+        "Footnote_Text": "Choltitz, Brennender Paris, pp. 16-17.",
+        "Footnote_Referenced_Source": "Dietrich von Choltitz, Brennender Paris (Vowinckel Verlag, 1951), pp. 16-17",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "11",
+        "Footnote_Number": 11,
+        "Footnote_Text": "Boineburg-Lengsfeld, MS # B-015.",
+        "Footnote_Referenced_Source": "German Manuscript B-015 (Boineburg-Lengsfeld)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "12",
+        "Footnote_Number": 12,
+        "Footnote_Text": "MS # B-034 (Schramm).",
+        "Footnote_Referenced_Source": "German Manuscript B-034 (Schramm)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "13",
+        "Footnote_Number": 13,
+        "Footnote_Text": "MS # B-034 (Schramm).",
+        "Footnote_Referenced_Source": "German Manuscript B-034 (Schramm)",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "Foreign Military Studies series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "14",
+        "Footnote_Number": 14,
+        "Footnote_Text": "OB WEST, KTB, 19 Aug.",
+        "Footnote_Referenced_Source": "OB WEST War Diary, 19 August 1944",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": "U.S. Army Center of Military History",
+        "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+        "NonDigital_Library_References": "German records series",
+        "Source_Type": "DE"
+      },
+      {
+        "Footnote": "15",
+        "Footnote_Number": 15,
+        "Footnote_Text": "Choltitz, Brennender Paris, p. 18.",
+        "Footnote_Referenced_Source": "Dietrich von Choltitz, Brennender Paris (Vowinckel Verlag, 1951), p. 18",
+        "Web_Link": null,
+        "Web_Link_Capture_Date": null,
+        "NonDigital_Library_Source": null,
+        "NonDigital_Library_References": null,
+        "Source_Type": "DE"
+      }
+    ]
+  },
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn29.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-29",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+  "Source_Link_Capture_Date": "2025-12-29"
+}

@@ -1,0 +1,1319 @@
+{
+  "Events": [
+    {
+      "Event": "German Reaction to Operation COBRA Breakthrough",
+      "Sub-event": "Initial Report and Immediate Commitments (25 July 1600)",
+      "Sub-event_summary": "The first German report at 1600 on 25 July revealed American penetration south of the Périers-St. Lô highway, in Montreuil, and on the road to Marigny. Choltitz committed a reinforced regiment of the 353d Division from south of Périers to secure la Chapelle-en-Juger. Hausser committed a regiment of the 275th Division from Canisy to la Chapelle-en-Juger to seal the penetration.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "The first report to give German higher headquarters any picture of what had happened after the COBRA bombardment revealed that the Americans had penetrated the main line of defense. German commanders learned at 1600, 25 July, that American troops were south of the Périers-St. Lô highway, in Montreuil, and on the road to Marigny.",
+        "Paragraph_5": "Choltitz immediately committed part of his LXXXIV Corps reserve, a reinforced regiment of the 353d Division. From an assembly area south of Périers, the regiment moved eastward to secure la Chapelle-en-Juger and thereby seal off the penetration. Not long afterward, Hausser committed part of his Seventh Army reserve, a regiment of the 275th Division, which, from its assembly area near Canisy, also moved toward la Chapelle-en-Juger. Thus, Choltitz and Hausser, acting on the same idea, sent two converging columns to deny the Americans the vital road network controlled by the village in the center of the attack zone."
+      },
+      "Footnote_References": [
+        "3"
+      ],
+      "Place_Name": [
+        "Périers-St. Lô highway",
+        "Montreuil",
+        "Marigny",
+        "la Chapelle-en-Juger",
+        "Périers",
+        "Canisy"
+      ],
+      "Dates": {
+        "Date_group_of_event": "251600BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "251500ZJUL44"
+      },
+      "TOE": {
+        "Unit": "LXXXIV Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "353d Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "275th Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "DE": []
+          },
+          "Axis_Destroyed": {
+            "DE": []
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "Description": "Map V showing the breakthrough area",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "la Chapelle-en-Juger",
+          "Place_GPS_coordinate": "49.1325, -1.2070",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Montreuil",
+          "Place_GPS_coordinate": "49.1361, -1.2450",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Marigny",
+          "Place_GPS_coordinate": "49.0992, -1.2419",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Périers",
+          "Place_GPS_coordinate": "49.1867, -1.4075",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Canisy",
+          "Place_GPS_coordinate": "49.0769, -1.1736",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "la Chapelle-en-Juger",
+          "Place_GPS_coordinate": "49.1325, -1.2070",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.1070,
+            "East": -0.3070,
+            "South": 48.2325,
+            "North": 50.0325
+          }
+        },
+        {
+          "Place_Name": "Montreuil",
+          "Place_GPS_coordinate": "49.1361, -1.2450",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.1450,
+            "East": -0.3450,
+            "South": 48.2361,
+            "North": 50.0361
+          }
+        },
+        {
+          "Place_Name": "Marigny",
+          "Place_GPS_coordinate": "49.0992, -1.2419",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.1419,
+            "East": -0.3419,
+            "South": 48.1992,
+            "North": 49.9992
+          }
+        },
+        {
+          "Place_Name": "Périers",
+          "Place_GPS_coordinate": "49.1867, -1.4075",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.3075,
+            "East": -0.5075,
+            "South": 48.2867,
+            "North": 50.0867
+          }
+        },
+        {
+          "Place_Name": "Canisy",
+          "Place_GPS_coordinate": "49.0769, -1.1736",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0736,
+            "East": -0.2736,
+            "South": 48.1769,
+            "North": 49.9769
+          }
+        }
+      ]
+    },
+    {
+      "Event": "German Reaction to Operation COBRA Breakthrough",
+      "Sub-event": "Hausser's Hopes and Unawareness of Losses",
+      "Sub-event_summary": "Hausser hoped to re-establish a main line of resistance from la Chapelle-en-Juger to Hébécrevon, relying on the 5th Parachute Division and 352d Division. Unaware of disruptions, he did not know of Panzer Lehr's losses (bulk infantry, 14 assault guns, 10 tanks), demolition of Kampfgruppe Heinz and another regiment of the 5th Parachute Division, and the crushing of the 275th Division regiment. This left the 352d Division with an open flank, too weak to hold Hébécrevon.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "Hausser hoped that retention of la Chapelle-en-Juger would permit him to re-establish a main line of resistance eastward to Hébécrevon, but he was unaware of the extent of the disaster that had overcome his troops. His command channels had been disrupted by the COBRA bombing and were saturated with overdue messages.",
+        "Paragraph_7": "Counting on the 5th Parachute Division, which controlled one regiment, to hold its positions near the Taute River and prevent the Americans from broadening their breach, he was not disappointed, for the paratroopers checked any genuine advance by the 330th Infantry. But Hausser also counted on the 352d Division (under II Parachute Corps) to hold the west bank of the Vire River and prevent an American penetration near Hébécrevon. What he did not know was that Panzer Lehr had lost the bulk of its organic infantry, at least fourteen of its assault guns, and ten of its few remaining tanks; that Kampfgruppe Heinz and the other regiment of the 5th Parachute Division, both attached to Panzer Lehr, had been demolished; and that the regiment of the 275th Division moving up from Canisy was about to be crushed by American fighter-bombers and infantry.",
+        "Paragraph_8": "The result was an open left flank for the 352d Division, and in that condition the unit was simply too weak to hold Hébécrevon, much less seal off a penetration."
+      },
+      "Footnote_References": [],
+      "Place_Name": [
+        "la Chapelle-en-Juger",
+        "Hébécrevon",
+        "Taute River",
+        "Vire River",
+        "Canisy"
+      ],
+      "Dates": {
+        "Date_group_of_event": "251600BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "251500ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB West",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "5th Parachute Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "352d Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "Panzer Lehr",
+            "Name": "Fritz Bayerlein",
+            "Rank": "Generalleutnant",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          },
+          {
+            "Unit": "Kampfgruppe Heinz",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "275th Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "II Parachute Corps",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "Panzer Lehr lost bulk of organic infantry; not fully staffed.",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "DE": []
+          },
+          "Axis_Destroyed": {
+            "DE": [
+              {
+                "Name": "Tank",
+                "Identifier": "Panther/PzIV",
+                "Quantity": 10,
+                "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_Lehr_Division",
+                "Web_Image_Reference": "",
+                "Web_Image_License": "",
+                "Web_Reference_Capture_Date": "December 21, 2025"
+              },
+              {
+                "Name": "Assault Gun",
+                "Identifier": "StuG III",
+                "Quantity": 14,
+                "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_Lehr_Division",
+                "Web_Image_Reference": "",
+                "Web_Image_License": "",
+                "Web_Reference_Capture_Date": "December 21, 2025"
+              }
+            ]
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "Description": "Map V showing the breakthrough area",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "la Chapelle-en-Juger",
+          "Place_GPS_coordinate": "49.1325, -1.2070",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Hébécrevon",
+          "Place_GPS_coordinate": "49.1278, -1.1639",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Taute River",
+          "Place_GPS_coordinate": "49.1500, -1.2500",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Vire River",
+          "Place_GPS_coordinate": "48.8400, -1.1800",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Canisy",
+          "Place_GPS_coordinate": "49.0769, -1.1736",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "la Chapelle-en-Juger",
+          "Place_GPS_coordinate": "49.1325, -1.2070",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.1070,
+            "East": -0.3070,
+            "South": 48.2325,
+            "North": 50.0325
+          }
+        },
+        {
+          "Place_Name": "Hébécrevon",
+          "Place_GPS_coordinate": "49.1278, -1.1639",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0639,
+            "East": -0.2639,
+            "South": 48.2278,
+            "North": 50.0278
+          }
+        },
+        {
+          "Place_Name": "Taute River",
+          "Place_GPS_coordinate": "49.1500, -1.2500",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.1500,
+            "East": -0.3500,
+            "South": 48.2500,
+            "North": 50.0500
+          }
+        },
+        {
+          "Place_Name": "Vire River",
+          "Place_GPS_coordinate": "48.8400, -1.1800",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0800,
+            "East": -0.2800,
+            "South": 47.9400,
+            "North": 49.7400
+          }
+        },
+        {
+          "Place_Name": "Canisy",
+          "Place_GPS_coordinate": "49.0769, -1.1736",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0736,
+            "East": -0.2736,
+            "South": 48.1769,
+            "North": 49.9769
+          }
+        }
+      ]
+    },
+    {
+      "Event": "German Reaction to Operation COBRA Breakthrough",
+      "Sub-event": "Optimism and Further Commitments (26 July Morning)",
+      "Sub-event_summary": "On the morning of 26 July, ignorant of losses and Hébécrevon's fall, Choltitz committed the remainder of the 353d Division toward Montreuil-Marigny to slow the 9th Division. Hausser launched a counterattack with a company of tanks and infantry from the 2d SS Panzer Division in the Marigny area.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "Ignorant of these developments and of the loss of Hébécrevon, which opened the route to St. Gilles, the German army and corps commanders in the Cotentin exuded optimism on the morning of 26 July. Choltitz committed the remainder of the 353d Division eastward toward the Montreuil-Marigny line to slow the efforts of the 9th Division. Hausser, while waiting for the destroyed and virtually nonexistent regiment of the 275th Division to move northwest from Canisy, decided to launch a counterattack with the company of tanks and the company of infantry of the 2d SS Panzer Division that he still had in army reserve. He committed this force in the Marigny area, where it met American armor and infantry."
+      },
+      "Footnote_References": [],
+      "Place_Name": [
+        "Hébécrevon",
+        "St. Gilles",
+        "Cotentin",
+        "Montreuil-Marigny",
+        "Canisy",
+        "Marigny"
+      ],
+      "Dates": {
+        "Date_group_of_event": "260800BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "260700ZJUL44"
+      },
+      "TOE": {
+        "Unit": "LXXXIV Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "353d Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "275th Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "2d SS Panzer Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "DE": [
+              {
+                "Name": "Tank",
+                "Identifier": "Panther/PzIV",
+                "Quantity": 1,
+                "Web_Reference": "https://en.wikipedia.org/wiki/2nd_SS_Panzer_Division_Das_Reich",
+                "Web_Image_Reference": "",
+                "Web_Image_License": "",
+                "Web_Reference_Capture_Date": "December 21, 2025"
+              }
+            ]
+          },
+          "Axis_Destroyed": {
+            "DE": []
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "Description": "Map V showing the breakthrough area",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Hébécrevon",
+          "Place_GPS_coordinate": "49.1278, -1.1639",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "St. Gilles",
+          "Place_GPS_coordinate": "49.1056, -1.1714",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Cotentin",
+          "Place_GPS_coordinate": "49.5000, -1.5000",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Montreuil-Marigny",
+          "Place_GPS_coordinate": "49.1361, -1.2450",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Canisy",
+          "Place_GPS_coordinate": "49.0769, -1.1736",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Marigny",
+          "Place_GPS_coordinate": "49.0992, -1.2419",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Hébécrevon",
+          "Place_GPS_coordinate": "49.1278, -1.1639",
+          "Weather_text": "Fair weather with partial cloud cover, temperatures approximately 18-24°C.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0639,
+            "East": -0.2639,
+            "South": 48.2278,
+            "North": 50.0278
+          }
+        },
+        {
+          "Place_Name": "St. Gilles",
+          "Place_GPS_coordinate": "49.1056, -1.1714",
+          "Weather_text": "Fair weather with partial cloud cover, temperatures approximately 18-24°C.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0714,
+            "East": -0.2714,
+            "South": 48.2056,
+            "North": 50.0056
+          }
+        },
+        {
+          "Place_Name": "Cotentin",
+          "Place_GPS_coordinate": "49.5000, -1.5000",
+          "Weather_text": "Fair weather with partial cloud cover, temperatures approximately 18-24°C.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.4000,
+            "East": -0.6000,
+            "South": 48.6000,
+            "North": 50.4000
+          }
+        },
+        {
+          "Place_Name": "Montreuil-Marigny",
+          "Place_GPS_coordinate": "49.1361, -1.2450",
+          "Weather_text": "Fair weather with partial cloud cover, temperatures approximately 18-24°C.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.1450,
+            "East": -0.3450,
+            "South": 48.2361,
+            "North": 50.0361
+          }
+        },
+        {
+          "Place_Name": "Canisy",
+          "Place_GPS_coordinate": "49.0769, -1.1736",
+          "Weather_text": "Fair weather with partial cloud cover, temperatures approximately 18-24°C.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0736,
+            "East": -0.2736,
+            "South": 48.1769,
+            "North": 49.9769
+          }
+        },
+        {
+          "Place_Name": "Marigny",
+          "Place_GPS_coordinate": "49.0992, -1.2419",
+          "Weather_text": "Fair weather with partial cloud cover, temperatures approximately 18-24°C.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.1419,
+            "East": -0.3419,
+            "South": 48.1992,
+            "North": 49.9992
+          }
+        }
+      ]
+    },
+    {
+      "Event": "German Reaction to Operation COBRA Breakthrough",
+      "Sub-event": "Kluge's Suggestions and Hausser's Difficulties",
+      "Sub-event_summary": "Kluge, diverted to Caen on 25 July, suggested withdrawing the left of LXXXIV Corps to shorten the front and disengage the 2d SS Panzer Division for counterattack. However, U.S. attacks on the Cotentin west coast tied down the left, allowing Hausser to free only one tank battalion and one infantry battalion by evening, moving them eastward.",
+      "Sub-event_fulltext": {
+        "Paragraph_10": "Kluge, who had been diverted to the Caen sector on 25 July by the Canadian attack, thought the situation in the Cotentin might be worse than his subordinates suspected. He suggested that Hausser withdraw the left of the LXXXIV Corps slightly in order to shorten the front. This would make it possible to disengage the entire 2d SS Panzer Division for a counterattack. By this time, however, U.S. troops on the Cotentin west coast were attacking and tying down the LXXXIV Corps left.",
+        "Paragraph_11": "Hausser could not disengage the entire panzer division; by evening he had succeeded in freeing only one tank battalion and one infantry battalion from the battle. He moved these units eastward toward the breakthrough sector."
+      },
+      "Footnote_References": [
+        "4"
+      ],
+      "Place_Name": [
+        "Caen",
+        "Cotentin"
+      ],
+      "Dates": {
+        "Date_group_of_event": "260800BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "260700ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB West",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "2d SS Panzer Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "LXXXIV Corps",
+            "Name": "Dietrich von Choltitz",
+            "Rank": "General der Infanterie",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Dietrich_von_Choltitz",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "DE": [
+              {
+                "Name": "Tank Battalion",
+                "Identifier": "",
+                "Quantity": 1,
+                "Web_Reference": "",
+                "Web_Image_Reference": "",
+                "Web_Image_License": "",
+                "Web_Reference_Capture_Date": ""
+              }
+            ]
+          },
+          "Axis_Destroyed": {
+            "DE": []
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "Description": "Map V showing the breakthrough area",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Caen",
+          "Place_GPS_coordinate": "49.1833, -0.3697",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Cotentin",
+          "Place_GPS_coordinate": "49.5000, -1.5000",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Caen",
+          "Place_GPS_coordinate": "49.1833, -0.3697",
+          "Weather_text": "Fair weather with partial cloud cover, temperatures approximately 18-24°C.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.2697,
+            "East": 0.5303,
+            "South": 48.2833,
+            "North": 50.0833
+          }
+        },
+        {
+          "Place_Name": "Cotentin",
+          "Place_GPS_coordinate": "49.5000, -1.5000",
+          "Weather_text": "Fair weather with partial cloud cover, temperatures approximately 18-24°C.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.4000,
+            "East": -0.6000,
+            "South": 48.6000,
+            "North": 50.4000
+          }
+        }
+      ]
+    },
+    {
+      "Event": "German Reaction to Operation COBRA Breakthrough",
+      "Sub-event": "Hausser's Proposal and Kluge's Orders (Late 25 July and Response)",
+      "Sub-event_summary": "By late afternoon on 25 July, Hausser counted seven American penetrations and received Bayerlein's report on Panzer Lehr's near destruction. He proposed withdrawing LXXXIV Corps coastal units to Coutances, with an outpost line from la Chapelle-en-Juger to Geffosses. Kluge, fearing a rout, ordered preparation of a main line from Pirou through Millières to Périers, placing all personnel on the front, and repeated his request for the 9th Panzer Division from southern France.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "Hausser's difficulty with the panzer division was only part of the story. By late afternoon on 25 July he had counted seven distinct American penetrations of his Lessay-St. Lô defensive line. He had also received Bayerlein's report that Panzer Lehr had practically no infantry left and that the division was about to cease to exist as an organized unit. Hausser therefore proposed a general withdrawal to Coutances of those LXXXIV Corps units in the coastal sector of the Cotentin. Still hoping that la Chapelle-en-Juger was not entirely lost, he thought of manning an outpost line between that village and Geffosses, the latter near the west coast.",
+        "Paragraph_13": "Suspecting that a withdrawal might turn into a rout, Kluge insisted on restraint. He ordered Hausser to prepare a main line of resistance from Pirou through Millières to Périers in order to keep the Geffosses--St. Sauveur-Lendelin-Marigny road in German hands. He instructed Hausser to place all his available personnel on the front (rather than echeloning his defense in depth) in order to prevent immediately further American advances. He also repeated a request, which he had been making to OKW since 13 July, that OKW permit the 9th Panzer Division to be brought up from southern France to reinforce the Seventh Army at once."
+      },
+      "Footnote_References": [
+        "5"
+      ],
+      "Place_Name": [
+        "Lessay-St. Lô defensive line",
+        "Coutances",
+        "Cotentin",
+        "la Chapelle-en-Juger",
+        "Geffosses",
+        "Pirou",
+        "Millières",
+        "Périers",
+        "St. Sauveur-Lendelin",
+        "Marigny"
+      ],
+      "Dates": {
+        "Date_group_of_event": "251700BJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+        "Zulu_date_group_of_event": "251600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB West",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Generalfeldmarschall",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Panzer Lehr",
+            "Name": "Fritz Bayerlein",
+            "Rank": "Generalleutnant",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          },
+          {
+            "Unit": "LXXXIV Corps",
+            "Name": "Dietrich von Choltitz",
+            "Rank": "General der Infanterie",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Dietrich_von_Choltitz",
+            "Biographical_reference_Capture_Date": "December 21, 2025"
+          },
+          {
+            "Unit": "9th Panzer Division",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "Panzer Lehr had practically no infantry left.",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "DE": []
+          },
+          "Axis_Destroyed": {
+            "DE": []
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "Description": "Map V showing the breakthrough area",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": [
+        {
+          "Place_Name": "Coutances",
+          "Place_GPS_coordinate": "49.0550, -1.4442",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Cotentin",
+          "Place_GPS_coordinate": "49.5000, -1.5000",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "la Chapelle-en-Juger",
+          "Place_GPS_coordinate": "49.1325, -1.2070",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Geffosses",
+          "Place_GPS_coordinate": "49.1342, -1.5642",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Pirou",
+          "Place_GPS_coordinate": "49.1619, -1.5742",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Millières",
+          "Place_GPS_coordinate": "49.1919, -1.4653",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Périers",
+          "Place_GPS_coordinate": "49.1867, -1.4075",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "St. Sauveur-Lendelin",
+          "Place_GPS_coordinate": "49.1297, -1.4131",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Marigny",
+          "Place_GPS_coordinate": "49.0992, -1.2419",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Lessay",
+          "Place_GPS_coordinate": "49.2008, -1.5328",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        },
+        {
+          "Place_Name": "Saint-Lô",
+          "Place_GPS_coordinate": "49.1153, -1.0903",
+          "Map_Reference": "Map V",
+          "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-V.jpg",
+          "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+          "ExternalMapLinkLicence": "",
+          "ExternalMapLinkCaptureDate": "December 21, 2025"
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Coutances",
+          "Place_GPS_coordinate": "49.0550, -1.4442",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.3442,
+            "East": -0.5442,
+            "South": 48.1550,
+            "North": 49.9550
+          }
+        },
+        {
+          "Place_Name": "Cotentin",
+          "Place_GPS_coordinate": "49.5000, -1.5000",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.4000,
+            "East": -0.6000,
+            "South": 48.6000,
+            "North": 50.4000
+          }
+        },
+        {
+          "Place_Name": "la Chapelle-en-Juger",
+          "Place_GPS_coordinate": "49.1325, -1.2070",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.1070,
+            "East": -0.3070,
+            "South": 48.2325,
+            "North": 50.0325
+          }
+        },
+        {
+          "Place_Name": "Geffosses",
+          "Place_GPS_coordinate": "49.1342, -1.5642",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.4642,
+            "East": -0.6642,
+            "South": 48.2342,
+            "North": 50.0342
+          }
+        },
+        {
+          "Place_Name": "Pirou",
+          "Place_GPS_coordinate": "49.1619, -1.5742",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.4742,
+            "East": -0.6742,
+            "South": 48.2619,
+            "North": 50.0619
+          }
+        },
+        {
+          "Place_Name": "Millières",
+          "Place_GPS_coordinate": "49.1919, -1.4653",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.3653,
+            "East": -0.5653,
+            "South": 48.2919,
+            "North": 50.0919
+          }
+        },
+        {
+          "Place_Name": "Périers",
+          "Place_GPS_coordinate": "49.1867, -1.4075",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.3075,
+            "East": -0.5075,
+            "South": 48.2867,
+            "North": 50.0867
+          }
+        },
+        {
+          "Place_Name": "St. Sauveur-Lendelin",
+          "Place_GPS_coordinate": "49.1297, -1.4131",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.3131,
+            "East": -0.5131,
+            "South": 48.2297,
+            "North": 50.0297
+          }
+        },
+        {
+          "Place_Name": "Marigny",
+          "Place_GPS_coordinate": "49.0992, -1.2419",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.1419,
+            "East": -0.3419,
+            "South": 48.1992,
+            "North": 49.9992
+          }
+        },
+        {
+          "Place_Name": "Lessay",
+          "Place_GPS_coordinate": "49.2008, -1.5328",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.4328,
+            "East": -0.6328,
+            "South": 48.3008,
+            "North": 50.1008
+          }
+        },
+        {
+          "Place_Name": "Saint-Lô",
+          "Place_GPS_coordinate": "49.1153, -1.0903",
+          "Weather_text": "Clear weather suitable for aerial bombardment, temperatures approximately 20-25°C, partial cloud cover.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9903,
+            "East": -0.1903,
+            "South": 48.2153,
+            "North": 50.0153
+          }
+        }
+      ]
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "3a",
+      "Footnote_Number": "3",
+      "Footnote_Text": "Telecon, Helmdach and Tempelhoff, 1600, 25 Jul, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "National Archives and Records Administration (NARA)",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Captured German records, Record Group 242, Microfilm T-311 or similar for Army Group B war diary"
+    },
+    {
+      "Footnote": "3b",
+      "Footnote_Number": "3",
+      "Footnote_Text": "Morning and Daily Sitreps, 25 Jul, LXXXIV Corps Meldungen",
+      "Footnote_Referenced_Source": "LXXXIV Corps Meldungen",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "National Archives and Records Administration (NARA)",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Captured German records, Record Group 242, Microfilm T-314 for LXXXIV Corps"
+    },
+    {
+      "Footnote": "3c",
+      "Footnote_Number": "3",
+      "Footnote_Text": "Seventh Army KTB, 25 Jul",
+      "Footnote_Referenced_Source": "Seventh Army KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "National Archives and Records Administration (NARA)",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Captured German records, Record Group 242, Microfilm T-311 for Seventh Army war diary"
+    },
+    {
+      "Footnote": "4a",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Telecons, Kluge and Hausser, 1010, 26 Jul, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "National Archives and Records Administration (NARA)",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Captured German records, Record Group 242, Microfilm T-311 or similar for Army Group B war diary"
+    },
+    {
+      "Footnote": "4b",
+      "Footnote_Number": "4",
+      "Footnote_Text": "Pemsel and Tempelhoff, 1830, 26 Jul, AGp B KTB",
+      "Footnote_Referenced_Source": "AGp B KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "National Archives and Records Administration (NARA)",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Captured German records, Record Group 242, Microfilm T-311 or similar for Army Group B war diary"
+    },
+    {
+      "Footnote": "5a",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Seventh Army KTB, 26 Jul",
+      "Footnote_Referenced_Source": "Seventh Army KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "National Archives and Records Administration (NARA)",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Captured German records, Record Group 242, Microfilm T-311 for Seventh Army war diary"
+    },
+    {
+      "Footnote": "5b",
+      "Footnote_Number": "5",
+      "Footnote_Text": "LXXXIV Corps Daily Sitrep, 26 Jul, in LXXXIV Corps Meldungen",
+      "Footnote_Referenced_Source": "LXXXIV Corps Meldungen",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "National Archives and Records Administration (NARA)",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Captured German records, Record Group 242, Microfilm T-314 for LXXXIV Corps"
+    },
+    {
+      "Footnote": "5c",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Kluge Order, 1935, 26 Jul, AGp B Op. Befehle",
+      "Footnote_Referenced_Source": "AGp B Op. Befehle",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "National Archives and Records Administration (NARA)",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Captured German records, Record Group 242, Microfilm T-311 or similar for Army Group B operations orders"
+    },
+    {
+      "Footnote": "5d",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Telecons, Kluge and Jodl, 1828, 13 Jul, OB WEST KTB, Anlagen 615, 860, and 862",
+      "Footnote_Referenced_Source": "OB WEST KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "National Archives and Records Administration (NARA)",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Captured German records, Record Group 242, Microfilm T-311 for OB West war diary and annexes"
+    },
+    {
+      "Footnote": "5e",
+      "Footnote_Number": "5",
+      "Footnote_Text": "Kluge and Zimmerman, 1750, 26 Jul, OB WEST KTB, Anlagen 615, 860, and 862",
+      "Footnote_Referenced_Source": "OB WEST KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "National Archives and Records Administration (NARA)",
+      "NonDigital_Library_Address": "8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Captured German records, Record Group 242, Microfilm T-311 for OB West war diary and annexes"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn13.html",
+  "Source_Footnote_Link_Capture_Date": "December 21, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+  "Source_Link_Capture_Date": "December 21, 2025"
+}

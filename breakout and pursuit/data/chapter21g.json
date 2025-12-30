@@ -1,0 +1,932 @@
+{
+  "Events": [
+    {
+      "Event": "Cézembre",
+      "Sub-event": "Island Description and Initial Actions",
+      "Sub-event_summary": "Cézembre island controlled sea approaches; initial artillery out of range, harassment; requested air and naval; bombers attacked 6 and 11 August; heavy artillery shelled from 9 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_95": "Four thousand yards offshore, the tiny island of Cézembre, half a mile long and a quarter of a mile wide, by its position opposite the mouth of the Rance River controlled the deep water channel to St. Malo and the sea approaches to Granville and Cancale. Its coastal guns had been out of range of the 83d Division artillery pieces during the early part of the battle, and its fire had been a nasty source of harassment. The division had requested the island blasted \"as quickly as we can and as often as we can,\" and the VIII Corps had promised to \"work on it from the air and naval angle.\" Bombers attacked the island during the night of 6 August and again on 11 August, but naval gunfire did not become available until much later. Meanwhile, the corps had brought heavy artillery into the St. Malo area, and the pieces shelled the island to prevent interference"
+      },
+      "Footnote_References": [
+        66
+      ],
+      "Place_Name": "Cézembre",
+      "Dates": {
+        "Date_group_of_event": "6-11 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "060000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division Artillery",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": null,
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p412.jpg",
+          "Description": "Bombing of Ile de Cezembre, Off St. Malo",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Cézembre",
+        "Place_GPS_coordinate": "48.6769, -2.0722",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cézembre",
+        "Place_GPS_coordinate": "48.6769, -2.0722",
+        "Weather_text": "Historical weather near Saint-Malo on 6-11 August 1944: Mild temperatures 14-21°C, mostly cloudy, moderate precipitation.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0722",
+          "East": "-1.0722",
+          "South": "47.7769",
+          "North": "49.5769"
+        }
+      }
+    },
+    {
+      "Event": "Cézembre",
+      "Sub-event": "Napalm Attack and Parley",
+      "Sub-event_summary": "35 planes dropped napalm on 17 August; Major Alexander demanded surrender on 18 August, refused by commander who needed orders.",
+      "Sub-event_fulltext": {
+        "Paragraph_96": "with the ground action on the mainland.",
+        "Paragraph_97": "The thirty-five planes diverted to Cézembre from the attack on the Citadel on 17 August created huge columns of smoke with their napalm bombs. Hoping that fires started by the bombardment would intensify the adverse effect Aulock's capitulation was sure to have on the garrison, and expecting that both factors would enlist a readiness to quit Cézembre, General Macon authorized Maj. Joseph M. Alexander and two enlisted men, as well as an accredited civilian motion picture cameraman, to demand that the Germans relinquish the island. On 18 August the party rowed across the St. Malo bay. At Cézembre, a noncommissioned officer met the boat and conducted Alexander and his interpreter to the fortress commander, a lieutenant colonel who did not give his name. Neither arrogant nor boastful, the German commander stated that the last order he had received from higher headquarters instructed him to maintain his defense. Until he received a countermanding order, he would continue to do just that. Informed that the mainland was completely under American control, he declared that he did not understand how that changed his situation. Reminded that the mainland had an effect on the German garrison in the château, for"
+      },
+      "Footnote_References": [
+        67,
+        68
+      ],
+      "Place_Name": "Cézembre",
+      "Dates": {
+        "Date_group_of_event": "17-18 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "170000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Cézembre Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "St. Malo Fortress",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": "Lieutenant Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "300 men",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cézembre",
+        "Place_GPS_coordinate": "48.6769, -2.0722",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cézembre",
+        "Place_GPS_coordinate": "48.6769, -2.0722",
+        "Weather_text": "Historical weather near Saint-Malo on 17-18 August 1944: Mild temperatures 14-21°C, mostly cloudy, moderate precipitation.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0722",
+          "East": "-1.0722",
+          "South": "47.7769",
+          "North": "49.5769"
+        }
+      }
+    },
+    {
+      "Event": "Cézembre",
+      "Sub-event": "Observations of Island Damage",
+      "Sub-event_summary": "Alexander observed island in shambles: buildings damaged, railway destroyed, craters, exploded dump; 300 men in tunnels manning guns.",
+      "Sub-event_fulltext": {
+        "Paragraph_98": "According to Alexander's observations, Cézembre was a shambles. Shelling and bombardment had demolished or badly damaged the few houses and buildings, destroyed a narrow-gauge railway designed to carry ammunition from the beach to gun positions, created large craters, and exploded an ammunition dump, scattering shells and debris throughout the island. About three hundred men comprised the garrison. From tunnels dug into rock, the men manned those coastal guns that still functioned."
+      },
+      "Footnote_References": [
+        69
+      ],
+      "Place_Name": "Cézembre",
+      "Dates": {
+        "Date_group_of_event": "18 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "180000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Cézembre Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "St. Malo Fortress",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": "Lieutenant Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "300 men",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cézembre",
+        "Place_GPS_coordinate": "48.6769, -2.0722",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cézembre",
+        "Place_GPS_coordinate": "48.6769, -2.0722",
+        "Weather_text": "Historical weather near Saint-Malo on 18 August 1944: Mild temperatures 14-21°C, mostly cloudy, moderate precipitation.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0722",
+          "East": "-1.0722",
+          "South": "47.7769",
+          "North": "49.5769"
+        }
+      }
+    },
+    {
+      "Event": "Cézembre",
+      "Sub-event": "Renewed Efforts and Bombardment",
+      "Sub-event_summary": "Week later, for Brest, 330th trained amphibious; softening 30 Aug bombers; 31 Aug P-38 napalm, 300 heavy HE; Warspite fired; field artillery targeted water tanks; parley refused.",
+      "Sub-event_fulltext": {
+        "Paragraph_99": "No further effort was made immediately against Cézembre. A week later, when preparations were being completed for a strong attack against Brest, higher headquarters decided to eliminate the nuisance of Cézembre. The 330th Infantry headquarters returned to St. Malo to direct training for an amphibious operation. Arrangements were made for assault boats and special equipment. Softening up operations commenced on 30 August when two groups of planes bombed the island. On 31 August twenty-four P-38's dropped napalm and three hundred heavy bombers struck with high explosive. Several 8-inch howitzers and guns shelled the island \"day and night\" with particular effort to destroy water tanks. Another parley with the island commander disclosed \"that he will fight to the last drop of water.\""
+      },
+      "Footnote_References": [
+        70
+      ],
+      "Place_Name": "Cézembre",
+      "Dates": {
+        "Date_group_of_event": "30-31 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "300000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "330th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "Robert T. Foster",
+          "Name": "Robert T. Foster",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Headquarters directing training",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Assault Boats",
+            "Identifier": "Unknown",
+            "Quantity": "Unknown",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cézembre",
+        "Place_GPS_coordinate": "48.6769, -2.0722",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cézembre",
+        "Place_GPS_coordinate": "48.6769, -2.0722",
+        "Weather_text": "Historical weather near Saint-Malo on 30-31 August 1944: Mild temperatures 14-21°C, mostly cloudy, moderate precipitation.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0722",
+          "East": "-1.0722",
+          "South": "47.7769",
+          "North": "49.5769"
+        }
+      }
+    },
+    {
+      "Event": "Cézembre",
+      "Sub-event": "Final Bombardment and Surrender",
+      "Sub-event_summary": "1 September bombardment by bombers and P-38 napalm; 2 September white flag, surrendered due to water shortage: 1 officer, 320 men, 2 Italians.",
+      "Sub-event_fulltext": {
+        "Paragraph_100": "Faced with this attitude, the Allies increased their pressure on 1 September. Medium bombers of both the IX Bomber Command and the RAF Bomber Command opened an aerial assault that ended with thirty-three P-38's dropping napalm. A British warship, H.M.S. Warspite, fired salvos of 15-inch armor-piercing projectiles. Field artillery from the mainland fired 155-mm.,8-inch, and 240-mm. shells at embrasures, portholes, and tunnel entrances. After this display of power, another demand for surrender was transmitted to the garrison. Again the German commander replied that he lacked permission to surrender.",
+        "Paragraph_101": "On the following day, 2 September, as the 330th Infantry prepared to make an amphibious assault on Cézembre, the garrison raised a white flag. The landing craft immediately conducted troops to the island and evacuated 1 German officer, 320 men, and 2 Italian officers. Although the fortifications had been severely damaged, the reason for the capitulation was a shortage of water--the distilling plant had been destroyed."
+      },
+      "Footnote_References": [
+        71,
+        72
+      ],
+      "Place_Name": "Cézembre",
+      "Dates": {
+        "Date_group_of_event": "2 September 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "020000ZSEP44"
+      },
+      "TOE": {
+        "Unit": "Cézembre Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "St. Malo Fortress",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": "Lieutenant Colonel",
+          "End_Date": "2 September 1944",
+          "End_Status": "Surrendered",
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "321 Germans + 2 Italians",
+        "Equipments": {
+          "Supply": "Water shortage",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 321
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cézembre",
+        "Place_GPS_coordinate": "48.6769, -2.0722",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cézembre",
+        "Place_GPS_coordinate": "48.6769, -2.0722",
+        "Weather_text": "Historical weather near Saint-Malo on 2 September 1944: Mild temperatures 14-21°C, mostly cloudy, moderate precipitation.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0722",
+          "East": "-1.0722",
+          "South": "47.7769",
+          "North": "49.5769"
+        }
+      }
+    },
+    {
+      "Event": "Cézembre",
+      "Sub-event": "End of Battle Assessment",
+      "Sub-event_summary": "Battle unexpected in inception, difficulty, duration; Germans showed discipline fulfilling Hitler's will.",
+      "Sub-event_fulltext": {
+        "Paragraph_102": "So ended the battle of St. Malo, a battle that had been unexpected in its inception, in its difficulty, and in its duration. German troops, although isolated, had demonstrated convincingly the value of military discipline in carrying out the Fuehrer's will. An action of local significance by mid-August, a rear area operation more than a hundred miles behind the front, the combat nevertheless fulfilled Hitler's strategic design."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "2 September 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "020000ZSEP44"
+      },
+      "TOE": {
+        "Unit": "St. Malo Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Andreas von Aulock",
+          "Name": "Andreas von Aulock",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Andreas_von_Aulock",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p413.jpg",
+          "Description": "St. Malo Prisoners Marching Off to Internment",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "Historical weather in St. Malo on 2 September 1944: Mild 14-21°C, cloudy, moderate rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "Cézembre",
+      "Sub-event": "Brittany Campaign Assessment",
+      "Sub-event_summary": "August whirlwind to calm; 4th Armored seized Rennes 4 Aug, contained Lorient 9, captured Nantes 13; 6th Armored penned Brest, destroyed division part; Task Force A secured railroad, beach; 83d besieged St. Malo to 17 Aug, Cézembre 2 Sep.",
+      "Sub-event_fulltext": {
+        "Paragraph_103": "From the American point of view, the results of the Brittany campaign produced mixed reactions. August had come in like a whirlwind, gone out in a calm. The 4th Armored Division had seized Rennes by 4 August, had contained 11,000 Germans in Lorient by 9 August, and had captured Nantes on 13 August. The 6th Armored Division had driven more than 200 miles down the center of the peninsula, had penned some 30,000 Germans into the fortress of Brest and had destroyed part of a German division. Task Force A had swept the northern shore of Brittany to secure the Brest-Rennes railroad and to secure the beach of St. Michel-en-Grève. In contrast with these swift exploiting thrusts, the 83d Division had besieged the fortress of St. Malo, and only after a \"slugging match had slowly hammered down pillboxes, barricades, and fortified areas\" was the mainland stronghold reduced by 17 August, the Ile de Cézembre two weeks later, by 2 September."
+      },
+      "Footnote_References": [
+        73
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "4th Armored Division",
+            "Name": "John S. Wood",
+            "Rank": "Major General",
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/John_S._Wood",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "6th Armored Division",
+            "Name": "Robert W. Grow",
+            "Rank": "Major General",
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_W._Grow",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "83d Infantry Division",
+            "Name": "Robert C. Macon",
+            "Rank": "Major General",
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_C._Macon",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000, -3.0000",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000, -3.0000",
+        "Weather_text": "Historical weather in Brittany during August 1944: Mild temperatures 14-21°C, mostly cloudy, moderate precipitation.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.0000",
+          "East": "-2.0000",
+          "South": "47.1000",
+          "North": "48.9000"
+        }
+      }
+    },
+    {
+      "Event": "Cézembre",
+      "Sub-event": "Brittany Liberation and Isolation",
+      "Sub-event_summary": "Peninsula cut off, Brittany liberated; Germans herded into Lorient, St. Nazaire, Brest; ports destroyed or occupied; minor harbors and railway gained.",
+      "Sub-event_fulltext": {
+        "Paragraph_104": "The Brittany peninsula had been completely cut off, and a sizable segment of France, the ancient province of Brittany, had been liberated with dispatch. No organized resistance remained in the interior, for the Germans who remained in Brittany had been herded into Lorient, St. Nazaire, and Brest, where they could only escape by sea or await American siege operations.",
+        "Paragraph_105": "Despite these achievements, the Brittany campaign had not secured the basic strategic objectives that had motivated it. The major ports of Brittany could not be used. St. Malo was destroyed beyond hope of immediate repair: Nantes was demolished. Brest, Lorient, and St. Nazaire were occupied by enemy forces in naturally good defensive positions bolstered by extensive fortifications. Construction of a harbor at Quiberon Bay could not be started. The logistical fruits of the action were the minor harbors of Cancale and St. Michel-en-Grève and the railway from Rennes to Morlaix. Although the VIII Corps gathered its forces for a mighty effort at Brest at the end of August, logistical planners were by then looking elsewhere for major ports of entry."
+      },
+      "Footnote_References": [
+        74
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 41000
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000, -3.0000",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000, -3.0000",
+        "Weather_text": "Historical weather in Brittany during August 1944: Mild temperatures 14-21°C, mostly cloudy, moderate precipitation.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.0000",
+          "East": "-2.0000",
+          "South": "47.1000",
+          "North": "48.9000"
+        }
+      }
+    },
+    {
+      "Event": "Cézembre",
+      "Sub-event": "Strategic Assessment",
+      "Sub-event_summary": "Failure to secure ports not important by mid-August; eastern breakout overflowing into Anjou and Maine.",
+      "Sub-event_fulltext": {
+        "Paragraph_106": "Failure to have attained the strategic goals of the operation did not appear terribly important in mid-August. Events occurring farther to the east had long since relegated the action in Brittany to secondary status. The eastern development of the breakout was overflowing Normandy into the ancient provinces of Anjou and Maine and promising to bring the campaign in western France to a climax."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "Mid-August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 150000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000, -3.0000",
+        "Map_Reference": "Map VIII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg/640px-US_Army_official_history_map_of_the_liberation_of_Brittany_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000, -3.0000",
+        "Weather_text": "Historical weather in Brittany mid-August 1944: Mild temperatures 14-21°C, mostly cloudy, moderate precipitation.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.0000",
+          "East": "-2.0000",
+          "South": "47.1000",
+          "North": "48.9000"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "66a",
+      "Footnote_Number": "66",
+      "Footnote_Text": "83d Div G-3 Jnl, entry 1600, 6 Aug",
+      "Footnote_Referenced_Source": "83d Division G-3 Journal, entry 1600, 6 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-3 journal entry"
+    },
+    {
+      "Footnote": "66b",
+      "Footnote_Number": "66",
+      "Footnote_Text": "VIII Corps G-3 Jnl, entry 1700, 6 Aug",
+      "Footnote_Referenced_Source": "VIII Corps G-3 Journal, entry 1700, 6 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps G-3 journal entry"
+    },
+    {
+      "Footnote": "66c",
+      "Footnote_Number": "66",
+      "Footnote_Text": "IX BC Sum of Opns, Aug",
+      "Footnote_Referenced_Source": "IX Bomber Command Summary of Operations, August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request IX BC summary August 1944"
+    },
+    {
+      "Footnote": "66d",
+      "Footnote_Number": "66",
+      "Footnote_Text": "VIII Corps AAR, Aug",
+      "Footnote_Referenced_Source": "VIII Corps After Action Report, August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps AAR August 1944"
+    },
+    {
+      "Footnote": "67",
+      "Footnote_Number": "67",
+      "Footnote_Text": "83d Div G-3 Per Rpt 22, 1200, 17 Aug.",
+      "Footnote_Referenced_Source": "83d Division G-3 Periodic Report 22, 1200, 17 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-3 report 22"
+    },
+    {
+      "Footnote": "68",
+      "Footnote_Number": "68",
+      "Footnote_Text": "83d Div G-3 Per Rpt 23, 2400, 18 Aug.",
+      "Footnote_Referenced_Source": "83d Division G-3 Periodic Report 23, 2400, 18 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-3 report 23"
+    },
+    {
+      "Footnote": "69",
+      "Footnote_Number": "69",
+      "Footnote_Text": "Msg, Macon to Middleton, 1830, 18 Aug.",
+      "Footnote_Referenced_Source": "Message, Macon to Middleton, 1830, 18 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "70",
+      "Footnote_Number": "70",
+      "Footnote_Text": "Msg, Macon to Middleton, 2200, 31 Aug.",
+      "Footnote_Referenced_Source": "Message, Macon to Middleton, 2200, 31 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "71",
+      "Footnote_Number": "71",
+      "Footnote_Text": "Msg, Macon to Middleton, 2200, 1 Sep.",
+      "Footnote_Referenced_Source": "Message, Macon to Middleton, 2200, 1 September",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "72",
+      "Footnote_Number": "72",
+      "Footnote_Text": "83d Div G-3 Per Rpt 58, 2400, 2 Sep; Msg, Macon to Middleton, 2200, 2 Sep.",
+      "Footnote_Referenced_Source": "83d Division G-3 Periodic Report 58, 2400, 2 September; Message, Macon to Middleton, 2200, 2 September",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-3 report 58 and message logs"
+    },
+    {
+      "Footnote": "73",
+      "Footnote_Number": "73",
+      "Footnote_Text": "VIII Corps AAR, Aug.",
+      "Footnote_Referenced_Source": "VIII Corps After Action Report, August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps AAR August 1944"
+    },
+    {
+      "Footnote": "74",
+      "Footnote_Number": "74",
+      "Footnote_Text": "VIII Corps G-2 Per Rpt 70, 2400, 22 Aug.",
+      "Footnote_Referenced_Source": "VIII Corps G-2 Periodic Report 70, 2400, 22 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps G-2 report 70"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

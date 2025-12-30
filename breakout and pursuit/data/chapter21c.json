@@ -1,0 +1,2306 @@
+{
+  "Events": [
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Commitment of 83d Division to St. Malo",
+      "Sub-event_summary": "After Task Force A departed, the 83d Division remained to capture St. Malo; initial optimism faded as strong defenses were confirmed, leading to full division commitment by 5 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_25": "When Task Force A departed the St. Malo area to sweep the Brittany north shore, the 83d Division stayed to complete the task already begun. Few Americans suspected at the beginning of August that St. Malo would be difficult to take, for the rapidity of the advance into Brittany had brought a heady optimism. Yet studies made in England before the invasion indicated that there were strong defenses at the harbor, and contact with the defenders in the early days of August should have confirmed the fact that the Germans would make a determined stand there. Not until 5 August, however, did American commanders acknowledge that the Germans were capable of stubborn defense. By then, General Middleton and the VIII Corps, and particularly General Macon and the 83d Division, were aware that they had a nasty job ahead of them.",
+        "Paragraph_26": "Originally alerted for action against Rennes and Quiberon or against Brest, Macon had supported Task Force A at St. Malo with one regiment, hoping thereby to sweep aside the allegedly insignificant opposition at the port. The resistance that developed soon changed these plans, and by 5 August the entire division was committed there."
+      },
+      "Footnote_References": [
+        21,
+        22
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "5 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "050000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "329th Infantry Regiment",
+            "Name": "George W. Crabill",
+            "Rank": "Colonel",
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "330th Infantry Regiment",
+            "Name": "Robert T. Foster",
+            "Rank": "Colonel",
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "331st Infantry Regiment",
+            "Name": "Robert York",
+            "Rank": "Colonel",
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "322nd Field Artillery Battalion",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "323rd Field Artillery Battalion",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "324th Field Artillery Battalion",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "908th Field Artillery Battalion",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "308th Engineer Battalion",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "308th Medical Battalion",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "83rd Cavalry Reconnaissance Troop",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "453rd Anti-Aircraft Artillery Battalion",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "783rd Ordnance Company",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "83rd Quartermaster Company",
+            "Name": null,
+            "Rank": null,
+            "Date": "August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Approximately 14,000 men, fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map I",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "In August 1944, the temperature in Saint-Malo typically ranged from 14°C to 21°C. The month was mostly cloudy, with an average of 6.5 hours of sunshine per day. Precipitation was moderate, with about 50 mm of rain over the month.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Decision to Capture St. Malo",
+      "Sub-event_summary": "General Bradley decided to capture St. Malo for its value as a supply port, despite initial plans to bypass it.",
+      "Sub-event_fulltext": {
+        "Paragraph_27": "At first wanting St. Malo immediately, later agreeing to bypass and contain the port if its reduction required \"too large a force and too much time,\" General Bradley finally decided that with American troops dispersing to the far corners of Brittany the St. Malo harbor would be valuable as an auxiliary supply port for those forces. Used by the Germans as a naval base for coastal operations and as a supply base for the Channel Islands, St. Malo could accommodate medium-sized vessels and had facilities to unload cargo at the rate of a thousand tons a day. Although naval planners had informed General Eisenhower \"that we are likely to be disappointed in its possibilities as a port,\" Bradley ordered St. Malo taken."
+      },
+      "Footnote_References": [
+        23
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "Early August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "12th Army Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map I",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "In August 1944, the temperature in Saint-Malo typically ranged from 14°C to 21°C. The month was mostly cloudy, with an average of 6.5 hours of sunshine per day. Precipitation was moderate, with about 50 mm of rain over the month.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Geographic Analogy to Normandy",
+      "Sub-event_summary": "American commanders saw the Avranches-St. Malo area as similar to the Normandy coastline, with St. Malo resembling Cherbourg.",
+      "Sub-event_fulltext": {
+        "Paragraph_28": "To American commanders studying their maps, the Avranches-St. Malo area was much like the Normandy coastline where the OVERLORD landings had been made. The Bay of Mont St. Michel resembled in miniature the shape of the Bay of the Seine. The St. Malo peninsula appeared to be the Cotentin Peninsula seen through the wrong end of a telescope. The harbor of St. Malo was a smaller version of Cherbourg. The Rance River estuary provided a west coast for the St. Malo peninsula as the ocean did for the Cotentin. At the base of the Rance estuary, Dinan was in the same relation to St. Malo as Avranches was to Cherbourg."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "Early August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "N/A",
+        "Unit_Nationality": "N/A",
+        "Command_Structure": {
+          "Unit": null,
+          "Commander": null,
+          "Name": null,
+          "Rank": null,
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo Peninsula",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map I",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo Peninsula",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "In August 1944, the temperature in Saint-Malo typically ranged from 14°C to 21°C. The month was mostly cloudy, with an average of 6.5 hours of sunshine per day. Precipitation was moderate, with about 50 mm of rain over the month.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Description of St. Malo and Fortress",
+      "Sub-event_summary": "St. Malo was a picturesque port with strong defenses; the fortress included St. Malo, Dinard, and surrounding areas.",
+      "Sub-event_fulltext": {
+        "Paragraph_29": "A picturesque port, St. Malo was the birthplace of Jacques Cartier and the home of the privateers who had harassed English shipping for three centuries. Across the Rance River, more than a mile to the west, the beaches of Dinard had been a favorite with British tourists. The defenses protecting both towns comprised the fortress complex of St. Malo."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "N/A",
+        "Unit_Nationality": "N/A",
+        "Command_Structure": {
+          "Unit": null,
+          "Commander": null,
+          "Name": null,
+          "Rank": null,
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ww2online.org/image/us-army-soldiers-shooting-german-snipers-saint-malo-1944",
+          "Description": "US Army soldiers shooting at German snipers in Saint-Malo, 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "In August 1944, the temperature in Saint-Malo typically ranged from 14°C to 21°C. The month was mostly cloudy, with an average of 6.5 hours of sunshine per day. Precipitation was moderate, with about 50 mm of rain over the month.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "German Garrison Strength",
+      "Sub-event_summary": "French warned of 10,000 German troops; American estimates varied from 3,000 to 6,000, but actual strength was over 12,000, with two-thirds on St. Malo side.",
+      "Sub-event_fulltext": {
+        "Paragraph_30": "Although Frenchmen warned that about ten thousand German troops garrisoned the fortress, American estimates of German strength varied between three and six thousand. As late as 12 August VIII Corps was accepting the figure of five thousand, even though in actuality more than twelve thousand Germans occupied St. Malo and Dinard, with about two thirds of that number on the St. Malo side of the Rance."
+      },
+      "Footnote_References": [
+        24
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "Early August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "St. Malo Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Andreas von Aulock",
+          "Name": "Andreas von Aulock",
+          "Rank": "Colonel",
+          "End_Date": "17 August 1944",
+          "End_Status": "Surrendered",
+          "Biographical_reference": "https://grokipedia.com/page/Andreas_von_Aulock",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Over 12,000 men",
+        "Equipments": {
+          "Supply": "Stockpiled supplies, ammunition, water, food",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "In August 1944, the temperature in Saint-Malo typically ranged from 14°C to 21°C. The month was mostly cloudy, with an average of 6.5 hours of sunshine per day. Precipitation was moderate, with about 50 mm of rain over the month.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Growth of German Garrison",
+      "Sub-event_summary": "Bypassing St. Malo allowed small garrisons and stragglers to reinforce the fortress; lack of naval patrols enabled supplies from Channel Islands.",
+      "Sub-event_fulltext": {
+        "Paragraph_33": "When the true numerical strength ofthe garrison became known after the battle, some Americans began to feel that the haste displayed in getting the Brittany exploitation under way had enabled the Germans to build up their St. Malo forces. In bypassing the port and its approaches, the Americans permitted numerous small garrisons in the surrounding countryside, as well as stragglers from the Cotentin, to take refuge in the fortress. The absence of Allied naval patrols offshore had allowed reinforcement and supply to be brought into the harbor from the Channel Islands. The growth of the garrison, which could not have occurred had the Americans thrust rapidly to the port upon entering Brittany, made reduction of the town a major task."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "Early August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "St. Malo Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Andreas von Aulock",
+          "Name": "Andreas von Aulock",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Andreas_von_Aulock",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Over 12,000 men",
+        "Equipments": {
+          "Supply": "Reinforcements and supplies from Channel Islands",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "In August 1944, the temperature in Saint-Malo typically ranged from 14°C to 21°C. The month was mostly cloudy, with an average of 6.5 hours of sunshine per day. Precipitation was moderate, with about 50 mm of rain over the month.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "German Intent to Resist",
+      "Sub-event_summary": "Colonel von Aulock rejected surrender, intending to defend to the last man, making St. Malo another Stalingrad.",
+      "Sub-event_fulltext": {
+        "Paragraph_34": "Though estimates of German strength were incorrect, American intelligence was right in its growing realization that the enemy in St. Malo firmly intended to resist. The garrison commander had rejected a proposal by French civilian officials that he surrender in order to save the nearby towns from damage. He had announced that \"he would defend St. Malo to the last man even if the last man had to be himself.\" That he could make a strong fight in support of his boast soon became evident."
+      },
+      "Footnote_References": [
+        25
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "Early August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "St. Malo Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Andreas von Aulock",
+          "Name": "Andreas von Aulock",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Andreas_von_Aulock",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Over 12,000 men",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "In August 1944, the temperature in Saint-Malo typically ranged from 14°C to 21°C. The month was mostly cloudy, with an average of 6.5 hours of sunshine per day. Precipitation was moderate, with about 50 mm of rain over the month.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Outpost Withdrawal and Line Defense",
+      "Sub-event_summary": "Germans withdrew outposts to the Châteauneuf-St. Benôit-des-Ondes line; 83d Division and Task Force A pierced the line on 5 August, capturing 655 prisoners.",
+      "Sub-event_fulltext": {
+        "Paragraph_35": "In early August outposts between Dol-de-Bretagne and Dinan were withdrawn to the Châteauneuf-St. Benôit-des-Ondes line, which consisted of antitank obstacles and guns, roadblocks, wire entanglements, mine fields, and machine gun emplacements. Although the co-ordinated attack, launched on 5 August by the 83d Division and Task Force A (the latter alone taking 655 prisoners), pierced this line and secured Châteauneuf, the stubborn opposition gave advance notice that the defense would stiffen as the Germans drew more closely around St. Malo."
+      },
+      "Footnote_References": [
+        26
+      ],
+      "Place_Name": "Châteauneuf",
+      "Dates": {
+        "Date_group_of_event": "5 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "050000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Robert C. Macon",
+          "Name": "Robert C. Macon",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_C._Macon",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Full division",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 655
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Châteauneuf",
+        "Place_GPS_coordinate": "48.5610, -1.9270",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Châteauneuf",
+        "Place_GPS_coordinate": "48.5610, -1.9270",
+        "Weather_text": "On 5 August 1944 in Saint-Malo area, temperatures ranged from 14°C to 21°C, partly cloudy with moderate precipitation possible.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.9270",
+          "East": "-0.9270",
+          "South": "47.6610",
+          "North": "49.4610"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Attempt to Outflank via Rance Crossing",
+      "Sub-event_summary": "Macon sent a battalion across the Rance to cut Dinan-Dinard road but recalled them due to strong resistance; 331st Infantry found easier approach east of Châteauneuf.",
+      "Sub-event_fulltext": {
+        "Paragraph_36": "Hoping to outflank and isolate the St. Malo defensive complex, General Macon on 5 August sent a battalion of the 329th Infantry across the Rance in assault boats to cut the Dinan-Dinard road, a movethat was to be the preliminary action for a swift thrust to Dinard. Though the battalion crossed the river, the men uncovered such strong resistance on the west bank of the Rance that Macon quickly recalled them. Adding impetus to this decision was the discovery by the 331st Infantry, in the right of the division sector, of a much easier approach to St. Malo. Moving north in the area east of Châteauneuf toward Cancale, on the east coast of the St. Malo peninsula, the 331st encountered light covering forces defending canals, roadblocks, and mine fields. What the Germans were covering was their consolidation of forces on the main defense line of St. Malo."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Rance River",
+      "Dates": {
+        "Date_group_of_event": "5 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "050000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "329th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "George W. Crabill",
+          "Name": "George W. Crabill",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [
+          {
+            "Unit": "Battalion",
+            "Name": null,
+            "Rank": null,
+            "Date": "5 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Battalion strength, approximately 800 men",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Assault Boats",
+            "Identifier": "Unknown",
+            "Quantity": "Unknown",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Rance River",
+        "Place_GPS_coordinate": "48.5833, -2.0000",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Rance River",
+        "Place_GPS_coordinate": "48.5833, -2.0000",
+        "Weather_text": "On 5 August 1944, temperatures in the Saint-Malo area ranged from 14°C to 21°C, with partly cloudy skies and moderate breeze.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0000",
+          "East": "-1.0000",
+          "South": "47.6833",
+          "North": "49.4833"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "German Preparations and Evacuation",
+      "Sub-event_summary": "German commander abandoned Cancale and Dinan; FFI surrounded Dinan where Germans were willing to surrender to Americans.",
+      "Sub-event_fulltext": {
+        "Paragraph_37": "That evening, 5 August, as Task Force A prepared to slip away to fulfill its original mission, the German commander prepared a last-ditch defense. As part of this activity, the fortress commander abandoned Cancale, which was occupied by the 331st Infantry on the following morning and immediately surveyed for use as a port for landing craft. The German commander also abandoned Dinan, which was surrounded on the following day by FFI troops who reported that several hundred Germans were willing to surrender, but only to Americans. By then, the 83d Division was attacking toward St. Malo with three regiments abreast--the 329th on the left, the 330th in the center, and the 331st on the right--and was in contact with the main defenses of the St. Malo fortress."
+      },
+      "Footnote_References": [
+        27
+      ],
+      "Place_Name": "Cancale",
+      "Dates": {
+        "Date_group_of_event": "6 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "060000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "331st Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "Robert York",
+          "Name": "Robert York",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Regiment strength, approximately 3,000 men",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cancale",
+        "Place_GPS_coordinate": "48.6761, -1.8514",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cancale",
+        "Place_GPS_coordinate": "48.6761, -1.8514",
+        "Weather_text": "On 6 August 1944, temperatures in the Saint-Malo area ranged from 14°C to 21°C, with partly cloudy skies and moderate breeze.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.8514",
+          "East": "-0.8514",
+          "South": "47.7761",
+          "North": "49.5761"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Description of St. Malo Fortress Components",
+      "Sub-event_summary": "The fortress included St. Malo, Paramé, St. Servan-sur-Mer, and the Citadel; supported by artillery on Cézembre and supplies from Channel Islands.",
+      "Sub-event_fulltext": {
+        "Paragraph_38": "On the St. Malo side of the Rance, the fortress encompassed three communities on the western tip of the peninsula. In the center was the walled town of St. Malo, originally an island accessible from the mainland only at low tide. Guarding the landward entrance into town was the fifteenth century château of Anne of Brittany. Protecting the town from seaward invasion were thick ramparts of stone. East of St. Malo and adjacent to it was the relatively modern suburb of Paramé, where bourgeois homes and resort hotels lined broad boulevards. South of St. Malo and across the harbor was the fishing port of St. Servan-sur-Mer. Not really on the ocean but on the Rance River estuary, St. Servan was the ferry terminus for the regular boat runs to Dinard. Dug into a rocky promontory on a peninsula between St. Malo harbor and the port of St. Servan was a casemented fort called the Citadel, the headquarters of the German commander.",
+        "Paragraph_39": "Although the Germans at St. Malo and Dinard were fighting with their backs to the sea, they had powerful support from artillery placed on the small island of Cézembre, not quite three miles offshore. The Channel islands of Jersey, Guernsey, and Alderney could furnish the St. Malo fortress supplies by water and receive German casualties."
+      },
+      "Footnote_References": [
+        28
+      ],
+      "Place_Name": "Citadel",
+      "Dates": {
+        "Date_group_of_event": "August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "St. Malo Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Andreas von Aulock",
+          "Name": "Andreas von Aulock",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Andreas_von_Aulock",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Over 12,000 men",
+        "Equipments": {
+          "Supply": "Supplies from Channel Islands",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Field Pieces",
+            "Identifier": "Unknown",
+            "Quantity": "6",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Image_License": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Citadel",
+        "Place_GPS_coordinate": "48.6392, -2.0236",
+        "Weather_text": "In August 1944, the temperature in Saint-Malo typically ranged from 14°C to 21°C. The month was mostly cloudy, with an average of 6.5 hours of sunshine per day. Precipitation was moderate, with about 50 mm of rain over the month.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0236",
+          "East": "-1.0236",
+          "South": "47.7392",
+          "North": "49.5392"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Fortifications Description",
+      "Sub-event_summary": "Fortifications were unfinished but adjusted to landward threat; ring of strongpoints barred approaches, with mutual support and stockpiled supplies.",
+      "Sub-event_fulltext": {
+        "Paragraph_40": "Hundreds of volunteer and impressed Todt workers had poured tons of concrete over steel for more than two years,but the fortifications of St. Malo were not finished. Permanent coastal guns, for example, had not been installed in the Citadel, and only half a dozen field pieces, still with wheels, stood provisionally behind the firing apertures. The Germans had planned to dig an enormous antitank ditch across the St. Malo peninsula from the Rance to the sea and fill it with water, but the excavations were far from complete. Another weakness of the fortress was that it faced seaward against an expected Allied invasion from the sea. Barbed wire and other obstacles decorated the beaches.",
+        "Paragraph_41": "Despite these deficiencies, the Germans were able to adjust quickly to a threat from the landward side of St. Malo. Enabling them to do so was a ring of strongpoints that barred the ground approaches. The most important were the coastal Fort la Varde, east of St. Malo; the strongpoint of St. Ideuc, on the eastern edge of Paramé; and positions on St. Joseph's Hill, in the southeast outskirts of St. Malo. The defense installations were mutually supporting, and underground wires assured telephonic communication among the principal garrisons. Stores of supplies, ammunition, water, and food, had been stockpiled in preparation against siege. As judged by OB WEST, the St. Malo fortifications were the most advanced of any fortress in the west."
+      },
+      "Footnote_References": [
+        29
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Todt Organization",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": null,
+          "Name": null,
+          "Rank": null,
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Organisation_Todt",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Hundreds of workers",
+        "Equipments": {
+          "Supply": "Concrete, steel",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Field Pieces",
+            "Identifier": "Unknown",
+            "Quantity": "6",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Image_License": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "In August 1944, the temperature in Saint-Malo typically ranged from 14°C to 21°C. The month was mostly cloudy, with an average of 6.5 hours of sunshine per day. Precipitation was moderate, with about 50 mm of rain over the month.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Von Aulock's Resolve",
+      "Sub-event_summary": "Colonel von Aulock, veteran of Stalingrad, promised to defend St. Malo to the last stone, disappointed not to fight offensively.",
+      "Sub-event_fulltext": {
+        "Paragraph_42": "The commander of St. Malo, Col. Andreas von Aulock, was somewhat disappointed to have been relegated to a static fortress, for he would have preferred to gain striking offensive victories for his Fuehrer. Yet whether he understood the strategic importance of Hitler's fortress policy or not, he prepared to do what was required of him. A veteran of Stalingrad who promised to make his defense of St. Malo \"another Stalingrad,\" Aulock stated, \"I was placed in command of this fortress. I did not request it. I will execute the orders I have received and, doing my duty as a soldier, I will fight to the last stone.\""
+      },
+      "Footnote_References": [
+        30
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "St. Malo Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Andreas von Aulock",
+          "Name": "Andreas von Aulock",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Andreas_von_Aulock",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Over 12,000 men",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "In August 1944, the temperature in Saint-Malo typically ranged from 14°C to 21°C. The month was mostly cloudy, with an average of 6.5 hours of sunshine per day. Precipitation was moderate, with about 50 mm of rain over the month.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Civilian Evacuation",
+      "Sub-event_summary": "Von Aulock ordered evacuation of civilians; most left reluctantly on 5 August, entering American lines.",
+      "Sub-event_fulltext": {
+        "Paragraph_43": "Aulock, who had always been correct in his official relations with the French, could not understand why the inhabitants of St. Malo regarded him as an enemy. For their own good, he had suggested soon after the Allied landings in Normandy that the French evacuate the town, which was sure to be a battlefield. Despite Allied air bombardment on 17 July and again on 1 August, very few families had departed. The approach of U.S. ground forces prompted Aulock to clear his decks. Calling several town officials into conference on 3 August, he informed them that they were fine fellows but that he preferred to have them \"in front of me rather than behind my back.\" Furthermore, since he wished to spare the population harm from the battle about to commence, most of the civilians had to go.",
+        "Paragraph_44": "To French requests that he save historic St. Malo from destruction by declaring it an open city, Aulock answered that he had referred that question to Kluge, who had transmitted it to Hitler. Hitler had replied that in warfare there was no such thing as a historic city. \"You will fight to the last man,\" he had ordered. As added justification to help the French comprehend Hitler's decision, Aulock explained that he commanded several small armed vessels that would have to maneuver in St. Malo waters. Since these boats constituted a legitimate military target, he could not declare the town an open city.",
+        "Paragraph_45": "Two days later, during the early evening of 5 August, a long line of French men, women, and pushing carts, most of the French population had left their homes reluctantly."
+      },
+      "Footnote_References": [
+        31
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "5 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "051800ZAUG44"
+      },
+      "TOE": {
+        "Unit": "St. Malo Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Andreas von Aulock",
+          "Name": "Andreas von Aulock",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Andreas_von_Aulock",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Small Armed Vessels",
+            "Identifier": "Unknown",
+            "Quantity": "Several",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Image_License": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "On 5 August 1944, temperatures ranged from 14°C to 21°C, partly cloudy with moderate breeze.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Fires and Demolitions in St. Malo",
+      "Sub-event_summary": "German artillery fire started fires; Germans set demolitions destroying the port; town burned for a week under pall of smoke.",
+      "Sub-event_fulltext": {
+        "Paragraph_46": "When American troops on 6 August came within range of the artillery on the island of Cézembre, German guns opened fire. One of the first shells struck the spire of the St. Malo cathedral. The steeple toppled over, a bad omen, the French believed. Later in the day fires broke out in the town. Frenchmen soon became convinced that the Germans had inadvertently spilled gasoline while burning codes and documents and that the few SS troops of the garrison with deliberate malice not only refused to permit fire fighters to put out the blaze but started others. The Americans unintentionally assisted by cutting the town's water supply in hope of encouraging German surrender, a hope concurred in by the mayor of St. Servan-sur-Mer, who had volunteered the necessary information on the location of the water valves. On the following morning, 7 August, the Germans added to the holocaust by setting off prepared demolitions that destroyed the port completely--quays, locks, breakwaters, and harbor machinery. For a week, as the town burned, a pall of smoke hovered over the St. Malo battlefield."
+      },
+      "Footnote_References": [
+        32
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "6-7 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "060000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "St. Malo Garrison",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Andreas von Aulock",
+          "Name": "Andreas von Aulock",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Andreas_von_Aulock",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "N/A",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Artillery on Cézembre",
+            "Identifier": "Unknown",
+            "Quantity": "Unknown",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Image_License": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.gettyimages.com/photos/liberation-of-saint-malo",
+          "Description": "Photos of liberation of Saint-Malo showing destruction",
+          "License": "Rights Managed"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "On 6-7 August 1944, temperatures ranged from 14°C to 21°C, partly cloudy, with smoke from fires affecting visibility.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Attack on 6 August",
+      "Sub-event_summary": "83d Division attacked main defenses with three regiments, using air and artillery; advances were limited, dispelling hopes of quick victory.",
+      "Sub-event_fulltext": {
+        "Paragraph_47": "In contact with the main defenses of the St. Malo fortress by the afternoon of 6 August, the 83d Division attacked positions forming a semicircle from the Rance to the sea. Belts of wire, large mine fields, rows of steel gates, antitank obstacles, and ditches were protected by machine gunners in pillboxes. Though the attack involved co-ordinated action by all three regiments and utilized air power and artillery, advances were markedly limited. Any last illusions that the battle might be swiftly terminated vanished."
+      },
+      "Footnote_References": [
+        33
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "6 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "061200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Robert C. Macon",
+          "Name": "Robert C. Macon",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_C._Macon",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Full division",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "On 6 August 1944, temperatures ranged from 14°C to 21°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Reinforcements for 83d Division",
+      "Sub-event_summary": "Middleton attached 121st Infantry Regiment and tank company from 8th Division, corps artillery battalion, and requested increased air support.",
+      "Sub-event_fulltext": {
+        "Paragraph_48": "To reinforce the 83d Division, General Middleton drew upon the 8th Division at Rennes for an infantry regiment (the 121st) and a medium tank company, which he attached to Macon's command; took a battalion of the corps artillery that had been attached to the 79th Division and ordered it into the St. Malo area; and requested increased air support."
+      },
+      "Footnote_References": [
+        34
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "6 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "060000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "121st Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "8th Infantry Division",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": null,
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Regiment strength, approximately 3,000 men",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Medium Tank Company",
+            "Identifier": "Unknown",
+            "Quantity": "1",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "On 6 August 1944, temperatures ranged from 14°C to 21°C, partly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Attack on 7 August and St. Joseph's Hill",
+      "Sub-event_summary": "Division renewed attack after artillery preparation; St. Joseph's Hill held strongly, requiring two days of pounding before 400 Germans surrendered on 9 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_49": "On 7 August the three organic regiments of the 83d Division renewed the attack toward St. Malo after a fifteen-minute artillery preparation. In the center of the division sector the German strongpoint on St. Joseph's Hill, tested on the previous day, continued to hold. Guns emplaced in a granite quarry on the hill, cavelike troop shelters hewed out of rock, and the dominating ground itself gave the German defenders such advantages that the 330th Infantry (Col.Robert T. Foster) could not even maneuver into position for an actual assault. The only genuine hope of success rested with sustained artillery fire. While division and corps battalions delivered concentrated shelling, the infantry tried to inch up the hill. Not the infantry progress, which was infinitesimal, but constant and severe artillery and tank destroyer pounding for two days finally produced results. On 9 August more than 400 Germans on St. Joseph's Hill laid down their arms and marched out under a white flag."
+      },
+      "Footnote_References": [
+        35
+      ],
+      "Place_Name": "St. Joseph's Hill",
+      "Dates": {
+        "Date_group_of_event": "7-9 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "070000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "330th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "Robert T. Foster",
+          "Name": "Robert T. Foster",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Regiment strength",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Tank Destroyers",
+            "Identifier": "Unknown",
+            "Quantity": "Unknown",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": null
+          },
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 400
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Joseph's Hill",
+        "Place_GPS_coordinate": "48.6333, -2.0167",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Joseph's Hill",
+        "Place_GPS_coordinate": "48.6333, -2.0167",
+        "Weather_text": "On 7-9 August 1944, temperatures ranged from 14°C to 21°C, mostly cloudy with occasional rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0167",
+          "East": "-1.0167",
+          "South": "47.7333",
+          "North": "49.5333"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Advances After Capturing St. Joseph's Hill",
+      "Sub-event_summary": "Capture of St. Joseph's Hill allowed flanks to advance; 331st drove through Paramé to the sea, cutting off St. Ideuc and la Varde; 329th moved through St. Servan to Citadel gates.",
+      "Sub-event_fulltext": {
+        "Paragraph_50": "The elimination of St. Joseph's Hill enabled the troops on both flanks to surge forward rapidly. On the right, Colonel York's 331st Infantry drove northward through Paramé to the sea, cutting off the enemy garrisons at St. Ideuc and la Varde. On the left, Colonel Crabill's 329th Infantry moved through St. Servan to the very gates of the Citadel."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Paramé",
+      "Dates": {
+        "Date_group_of_event": "9 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "090000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "331st Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "83d Infantry Division",
+          "Commander": "Robert York",
+          "Name": "Robert York",
+          "Rank": "Colonel",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Regiment strength",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Paramé",
+        "Place_GPS_coordinate": "48.6569, -1.9917",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Paramé",
+        "Place_GPS_coordinate": "48.6569, -1.9917",
+        "Weather_text": "On 9 August 1944, temperatures ranged from 14°C to 21°C, mostly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.9917",
+          "East": "-0.9917",
+          "South": "47.7569",
+          "North": "49.5569"
+        }
+      }
+    },
+    {
+      "Event": "To the Last Stone",
+      "Sub-event": "Achievements by 9 August",
+      "Sub-event_summary": "After five days, 83d Division eliminated St. Joseph's Hill, knocked out bunkers, captured 3,500 prisoners, possessed St. Servan and Paramé; resistance continued at key points.",
+      "Sub-event_fulltext": {
+        "Paragraph_51": "By 9 August, after five days of attack, the 83d Division had eliminated the major strongpoint on St. Joseph's Hill, had knocked out many individual bunkers and pillboxes, had captured about 3,500 prisoners, and was in possession of St. Servan and Paramé. Yet for all this real achievement, resistance at St. Ideuc and la Varde, in the walled town of St. Malo itself, and fire from the Citadel continued undiminished, while supporting fires from Dinard and Cézembre rained down with telling effect."
+      },
+      "Footnote_References": [
+        36
+      ],
+      "Place_Name": "St. Malo",
+      "Dates": {
+        "Date_group_of_event": "9 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+        "Zulu_date_group_of_event": "090000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "83d Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Robert C. Macon",
+          "Name": "Robert C. Macon",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Robert_C._Macon",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Full division",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 3500
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ww2online.org/image/us-army-soldiers-shooting-german-snipers-saint-malo-1944",
+          "Description": "US Army soldiers firing at German snipers in St. Malo, 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Map_Reference": "Map 11",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-11.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_Army_official_history_map_of_the_Battle_of_Saint-Malo_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Malo",
+        "Place_GPS_coordinate": "48.6472, -2.0088",
+        "Weather_text": "On 9 August 1944, temperatures ranged from 14°C to 21°C, mostly cloudy.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0088",
+          "East": "-1.0088",
+          "South": "47.7472",
+          "North": "49.5472"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "21a",
+      "Footnote_Number": "21",
+      "Footnote_Text": "VIII Corps AAR, Aug",
+      "Footnote_Referenced_Source": "VIII Corps After Action Report, August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps AAR for August 1944"
+    },
+    {
+      "Footnote": "21b",
+      "Footnote_Number": "21",
+      "Footnote_Text": "G-2 Per Rpt 48, dated 1 Aug",
+      "Footnote_Referenced_Source": "G-2 Periodic Report 48, dated 1 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request G-2 periodic report 48"
+    },
+    {
+      "Footnote": "21c",
+      "Footnote_Number": "21",
+      "Footnote_Text": "G-2 Per Rpt 49, dated 3 Aug",
+      "Footnote_Referenced_Source": "G-2 Periodic Report 49, dated 3 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request G-2 periodic report 49"
+    },
+    {
+      "Footnote": "21d",
+      "Footnote_Number": "21",
+      "Footnote_Text": "G-2 Per Rpt 51, dated 5 Aug",
+      "Footnote_Referenced_Source": "G-2 Periodic Report 51, dated 5 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request G-2 periodic report 51"
+    },
+    {
+      "Footnote": "22a",
+      "Footnote_Number": "22",
+      "Footnote_Text": "VIII Corps FO 9, 1 Aug",
+      "Footnote_Referenced_Source": "VIII Corps Field Order 9, 1 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps field order 9"
+    },
+    {
+      "Footnote": "22b",
+      "Footnote_Number": "22",
+      "Footnote_Text": "VIII Corps FO 10, 2 Aug",
+      "Footnote_Referenced_Source": "VIII Corps Field Order 10, 2 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps field order 10"
+    },
+    {
+      "Footnote": "22c",
+      "Footnote_Number": "22",
+      "Footnote_Text": "G-3 Memo, 0630, 3 Aug",
+      "Footnote_Referenced_Source": "G-3 Memo, 0630, 3 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request G-3 memo dated 3 August"
+    },
+    {
+      "Footnote": "22d",
+      "Footnote_Number": "22",
+      "Footnote_Text": "G-2 Rpt, Beaches South of Vannes, n.d.",
+      "Footnote_Referenced_Source": "G-2 Report, Beaches South of Vannes, no date",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request G-2 report on Beaches South of Vannes"
+    },
+    {
+      "Footnote": "22e",
+      "Footnote_Number": "22",
+      "Footnote_Text": "Min of Mtg. 0900, 30 Jul, 83d Div G-2, G-3 Jnl.",
+      "Footnote_Referenced_Source": "Minutes of Meeting 0900, 30 July, 83d Division G-2, G-3 Journal",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request minutes of meeting and 83d Division journals"
+    },
+    {
+      "Footnote": "23",
+      "Footnote_Number": "23",
+      "Footnote_Text": "Ltr, Eisenhower to Montgomery, 10 Jul, SGS SHAEF File 381, Overlord, I (a).",
+      "Footnote_Referenced_Source": "Letter, Eisenhower to Montgomery, 10 July, SGS SHAEF File 381, Overlord, I (a)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request SHAEF files on Overlord"
+    },
+    {
+      "Footnote": "24a",
+      "Footnote_Number": "24",
+      "Footnote_Text": "TF A FO 2, 1159, 4 Aug",
+      "Footnote_Referenced_Source": "Task Force A Field Order 2, 1159, 4 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Task Force A field order 2"
+    },
+    {
+      "Footnote": "24b",
+      "Footnote_Number": "24",
+      "Footnote_Text": "83d Div FO 21, 1800, 4 Aug",
+      "Footnote_Referenced_Source": "83d Division Field Order 21, 1800, 4 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division field order 21"
+    },
+    {
+      "Footnote": "24c",
+      "Footnote_Number": "24",
+      "Footnote_Text": "83d Div FO 22, 0100, 6 Aug",
+      "Footnote_Referenced_Source": "83d Division Field Order 22, 0100, 6 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division field order 22"
+    },
+    {
+      "Footnote": "24d",
+      "Footnote_Number": "24",
+      "Footnote_Text": "Annex 1 to G-2 Per Rpt 44, 16 Aug",
+      "Footnote_Referenced_Source": "Annex 1 to G-2 Periodic Report 44, 16 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request annex to G-2 report 44"
+    },
+    {
+      "Footnote": "24e",
+      "Footnote_Number": "24",
+      "Footnote_Text": "G-3 Per Rpt 33, 1600, 5 Aug",
+      "Footnote_Referenced_Source": "G-3 Periodic Report 33, 1600, 5 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request G-3 periodic report 33"
+    },
+    {
+      "Footnote": "24f",
+      "Footnote_Number": "24",
+      "Footnote_Text": "VIII Corps G-2 Weekly Per Rpt 8, 12 Aug",
+      "Footnote_Referenced_Source": "VIII Corps G-2 Weekly Periodic Report 8, 12 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps G-2 weekly report 8"
+    },
+    {
+      "Footnote": "25a",
+      "Footnote_Number": "25",
+      "Footnote_Text": "83d Div G-2 Per Rpt 32, 1800, 4 Aug",
+      "Footnote_Referenced_Source": "83d Division G-2 Periodic Report 32, 1800, 4 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-2 report 32"
+    },
+    {
+      "Footnote": "25b",
+      "Footnote_Number": "25",
+      "Footnote_Text": "83d Div G-2 Per Rpt 33, 1600, 5 Aug",
+      "Footnote_Referenced_Source": "83d Division G-2 Periodic Report 33, 1600, 5 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-2 report 33"
+    },
+    {
+      "Footnote": "26a",
+      "Footnote_Number": "26",
+      "Footnote_Text": "83d Div FO 21",
+      "Footnote_Referenced_Source": "83d Division Field Order 21",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division field order 21"
+    },
+    {
+      "Footnote": "26b",
+      "Footnote_Number": "26",
+      "Footnote_Text": "G-2 Per Rpt 32, 1800, 4 Aug",
+      "Footnote_Referenced_Source": "G-2 Periodic Report 32, 1800, 4 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request G-2 periodic report 32"
+    },
+    {
+      "Footnote": "26c",
+      "Footnote_Number": "26",
+      "Footnote_Text": "AAR, Aug",
+      "Footnote_Referenced_Source": "After Action Report, August",
+      "Web_Link": "https://83rdinfdivdocs.org/documents/83rd/AAR/AAR_83_AUG1944.pdf",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "27a",
+      "Footnote_Number": "27",
+      "Footnote_Text": "Msg, Macon (signed [Lt Col Robert W. Hartman) to Middleton, 6 Aug",
+      "Footnote_Referenced_Source": "Message, Macon (signed Lt Col Robert W. Hartman) to Middleton, 6 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "27b",
+      "Footnote_Number": "27",
+      "Footnote_Text": "83d Div G-3 Per Rpt 5, 1200, 7 Aug",
+      "Footnote_Referenced_Source": "83d Division G-3 Periodic Report 5, 1200, 7 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-3 report 5"
+    },
+    {
+      "Footnote": "28a",
+      "Footnote_Number": "28",
+      "Footnote_Text": "Msgs, Macon to Middleton, 2120, 9 Aug",
+      "Footnote_Referenced_Source": "Message, Macon to Middleton, 2120, 9 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "28b",
+      "Footnote_Number": "28",
+      "Footnote_Text": "Msgs, Macon to Middleton, 1830, 11 Aug",
+      "Footnote_Referenced_Source": "Message, Macon to Middleton, 1830, 11 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "28c",
+      "Footnote_Number": "28",
+      "Footnote_Text": "R. Fouque, La CM, Bastion de la Forteresse de Saint-Malo (n.p., 1945)",
+      "Footnote_Referenced_Source": "R. Fouque, La CM, Bastion de la Forteresse de Saint-Malo (n.p., 1945)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Fouque book"
+    },
+    {
+      "Footnote": "28d",
+      "Footnote_Number": "28",
+      "Footnote_Text": "Dr. Paul Aubry, L'Agonie de Saint-Malo (Rennes, 1945)",
+      "Footnote_Referenced_Source": "Dr. Paul Aubry, L'Agonie de Saint-Malo (Rennes, 1945)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Aubry book"
+    },
+    {
+      "Footnote": "28e",
+      "Footnote_Number": "28",
+      "Footnote_Text": "Dr. Paul Aubry, La Ruee sur Saint-Malo (Rennes, 1947)",
+      "Footnote_Referenced_Source": "Dr. Paul Aubry, La Ruee sur Saint-Malo (Rennes, 1947)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Aubry book"
+    },
+    {
+      "Footnote": "29",
+      "Footnote_Number": "29",
+      "Footnote_Text": "OB WEST, a Study in Command, II, 9.",
+      "Footnote_Referenced_Source": "OB WEST, a Study in Command, Volume II, page 9",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request OB WEST study"
+    },
+    {
+      "Footnote": "30",
+      "Footnote_Number": "30",
+      "Footnote_Text": "Fouque, pp. 33-34; see also pp. 25, 44-45, and Plate 7.",
+      "Footnote_Referenced_Source": "R. Fouque, La CM, Bastion de la Forteresse de Saint-Malo, pages 33-34, 25, 44-45, Plate 7",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Fouque book"
+    },
+    {
+      "Footnote": "31",
+      "Footnote_Number": "31",
+      "Footnote_Text": "As it turned out, the few vessels were quite unimportant in the military action that developed. Fighter-bombers soon drove them from the St. Malo waters.",
+      "Footnote_Referenced_Source": "Note on vessels",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "32a",
+      "Footnote_Number": "32",
+      "Footnote_Text": "Aubry, L'Agonie de Saint-Malo, pp. 49-50",
+      "Footnote_Referenced_Source": "Dr. Paul Aubry, L'Agonie de Saint-Malo, pages 49-50",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request Aubry book"
+    },
+    {
+      "Footnote": "32b",
+      "Footnote_Number": "32",
+      "Footnote_Text": "83d Div G-2, G—3 Jnl, entry 0945, 8 Jul",
+      "Footnote_Referenced_Source": "83d Division G-2, G-3 Journal, entry 0945, 8 July",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division journals"
+    },
+    {
+      "Footnote": "33",
+      "Footnote_Number": "33",
+      "Footnote_Text": "See 83d Div G-2 Per Rpt, 1600, 6 Aug.",
+      "Footnote_Referenced_Source": "83d Division G-2 Periodic Report, 1600, 6 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 83d Division G-2 report"
+    },
+    {
+      "Footnote": "34a",
+      "Footnote_Number": "34",
+      "Footnote_Text": "Msg, Middleton to Stroh, 5 Aug",
+      "Footnote_Referenced_Source": "Message, Middleton to Stroh, 5 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "34b",
+      "Footnote_Number": "34",
+      "Footnote_Text": "Msg, Middle-ton to Jeter, 1260, 6 Aug",
+      "Footnote_Referenced_Source": "Message, Middleton to Jeter, 1260, 6 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "34c",
+      "Footnote_Number": "34",
+      "Footnote_Text": "Msg, Macon to Middleton, 0035, 6 Aug",
+      "Footnote_Referenced_Source": "Message, Macon to Middleton, 0035, 6 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    },
+    {
+      "Footnote": "34d",
+      "Footnote_Number": "34",
+      "Footnote_Text": "VIII Corps Msg, 6 Aug",
+      "Footnote_Referenced_Source": "VIII Corps Message, 6 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request VIII Corps messages"
+    },
+    {
+      "Footnote": "35",
+      "Footnote_Number": "35",
+      "Footnote_Text": "330th Inf G-3 Rpt, 1130, 9 Aug.",
+      "Footnote_Referenced_Source": "330th Infantry G-3 Report, 1130, 9 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request 330th Infantry G-3 report"
+    },
+    {
+      "Footnote": "36",
+      "Footnote_Number": "36",
+      "Footnote_Text": "Msg, Macon to Middleton, 1535, 9 Aug.",
+      "Footnote_Referenced_Source": "Message, Macon to Middleton, 1535, 9 August",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort McNair, Washington, DC",
+      "NonDigital_Library_References": "Request message logs"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn21.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

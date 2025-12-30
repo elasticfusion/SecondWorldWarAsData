@@ -1,0 +1,568 @@
+{
+  "Events": [
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "German Planning for Avranches Counterattack",
+      "Sub-event_summary": "The Germans planned a counterattack to regain Avranches and stabilize Normandy defenses, necessitating stiffened resistance to preserve conditions for the attack while protecting assembly areas, despite having few troops available at the beginning of August.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "In planning a counterattack to regain Avranches and restabilize their Normandy defenses, the Germans had to stiffen their resistance in order to preserve the conditions under which a counterattack was possible. If the defensive line east of Avranches were lost, regaining Avranches would avail little. At the same time, the assembly areas for the forces that were to launch the counterattack had to be protected. To accomplish these tasks was to prove difficult, for the Germans had relatively few troops in Normandy at the beginning of August. *(See [Map IX](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg).)*"
+      },
+      "Footnote_References": [],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING aug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "BEGINNING aug44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "200000BSTaug44",
+          "End_Status": "WIA",
+          "Biographical_reference": "https://grokipedia.com/page/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Relatively few troops, high losses",
+        "Equipments": {
+          "Supply": "Inadequate materiel and supplies",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "General equipment",
+              "Identifier": "",
+              "Quantity": "",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Equipment_of_the_German_Army_during_World_War_II",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://picryl.com/media/elfeld-capture-a-black-and-white-photo-of-a-group-of-people",
+          "Description": "General Elfeld of the German 84th Korps, having surrendered to Canadian & Polish forces on August 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://cgsc.contentdm.oclc.org/digital/collection/p4013coll8/id/5779/",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6833, -1.3667",
+        "Weather_text": "Warm summer weather with occasional fog and light winds, contributing to operational challenges.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.73,
+          "East": 0.0,
+          "South": 47.78,
+          "North": 49.58
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "German Losses in July",
+      "Sub-event_summary": "Heavy losses in June and July destroyed or crippled numerous German divisions, including eight in the Cotentin under Seventh Army command, with additional units annihilated or isolated, leaving few combat-effective forces amid concerns over morale and Allied superiority.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "Losses had been exceedingly high among the divisions in contact with the Allies during June and July. Hausser, the *Seventh Army* commander, counted eight divisions that had practically been destroyed in the Cotentin during the month of July alone: *Panzer Lehr, 5th Parachute, 17th SS Panzer Grenadier,* and *91st, 352d, 275th, 243d,* and *77th Infantry Divisions.*<sup>[8](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn8)</sup> This did not take into account the *16th Luftwaffe Field Division* and the *326th Division,* annihilated near Caen and Caumont, respectively. It did not include the divisions in Brittany and on the Channel Isles that had to be written off as far as the Normandy front was concerned: the *2d Parachute,* the *343d* and *319th Infantry Divisions,* and parts of the *265th* and *266th.* Nor did it mention that the *21st, 9th SS, 10th SS,* and *12th SS Panzer Divisions* had been badly crippled in the Caen and Caumont sectors. Only a few divisions of Eberbach's *Fifth Panzer Army,* the weak *3d Parachute* and *353d Divisions* (the latter temporarily presumed lost during COBRA and now reduced to kampfgruppe size) of Hausser's *Seventh Army,* and the armored divisions scheduled to launch the Avranches counterattack still retained combat effectiveness. Like all the troops in Normandy, these too had suffered from --442-- uninterrupted combat, inferior equipment, inadequate materiel and supplies, and Allied air superiority. Though the men were still fighting grimly, commanders were concerned lest the will to resist suddenly vanish.<sup>[9](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn9)</sup>"
+      },
+      "Footnote_References": [
+        "8",
+        "9a",
+        "9b"
+      ],
+      "Place_Name": "Cotentin",
+      "Dates": {
+        "Date_group_of_event": "END jul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "END jul44"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Fritz Bayerlein",
+          "Name": "Fritz Bayerlein",
+          "Rank": "Generalleutnant",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Practically destroyed",
+        "Equipments": {
+          "Supply": "Inadequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5000, -1.5000",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://www.loc.gov/resource/g5701sm.gct00021/?sp=57",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5000, -1.5000",
+        "Weather_text": "Variable summer conditions with periods of rain and wind, impacting military operations.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.86,
+          "East": -0.14,
+          "South": 48.6,
+          "North": 50.4
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "Reinforcements and Relief Efforts",
+      "Sub-event_summary": "Two infantry divisions, the 363d and 84th, were deployed to reinforce the Normandy left flank and relieve armored divisions for the counterattack, though the 84th became heavily engaged in Sourdeval and delayed relief.",
+      "Sub-event_fulltext": {
+        "Paragraph_14": "Two infantry divisions were scheduled to reinforce the battered units holding the Normandy left flank and also to relieve the armored divisions scheduled to counterattack. The *363d* moved through Tinchebray during the first days of August and into the Brécey-Vire line to relieve the *2d* and the *2d SS Panzer Divisions* by 5 August.<sup>[10](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn10)</sup> The *84th,* supposed to relieve the *116th Panzer Division,* was committed on 2 August in defense of the Sourdeval sector and became engaged in such violent combat that it was unable to accomplish the relief as quickly as hoped."
+      },
+      "Footnote_References": [
+        "10"
+      ],
+      "Place_Name": "Tinchebray",
+      "Dates": {
+        "Date_group_of_event": "020000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "012300Zaug44"
+      },
+      "TOE": {
+        "Unit": "363d Infantry Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "August Dettling",
+          "Name": "August Dettling",
+          "Rank": "Generalmajor",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/363rd_Volksgrenadier_Division",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Tinchebray",
+        "Place_GPS_coordinate": "48.7636, -0.7331",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://www.loc.gov/resource/g5701sm.gct00021/?sp=57",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Tinchebray",
+        "Place_GPS_coordinate": "48.7636, -0.7331",
+        "Weather_text": "Warm summer weather with occasional fog and light winds, contributing to operational challenges.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.1,
+          "East": 0.63,
+          "South": 47.86,
+          "North": 49.66
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "German Defensive Line Maintenance",
+      "Sub-event_summary": "Despite pressure from the U.S. First Army, the German Seventh Army maintained a cohesive defensive line along Brécey-Vire using the XLVII Panzer Corps, II Parachute Corps, and LXXXIV Corps, relying on remnants and kampfgruppen to disengage armored units.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "Despite heavy pressure exerted by the First U.S. Army, the *Seventh Army* managed, by stubborn resistance and skillful withdrawal, to retain a defensive line that, while not solid, was at least cohesive. The *XLVII Panzer Corps* headquarters gave up responsibility for the center to prepare for the counterattack, and the *77 Parachute* and the *LXXXIV Corps* together fought along the Brécey-Vire line. On the right (east), the *II Parachute Corps,* controlling only the *3d Parachute Division* (reinforced by a regiment of the *5th Parachute Division)* defended the town of Vire. On the left, the *LXXXIV Corps* had the more complicated job of getting the armored divisions out of the line without upsetting the precarious defensive balance. In this the corps depended heavily on the kampfgruppe of the *353d Division.* On the extreme left, under *LXXXIV Corps* control, remnants of the *5th Parachute* and *275th Divisions* held weak blocking positions south of the Sée River near Juvigny.<sup>[11](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn11)</sup>"
+      },
+      "Footnote_References": [
+        "11a",
+        "11b",
+        "11c"
+      ],
+      "Place_Name": "Vire",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING aug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "BEGINNING aug44"
+      },
+      "TOE": {
+        "Unit": "II Parachute Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Fifth Panzer Army",
+          "Commander": "Eugen Meindl",
+          "Name": "Eugen Meindl",
+          "Rank": "General der Fallschirmtruppe",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Eugen_Meindl",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "3d Parachute Division",
+            "Name": "Richard Schimpf",
+            "Rank": "Generalleutnant",
+            "Date": "010000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Richard_Schimpf",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.8333, -0.8833",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://cgsc.contentdm.oclc.org/digital/collection/p4013coll8/id/5779/",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.8333, -0.8833",
+        "Weather_text": "Warm summer weather with occasional fog and light winds, contributing to operational challenges.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.25,
+          "East": 0.48,
+          "South": 47.93,
+          "North": 49.73
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIV - Opportunities and Intentions",
+      "Sub-event": "Concerns Impacting German Counterattack",
+      "Sub-event_summary": "During the first week of August, German commanders faced multiple concerns including protection of assembly areas, weakening of the right wing, threats of encirclement at Flers, advances toward le Mans, and potential loss of Mortain high ground.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "During the first week of August, five factors gave the German commanders pause. First, they often doubted that they could prevent the counterattack assembly areas from being overrun. Second, they wondered whether the transfer of armored divisions (the *2d* and the *116th* at the end of July, and the pending transfer of the *1st SS* in August) from Eberbach's forces would so weaken the right wing that the British and Canadians would be able to effect a penetration south of Caen. Third, they were aware of the threat of encirclement by coordinated British and American drives to the town of Flers--the British by a continuation of the southeastward thrust from Caumont, the Americans by a northeastward thrust from Fougères through Domfront. Fourth, they were concerned with the threat to the *Army Group B* rear posed by American forces driving toward le Mans. Fifth, they worried that loss of high ground around Mortain--excellent terrain from which to launch offensive action--might inhibit the counterattack toward Avranches. These thoughts added to the burdens of the holding battle immediately preceding the counterattack.<sup>[12](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn12)</sup>"
+      },
+      "Footnote_References": [
+        "12a",
+        "12b",
+        "12c"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING aug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "BEGINNING aug44"
+      },
+      "TOE": {
+        "Unit": "Fifth Panzer Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Heinrich Eberbach",
+          "Name": "Heinrich Eberbach",
+          "Rank": "General der Panzertruppe",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Heinrich_Eberbach",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.gettyimages.com/photos/german-army-prisoners-of-war-in-france-1944",
+          "Description": "German prisoners of war at a camp for soldiers captured in the Allied campaign in France, 21st August 1944.",
+          "License": "Rights-Managed"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6486, -0.9397",
+        "Map_Reference": "Map IX",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Falaise_pocket-en.svg",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6486, -0.9397",
+        "Weather_text": "Warm summer weather with occasional fog and light winds, contributing to operational challenges.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.3,
+          "East": 0.42,
+          "South": 47.75,
+          "North": 49.55
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "8",
+      "Footnote_Number": "8",
+      "Footnote_Text": "MS # B-179 (Hausser)",
+      "Footnote_Referenced_Source": "MS # B-179",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "MS # B-179 (Hausser)"
+    },
+    {
+      "Footnote": "9a",
+      "Footnote_Number": "9a",
+      "Footnote_Text": "MS # B-179 (Hausser)",
+      "Footnote_Referenced_Source": "MS # B-179",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "MS # B-179 (Hausser)"
+    },
+    {
+      "Footnote": "9b",
+      "Footnote_Number": "9b",
+      "Footnote_Text": "MS # B-725 (Gersdorff)",
+      "Footnote_Referenced_Source": "MS # B-725",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "MS # B-725 (Gersdorff)"
+    },
+    {
+      "Footnote": "10",
+      "Footnote_Number": "10",
+      "Footnote_Text": "On how the movement of the 363d Division was consistently harassed by air attack, see Leigh-Mallory, \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946, p. 63.",
+      "Footnote_Referenced_Source": "Leigh-Mallory, \"Despatch,\"",
+      "Web_Link": "https://www.thegazette.co.uk/London/issue/37838/supplement/63",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "11a",
+      "Footnote_Number": "11a",
+      "Footnote_Text": "MS # B-346 (Blauensteiner)",
+      "Footnote_Referenced_Source": "MS # B-346",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "MS # B-346 (Blauensteiner)"
+    },
+    {
+      "Footnote": "11b",
+      "Footnote_Number": "11b",
+      "Footnote_Text": "MS # B-725 (Gersdorff)",
+      "Footnote_Referenced_Source": "MS # B-725",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "MS # B-725 (Gersdorff)"
+    },
+    {
+      "Footnote": "11c",
+      "Footnote_Number": "11c",
+      "Footnote_Text": "MS # B-179 (Hausser)",
+      "Footnote_Referenced_Source": "MS # B-179",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "MS # B-179 (Hausser)"
+    },
+    {
+      "Footnote": "12a",
+      "Footnote_Number": "12a",
+      "Footnote_Text": "MS # B-725 (Gersdorff)",
+      "Footnote_Referenced_Source": "MS # B-725",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "MS # B-725 (Gersdorff)"
+    },
+    {
+      "Footnote": "12b",
+      "Footnote_Number": "12b",
+      "Footnote_Text": "MS # B-179 (Hausser)",
+      "Footnote_Referenced_Source": "MS # B-179",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "MS # B-179 (Hausser)"
+    },
+    {
+      "Footnote": "12c",
+      "Footnote_Number": "12c",
+      "Footnote_Text": "MS # B-722 (Gersdorff)",
+      "Footnote_Referenced_Source": "MS # B-722",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "MS # B-722 (Gersdorff)"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

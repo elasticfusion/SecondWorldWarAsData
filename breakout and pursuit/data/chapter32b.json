@@ -1,0 +1,497 @@
+{
+  "Events": [
+    {
+      "Event": "SHAEF Command Transition on the Continent",
+      "Sub-event": "Eisenhower Assumes Direct Ground Command",
+      "Sub-event_summary": "On 1 September 1944, SHAEF became operational on the Continent near Granville. General Eisenhower assumed personal command of ground forces, replacing Field Marshal Montgomery as temporary ground commander. This completed the planned shift, aligning tactical air forces (British Second with 21 Army Group, Ninth U.S. with 12th Army Group) and preparing for 6th Army Group integration.",
+      "Sub-event_fulltext": {
+        "Paragraph_37": "On 1 September, at the height of the accelerated American pursuit, SHAEF became operational on the Continent with headquarters in the Cotentin near Granville. General Eisenhower, in addition to exercising the Supreme Command, assumed personal command of the ground forces, thereby replacing the pro tem commander, Field Marshal Montgomery.<sup>[34](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn34)</sup> The change in the command structure brought the Allied organization to full flower. The British Second Tactical Air Force, with headquarters on the Continent, was from this point on to be associated with the 21 Army Group. The Ninth U.S. Air Force, also established on the Continent, was to assist the 12th Army Group, as well as the 6th Army Group in southern France, which was to become operational under the control of SHAEF two weeks later.<sup>[35](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn35)</sup>",
+        "Paragraph_38": "*--684--* <a id=\"page685\"></a> * * * > The alteration in the command of the ground forces had long been planned. In anticipation that General Eisenhower would take control of the land warfare beyond the Seine, General Montgomery had made his plans for the advance beyond the Seine on the basis that he would direct only those forces on the routes north of the Ardennes.<sup>[36](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn36)</sup> General Bradley had done the same for Patton's subsidiary drive south of the Ardennes."
+      },
+      "Footnote_References": ["34", "35", "36"],
+      "Place_Name": ["Cotentin", "Granville", "Ardennes"],
+      "Dates": {
+        "Date_group_of_event": "1 Sep 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+        "Zulu_date_group_of_event": "01 Sep 44"
+      },
+      "TOE": {
+        "Unit": "SHAEF",
+        "Unit_Nationality": "Allied",
+        "Command_Structure": {
+          "Commander": "General Dwight D. Eisenhower",
+          "Rank": "General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower"
+        },
+        "Subordinates": [
+          {
+            "Unit": "21 Army Group",
+            "Commander": "Field Marshal Sir Bernard L. Montgomery",
+            "Rank": "Field Marshal",
+            "Date": "Sep 1944"
+          },
+          {
+            "Unit": "12th Army Group",
+            "Commander": "Lt. Gen. Omar N. Bradley",
+            "Rank": "Lieutenant General",
+            "Date": "Sep 1944"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_GB_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_GB_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_GB_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_GB_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0",
+          "Allied_GB_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Granville, France",
+          "Place_GPS_coordinate": "48.8378 N, 1.5833 W",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.5833,
+            "East": 0.4167,
+            "South": 47.8378,
+            "North": 49.8378
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Cotentin Peninsula, France",
+          "Place_GPS_coordinate": "49.5000 N, 1.5000 W",
+          "Weather_text": "No specific weather data provided in source for 1 September 1944; command transition occurred without noted weather-related impacts.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.5,
+            "East": 0.5,
+            "South": 48.5,
+            "North": 50.5
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Logistical and Communications Challenges at SHAEF",
+      "Sub-event": "Eisenhower's Assessment of Signal Limitations",
+      "Sub-event_summary": "Eisenhower noted severe signal troop shortages limiting SHAEF communications and coordination. Priority given to front-line commanders; SHAEF relied on limited radio/telephone and code systems. Despite challenges, SHAEF became operational on Continent as planned by 1 September.",
+      "Sub-event_fulltext": {
+        "Paragraph_39": "Though General Eisenhower sought to take effective control of all ground action, it was difficult to accomplish, not only because SHAEF was far from the front but also because signal facilities were in short supply. General Eisenhower had foreseen the problem as early as 19 August, when he had dictated for the record:",
+        "Paragraph_40": "> Obviously, communications from the senior fighting commanders to their divisions on the front took precedence over the establishment of communications for SHAEF headquarters. Our woeful insufficiency in Signal troops has made it impossible, as yet, to provide for me on the Continent a headquarters which would permit me to discharge all the responsibilities devolving upon me and at the same time take over the broad operational coordination necessary between Army Groups. Even now, with all available US signal units allocated to Bradley, his communications with Patton are ordinarily limited to radio telephone or laborious code, and to his rear they are no better. . . .",
+        "Paragraph_41": "> . . . the very signal units I need have had to be given to Bradley so that he could keep in even sketchy contact with the rapidly changing situation.",
+        "Paragraph_42": "> Some time ago I ordered my staff to be ready to function on the Continent September 1st. I still hope to make that date, although it is much earlier than any of the technicians believed it could be done.<sup>[37](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn37)</sup>",
+        "Paragraph_43": "It was nevertheless done although, during the next few weeks, it would seem that immediate and firm direction and control were sometimes lacking."
+      },
+      "Footnote_References": ["37"],
+      "Place_Name": ["Cotentin", "Seine River"],
+      "Dates": {
+        "Date_group_of_event": "19 Aug - 1 Sep 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+        "Zulu_date_group_of_event": "19 Aug - 01 Sep 44"
+      },
+      "TOE": {
+        "Unit": "SHAEF",
+        "Unit_Nationality": "Allied",
+        "Command_Structure": {
+          "Commander": "General Dwight D. Eisenhower",
+          "Rank": "General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Cotentin Peninsula, France",
+          "Place_GPS_coordinate": "49.5000 N, 1.5000 W",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.5,
+            "East": 0.5,
+            "South": 48.5,
+            "North": 50.5
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Cotentin / Normandy area, France",
+          "Place_GPS_coordinate": "49.5000 N, 1.5000 W",
+          "Weather_text": "No specific weather data in source for late August-early September 1944; logistical and signal issues described without weather-related causes.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.5,
+            "East": 0.5,
+            "South": 48.5,
+            "North": 50.5
+          }
+        }
+      ]
+    },
+    {
+      "Event": "SHAEF Assessment of German Situation",
+      "Sub-event": "Perception of German Disintegration",
+      "Sub-event_summary": "SHAEF assessed German forces as no longer cohesive but fugitive battle groups, disorganized, demoralized, short of equipment. Strategic deterioration across fronts, industry (oil), and political instability suggested imminent collapse or insurrection. DRAGOON success accelerated expected juncture with OVERLORD forces near Dijon.",
+      "Sub-event_fulltext": {
+        "Paragraph_44": "To SHAEF at this time the hostile army appeared to be \"no longer a cohesive force but a number of fugitive battle groups, disorganized and even demoralized, short of equipment and arms.\" The German strategic situation presented signs of so much deterioration that recovery no longer seemed possible. Political upheaval within Germany or insurrection within the Army seemed likely to hasten the end of the war.<sup>[38](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn38)</sup>",
+        "Paragraph_45": "The success of the subsidiary Allied invasion of western Europe by way of southern France underscored the apparent hopelessness of the German situation. The DRAGOON forces, primarily American and French, had had little difficulty in landing in southern France west of Cannes on 15 August and in driving up the Rhone valley. SHAEF had estimated that DRAGOON would have no direct effect on OVERLORD until the forces from the Mediterranean moved well over three hundred miles to Dijon, and that this was hardly to be expected before November.<sup>[39](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn39)</sup> Yet at the end of August, in addition to having captured the major port of Marseille, the Allied forces in southern France were approaching",
+        "Paragraph_46": "*--685--* <a id=\"page686\"></a> * * * > Lyon, little more than a hundred miles short of Dijon.<sup>[40](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn40)</sup> Since German withdrawal all along the Western Front made the juncture of OVERLORD and DRAGOON forces foreseeable in the near future, an Allied *coup de grâce* seemed in order. How to deliver the coup became the subject of much discussion in early September."
+      },
+      "Footnote_References": ["38", "39", "40"],
+      "Place_Name": ["Rhone valley", "Cannes", "Marseille", "Lyon", "Dijon"],
+      "Dates": {
+        "Date_group_of_event": "End Aug - early Sep 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+        "Zulu_date_group_of_event": "End Aug - early Sep 44"
+      },
+      "TOE": {
+        "Unit": "SHAEF",
+        "Unit_Nationality": "Allied",
+        "Command_Structure": {
+          "Commander": "General Dwight D. Eisenhower",
+          "Rank": "General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Dijon, France",
+          "Place_GPS_coordinate": "47.3219 N, 5.0410 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 4.0410,
+            "East": 6.0410,
+            "South": 46.3219,
+            "North": 48.3219
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Southern France / Rhone valley",
+          "Place_GPS_coordinate": "45.7500 N, 4.8333 E",
+          "Weather_text": "No specific weather data in source for late August 1944; DRAGOON advance described as rapid with no weather impediments noted.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 3.8333,
+            "East": 5.8333,
+            "South": 44.75,
+            "North": 46.75
+          }
+        }
+      ]
+    },
+    {
+      "Event": "Debate on Broad Front versus Narrow Thrust",
+      "Sub-event": "Montgomery's Proposal for Concentrated Drive",
+      "Sub-event_summary": "Montgomery advocated single strong thrust north of Ardennes to Ruhr/Berlin, requesting all available resources. Eisenhower preferred broad-front strategy to stretch German forces, maintain all routes, and secure West Wall/Rhine crossings. Allocated some support to Montgomery but continued balanced advance with Patton resuming operations.",
+      "Sub-event_fulltext": {
+        "Paragraph_47": "The discussion was an outgrowth of differences apparent as early as 19 August, when General Eisenhower had decided to cross the Seine and initiate pursuit operations without waiting for a more secure logistical basis. He had then thought of following the preinvasion plan of splitting his forces equally to make a dual thrust toward the Ruhr by routes north and south of the Ardennes. General Montgomery, in contrast, had favored a single drive north of the Ardennes directly toward the Ruhr. The result in late August had been a compromise that leaned toward Montgomery's point of view. Three armies carried the main effort north of the Ardennes, while Patton's Third Army, making the subsidiary effort, had had its gasoline supplies curtailed.<sup>[41](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn41)</sup>",
+        "Paragraph_48": "On 2 September, as Eisenhower met with Bradley, Hodges, and Patton, he reinstituted what later came to be called the broad-front strategy. Hoping to keep the enemy stretched so that he would be unable to organize an effective defense at the West Wall, General Eisenhower allocated gasoline stocks to the Third Army just as Hodges' First Army was running out of gas at the Belgian border and sent both U.S. armies toward the Rhine. Patton was to advance toward Mannheim and Frankfurt; Hodges was to shift from his northward course-- which pointed across the British routes of advance in Belgium--to an eastward axis toward Koblenz and Cologne. To cover the gap that had opened between the First and Third Armies, Hodges was to send one corps through the Ardennes, a route not recommended by the preinvasion planners.<sup>[42](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn42)</sup>",
+        "Paragraph_49": "At this particular moment, Dempsey's Second British Army was in the midst of a spectacular advance. Having crossed the Somme River at Amiens on 31 August and again between Amiens and Abbeville on 1 September against disorganized resistance, British armor drove into the industrial region of northern France. Outflanking Arras, bypassing Lille, moving through Douai and Tournai, armored spearheads swept across the Belgian border and took Brussels, Antwerp, and Ghent on 3, 4, and 5 September, respectively. With three armored divisions in the lead and with infantry mopping up, the British advanced 250 miles in six days to the Albert Canal between Antwerp and Hasselt.",
+        "Paragraph_50": "Crerar's First Canadian Army had similar success. Moving out of the Rouen bridgehead on the last day of August, armor began pursuit action while infantry turned to the ports. Infantrymen took Dieppe and le Tréport on 1 September and St. Valery-en-Caux the following day. While the 1 British Corps swung toward Le Havre, the 2d",
+        "Paragraph_51": "*--686--* <a id=\"page687\"></a> * * * > Canadian Corps moved through the coastal belt, invested Boulogne, Calais, and Dunkerque, and took Ostend by 9 September. Armored troops had meanwhile crossed the Somme River near Abbeville on 2 September and driven toward Belgium. Held up briefly by resistance near Bruges, the mobile elements were at the Belgian-Dutch border and within striking distance of the Schelde estuary by the second week in September. The Canadians had overrun the flying bomb launching sites in the Pas-de-Calais by 6 September, although the Germans began two days later to fire V-weapons from the Netherlands and continued to do so until almost the end of the war.<sup>[43](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn43)</sup>",
+        "Paragraph_52": "Impressed by the development of the pursuit and particularly by the capture of Brussels and Antwerp on 3 and 4 September, Field Marshal Montgomery began to believe that the Germans in the west were so weak as to be incapable of withstanding a major Allied effort. He concluded that the war could be ended at once by a thrust launched immediately to Berlin via the Ruhr. He proposed to the Supreme Commander on 4 September that all the Allied resources available on the Continent be allocated for this drive, a strong single thrust that General Eisenhower later misunderstood to be \"pencillike.\"<sup>[44](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn44)</sup>",
+        "Paragraph_53": "General Eisenhower, who had two days earlier made it possible for Patton to resume operations and who had thereby instituted a broad-front movement, justified his course of action, which was more cautious than Montgomery's, by a reasoned statement. Eisenhower did not believe that the Allies could support a drive to Berlin, and he thought that the Allies first needed to attain the successive objectives of breaching the West Wall, crossing the Rhine on a wide front, and seizing the Ruhr and the Saar. An advance on the entire front, he argued, would compel the Germans to stretch their meager forces to the breaking point and would imperil the rear of the *Army Group G* forces retreating from southern France. He also thought it desirable to keep Patton moving because he wanted the Allies to take advantage of all existing lines of communication. If, however, Montgomery needed additional assistance, Eisenhower was willing to give him SHAEF's strategic reserve, the Allied airborne army, which could help Montgomery seize crossings over the Rhine, help him make a deep advance into the Ruhr, and enable him even to threaten Berlin. The only factor, he said, that limited optimism for future operations and ruled out what he interpreted as Montgomery's proposal for a thin thrust to Berlin was logistics, already \"stretched to the limit.\"<sup>[45](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn45)</sup>",
+        "Paragraph_54": "It was just the logistical situation that made Montgomery feel that the Allies could afford only one effort. He wanted it to be a strong effort, and he believed that it should be aimed through the Ruhr and toward Berlin.<sup>[46](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn46)</sup>",
+        "Paragraph_55": "Yet SHAEF judged Montgomery's suggestion too optimistic. Eisenhower provided him additional support, particularly in locomotives and rolling stock, but he refused to allay Montgomery's basic dissatisfaction over what Montgomery considered an unrealistic Allied dispersion of effort. During early September Eisenhower continued to allocate fuel supplies on a broad-front basis. Bradley managed to keep an uneasy gasoline balance between the two U.S. armies, his principal motive apparently the desire to keep Patton moving. With Hodges oriented toward Cologne, Bonn, and Koblenz, and Patton toward Mannheim and Mainz, and, if possible, Karlsruhe, it was clear that General Eisenhower preferred to use all the routes toward Germany, good and bad alike.<sup>[47](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn47)</sup>"
+      },
+      "Footnote_References": ["41", "42", "43", "44", "45", "46", "47"],
+      "Place_Name": ["Seine River", "Ardennes", "Ruhr", "Berlin", "Somme River", "Amiens", "Abbeville", "Arras", "Lille", "Douai", "Tournai", "Brussels", "Antwerp", "Ghent", "Albert Canal", "Hasselt", "Rouen", "Dieppe", "le Tréport", "St. Valery-en-Caux", "Le Havre", "Boulogne", "Calais", "Dunkerque", "Ostend", "Bruges", "Schelde estuary", "Pas-de-Calais", "Netherlands", "Mannheim", "Frankfurt", "Koblenz", "Cologne", "Bonn", "Mainz", "Karlsruhe"],
+      "Dates": {
+        "Date_group_of_event": "1- early Sep 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+        "Zulu_date_group_of_event": "01-early Sep 44"
+      },
+      "TOE": {
+        "Unit": "SHAEF",
+        "Unit_Nationality": "Allied",
+        "Command_Structure": {
+          "Commander": "General Dwight D. Eisenhower",
+          "Rank": "General",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower"
+        },
+        "Subordinates": [
+          {
+            "Unit": "21 Army Group",
+            "Commander": "Field Marshal Sir Bernard L. Montgomery",
+            "Rank": "Field Marshal",
+            "Date": "Sep 1944"
+          },
+          {
+            "Unit": "Second British Army",
+            "Commander": "General Miles C. Dempsey",
+            "Rank": "General",
+            "Date": "Sep 1944"
+          },
+          {
+            "Unit": "First Canadian Army",
+            "Commander": "General Henry D. G. Crerar",
+            "Rank": "General",
+            "Date": "Sep 1944"
+          }
+        ]
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_GB_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_GB_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_GB_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_GB_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0",
+          "Allied_GB_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        }
+      },
+      "Place": [
+        {
+          "Place_Name": "Antwerp, Belgium",
+          "Place_GPS_coordinate": "51.2213 N, 4.4052 E",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 3.4052,
+            "East": 5.4052,
+            "South": 50.2213,
+            "North": 52.2213
+          }
+        }
+      ],
+      "Weather": [
+        {
+          "Place_Name": "Northern France / Belgium (general pursuit area)",
+          "Place_GPS_coordinate": "50.5000 N, 3.0000 E",
+          "Weather_text": "No specific weather data in source for early September 1944; rapid British/Canadian advances described without weather impediments noted beyond initial logistical constraints.",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": 2.0,
+            "East": 4.0,
+            "South": 49.5,
+            "North": 51.5
+          }
+        }
+      ]
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "34",
+      "Footnote_Number": "34",
+      "Footnote_Text": "SHAEF Min, Mtg at SHAEF Fwd, 1 Sep, SGS SHAEF File 337/1, Mtgs w/ Supreme Comdr, I.",
+      "Footnote_Referenced_Source": "SHAEF Minutes, Meeting at SHAEF Forward, 1 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "SGS SHAEF File 337/1, Meetings with Supreme Commander",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "35",
+      "Footnote_Number": "35",
+      "Footnote_Text": "SHAEF Min, Mtg at SHAEF Fwd, 1 Sep; First U.S. Army Report of Operations, I, 37.",
+      "Footnote_Referenced_Source": "SHAEF Minutes, Meeting at SHAEF Forward, 1 September 1944; First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "SGS SHAEF File 337/1; First U.S. Army Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "36",
+      "Footnote_Number": "36",
+      "Footnote_Text": "Montgomery, Normandy to the Baltic, p. 192.",
+      "Footnote_Referenced_Source": "Montgomery, Normandy to the Baltic",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "Published memoir held in USAHEC library collections",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "37",
+      "Footnote_Number": "37",
+      "Footnote_Text": "Ltr, Eisenhower to Marshall, CPA-90235, 19 Aug, SHAEF G-3 Ops A 322/011.1, Comd and Contl of U.S./Br Forces.",
+      "Footnote_Referenced_Source": "Letter, Eisenhower to Marshall, 19 August 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "SHAEF G-3 Ops File A 322/011.1",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "38",
+      "Footnote_Number": "38",
+      "Footnote_Text": "SHAEF Weekly Intel Summaries, 2, 9 Sep.",
+      "Footnote_Referenced_Source": "SHAEF Weekly Intelligence Summaries, 2 and 9 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "SHAEF G-2 Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "39",
+      "Footnote_Number": "39",
+      "Footnote_Text": "SHAEF Weekly Intel Summary, 26 Aug.",
+      "Footnote_Referenced_Source": "SHAEF Weekly Intelligence Summary, 26 August 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "SHAEF G-2 Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "40",
+      "Footnote_Number": "40",
+      "Footnote_Text": "SHAEF Weekly Intel Summary, 2 Sep.",
+      "Footnote_Referenced_Source": "SHAEF Weekly Intelligence Summary, 2 September 1944",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "SHAEF G-2 Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "41",
+      "Footnote_Number": "41",
+      "Footnote_Text": "See Chapter XXXI, above.",
+      "Footnote_Referenced_Source": "Chapter XXXI of the same volume",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "U.S. Army in World War II series files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "42",
+      "Footnote_Number": "42",
+      "Footnote_Text": "First U.S. Army G-3 Jnl, 2 Sep; First U.S. Army Report of Operations, I, 37-38.",
+      "Footnote_Referenced_Source": "First U.S. Army G-3 Journal; Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army G-3 Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "43",
+      "Footnote_Number": "43",
+      "Footnote_Text": "21 AGp Dir, M-520, 26 Aug, SGS SHAEF File 381, Post-OVERLORD Plng, I; Second Army Opns, 27 Aug-9 Sep; First Canadian Army Report, pp. 45-47; Montgomery, Normandy to the Baltic, pp. 202-04.",
+      "Footnote_Referenced_Source": "21 AGp Directive M-520; Second Army and First Canadian Army operations; Montgomery publication",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "SGS SHAEF File 381; Army operational reports",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "44",
+      "Footnote_Number": "44",
+      "Footnote_Text": "Msg, Montgomery to Eisenhower, M-1001, 4 Sep, SGS SHAEF File 381, Post-OVERLORD Plng, I; Pogue, Supreme Command, pp. 256-57; Wilmot, Struggle for Europe, pp. 455-56.",
+      "Footnote_Referenced_Source": "Message, Montgomery to Eisenhower, M-1001; Pogue, Supreme Command; Wilmot, Struggle for Europe",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "SGS SHAEF File 381; OCMH Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "45",
+      "Footnote_Number": "45",
+      "Footnote_Text": "Msg, Eisenhower to Montgomery, 5 Sep, SGS SHAEF File 381, Post-OVERLORD Plng, I; Pogue, Supreme Command, pp. 256-57.",
+      "Footnote_Referenced_Source": "Message, Eisenhower to Montgomery, 5 September 1944; Pogue, Supreme Command",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "SGS SHAEF File 381; OCMH Files",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "46",
+      "Footnote_Number": "46",
+      "Footnote_Text": "Montgomery, Normandy to the Baltic, pp. 204-05.",
+      "Footnote_Referenced_Source": "Montgomery, Normandy to the Baltic",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "Published memoir held in USAHEC library collections",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "47",
+      "Footnote_Number": "47",
+      "Footnote_Text": "First U.S. Army Report of Operations, I, 38-39.",
+      "Footnote_Referenced_Source": "First U.S. Army Report of Operations",
+      "Web_Link": "N/A",
+      "Web_Link_Capture_Date": "N/A",
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "950 Soldiers Drive, Carlisle, PA 17013-5021, United States",
+      "NonDigital_Library_References": "First U.S. Army Files",
+      "Source_Type": "US"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-30",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+  "Source_Link_Capture_Date": "2025-12-30"
+}

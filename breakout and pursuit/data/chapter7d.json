@@ -1,0 +1,1883 @@
+{
+  "Events": [
+    {
+      "Event": "Counterattack",
+      "Sub-event": "German Reinforcement and Planning for Counterattack",
+      "Sub-event_summary": "Between 7 and 10 July 1944, the Germans reinforced the Taute-Vire sector with elements from the 2d SS Panzer Division and planned a major counterattack using the Panzer Lehr Division to prevent an American breakthrough.",
+      "Sub-event_fulltext": {
+        "Paragraph_34": "While the Germans defended stubbornly and adroitly in the zones of the VII and VIII Corps, they directed their greatest effort against the XIX Corps between the Taute and Vire Rivers. This was the sector where the 30th Division and Combat Command B of the 3d Armored Division were attacking toward the high ground west of St. Lô. If the U.S. troops reached their objective, the Germans reasoned, they might unhinge the German line in the Cotentin and outflank not only those units defending la Haye-du-Puits and Périers but also the II Parachute Corps in the St. Lô-Caumont sector. To reinforce Kampfgruppe Heinz and the small portion of the 17th SS Panzer Grenadier Division resisting between the Taute and the Vire, the II Parachute Corps sent part of its reserves, light forces organized around a mobile brigade, to close the gap opened by the American attack. But these troops were obviously too few to dissipate the danger of a serious breakthrough, and the 2d SS Panzer Division consequently added a tank-infantry task force, which attacked the American flank on 9 July.",
+        "Paragraph_35": "Deciding two days earlier that they needed a strong force between the Taute and the Vire, Kluge and Rommel obtained the Panzer Lehr Division from the Panzer Group West front in order to mount a major counterattack."
+      },
+      "Footnote_References": "35,36",
+      "Place_Name": "Between Taute and Vire Rivers",
+      "Dates": {
+        "Date_group_of_event": "7-10 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "070000ZJUL44 - 102359ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Panzer Lehr Division",
+          "Name": "Fritz Bayerlein",
+          "Rank": "Generalleutnant",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Tank",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Taute-Vire sector",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Taute-Vire sector",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.52",
+          "East": "0.22",
+          "South": "48.25",
+          "North": "50.05"
+        }
+      }
+    },
+    {
+      "Event": "Counterattack",
+      "Sub-event": "Movement of Panzer Lehr Division",
+      "Sub-event_summary": "The Panzer Lehr Division moved from the British front to the Taute-Vire area between 8 and 10 July 1944, delayed by poor roads and Allied air attacks.",
+      "Sub-event_fulltext": {
+        "Paragraph_37": "While the division traveled westward across the Normandy front toward the Taute and Vire region, the inexperience and errors of the U.S. units as much as firm resistance offered by the relatively small German combat groups--the armored task forces and the remnants of Kampfgruppe Heinz, reinforced by the parachute corps reserves--prevented a genuine American breakthrough.",
+        "Paragraph_36": "The arrival of advance elements of Panzer Lehr on 10 July was to seal off the penetration, while the projected Panzer Lehr counterattack threatened to reverse the situation completely and throw the Americans on the defensive."
+      },
+      "Footnote_References": "36,37",
+      "Place_Name": "Normandy front to Taute-Vire region",
+      "Dates": {
+        "Date_group_of_event": "8-10 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "080000ZJUL44 - 102359ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Panzer Lehr Division",
+          "Name": "Fritz Bayerlein",
+          "Rank": "Generalleutnant",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "Fully staffed, but suffered losses en route",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Tank",
+            "Identifier": "Panther",
+            "Quantity": "",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Panther_tank",
+            "Web_Image_Reference": "https://www.worldwarphotos.info/gallery/germany/tanks-2-3/panther-tank/panther-wreck-normandy-1944/",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 20, 2025"
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "https://www.worldwarphotos.info/gallery/germany/tanks-2-3/panther-tank/panther-wreck-normandy-1944/",
+        "Description": "Panther Ausf A of the Panzer Lehr Division destroyed in Normandy July 1944",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Taute-Vire region",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Taute-Vire region",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.52",
+          "East": "0.22",
+          "South": "48.25",
+          "North": "50.05"
+        }
+      }
+    },
+    {
+      "Event": "Counterattack",
+      "Sub-event": "Deployment of 9th Infantry Division",
+      "Sub-event_summary": "On 8-10 July 1944, the 9th Division was deployed along the east bank of the Taute River to outflank German resistance and protect the XIX Corps flank, assuming control of additional units.",
+      "Sub-event_fulltext": {
+        "Paragraph_37": "General Corlett on 8 July had sent Combat Command A of the 3d Armored Division across the Vire to reinforce the 113th Cavalry Group on the right flank. Adding further to the strength of the already considerable force in the XIX Corps bridgehead, and arriving accidentally in time to meet the attack of Panzer Lehr, came the 9th Division, the unit that General Collins had been unable to employ with the rest of his VII Corps on the Carentan-Périers isthmus. Upon General Hodges' suggestion, General Collins persuaded General Bradley on 8 July that committing the unemployed 9th Division along the east bank of the Taute River would fulfill two useful functions. By outflanking the German resistance on the Carentan-Périers isthmus, the division would help the VII Corps and provide strong protection to the XIX Corps right flank. Bradley decided that the 9th Division's attack would be related more properly to the VII Corps action than to the XIX Corps advance toward St. Lô, so he let Collins retain control of the division. Moving the VII Corps boundary to the east and giving Collins a slice of the XIX Corps zone, General Bradley split the Taute and Vire area between the VII and XIX Corps, the new boundary to be effective as soon as the 9th Division crossed the Vire et Taute Canal and was ready to attack. General Collins ordered the division to attack westward--between the canal on the north and the St. Jean-de-Daye--le Désert road on the south--toward the Taute River. After making contact with the 83d Division, the 9th was to turn south to cut the Périers-St. Lô highway.",
+        "Paragraph_38": "The 9th Division was thoroughly battle trained. It had participated in the North African invasion and the Sicilian campaign and in June had played a prominent part in the capture of Cherbourg. General Eisenhower considered it one of the two he rated \"tops\" in the European theater.",
+        "Paragraph_39": "The division commander, Maj Gen. Manton S. Eddy, had organized his headquarters in a fashion that resembled German practice. So that he might be free to visit the line units, Eddy kept the assistant division commander at the command post to make emergency decisions and to supervise the \"operational group\"--the G-2 and G-3 Sections--while the chief of staff supervised the \"administrative group\"--the G-1 and G-4 Sections.",
+        "Paragraph_40": "The division had considerable potential fire power and mobility. In addition to controlling two extra battalions of artillery, one light and one medium, the 9th Division assumed control of Combat Command A of the 3d Armored Division and also of the 113th Cavalry Group. To keep the mobile armor and cavalry available for emergency use, General Eddy planned to hold them in reserve. At first he would employ his three infantry regiments abreast, attacking westward toward the Taute. The 9th Division crossed the Vire et Taute Canal on 9 July and was ready on the following morning to meet again the challenge of fighting in the hedgerows. A preparation by dive-bombers and artillery preceded the attack. Two regiments met opposition immediately and to their consternation advanced but several hedgerows. The third regiment had better success clearing the corner formed by the juncture of the Taute River and the Vire et Taute Canal. Resistance was light and enemy artillery conspicuous by its silence. A reconnaissance patrol, however, moving toward Tribehou Island in the Taute River flats, was turned back by mortar and machine gun fire. That night, as the 9th Division reorganized for attack on the morning of 11 July, enemy fire increased and small groups of tanks and infantry attempted to infiltrate the lines. German tank motors sounded in the distance. From just beyond the division positions came the noise of infantrymen digging in. The 9th Division staff officers depreciated these signs, for they believed that the Germans were merely covering preparations for a general withdrawal during the night. Although the 30th Division on the left reported heavy enemy traffic moving toward the Taute River, the 9th Division staff preferred to accept as more valid an announcement from the 4th Division that the enemy was falling back. This judgment coincided with the view held at First Army headquarters. The army G-2 had interpreted the noisy march across the American front by Panzer Lehr, which had repeatedly broken radio silence en route, as a demonstration of German bluff, an action presaging in reality a general withdrawal."
+      },
+      "Footnote_References": "38,39",
+      "Place_Name": "East bank of Taute River",
+      "Dates": {
+        "Date_group_of_event": "8-10 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "080000ZJUL44 - 102359ZJUL44"
+      },
+      "TOE": {
+        "Unit": "9th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Joseph Lawton Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "9th Infantry Division",
+          "Name": "Manton S. Eddy",
+          "Rank": "Major General",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "Battle trained",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Artillery battalion",
+            "Identifier": "",
+            "Quantity": "2 extra",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "East bank of Taute River",
+        "Place_GPS_coordinate": "49.2°N 1.2°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "East bank of Taute River",
+        "Place_GPS_coordinate": "49.2°N 1.2°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.57",
+          "East": "0.17",
+          "South": "48.3",
+          "North": "50.1"
+        }
+      }
+    },
+    {
+      "Event": "Counterattack",
+      "Sub-event": "Panzer Lehr Preparation and Jump-Off",
+      "Sub-event_summary": "On 10 July 1944, Panzer Lehr prepared for the counterattack, attaching additional units, and jumped off just before dawn on 11 July after a short artillery preparation, with two regiments attacking toward St. Jean-de-Daye.",
+      "Sub-event_fulltext": {
+        "Paragraph_41": "The Germans were not bluffing. Generalleutnant Fritz Bayerlein, the commander of Panzer Lehr, had received his march order on 8 July and had moved at once, though poor roads and strafing by Allied planes had hampered the division march. Not until the night of 10 July was the division in position to attack--too late, Rommel thought. Kampfgruppe Heinz, which had suffered approximately 30 percent casualties and had virtually disintegrated as an organized unit, was withdrawn to the southwest as artillery of the 17th SS Panzer Grenadiers gave covering fire and the 30th Mobile Brigade and the tank-infantry teams of the 2d SS Panzer Division launched local counterattacks. Hausser, the Seventh Army commander, attached these elements to Panzer Lehr, visited the division command post, and talked over the details of the attack with Bayerlein. With Rommel pushing for speed, Panzer Lehr was to attack at once--that night.",
+        "Paragraph_42": "Bayerlein planned to attack with two regimental combat teams abreast. The regiments were to converge on the St. Jean-de-Daye crossroads from the southwest and the south. With the high ground at the crossroads in his possession, he would have command of the American crossing sites over the canal and the river, north and east of St. Jean-de-Daye. Hoping that the night attack would easily achieve a breakthrough, Bayerlein envisioned the infantry riding tanks to the objective. The II Parachute Corps was to launch a feint directly north from St. Lô in a limited objective attack along the east bank of the Vire River.",
+        "Paragraph_43": "The jump-off was scheduled for 0145, 11 July. Unfortunately for Panzer Lehr, Combat Command B of the 3d Armored Division in driving toward Hauts-Vents had jostled and delayed the leading panzer elements getting ready to attack. Still in firm possession of Hauts-Vents, Panzer Lehr jumped off just before dawn, 11 July, after a short artillery preparation. The routes of attack passed on both sides of CCB. The regiment on the right, moving close to the Vire River through Pont-Hébert, aimed for the Airel bridge and struck the 30th Division. The regiment on the left, moving through le Désert, struck the 30th and 9th Divisions."
+      },
+      "Footnote_References": "41,42,43",
+      "Place_Name": "Hauts-Vents",
+      "Dates": {
+        "Date_group_of_event": "10-11 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "100000ZJUL44 - 110400ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Panzer Lehr Division",
+          "Name": "Fritz Bayerlein",
+          "Rank": "Generalleutnant",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Armored infantry battalion",
+            "Identifier": "",
+            "Quantity": "2",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Hauts-Vents",
+        "Place_GPS_coordinate": "49.1667°N 1.1667°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://www.flamesofwar.com/portals/0/all_images/Historical/Normandy/Panzer-Lehr-Map.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hauts-Vents",
+        "Place_GPS_coordinate": "49.1667°N 1.1667°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.5367",
+          "East": "0.2033",
+          "South": "48.2667",
+          "North": "50.0667"
+        }
+      }
+    },
+    {
+      "Event": "Counterattack",
+      "Sub-event": "Panzer Lehr Left Regiment Attack",
+      "Sub-event_summary": "On 11 July 1944, the left regiment of Panzer Lehr penetrated U.S. lines near le Désert, causing confusion and some withdrawal in the 9th and 30th Divisions.",
+      "Sub-event_summary": "On 11 July 1944, the left regiment of Panzer Lehr penetrated U.S. lines near le Désert, causing confusion and some withdrawal in the 9th and 30th Divisions.",
+      "Sub-event_fulltext": {
+        "Paragraph_43": "The regiment on the left, moving through le Désert, struck the 30th and 9th Divisions.",
+        "Paragraph_44": "In the 9th Division sector, the division staff still was not seriously perturbed even after receiving reports at 0300 of German infiltration along the left flank. Two hours later the fact that Germans were making noise, were firing a great deal, and appeared \"to be all around now\" occasioned little more than nonchalance mixed with some incredulity. Not until the division artillery reported some confusion because German infantrymen were approaching the gun positions did the staff realize that a counterattack was under way. About the same time an infantry infantry battalion command post was overrun. As reports began to indicate that enemy tanks were throughout the division area, telephone lines from all the regiments went out. Still the situation did not seem serious enough to wake the division commander.",
+        "Paragraph_45": "Panzer Lehr's leading elements on the left--two battalions of armored infantry, a company of tanks, and two companies of self-propelled guns--had actually made two shallow penetrations of the U.S. lines near le Désert, one along a regimental boundary of the 9th Division, the other between the 9th and 30th Divisions. The penetrations prompted confusion and some withdrawal before subordinate American commanders could begin to control their troops in close-range fighting. After daylight brought some amelioration of the confusion, and after wiremen by 0900 had restored communications to the regiments, General Eddy got a coordinated defense into action. Infantrymen cut behind German spearheads to seal routes of withdrawal, while tanks, tank destroyers, and infantry bazooka teams stalked the isolated enemy armor."
+      },
+      "Footnote_References": "44",
+      "Place_Name": "le Désert",
+      "Dates": {
+        "Date_group_of_event": "11 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "110300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr Division (Left Regiment)",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Panzer Lehr Division",
+          "Commander": "Fritz Bayerlein",
+          "Name": "Fritz Bayerlein",
+          "Rank": "Generalleutnant",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Tank",
+            "Identifier": "",
+            "Quantity": "1 company",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "le Désert",
+        "Place_GPS_coordinate": "49.1833°N 1.2°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "le Désert",
+        "Place_GPS_coordinate": "49.1833°N 1.2°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.57",
+          "East": "0.17",
+          "South": "48.2833",
+          "North": "50.0833"
+        }
+      }
+    },
+    {
+      "Event": "Counterattack",
+      "Sub-event": "American Containment in 9th Division Sector",
+      "Sub-event_summary": "On 11 July 1944, the 9th Division contained the German penetration, destroying several tanks and regaining lost ground by afternoon, with air support contributing to the effort.",
+      "Sub-event_fulltext": {
+        "Paragraph_45": "Panzer Lehr's leading elements on the left--two battalions of armored infantry, a company of tanks, and two companies of self-propelled guns--had actually made two shallow penetrations of the U.S. lines near le Désert, one along a regimental boundary of the 9th Division, the other between the 9th and 30th Divisions. The penetrations prompted confusion and some withdrawal before subordinate American commanders could begin to control their troops in close-range fighting. After daylight brought some amelioration of the confusion, and after wiremen by 0900 had restored communications to the regiments, General Eddy got a coordinated defense into action. Infantrymen cut behind German spearheads to seal routes of withdrawal, while tanks, tank destroyers, and infantry bazooka teams stalked the isolated enemy armor.",
+        "Paragraph_46": "Tank destroyers alone claimed destruction of at least one Mark IV and twelve Mark V (Panther) tanks. The division artillery pounded enemy tanks parked along the road west of le Désert. American planes flying other missions were diverted to counter the Panzer Lehr threat, and one formation dropped twenty-two 500-pound bombs on a German armored column. By the middle of the afternoon of 11 July, the 9th Division had contained the enemy attack. General Eddy was then able to launch his own counterattack and regain ground abandoned earlier in the day. Because of the possibility of further enemy armored action, Eddy established a strong defensive line, giving particular attention to antitank precautions. The 9th Division had sustained little more than a hundred casualties. The only effect of the Panzer Lehr effort was to delay the 9th Division attack twenty-four hours."
+      },
+      "Footnote_References": "46,47,48,49",
+      "Place_Name": "le Désert",
+      "Dates": {
+        "Date_group_of_event": "11 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "110600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "9th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Joseph Lawton Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "9th Infantry Division",
+          "Name": "Manton S. Eddy",
+          "Rank": "Major General",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Tank destroyer",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Tank",
+            "Identifier": "Mark IV",
+            "Quantity": "1",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "100",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "le Désert",
+        "Place_GPS_coordinate": "49.1833°N 1.2°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "le Désert",
+        "Place_GPS_coordinate": "49.1833°N 1.2°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.57",
+          "East": "0.17",
+          "South": "48.2833",
+          "North": "50.0833"
+        }
+      }
+    },
+    {
+      "Event": "Counterattack",
+      "Sub-event": "Panzer Lehr Right Regiment Attack",
+      "Sub-event_summary": "On 11 July 1944, the right regiment of Panzer Lehr struck the 30th Division near the Vire River, but was repelled by U.S. troops.",
+      "Sub-event_fulltext": {
+        "Paragraph_43": "The regiment on the right, moving close to the Vire River through Pont-Hébert, aimed for the Airel bridge and struck the 30th Division.",
+        "Paragraph_47": "Along the boundary between the 9th and 30th Divisions, confusion had at first also prevailed among men of the 30th. At a roadblock on a secondary route, guards heard tanks approaching, but were told by higher headquarters that American tanks were in the vicinity. The men let a column of tanks and infantry pass before noticing that the soldiers in the column were speaking German. They immediately alerted troops in the rear who engaged the column with antitank rifles and bazookas. Individual groups of infantrymen spontaneously and with little coordination or direction destroyed five enemy tanks and four armored scout cars, two of the latter mounting flame throwers. Machine guns emplaced earlier that evening for all-around security fired into the ranks of enemy infantry. As the night exploded into sound and flash, the noise of withdrawing tanks gradually became discernible. In the morning it was obvious that the point of the enemy armored column had been blunted and the main body forced to withdraw. In the morning it was obvious that the point of the enemy armored column had been blunted and the main body forced to withdraw. At the same time, units of the 30th Division near the west bank of the Vire River were repelling the other regimental column of Panzer Lehr. Before noon of 11 July, U.S. troops had contained the enemy attack in that area and had cleared German stragglers from the division rear.",
+        "Paragraph_48": "Though General Hobbs launched his own attack, it ran into resistance at once and made only slight gain. The effect of the Panzer Lehr attack was not confined to the front line. At the still inadequate crossing sites over the Vire, military policemen had been driven from their traffic control posts by the increased enemy shelling. Traffic quickly coagulated. To relieve the congestion and reduce the possibility of embarrassment if a direct shell hit destroyed a bridge, a Bailey bridge was erected and completed late on 12 July; it took somewhat longer than normal because of continuing German fire."
+      },
+      "Footnote_References": "50",
+      "Place_Name": "Pont-Hébert",
+      "Dates": {
+        "Date_group_of_event": "11 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "110300ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr Division (Right Regiment)",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Panzer Lehr Division",
+          "Commander": "Fritz Bayerlein",
+          "Name": "Fritz Bayerlein",
+          "Rank": "Generalleutnant",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Tank",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Tank",
+            "Identifier": "Mark IV",
+            "Quantity": "5",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Pont-Hébert",
+        "Place_GPS_coordinate": "49.1667°N 1.1333°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pont-Hébert",
+        "Place_GPS_coordinate": "49.1667°N 1.1333°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.5033",
+          "East": "0.2367",
+          "South": "48.2667",
+          "North": "50.0667"
+        }
+      }
+    },
+    {
+      "Event": "Counterattack",
+      "Sub-event": "American Containment in 30th Division Sector",
+      "Sub-event_summary": "On 11 July 1944, the 30th Division repelled the German attack, destroying several tanks and scout cars, and cleared stragglers from the rear.",
+      "Sub-event_fulltext": {
+        "Paragraph_47": "Along the boundary between the 9th and 30th Divisions, confusion had at first also prevailed among men of the 30th. At a roadblock on a secondary route, guards heard tanks approaching, but were told by higher headquarters that American tanks were in the vicinity. The men let a column of tanks and infantry pass before noticing that the soldiers in the column were speaking German. They immediately alerted troops in the rear who engaged the column with antitank rifles and bazookas. Individual groups of infantrymen spontaneously and with little coordination or direction destroyed five enemy tanks and four armored scout cars, two of the latter mounting flame throwers. Machine guns emplaced earlier that evening for all-around security fired into the ranks of enemy infantry. As the night exploded into sound and flash, the noise of withdrawing tanks gradually became discernible. In the morning it was obvious that the point of the enemy armored column had been blunted and the main body forced to withdraw. In the morning it was obvious that the point of the enemy armored column had been blunted and the main body forced to withdraw. At the same time, units of the 30th Division near the west bank of the Vire River were repelling the other regimental column of Panzer Lehr. Before noon of 11 July, U.S. troops had contained the enemy attack in that area and had cleared German stragglers from the division rear.",
+        "Paragraph_48": "Though General Hobbs launched his own attack, it ran into resistance at once and made only slight gain. The effect of the Panzer Lehr attack was not confined to the front line. At the still inadequate crossing sites over the Vire, military policemen had been driven from their traffic control posts by the increased enemy shelling. Traffic quickly coagulated. To relieve the congestion and reduce the possibility of embarrassment if a direct shell hit destroyed a bridge, a Bailey bridge was erected and completed late on 12 July; it took somewhat longer than normal because of continuing German fire."
+      },
+      "Footnote_References": "50",
+      "Place_Name": "West bank of Vire River",
+      "Dates": {
+        "Date_group_of_event": "11 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "110600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Charles H. Corlett",
+          "Name": "Charles Harrison Corlett",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "30th Infantry Division",
+          "Name": "Leland S. Hobbs",
+          "Rank": "Major General",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leland_S._Hobbs",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Bazooka",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Armored scout car",
+            "Identifier": "",
+            "Quantity": "4",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Pont-Hébert",
+        "Place_GPS_coordinate": "49.1667°N 1.1333°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pont-Hébert",
+        "Place_GPS_coordinate": "49.1667°N 1.1333°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.5033",
+          "East": "0.2367",
+          "South": "48.2667",
+          "North": "50.0667"
+        }
+      }
+    },
+    {
+      "Event": "Counterattack",
+      "Sub-event": "Air Support Against Panzer Lehr",
+      "Sub-event_summary": "On 11 July 1944, American planes were diverted to bomb German armored columns, dropping 500-pound bombs and claiming destruction of several tanks.",
+      "Sub-event_fulltext": {
+        "Paragraph_46": "American planes flying other missions were diverted to counter the Panzer Lehr threat, and one formation dropped twenty-two 500-pound bombs on a German armored column."
+      },
+      "Footnote_References": "48",
+      "Place_Name": "Taute-Vire sector",
+      "Dates": {
+        "Date_group_of_event": "11 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "111200ZJUL44"
+      },
+      "TOE": {
+        "Unit": "IX Tactical Air Command",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Ninth Air Force",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Fighter-bomber",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Tank",
+            "Identifier": "",
+            "Quantity": "19",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Taute-Vire sector",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Taute-Vire sector",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.52",
+          "East": "0.22",
+          "South": "48.25",
+          "North": "50.05"
+        }
+      }
+    },
+    {
+      "Event": "Counterattack",
+      "Sub-event": "DSC Award to James D. Allgood",
+      "Sub-event_summary": "Captain James D. Allgood of the 47th Infantry Regiment was awarded the DSC for extraordinary heroism in repelling the German counterattack on 11 July 1944.",
+      "Sub-event_fulltext": {
+        "Paragraph_44": "Capt. James D. Allgood and 1st Lt. William F. Squire of the 47th Infantry received the DSC for their efforts in repelling the counterattack."
+      },
+      "Footnote_References": "45",
+      "Place_Name": "Near St. Lo",
+      "Dates": {
+        "Date_group_of_event": "11 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "110000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "47th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "9th Infantry Division",
+          "Commander": "Manton S. Eddy",
+          "Name": "Manton Sprague Eddy",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Near St. Lô",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Near St. Lô",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4603",
+          "East": "0.2797",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Counterattack",
+      "Sub-event": "DSC Award to William F. Squire",
+      "Sub-event_summary": "1st Lt. William F. Squire of the 47th Infantry Regiment was awarded the DSC posthumously for heroic actions in repelling a German tank during the counterattack on 11 July 1944.",
+      "Sub-event_fulltext": {
+        "Paragraph_44": "Capt. James D. Allgood and 1st Lt. William F. Squire of the 47th Infantry received the DSC for their efforts in repelling the counterattack."
+      },
+      "Footnote_References": "45",
+      "Place_Name": "Near St. Lo",
+      "Dates": {
+        "Date_group_of_event": "11 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "110000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "47th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "9th Infantry Division",
+          "Commander": "Manton S. Eddy",
+          "Name": "Manton Sprague Eddy",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "1",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Near St. Lô",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Near St. Lô",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4603",
+          "East": "0.2797",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Counterattack",
+      "Sub-event": "DSC Award to Henry J. Kucharski",
+      "Sub-event_summary": "T/3 Henry J. Kucharski of the Medical Detachment, 47th Infantry Regiment was awarded the DSC for extraordinary heroism in aiding wounded under fire on 11 July 1944, securing a truce to evacuate casualties.",
+      "Sub-event_fulltext": {
+        "Paragraph_44": "T/3 Henry J. Kucharski of the Medical Detachment, 47th Infantry, when unable to render aid because of fire, ripped off his Red Cross armband and waved it in front of him as he advanced toward wounded men. The enemy recognized his mission and halted fire. When a German officer approached, Kucharski sued for and secured a thirty-minute truce, time for him to treat and evacuate American casualties. He received the DSC."
+      },
+      "Footnote_References": "45",
+      "Place_Name": "Near St. Lo",
+      "Dates": {
+        "Date_group_of_event": "11 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "110000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Medical Detachment, 47th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "9th Infantry Division",
+          "Commander": "Manton S. Eddy",
+          "Name": "Manton Sprague Eddy",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Near St. Lô",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Near St. Lô",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.4603",
+          "East": "0.2797",
+          "South": "48.2167",
+          "North": "50.0167"
+        }
+      }
+    },
+    {
+      "Event": "Counterattack",
+      "Sub-event": "Outcome and Casualties",
+      "Sub-event_summary": "The German counterattack by Panzer Lehr on 11 July 1944 failed, resulting in heavy German losses of approximately 1000 men and 25 tanks, while American casualties were low, and the attack only delayed the U.S. advance by 24 hours.",
+      "Sub-event_fulltext": {
+        "Paragraph_49": "The 30th Division estimated that, with CCB, it had destroyed about 20 Mark IV tanks on 11 July. General Collins judged that the VII Corps had destroyed over 30 German tanks, most of them in the 9th Division sector. Three tactical air squadrons, which had bombed German armored columns, claimed 19 tanks destroyed, 2 probably destroyed, and 7 damaged; 2 half-tracks destroyed and 6 damaged.",
+        "Paragraph_50": "Perhaps more important, at the height of the counterattack, CCB of the 3d Armored Division"
+      },
+      "Footnote_References": "49,50",
+      "Place_Name": "Taute-Vire sector",
+      "Dates": {
+        "Date_group_of_event": "11 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+        "Zulu_date_group_of_event": "110000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "Panzer Lehr Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": {
+          "Unit": "",
+          "Name": "",
+          "Rank": "",
+          "Date": "",
+          "End_Date_of_command": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Allied_Destroyed": {
+            "Origination_Country": "US",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Image_License": "",
+            "Web_Reference_Capture_Date": ""
+          },
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Tank",
+            "Identifier": "",
+            "Quantity": "25",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "Low",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "1000",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {
+        "Link": "",
+        "Description": "",
+        "License": ""
+      },
+      "Place": {
+        "Place_Name": "Taute-Vire sector",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Map_Reference": "Map II",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-II.jpg",
+        "ExternalMapLink": "https://brooklynwargaming.com/wp-content/uploads/2014/09/10Jul1944-Hauts-Vents-Map1-1024x768.jpg",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Taute-Vire sector",
+        "Place_GPS_coordinate": "49.15°N 1.15°W",
+        "Weather_text": "Variable with periods of rain and low clouds, limiting air activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.52",
+          "East": "0.22",
+          "South": "48.25",
+          "North": "50.05"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "35a",
+      "Footnote_Number": "35",
+      "Footnote_Text": "MS # B-455 (Ziegelmann)",
+      "Footnote_Referenced_Source": "The 352d Infantry Division (D-Day - 31 July 1944)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Foreign Military Studies, MS # B-455, The 352d Infantry Division (D-Day - 31 July 1944)"
+    },
+    {
+      "Footnote": "35b",
+      "Footnote_Number": "35",
+      "Footnote_Text": "Telecons, Pemsel to Speidel, 1315, 13 Jul, and Choltitz to Pemsel, 1930, 13 July, Seventh Army Tel Msgs",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Seventh Army Telephone Messages"
+    },
+    {
+      "Footnote": "35c",
+      "Footnote_Number": "35",
+      "Footnote_Text": "Pemsel and Meindl, 1910, 7 Jul, AGp B KTB",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Army Group B War Diary"
+    },
+    {
+      "Footnote": "36",
+      "Footnote_Number": "36",
+      "Footnote_Text": "Memo, Rommel to Kluge, 15 Jul, OB WEST KTB, Anlage 646 .",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "OB WEST War Diary, Annex 646"
+    },
+    {
+      "Footnote": "37a",
+      "Footnote_Number": "37",
+      "Footnote_Text": "Pz Lehr F0, 10 Jul, in Pz Lehr Div Ib KTB",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Panzer Lehr Division Ib War Diary"
+    },
+    {
+      "Footnote": "37b",
+      "Footnote_Number": "37",
+      "Footnote_Text": "Seventh Army KTB , 10 Jul",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Seventh Army War Diary"
+    },
+    {
+      "Footnote": "37c",
+      "Footnote_Number": "37",
+      "Footnote_Text": "3d Armd Div CCB G-2 Daily Narrative, 7-16 Jul",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "3d Armored Division CCB G-2 Daily Narrative, 7-16 Jul"
+    },
+    {
+      "Footnote": "38",
+      "Footnote_Number": "38",
+      "Footnote_Text": "Memo,  Corlett to OCMH, 19 Jan 54",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Memo, Corlett to OCMH, 19 Jan 54"
+    },
+    {
+      "Footnote": "39",
+      "Footnote_Number": "39",
+      "Footnote_Text": "Ltr, Eisenhower to Marshall, 5 Jul, Pogue Files.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Letter, Eisenhower to Marshall, 5 Jul, Pogue Files"
+    },
+    {
+      "Footnote": "40",
+      "Footnote_Number": "40",
+      "Footnote_Text": "12th AGp Immed Rpt 23, 9 Aug.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "12th Army Group Immediate Report 23, 9 Aug"
+    },
+    {
+      "Footnote": "41",
+      "Footnote_Number": "41",
+      "Footnote_Text": "9th Div G-3 Jnl, 0005, 0040, 11 Jul, and AAR, Jul",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "9th Division G-3 Journal, 0005, 0040, 11 Jul, and After Action Report, Jul"
+    },
+    {
+      "Footnote": "42",
+      "Footnote_Number": "42",
+      "Footnote_Text": "FUSA G-3 Jnl, 0600, 11 Jul, and G-2 per Rpt 31, 11 Jul .",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "First U.S. Army G-3 Journal, 0600, 11 Jul, and G-2 Periodic Report 31, 11 Jul"
+    },
+    {
+      "Footnote": "43",
+      "Footnote_Number": "43",
+      "Footnote_Text": "Memo, Br Brereton, Diaries, p. 307.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "The Brereton Diaries, p. 307"
+    },
+    {
+      "Footnote": "44",
+      "Footnote_Number": "44",
+      "Footnote_Text": "9th Div G-3 Jnl, 0305, 0515, 0525, 11 Jul.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "9th Division G-3 Journal, 0305, 0515, 0525, 11 Jul"
+    },
+    {
+      "Footnote": "45",
+      "Footnote_Number": "45",
+      "Footnote_Text": "Capt. James D. Allgood and 1st Lt. William F. Squire of the 47th Infantry received the DSC for their efforts in repelling the counterattack. T/3 Henry J. Kucharski of the Medical Detachment, 47th Infantry, when unable to render aid because of fire, ripped off his Red Cross armband and waved it in front of him as he advanced toward wounded men. The enemy recognized his mission and halted fire. When a German officer approached, Kucharski sued for and secured a thirty-minute truce, time for him to treat and evacuate American casualties. He received the DSC.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "https://9thinfantrydivision.net/distinguished-service-cross/",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "46",
+      "Footnote_Number": "46",
+      "Footnote_Text": "2d Lt. Richard A. Kirsting of the 216th Engineer Combat Battalion was awarded the DSC for heroic action that resulted in the capture of forty Germans.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "47",
+      "Footnote_Number": "47",
+      "Footnote_Text": "As army engineers manipulated the Carentan locks on 14 July in an attempt to drain the flooded areas of the Cotentin, the Vire River water level descended so rapidly that it endangered the temporary bridge and made additional trestling necessary. XIX Corps Engr Sec Jnl and Sitreps, XIX Corps AAR, Jul.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "XIX Corps Engineer Section Journal and Situation Reports, XIX Corps After Action Report, Jul"
+    },
+    {
+      "Footnote": "48",
+      "Footnote_Number": "48",
+      "Footnote_Text": "VII Corps Msgs, 1100, 1230, 1505, 2300, 11 Jul, FUSA G-3 Jnl File; 3d Armd Div CCB G-2 Daily Narrative, 7-16 Jul.",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "VII Corps Messages, 1100, 1230, 1505, 2300, 11 Jul, First U.S. Army G-3 Journal File; 3d Armored Division CCB G-2 Daily Narrative, 7-16 Jul"
+    },
+    {
+      "Footnote": "49",
+      "Footnote_Number": "49",
+      "Footnote_Text": "Telcon, Pemsel to Tempelhoff, 1000, 15 Jul, Seventh Army Tel Msgs; Rommel to Kluge, 15 Jul, OB WEST KTB, Anlage 646 .",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telephone Conversation, Pemsel to Tempelhoff, 1000, 15 Jul, Seventh Army Telephone Messages; Rommel to Kluge, 15 Jul, OB WEST War Diary, Annex 646"
+    },
+    {
+      "Footnote": "50",
+      "Footnote_Number": "50",
+      "Footnote_Text": "90th Div G-3 Jnl File, 11 and 12 Jul, and AAR, Jul; [Garth], St.-Lô , pp. 36-42 ; Hodgson, R-54; Pz Lehr F0, 11 Jul, Pz Lehr Div Ib KTB .",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "90th Division G-3 Journal File, 11 and 12 Jul, and After Action Report, Jul; [Garth], St.-Lô , pp. 36-42 ; Hodgson, R-54; Panzer Lehr Field Order, 11 Jul, Panzer Lehr Division Ib War Diary"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn7.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

@@ -1,0 +1,2980 @@
+{
+  "Events": [
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Alarm from Canadian Attack and Kluge-Eberbach Conversation",
+      "Sub-event_summary": "The aerial bombardment on the night of 7 August and the estimated six hundred Canadian tanks attacking toward Falaise caused alarm among the German command in Normandy, leading to a conversation between Kluge and Eberbach where they expressed their concerns and expectations.",
+      "Sub-event_fulltext": {
+        "Paragraph_36": "The aerial bombardment on the night of 7 August and the estimate that six hundred Canadian tanks were attacking toward Falaise alarmed the German command in Normandy: \"We didn't expect this to come so soon,\" Kluge told Eberbach, \"but I can imagine that it was no surprise to you.\"",
+        "Paragraph_37": "\"No,\" Eberbach said, \"I have always awaited it and looked toward the morrow with a heavy heart.\"[9](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn9)"
+      },
+      "Footnote_References": [
+        "9"
+      ],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "072300BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Fifth Panzer Army",
+            "Name": "Hans Eberbach",
+            "Rank": "General der Panzertruppe",
+            "Date": "072300BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Eberbach",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://warfarehistorynetwork.com/wp-content/uploads/W-Mortain-Map.jpg",
+          "Description": "Map of Mortain counterattack and Falaise pocket",
+          "License": "Fair use"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/2/22/Falaise_Pocket_German_Counterattack.png",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.578,
+          "East": 1.174,
+          "South": 47.994,
+          "North": 49.793
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Adjustment of Division Movements",
+      "Sub-event_summary": "In response to Hitler's order for a stronger attack toward Avranches, Kluge began moving three armored divisions from the Fifth Panzer Army sector, but due to the Canadian threat, orders for the 9th SS and 12th SS Panzer Divisions were canceled, with the 12th SS remaining to stop the Canadians, and other units like the 85th Division, Panther battalion of the 9th Panzer, and a rocket brigade redirected to defend north of Falaise.",
+      "Sub-event_fulltext": {
+        "Paragraph_38": "The moment was particularly dark because Kluge, in compliance with Hitler's order for a second and stronger attack toward Avranches, had started to move three armored divisions out of the *Fifth Panzer Army* sector toward the Mortain area.",
+        "Paragraph_39": "The *10th SS Panzer Division* was already on the move, but orders for the three *9th SS* and *12th SS Panzer Divisions* were canceled. The latter remained south of Caen to help stop the Canadians. Units of the newly arriving *85th Division,* instead of being assembled at Tinchebray for eventual commitment near Brécey, were diverted immediately to the Falaise sector. The Panther tank battalion of the 9*th Panzer Division* and a rocket brigade, also scheduled to participate in the attack toward Avranches, joined the defenses north of Falaise.[10](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn10)"
+      },
+      "Footnote_References": [
+        "10"
+      ],
+      "Place_Name": "Tinchebray",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "10th SS Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Fifth Panzer Army",
+            "Commander": "Otto Baum",
+            "Name": "Otto Baum",
+            "Rank": "Brigadeführer",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Otto_Baum",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "9th SS Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Fifth Panzer Army",
+            "Commander": "Friedrich-Wilhelm Bock",
+            "Name": "Friedrich-Wilhelm Bock",
+            "Rank": "Brigadeführer",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Friedrich-Wilhelm_Bock",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "12th SS Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Fifth Panzer Army",
+            "Commander": "Kurt Meyer",
+            "Name": "Kurt Meyer",
+            "Rank": "Brigadeführer",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Kurt_Meyer",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "85th Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Fifth Panzer Army",
+            "Commander": "Kurt Chill",
+            "Name": "Kurt Chill",
+            "Rank": "Generalleutnant",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Kurt_Chill",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "9th Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "LXXXI Corps",
+            "Commander": "Jolasse von Jolasse",
+            "Name": "Jolasse von Jolasse",
+            "Rank": "Generalleutnant",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/9th_Panzer_Division_(Wehrmacht)",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Axis_Employed": {
+              "Origination_Country": "DE",
+              "Name": "Panther tank",
+              "Identifier": "PzKpfw V Panther",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panther_tank",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/Panther_tank#/media/File:Bundesarchiv_Bild_101I-300-1870-17,_Panzer_V_Panther.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Tinchebray",
+        "Place_GPS_coordinate": "48.763, -0.732",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Tinchebray",
+        "Place_GPS_coordinate": "48.763, -0.732",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.107,
+          "East": 0.643,
+          "South": 47.863,
+          "North": 49.662
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Postponement of Second Attack to Avranches",
+      "Sub-event_summary": "The second attack toward Avranches, scheduled for the evening of 9 August, was postponed by Kluge that afternoon due to the Canadian threat.",
+      "Sub-event_fulltext": {
+        "Paragraph_40": "The second attack toward Avranches was scheduled for the evening of 9 August but, on the basis of the Canadian threat, Kluge that afternoon postponed it."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "091800BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "091700ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3617",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3617",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.736,
+          "East": 0.012,
+          "South": 47.785,
+          "North": 49.584
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Developments on the American Front",
+      "Sub-event_summary": "Attacks by U.S. V and XIX Corps between Vire and Sourdeval strained German corps and divisions, with U.S. pressure forcing withdrawals and threatening flanks, while the capture of le Mans tied down German forces, contributing to Kluge's decision to postpone the second attack to Avranches.",
+      "Sub-event_fulltext": {
+        "Paragraph_41": "Developments on the American front contributed to Kluge's decision. Attacks on 8 August by the V and XIX Corps between Vire and Sourdeval had strained the *II Parachute* and *LXXXIV Corps* and had ripped the *363d Division* to such an extent that the *Seventh Army* was trying to accelerate the arrival of the *331st Division* into the line. Perhaps worse, U.S. pressure had compelled the *XLVII Panzer Corps* during the night of 8 August to pull back slightly the *2d Panzer Division's* most advanced wedge of the counterattack forces near le Mesnil-Tôve and Chérencé. Even more threatening was the attack of the 2d Armored Division against the deep southern flank of the *2d SS Panzer Division* at Barenton. Finally, the capture of le Mans and the possibility of an American attack northward to Alençon tied down the *LXXXI Corps* and prevented the *9th Panzer Division* from adding its strength to the second attempt to gain Avranches.[11](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn11)"
+      },
+      "Footnote_References": [
+        "11"
+      ],
+      "Place_Name": "Vire",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "II Parachute Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Seventh Army",
+            "Commander": "Eugen Meindl",
+            "Name": "Eugen Meindl",
+            "Rank": "General der Fallschirmtruppe",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Eugen_Meindl",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "LXXXIV Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Seventh Army",
+            "Commander": "Otto Elfeldt",
+            "Name": "Otto Elfeldt",
+            "Rank": "General der Artillerie",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Otto_Elfeldt",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "363d Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "LXXXIV Corps",
+            "Commander": "Unknown",
+            "Name": "Unknown",
+            "Rank": "Unknown",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          "Subordinates": [],
+          "Personnel": "Severely damaged",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "331st Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Seventh Army",
+            "Commander": "Unknown",
+            "Name": "Unknown",
+            "Rank": "Unknown",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "XLVII Panzer Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Seventh Army",
+            "Commander": "Hans von Funck",
+            "Name": "Hans von Funck",
+            "Rank": "General der Panzertruppe",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_von_Funck",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "2d Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "XLVII Panzer Corps",
+            "Commander": "Heinrich Freiherr von Lüttwitz",
+            "Name": "Heinrich Freiherr von Lüttwitz",
+            "Rank": "General der Panzertruppe",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Heinrich_Freiherr_von_L%C3%BCttwitz",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "2d SS Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "XLVII Panzer Corps",
+            "Commander": "Heinz Lammerding",
+            "Name": "Heinz Lammerding",
+            "Rank": "Brigadeführer",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Heinz_Lammerding",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "LXXXI Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Army Group B",
+            "Commander": "Friedrich-August Schack",
+            "Name": "Friedrich-August Schack",
+            "Rank": "General der Infanterie",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Friedrich-August_Schack",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "9th Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "LXXXI Corps",
+            "Commander": "Jolasse von Jolasse",
+            "Name": "Jolasse von Jolasse",
+            "Rank": "Generalleutnant",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/9th_Panzer_Division_(Wehrmacht)",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.flamesofwar.com/Portals/0/all_images/Historical/Cobra/Falaise-map.jpg",
+          "Description": "Map of Falaise pocket",
+          "License": "Fair use"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.838, -0.889",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/2/22/Falaise_Pocket_German_Counterattack.png",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.838, -0.889",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.264,
+          "East": 0.486,
+          "South": 47.938,
+          "North": 49.737
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Planned Structure for Second Effort",
+      "Sub-event_summary": "The second effort toward Avranches was planned with the XLVII Panzer Corps (1st SS, 2d SS, 2d, and 116th Panzer Divisions) and LVIII Panzer Corps (9th SS and 10th SS Panzer Divisions, plus the Panther battalion of the 9th Panzer Division) moving abreast, supported by two rocket brigades and reinforced later by the 12th SS Panzer and 85th Infantry Divisions.",
+      "Sub-event_fulltext": {
+        "Paragraph_42": "The second effort was to have been made over the same terrain as the first, but this time with two corps moving abreast: the *XLVII Panzer Corps* (with four armored divisions--*1st SS, 2d SS, 2d,* and *116th)* and the *LVIII Panzer Corps* (with the *9th SS and 10th SS Panzer Divisions,* as well as the Panther tank battalion of the *9th Panzer Division).*",
+        "Paragraph_43": "The attacking corps were to have been supported by two rocket brigades and reinforced later by the *12th SS Panzer* and *85th Infantry Divisions*.[12](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn12)"
+      },
+      "Footnote_References": [
+        "12"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "091800BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "091700ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "XLVII Panzer Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Seventh Army",
+            "Commander": "Hans von Funck",
+            "Name": "Hans von Funck",
+            "Rank": "General der Panzertruppe",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_von_Funck",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [
+            {
+              "Unit": "1st SS Panzer Division",
+              "Name": "Theodor Wisch",
+              "Rank": "Brigadeführer",
+              "Date": "091800BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Theodor_Wisch",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "2d SS Panzer Division",
+              "Name": "Heinz Lammerding",
+              "Rank": "Brigadeführer",
+              "Date": "091800BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Heinz_Lammerding",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "2d Panzer Division",
+              "Name": "Heinrich Freiherr von Lüttwitz",
+              "Rank": "General der Panzertruppe",
+              "Date": "091800BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Heinrich_Freiherr_von_L%C3%BCttwitz",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "116th Panzer Division",
+              "Name": "Gerhard von Schwerin",
+              "Rank": "Generalleutnant",
+              "Date": "091800BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Gerhard_von_Schwerin",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "LVIII Panzer Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Seventh Army",
+            "Commander": "Walter Kruger",
+            "Name": "Walter Krüger",
+            "Rank": "General der Panzertruppe",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_Kr%C3%BCger_(Wehrmacht_general)",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [
+            {
+              "Unit": "9th SS Panzer Division",
+              "Name": "Friedrich-Wilhelm Bock",
+              "Rank": "Brigadeführer",
+              "Date": "091800BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Friedrich-Wilhelm_Bock",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Unit": "10th SS Panzer Division",
+              "Name": "Otto Baum",
+              "Rank": "Brigadeführer",
+              "Date": "091800BAUG44",
+              "End_Date_of_command": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Otto_Baum",
+              "Biographical_reference_Capture_Date": "December 28, 2025"
+            }
+          ],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned",
+            "Axis_Employed": {
+              "Origination_Country": "DE",
+              "Name": "Panther tank",
+              "Identifier": "PzKpfw V Panther",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panther_tank",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/Panther_tank#/media/File:Bundesarchiv_Bild_101I-300-1870-17,_Panzer_V_Panther.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3617",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3617",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.736,
+          "East": 0.012,
+          "South": 47.785,
+          "North": 49.584
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Diversion to Defensive Missions",
+      "Sub-event_summary": "Continued Allied pressure and flank threats led to diverting attack-designated elements to defensive roles, including moving the 116th, 2d SS, and remnants of Panzer Lehr to support divisions between Vire and Sourdeval, and inserting the LVIII Corps with the 10th SS Panzer at Barenton to relieve the 275th Division and protect the flank, shifting emphasis to defense.",
+      "Sub-event_fulltext": {
+        "Paragraph_44": "Continued Allied pressure and the threats to the flanks made it necessary to divert an increasing number of elements designated for the attack to defensive missions.",
+        "Paragraph_45": "The *116th, 2d SS,* and remnants of *Panzer Lehr* moved to the *LXXXIV Corps* to support the *363d* and 353d *Divisions* between Vire and Sourdeval; the *LVIII Corps* (with the *10th SS Panzer Division*) was inserted at Barenton to relieve the weak *275th Division* (which moved to the *Fifteenth Army* area for reconstitution) and protect the long *2d SS Panzer Division* flank. The emphasis turned unmistakably to defense."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Barenton",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "116th Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "LXXXIV Corps",
+            "Commander": "Gerhard von Schwerin",
+            "Name": "Gerhard von Schwerin",
+            "Rank": "Generalleutnant",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Gerhard_von_Schwerin",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "2d SS Panzer Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "LXXXIV Corps",
+            "Commander": "Heinz Lammerding",
+            "Name": "Heinz Lammerding",
+            "Rank": "Brigadeführer",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Heinz_Lammerding",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "Panzer Lehr Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "LXXXIV Corps",
+            "Commander": "Fritz Bayerlein",
+            "Name": "Fritz Bayerlein",
+            "Rank": "Generalleutnant",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Fritz_Bayerlein",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Remnants",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "353d Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "LXXXIV Corps",
+            "Commander": "Paul Mahlmann",
+            "Name": "Paul Mahlmann",
+            "Rank": "Generalleutnant",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/353rd_Infantry_Division_(Wehrmacht)",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "275th Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "LVIII Panzer Corps",
+            "Commander": "Hans Schmidt",
+            "Name": "Hans Schmidt",
+            "Rank": "Generalleutnant",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/275th_Infantry_Division_(Wehrmacht)",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Weak",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "Fifteenth Army",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "Army Group B",
+            "Commander": "Gustav von Zangen",
+            "Name": "Gustav von Zangen",
+            "Rank": "General der Infanterie",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Gustav-Adolf_von_Zangen",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Barenton",
+        "Place_GPS_coordinate": "48.6, -0.833",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Barenton",
+        "Place_GPS_coordinate": "48.6, -0.833",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.208,
+          "East": 0.542,
+          "South": 47.7,
+          "North": 49.5
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Conditions for Renewed Effort Success",
+      "Sub-event_summary": "German commanders believed a renewed attack toward Avranches could succeed if positions north of Falaise remained stable, a strong defense was established north of Alençon to protect supply dumps, additional equipment was moved to the Seventh Army sector, and Eberbach had time to reassemble forces.",
+      "Sub-event_fulltext": {
+        "Paragraph_46": "Despite postponement of the second attempt to drive toward Avranches and despite the fact that the *XLVII Panzer Corps,* basically the striking force, retained control over the *1st SS* and *2d Panzer Divisions,* the German commanders in Normandy felt that a renewed effort might still succeed if certain conditions were met: if the positions north of Falaise remained stable, if a strong defense could be established north of Alençon to protect the ammunition and gasoline dumps nearby, if the Panther battalion and a rocket brigade newly made available could be moved quickly to the *Seventh Army* sector, and if Eberbach, designated by Hitler to take command of the renewed effort toward Avranches, could have a few days in which to unscramble the assault forces and reassemble them for the attack.[13](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn13)"
+      },
+      "Footnote_References": [
+        "13"
+      ],
+      "Place_Name": "Alençon",
+      "Dates": {
+        "Date_group_of_event": "090000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "082300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "Oberstgruppenführer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Ammunition and gasoline dumps threatened",
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Panther tank",
+            "Identifier": "PzKpfw V Panther",
+            "Quantity": "Unknown",
+            "Web_Reference": "https://en.wikipedia.org/wiki/Panther_tank",
+            "Web_Image_Reference": "https://en.wikipedia.org/wiki/Panther_tank#/media/File:Bundesarchiv_Bild_101I-300-1870-17,_Panzer_V_Panther.jpg",
+            "Web_Image_License": "Public Domain",
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4329, 0.0919",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4329, 0.0919",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.283,
+          "East": 1.467,
+          "South": 47.533,
+          "North": 49.332
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Hitler's New Order on 9 August",
+      "Sub-event_summary": "On 9 August, Hitler issued a new order, convinced that Eberbach could succeed by avoiding previous mistakes, reserving the right to set H Hour, preparing to attack from Domfront to Avranches with LXXXI Corps protecting the flank, diverting weapons to I SS Panzer Corps at Falaise, and prohibiting local counterattacks while allowing withdrawals for Allied penetrations.",
+      "Sub-event_fulltext": {
+        "Paragraph_47": "Hitler, who issued a new order that day, 9 August, was convinced that Eberbach could achieve success if he avoided the mistakes of the first attack, which Hitler considered to have been launched \"too early, too weak, and in unfavorable weather.\"",
+        "Paragraph_48": "To insure proper timing, Hitler reserved for himself the designation of H Hour.",
+        "Paragraph_49": "Meanwhile, Eberbach was to prepare to attack southwest from the vicinity of Domfront, then northwest to the ultimate objective, Avranches. To protect Eberbach's left flank, *LXXXI Corps* was to follow the two assault corps echeloned to the left rear.",
+        "Paragraph_50": "Recognizing that Allied pressure had to be resisted particularly at Falaise, Hitler ordered sufficient antitank weapons, tanks, and assault guns, which were coming from the *Fifteenth Army* sector, diverted to the *I SS Panzer Corps* for a strong stand at Falaise. Elsewhere along the front, Hitler prohibited local counterattacks that might lead to serious personnel losses; he also authorized withdrawals to neutralize any penetrations the Allies might effect.[14](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn14)"
+      },
+      "Footnote_References": [
+        "14"
+      ],
+      "Place_Name": "Domfront",
+      "Dates": {
+        "Date_group_of_event": "090000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "082300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "OB WEST",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OKW",
+          "Commander": "Adolf Hitler",
+          "Name": "Adolf Hitler",
+          "Rank": "Führer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Adolf_Hitler",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "I SS Panzer Corps",
+            "Name": "Josef Dietrich",
+            "Rank": "Oberstgruppenführer",
+            "Date": "090000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Sepp_Dietrich",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Antitank weapons, tanks, assault guns",
+            "Identifier": "Various",
+            "Quantity": "Sufficient",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Domfront",
+        "Place_GPS_coordinate": "48.592, -0.652",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Domfront",
+        "Place_GPS_coordinate": "48.592, -0.652",
+        "Weather_text": "Unfavorable weather mentioned in context of previous attack",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.027,
+          "East": 0.723,
+          "South": 47.692,
+          "North": 49.491
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Commanders' Criticism of Hitler's Order",
+      "Sub-event_summary": "Some German commanders criticized Hitler's order as unrealistic, not aligned with ground, air, and supply situations, viewing it as the height of ignorant command from OKW in East Prussia.",
+      "Sub-event_fulltext": {
+        "Paragraph_51": "Although some commanders later called Hitler's order \"pure Utopia\" and not in keeping with the situation on the ground, the situation in the air, and the supply situation--\"the apex of conduct by a command [OKW] ignorant of front line conditions, taking upon itself the right to judge the situation from East Prussia\"--the commanders facing the crisis in Normandy reorganized for a renewed attempt.[15](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn15)"
+      },
+      "Footnote_References": [
+        "15"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "090000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "082300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "OKW",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": null,
+          "Commander": "Adolf Hitler",
+          "Name": "Adolf Hitler",
+          "Rank": "Führer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Adolf_Hitler",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Supply situation not in keeping"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0, -1.0",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0, -1.0",
+        "Weather_text": "Situation in the air not in keeping",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.374,
+          "East": 0.374,
+          "South": 48.1,
+          "North": 49.9
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Plans for Withdrawal and Assembly",
+      "Sub-event_summary": "The Germans planned to pull the 116th Panzer Division out for assembly, withdraw the 84th Division to a shorter line, instruct the XLVII Panzer Corps to withdraw the 2d Panzer Division slightly and pull out the 1st SS Panzer Division for assembly, concentrate them under LVIII Panzer Corps for the new attack, and expect additional support from the 9th Panzer Division's Panther battalion and two werfer brigades.",
+      "Sub-event_fulltext": {
+        "Paragraph_52": "They planned to have the *LXXXIV Corps* pull the *116th Panzer Division* out of the front for assembly; they hoped to withdraw the *84th Division* to a shorter line east of Perriers-en-Beauficel; they instructed the *XLVII Panzer Corps* to withdraw the *2d Panzer Division* somewhat and pull out the *1st SS Panzer Division* for assembly.",
+        "Paragraph_53": "The *1st SS* and *116th Panzer Divisions* were then to be concentrated in forward assembly areas under *LVIII Panzer Corps* to provide impetus for the new attack.",
+        "Paragraph_54": "The *Seventh Army* also expected to receive the *9th Panzer Division's* Panther battalion and two mortar *(werfer)* brigades to bolster the second effort."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Perriers-en-Beauficel",
+      "Dates": {
+        "Date_group_of_event": "090000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "082300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "84th Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": {
+            "Unit": "LXXXIV Corps",
+            "Commander": "Erwin Menny",
+            "Name": "Erwin Menny",
+            "Rank": "Generalleutnant",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/84th_Infantry_Division_(Wehrmacht)",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Perriers-en-Beauficel",
+        "Place_GPS_coordinate": "48.776, -0.99",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Perriers-en-Beauficel",
+        "Place_GPS_coordinate": "48.776, -0.99",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.365,
+          "East": 0.385,
+          "South": 47.876,
+          "North": 49.675
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Planned New Attack Parameters",
+      "Sub-event_summary": "The new attack was to be launched under Eberbach's command from the Mortain-Domfront area toward St. Hilaire and eventually Avranches.",
+      "Sub-event_fulltext": {
+        "Paragraph_55": "The new attack was to be launched, as Hitler wished, under Eberbach's command and from the Mortain-Domfront area toward St. Hilaire and eventually Avranches."
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Hilaire",
+      "Dates": {
+        "Date_group_of_event": "090000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "082300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Panzer Group Eberbach",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Hans Eberbach",
+          "Name": "Hans Eberbach",
+          "Rank": "General der Panzertruppe",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Eberbach",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Hilaire",
+        "Place_GPS_coordinate": "48.55, -1.266",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "St. Hilaire",
+        "Place_GPS_coordinate": "48.55, -1.266",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.641,
+          "East": 0.109,
+          "South": 47.65,
+          "North": 49.45
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Eberbach Takes Command of Panzer Group",
+      "Sub-event_summary": "Eberbach, reluctantly, took command of Panzer Group Eberbach from the Fifth Panzer Army, which was left under Josef Dietrich, assembling a skeleton staff including Lt. Col. Guenther von Kluge and Maj. Arthur von Eckesparre, despite deficiencies in personnel and equipment, and began planning the attack with aid from the Seventh Army staff.",
+      "Sub-event_fulltext": {
+        "Paragraph_56": "Leaving command of the *Fifth Panzer Army* to Panzergeneraloberst Josef (Sepp) Dietrich, formerly the commander of the *I SS Panzer Corps,* Eberbach, somewhat against his will, took command of *Panzer Group Eberbach.*",
+        "Paragraph_57": "His headquarters, formed for the express purpose of making the second attack to Avranches on 11 August, was directly under *Army Group B.*",
+        "Paragraph_58": "Eberbach assembled a skeleton staff of great ability that included Lt. Col. Guenther von Kluge, the field marshal's son, as chief of staff, and Maj. Arthur von Eckesparre, formerly Rommel's G-4, as operations officer.",
+        "Paragraph_59": "The command was nevertheless deficient in personnel and equipment and could function only with the aid of the *Seventh Army* staff or a corps headquarters.",
+        "Paragraph_60": "Despite these handicaps and the additional one of Eberbach's pessimism, the provisional headquarters began to plan the attack in detail.[16](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn16)"
+      },
+      "Footnote_References": [
+        "16"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "090000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "082300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Panzer Group Eberbach",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Hans Eberbach",
+          "Name": "Hans Eberbach",
+          "Rank": "General der Panzertruppe",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Eberbach",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Staff",
+            "Name": "Guenther von Kluge",
+            "Rank": "Lt. Col.",
+            "Date": "090000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "Staff",
+            "Name": "Arthur von Eckesparre",
+            "Rank": "Maj.",
+            "Date": "090000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Deficient",
+        "Equipments": {
+          "Supply": "Deficient in equipment"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0, -1.0",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0, -1.0",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.374,
+          "East": 0.374,
+          "South": 48.1,
+          "North": 49.9
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Eberbach's Conclusion on Delay",
+      "Sub-event_summary": "Eberbach concluded that he could not attack on 11 August due to the need to protect assembly areas, insufficient tanks (only 77 Mark IV and 47 Panther), requirements for vehicle replacements, additional supplies, and the limitation of attacks to early morning hours with ground fog for concealment, recommending 20 August when moon light and unfavorable weather for Allied air would be available.",
+      "Sub-event_fulltext": {
+        "Paragraph_61": "It did not take Eberbach long to conclude that he could not attack on 11 August.",
+        "Paragraph_62": "He felt that he would probably have to commit part of his attack forces to protect his assembly areas and thus would not be able to assemble his troops by that date.",
+        "Paragraph_63": "Judging that only 77 Mark IV and 47 Panther tanks were available for the attack, he wanted more.",
+        "Paragraph_64": "He also requested vehicle replacements and additional ammunition and POL supplies. All this would take time.",
+        "Paragraph_65": "Judging that only 77 Mark IV and 47 Panther tanks were available for the attack, he wanted more. He also requested vehicle replacements and additional ammunition and POL supplies. All this would take time.",
+        "Paragraph_66": "If his assault forces failed to reach their objective during that period, the events at Mortain would be repeated--his troops would be smashed by Allied air and artillery.",
+        "Paragraph_67": "To attack after nightfall, he needed the light of the waning moon, not to be had until 20 August.",
+        "Paragraph_68": "At that time also, according to meteorologists, the weather would change and become unfavorable for aerial activity.",
+        "Paragraph_69": "Thus 20 August, not 11 August, in Eberbach's estimation, was the best date for launching the new attack toward Avranches.[17](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn17)"
+      },
+      "Footnote_References": [
+        "17"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Panzer Group Eberbach",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Hans Eberbach",
+          "Name": "Hans Eberbach",
+          "Rank": "General der Panzertruppe",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Eberbach",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Additional ammunition and POL supplies requested",
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Mark IV tank",
+              "Identifier": "PzKpfw IV",
+              "Quantity": 77,
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/Panzer_IV#/media/File:Bundesarchiv_Bild_101I-277-0834-02,_Griechenland,_Panzer_IV.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Panther tank",
+              "Identifier": "PzKpfw V Panther",
+              "Quantity": 47,
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panther_tank",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/Panther_tank#/media/File:Bundesarchiv_Bild_101I-300-1870-17,_Panzer_V_Panther.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 28, 2025"
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://warfarehistorynetwork.com/wp-content/uploads/W-Mortain-Map.jpg",
+        "ExternalMapLinkLicence": "Fair use",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Weather_text": "Ground fog for concealment, unfavorable for aerial activity on 20 August",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.316,
+          "East": 0.434,
+          "South": 47.747,
+          "North": 49.547
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "New Threat from American Swerve to Alençon",
+      "Sub-event_summary": "As the Canadian attack on the north flank seemed halted, the Americans swerved north from le Mans toward Alençon, leading Kluge to evaluate the situation on 10 August as a potential double envelopment if connected to the Canadian effort, with the weak LXXXI Corps unable to protect the southern flank or keep the Alençon-Flers line open.",
+      "Sub-event_fulltext": {
+        "Paragraph_70": "While Eberbach was coming to his conclusions, a new threat developed.",
+        "Paragraph_71": "Just as it appeared that the Canadian attack on the north flank was halted, the Americans on the south flank \"unmistakably swerved\" north from le Mans toward Alençon.",
+        "Paragraph_72": "As Kluge evaluated the situation on the evening of 10 August, if the changed direction of the XV Corps drive was connected with the Canadian effort toward Falaise, he faced the threat of double envelopment.",
+        "Paragraph_73": "Furthermore, the weak forces of the *LXXXI Corps* could not possibly protect the army group on the southern flank.",
+        "Paragraph_74": "Nor could the *LXXXI Corps* keep the vital Alençon-Flers line open."
+      },
+      "Footnote_References": [],
+      "Place_Name": "le Mans",
+      "Dates": {
+        "Date_group_of_event": "102200BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102100ZAUG44"
+      },
+      "TOE": {
+        "Unit": "XV Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "Wade H. Haislip",
+          "Name": "Wade H. Haislip",
+          "Rank": "Major General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Wade_H._Haislip",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "le Mans",
+        "Place_GPS_coordinate": "48.0061, 0.1996",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "le Mans",
+        "Place_GPS_coordinate": "48.0061, 0.1996",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.175,
+          "East": 1.574,
+          "South": 47.106,
+          "North": 48.906
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Kluge's Suggestion to Smash American Spearheads",
+      "Sub-event_summary": "Kluge suggested considering smashing the spearheads of enemy columns driving north with a swift panzer thrust instead of continuing toward Avranches, requesting Jodl to get Hitler's decision on this matter.",
+      "Sub-event_fulltext": {
+        "Paragraph_75": "Instead of continuing the attack toward Avranches, Kluge thought it \"worth considering whether the spearheads of the enemy columns driving north should not be smashed by a . .&bnbsp; swiftly executed panzer thrust.\" He requested Jodl to get a decision on this matter from Hitler.[18](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn18)"
+      },
+      "Footnote_References": [
+        "18"
+      ],
+      "Place_Name": "Alençon",
+      "Dates": {
+        "Date_group_of_event": "102200BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102100ZAUG44"
+      },
+      "TOE": {
+        "Unit": "OKW",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": null,
+          "Commander": "Alfred Jodl",
+          "Name": "Alfred Jodl",
+          "Rank": "Generaloberst",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Alfred_Jodl",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4329, 0.0919",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4329, 0.0919",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.283,
+          "East": 1.467,
+          "South": 47.533,
+          "North": 49.332
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Hitler's Queries on Kluge's Suggestion",
+      "Sub-event_summary": "Hitler responded with queries seeking clarification on the delay to 20 August for the Avranches attack, Funck's opinion on resuming it, details on a potential attack to regain le Mans, and the arrival time of the 11th Panzer Division from southern France to support such an attack, conceding that an attack on the U.S. XV Corps might be necessary earlier.",
+      "Sub-event_fulltext": {
+        "Paragraph_76": "Hitler replied with queries. He wanted clarification on why Eberbach could not mount his attack toward Avranches before 20 August. He wanted to know what Funck, the commander of the *XLVII Panzer Corps,* thought of resuming that attack.",
+        "Paragraph_77": "Hitler interpreted Kluge's suggestion as meaning an attack to regain le Mans and asked when, with what forces, and from where such an attack could be launched.",
+        "Paragraph_78": "Finally, he asked when the *nth Panzer Division,* if he ordered it moved from southern France, could reach the Loire River near Tours so that it could support an attack on le Mans--for if another attack toward Avranches could not be mounted before 20 August, Hitler conceded, an attack against the U.S. XV Corps \"must perforce be carried out before that time.\"[19](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn19)"
+      },
+      "Footnote_References": [
+        "19"
+      ],
+      "Place_Name": "Tours",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "11th Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Nineteenth Army",
+          "Commander": "Wend von Wietersheim",
+          "Name": "Wend von Wietersheim",
+          "Rank": "Generalleutnant",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/11th_Panzer_Division_(Wehrmacht)",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Tours",
+        "Place_GPS_coordinate": "47.3941, 0.6889",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Tours",
+        "Place_GPS_coordinate": "47.3941, 0.6889",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -0.686,
+          "East": 2.064,
+          "South": 46.494,
+          "North": 48.294
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Kluge and Eberbach Agreement on Avranches Attack",
+      "Sub-event_summary": "Kluge and Eberbach agreed that a new attempt to gain Avranches was not feasible at the moment due to strong opposition at Mortain, pressure elsewhere, and the converging Allied attacks toward Falaise and Alençon threatening encirclement.",
+      "Sub-event_fulltext": {
+        "Paragraph_79": "Before he answered Hitler's questions, Kluge phoned Eberbach. The commanders were in agreement that a new attempt to gain Avranches was out of the question, at least for the moment.",
+        "Paragraph_80": "The obstacles to a renewed drive toward Avranches were not only the strong opposition at Mortain and the unrelaxed pressure elsewhere along the front but also the uncomfortable thought that the Canadians attacking south toward Falaise and the Americans attacking north toward Alençon seemed to be converging on a common point.",
+        "Paragraph_81": "If the Allied forces joined, the major part of the German forces would be encircled."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "110315BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "110215ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.578,
+          "East": 1.174,
+          "South": 47.994,
+          "North": 49.793
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Priority to Blunt American Spearheads",
+      "Sub-event_summary": "With the Canadian attack apparently stopped, priority was given to blunting the American spearheads threatening vital supply installations around Alençon.",
+      "Sub-event_fulltext": {
+        "Paragraph_82": "The Canadian and American spearheads had to be blunted immediately, and since the Canadians were apparently stopped, action ought to be taken against the Americans, who threatened the vital supply installations around Alençon."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Alençon",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "First Canadian Army",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Henry Duncan Graham Crerar",
+          "Name": "Henry Duncan Graham Crerar",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_Crerar",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Fully staffed",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4329, 0.0919",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4329, 0.0919",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.283,
+          "East": 1.467,
+          "South": 47.533,
+          "North": 49.332
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Kluge Informs Hitler of Unfavorable Prospects",
+      "Sub-event_summary": "Kluge informed Hitler that all commanders agreed the Avranches attack was unfavorable due to reinforced enemy, lost surprise, and need for more resources and specific weather conditions, with no possibility of meeting requirements soon.",
+      "Sub-event_fulltext": {
+        "Paragraph_83": "Kluge informed Hitler to this effect an hour and a half later. All commanders agreed, Kluge said, that the prospect of continuing the attack to Avranches was unfavorable because the enemy had reinforced, surprise had been lost, and the attacking force needed time to bring forward more troops, tanks, gasoline, and ammunition, and required certain weather conditions.",
+        "Paragraph_84": "There was no possibility of fulfilling the necessary preattack requirements within a few days."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "110445BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "110345ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Need for more gasoline and ammunition"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3617",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3617",
+        "Weather_text": "Required certain weather conditions",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.736,
+          "East": 0.012,
+          "South": 47.785,
+          "North": 49.584
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Kluge's Proposal for Attack on XV Corps",
+      "Sub-event_summary": "Kluge proposed attacking the XV Corps with at least two panzer divisions from the vicinity of Alençon, with the direction depending on developments, planning an approach march on the night of 11 August and attack on 13 August, noting the 11th Panzer Division could not arrive in time.",
+      "Sub-event_fulltext": {
+        "Paragraph_85": "As for an attack against the XV Corps, Kluge would need at least two of the best panzer divisions, which he envisioned attacking from the vicinity of Alençon. The direction of the attack would depend on developments.",
+        "Paragraph_86": "He hoped to make his approach march during the night of 11 August and attack on 13 August with the hope of completing the operation three days later.",
+        "Paragraph_87": "The *11th Panzer Division* in southern France could not reach the area of operations in time to lend support.[21](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn21)"
+      },
+      "Footnote_References": [
+        "21"
+      ],
+      "Place_Name": "Alençon",
+      "Dates": {
+        "Date_group_of_event": "130000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "122300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "11th Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Nineteenth Army",
+          "Commander": "Wend von Wietersheim",
+          "Name": "Wend von Wietersheim",
+          "Rank": "Generalleutnant",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/11th_Panzer_Division_(Wehrmacht)",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4329, 0.0919",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4329, 0.0919",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.283,
+          "East": 1.467,
+          "South": 47.533,
+          "North": 49.332
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Kluge's Conference and Conviction on Avranches Attack",
+      "Sub-event_summary": "On 11 August, after conferring with Hausser and Eberbach, Kluge and the commanders were convinced that an attack on Avranches had no prospect of success.",
+      "Sub-event_fulltext": {
+        "Paragraph_88": "Kluge was again in touch with Hitler's headquarters at noon on 11 August.",
+        "Paragraph_89": "He had conferred with Hausser and Eberbach, and all three commanders were convinced that an attack on Avranches had no prospect of success."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "111200BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "111100ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "Oberstgruppenführer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0, -1.0",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0, -1.0",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.374,
+          "East": 0.374,
+          "South": 48.1,
+          "North": 49.9
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Deteriorating Situation on Southern Flank",
+      "Sub-event_summary": "The situation on the extreme southern flank deteriorated rapidly, with the 9th Panzer Division fighting near Alençon close to vital supply installations, necessitating immediate measures and more armor in that area.",
+      "Sub-event_fulltext": {
+        "Paragraph_90": "The situation on the extreme southern flank of the army group was deteriorating so rapidly--the *9th Panzer Division,* for example, was fighting near Alençon with its back close to vital supply installations--that immediate measures had to be taken in that area.",
+        "Paragraph_91": "Kluge needed more armor there."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Alençon",
+      "Dates": {
+        "Date_group_of_event": "111200BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "111100ZAUG44"
+      },
+      "TOE": {
+        "Unit": "9th Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXI Corps",
+          "Commander": "Jolasse von Jolasse",
+          "Name": "Jolasse von Jolasse",
+          "Rank": "Generalleutnant",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/9th_Panzer_Division_(Wehrmacht)",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Vital supply installations threatened"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4329, 0.0919",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4329, 0.0919",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.283,
+          "East": 1.467,
+          "South": 47.533,
+          "North": 49.332
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Plan to Pull Divisions Out of Line",
+      "Sub-event_summary": "To obtain more armor, Kluge planned to pull three divisions (116th that night, 1st SS and 2d Panzer the following night) out of the line by reducing the Seventh Army salient at Mortain through eastern withdrawal, abandoning the breakthrough to Avranches.",
+      "Sub-event_fulltext": {
+        "Paragraph_92": "The only practical way to get armor was to pull three divisions out of the line--the *116th* that night, the *1st SS* and *2d Panzer Divisions* during the following night.",
+        "Paragraph_93": "These units could be released only if the *Seventh Army* salient at Mortain were reduced by withdrawal to the east.",
+        "Paragraph_94": "This meant abandoning hope of a breakthrough to the sea at Avranches."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "112300BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "Oberstgruppenführer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.316,
+          "East": 0.434,
+          "South": 47.747,
+          "North": 49.547
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Kluge's Decision for Attack on XV Corps",
+      "Sub-event_summary": "Kluge determined that the only clear decision was to attack the XV Corps near Alençon with pulled panzer divisions and advance additional infantry divisions from east to west to stabilize the army group left flank.",
+      "Sub-event_fulltext": {
+        "Paragraph_95": "A clear-cut decision had to be made at once.",
+        "Paragraph_96": "In Kluge's mind, the decision could be only one thing: attack the XV Corps in the vicinity of Alençon with panzer divisions pulled out of the line and bring additional infantry divisions forward to launch an attack against the XV Corps from east to west, thus stabilizing the situation on the army group left flank.[22](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn22)"
+      },
+      "Footnote_References": [
+        "22"
+      ],
+      "Place_Name": "Alençon",
+      "Dates": {
+        "Date_group_of_event": "111200BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "111100ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4329, 0.0919",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.4329, 0.0919",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.283,
+          "East": 1.467,
+          "South": 47.533,
+          "North": 49.332
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Kluge's Written Report and Projected Actions",
+      "Sub-event_summary": "After discussion with Jodl, Kluge issued a written report projecting the withdrawal of the Seventh Army's Mortain salient that night, assembly of an attack force including XLVII Panzer and LXXXI Corps, 1st SS, 2d, and 116th Panzer Divisions, two werfer brigades, and possibly another panzer division in the Carrouges area, to attack on 14 August in a southeasterly direction along the Lalacelle-la Hutte axis.",
+      "Sub-event_fulltext": {
+        "Paragraph_97": "After further discussion with Jodl in midafternoon, Kluge issued a written report to Hitler and disseminated it to his subordinate commands, probably as a warning order subject to Hitler's approval. In this report, Kluge projected the following actions. The *Seventh Army* was to withdraw its Mortain salient that night. An attack force--composed of the *XLVII Panzer* and *LXXXI Corps* headquarters, the *1st SS, 2d,* and *116th Panzer Divisions,* two *werfer* brigades, and possibly an additional panzer division--was to assemble in the Carrouges area and prepare to attack during the early morning hours of 14 August, one day later than Kluge had originally contemplated. The attack, with three divisions abreast, was to be launched in a southeasterly direction along the Lalacelle-la Hutte axis--generally a thrust starting northwest of Alençon and cutting across the le Mans-- Alençon road.[23](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn23)"
+      },
+      "Footnote_References": [
+        "23"
+      ],
+      "Place_Name": "Carrouges",
+      "Dates": {
+        "Date_group_of_event": "140400BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "140300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "XLVII Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Panzer Group Eberbach",
+          "Commander": "Hans von Funck",
+          "Name": "Hans von Funck",
+          "Rank": "General der Panzertruppe",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_von_Funck",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Carrouges",
+        "Place_GPS_coordinate": "48.567, 0.147",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Carrouges",
+        "Place_GPS_coordinate": "48.567, 0.147",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.228,
+          "East": 1.522,
+          "South": 47.667,
+          "North": 49.467
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "Hitler's Response to Kluge's Report",
+      "Sub-event_summary": "Hitler approved Kluge's plan for Eberbach to launch an attack with an armored corps from Carrouges against the west flank of the U.S. XV Corps across the Sillé-le-Guillaume-Beaumont road, agreeing to a minor withdrawal between Sourdeval and Mortain, but retained the 11th Panzer Division in southern France due to timing and apprehensions over Allied invasion.",
+      "Sub-event_fulltext": {
+        "Paragraph_98": "Hitler's response to Kluge's report reached *Army Group B* headquarters late that evening. Acknowledging the new set of circumstances that had come into being, Hitler, though reiterating his intention to attack westward to the sea (this time by way of Mayenne), admitted that \"the serious threat to the deep southern flank\" of the army group required quick action. He therefore approved Kluge's plan to have Eberbach launch an attack with an armored corps from the vicinity of Carrouges. But instead of an effort envisaged by Kluge as an attempt to destroy the American spearheads driving north toward Alençon, Hitler envisioned an attack against the deep west flank of the U.S. XV Corps, the axis of the thrust passing in a more southerly direction across the Sillé-le-Guillaume-Beaumont road. In order to disengage the necessary forces, Hitler agreed to \"a minor withdrawal of the front between Sourdeval and Mortain.\" He retained the *11th Panzer Division* in southern France as the only mobile reserve in the *Nineteenth Army* sector because Kluge assured him that it could not reach the Normandy front in time to attack near Alençon, and perhaps because he was apprehensive over the imminent Allied invasion of southern France.[24](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn24)"
+      },
+      "Footnote_References": [
+        "24"
+      ],
+      "Place_Name": "Sillé-le-Guillaume",
+      "Dates": {
+        "Date_group_of_event": "112300BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Nineteenth Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group G",
+          "Commander": "Friedrich Wiese",
+          "Name": "Friedrich Wiese",
+          "Rank": "General der Infanterie",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Friedrich_Wiese",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Sillé-le-Guillaume",
+        "Place_GPS_coordinate": "48.183, -0.13",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Sillé-le-Guillaume",
+        "Place_GPS_coordinate": "48.183, -0.13",
+        "Weather_text": "No specific weather mentioned",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.505,
+          "East": 1.245,
+          "South": 47.283,
+          "North": 49.083
+        }
+      }
+    },
+    {
+      "Event": "The German Dilemma",
+      "Sub-event": "German Withdrawal from Mortain",
+      "Sub-event_summary": "While awaiting reinforcements and favorable weather for another attempt at Avranches per Hitler's wishes, Eberbach was to eradicate the American threat to Alençon, enabling the Seventh Army to begin withdrawing eastward from Mortain during the night of 11 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_99": "Thus, while the Germans awaited reinforcements and favorable weather for another try at Avranches in compliance with Hitler's wishes, Eberbach was to make an effort to eradicate the American threat to Alençon. To make this possible, the *Seventh Army* during the night of 11 August began to withdraw eastward from Mortain.[25](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn25)"
+      },
+      "Footnote_References": [
+        "25"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "112300BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "112200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "Oberstgruppenführer",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Awaiting reinforcements"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Weather_text": "Awaiting favorable weather",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.316,
+          "East": 0.434,
+          "South": 47.747,
+          "North": 49.547
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "9a",
+      "Footnote_Number": "9",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 2100, 8 Aug, Fifth Pz A KTB",
+      "Footnote_Referenced_Source": "Telecon, Kluge and Eberbach, 2100, 8 Aug, Fifth Pz A KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Fifth Panzer Army War Diary"
+    },
+    {
+      "Footnote": "9b",
+      "Footnote_Number": "9",
+      "Footnote_Text": "see also, Account by Brigadefuhrer Kurt Meyer, Commander, 12th SS Panzer Division, in British Army of the Rhine, Operation TOTALIZE, p. 101.",
+      "Footnote_Referenced_Source": "Account by Brigadefuhrer Kurt Meyer, Commander, 12th SS Panzer Division, in British Army of the Rhine, Operation TOTALIZE, p. 101.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "British Army of the Rhine, Operation TOTALIZE",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Battlefield Tour series, p. 101"
+    },
+    {
+      "Footnote": "10",
+      "Footnote_Number": "10",
+      "Footnote_Text": "OB WEST, AGp B, and Fifth Pz A KTB's, 8 and 9 Aug.",
+      "Footnote_Referenced_Source": "OB WEST, AGp B, and Fifth Pz A KTB's, 8 and 9 Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "OB WEST, Army Group B, Fifth Panzer Army War Diaries, 8 and 9 Aug"
+    },
+    {
+      "Footnote": "11a",
+      "Footnote_Number": "11",
+      "Footnote_Text": "MS # B-179 (Hausser)",
+      "Footnote_Referenced_Source": "MS # B-179 (Hausser)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-179"
+    },
+    {
+      "Footnote": "11b",
+      "Footnote_Number": "11",
+      "Footnote_Text": "MS # B-725 (Gersdorff) are basic sources for the following section.",
+      "Footnote_Referenced_Source": "MS # B-725 (Gersdorff) are basic sources for the following section.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-725"
+    },
+    {
+      "Footnote": "11c",
+      "Footnote_Number": "11",
+      "Footnote_Text": "For a vivid account of the movement of the 331st Division from the Pas-de-Calais--movement made difficult by Allied air attacks on rail lines--see Leigh-Mallory, \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946, p. 63.",
+      "Footnote_Referenced_Source": "Leigh-Mallory, \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946, p. 63.",
+      "Web_Link": "https://www.thegazette.co.uk/London/issue/37838/supplement/63",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "12a",
+      "Footnote_Number": "12",
+      "Footnote_Text": "Seventh Army Order, Ia Nr. 640/44, 9 Aug, LXXXI Corps Befehle H Gr u Armee",
+      "Footnote_Referenced_Source": "Seventh Army Order, Ia Nr. 640/44, 9 Aug, LXXXI Corps Befehle H Gr u Armee",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "LXXXI Corps Orders"
+    },
+    {
+      "Footnote": "12b",
+      "Footnote_Number": "12",
+      "Footnote_Text": "Speidel's Est of the Situation, 1000, 9 Aug, AGp B Operationsbefehle.",
+      "Footnote_Referenced_Source": "Speidel's Est of the Situation, 1000, 9 Aug, AGp B Operationsbefehle.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Army Group B Operations Orders"
+    },
+    {
+      "Footnote": "13a",
+      "Footnote_Number": "13",
+      "Footnote_Text": "Telecons, Kluge and Jodl, 1500, 9 Aug, and Buhle and Jodl, 2210, 9 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "Telecons, Kluge and Jodl, 1500, 9 Aug, and Buhle and Jodl, 2210, 9 Aug, AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Army Group B War Diary"
+    },
+    {
+      "Footnote": "13b",
+      "Footnote_Number": "13",
+      "Footnote_Text": "Telecons Kluge and Gersdorff, 1520, 9 Aug, and Tempelhoff, Speidel, and Gersdorff, 1250, 9 Aug, Seventh Army Tel Msgs",
+      "Footnote_Referenced_Source": "Telecons Kluge and Gersdorff, 1520, 9 Aug, and Tempelhoff, Speidel, and Gersdorff, 1250, 9 Aug, Seventh Army Tel Msgs",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Seventh Army Telephone Messages"
+    },
+    {
+      "Footnote": "13c",
+      "Footnote_Number": "13",
+      "Footnote_Text": "Seventh Army Est of the Situation, 10 Aug, Msg, AGp B to OB WEST, 0200, 11 Aug, AGp B Op. Befehle, pp. 412-13",
+      "Footnote_Referenced_Source": "Seventh Army Est of the Situation, 10 Aug, Msg, AGp B to OB WEST, 0200, 11 Aug, AGp B Op. Befehle, pp. 412-13",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Army Group B Operations Orders, pp. 412-13"
+    },
+    {
+      "Footnote": "13d",
+      "Footnote_Number": "13",
+      "Footnote_Text": "MS # B-445 (Krueger).",
+      "Footnote_Referenced_Source": "MS # B-445 (Krueger).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-445"
+    },
+    {
+      "Footnote": "14a",
+      "Footnote_Number": "14",
+      "Footnote_Text": "Telecon, Jodl and Blumentritt, 1745, 9 Aug, OB WEST KTB",
+      "Footnote_Referenced_Source": "Telecon, Jodl and Blumentritt, 1745, 9 Aug, OB WEST KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "OB WEST War Diary"
+    },
+    {
+      "Footnote": "14b",
+      "Footnote_Number": "14",
+      "Footnote_Text": "Hitler Order, 2300, 9 Aug (WFSt/Op. Nr. 77280/44 g.Kdos. Chefs.), quoted in Msg from AGp B to the armies, 1130, 10 Aug, AGp B Fuehrer Befehle.",
+      "Footnote_Referenced_Source": "Hitler Order, 2300, 9 Aug (WFSt/Op. Nr. 77280/44 g.Kdos. Chefs.), quoted in Msg from AGp B to the armies, 1130, 10 Aug, AGp B Fuehrer Befehle.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Army Group B Fuehrer Orders"
+    },
+    {
+      "Footnote": "15",
+      "Footnote_Number": "15",
+      "Footnote_Text": "Quote is from MS # B-725 (Gersdorff).",
+      "Footnote_Referenced_Source": "Quote is from MS # B-725 (Gersdorff).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # B-725"
+    },
+    {
+      "Footnote": "16a",
+      "Footnote_Number": "16",
+      "Footnote_Text": "Msg, AGp B to OB WEST and Seventh Army, 1815, 9 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "Msg, AGp B to OB WEST and Seventh Army, 1815, 9 Aug, AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Army Group B War Diary"
+    },
+    {
+      "Footnote": "16b",
+      "Footnote_Number": "16",
+      "Footnote_Text": "see OB WEST, a Study in Command, p. 132",
+      "Footnote_Referenced_Source": "see OB WEST, a Study in Command, p. 132",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort Lesley J. McNair, Washington, D.C.",
+      "NonDigital_Library_References": "OB WEST, a Study in Command, p. 132"
+    },
+    {
+      "Footnote": "16c",
+      "Footnote_Number": "16",
+      "Footnote_Text": "MS # A-922 (Eberbach).",
+      "Footnote_Referenced_Source": "MS # A-922 (Eberbach).",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # A-922"
+    },
+    {
+      "Footnote": "17",
+      "Footnote_Number": "17",
+      "Footnote_Text": "Pz Gp Eberbach Ltr, Ia Nr. 2/44 g.Kdos., 10 Aug, OB WEST, Anlagen, Incl to Annex 1458.",
+      "Footnote_Referenced_Source": "Pz Gp Eberbach Ltr, Ia Nr. 2/44 g.Kdos., 10 Aug, OB WEST, Anlagen, Incl to Annex 1458.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "OB WEST Annexes"
+    },
+    {
+      "Footnote": "18",
+      "Footnote_Number": "18",
+      "Footnote_Text": "Kluge to Jodl, 10 Aug, AGp B Lagebeurteilungen, Wochenmeldungen.",
+      "Footnote_Referenced_Source": "Kluge to Jodl, 10 Aug, AGp B Lagebeurteilungen, Wochenmeldungen.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Army Group B Situation Estimates"
+    },
+    {
+      "Footnote": "19",
+      "Footnote_Number": "19",
+      "Footnote_Text": "Telecon, Blumentritt and Speidel, 0200, 11 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "Telecon, Blumentritt and Speidel, 0200, 11 Aug, AGp B KTB.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Army Group B War Diary"
+    },
+    {
+      "Footnote": "20a",
+      "Footnote_Number": "20",
+      "Footnote_Text": "Telecon, Kluge and Eberbach, 0315, 11 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "Telecon, Kluge and Eberbach, 0315, 11 Aug, AGp B KTB",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Army Group B War Diary"
+    },
+    {
+      "Footnote": "20b",
+      "Footnote_Number": "20",
+      "Footnote_Text": "Kluge's Est of the Situation, 10 Aug, AGp B Lagebeurteilungen, Wochenmeldungen.",
+      "Footnote_Referenced_Source": "Kluge's Est of the Situation, 10 Aug, AGp B Lagebeurteilungen, Wochenmeldungen.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Army Group B Situation Estimates"
+    },
+    {
+      "Footnote": "21",
+      "Footnote_Number": "21",
+      "Footnote_Text": "Telecon, Kluge and Jodl, 0445, 11 Aug, AGp B Lagebeurteilungen, Wochenmeldungen.",
+      "Footnote_Referenced_Source": "Telecon, Kluge and Jodl, 0445, 11 Aug, AGp B Lagebeurteilungen, Wochenmeldungen.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Army Group B Situation Estimates"
+    },
+    {
+      "Footnote": "22",
+      "Footnote_Number": "22",
+      "Footnote_Text": "Telecon, Kluge and Jodl, 11 Aug, AGp B Lagebeurteilungen, Wochenmeldungen.",
+      "Footnote_Referenced_Source": "Telecon, Kluge and Jodl, 11 Aug, AGp B Lagebeurteilungen, Wochenmeldungen.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Army Group B Situation Estimates"
+    },
+    {
+      "Footnote": "23",
+      "Footnote_Number": "23",
+      "Footnote_Text": "Msg, Kluge to Jodl (info to subordinate comds), 1745, 11 Aug, AGp B Lagebeurteilungen, Wochenmeldungen.",
+      "Footnote_Referenced_Source": "Msg, Kluge to Jodl (info to subordinate comds), 1745, 11 Aug, AGp B Lagebeurteilungen, Wochenmeldungen.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Army Group B Situation Estimates"
+    },
+    {
+      "Footnote": "24",
+      "Footnote_Number": "24",
+      "Footnote_Text": "Hitler Order, WFSt/Op. Nr. 772830/44, g.Kdos. Chefs., 11 Aug, quoted in AGp B Msg to the armies, 0030, 12 Aug, AGp B Fuehrer Befehle.",
+      "Footnote_Referenced_Source": "Hitler Order, WFSt/Op. Nr. 772830/44, g.Kdos. Chefs., 11 Aug, quoted in AGp B Msg to the armies, 0030, 12 Aug, AGp B Fuehrer Befehle.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Captured German Records",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "Army Group B Fuehrer Orders"
+    },
+    {
+      "Footnote": "25a",
+      "Footnote_Number": "25",
+      "Footnote_Text": "See MS # A-918 (Gersdorff)",
+      "Footnote_Referenced_Source": "See MS # A-918 (Gersdorff)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Foreign Military Studies",
+      "NonDigital_Library_Address": "National Archives, College Park, MD",
+      "NonDigital_Library_References": "MS # A-918"
+    },
+    {
+      "Footnote": "25b",
+      "Footnote_Number": "25",
+      "Footnote_Text": "OB WEST, a Study in Command, p. 57.",
+      "Footnote_Referenced_Source": "OB WEST, a Study in Command, p. 57.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Fort Lesley J. McNair, Washington, D.C.",
+      "NonDigital_Library_References": "OB WEST, a Study in Command, p. 57"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

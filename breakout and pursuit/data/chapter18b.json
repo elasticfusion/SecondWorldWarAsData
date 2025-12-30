@@ -1,0 +1,1503 @@
+{
+  "Events": [
+    {
+      "Event": "A New Army",
+      "Sub-event": "Activation of First Canadian Army",
+      "Sub-event_summary": "General Crerar's First Canadian Army became operational under General Montgomery's 21 Army Group on 23 July 1944, as Allied strength on the Continent reached organizational maturity, prompting the need for U.S. Third Army activation and a U.S. army group due to the build-up and scope of OVERLORD operations.",
+      "Sub-event_fulltext": {
+        "Paragraph_21": "Behind the armored spearheads pushing into German-held territory was an Allied strength on the Continent that had almost reached organizational maturity. General Crerar's First Canadian Army had become operational under the control of General Montgomery's 21 Army Group on 23 July, and it was apparent then that General Patton's Third Army would soon have to become active. The build-up was fattening the First Army almost to unreasonable proportions, and the broad scope of OVERLORD operations foreshadowed the early need of a U.S. army group. If American troops entered Brittany and drove westward as contemplated, they would diverge from British, Canadian, and other U.S. forces oriented eastward toward the Seine. An American army group in control of the American thrusts eastward and westward would simplify problems of command control and logistics."
+      },
+      "Footnote_References": [
+        11
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "23 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "230000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "First Canadian Army",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "21 Army Group",
+          "Commander": "Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Viscount_Montgomery_of_Alamein",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "First Canadian Army",
+            "Name": "Harry Crerar",
+            "Rank": "General",
+            "Date": "23 July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://grokipedia.com/page/Harry_Crerar",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000,-1.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:US_advance_into_Brittany.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000,-1.0000",
+        "Weather_text": "Typical summer weather in Normandy on 23 July 1944: temperatures around 15-20°C, variable conditions with possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.35",
+          "East": "0.35",
+          "South": "48.1",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "A New Army",
+      "Sub-event": "Bradley's Recommendation for Army Group Activation",
+      "Sub-event_summary": "In mid-July 1944, due to the growing number of divisions under First Army control, General Bradley recommended, with Montgomery's concurrence, that the 12th Army Group and Third Army become operational upon completion of COBRA, informing Hodges and Patton of the planned change without halting the advance.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "As early as mid-July, when the plans for creating an American army group still were indefinite and American forces were far from Brittany, the growing number of divisions under First Army control had prompted General Bradley to recommend (with Montgomery's concurrence) that the 12th Army Group and Third Army headquarters become operational as soon as COBRA was completed, regardless of the progress achieved in COBRA.",
+        "Paragraph_23": "Anticipating General Eisenhower's approval, Bradley informed Generals Hodges and Patton that the change in command would be made during the COBRA offensive and \"without any appreciable halt in the attack provided everything is going well; . . . we will not halt the advance to reorganize.\""
+      },
+      "Footnote_References": [
+        12,
+        13
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "mid-July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "APPROX 150000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "12th Army Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "First Army",
+            "Name": "Courtney Hodges",
+            "Rank": "Lieutenant General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://grokipedia.com/page/Courtney_Hodges",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "Third Army",
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/4/41/US_advance_into_Brittany.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Weather_text": "Typical summer weather in Brittany in mid-July 1944: mild temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.35",
+          "East": "-1.65",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "A New Army",
+      "Sub-event": "Eisenhower's Approval of Command Change",
+      "Sub-event_summary": "General Eisenhower approved Bradley's recommendation to activate the 12th Army Group and Third Army upon COBRA completion, authorizing Bradley to set the date, while ensuring Montgomery continued as Allied ground forces commander until SHAEF moved to the Continent and Eisenhower assumed direct command.",
+      "Sub-event_fulltext": {
+        "Paragraph_24": "General Eisenhower approved Bradley's recommendation and authorized him to set the date for the change. At the same time he made clear his desire that Montgomery continue to act as the Allied ground forces commander until SHAEF moved to the Continent and he, Eisenhower, assumed personal command of the Allied ground forces."
+      },
+      "Footnote_References": [
+        14
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "25 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn18.html#fn14",
+        "Zulu_date_group_of_event": "250000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "SHAEF",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Dwight D. Eisenhower",
+          "Name": "Dwight D. Eisenhower",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000,-1.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000,-1.0000",
+        "Weather_text": "Typical summer weather in Normandy on 25 July 1944: temperatures around 15-20°C, variable conditions with possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.35",
+          "East": "0.35",
+          "South": "48.1",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "A New Army",
+      "Sub-event": "Activation of 12th Army Group and Third Army",
+      "Sub-event_summary": "At noon on 1 August 1944, as armored columns streamed beyond Pontaubault, the 12th Army Group under General Bradley became operational, with General Hodges assuming command of the First U.S. Army and General Patton's Third U.S. Army coming to life.",
+      "Sub-event_fulltext": {
+        "Paragraph_25": "At noon, 1 August, as armored columns streamed beyond Pontaubault, the 12th Army Group, under General Bradley's command, became operational.",
+        "Paragraph_26": "General Hodges assumed command of the First U.S. Army, and General Patton's Third U.S. Army came to life."
+      },
+      "Footnote_References": [
+        15,
+        16
+      ],
+      "Place_Name": "Pontaubault",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "011100ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Third Army",
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General",
+            "Date": "1 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "First Army",
+            "Name": "Courtney Hodges",
+            "Rank": "Lieutenant General",
+            "Date": "1 August 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://grokipedia.com/page/Courtney_Hodges",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://images04.military.com/sites/default/files/styles/full/public/media/history/2017/08/george-s-patton-1100x733.jpg",
+          "Description": "Lt. Gen. George S. Patton in WWII",
+          "License": "unknown"
+        },
+        {
+          "Link": "https://www.nationalww2museum.org/sites/default/files/styles/wide_medium/public/2023-06/patton.png?h=d1cb525d",
+          "Description": "General Patton during the raid to liberate Hammelburg",
+          "License": "unknown"
+        },
+        {
+          "Link": "https://news.va.gov/wp-content/uploads/sites/3/2022/12/VOD_FB_George_S_Patton-scaled.jpg",
+          "Description": "Army Veteran George S. Patton",
+          "License": "unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Pontaubault",
+        "Place_GPS_coordinate": "48.6298,-1.3497",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/images/map_brittany_all.png",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Pontaubault",
+        "Place_GPS_coordinate": "48.6298,-1.3497",
+        "Weather_text": "Historical weather in Normandy on 1 August 1944: temperatures around 15-20°C, variable conditions with possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.6997",
+          "East": "0.0003",
+          "South": "47.7298",
+          "North": "49.5298"
+        }
+      }
+    },
+    {
+      "Event": "A New Army",
+      "Sub-event": "Patton's Personality and Military Philosophy",
+      "Sub-event_summary": "General Patton, the most flamboyant Allied personality, with extensive combat experience from North Africa, Tunisia, and Sicily, was recognized for his ruthless driving power and ability to maximize soldiers' performance in offensive operations. Associated with tanks and armor, he embodied daring and dash, favoring bold execution over perfection, believing war's keys were self-confidence, speed, and audacity, finding August 1944 suited to these principles.",
+      "Sub-event_fulltext": {
+        "Paragraph_27": "The most flamboyant personality in the Allied camp was without question General Patton. Commander of assault troops in the North African landings in November 1942, leader of the II Corps in Tunisia, organizer and commander of the Seventh U.S. Army in Sicily, Patton had been designated the Third Army commander in the spring of 1944. Intensely sensitive, at times overbearing, always temperamentally dramatic, a controversial figure recognized as one of the outstanding field commanders in the U.S. Army, Patton was able to exert \"an extraordinary and ruthless driving power . . . at critical moments.\" He had \"demonstrated [his] ability of getting the utmost out of soldiers in offensive operations.\"",
+        "Paragraph_28": "Closely associated with the development of tanks and armor doctrine, a cavalryman by temperament, tradition, and training, and at the same time a profound student of military history, General Patton typified the tenets of daring and dash. If he seemed to be reckless and impetuous, he was also bold and imaginative, favoring \"a good plan violently executed now\" rather than \"a perfect plan next week.\" Like Napoleon, he believed that war was \"a very simple thing.\" Its determining characteristics were \"self-confidence, speed, and audacity.\"",
+        "Paragraph_29": "During the month of August, Patton and his army--whose members modeled their behavior on that of their chief--were to find a situation perfectly suited to the expression of their principles of combat."
+      },
+      "Footnote_References": [
+        17,
+        18,
+        19
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "BEGINNING AUG44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://images04.military.com/sites/default/files/styles/full/public/media/history/2017/08/george-s-patton-1100x733.jpg",
+          "Description": "General George S. Patton in WWII",
+          "License": "unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/4/41/US_advance_into_Brittany.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Weather_text": "Historical weather in Brittany in August 1944: mild temperatures 15-20°C, possible rain, with improvements allowing airborne operations.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.35",
+          "East": "-1.65",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "A New Army",
+      "Sub-event": "Differences in First and Third Army Headquarters",
+      "Sub-event_summary": "Due to commanders' personalities, First and Third Army headquarters functioned differently: First Army more methodical with written planning, Third Army using informal briefings; both appreciated staff work that enabled leaders to direct operations effectively.",
+      "Sub-event_fulltext": {
+        "Paragraph_30": "Partially as a result of the personalities of the commanders, the headquarters of the First and Third Armies functioned in slightly different ways. The difference was evident only by comparison. The First Army tended to be more methodical and meticulous in staff work, and required more reports from subordinate units. More planning was committed to paper in the First Army, whereas informal briefings and conversations frequently sufficed in the Third. Yet in both armies the work of the staff members was neither underrated nor unappreciated. Long hours of patient staff work often preceded a daring decision or brought a brilliant idea to maturity and reality. The many anonymous staff officers who toiled in relative obscurity, not only on the army level but on all echelons of command, made it possible for the military leaders of World War II to direct the complex operations with such apparent ease."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "BEGINNING AUG44"
+      },
+      "TOE": {
+        "Unit": "First Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Courtney Hodges",
+          "Name": "Courtney Hodges",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/Courtney_Hodges",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000,-1.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000,-1.0000",
+        "Weather_text": "Typical summer weather in Normandy in August 1944: temperatures around 15-20°C, variable conditions with possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.35",
+          "East": "0.35",
+          "South": "48.1",
+          "North": "49.9"
+        }
+      }
+    },
+    {
+      "Event": "A New Army",
+      "Sub-event": "Fortitude Deception and Patton's Publicity Ban",
+      "Sub-event_summary": "To enhance the Fortitude deception of a Pas-de-Calais landing, Eisenhower forbade publicity on Patton's entrance into battle, tricking Germans into keeping Fifteenth Army forces immobile, expecting Patton to lead a main invasion outside Normandy due to his experience and rank.",
+      "Sub-event_fulltext": {
+        "Paragraph_31": "To enhance the Fortitude deception--the Allied threat of a landing on the Pas-de-Calais--General Eisenhower forbade publicity on Patton's entrance into battle.",
+        "Paragraph_32": "The Germans were still being tricked into keeping a considerable number of their Fifteenth Army forces immobile because they were expecting Patton's appearance on the Continent outside Normandy. They could construe his unexplained absence only as signifying that another Allied invasion of western Europe would take place.",
+        "Paragraph_33": "The Germans knew that Patton had more combat experience than Bradley; they were conscious that he outranked Bradley in grade. Respecting Patton as a dangerous opponent, they logically expected the Allies to use him to head the main U.S. forces in western Europe, which evidently had not yet appeared."
+      },
+      "Footnote_References": [
+        20,
+        21,
+        22
+      ],
+      "Place_Name": "Pas-de-Calais",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Fifteenth Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Fifteenth Army",
+          "Commander": "unknown",
+          "Name": "unknown",
+          "Rank": "unknown",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "considerable number",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Pas-de-Calais",
+        "Place_GPS_coordinate": "50.9461,1.8522",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Pas-de-Calais",
+        "Place_GPS_coordinate": "50.9461,1.8522",
+        "Weather_text": "Typical summer weather in Pas-de-Calais on 1 August 1944: temperatures around 15-20°C, variable conditions.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "0.5022",
+          "East": "3.2022",
+          "South": "50.0461",
+          "North": "51.8461"
+        }
+      }
+    },
+    {
+      "Event": "A New Army",
+      "Sub-event": "Third Army Arrival and Corps Readiness",
+      "Sub-event_summary": "The Third Army arrived in a fluid situation on 1 August 1944, taking command of VIII Corps approaching Brittany, with XV Corps (arrived 15 July) and XX Corps (arrived 24 July) ready, and XII Corps staging movements, arriving partially on 29 July and fully on 7 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_34": "The Third Army arrived on the scene in the midst of an extremely fluid situation. By taking command of VIII Corps, which on 1 August was rapidly approaching Brittany, Patton assumed control of a going concern. Behind the front, XV Corps headquarters, which had arrived in France on 15 July, and XX Corps headquarters, which had arrived on 24 July, were ready for action. The XII Corps headquarters was staging the movement of Third Army units from England to the Continent and processing them from the beach forward; part of the headquarters reached Normandy on 29 July, the remainder on 7 August."
+      },
+      "Footnote_References": [
+        23
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "1 August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "XV Corps",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "15 July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "XX Corps",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "24 July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          },
+          {
+            "Unit": "XII Corps",
+            "Name": "unknown",
+            "Rank": "unknown",
+            "Date": "29 July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/images/map_brittany_all.png",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Weather_text": "Historical weather in Brittany on 1 August 1944: mild temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.35",
+          "East": "-1.65",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "A New Army",
+      "Sub-event": "Activation of XIX Tactical Air Command",
+      "Sub-event_summary": "To provide close air support to the Third Army, Brig. Gen. Otto P. Weyland's XIX Tactical Air Command became operational, previously part of IX TAC, with transfers of British Second Tactical Air Force and U.S. Ninth Air Force headquarters to France in early August, complementing army group establishments, and AEAF to move when SHAEF displaced.",
+      "Sub-event_fulltext": {
+        "Paragraph_35": "To give close air support to the Third Army, Brig. Gen. Otto P. Weyland's XIX Tactical Air Command, which had been operating as part of the IX TAC, became operational. The transfer from England to France of the headquarters of the British Second Tactical Air Force and of the U.S. Ninth Air Force--moves scheduled to be completed in the first week of August--complemented the establishment on the Continent of the two army group headquarters for the ground forces. When SHAEF displaced to France and the Supreme Commander assumed direct control of ground operations, Headquarters, AEAF, was also to move in order to facilitate co-ordination of ground and air operations."
+      },
+      "Footnote_References": [
+        24
+      ],
+      "Place_Name": "France",
+      "Dates": {
+        "Date_group_of_event": "first week of August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "APPROX 070000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "XIX Tactical Air Command",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Ninth Air Force",
+          "Commander": "unknown",
+          "Name": "unknown",
+          "Rank": "unknown",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [
+          {
+            "Unit": "XIX Tactical Air Command",
+            "Name": "Otto P. Weyland",
+            "Rank": "Brigadier General",
+            "Date": "1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Otto_P._Weyland",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "France",
+        "Place_GPS_coordinate": "46.0000,2.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "France",
+        "Place_GPS_coordinate": "46.0000,2.0000",
+        "Weather_text": "Typical summer weather in France in early August 1944: temperatures 20-25°C, variable conditions.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "0.65",
+          "East": "3.35",
+          "South": "45.1",
+          "North": "46.9"
+        }
+      }
+    },
+    {
+      "Event": "A New Army",
+      "Sub-event": "OVERLORD Plan for Third Army in Brittany",
+      "Sub-event_summary": "The OVERLORD plan designated Brittany for Third Army's initial operations, expected between two weeks and two months after invasion; commanders in Normandy since early July despaired of meeting time limits, but were suddenly ordered into Brittany less than a week before the limit expired.",
+      "Sub-event_fulltext": {
+        "Paragraph_36": "The OVERLORD plan had designated Brittany the stage for the Third Army's initial operations, which were expected to begin some time between two weeks and two months after the invasion. In Normandy since the early days of July, commanders and staffs of the Third Army and its components had despaired of performing within the original OVERLORD time limits. Suddenly, less than a week before the planned limit expired, they were ordered into Brittany."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "early days of July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://images.immediate.co.uk/production/volatile/sites/7/2019/05/Departure-map-9be3bce.jpg?resize=842%2C441",
+          "Description": "Map of D-Day Beaches and Operation Overlord",
+          "License": "unknown"
+        },
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/4/41/US_advance_into_Brittany.jpg",
+          "Description": "US advance into Brittany 1944",
+          "License": "Public Domain"
+        },
+        {
+          "Link": "https://cdn.britannica.com/38/110738-004-C6C45CD0.jpg",
+          "Description": "D-Day map including Brittany",
+          "License": "unknown"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/4/41/US_advance_into_Brittany.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Weather_text": "Typical summer weather in Brittany in early July 1944: mild temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.35",
+          "East": "-1.65",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "A New Army",
+      "Sub-event": "Importance of Brittany Ports",
+      "Sub-event_summary": "Brittany was vital for its ports including St. Malo, Brest, Lorient, St. Nazaire, Nantes, and smaller harbors; capturing them would provide continental port capacity to support OVERLORD forces, essential for sustaining the projected build-up, with Eisenhower stating the ideal as securing the coast from Havre to Nantes for maximum U.S. troop entry, reducing interest in ANVIL.",
+      "Sub-event_fulltext": {
+        "Paragraph_37": "The peninsula of Brittany was important to the Allies because of its ports: St. Malo, less than fifty miles west of Avranches; Brest, on the western extremity of the peninsula; Lorient and St. Nazaire, along the southern seashore; Nantes, fifty miles east of the Loire River mouth; and the many small harbors and beaches useful for discharging cargo. If Brittany could be captured, one of the basic requirements for the success of OVERLORD would be fulfilled: a continental port capacity sufficient to support the forces deemed necessary to defeat the Germans. Without the Breton ports, the Allies, particularly the Americans, could not hope to sustain the continental build-up projected by OVERLORD. As General Eisenhower stated it, \"the ideal situation [would be] . . . to obtain the entire coastal area from Havre to Nantes, both inclusive. With such a broad avenue of entry we could [bring to the Continent] . . . every single soldier the United States could procure for us, and we would have . . . little interest in ANVIL.\""
+      },
+      "Footnote_References": [
+        25
+      ],
+      "Place_Name": "Brittany",
+      "Dates": {
+        "Date_group_of_event": "10 July",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn18.html#fn25",
+        "Zulu_date_group_of_event": "100000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "SHAEF",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Dwight D. Eisenhower",
+          "Name": "Dwight D. Eisenhower",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/4/41/US_advance_into_Brittany.jpg",
+          "Description": "Map of US advance into Brittany 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://ww2db.com/images/map_brittany_all.png",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brittany",
+        "Place_GPS_coordinate": "48.0000,-3.0000",
+        "Weather_text": "Typical summer weather in Brittany on 10 July 1944: mild temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.35",
+          "East": "-1.65",
+          "South": "47.1",
+          "North": "48.9"
+        }
+      }
+    },
+    {
+      "Event": "A New Army",
+      "Sub-event": "Plans for Capturing Brittany",
+      "Sub-event_summary": "Planners projected capturing Brittany in two thrusts: seizing Nantes and St. Nazaire then westward to Brest; doubting immediate use due to German fortifications, Americans planned a new port at Quiberon Bay for advantages like rail network, beaches, and no need for Loire bridgeheads, deciding to seize Quiberon first as instructed on 13 May.",
+      "Sub-event_fulltext": {
+        "Paragraph_38": "To gain a broad avenue of entry was a major Allied objective. Planners originally had projected the capture of Brittany in two thrusts-seizure of Nantes and St. Nazaire, and a subsequent westward drive to secure Brest and the other harbors. Logistical planners doubted that the Breton ports could be used immediately after capture. The Germans had fortified the important ones, particularly Lorient, St. Nazaire, and Brest, which were naval bases for the underwater and surface raiders that attacked Allied shipping on the Atlantic, and they were certain to defend them with determination and destroy the facilities in the process. On this assumption, the Americans had decided to construct an entirely new port on the south coast of Brittany between Lorient and St. Nazaire, where the Quiberon peninsula shelters a curving bay from the Atlantic winds. There, four ports (including the not inconsiderable harbors of Vannes and Auray), an excellent rail and road network, hard beaches with gentle gradients, and sheltered anchorages for ocean-going vessels made the area attractive. Closer to the post-OVERLORD area of operations than Cherbourg and Brest, a port complex around Quiberon would obviate complete dependence on the railway that linked Brest with the interior of France, a railroad the Germans would most probably have destroyed and one that would be difficult to repair. With the Allies in possession of Quiberon, it would not be necessary to rely so heavily on the original landing beaches in Normandy, which were expected to be useful only until autumn. Furthermore, protective bridgeheads south of the Loire River, the southern boundary of the OVERLORD lodgment area, would be needed in order to utilize Nantes and St. Nazaire, but would not be necessary for Quiberon Bay.",
+        "Paragraph_39": "On this basis, the Americans decided that instead of securing Nantes and St. Nazaire first, they would drive at once to seize the Quiberon area. As early as 13 May, the 1st Army Group had instructed the Third Army to prepare plans for this operation."
+      },
+      "Footnote_References": [
+        26
+      ],
+      "Place_Name": "Quiberon",
+      "Dates": {
+        "Date_group_of_event": "13 May",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "130000ZMAY44"
+      },
+      "TOE": {
+        "Unit": "1st Army Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "1st Army Group",
+          "Commander": "unknown",
+          "Name": "unknown",
+          "Rank": "unknown",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Quiberon",
+        "Place_GPS_coordinate": "47.4842,-3.1196",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://upload.wikimedia.org/wikipedia/commons/4/41/US_advance_into_Brittany.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Quiberon",
+        "Place_GPS_coordinate": "47.4842,-3.1196",
+        "Weather_text": "Typical spring weather in Quiberon on 13 May 1944: temperatures around 10-15°C, variable conditions.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-4.4696",
+          "East": "-1.7696",
+          "South": "46.5842",
+          "North": "48.3842"
+        }
+      }
+    },
+    {
+      "Event": "A New Army",
+      "Sub-event": "Interest in Major Ports Despite Quiberon Plans",
+      "Sub-event_summary": "Despite plans for Quiberon Bay to handle large tonnages, Allies remained interested in Brittany's major ports, especially Brest for direct U.S. landings and safe convoy routes; doubts in July about quick acquisition and reluctance for Quiberon engineering, but at August's start, Brittany ports were still needed.",
+      "Sub-event_fulltext": {
+        "Paragraph_40": "Despite plans for using Quiberon Bay to handle large freight tonnages, the Allies were still interested in the major ports of Brittany, Brest in particular. Possession of Brest would enable personnel and vehicles coming directly from the United States to be landed there without waiting for the Quiberon complex to be built. Also, with Brest in Allied hands, convoys could sail around Brittany to the Quiberon Bay area without hindrance from German warships based at Brest. Although doubts had been expressed in July that the Allies could obtain the major ports quickly and although there appeared an increasing reluctance to undertake the complicated engineering necessary to utilize Quiberon, the Allies at the beginning of August still felt that they needed Brittany and its port facilities."
+      },
+      "Footnote_References": [
+        27
+      ],
+      "Place_Name": "Brest",
+      "Dates": {
+        "Date_group_of_event": "beginning of August",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+        "Zulu_date_group_of_event": "BEGINNING AUG44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Third Army",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "unknown",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Brest",
+        "Place_GPS_coordinate": "48.3904,-4.4861",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://warfarehistorynetwork.com/wp-content/uploads/2021/10/Brittany-121Inf-Map-2.jpg",
+        "ExternalMapLinkLicence": "unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brest",
+        "Place_GPS_coordinate": "48.3904,-4.4861",
+        "Weather_text": "Typical summer weather in Brest at beginning of August 1944: temperatures 15-20°C, possible rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-5.8361",
+          "East": "-3.1361",
+          "South": "47.4904",
+          "North": "49.2904"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "11a",
+      "Footnote_Number": "11",
+      "Footnote_Text": "SHAEF Memo, Command and Organization After D Day--OVERLORD, 21 AGp/20657/i/G (Plans), 30 May",
+      "Footnote_Referenced_Source": "SHAEF Memo, Command and Organization After D Day--OVERLORD, 21 AGp/20657/i/G (Plans), 30 May",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "SHAEF G-3 Opns File A 322/011/1"
+    },
+    {
+      "Footnote": "11b",
+      "Footnote_Number": "11",
+      "Footnote_Text": "SHAEF/17100/5/Opns (A), 1 Jun",
+      "Footnote_Referenced_Source": "SHAEF/17100/5/Opns (A), 1 Jun",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "SHAEF G-3 Opns File A 322/011/1"
+    },
+    {
+      "Footnote": "11c",
+      "Footnote_Number": "11",
+      "Footnote_Text": "ETOUSA Ltr, Organization and Comd of U.S. Forces, 6 Jun",
+      "Footnote_Referenced_Source": "ETOUSA Ltr, Organization and Comd of U.S. Forces, 6 Jun",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "SHAEF G-3 Opns File A 322/011/1"
+    },
+    {
+      "Footnote": "12",
+      "Footnote_Number": "12",
+      "Footnote_Text": "Ltr, Bradley to Eisenhower, 19 Jul, with handwritten endorsement by Montgomery, 20 Jul, Gen Bd Rpts File 322/011, Box 47, Item 50.",
+      "Footnote_Referenced_Source": "Ltr, Bradley to Eisenhower, 19 Jul, with handwritten endorsement by Montgomery, 20 Jul",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Gen Bd Rpts File 322/011, Box 47, Item 50"
+    },
+    {
+      "Footnote": "13",
+      "Footnote_Number": "13",
+      "Footnote_Text": "FUSA Memo, Bradley to Hodges and Patton, 21 Jul, 12th AGp File 371.3, Mil Objectives.",
+      "Footnote_Referenced_Source": "FUSA Memo, Bradley to Hodges and Patton, 21 Jul",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "12th AGp File 371.3, Mil Objectives"
+    },
+    {
+      "Footnote": "14a",
+      "Footnote_Number": "14",
+      "Footnote_Text": "SHAEF Ltr, Comd and Organization, U.S. Ground Forces, 25 Jul, SHAEF/17100/5/Opns (A), SHAEF G-3 File Opns A-322/011.1",
+      "Footnote_Referenced_Source": "SHAEF Ltr, Comd and Organization, U.S. Ground Forces, 25 Jul, SHAEF/17100/5/Opns (A)",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "SHAEF G-3 File Opns A-322/011.1"
+    },
+    {
+      "Footnote": "14b",
+      "Footnote_Number": "14",
+      "Footnote_Text": "SGS SHAEF War Diary, 25 Jul.",
+      "Footnote_Referenced_Source": "SGS SHAEF War Diary, 25 Jul",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "SGS SHAEF War Diary, 25 Jul"
+    },
+    {
+      "Footnote": "15",
+      "Footnote_Number": "15",
+      "Footnote_Text": "Chief of Staff, Maj. Gen. Leven C. Allen; G-1, Col. Joseph J. O'Hare; G-2, Brig. Gen. Edwin L. Sibert; G-3, Brig. Gen. A. Franklin Kibler; G-4, Brig. Gen. Raymond G. Moses.",
+      "Footnote_Referenced_Source": "Chief of Staff, Maj. Gen. Leven C. Allen; G-1, Col. Joseph J. O'Hare; G-2, Brig. Gen. Edwin L. Sibert; G-3, Brig. Gen. A. Franklin Kibler; G-4, Brig. Gen. Raymond G. Moses",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Staff list"
+    },
+    {
+      "Footnote": "16",
+      "Footnote_Number": "16",
+      "Footnote_Text": "ADSEC continued to be the direct agency of supply for the combat forces, but Lt. Gen. John C. H. Lee's Communication Zone headquarters was fast getting established on the Continent.",
+      "Footnote_Referenced_Source": "ADSEC continued to be the direct agency of supply for the combat forces, but Lt. Gen. John C. H. Lee's Communication Zone headquarters was fast getting established on the Continent",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "ADSEC and COMZ information"
+    },
+    {
+      "Footnote": "17",
+      "Footnote_Number": "17",
+      "Footnote_Text": "Ltrs, Eisenhower to Marshall, 29 and 30 Apr, cited in Pogue, Supreme Command, p. 166.",
+      "Footnote_Referenced_Source": "Ltrs, Eisenhower to Marshall, 29 and 30 Apr, cited in Pogue, Supreme Command, p. 166",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Pogue, Supreme Command, p. 166"
+    },
+    {
+      "Footnote": "18",
+      "Footnote_Number": "18",
+      "Footnote_Text": "Patton, War as I Knew It, p. 354.",
+      "Footnote_Referenced_Source": "Patton, War as I Knew It, p. 354",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Patton, War as I Knew It, p. 354"
+    },
+    {
+      "Footnote": "19",
+      "Footnote_Number": "19",
+      "Footnote_Text": "The Third Army general staff consisted of Maj. Gen. Hugh j. Gaffey, chief of staff; Col. Frederick S. Matthews, G-1; Col. Oscar W. Koch, G-2; Col. Halley G. Maddox, G-3; Col. Walter J. Muller, G-4. See Hugh M. Cole, The Lorraine Campaign, UNITED STATES ARMY IN WORLD WAR II (Washington, 1950), Chapter I, for a detailed discussion of the Third Army command and staff.",
+      "Footnote_Referenced_Source": "The Third Army general staff consisted of Maj. Gen. Hugh j. Gaffey, chief of staff; Col. Frederick S. Matthews, G-1; Col. Oscar W. Koch, G-2; Col. Halley G. Maddox, G-3; Col. Walter J. Muller, G-4. See Hugh M. Cole, The Lorraine Campaign, UNITED STATES ARMY IN WORLD WAR II (Washington, 1950), Chapter I, for a detailed discussion of the Third Army command and staff",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Lorraine/index.html",
+      "Web_Link_Capture_Date": "December 24, 2025",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Hugh M. Cole, The Lorraine Campaign, UNITED STATES ARMY IN WORLD WAR II (Washington, 1950), Chapter I"
+    },
+    {
+      "Footnote": "20",
+      "Footnote_Number": "20",
+      "Footnote_Text": "Eisenhower to Marshall, FWD-12493, 30 Jul, Pogue Files.",
+      "Footnote_Referenced_Source": "Eisenhower to Marshall, FWD-12493, 30 Jul",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Pogue Files"
+    },
+    {
+      "Footnote": "21",
+      "Footnote_Number": "21",
+      "Footnote_Text": "JIC (44) 345 (O) (Final), German Appreciation of Allied Intentions in the West, 7 Aug, JIC Papers, 1944, Pogue Files.",
+      "Footnote_Referenced_Source": "JIC (44) 345 (O) (Final), German Appreciation of Allied Intentions in the West, 7 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "JIC Papers, 1944, Pogue Files"
+    },
+    {
+      "Footnote": "22",
+      "Footnote_Number": "22",
+      "Footnote_Text": "OB WEST, a Study in Command, pp. 55ff.",
+      "Footnote_Referenced_Source": "OB WEST, a Study in Command, pp. 55ff",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "OB WEST, a Study in Command, pp. 55ff"
+    },
+    {
+      "Footnote": "23",
+      "Footnote_Number": "23",
+      "Footnote_Text": "TUSA AAR, I, 7, 12.",
+      "Footnote_Referenced_Source": "TUSA AAR, I, 7, 12",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "TUSA AAR, I, 7, 12"
+    },
+    {
+      "Footnote": "24",
+      "Footnote_Number": "24",
+      "Footnote_Text": "AEAF Ltr, Comd and Contl of Allied Air Force, AEAF/TS 378/Air Plans, 5 Aug, Gen Bd Rpts File 322/011/1, Box 47, Item 50.",
+      "Footnote_Referenced_Source": "AEAF Ltr, Comd and Contl of Allied Air Force, AEAF/TS 378/Air Plans, 5 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Gen Bd Rpts File 322/011/1, Box 47, Item 50"
+    },
+    {
+      "Footnote": "25",
+      "Footnote_Number": "25",
+      "Footnote_Text": "Ltr, Eisenhower to Montgomery, 10 Jul, SGS SHAEF File 381, OVERLORD, I (a). ANVIL was the code name for the invasion of southern France, which was scheduled for 15 August. [Changed to DRAGOON, as ANVIL was assigned to the Anzio landing. --HyperWar ]",
+      "Footnote_Referenced_Source": "Ltr, Eisenhower to Montgomery, 10 Jul",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "SGS SHAEF File 381, OVERLORD, I (a)"
+    },
+    {
+      "Footnote": "26a",
+      "Footnote_Number": "26",
+      "Footnote_Text": "Ruppenthal, Logistical Support, I, 186-88, 285-97",
+      "Footnote_Referenced_Source": "Ruppenthal, Logistical Support, I, 186-88, 285-97",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Logistics1/index.html",
+      "Web_Link_Capture_Date": "December 24, 2025",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Ruppenthal, Logistical Support, I, 186-88, 285-97"
+    },
+    {
+      "Footnote": "26b",
+      "Footnote_Number": "26",
+      "Footnote_Text": "SHAEF/17100/35 Opns, NEPTUNE, Summary of Jt Opns Plan, Phase II, 25 Apr, SGS SHAEF File 381, OVERLORD, I (a)",
+      "Footnote_Referenced_Source": "SHAEF/17100/35 Opns, NEPTUNE, Summary of Jt Opns Plan, Phase II, 25 Apr",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "SGS SHAEF File 381, OVERLORD, I (a)"
+    },
+    {
+      "Footnote": "26c",
+      "Footnote_Number": "26",
+      "Footnote_Text": "SHAEF/17100/35/Opns, NEPTUNE, Summary of Rev Jt Opns Plan--U.S. Forces for Phase II of Opn OVERLORD, 20 May, and SHAEF/17100/35/Opns, NEPTUNE, Summary of Third U.S. Army Outline Plan, 22 May, both in EUCOM Files, Box 3",
+      "Footnote_Referenced_Source": "SHAEF/17100/35/Opns, NEPTUNE, Summary of Rev Jt Opns Plan--U.S. Forces for Phase II of Opn OVERLORD, 20 May, and SHAEF/17100/35/Opns, NEPTUNE, Summary of Third U.S. Army Outline Plan, 22 May",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "EUCOM Files, Box 3"
+    },
+    {
+      "Footnote": "26d",
+      "Footnote_Number": "26",
+      "Footnote_Text": "Capt Albert Norman, The History of 12th Army Group (Third Draft), MS, Hist Br, AG Sec, 12th AGp [27 Jul 45], pp. 349-56, 12th AGp File, Box 27",
+      "Footnote_Referenced_Source": "Capt Albert Norman, The History of 12th Army Group (Third Draft), MS, Hist Br, AG Sec, 12th AGp [27 Jul 45], pp. 349-56",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "12th AGp File, Box 27"
+    },
+    {
+      "Footnote": "26e",
+      "Footnote_Number": "26",
+      "Footnote_Text": "Interv by Pogue with Maj Gen K. R. McLean, 11-13 Mar 47, Pogue Files.",
+      "Footnote_Referenced_Source": "Interv by Pogue with Maj Gen K. R. McLean, 11-13 Mar 47",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Pogue Files"
+    },
+    {
+      "Footnote": "27",
+      "Footnote_Number": "27",
+      "Footnote_Text": "Ruppenthal, Logistical Support, I, 468-74.",
+      "Footnote_Referenced_Source": "Ruppenthal, Logistical Support, I, 468-74",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Logistics1/index.html",
+      "Web_Link_Capture_Date": "December 24, 2025",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, DC",
+      "NonDigital_Library_References": "Ruppenthal, Logistical Support, I, 468-74"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn18.html",
+  "Source_Footnote_Link_Capture_Date": "December 24, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+  "Source_Link_Capture_Date": "December 24, 2025"
+}

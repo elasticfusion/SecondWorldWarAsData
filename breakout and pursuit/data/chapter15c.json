@@ -1,0 +1,1947 @@
+{
+  "Events": [
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "V Corps Resumes Attack and Assumes Responsibility",
+      "Sub-event_summary": "On 28 July, V Corps under General Gerow assumed control of the 35th Division and all territory east of the Vire, pushing south toward Vire without specific objectives but with emphasis on maintaining contact and preventing German entrenchment.",
+      "Sub-event_fulltext": {
+        "Paragraph_[48]": "East of the Vire River While the British were preparing to join the offensive east of the Vire, the V Corps resumed the attack. Assuming responsibility for all the American-held territory east of the Vire on 28 July by taking control of the 35th Division, General Gerow had free rein to push the V Corps to the south in the general direction of the town of Vire. Though General Bradley had assigned him no specific objectives, Bradley had asked him to keep the army headquarters informed on his intentions and progress. To his three divisions--the 2d, 5th, and 35th--General Gerow stated his mission as he understood it: \"We must keep going to maintain contact, and not give the Boche a chance to dig in. See that all understand this.\""
+      },
+      "Footnote_References": [
+        25
+      ],
+      "Place_Name": "East of the Vire River",
+      "Dates": {
+        "Date_group_of_event": "280000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "272300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "V Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "First Army",
+              "Commander": "Omar N. Bradley",
+              "Name": "Omar N. Bradley",
+              "Rank": "Lt Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "2d Infantry Division",
+              "Name": "Walter M. Robertson",
+              "Rank": "Maj Gen",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_M._Robertson",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            },
+            {
+              "Unit": "5th Infantry Division",
+              "Name": "Stafford LeRoy Irwin",
+              "Rank": "Maj Gen",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Stafford_LeRoy_Irwin",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            },
+            {
+              "Unit": "35th Infantry Division",
+              "Name": "Paul W. Baade",
+              "Rank": "Maj Gen",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_W._Baade",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "East of the Vire River",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Map_Reference": "Map VI",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VI.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "East of the Vire River",
+          "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0000,
+            "East": 0.0000,
+            "South": 48.0000,
+            "North": 50.0000
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "II Parachute Corps",
+      "Sub-event_summary": "The opposing II Parachute Corps under General Meindl pulled back to establish defenses tied with lines west of the Vire.",
+      "Sub-event_fulltext": {
+        "Paragraph_[49]": "As the opposing II Parachute Corps pulled back in the hope of establishing defenses that could be tied in with the line the German units west of the Vire were trying to form, the V Corps on 28 July secured its COBRA objective, the St. Jean-des-Baisants ridge from Ste. Suzanne-sur-Vire to Vidouville. All three divisions advanced against light resistance and captured few prisoners. Although the enemy seemed much weaker as a result of the three-day attack and thus made prospects of a virtually unlimited advance seem possible for the V Corps, General Gerow was reluctant to initiate an unrestrained attack because of the terrain and his left flank. (See Map VI.)"
+      },
+      "Footnote_References": [],
+      "Place_Name": "St. Jean-des-Baisants ridge",
+      "Dates": {
+        "Date_group_of_event": "280000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "272300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "II Parachute Corps",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "Panzer Group West",
+              "Commander": "Eberbach",
+              "Name": "Hans Eberbach",
+              "Rank": "Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_Eberbach",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Weakened",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Jean-des-Baisants ridge",
+        "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+        "Map_Reference": "Map VI",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VI.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "St. Jean-des-Baisants ridge",
+          "Place_GPS_coordinate": "49.0933 N, -0.9743 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9743,
+            "East": 0.0257,
+            "South": 48.0933,
+            "North": 50.0933
+          }
+        },
+        {
+          "Place_Name": "Ste. Suzanne-sur-Vire",
+          "Place_GPS_coordinate": "49.0616 N, -1.0604 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0604,
+            "East": -0.0604,
+            "South": 48.0616,
+            "North": 50.0616
+          }
+        },
+        {
+          "Place_Name": "Vidouville",
+          "Place_GPS_coordinate": "49.0989 N, -0.8994 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8994,
+            "East": 0.1006,
+            "South": 48.0989,
+            "North": 50.0989
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "Terrain and Flank Concerns",
+      "Sub-event_summary": "The Souloeuvre-Vire river line was the obvious objective, but bocage terrain and exposed left flank until British attack on 30 July led Gerow to set limits on advance.",
+      "Sub-event_fulltext": {
+        "Paragraph_[50]": "The Souloeuvre-Vire river line, eleven miles beyond the St. Jean-des-Baisants ridge, appeared the obvious V Corps objective. Although the water alone constituted an obstacle to vehicular movement, the river runs through a ridge mass more than two miles in depth that presented an even more serious barrier to military advance. Steep-walled hills from 600 to 900 feet high would provide the Germans dominant observation, cover and concealment, fields of fire, and a good communications network. Hoping to secure the area before the Germans could organize it for defense, General Gerow nevertheless felt that the intervening terrain precluded a rapid advance. In the heart of the bocage country, the corps sector east of the Vire was a region of small irregular hills, small winding roads, and small hedgerowed fields. Combat there was sure to resemble the earlier battle of the hedgerows in the Cotentin.",
+        "Paragraph_[51]": "The second factor working against an unchecked V Corps advance was General Gerow's concern over his left flank. Until the British attacked south from Caumont on 30 July (prevented until then by difficulties of regrouping and deployment) and covered the flank, a headlong advance by V Corps would expose an increasingly vulnerable side to the enemy.",
+        "Paragraph_[52]": "General Gerow's solution for his two problems was to set limits on his advance in order to keep tight control."
+      },
+      "Footnote_References": [
+        26,
+        27
+      ],
+      "Place_Name": "Souloeuvre-Vire river line",
+      "Dates": {
+        "Date_group_of_event": "APPROX 280900ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "APPROX 280800ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Souloeuvre-Vire river line",
+        "Place_GPS_coordinate": "48.9281 N, -0.7189 W",
+        "Map_Reference": "Map VI",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VI.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Souloeuvre-Vire river line",
+          "Place_GPS_coordinate": "48.9281 N, -0.7189 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.7189,
+            "East": 0.2811,
+            "South": 47.9281,
+            "North": 49.9281
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "German Withdrawal and V Corps Advance on 29 July",
+      "Sub-event_summary": "Germans withdrew, allowing V Corps to advance to line from Conde-sur-Vire to Caumont by noon 29 July, then further against sporadic resistance.",
+      "Sub-event_fulltext": {
+        "Paragraph_[53]": "The Germans facilitated the V Corps advance when the II Parachute Corps, with permission, pulled back again.",
+        "Paragraph_[54]": "Moving to the first limit of advance with very little difficulty, V Corps by noon 29 July held a line from Conde-sur-Vire to the British positions near Caumont. When the corps commander ordered the attack continued, troops pushed forward again for several thousand yards against sporadic resistance."
+      },
+      "Footnote_References": [
+        28,
+        29
+      ],
+      "Place_Name": "Conde-sur-Vire",
+      "Dates": {
+        "Date_group_of_event": "291200ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "291100ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Conde-sur-Vire",
+        "Place_GPS_coordinate": "49.0500 N, -1.0333 W",
+        "Map_Reference": "Map VI",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VI.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Conde-sur-Vire",
+          "Place_GPS_coordinate": "49.0500 N, -1.0333 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0333,
+            "East": -0.0333,
+            "South": 48.0500,
+            "North": 50.0500
+          }
+        },
+        {
+          "Place_Name": "Caumont",
+          "Place_GPS_coordinate": "49.0909 N, -0.8064 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8064,
+            "East": 0.1936,
+            "South": 48.0909,
+            "North": 50.0909
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "Challenges in Advance",
+      "Sub-event_summary": "Despite no organized defense, terrain, ambushes, and rear-guard actions made advance difficult; one regimental commander considered relief due to exhaustion.",
+      "Sub-event_fulltext": {
+        "Paragraph_[55]": "Despite the absence of an organized German defensive line, the V Corps divisions did not have an easy time. The terrain inhibited rapid advance, and ambush lurked around every twist in the road. The bocage hills were populated by German rear-guard parties who used artillery, mortars, and small arms fire effectively. One American regimental commander, apparently near exhaustion, reported, \"Things are not going very well,\" and said he \"would like to be relieved of command.\" The division commander was not sympathetic. \"I will relieve you when I get ready to do so,\" he snapped, but later sought to soothe him: \"Do not get discouraged,\" he said, \"this is hedgerow fighting. It is tough.\""
+      },
+      "Footnote_References": [
+        30
+      ],
+      "Place_Name": "bocage hills",
+      "Dates": {
+        "Date_group_of_event": "290000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "282300ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "bocage hills",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Map_Reference": "Map VI",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VI.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "bocage hills",
+          "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0000,
+            "East": 0.0000,
+            "South": 48.0000,
+            "North": 50.0000
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "Award of DSC to Colonel Charles W. Hirschfelder",
+      "Sub-event_summary": "Colonel Hirschfelder of the 9th Infantry inspired troops by exposing himself to enemy fire, awarded DSC.",
+      "Sub-event_fulltext": {
+        "Paragraph_[55]": "Despite the absence of an organized German defensive line, the V Corps divisions did not have an easy time. The terrain inhibited rapid advance, and ambush lurked around every twist in the road. The bocage hills were populated by German rear-guard parties who used artillery, mortars, and small arms fire effectively. One American regimental commander, apparently near exhaustion, reported, \"Things are not going very well,\" and said he \"would like to be relieved of command.\" The division commander was not sympathetic. \"I will relieve you when I get ready to do so,\" he snapped, but later sought to soothe him: \"Do not get discouraged,\" he said, \"this is hedgerow fighting. It is tough.\""
+      },
+      "Footnote_References": [
+        30
+      ],
+      "Place_Name": "bocage hills",
+      "Dates": {
+        "Date_group_of_event": "280000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "272300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "9th Infantry Regiment",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "2d Infantry Division",
+              "Commander": "Walter M. Robertson",
+              "Name": "Walter M. Robertson",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_M._Robertson",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "bocage hills",
+        "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+        "Map_Reference": "Map VI",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VI.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "bocage hills",
+          "Place_GPS_coordinate": "49.0000 N, -1.0000 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0000,
+            "East": 0.0000,
+            "South": 48.0000,
+            "North": 50.0000
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "Order for All-Out Advance",
+      "Sub-event_summary": "On 29 July, upon learning of German withdrawal and upcoming British attack, Gerow ordered relentless pursuit, bypassing resistance.",
+      "Sub-event_fulltext": {
+        "Paragraph_[56]": "Receiving word that the Germans were withdrawing all along the First Army front and learning that the British were planning to attack on the following day, General Gerow on 29 July ordered his division commanders into an all-out advance. Instead of merely preventing disengagement, the corps was to \"drive strong and hard\" in \"a relentless pursuit.\" As translated by General Robertson, the troops were to \"by-pass everything. Never mind these little pockets of resistance. . . . Let's get down and take a bath in the Vire.\" (Map VII)"
+      },
+      "Footnote_References": [
+        31,
+        32
+      ],
+      "Place_Name": "Vire River",
+      "Dates": {
+        "Date_group_of_event": "290000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "282300ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River",
+        "Place_GPS_coordinate": "48.8376 N, -0.8889 W",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Vire River",
+          "Place_GPS_coordinate": "48.8376 N, -0.8889 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8889,
+            "East": 0.1111,
+            "South": 47.8376,
+            "North": 49.8376
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "Resistance at Torigni-sur-Vire",
+      "Sub-event_summary": "On 30 July, V Corps encountered resistance at Torigni-sur-Vire road net, inflicting nearly 1000 casualties and halting advance.",
+      "Sub-event_fulltext": {
+        "Paragraph_[57]": "The instructions came too late. Though army headquarters claimed that only some \"tired old Austrians\" were in opposition, the troops had moved into contact with a defensive line covering an important road net centering on Torigni-sur-Vire. As the 35th Division on 30 July tried to take Torigni and the 2d and 5th Division to occupy high ground east of the village, the Germans inflicted close to 1,000 casualties, halted the advance,"
+      },
+      "Footnote_References": [
+        33
+      ],
+      "Place_Name": "Torigni-sur-Vire",
+      "Dates": {
+        "Date_group_of_event": "300000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "292300ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 1000,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Torigni-sur-Vire",
+        "Place_GPS_coordinate": "49.0333 N, -0.9833 W",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Torigni-sur-Vire",
+          "Place_GPS_coordinate": "49.0333 N, -0.9833 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9833,
+            "East": 0.0167,
+            "South": 48.0333,
+            "North": 50.0333
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "Award of DSC to 1st Lt. Arthur J. Miller",
+      "Sub-event_summary": "1st Lt. Arthur J. Miller of the 5th Division awarded DSC for heroic action on 30 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_[57]": "The instructions came too late. Though army headquarters claimed that only some \"tired old Austrians\" were in opposition, the troops had moved into contact with a defensive line covering an important road net centering on Torigni-sur-Vire. As the 35th Division on 30 July tried to take Torigni and the 2d and 5th Division to occupy high ground east of the village, the Germans inflicted close to 1,000 casualties, halted the advance,"
+      },
+      "Footnote_References": [
+        33
+      ],
+      "Place_Name": "Torigni-sur-Vire",
+      "Dates": {
+        "Date_group_of_event": "300000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "292300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "5th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "V Corps",
+              "Commander": "Leonard T. Gerow",
+              "Name": "Leonard T. Gerow",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Leonard_T._Gerow",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Torigni-sur-Vire",
+        "Place_GPS_coordinate": "49.0333 N, -0.9833 W",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Torigni-sur-Vire",
+          "Place_GPS_coordinate": "49.0333 N, -0.9833 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9833,
+            "East": 0.0167,
+            "South": 48.0333,
+            "North": 50.0333
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "Award of DSC to S. Sgt. Konstanty Gugala",
+      "Sub-event_summary": "S. Sgt. Konstanty Gugala of the 5th Division awarded DSC for heroic action on 30 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_[57]": "The instructions came too late. Though army headquarters claimed that only some \"tired old Austrians\" were in opposition, the troops had moved into contact with a defensive line covering an important road net centering on Torigni-sur-Vire. As the 35th Division on 30 July tried to take Torigni and the 2d and 5th Division to occupy high ground east of the village, the Germans inflicted close to 1,000 casualties, halted the advance,"
+      },
+      "Footnote_References": [
+        33
+      ],
+      "Place_Name": "Torigni-sur-Vire",
+      "Dates": {
+        "Date_group_of_event": "300000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "292300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "5th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "V Corps",
+              "Commander": "Leonard T. Gerow",
+              "Name": "Leonard T. Gerow",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Leonard_T._Gerow",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Torigni-sur-Vire",
+        "Place_GPS_coordinate": "49.0333 N, -0.9833 W",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Torigni-sur-Vire",
+          "Place_GPS_coordinate": "49.0333 N, -0.9833 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9833,
+            "East": 0.0167,
+            "South": 48.0333,
+            "North": 50.0333
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "Award of DSC to Pfc. Henry N. Powell",
+      "Sub-event_summary": "Pfc. Henry N. Powell of the 5th Division posthumously awarded DSC for heroic action on 30 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_[57]": "The instructions came too late. Though army headquarters claimed that only some \"tired old Austrians\" were in opposition, the troops had moved into contact with a defensive line covering an important road net centering on Torigni-sur-Vire. As the 35th Division on 30 July tried to take Torigni and the 2d and 5th Division to occupy high ground east of the village, the Germans inflicted close to 1,000 casualties, halted the advance,"
+      },
+      "Footnote_References": [
+        33
+      ],
+      "Place_Name": "Torigni-sur-Vire",
+      "Dates": {
+        "Date_group_of_event": "300000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "292300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "5th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "V Corps",
+              "Commander": "Leonard T. Gerow",
+              "Name": "Leonard T. Gerow",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Leonard_T._Gerow",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 1,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Torigni-sur-Vire",
+        "Place_GPS_coordinate": "49.0333 N, -0.9833 W",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Torigni-sur-Vire",
+          "Place_GPS_coordinate": "49.0333 N, -0.9833 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9833,
+            "East": 0.0167,
+            "South": 48.0333,
+            "North": 50.0333
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "German Disengagement and Advance on 31 July",
+      "Sub-event_summary": "On 31 July, Germans disengaged, allowing V Corps to advance undefended but slowed by mines and artillery; commanders frustrated by enemy escape.",
+      "Sub-event_fulltext": {
+        "Paragraph_[58]": "and dashed American hopes for an immediate pursuit. To breach the new line, the subordinate units of the V Corps made detailed attack plans, only to discover as they prepared to launch a co-ordinated offensive on the morning of 31 July that the Germans had disengaged.",
+        "Paragraph_[59]": "Kluge had authorized the II Parachute Corps to withdraw.",
+        "Paragraph_[60]": "In falling back, the Germans abandoned not only the Torigni road net but also terrain that was highly defensible. Only mines and sporadic harassing artillery fire opposed an uninterrupted advance. American troops cheerfully advanced across undefended ground, while their commanders chafed at the thought of the enemy slipping away undetected."
+      },
+      "Footnote_References": [
+        34,
+        35,
+        36
+      ],
+      "Place_Name": "Torigni-sur-Vire",
+      "Dates": {
+        "Date_group_of_event": "310600ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "310500ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Torigni-sur-Vire",
+        "Place_GPS_coordinate": "49.0333 N, -0.9833 W",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Torigni-sur-Vire",
+          "Place_GPS_coordinate": "49.0333 N, -0.9833 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.9833,
+            "East": 0.0167,
+            "South": 48.0333,
+            "North": 50.0333
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "Slowing Advance Near Souloeuvre-Vire",
+      "Sub-event_summary": "Advance slowed afternoon 31 July near Souloeuvre-Vire due to increasing resistance; boundaries would pinch V Corps out near Vire.",
+      "Sub-event_fulltext": {
+        "Paragraph_[61]": "Although all concerned pressed for speedy pursuit, the pace of the V Corps advance slowed during the afternoon of 31 July. Nearing the Souloeuvre-Vire water line, the corps encountered pockets of resistance and delaying forces with increasing frequency. The pursuit again threatened to come to a halt.",
+        "Paragraph_[62]": "The boundaries delineating the corps zone of advance met near the town of Vire, four fourteen miles southwest of Torigni. If the British on the left and the XIX Corps on the right advanced as projected, the V Corps would be pinched out near Vire.",
+        "Paragraph_[63]": "Blocking the approach to the V Corps limit of advance was the east-west Vire-Souloeuvre river line and hill mass, seven miles north of Vire."
+      },
+      "Footnote_References": [
+        37
+      ],
+      "Place_Name": "Souloeuvre-Vire water line",
+      "Dates": {
+        "Date_group_of_event": "311200ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "311100ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Souloeuvre-Vire water line",
+        "Place_GPS_coordinate": "48.9281 N, -0.7189 W",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Souloeuvre-Vire water line",
+          "Place_GPS_coordinate": "48.9281 N, -0.7189 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.7189,
+            "East": 0.2811,
+            "South": 47.9281,
+            "North": 49.9281
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "Orders to Cross River",
+      "Sub-event_summary": "Gerow ordered divisions to cross Souloeuvre-Vire river before dark on 31 July; 35th and 2d Divisions met strong resistance near Tessy-sur-Vire, while 5th Division faced lighter opposition.",
+      "Sub-event_fulltext": {
+        "Paragraph_[64]": "These factors generally and a conversation with General Bradley specifically governed General Gerow's desire to cross the hills and the water barriers quickly.",
+        "Paragraph_[65]": "Earlier on 31 July, Gerow had instructed his division commanders to move only as far as the river line. Later in the afternoon he ordered each division commander to get at least one battalion of each front-line regiment across the river before dark.",
+        "Paragraph_[66]": "On the corps right and in its center, the 35th and 2d Divisions met such strong resistance on the approaches to the water line--and particularly near Tessy-sur-Vire--that it became obvious that they could not comply with instructions.",
+        "Paragraph_[67]": "On the other hand, the 5th Division on the left met relatively light resistance, indicating that a hard push might gain a bridgehead across the stream."
+      },
+      "Footnote_References": [
+        38,
+        39
+      ],
+      "Place_Name": "Tessy-sur-Vire",
+      "Dates": {
+        "Date_group_of_event": "311200ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "311100ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "http://www.oldhickory30th.com/Aug2PhotoTessy.jpg",
+          "Description": "Tessy-sur-Vire during World War II 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Tessy-sur-Vire",
+        "Place_GPS_coordinate": "48.9738 N, -1.0609 W",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Bluecoat#/media/File:Operation_Bluecoat_30_July_-_7_August_1944_map.png",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 23, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Tessy-sur-Vire",
+          "Place_GPS_coordinate": "48.9738 N, -1.0609 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0609,
+            "East": -0.0609,
+            "South": 47.9738,
+            "North": 49.9738
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "Award of DSC to 2d Lt. John F. Hermanspan, Jr.",
+      "Sub-event_summary": "2d Lt. John F. Hermanspan, Jr. of the 35th Division posthumously awarded DSC for rescuing wounded men under fire.",
+      "Sub-event_fulltext": {
+        "Paragraph_[66]": "On the corps right and in its center, the 35th and 2d Divisions met such strong resistance on the approaches to the water line--and particularly near Tessy-sur-Vire--that it became obvious that they could not comply with instructions."
+      },
+      "Footnote_References": [
+        39
+      ],
+      "Place_Name": "Tessy-sur-Vire",
+      "Dates": {
+        "Date_group_of_event": "310000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "302300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "35th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "V Corps",
+              "Commander": "Leonard T. Gerow",
+              "Name": "Leonard T. Gerow",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Leonard_T._Gerow",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 1,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Tessy-sur-Vire",
+        "Place_GPS_coordinate": "48.9738 N, -1.0609 W",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Tessy-sur-Vire",
+          "Place_GPS_coordinate": "48.9738 N, -1.0609 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0609,
+            "East": -0.0609,
+            "South": 47.9738,
+            "North": 49.9738
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "Urgent Orders to 5th Division",
+      "Sub-event_summary": "Gerow ordered 5th Division to mount infantry on tanks, bypass resistance, and cross river in battalion strength quickly.",
+      "Sub-event_fulltext": {
+        "Paragraph_[68]": "Unable to reach General Irwin, the 5th Division commander, personally, Gerow phoned one of Irwin's regimental commanders and told him to mount his infantry on tanks. They were to bypass resistance, use only good roads, and get to the water and across it in at least battalion strength. \"In short,\" Gerow commanded, \"hurry.\" Half an hour later he explained to Irwin, \"I told you before to stop at the river--now I want you to change that.\" The 5th Division was to cover the more than six miles to the river line in record time."
+      },
+      "Footnote_References": [
+        40,
+        41
+      ],
+      "Place_Name": "Souloeuvre River",
+      "Dates": {
+        "Date_group_of_event": "311600ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "311500ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "5th Infantry Division",
+          "Unit_Nationality": "US",
+          "Command_Structure": [
+            {
+              "Unit": "V Corps",
+              "Commander": "Leonard T. Gerow",
+              "Name": "Leonard T. Gerow",
+              "Rank": "Maj Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://grokipedia.com/page/Leonard_T._Gerow",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [
+              {
+                "Origination_Country": "US",
+                "Name": "Tanks",
+                "Identifier": "M4 Sherman",
+                "Quantity": "Unknown",
+                "Web_Reference": null,
+                "Web_Image_Reference": null,
+                "Web_Reference_Capture_Date": null
+              }
+            ],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Souloeuvre River",
+        "Place_GPS_coordinate": "48.9281 N, -0.7189 W",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Souloeuvre River",
+          "Place_GPS_coordinate": "48.9281 N, -0.7189 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.7189,
+            "East": 0.2811,
+            "South": 47.9281,
+            "North": 49.9281
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "British Capture Bridges",
+      "Sub-event_summary": "British armored division captured two bridges across Souloeuvre, entering V Corps zone; Gerow ordered 5th Division to use bridgehead for drive to Vire.",
+      "Sub-event_fulltext": {
+        "Paragraph_[69]": "Less than an hour after Gerow forwarded these instructions, he learned that a British armored division had attacked to the southwest, entered the V Corps zone, and secured two bridges across the river. \"Well now, I don't like British walking across our front [and] taking [our] objectives,\" General Gerow complained. But since the British had already secured a bridgehead he saw no reason why the Americans could not use it, specifically the 5th Division, for a quick drive across the remaining seven miles to the town of Vire."
+      },
+      "Footnote_References": [
+        42,
+        43
+      ],
+      "Place_Name": "Souloeuvre River",
+      "Dates": {
+        "Date_group_of_event": "311700ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "311600ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "11th Armoured Division",
+          "Unit_Nationality": "GB",
+          "Command_Structure": [
+            {
+              "Unit": "8 Corps",
+              "Commander": "Richard O'Connor",
+              "Name": "Richard O'Connor",
+              "Rank": "Lt Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Richard_O%27Connor",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Souloeuvre River",
+        "Place_GPS_coordinate": "48.9281 N, -0.7189 W",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Bluecoat#/media/File:Operation_Bluecoat_30_July_-_7_August_1944_map.png",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 23, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Souloeuvre River",
+          "Place_GPS_coordinate": "48.9281 N, -0.7189 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.7189,
+            "East": 0.2811,
+            "South": 47.9281,
+            "North": 49.9281
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "Confusion with British Forces",
+      "Sub-event_summary": "Intermingling of British tanks and American infantry caused confusion, losing opportunity for exploitation; 5th Division regiment reached north bank early 1 August but remained out of contact.",
+      "Sub-event_fulltext": {
+        "Paragraph_[70]": "Unfortunately, the intermingling of British tanks and American infantrymen caused confusion. The opportunity for an immediate exploitation by either the British or the Americans was lost.",
+        "Paragraph_[71]": "One regiment of the 5th Division reached the north bank of the Souloeuvre River during the early morning hours of 1 August. There it remained throughout the day, out of contact much of the time with other division units."
+      },
+      "Footnote_References": [
+        44
+      ],
+      "Place_Name": "Souloeuvre River",
+      "Dates": {
+        "Date_group_of_event": "010000ZAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "312300ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Souloeuvre River",
+        "Place_GPS_coordinate": "48.9281 N, -0.7189 W",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Souloeuvre River",
+          "Place_GPS_coordinate": "48.9281 N, -0.7189 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.7189,
+            "East": 0.2811,
+            "South": 47.9281,
+            "North": 49.9281
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "Boundary Change and Pinching Out 5th Division",
+      "Sub-event_summary": "On 1 August, as 35th and 2d Divisions fought near Tessy-sur-Vire, boundary moved west, narrowing V Corps and pinching out 5th Division after seven-mile advance in six days.",
+      "Sub-event_fulltext": {
+        "Paragraph_[72]": "By then, however, after having advanced more than seven miles in six days, the corps had reached the end of what had earlier promised to develop into an unlimited pursuit. On 1 August, as the 35th and 2d Divisions fought near Tessy-sur-Vire to get to the Souloeuvre-Vire line, the boundary separating the British and Americans was moved to the west, thereby narrowing the V Corps sector and pinching out the entire 5th Division."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Tessy-sur-Vire",
+      "Dates": {
+        "Date_group_of_event": "010000ZAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "312300ZJUL44"
+      },
+      "TOE": [],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "http://www.oldhickory30th.com/Aug2PhotoTessy.jpg",
+          "Description": "Tessy-sur-Vire during World War II 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Tessy-sur-Vire",
+        "Place_GPS_coordinate": "48.9738 N, -1.0609 W",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": [
+        {
+          "Place_Name": "Tessy-sur-Vire",
+          "Place_GPS_coordinate": "48.9738 N, -1.0609 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -2.0609,
+            "East": -0.0609,
+            "South": 47.9738,
+            "North": 49.9738
+          }
+        }
+      ]
+    },
+    {
+      "Event": "East of the Vire River",
+      "Sub-event": "British Operation BLUECOAT",
+      "Sub-event_summary": "British 8 Corps launched BLUECOAT on 30 July with heavy bombing, advancing against 326th Infantry Division; overcame terrain, exploited unoccupied Forêt l'Evêque, reached south bank of Souloeuvre and high ground east of Vire by 1 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_[73]": "Part of the reason for the boundary change was the success of the British attack south from Caumont. In compliance with Montgomery's endeavor to deny the Germans the pivot point near Mont Pinçon, General Dempsey had launched the 8 Corps in Operation BLUECOAT on 30 July. Following a bombardment by 700 heavy bombers and 500 medium and light bombers that dropped 2,200 tons of high explosive, the British attacked a sector that was lightly defended. Only the bombed and inexperienced 326th Infantry Division stood in the way. On the first day of the attack, the 11th British Armoured Division advanced six to eight miles to come abreast of the V Corps east of Torigni-sur-Vire. Operations on 31 July were hampered by the terrain: by the pronounced ridges running across the axis of advance; by the streams, which flowed in all directions and which in many cases were tank obstacles because of their width, depth, or marshy approaches; and by the tortuous roads, which were often banked by high hedges. But these difficulties were quickly overcome when the British discovered that the Forêt l'Evêque, which was astride the boundary between the Seventh Army and Panzer Group West, had through oversight been left unoccupied by the Germans. A vital stretch of some 1,500 yards of country was theirs for the taking. Thrusting through the forest, the 11th Armoured Division quickly gained the south bank of the Souloeuvre River and by 1 August occupied high ground immediately east of the Vire."
+      },
+      "Footnote_References": [
+        45
+      ],
+      "Place_Name": "Forêt l'Evêque",
+      "Dates": {
+        "Date_group_of_event": "300000ZJUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+        "Zulu_date_group_of_event": "292300ZJUL44"
+      },
+      "TOE": [
+        {
+          "Unit": "8 Corps",
+          "Unit_Nationality": "GB",
+          "Command_Structure": [
+            {
+              "Unit": "Second British Army",
+              "Commander": "Miles Dempsey",
+              "Name": "Miles Dempsey",
+              "Rank": "Lt Gen",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Miles_Dempsey",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [
+            {
+              "Unit": "11th Armoured Division",
+              "Name": "George Philip Bradley Roberts",
+              "Rank": "Maj Gen",
+              "Date": "July 1944",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Pip_Roberts",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [
+              {
+                "Origination_Country": "GB",
+                "Name": "Heavy bombers",
+                "Identifier": "Various",
+                "Quantity": "700",
+                "Web_Reference": null,
+                "Web_Image_Reference": null,
+                "Web_Reference_Capture_Date": null
+              },
+              {
+                "Origination_Country": "GB",
+                "Name": "Medium and light bombers",
+                "Identifier": "Various",
+                "Quantity": "500",
+                "Web_Reference": null,
+                "Web_Image_Reference": null,
+                "Web_Reference_Capture_Date": null
+              }
+            ],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        },
+        {
+          "Unit": "326th Infantry Division",
+          "Unit_Nationality": "DE",
+          "Command_Structure": [
+            {
+              "Unit": "II Parachute Corps",
+              "Commander": "Eugen Meindl",
+              "Name": "Eugen Meindl",
+              "Rank": "Gen der Fallschirmtruppe",
+              "End_Date": null,
+              "End_Status": null,
+              "Biographical_reference": "https://en.wikipedia.org/wiki/Eugen_Meindl",
+              "Biographical_reference_Capture_Date": "December 23, 2025"
+            }
+          ],
+          "Subordinates": [],
+          "Personnel": "Inexperienced",
+          "Equipments": {
+            "Supply": "Unknown",
+            "Allied_Employed": [],
+            "Allied_Destroyed": [],
+            "Axis_Employed": [],
+            "Axis_Destroyed": []
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://en.wikipedia.org/wiki/Operation_Bluecoat#/media/File:Operation_Bluecoat_30_July_-_7_August_1944_map.png",
+          "Description": "Map of Operation Bluecoat",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Forêt l'Evêque",
+        "Place_GPS_coordinate": "49.0500 N, -0.6500 W",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/Operation_Bluecoat#/media/File:Operation_Bluecoat_30_July_-_7_August_1944_map.png",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 23, 2025"
+      },
+      "Weather": [
+        {
+          "Place_Name": "Forêt l'Evêque",
+          "Place_GPS_coordinate": "49.0500 N, -0.6500 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.6500,
+            "East": 0.3500,
+            "South": 48.0500,
+            "North": 50.0500
+          }
+        },
+        {
+          "Place_Name": "Caumont",
+          "Place_GPS_coordinate": "49.0909 N, -0.8064 W",
+          "Weather_text": "Overcast skies and wet weather conditions",
+          "Spatial_Bounding_Box Coordinates": {
+            "West": -1.8064,
+            "East": 0.1936,
+            "South": 48.0909,
+            "North": 50.0909
+          }
+        }
+      ]
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "25",
+      "Footnote_Number": "25",
+      "Footnote_Text": "V Corps Memo, FUSA FO 2, 28 Jul, and penciled note, V Corps G-3 Jnl.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "V Corps Memo, First Army FO 2, 28 Jul"
+    },
+    {
+      "Footnote": "26",
+      "Footnote_Number": "26",
+      "Footnote_Text": "V Corps G-2 Sec Tactical Study of the Terrain, 30 Jul; XIX Corps G-2 Est of Bocage, 25 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "V Corps G-2 Sec Tactical Study of the Terrain, 30 Jul"
+    },
+    {
+      "Footnote": "27",
+      "Footnote_Number": "27",
+      "Footnote_Text": "V Corps FO, 29 Jul, and G-3 Situation Map, 2030, 28 Jul; 5th Div Outline Plan, 0230, 27 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "V Corps FO, 29 Jul"
+    },
+    {
+      "Footnote": "28",
+      "Footnote_Number": "28",
+      "Footnote_Text": "Msg, Kluge to Hausser, 28 Jul, AGp B Op. Befehle, p. 195; Telecon, Tempelhoff and Pemsel, 0935, 28 Jul, AGp B KTB.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Msg, Kluge to Hausser, 28 Jul, AGp B Op. Befehle"
+    },
+    {
+      "Footnote": "29",
+      "Footnote_Number": "29",
+      "Footnote_Text": "V Corps G-3 Jnl, 29 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "V Corps G-3 Jnl, 29 Jul"
+    },
+    {
+      "Footnote": "30",
+      "Footnote_Number": "30",
+      "Footnote_Text": "Telecon, Robertson and Hirschfelder, 1930, 29 Jul, 2d Div G-3 Jnl. On the previous day, Colonel Hirschfelder, the 9th Infantry commander, had inspired his assault troops by turning his back to enemy fire and, in full view of the Germans, had removed his helmet, placed his hands on his hips, and asked his men what was holding them up. This display of courage and of psychological inspiration provided the spark for continued attack. Colonel Hirschfelder was awarded the DSC.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Robertson and Hirschfelder, 1930, 29 Jul, 2d Div G-3 Jnl"
+    },
+    {
+      "Footnote": "31",
+      "Footnote_Number": "31",
+      "Footnote_Text": "V Corps FO 16, 29 Jul, Ltr of Instrs, 29 Jul, and Memos for the Record by the CofS, 1120 and 1250, 29 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "V Corps FO 16, 29 Jul"
+    },
+    {
+      "Footnote": "32",
+      "Footnote_Number": "32",
+      "Footnote_Text": "Telecon, Robertson and Hirschfelder, 0920, 30 Jul, 2d Div G-3 Jnl.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Robertson and Hirschfelder, 0920, 30 Jul, 2d Div G-3 Jnl"
+    },
+    {
+      "Footnote": "33a",
+      "Footnote_Number": "33",
+      "Footnote_Text": "35th Div G-3 Per Rpt 22, 31 Jul;",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "35th Div G-3 Per Rpt 22, 31 Jul"
+    },
+    {
+      "Footnote": "33b",
+      "Footnote_Number": "33",
+      "Footnote_Text": "Ltr, Brig Gen Ralph W. Zwicker to OCMH, 14 Mar 56, OCMH files. Three members of the 5th Division were awarded the DSC for heroic action that day: 1st Lt. Arthur J. Miller, S. Sgt. Konstanty Gugala, and Pfc. Henry N. Powell, the latter posthumously.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Ltr, Brig Gen Ralph W. Zwicker to OCMH, 14 Mar 56"
+    },
+    {
+      "Footnote": "34",
+      "Footnote_Number": "34",
+      "Footnote_Text": "2d Div G-2 Per Rpt and G-3 Jnl, 31 Jul; 35th Div FO 11, 30 Jul, and G-2 Per Rpt, 31 Jul; 5th Div AAR, Jul, and G-2 Per Rpt, 31 Jul; Gerow Msg, 1930, 30 Jul, 5th Div G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "2d Div G-2 Per Rpt and G-3 Jnl, 31 Jul"
+    },
+    {
+      "Footnote": "35",
+      "Footnote_Number": "35",
+      "Footnote_Text": "Telecon, 0030, 31 Jul, AGp B KTB; Msg, AGp B to II Para Corps (for information to the Seventh Army and Panzer Group West), 31 Jul, AGp B Op. Befehle, p. 206.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, 0030, 31 Jul, AGp B KTB"
+    },
+    {
+      "Footnote": "36",
+      "Footnote_Number": "36",
+      "Footnote_Text": "See the corps and div G-3 Jnls, 31 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "corps and div G-3 Jnls, 31 Jul"
+    },
+    {
+      "Footnote": "37",
+      "Footnote_Number": "37",
+      "Footnote_Text": "V Corps G-3 Situation Map, 2030, 29 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "V Corps G-3 Situation Map, 2030, 29 Jul"
+    },
+    {
+      "Footnote": "38",
+      "Footnote_Number": "38",
+      "Footnote_Text": "Telecon, Gerow and Irwin, 1710, 31 Jul, 5th Div G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Gerow and Irwin, 1710, 31 Jul, 5th Div G-3 Jnl and File"
+    },
+    {
+      "Footnote": "39",
+      "Footnote_Number": "39",
+      "Footnote_Text": "2d Lt. John F. Hermanspan, Jr., of the 35th Division, after withdrawing his platoon from a village, discovered that six wounded men had been abandoned there. Hermanspan re-entered the village and created a diversion to cover the evacuation of the casualties. Fatally wounded, Hermanspan was posthumously awarded the DSC.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "DSC Awards"
+    },
+    {
+      "Footnote": "40",
+      "Footnote_Number": "40",
+      "Footnote_Text": "Telecon, Gen Gerow and Col Charles W. Yuill, 1645, 31 Jul, 5th Div G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Gen Gerow and Col Charles W. Yuill, 1645, 31 Jul, 5th Div G-3 Jnl and File"
+    },
+    {
+      "Footnote": "41",
+      "Footnote_Number": "41",
+      "Footnote_Text": "Telecon, Gerow and Irwin, 1710, 31 Jul, 5th Div G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Gerow and Irwin, 1710, 31 Jul, 5th Div G-3 Jnl and File"
+    },
+    {
+      "Footnote": "42",
+      "Footnote_Number": "42",
+      "Footnote_Text": "Telecon, Gerow and Irwin, 1750, 31 Jul, 5th Div G-3 Jnl and File. According to V Corps Operations in the ETO, page 150, the British secured permission to move the armored unit on the road net across the 5th Division front. Who gave permission is not stated.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Telecon, Gerow and Irwin, 1750, 31 Jul, 5th Div G-3 Jnl and File"
+    },
+    {
+      "Footnote": "43",
+      "Footnote_Number": "43",
+      "Footnote_Text": "V Corps Msg, 1750, 31 Jul, and Telecon, Gerow and Irwin, 1910, 31 Jul, 5th Div G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "V Corps Msg, 1750, 31 Jul"
+    },
+    {
+      "Footnote": "44",
+      "Footnote_Number": "44",
+      "Footnote_Text": "5th Div G-3 Jnl, entries 1840, 1855, and 2245, 31 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "5th Div G-3 Jnl, entries 1840, 1855, and 2245, 31 Jul"
+    },
+    {
+      "Footnote": "45a",
+      "Footnote_Number": "45",
+      "Footnote_Text": "Opn BLUECOAT, pp. 1-2, 47;",
+      "Footnote_Referenced_Source": "Book",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "British Army of the Rhine",
+      "NonDigital_Library_Address": "The National Archives, Kew, Richmond TW9 4DU, UK",
+      "NonDigital_Library_References": "Opn BLUECOAT"
+    },
+    {
+      "Footnote": "45b",
+      "Footnote_Number": "45",
+      "Footnote_Text": "Leigh-Mallory, \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946;",
+      "Footnote_Referenced_Source": "Book",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "London Gazette",
+      "NonDigital_Library_Address": "The National Archives, Kew, Richmond TW9 4DU, UK",
+      "NonDigital_Library_References": "Leigh-Mallory, \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946"
+    },
+    {
+      "Footnote": "45c",
+      "Footnote_Number": "45",
+      "Footnote_Text": "see Wilmot, The Struggle for Europe, pp. 395-98.",
+      "Footnote_Referenced_Source": "Book",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": "Wilmot, The Struggle for Europe"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn15.html",
+  "Source_Footnote_Link_Capture_Date": "December 23, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+  "Source_Link_Capture_Date": "December 23, 2025"
+}

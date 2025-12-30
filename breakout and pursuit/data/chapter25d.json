@@ -1,0 +1,1818 @@
+{
+  "Events": [
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Bradley Assesses Mortain Situation",
+      "Sub-event_summary": "As early as 8 August, General Bradley was confident that the reinforced VII Corps would hold at Mortain, feeling that the Mortain counterattack had been contained and that the Germans had incurred the risk of encirclement from the South and North, prompting him to act to capitalize on the opportunity.",
+      "Sub-event_fulltext": {
+        "Paragraph_[128]": "As early as 8 August, General Bradley was confident that the reinforced VII Corps would hold at Mortain. He felt that the Mortain counterattack had \"apparently been contained.\" As he studied the situation, he came to the further conclusion that the Germans by attacking had \"incurred the risk of encirclement from the South and North,\" and he acted at once to capitalize on the opportunity.[46](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn46)"
+      },
+      "Footnote_References": [
+        "46"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "12th Army Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "VII Corps",
+            "Name": "Joseph Lawton Collins",
+            "Rank": "Lieutenant General",
+            "Date": "080000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:Normandy_Breakout_Map,_operations_25_July_to_15_August_1944.svg",
+        "ExternalMapLinkLicence": "CC BY-SA 4.0",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.647, -0.941",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.316,
+          "East": 0.434,
+          "South": 47.747,
+          "North": 49.547
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Bradley Coordinates with Montgomery",
+      "Sub-event_summary": "In the presence of General Eisenhower at his headquarters on 8 August, General Bradley telephoned General Montgomery and secured approval for a bold course of action to encircle German forces west of Argentan and Falaise.",
+      "Sub-event_fulltext": {
+        "Paragraph_[129]": "In the presence of General Eisenhower who was visiting his headquarters on 8 August, General Bradley telephoned General Montgomery and secured approval for a bold course of action designed to encircle the German forces west of Argentan and Falaise.[47](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn47)"
+      },
+      "Footnote_References": [
+        "47"
+      ],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "12th Army Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.75, -0.02",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.75, -0.02",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.395,
+          "East": 1.355,
+          "South": 47.85,
+          "North": 49.65
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Bradley Proposes Radical Change",
+      "Sub-event_summary": "Bradley proposed a radical change—a 90-degree turn—in the 12th Army Group offensive axis, wheeling the First and Third Armies north to Flers and Argentan instead of east to the Seine, advancing to the boundary Mortain-Domfront-Carrouges-Sées.",
+      "Sub-event_fulltext": {
+        "Paragraph_[130]": "What he proposed was a radical change--a 90-degree turn--in the 12th Army Group offensive axis. Instead of driving eastward toward the Seine, the First and Third Armies would wheel to the north and attack toward the army group boundary, specifically toward the towns of Flers and Argentan. *[](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-14.jpg)* Since the towns were within the 21 Army Group zone, the American armies would advance only to the boundary, the east-west line generally from Mortain through Domfront and Carrouges to Sées."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Flers",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "12th Army Group",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "First Army",
+            "Name": "Courtney Hodges",
+            "Rank": "Lieutenant General",
+            "Date": "080000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Courtney_Hodges",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "Third Army",
+            "Name": "George S. Patton",
+            "Rank": "Lieutenant General",
+            "Date": "080000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-14.jpg",
+          "Description": "Map 14: 12th Army Group Plan, 8 August 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Flers",
+        "Place_GPS_coordinate": "48.7372, -0.5747",
+        "Map_Reference": "Map 14",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-14.jpg",
+        "ExternalMapLink": "https://www.loc.gov/item/2004629025/",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Flers",
+        "Place_GPS_coordinate": "48.7372, -0.5747",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.9497,
+          "East": 0.8003,
+          "South": 47.8372,
+          "North": 49.6372
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "American and British/Canadian Roles in Vise",
+      "Sub-event_summary": "American forces would act as the southern jaw of a vise, with British and Canadian forces as the northern jaw, closing on the army group boundary to entrap and crush the Germans.",
+      "Sub-event_fulltext": {
+        "Paragraph_[131]": "There, the American forces would be in a position to act as the southern jaw of a vise. Approaching the same line from the north, the British and Canadian forces between Tinchebray and Falaise would, in effect, form the other jaw. Closing the jaws on the army group boundary would entrap and crush the Germans in between."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Tinchebray",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "21st Army Group",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "First Canadian Army",
+            "Name": "Henry Duncan Graham Crerar",
+            "Rank": "General",
+            "Date": "080000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_Crerar",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "Second British Army",
+            "Name": "Miles Dempsey",
+            "Rank": "Lieutenant General",
+            "Date": "080000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Miles_Dempsey",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Tinchebray",
+        "Place_GPS_coordinate": "48.7628, -0.7342",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Tinchebray",
+        "Place_GPS_coordinate": "48.7628, -0.7342",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.1092,
+          "East": 0.6408,
+          "South": 47.8628,
+          "North": 49.6628
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Bradley's Orders to Patton",
+      "Sub-event_summary": "Bradley ordered Patton to advance on the axis Alençon-Sées to the line Sées-Carrouges, prepared for further action against the enemy flank and rear toward Argentan, giving Patton another armored division and initially the 35th Division, though the latter order was revoked as it was needed by VII Corps.",
+      "Sub-event_fulltext": {
+        "Paragraph_[132]": "Specifically, General Bradley ordered General Patton to \"advance on the axis Alençon-Sées to the line Sées--Carrouges prepared for further action against the enemy flank and rear in the direction of Argentan.\" This meant turning the XV Corps north from le Mans, and for this purpose Bradley gave Patton another armored division. He also ordered the 35th Division, involved in the battle around Mortain, to revert to the Third Army \"without delay,\" but the division was still needed by the VII Corps, and Bradley soon revoked this part of this order."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Alençon",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "XV Corps",
+            "Name": "Wade H. Haislip",
+            "Rank": "Major General",
+            "Date": "080000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Wade_H._Haislip",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "35th Infantry Division",
+            "Name": "Paul Baade",
+            "Rank": "Major General",
+            "Date": "080000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_W._Baade",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": {
+            "Origination_Country": "US",
+            "Name": "Armored Division",
+            "Identifier": "Unknown",
+            "Quantity": "1 additional",
+            "Web_Reference": null,
+            "Web_Image_Reference": null,
+            "Web_Reference_Capture_Date": "December 28, 2025"
+          }
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.432856, 0.091266",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.432856, 0.091266",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.283,
+          "East": 1.467,
+          "South": 47.533,
+          "North": 49.332
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Bradley's Instructions to Hodges",
+      "Sub-event_summary": "Bradley instructed Hodges to pivot on Mortain, advance to Barenton-Domfront, and be ready for further action northeast toward Flers, while eliminating the German salient in the Vire-Mortain-Ger area.",
+      "Sub-event_fulltext": {
+        "Paragraph_[133]": "General Bradley instructed General Hodges to pivot on Mortain, advance to the Barenton-Domfront line, and be ready to take further action northeast in the direction of Flers. Hodges was also to eliminate the German salient in the Vire-Mortain-Ger area.[48](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn48)"
+      },
+      "Footnote_References": [
+        "48"
+      ],
+      "Place_Name": "Barenton",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "First Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Courtney Hodges",
+          "Name": "Courtney Hodges",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Courtney_Hodges",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Barenton",
+        "Place_GPS_coordinate": "48.599998, -0.83333",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Barenton",
+        "Place_GPS_coordinate": "48.599998, -0.83333",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.20833,
+          "East": 0.54167,
+          "South": 47.699998,
+          "North": 49.499998
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Hodges Issues Orders",
+      "Sub-event_summary": "Hodges issued orders the day after Bradley's instructions for a converging attack by VII and XIX Corps to eliminate the salient, with XIX Corps assuming control and continuing to Flers, VII Corps concentrating and attacking to Argentan, and V Corps attacking to Tinchebray.",
+      "Sub-event_fulltext": {
+        "Paragraph_[134]": "General Hodges issued his order the day after Bradley's instructions. To eliminate the German salient around Mortain, Hodges set up a converging attack by the VII and XIX Corps. VII Corps, attacking generally eastward along an axis through Mortain (south of a new temporary boundary with XIX Corps), was eventually to be pinched out by the advance of XIX Corps, which was attacking to the south through Sourdeval and Ger. This would wipe out the German salient. XIX Corps was then to assume control over its original zone and some of the forces of VII Corps and continue the attack east and northeast toward Flers. VII Corps was to concentrate its strength in the area south and southeast of Domfront and, together with its forces near Mayenne, it was to launch an attack northeast in the direction of Argentan. Meanwhile, V Corps was to attack from the Vire area southeastward to Tinchebray. The effect of these moves would be to push the German forces opposing First Army to the army group boundary."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Sourdeval",
+      "Dates": {
+        "Date_group_of_event": "090000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "082300ZAUG44"
+      },
+      "TOE": [
+        {
+          "Unit": "VII Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "First Army",
+            "Commander": "Joseph Lawton Collins",
+            "Name": "Joseph Lawton Collins",
+            "Rank": "Lieutenant General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "XIX Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "First Army",
+            "Commander": "Charles H. Corlett",
+            "Name": "Charles H. Corlett",
+            "Rank": "Major General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        },
+        {
+          "Unit": "V Corps",
+          "Unit_Nationality": "US",
+          "Command_Structure": {
+            "Unit": "First Army",
+            "Commander": "Leonard T. Gerow",
+            "Name": "Leonard T. Gerow",
+            "Rank": "Lieutenant General",
+            "End_Date": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Leonard_T._Gerow",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          "Subordinates": [],
+          "Personnel": "Unknown",
+          "Equipments": {
+            "Supply": "No shortages mentioned"
+          }
+        }
+      ],
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Sourdeval",
+        "Place_GPS_coordinate": "48.7231, -0.9222",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Sourdeval",
+        "Place_GPS_coordinate": "48.7231, -0.9222",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.2972,
+          "East": 0.4528,
+          "South": 47.8231,
+          "North": 49.6231
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "First Army G-2 Interpretation",
+      "Sub-event_summary": "According to the First Army G-2's erroneous interpretation, by 9 August the Germans were already pulling back to avoid entrapment.",
+      "Sub-event_fulltext": {
+        "Paragraph_[135]": "According to the erroneous interpretation of enemy intentions by the First Army G-2, who was two days ahead of events, the Germans by 9 August were already \"pulling back to avoid entrapment.\"[49](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn49)"
+      },
+      "Footnote_References": [
+        "49"
+      ],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "090000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "082300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "First Army G-2",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Unknown",
+          "Name": "Unknown",
+          "Rank": "Unknown",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0, -1.0",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://omniatlas.com/maps/europe/19440811/",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0, -1.0",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.374,
+          "East": 0.374,
+          "South": 48.1,
+          "North": 49.9
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Patton's Vision for Encirclement",
+      "Sub-event_summary": "Patton felt that to surround and destroy the German army west of the Seine, forces needed to cut through the German rear on a narrow front and encircle by contacting the Canadians, tasking the XV Corps with this.",
+      "Sub-event_fulltext": {
+        "Paragraph_[136]": "As for the Third Army, General Patton felt that since the \"purpose of the operation is to surround and destroy the German army west of the Seine,\" he had first to surround the Germans so that their destruction would be inescapable. He envisioned forces cutting through the German rear on a relatively narrow front and encircling the enemy by making contact with the Canadians on the opposite Allied flank. This was the task he gave XV Corps.[50](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn50)"
+      },
+      "Footnote_References": [
+        "50"
+      ],
+      "Place_Name": "Seine River",
+      "Dates": {
+        "Date_group_of_event": "080000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "072300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "XV Corps",
+            "Name": "Wade H. Haislip",
+            "Rank": "Major General",
+            "Date": "080000BAUG44",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Wade_H._Haislip",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Seine River",
+        "Place_GPS_coordinate": "49.27833, -0.22611",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Seine River",
+        "Place_GPS_coordinate": "49.27833, -0.22611",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.60111,
+          "East": 1.14889,
+          "South": 48.37833,
+          "North": 50.17833
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Montgomery's Concept on 11 August",
+      "Sub-event_summary": "On 11 August, Montgomery made known his concept of encirclement, based on the estimate that the bulk of enemy forces were west of a line from Caen through Falaise, Argentan, Alençon to le Mans.",
+      "Sub-event_fulltext": {
+        "Paragraph_[137]": "On 11 August--a day after XV Corps attacked north from le Mans, the same day that Kluge decided the Mortain salient had to be reduced, and a day before the First Army began its new attack--General Montgomery made known his concept of encirclement. He based his concept on the estimate that the bulk of the enemy forces were west of a north-south line passing from Caen through Falaise, Argentan, and Alençon to le Mans."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "21st Army Group",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.182863, -0.370679",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.182863, -0.370679",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.74496,
+          "East": 1.00676,
+          "South": 48.28398,
+          "North": 50.08262
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Narrowing Gap and Closing It",
+      "Sub-event_summary": "As Canadians attack toward Falaise and XV U.S. Corps toward Alençon, the gap for German supplies narrows, and closing it completely would put the enemy in the most awkward predicament.",
+      "Sub-event_fulltext": {
+        "Paragraph_[138]": "As the Canadians attacked toward Falaise and the XV U.S. Corps attacked toward Alençon, the gap, through which must come all German supplies and reinforcement from the east, would narrow. \"Obviously,\" General Montgomery stated, \"if we can close the gap completely, we shall have put the enemy in the most awkward predicament.\" *[](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-15.jpg)*"
+      },
+      "Footnote_References": [],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "First Canadian Army",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Henry Duncan Graham Crerar",
+          "Name": "Henry Duncan Graham Crerar",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_Crerar",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-15.jpg",
+          "Description": "Map 15: Normandy Front, 7-11 August 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Map_Reference": "Map 15",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-15.jpg",
+        "ExternalMapLink": "https://omniatlas.com/maps/europe/19440811/",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.576956,
+          "East": 1.173044,
+          "South": 47.993548,
+          "North": 49.793548
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Expected German Reaction to Narrowing Gap",
+      "Sub-event_summary": "As the gap narrows, the enemy is likely to bring additional divisions from the east or move armored and mobile forces eastward through the gap toward supplies.",
+      "Sub-event_fulltext": {
+        "Paragraph_[139]": "As the gap narrowed, the enemy was likely to react in one of two ways. He might bring up additional divisions from the east; or, more probably, he would try to move his armored and mobile forces eastward through the gap toward ammunition and gasoline supplies."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "Ammunition and gasoline supplies"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0, -1.0",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0, -1.0",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.374,
+          "East": 0.374,
+          "South": 48.1,
+          "North": 49.9
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Likely German Operations in Bocage",
+      "Sub-event_summary": "If moving eastward, Germans would operate in the Domfront-Argentan-Alençon area for bocage benefits, to hold off Americans and withdraw on the Falaise-Vire line.",
+      "Sub-event_fulltext": {
+        "Paragraph_[142]": "If the Germans chose the latter course of action, they would probably operate in the general Domfront, Argentan, Alençon area in order \"to have the benefit of the difficult 'bocage' country.\" Their purpose would be to hold off the Americans and withdraw on the Falaise-Vire line."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Domfront",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Domfront",
+        "Place_GPS_coordinate": "48.5921, -0.6459",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Domfront",
+        "Place_GPS_coordinate": "48.5921, -0.6459",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.0209,
+          "East": 0.7291,
+          "South": 47.6921,
+          "North": 49.4921
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Montgomery's Assessment of Defenses",
+      "Sub-event_summary": "Expecting stronger German forces in defense of Alençon than Falaise, Montgomery concluded it would be easier for Canadians to reach Argentan from the north than for Americans from the south.",
+      "Sub-event_fulltext": {
+        "Paragraph_[143]": "Expecting the Germans to mass stronger forces in defense of Alençon than of Falaise, Montgomery concluded that it would be easier for the Canadians to reach Argentan from the north than it would be for the Americans to get there from the south."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Alençon",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "21st Army Group",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.432856, 0.091266",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Alençon",
+        "Place_GPS_coordinate": "48.432856, 0.091266",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.283734,
+          "East": 1.466266,
+          "South": 47.532856,
+          "North": 49.332856
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Montgomery's Orders to Canadians and British",
+      "Sub-event_summary": "Montgomery ordered the First Canadian Army to continue capturing Falaise quickly, then drive south to Argentan, with the Second British Army turning left to drive toward Falaise by pushing its left wing forward.",
+      "Sub-event_fulltext": {
+        "Paragraph_[144]": "He therefore ordered the First Canadian Army to continue its effort to capture Falaise, stating that it was \"vital that it should be done quickly.\" The Canadians were then to drive south from Falaise to take Argentan. On the Canadian right, the Second British Army, turning to the left, was also to drive toward Falaise by pushing forward its left wing."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Falaise",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "First Canadian Army",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Henry Duncan Graham Crerar",
+          "Name": "Henry Duncan Graham Crerar",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Harry_Crerar",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Falaise",
+        "Place_GPS_coordinate": "48.893548, -0.201956",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.576956,
+          "East": 1.173044,
+          "South": 47.993548,
+          "North": 49.793548
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "British Occupation and XV Corps Advance",
+      "Sub-event_summary": "At the conclusion, the British would occupy a north-south line between Falaise and Argentan; meanwhile, the XV U.S. Corps advances north from le Mans through Alençon to the army group boundary several miles south of Argentan along Carrouges and Sées.",
+      "Sub-event_fulltext": {
+        "Paragraph_[145]": "At the conclusion of the advance, the British would occupy a north-south line between Falaise and Argentan, the right boundary of the Canadian army sector. Meanwhile, the XV U.S. Corps was to advance north from le Mans through Alençon to the army group boundary, which was several miles south of Argentan along a line between Carrouges and Sées."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Carrouges",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Second British Army",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "21st Army Group",
+          "Commander": "Miles Dempsey",
+          "Name": "Miles Dempsey",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Miles_Dempsey",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Carrouges",
+        "Place_GPS_coordinate": "48.566669, -0.15",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Carrouges",
+        "Place_GPS_coordinate": "48.566669, -0.15",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.525,
+          "East": 1.225,
+          "South": 47.666669,
+          "North": 49.466669
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Projected Meeting and Encirclement",
+      "Sub-event_summary": "The projected result would be a meeting of Canadian and American forces just south of Argentan to encircle Germans concentrated west of the Orne, with the British sweeping to herd Germans into the lines, and the First U.S. Army driving Germans in its zone to the boundary.",
+      "Sub-event_fulltext": {
+        "Paragraph_[146]": "The projected result would be a meeting of Canadian and American forces just south of Argentan to encircle the Germans who had concentrated the bulk of their forces west of the Orne and a sweeping advance by the British to herd the Germans into the Canadian and American lines. The First U.S. Army, inferentially, would drive the Germans in its zone into the path of the British advance."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Orne River",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Courtney Hodges",
+          "Name": "Courtney Hodges",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Courtney_Hodges",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Orne River",
+        "Place_GPS_coordinate": "49.27833, -0.22611",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Orne River",
+        "Place_GPS_coordinate": "49.27833, -0.22611",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.60111,
+          "East": 1.14889,
+          "South": 48.37833,
+          "North": 50.17833
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Montgomery's Intent to Destroy Between Seine and Loire",
+      "Sub-event_summary": "Montgomery noted it looks as if the enemy intends to fight between the Seine and the Loire, suiting the Allies well, with the intention to destroy enemy forces there, not overlooking possible evasion for wider encirclement to the Seine.",
+      "Sub-event_fulltext": {
+        "Paragraph_[147]": "\"It begins to look,\" General Montgomery wrote, \"as if the enemy intends to fight it out between the Seine and the Loire. This will suit us very well. . .&bnbsp; Clearly our intention must be to destroy the enemy forces between the Seine and the Loire.\" Yet Montgomery did not overlook the possibility that the enemy might successfully evade encirclement at Argentan. In that case, the Allies were to be ready to institute the wider encirclement earlier projected to the Seine.[51](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn51)"
+      },
+      "Footnote_References": [
+        "51"
+      ],
+      "Place_Name": "Seine River",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "21st Army Group",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Seine River",
+        "Place_GPS_coordinate": "49.27833, -0.22611",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Seine River",
+        "Place_GPS_coordinate": "49.27833, -0.22611",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.60111,
+          "East": 1.14889,
+          "South": 48.37833,
+          "North": 50.17833
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Allied Occupation Narrowing Gap",
+      "Sub-event_summary": "Apparent to all that Allied occupation of Falaise and Alençon would narrow the gap to thirty-five miles, with bulk Germans west facing encirclement, cutting two main roads, forcing escape along Vire-Flers-Argentan highway.",
+      "Sub-event_fulltext": {
+        "Paragraph_[149]": "What seemed perfectly apparent to all was that Allied occupation of Falaise and Alençon would narrow to thirty-five miles the gap between the two flanks of the German defensive positions. Since the bulk of the German forces were west of the gap and facing complete encirclement, capture of the two towns would cut two of the three main east-west roads still in German hands and force the Germans to escape eastward, if they could, along the axis of the Vire-Flers-Argentan highway.[52](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn52)"
+      },
+      "Footnote_References": [
+        "52"
+      ],
+      "Place_Name": "Vire",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.838, -0.889",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.838, -0.889",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.264,
+          "East": 0.486,
+          "South": 47.938,
+          "North": 49.738
+        }
+      }
+    },
+    {
+      "Event": "Concepts of Encirclement",
+      "Sub-event": "Potential Realization of Montgomery's Opinion",
+      "Sub-event_summary": "It seemed likely that Montgomery's mid-June opinion that the Allies might defeat the Germans between the Seine and the Loire was about to be realized.",
+      "Sub-event_fulltext": {
+        "Paragraph_[150]": "It seemed not altogether unlikely that the opinion General Montgomery had ventured in mid-June--that the Allies might defeat the Germans between the Seine and the Loire--was about to be realized.[53](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html#fn53)"
+      },
+      "Footnote_References": [
+        "53"
+      ],
+      "Place_Name": "Loire River",
+      "Dates": {
+        "Date_group_of_event": "110000BAUG44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+        "Zulu_date_group_of_event": "102300ZAUG44"
+      },
+      "TOE": {
+        "Unit": "21st Army Group",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "SHAEF",
+          "Commander": "Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Unknown",
+        "Equipments": {
+          "Supply": "No shortages mentioned"
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Loire River",
+        "Place_GPS_coordinate": "47.2682, -2.18583",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Loire River",
+        "Place_GPS_coordinate": "47.2682, -2.18583",
+        "Weather_text": "Mainly dry and warm, especially in the first half of August 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -3.56083,
+          "East": -0.81083,
+          "South": 46.3682,
+          "North": 48.1682
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "46",
+      "Footnote_Number": "46",
+      "Footnote_Text": "12th AGp Dir, 8 Aug, Confirming oral orders, FUSA Dir, 8 Aug, Confirming oral orders, 12th AGp Confirmatory Notes, 8 Aug, all in 12th AGp Dir File.",
+      "Footnote_Referenced_Source": "12th AGp Dir, 8 Aug, Confirming oral orders, FUSA Dir, 8 Aug, Confirming oral orders, 12th AGp Confirmatory Notes, 8 Aug, all in 12th AGp Dir File.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "12th Army Group Directive File"
+    },
+    {
+      "Footnote": "47a",
+      "Footnote_Number": "47",
+      "Footnote_Text": "Bradley, A Soldier's Story, pp. 375-76",
+      "Footnote_Referenced_Source": "Bradley, A Soldier's Story, pp. 375-76",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Book",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "A Soldier's Story, pp. 375-76"
+    },
+    {
+      "Footnote": "47b",
+      "Footnote_Number": "47",
+      "Footnote_Text": "Pogue Interv with Bradley, 4 May 46.",
+      "Footnote_Referenced_Source": "Pogue Interv with Bradley, 4 May 46.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Pogue Interview with Bradley, 4 May 46"
+    },
+    {
+      "Footnote": "48a",
+      "Footnote_Number": "48",
+      "Footnote_Text": "12th AGp Dir, 8 Aug, Confirming oral orders",
+      "Footnote_Referenced_Source": "12th AGp Dir, 8 Aug, Confirming oral orders",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "12th Army Group Directive, 8 Aug"
+    },
+    {
+      "Footnote": "48b",
+      "Footnote_Number": "48",
+      "Footnote_Text": "TUSA Dir, 8 Aug, Confirming oral orders, 8 Aug, TUSA Dir File.",
+      "Footnote_Referenced_Source": "TUSA Dir, 8 Aug, Confirming oral orders, 8 Aug, TUSA Dir File.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Third Army Directive File"
+    },
+    {
+      "Footnote": "49",
+      "Footnote_Number": "49",
+      "Footnote_Text": "FUSA Dir, 9 Aug, Confirming oral orders, 8 Aug, FUSA Dir File.",
+      "Footnote_Referenced_Source": "FUSA Dir, 9 Aug, Confirming oral orders, 8 Aug, FUSA Dir File.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "First Army Directive File"
+    },
+    {
+      "Footnote": "50",
+      "Footnote_Number": "50",
+      "Footnote_Text": "TUSA Dir, 8 Aug, Confirming oral orders, TUSA Dir File.",
+      "Footnote_Referenced_Source": "TUSA Dir, 8 Aug, Confirming oral orders, TUSA Dir File.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Third Army Directive File"
+    },
+    {
+      "Footnote": "51a",
+      "Footnote_Number": "51",
+      "Footnote_Text": "21 AGp Dir, M-519, 11 Aug",
+      "Footnote_Referenced_Source": "21 AGp Dir, M-519, 11 Aug",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "21 Army Group Directive M-519"
+    },
+    {
+      "Footnote": "51b",
+      "Footnote_Number": "51",
+      "Footnote_Text": "Montgomery, Normandy to the Baltic, p. 164.",
+      "Footnote_Referenced_Source": "Montgomery, Normandy to the Baltic, p. 164.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Book",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Normandy to the Baltic, p. 164"
+    },
+    {
+      "Footnote": "52",
+      "Footnote_Number": "52",
+      "Footnote_Text": "TUSA G-2 Per Rpt 58, 8 Aug.",
+      "Footnote_Referenced_Source": "TUSA G-2 Per Rpt 58, 8 Aug.",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Third Army G-2 Periodic Report 58"
+    },
+    {
+      "Footnote": "53",
+      "Footnote_Number": "53",
+      "Footnote_Text": "See above, Ch. VIII.",
+      "Footnote_Referenced_Source": "See above, Ch. VIII.",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+      "Web_Link_Capture_Date": "December 28, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn25.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

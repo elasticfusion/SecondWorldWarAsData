@@ -1,0 +1,671 @@
+{
+  "Events": [
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "Contrast in Army Progress",
+      "Sub-event_summary": "The Third Army achieved spectacular gains in early August 1944 by advancing through lightly defended areas, while the First Army encountered organized and stubborn German resistance, impacting the overall campaign in western Europe.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "In contrast with the Third Army's spectacular gains during the first week of August, the First Army seemed to be standing still. The difference between the rates of progress of the two armies was easily explained. Whereas Patton's units were slashing through areas held by few German defenders, the First Army was meeting organized, stubborn resistance. Because the Third Army's achievements were more impressive, they became the side of the coin usually displayed, but the accomplishments of Hodges' First Army were no less important in determining the course of the campaign in western Europe."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Western Europe",
+      "Dates": {
+        "Date_group_of_event": "010000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "312300Zjul44"
+      },
+      "TOE": {
+        "Unit": "First Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "VII Corps",
+            "Name": "Joseph Lawton Collins",
+            "Rank": "Major General",
+            "Date": "010000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://grokipedia.com/page/J._Lawton_Collins",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "XIX Corps",
+            "Name": "Charles H. Corlett",
+            "Rank": "Major General",
+            "Date": "010000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          },
+          {
+            "Unit": "V Corps",
+            "Name": "Leonard T. Gerow",
+            "Rank": "Major General",
+            "Date": "010000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://grokipedia.com/page/Leonard_T._Gerow",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXIII-1.jpg",
+          "Description": "Map of Normandy breakout operations",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, -1.0000",
+        "Map_Reference": "Maps I-XLIII are in Inverse Order Inside Back Cover",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXIII-1.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_Breakout_Map,_operations_25_July_to_15_August_1944.svg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, -1.0000",
+        "Weather_text": "Warm summer weather with high humidity and possible ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.36,
+          "East": 0.36,
+          "South": 48.1,
+          "North": 49.9
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "Allied Objectives and Planning",
+      "Sub-event_summary": "The Allies aimed to maintain the momentum from Operation COBRA, with the Third Army advancing into Brittany and the First Army pivoting to face east for a drive to the Seine alongside British and Canadian forces.",
+      "Sub-event_fulltext": {
+        "Paragraph_2": "The primary intention of the Allies on 1 August was to sustain the momentum developed by COBRA. The objectives remained the same as those enunciated at the beginning of July. While the Third Army slid into Brittany, the First Army was to swing left to a north-south line facing eastward and prepare to drive to the Seine in conjunction with the British and Canadians.",
+        "Paragraph_3": "The NEPTUNE planners had envisioned a rather wide wheeling movement beginning at the base of the Cotentin and clearing the OVERLORD lodgment area as far south as the Loire River. In keeping with this concept, the boundary between the First Army and the British and Canadians extended from the invasion coast southeast more than fifty miles through Bayeux and Flers, then east through Alençon and Dreux to the Eure River just short of Paris. This split the lodgment area (exclusive of Brittany) roughly into equal parts and postulated a twin drive by the 21 Army Group toward the lower Seine River (between Paris and the sea) and the 12th Army Group toward the upper Seine north of the Loire River (between Paris and Orléans). The pivot for the American turn was at a point just west of Alençon, almost sixty miles from the invasion coast.<sup>[1](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn1)</sup>"
+      },
+      "Footnote_References": [
+        "1"
+      ],
+      "Place_Name": "Cotentin",
+      "Dates": {
+        "Date_group_of_event": "010000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "312300Zjul44"
+      },
+      "TOE": {
+        "Unit": "21 Army Group",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Allied Expeditionary Force",
+          "Commander": "Bernard Montgomery",
+          "Name": "Bernard Montgomery",
+          "Rank": "Field Marshal",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5000, -1.5000",
+        "Map_Reference": "Maps I-XLIII are in Inverse Order Inside Back Cover",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_Breakout_Map,_operations_25_July_to_15_August_1944.svg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5000, -1.5000",
+        "Weather_text": "Incessant downpours and bad weather typical of Normandy in summer 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.86,
+          "East": -0.14,
+          "South": 48.6,
+          "North": 50.4
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "Adjustments in Wheeling Movement",
+      "Sub-event_summary": "Initial plans for pivoting at Alençon were deemed unrealistic, leading to a shallower turning movement anchored at Caumont and arcing through Fougères, with the pivot shifting to Vire during the COBRA operation.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "Three weeks after the invasion it had seemed obvious that pivoting on Alençon was an optimistic improbability. Also, General Montgomery preferred to anchor the British forces on the small foothold secured by the end of June rather than attempt to enlarge the space that would determine the eventual wheeling maneuver. Montgomery had therefore instructed General Bradley to secure the American left on Caumont, less than twenty miles inland, and make a shallower turning movement, describing --440-- an arc through Fougères, about seventy miles north of the Loire River. This, the First Army had been unable to accomplish.",
+        "Paragraph_5": "During the COBRA operation, the American left flank forces had been anchored on St. Lô. The success of COBRA and of the post-COBRA exploitation had enabled the forces on the right to sweep through the successive objectives of Laval and le Mans, about fifty miles north of the Loire. At the same time, the American pivot shifted south to the town of Vire. At the beginning of August, American and British troops were both driving to secure Vire as the point of the wheeling movement that had already started.<sup>[2](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn2)</sup>"
+      },
+      "Footnote_References": [
+        "2"
+      ],
+      "Place_Name": "Vire",
+      "Dates": {
+        "Date_group_of_event": "010000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "312300Zjul44"
+      },
+      "TOE": {
+        "Unit": "First Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.837781, -0.888482",
+        "Map_Reference": "Maps I-XLIII are in Inverse Order Inside Back Cover",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_Breakout_Map,_operations_25_July_to_15_August_1944.svg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Vire",
+        "Place_GPS_coordinate": "48.837781, -0.888482",
+        "Weather_text": "Warm summer weather with high humidity and possible ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.25,
+          "East": 0.47,
+          "South": 47.94,
+          "North": 49.74
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "Importance of Key Road Centers and Hodges' Concentration",
+      "Sub-event_summary": "Allied plans required securing road centers like Vire, Mortain, and Fougères to protect the advance into Brittany from eastern threats, with General Hodges focusing on Vire and Mortain after the Third Army took Fougères.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "Earlier, the Allies had believed that, before troops could move from Avranches into Brittany, it would be necessary to erect a barrier against interference from the east. This requirement partially explained Allied preoccupation with the road centers of Vire, Mortain, and Fougères. Yet before these could be seized, even as the American left remained heavily engaged near Villedieu-les-Poëles, Percy, and Tessy, the entrance into Brittany had been made. Vire, Mortain, and Fougères remained important nevertheless, for with German strength in Brittany drained to reinforce the Normandy front, a strong German threat could only come from the east or the southeast. When the Third Army assumed responsibility for taking Fougères, General Hodges concentrated upon capturing Vire and Mortain.<sup>[3](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn3)</sup>"
+      },
+      "Footnote_References": [
+        "3"
+      ],
+      "Place_Name": "Mortain",
+      "Dates": {
+        "Date_group_of_event": "010000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "312300Zjul44"
+      },
+      "TOE": {
+        "Unit": "Third Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "12th Army Group",
+          "Commander": "George S. Patton",
+          "Name": "George S. Patton",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/George_S._Patton",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ww2online.org/image/united-states-serviceman-standing-next-crater-road-mortain-normandy-france-july-1944",
+          "Description": "United States serviceman standing next to crater in road in Mortain, Normandy, France in July 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6486, -0.9397",
+        "Map_Reference": "Maps I-XLIII are in Inverse Order Inside Back Cover",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_Breakout_Map,_operations_25_July_to_15_August_1944.svg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mortain",
+        "Place_GPS_coordinate": "48.6486, -0.9397",
+        "Weather_text": "Warm summer weather and high humidity resulting in ground fog in the early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.3,
+          "East": 0.42,
+          "South": 47.75,
+          "North": 49.55
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "General Hodges' Command and Background",
+      "Sub-event_summary": "General Courtney Hodges assumed command of the First Army on 1 August 1944, sharing traits with Bradley and preferring direct engagements; his career spanned from enlisted private to lieutenant general, including service in Mexico, WWI, and various commands.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "Succeeding to the command of the First Army after having served as deputy commander, General Hodges was in demeanor and habit much like his predecessor, General Bradley. Quiet and modest, \"unostentatious and retiring,\" General Hodges performed his duties in a workmanlike manner without fanfare. He was opposed to what he termed the \"uncertain business\" of \"tricky maneuver.\" Too many units, he felt, tried to flank and skirt instead of meeting the enemy straight on, and he believed that it was \"safer, sounder, and in the end quicker to keep smashing ahead.\"<sup>[4](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn4)</sup>",
+        "Paragraph_8": "General Hodges had enlisted in the Regular Army as a private, had served in Pershing's Punitive Expedition into Mexico as an officer, and had fought in France during World War I as a battalion and a regimental commander. Commandant of the Infantry School at Fort Benning, Georgia, in 1940, Hodges had become in rapid succession Chief of Infantry, head of the Replacement and School Command of the Army Ground Forces, and Commanding General, X Corps. A lieutenant general by 1944, he assumed command of the First Army on 1 August and took control of three corps, the VII, the XIX, and the V."
+      },
+      "Footnote_References": [
+        "4"
+      ],
+      "Place_Name": "Fort Benning, Georgia",
+      "Dates": {
+        "Date_group_of_event": "010000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "312300Zjul44"
+      },
+      "TOE": {
+        "Unit": "First Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First Army",
+          "Commander": "Courtney Hodges",
+          "Name": "Courtney Hodges",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Courtney_Hodges",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "VII Corps",
+            "Name": "Joseph Lawton Collins",
+            "Rank": "Major General",
+            "Date": "010000BSTaug44",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://grokipedia.com/page/J._Lawton_Collins",
+            "Biographical_reference_Capture_Date": "December 28, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Fort Benning, Georgia",
+        "Place_GPS_coordinate": "32.3522, -84.9689",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Fort Benning, Georgia",
+        "Place_GPS_coordinate": "32.3522, -84.9689",
+        "Weather_text": "Not applicable for event date; historical context only.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -86.33,
+          "East": -83.61,
+          "South": 31.45,
+          "North": 33.25
+        }
+      }
+    },
+    {
+      "Event": "Chapter XXIII - Opportunities and Intentions",
+      "Sub-event": "Objectives and German Situation Assessment",
+      "Sub-event_summary": "Seizing Vire and Mortain would protect the Avranches corridor and initiate the turning maneuver, with optimistic prospects for First Army goals amid German attempts to stabilize, potentially leading to collapse without reinforcements from the Fifteenth Army.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "By seizing Vire and Mortain, General Hodges would provide protection for the Avranches corridor while beginning the First Army turning maneuver.<sup>[5](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn5)</sup> Prospects of attaining his goals seemed favorable. The Germans were trying to stabilize their left flank, but despite counterattacks \"and the belated shifting of his reserves,\" the enemy appeared incapable of halting a First Army advance.<sup>[6](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn6)</sup> If eight divisions were shifted from the *Fifteenth Army,* the Germans could perhaps continue to fight along a general line from Rennes through Mortain, Falaise, and Trouville and thus prevent the emergence of Allied forces from Normandy. Otherwise, there could only be abandonment of the \"no retreat\" policy. Beyond that, it was possible even to foresee complete German collapse in the very near future. \"Only discipline,\" the First Army G-2 wrote,",
+        "Paragraph_10": "> and habit of obedience to orders keeps the front line units fighting. It is doubtful that the German forces in Normandy can continue for more than four to eight weeks as a military machine. One more heavy defeat such as the recent breakthrough battle which commenced 25 July will most probably result in the collapse of the forces now at the base of the Cherbourg Peninsula. Surrender or a disastrous retreat will be the alternative for the German forces. In the next four to eight weeks the current situation may change with dramatic suddenness into a race to reach a chaotic Germany.<sup>[7](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html#fn7)</sup>",
+        "Paragraph_11": "So optimistic an assessment, though completely warranted, was not to endure for long once the character of German resistance on the immediate First Army front was manifest."
+      },
+      "Footnote_References": [
+        "5",
+        "6",
+        "7"
+      ],
+      "Place_Name": "Avranches",
+      "Dates": {
+        "Date_group_of_event": "010000BSTaug44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+        "Zulu_date_group_of_event": "312300Zjul44"
+      },
+      "TOE": {
+        "Unit": "Fifteenth Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Hans von Salmuth",
+          "Name": "Hans von Salmuth",
+          "Rank": "General",
+          "End_Date": "APPROX 250000BSTaug44",
+          "End_Status": "Relieved",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_von_Salmuth",
+          "Biographical_reference_Capture_Date": "December 28, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3569",
+        "Map_Reference": "Maps I-XLIII are in Inverse Order Inside Back Cover",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Normandy_Breakout_Map,_operations_25_July_to_15_August_1944.svg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 28, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Avranches",
+        "Place_GPS_coordinate": "48.6844, -1.3569",
+        "Weather_text": "Warm summer weather with high humidity and possible ground fog in early morning hours.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.72,
+          "East": -0.0,
+          "South": 47.78,
+          "North": 49.58
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "1a",
+      "Footnote_Number": "1a",
+      "Footnote_Text": "PS SHAEF (44) 13 (Final), Post-NEPTUNE Plng Forecast No. 1, 27 May, and Map \"MA\" attached, SGS SHAEF Post-OVERLORD Plng File, 381",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "SGS SHAEF Post-OVERLORD Plng File, 381",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "PS SHAEF (44) 13 (Final)"
+    },
+    {
+      "Footnote": "1b",
+      "Footnote_Number": "1b",
+      "Footnote_Text": "SHAEF/17100/35/Ops, NEPTUNE, Summary of Revised Jt Opns Plan--US Forces for Phase II of Opn OVERLORD, 20 May, EUCOM Files, Box 3",
+      "Footnote_Referenced_Source": "",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "EUCOM Files, Box 3",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "SHAEF/17100/35/Ops"
+    },
+    {
+      "Footnote": "2",
+      "Footnote_Number": "2",
+      "Footnote_Text": "See 21 AGp Ltr, M-512, Montgomery to Bradley, Dempsey, Patton, and Crerar, 21 Jul; see above.",
+      "Footnote_Referenced_Source": "21 AGp Ltr, M-512",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "21 AGp Ltr, M-512"
+    },
+    {
+      "Footnote": "3",
+      "Footnote_Number": "3",
+      "Footnote_Text": "12th AGp Dir for Current Opns, 2 Aug.",
+      "Footnote_Referenced_Source": "12th AGp Dir for Current Opns",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "12th AGp Dir for Current Opns, 2 Aug"
+    },
+    {
+      "Footnote": "4a",
+      "Footnote_Number": "4a",
+      "Footnote_Text": "Bradley, Soldier's Story, pp. 226, 358-59",
+      "Footnote_Referenced_Source": "Bradley, Soldier's Story",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "Bradley, Soldier's Story, pp. 226, 358-59"
+    },
+    {
+      "Footnote": "4b",
+      "Footnote_Number": "4b",
+      "Footnote_Text": "Sylvan Diary, 30 Jul.",
+      "Footnote_Referenced_Source": "Sylvan Diary",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "Sylvan Diary, 30 Jul"
+    },
+    {
+      "Footnote": "5a",
+      "Footnote_Number": "5a",
+      "Footnote_Text": "12th AGp Ltr of Instrs 1, 29 Jul",
+      "Footnote_Referenced_Source": "12th AGp Ltr of Instrs 1",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "12th AGp Ltr of Instrs 1, 29 Jul"
+    },
+    {
+      "Footnote": "5b",
+      "Footnote_Number": "5b",
+      "Footnote_Text": "see Msg, Eisenhower to Montgomery, FWD-12505, 31 Jul, SGS SHAEF File 381, OVERLORD, I (a).",
+      "Footnote_Referenced_Source": "Msg, Eisenhower to Montgomery, FWD-12505",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "SGS SHAEF File 381, OVERLORD, I (a)",
+      "NonDigital_Library_Address": "National Archives and Records Administration, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "Msg, Eisenhower to Montgomery, FWD-12505, 31 Jul"
+    },
+    {
+      "Footnote": "6",
+      "Footnote_Number": "6",
+      "Footnote_Text": "FUSA FO 3, 1 Aug.",
+      "Footnote_Referenced_Source": "FUSA FO 3",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "FUSA FO 3, 1 Aug"
+    },
+    {
+      "Footnote": "7",
+      "Footnote_Number": "7",
+      "Footnote_Text": "FUSA G-2 Est 13, 1 Aug.",
+      "Footnote_Referenced_Source": "FUSA G-2 Est 13",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "FUSA G-2 Est 13, 1 Aug"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn23.html",
+  "Source_Footnote_Link_Capture_Date": "December 28, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-23.html",
+  "Source_Link_Capture_Date": "December 28, 2025"
+}

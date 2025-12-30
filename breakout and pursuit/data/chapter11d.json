@@ -1,0 +1,2688 @@
+{
+  "Events": [
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Conception and Teamwork of Bradley and Collins",
+      "Sub-event_summary": "General Bradley conceived the COBRA operation, and General Collins executed it. Their close collaboration and mutual confidence enabled effective planning and modifications based on terrain and reconnaissance.",
+      "Sub-event_fulltext": {
+        "Paragraph_82": "The persons most intimately connected with COBRA were General Bradley, who conceived it, and General Collins, who executed it. These officers, warm personal friends, each of whom seemed to be able to anticipate what the other was about to do, worked together so closely on the plans and on the developing operations that it was sometimes difficult to separate their individual contributions. Their teamwork was particularly effective within the American concept of command where the higher commander often gives his subordinate great leeway in the detailed planning of an operation. On the basis of reconnaissance, terrain study, road conditions, and photo analysis, the subordinate commander could recommend modifications that might alter quite basically the original idea. With fine communications at their disposal, the American commanders at both echelons (indeed at all levels of command) could and did exchange information and suggestions, and measures proposed by the subordinate could be approved quickly by the higher authority. Where mutual confidence abounded as it did in the case of Generals Bradley and Collins, the closest co-operation resulted, with great credit to both."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy, France",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING jul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "BEGINNING jul44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar Nelson Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "VII Corps",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "General",
+          "Date": "jul44",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy, France",
+        "Place_GPS_coordinate": "49.0000°N 1.0000°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Operation_cobra.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 21, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Normandy, France",
+        "Place_GPS_coordinate": "49.0000°N 1.0000°W",
+        "Weather_text": "Typical July weather in Normandy during 1944, with variable conditions including overcast skies and rain earlier in the month.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.2800,
+          "East": 0.2800,
+          "South": 48.1000,
+          "North": 49.9000
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Presentation of COBRA Idea at Conference",
+      "Sub-event_summary": "General Bradley presented the COBRA idea at a conference on 12 July, describing the hedgerow battle as tough and slow, emphasizing the need for bold action and readiness for losses to achieve a swift advance with massive air bombardment.",
+      "Sub-event_fulltext": {
+        "Paragraph_83": "General Bradley presented the COBRA idea at a conference with his staff and his corps commanders on 12 July. He characterized the battle of the hedgerows as \"tough and costly . . . a slugger's match . . . too slow a process,\" and spoke of his hope for a swift advance made possible by \"three or four thousand tons of bombs\" from the air. He stated that aggressive action and a readiness to take stiff losses if necessary were the keys to the success of COBRA. \"If they \\[the Germans\\] get set \\[again\\],\" he warned, \"we go right back to this hedge fighting and you can't make any speed.\" He insisted, \"This thing \\[COBRA\\] must be bold.\"<sup>[55](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn55)</sup>"
+      },
+      "Footnote_References": [
+        "55"
+      ],
+      "Place_Name": "Normandy, France",
+      "Dates": {
+        "Date_group_of_event": "121000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "120900Zjul44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar Nelson Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Air Bombs",
+              "Identifier": "General Bombs",
+              "Quantity": "3000-4000 tons",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Operation_Cobra",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy, France",
+        "Place_GPS_coordinate": "49.0000°N 1.0000°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy, France",
+        "Place_GPS_coordinate": "49.0000°N 1.0000°W",
+        "Weather_text": "Overcast and rainy conditions typical of early July 1944 in Normandy, with temperatures around 20°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.2800,
+          "East": 0.2800,
+          "South": 48.1000,
+          "North": 49.9000
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Requisites for COBRA Operation",
+      "Sub-event_summary": "General Bradley outlined multiple complex requisites for COBRA, including German withdrawal to a stable line, contact with main resistance, weak fortifications, firm ground, adequate roads, and the ability to shake armor loose before German recovery.",
+      "Sub-event_fulltext": {
+        "Paragraph_84": "Requisites for the COBRA operation were many and complex, and General Bradley could only estimate that they in fact were fulfilled. He assumed that the Germans in the Cotentin, under the pressure of the July offensive, would withdraw to an organized and stable defensive line. He had to determine where they would be likely to erect their defense. He had to be certain that the Americans were in contact with the main line of resistance when the operation commenced. He had to be sure that the enemy line would not be so strongly fortified as to defy rapid penetration. He had to have firm ground beyond the Cotentin marshes that would not mire and delay mobile columns. He had to have a region traversed by a sufficient number of roads to permit quick passage of large numbers of troops. Finally, he had to be reasonably sure he could shake his armor loose before the Germans could recuperate from the penetration.<sup>[56](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn56)</sup>"
+      },
+      "Footnote_References": [
+        "56"
+      ],
+      "Place_Name": "Cotentin Peninsula, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 312300Zjun44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar Nelson Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cotentin Peninsula, France",
+        "Place_GPS_coordinate": "49.5000°N 1.5000°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Cotentin Peninsula, France",
+        "Place_GPS_coordinate": "49.5000°N 1.5000°W",
+        "Weather_text": "Variable July weather, with periods of rain and overcast skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.7800,
+          "East": -0.2200,
+          "South": 48.6000,
+          "North": 50.4000
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Selection of Line of Departure and Battleground",
+      "Sub-event_summary": "Bradley selected the Lessay-St. Lô highway as the COBRA line of departure, with the battleground on the Coutances-St. Lô plateau, characterized by bocage terrain, ridges, roads, and streams.",
+      "Sub-event_fulltext": {
+        "Paragraph_85": "Reasoning that the Germans would withdraw to the vicinity of the Lessay-St. Lô highway, General Bradley chose that road as the COBRA line of departure. The COBRA battleground--the Coutances-St. Lô plateau--was to be south of the highway. It was a region of typical *bocage,* an area of small woods and small hills, land bounded on the west by the ocean, on the east by the Vire River. The sombre hedgerowed lowland gave way to rolling and cheerful terrain, the swamps disappeared, arable land was more plentiful and fertile, the farms more prosperous, the hedgerowed fields larger. Pastoral hillsides replaced the desolation of the *prairies* and the over-luxuriant foliage of the Carentan lowlands. Roads were plentiful, for the most part tarred two-lane routes. There were several wider highways--four main roads leading south and three principal east--west roads across the Cotentin. Road centers such as Coutances, Marigny, St. Gilles, le Mesnil-Herman, and Notre-Dame-de-Cenilly assured an adequate communications network. Streams were relatively small."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Lessay-St. Lô highway, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 312300Zjun44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar Nelson Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Lessay-St. Lô highway, France",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Lessay-St. Lô highway, France",
+        "Place_GPS_coordinate": "49.1167°N 1.0903°W",
+        "Weather_text": "Variable July weather, with periods of rain and overcast skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.3703,
+          "East": 0.1897,
+          "South": 48.2167,
+          "North": 50.0167
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Terrain Analysis and Collins' Input",
+      "Sub-event_summary": "The Coutances-St. Lô plateau features east-west ridges favoring lateral movement. General Collins noted the advantages of swinging the offensive westward, which Bradley's plan incorporated by having mobile troops veer westward to encircle Germans.",
+      "Sub-event_fulltext": {
+        "Paragraph_86": "A jumble of small ridge lines and low hills at first glance, the Coutances-St. Lô plateau contains a series of east-west ridges that rise toward the south for about eight miles from the Lessay-St. Lô highway. Forming cross-compartments that would hinder an advance to the south, the ridges favored lateral movement across the First Army front. When in July the VII Corps had attacked down the Carentan-Périers isthmus toward the plateau, General Collins had indicated awareness of the advantages of swinging the offensive to a lateral axis in that region. He had pointed out that if infantry forces reached Marigny, armored troops might well drive westward",
+        "Paragraph_87": "along the highway from St. Lô to Coutances in exploitation.<sup>[57](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn57)</sup> General Bradley's COBRA plan took advantage of the terrain in the same way. After air force bombs facilitated the infantry penetration, mobile troops were to veer westward and drive to the Coutances, thereby encircling the Germans on the west coast of the Cotentin."
+      },
+      "Footnote_References": [
+        "57"
+      ],
+      "Place_Name": "Coutances-St. Lô plateau, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 312300Zjun44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Coutances-St. Lô plateau, France",
+        "Place_GPS_coordinate": "49.0553°N 1.4449°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Coutances-St. Lô plateau, France",
+        "Place_GPS_coordinate": "49.0553°N 1.4449°W",
+        "Weather_text": "Variable July weather, with periods of rain and overcast skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.7249,
+          "East": -0.1649,
+          "South": 48.1553,
+          "North": 49.9553
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Assignment to VII Corps",
+      "Sub-event_summary": "Bradley assigned the main effort to VII Corps, adjusting boundaries and allocating three infantry and two armored divisions to General Collins.",
+      "Sub-event_fulltext": {
+        "Paragraph_88": "General Bradley called upon the VII Corps to make the main effort. He therefore changed the corps boundary to reduce the corps zone to a width of four and a half miles. He also enlarged General Collins' force to a total of three infantry and two armored divisions. *([Map 10](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-10.jpg) )*"
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 312300Zjun44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "9th Infantry Division",
+          "Name": null,
+          "Rank": null,
+          "Date": "jul44",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-10.jpg",
+          "Description": "Map 10 Operation COBRA, VII Corps Plan, 20 July 1944",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Normandy, France",
+        "Place_GPS_coordinate": "49.0000°N 1.0000°W",
+        "Map_Reference": "Map 10",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-10.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy, France",
+        "Place_GPS_coordinate": "49.0000°N 1.0000°W",
+        "Weather_text": "Variable July weather, with periods of rain and overcast skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.2800,
+          "East": 0.2800,
+          "South": 48.1000,
+          "North": 49.9000
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Army Plan Outline",
+      "Sub-event_summary": "The plan involved a massive air bombardment, infantry penetration by the 9th and 30th Divisions, exploitation by armored and motorized divisions to encircle Germans near Coutances, with consolidation on the Coutances-Caumont line.",
+      "Sub-event_fulltext": {
+        "Paragraph_89": "As outlined by the army plan, COBRA would start with a tremendous air bombardment designed to obliterate the German defenses along the Périers-St. Lô highway opposite the VII Corps. Two infantry divisions, the 9th and the 30th, were to make the penetration and keep the breach open by securing the towns of Marigny and St. Gilles, thereby sealing off the flanks of the breakthrough. Two armored divisions, the 3d and the 2d (the latter after being moved from the V Corps sector), and a motorized infantry division, the 1st (also after having been moved from the V to the VII Corps zone), were then to speed through the passageway--the three-mile-wide Marigny-St. Gilles gap--in exploitation. Tactical aircraft were to have already destroyed river bridges around the limits of the projected COBRA area to isolate the battlefield, and the exploiting forces on the left were to establish blocking positions on the eastern flank and along",
+        "Paragraph_90": "the southern edge of the battlefield to prevent the Germans from bringing in reinforcements. The forces in the main exploiting thrust, on the right (west), were to drive toward the Cotentin west coast near Coutances and encircle the enemy opposite VIII Corps. The VIII Corps in turn was to squeeze and destroy the surrounded enemy forces. At the conclusion of COBRA, the First Army would find itself consolidating on the Coutances-Caumont line. If the air bombardment and ground attack paralyzed German reaction completely, the troops were to be ready to exploit enemy disorganization still further by continuing offensive operations without consolidation.<sup>[58](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn58)</sup>"
+      },
+      "Footnote_References": [
+        "58"
+      ],
+      "Place_Name": "Périers-St. Lô highway, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 130000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 122300Zjul44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "9th Infantry Division",
+          "Name": null,
+          "Rank": null,
+          "Date": "jul44",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway, France",
+        "Place_GPS_coordinate": "49.1864°N 1.4072°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway, France",
+        "Place_GPS_coordinate": "49.1864°N 1.4072°W",
+        "Weather_text": "Overcast conditions with possible rain, typical for mid-July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.6872,
+          "East": -0.1272,
+          "South": 48.2864,
+          "North": 50.0864
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Subsidiary Role of Other Corps",
+      "Sub-event_summary": "XIX Corps supported VII Corps, V Corps conducted a diversionary attack, both to tie down German troops. XIX Corps prepared to displace west of the Vire River.",
+      "Sub-event_fulltext": {
+        "Paragraph_91": "Since the larger and basic American maneuver defined by Montgomery was to be a sweep through the Cotentin around a go-degree arc with the pivot at Caumont, the U.S. troops east of the Vire had the subsidiary role of containing the enemy forces. While XIX Corps remained in place and supported the VII Corps effort, V Corps was to make a diversionary attack on the second day of the COBRA operation. Both corps were to tie down German troops that might otherwise be moved to seal off a COBRA penetration. The XIX Corps was also to be ready to displace west of the Vire River and assume a new zone; as VII Corps veered westward toward Coutances, XIX Corps was to be prepared to take over the left portion of the VII Corps zone and drive to the south along the west bank of the river.<sup>[59](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn59)</sup>"
+      },
+      "Footnote_References": [
+        "59"
+      ],
+      "Place_Name": "Vire River, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 312300Zjun44"
+      },
+      "TOE": {
+        "Unit": "XIX Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "XIX Corps",
+          "Commander": "Corlett",
+          "Name": "Charles Harrison Corlett",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Charles_H._Corlett",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Vire River, France",
+        "Place_GPS_coordinate": "49.0000°N 1.0000°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Vire River, France",
+        "Place_GPS_coordinate": "49.0000°N 1.0000°W",
+        "Weather_text": "Variable July weather, with periods of rain and overcast skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.2800,
+          "East": 0.2800,
+          "South": 48.1000,
+          "North": 49.9000
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "VII Corps Modifications - Infantry Assault",
+      "Sub-event_summary": "VII Corps developed the army plan, adding the 4th Division to the initial assault due to exhaustion of the 9th and 30th Divisions, to ensure quick follow-up of the air bombardment.",
+      "Sub-event_fulltext": {
+        "Paragraph_92": "The rather general concept expressed in the army outline plan was developed into a detailed course of action by the VII Corps. Corps planners also made two major modifications that affected the weight of the infantry assault and the routes as well as the relative strengths of the exploiting units. Because the 9th and 30th Divisions were near exhaustion from their battle in the Taute and Vire region, General Collins requested and received the 4th Division as well, and assigned to it a role in the initial infantry assault. Though General Bradley had planned to retain the 4th in army reserve, he acceded to Collins' request in order to insure a quick follow-up of the air bombardment and a speedy penetration.<sup>[60](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn60)</sup>"
+      },
+      "Footnote_References": [
+        "60"
+      ],
+      "Place_Name": "Taute and Vire region, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 312300Zjun44"
+      },
+      "TOE": {
+        "Unit": "4th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "4th Infantry Division",
+          "Name": null,
+          "Rank": null,
+          "Date": "jul44",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Personnel": "Near exhaustion for 9th and 30th Divisions",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Taute and Vire region, France",
+        "Place_GPS_coordinate": "49.2000°N 1.3000°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Taute and Vire region, France",
+        "Place_GPS_coordinate": "49.2000°N 1.3000°W",
+        "Weather_text": "Variable July weather, with periods of rain and overcast skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5800,
+          "East": -0.0200,
+          "South": 48.3000,
+          "North": 50.1000
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Modification of Exploitation",
+      "Sub-event_summary": "The exploitation plan was modified, with armored divisions following specific routes to encircle Coutances, setting up blocking positions, and using the 1st Division as reserve.",
+      "Sub-event_fulltext": {
+        "Paragraph_93": "More important was the modification of the exploitation, which virtually changed the character of COBRA. According to the army plan, the mobile forces were to use two main highways leading south, the Marigny-Carantilly road on the right (west) and the St. Gilles-Canisy road on the left. One armored division, presumably the 3d, after moving south for six miles to Carantilly, was to swing in a wide arc for eleven miles--southwest, west, and northwest--to encircle Coutances in the corps main effort. The other armored division, the 2d, after pushing five miles south to Canisy, was to split into three columns and drive southeast, south, and southwest in order to protect the main effort developing toward Coutances. At the conclusion of its advance, the 2d Armored Division was to set up blocking positions across the fronts of both the VII and the VIII Corps--at Bréhal, Cérences, Lengronne, St. Denis-le-Gast, and Hambye, also inferentially at Villebaudon and Tessy-sur-Vire--and thereby across the entire Cotentin. In advance of the forces actually encircling and destroying the enemy near Coutances, the blocking positions were to prevent the Germans from bringing in reinforcements from the southeast and from the south. The motorized 1st Infantry Division was to provide reserve strength to reinforce either armored thrust, or both.<sup>[61](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn61)</sup>"
+      },
+      "Footnote_References": [
+        "61"
+      ],
+      "Place_Name": "Marigny, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 312300Zjun44"
+      },
+      "TOE": {
+        "Unit": "2d Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "2d Armored Division",
+          "Name": null,
+          "Rank": null,
+          "Date": "jul44",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Marigny, France",
+        "Place_GPS_coordinate": "49.0992°N 1.2422°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Marigny, France",
+        "Place_GPS_coordinate": "49.0992°N 1.2422°W",
+        "Weather_text": "Variable July weather, with periods of rain and overcast skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5222,
+          "East": 0.0378,
+          "South": 48.1992,
+          "North": 49.9992
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Collins' Redistribution of Power",
+      "Sub-event_summary": "Collins focused more on existing enemy strength, strengthening the main attack force to Coutances, rerouting it directly, transforming the longer route to subsidiary, and consolidating blocking forces.",
+      "Sub-event_fulltext": {
+        "Paragraph_94": "Less concerned with the possible arrival of enemy reinforcements than with the strength already facing the VII and VIII Corps in the Cotentin, General Collins redistributed the power available to him. He re-formed and strengthened the main attack force and rerouted it along a more direct approach to Coutances. He transformed the drive along the original and more roundabout route to Coutances into a subsidiary and protective effort. He consolidated the blocking force on the left from three dispersed columns into two compact thrusts. As formulated by Collins, the plan of exploitation assigned the main encirclement to the motorized 1st Division, with Combat Command B of the 3d Armored Division attached. Armor and infantry, after driving south to Marigny, were to attack westward along the excellent highway directly to Coutances in order to block and help destroy the Germans facing the VIII Corps. The 3d Armored Division, less CCB, was to follow the original and more roundabout route to Coutances; it was to seize the southern exits of Coutances and provide flank protection on the south for the main effort. The 2d Armored Division, strengthened by the attachment of the 22d Regimental Combat Team of the 4th Division, was to drive along the left (east) flank of the corps. One thrust was to go directly to le Mesnil-Herman to cover the movement of the other exploiting forces and prepare for further movement to Villebaudon and Tessy-sur-Vire, two critical points of entry for possible German reinforcements from the southeast. Another 2d Armored Division force was to be ready to go southwest from Canisy through Notre-Dame-de-Cenilly to block German reinforcement from the south, but instead of driving all the way to Bréhal near the Cotentin west coast it was to stop at Cérences. The armor was to halt at Cérences in order to provide a coastal corridor for an advance to the south by the VIII Corps, to avoid \"a hell of a scramble\" likely to come if VII and VIII Corps units intermingled south of Coutances, and to prevent the 2d Armored Division from being \"strung out too badly.\"<sup>[62](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn62)</sup>"
+      },
+      "Footnote_References": [
+        "62"
+      ],
+      "Place_Name": "Coutances, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 200000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 192300Zjul44"
+      },
+      "TOE": {
+        "Unit": "1st Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Combat Command B, 3d Armored Division",
+          "Name": null,
+          "Rank": null,
+          "Date": "jul44",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Coutances, France",
+        "Place_GPS_coordinate": "49.0553°N 1.4449°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Coutances, France",
+        "Place_GPS_coordinate": "49.0553°N 1.4449°W",
+        "Weather_text": "Overcast with possible light rain, temperatures around 20°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.7249,
+          "East": -0.1649,
+          "South": 48.1553,
+          "North": 49.9553
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Final COBRA Plan Form",
+      "Sub-event_summary": "The final plan had three infantry divisions penetrating behind bombardment, creating a corridor for exploiting forces to stream westward, with three encircling columns around Coutances.",
+      "Sub-event_fulltext": {
+        "Paragraph_95": "The COBRA plan in final form thus called for three infantry divisions, the 9th, 4th, and 30th, to make the initial penetration close behind the air bombardment and create a \"defended corridor\" for exploiting forces, which were to stream westward toward the sea. The motorized 1st Division, with CCB of the 3d Armored Division attached, was to thrust directly toward Coutances. The reduced 3d Armored Division was to make a wider envelopment. The 2d Armored Division, with the 22d Infantry attached, was to establish blocking positions from Tessy-sur-Vire to the Sienne River near Cérences and, in effect, make a still wider envelopment of Coutances.<sup>[63](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn63)</sup>"
+      },
+      "Footnote_References": [
+        "63"
+      ],
+      "Place_Name": "Coutances, France",
+      "Dates": {
+        "Date_group_of_event": "200000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "192300Zjul44"
+      },
+      "TOE": {
+        "Unit": "30th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Coutances, France",
+        "Place_GPS_coordinate": "49.0553°N 1.4449°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Coutances, France",
+        "Place_GPS_coordinate": "49.0553°N 1.4449°W",
+        "Weather_text": "Overcast with possible light rain, temperatures around 20°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.7249,
+          "East": -0.1649,
+          "South": 48.1553,
+          "North": 49.9553
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Difference from Army Idea",
+      "Sub-event_summary": "The VII Corps plan differed by reinforcing infantry assault, massing power against Coutances, strengthening blocking positions, and providing a corridor for VIII Corps exploitation.",
+      "Sub-event_fulltext": {
+        "Paragraph_96": "The VII Corps plan expressed a concept quite different from the army idea. The corps plan reinforced the initial infantry assault. It massed more power against Coutances. It strengthened blocking positions. It projected three encircling columns across the Cotentin and around Coutances. Instead of cutting across the VIII Corps zone of advance, it provided a corridor for the VIII Corps to exploit further a successfully completed COBRA. As a result of these changes, COBRA was no longer a plan designed primarily to encircle Coutances after penetration; it had become a plan to encircle and secure Coutances, disrupt the German defenses west of the Vire River, and set up a situation suitable for further exploitation, presumably by the VIII Corps."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Cotentin, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 312300Zjun44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar Nelson Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cotentin, France",
+        "Place_GPS_coordinate": "49.5000°N 1.5000°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Cotentin, France",
+        "Place_GPS_coordinate": "49.5000°N 1.5000°W",
+        "Weather_text": "Variable July weather, with periods of rain and overcast skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.7800,
+          "East": -0.2200,
+          "South": 48.6000,
+          "North": 50.4000
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Postponement of VIII Corps Attack",
+      "Sub-event_summary": "Due to preliminary operations failure, Bradley postponed VIII Corps attack to allow more time for VII Corps progress.",
+      "Sub-event_fulltext": {
+        "Paragraph_97": "Expecting the VII Corps ground attack to complete the penetration six hours after the bombardment, General Bradley originally scheduled the VIII Corps attack for that time. The failure of both preliminary operations in the VIII Corps zone caused him to modify this arrangement. If the German resistance to the pre-COBRA operations at la Varde and St. Germain was typical of what the Americans could anticipate in COBRA, then six hours was not enough time. General Bradley consequently postponed the VIII Corps attack. If COBRA were launched in the morning, VIII Corps would attack at dawn of the following day; if COBRA were launched in the afternoon, VIII Corps would attack on the morning of the third day.<sup>[64](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn64)</sup>"
+      },
+      "Footnote_References": [
+        "64"
+      ],
+      "Place_Name": "la Varde and St. Germain, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 312300Zjun44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar Nelson Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "la Varde and St. Germain, France",
+        "Place_GPS_coordinate": "49.2333°N 1.3667°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "la Varde and St. Germain, France",
+        "Place_GPS_coordinate": "49.2333°N 1.3667°W",
+        "Weather_text": "Variable July weather, with periods of rain and overcast skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.6467,
+          "East": -0.0867,
+          "South": 48.3333,
+          "North": 50.1333
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Change with 330th Infantry",
+      "Sub-event_summary": "The 330th Infantry remained a separate unit under VIII Corps but attacked with VII Corps for COBRA.",
+      "Sub-event_fulltext": {
+        "Paragraph_98": "One other change in plan came as a result of the preliminary operations. Instead of reverting to control of the 83d Division, the 330th Infantry east of the Taute River flats remained a separate unit. Although still considered formally under control of the VIII Corps, the regiment was to begin the COBRA attack with the VII Corps."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Taute River, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 312300Zjun44"
+      },
+      "TOE": {
+        "Unit": "330th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": null,
+          "Name": null,
+          "Rank": null,
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Taute River, France",
+        "Place_GPS_coordinate": "49.2000°N 1.3000°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Taute River, France",
+        "Place_GPS_coordinate": "49.2000°N 1.3000°W",
+        "Weather_text": "Variable July weather, with periods of rain and overcast skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5800,
+          "East": -0.0200,
+          "South": 48.3000,
+          "North": 50.1000
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "VII Corps Strength and Surprise",
+      "Sub-event_summary": "VII Corps had six divisions, heavy armored, combat experienced, with units assembled in rear to maintain surprise.",
+      "Sub-event_fulltext": {
+        "Paragraph_99": "Since COBRA's success depended essentially on VII Corps progress, General Collins had six divisions under his control, virtually an army. The armored units augmented the corps strength still more since both were \"old type\" or \"heavy\" armored divisions, the only ones in the theater. All the divisions scheduled to make the VII Corps COBRA attack were combat experienced; three--the 2d Armored, the 1st, and the 9th--had fought in North Africa and Sicily. While the 9th and 30th manned the corps front in mid-July, the other divisions slated for commitment in COBRA assembled in the rear, careful to avoid contact with the enemy lest their identity be revealed. Tactical surprise was to be as important in COBRA as was the concentration of strength."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 150000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 142300Zjul44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "2d Armored Division",
+          "Name": null,
+          "Rank": null,
+          "Date": "jul44",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": null,
+          "Biographical_reference_Capture_Date": null
+        },
+        "Personnel": "Combat experienced",
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy, France",
+        "Place_GPS_coordinate": "49.0000°N 1.0000°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy, France",
+        "Place_GPS_coordinate": "49.0000°N 1.0000°W",
+        "Weather_text": "Overcast conditions with occasional rain.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.2800,
+          "East": 0.2800,
+          "South": 48.1000,
+          "North": 49.9000
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Artillery Allocation and Planning",
+      "Sub-event_summary": "First Army allocated significant artillery to VII Corps, including 258 pieces, with ammunition for five days. Fire plans focused on specific targets rather than general support.",
+      "Sub-event_fulltext": {
+        "Paragraph_100": "In keeping with the mission of VII Corps, First Army gave the corps a large part of its artillery: 9 of its 21 heavy battalions, 5 of its 19 mediums, and all 7 of its nondivisional lights. Nondivisional artillery pieces of all types under corps control totaled 258.<sup>[65](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn65)</sup> For the anticipated duration of the attack--five days--the army allocated the VII Corps almost 140,000 rounds of artillery ammunition.<sup>[66](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn66)</sup> Because ammunition restrictions made all-inclusive prearranged fires difficult, the VII Corps Artillery (Brig. Gen. Williston B. Palmer) did not draw up an over-all fire plan. Attaching to the divisions all seven of the light battalions the army had made available, the corps suballocated to the divisions the greater part of its supply of ammunition.<sup>[67](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn67)</sup> The division fire plans included concentrations on known or suspected enemy installations, some to strike as far as 3,000 yards south of the Périers-St. Lô highway, most to fall on the main enemy defenses near the road. All fire plans emphasized striking specific targets rather than furnishing general support.<sup>[68](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn68)</sup>"
+      },
+      "Footnote_References": [
+        "65",
+        "66",
+        "67",
+        "68"
+      ],
+      "Place_Name": "Périers-St. Lô highway, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 312300Zjun44"
+      },
+      "TOE": {
+        "Unit": "VII Corps Artillery",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps Artillery",
+          "Commander": "Palmer",
+          "Name": "Williston B. Palmer",
+          "Rank": "Brigadier General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Williston_B._Palmer",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": "140000 rounds of artillery ammunition",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Artillery Pieces",
+              "Identifier": "Various calibers (heavy, medium, light)",
+              "Quantity": "258",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Field_artillery_in_the_American_Civil_War", // placeholder, actual WWII arty
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway, France",
+        "Place_GPS_coordinate": "49.1864°N 1.4072°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway, France",
+        "Place_GPS_coordinate": "49.1864°N 1.4072°W",
+        "Weather_text": "Variable July weather, with periods of rain and overcast skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.6872,
+          "East": -0.1272,
+          "South": 48.2864,
+          "North": 50.0864
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Air Bombardment Planning",
+      "Sub-event_summary": "The major bombardment was from air, with planes disrupting enemy communications, neutralizing reserves, and reducing will to fight. Bradley presented requirements to air chiefs in England on 19 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_101": "The major preattack bombardment was to come from the air. Planes were to assume the normal artillery missions of disrupting the enemy's communications, neutralizing his reserves, and reducing his will to fight. Far beyond the resources of the artillery available to the First Army, the air bombardment that General Bradley had in mind encompassed terrifying power. To be certain that air commanders appreciated the extent of the support desired, General Bradley went to England on 19 July to present his requirements to the air chiefs in person."
+      },
+      "Footnote_References": [],
+      "Place_Name": "England",
+      "Dates": {
+        "Date_group_of_event": "190000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "182300Zjul44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar Nelson Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "England",
+        "Place_GPS_coordinate": "51.5074°N 0.1278°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "England",
+        "Place_GPS_coordinate": "51.5074°N 0.1278°W",
+        "Weather_text": "Mild July weather in England, with temperatures around 20°C and possible showers.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.4078,
+          "East": 1.1522,
+          "South": 50.6074,
+          "North": 52.4074
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Bradley's Requirements for Air Support",
+      "Sub-event_summary": "Bradley requested blast effect from heavy bombers, concentrated in mass with light bombs to avoid cratering. He designated a target area and suggested lateral bomb runs for safety.",
+      "Sub-event_fulltext": {
+        "Paragraph_102": "Bradley's primary desire was to obtain \"blast effect\" by the use of heavy bombers.<sup>[69](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn69)</sup> He wanted the air attack concentrated in mass, the planes to strike in a minimum duration of time. To avoid excessive cratering, which might impede the ground troops, and to prevent the destruction of villages located at critical road junctions, he requested that only relatively light bombs be used.<sup>[70](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn70)</sup> He designated a rectangular target immediately south of the Périers-St. Lô highway, 7,000 yards wide and 2,500 yards deep. To prevent accidental bombing of VII Corps front-line troops, Bradley planned to withdraw them 800 yards from the bomb target. Though 800 yards left no real margin of safety, General Bradley wanted the ground troops close enough to the target for immediate exploitation after the bombardment. To provide additional protection for the ground forces, General Bradley recommended that the planes make their bomb runs laterally across the front, parallel to the front lines, instead of approaching over the heads of American troops and perpendicular to the front. Recognizing that pilots preferred a perpendicular approach to minimize antiaircraft interference, he suggested that the planes use the sun for concealment--if the attack occurred in the morning, the bombers could fly from east to west; in the afternoon, they could attack over a reverse course. In either case, the straight road between Périers and St. Lô would be an unmistakably clear landmark as a flank guide."
+      },
+      "Footnote_References": [
+        "69",
+        "70"
+      ],
+      "Place_Name": "Périers-St. Lô highway, France",
+      "Dates": {
+        "Date_group_of_event": "190000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "182300Zjul44"
+      },
+      "TOE": {
+        "Unit": "First U.S. Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar Nelson Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Heavy Bombers",
+              "Identifier": "B-17/B-24",
+              "Quantity": "Unknown at planning",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Boeing_B-17_Flying_Fortress",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Light Bombs",
+              "Identifier": "100-lb/250-lb HE",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/General-purpose_bomb",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway, France",
+        "Place_GPS_coordinate": "49.1864°N 1.4072°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway, France",
+        "Place_GPS_coordinate": "49.1864°N 1.4072°W",
+        "Weather_text": "Overcast with possible light rain, temperatures around 20°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.6872,
+          "East": -0.1272,
+          "South": 48.2864,
+          "North": 50.0864
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Air Chiefs' Responses and Compromises",
+      "Sub-event_summary": "Air chiefs agreed to mass attack with light bombs but insisted on perpendicular bomb runs for accuracy and reduced the safety factor to 1,450 yards for heavy bombers, with fighter-bombers covering the interval.",
+      "Sub-event_fulltext": {
+        "Paragraph_103": "For their part, the air chiefs were unable to meet all the requirements. Although they promised blast effect by a mass attack, agreed to use comparatively light bombs, and concurred in the choice of the target, they demurred at making lateral bomb runs and objected to the slender 800-yard safety factor. A lateral bomb run, the air chiefs pointed out, meant approaching the target area on its narrow side, that is to say along a narrow corridor. In an operation on the scale requested by General Bradley, this would cause congestion over the target and make the completion of the attack impossible in the brief time desired. To gain the effect of mass, the bombers had to approach from the north over the heads of the ground troops. Admitting that this posed some dangers to the ground troops, the air chiefs noted that the highway would serve as a clearly distinguishable \"no bomb line.\" In addition, the less effective enemy aircraft interference during a perpendicular approach would enable pilots and bombardiers to bomb more accurately.<sup>[71](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn71)</sup> Despite the fact that the highway made an excellent landmark, the air chiefs wished a true safety ground factor of 3,000 yards. They nevertheless agreed, in light of General Bradley's desire to get the ground troops to the target area quickly, to reduce the safety factor to 1,500 yards. Bradley, for his part, refused to withdraw his troops more than 1,000 yards from the highway.<sup>[72](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn72)</sup> The final result was a further compromise. The ground troops were to withdraw only 1,200 yards, but the heavy bombers were to strike no closer to the ground troops than 1,450 yards. The interval of 250 yards was to be covered by fighter-bombers, which attacked at lower altitudes than the heavies and thus could bomb more accurately."
+      },
+      "Footnote_References": [
+        "71",
+        "72"
+      ],
+      "Place_Name": "Périers-St. Lô highway, France",
+      "Dates": {
+        "Date_group_of_event": "190000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "182300Zjul44"
+      },
+      "TOE": {
+        "Unit": "Eighth U.S. Air Force",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Allied Expeditionary Air Force",
+          "Commander": "Leigh-Mallory",
+          "Name": "Trafford Leigh-Mallory",
+          "Rank": "Air Chief Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Trafford_Leigh-Mallory",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Fighter-Bombers",
+              "Identifier": "P-47 Thunderbolt",
+              "Quantity": "Unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Republic_P-47_Thunderbolt",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:P-47_Thunderbolt.jpg",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway, France",
+        "Place_GPS_coordinate": "49.1864°N 1.4072°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway, France",
+        "Place_GPS_coordinate": "49.1864°N 1.4072°W",
+        "Weather_text": "Overcast with possible light rain, temperatures around 20°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.6872,
+          "East": -0.1272,
+          "South": 48.2864,
+          "North": 50.0864
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Participating Air Units",
+      "Sub-event_summary": "Participating units included heavy bombers from Eighth U.S. Air Force, medium and fighter-bombers from Ninth U.S. Air Force, with cover from Eighth U.S. Air Force and RAF. RAF Heavy Bomber Command was excluded to avoid excessive cratering.",
+      "Sub-event_fulltext": {
+        "Paragraph_104": "Participating units in the COBRA air attack were to include all the heavy bombers of the Eighth U.S. Air Force and all the medium bombers and fighter-bombers of the Ninth U.S. Air Force. Fighter planes from the Eighth U.S. Air Force and from the RAF 2nd Tactical Air Force were to fly cover. The RAF Heavy Bomber Command, with planes equipped to carry only large bombs, were excluded because of Bradley's desire to avoid excessive destruction and cratering.<sup>[73](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn73)</sup> Air Chief Marshal Tedder, Deputy Supreme Commander, provided top-level supervision. Air Chief Marshal Leigh-Mallory, commander of the AEAF, was to set the time and the date of the operation. General Brereton, commanding the Ninth U.S. Air Force, was to plan the attack of the bombers. General Quesada, commander of the IX Tactical Air Command, was to co-ordinate the air attack with the ground forces.<sup>[74](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn74)</sup>"
+      },
+      "Footnote_References": [
+        "73",
+        "74"
+      ],
+      "Place_Name": "Normandy, France",
+      "Dates": {
+        "Date_group_of_event": "190000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "182300Zjul44"
+      },
+      "TOE": {
+        "Unit": "Eighth U.S. Air Force",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Allied Expeditionary Air Force",
+          "Commander": "Tedder",
+          "Name": "Arthur Tedder",
+          "Rank": "Air Chief Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Arthur_Tedder,_1st_Baron_Tedder",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "Ninth U.S. Air Force",
+          "Name": "Lewis H. Brereton",
+          "Rank": "General",
+          "Date": "jul44",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Lewis_H._Brereton",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Heavy Bombers",
+              "Identifier": "B-17 Flying Fortress",
+              "Quantity": "1800",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Boeing_B-17_Flying_Fortress",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:B-17_Flying_Fortress.jpg",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Medium Bombers",
+              "Identifier": "B-26 Marauder",
+              "Quantity": "396",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Martin_B-26_Marauder",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:B-26_Marauder.jpg",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Fighter-Bombers",
+              "Identifier": "P-47 Thunderbolt",
+              "Quantity": "700",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Republic_P-47_Thunderbolt",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:P-47_Thunderbolt.jpg",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            },
+            {
+              "Origination_Country": "GB",
+              "Name": "Fighters",
+              "Identifier": "Spitfire",
+              "Quantity": "500",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Supermarine_Spitfire",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Supermarine_Spitfire.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy, France",
+        "Place_GPS_coordinate": "49.0000°N 1.0000°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy, France",
+        "Place_GPS_coordinate": "49.0000°N 1.0000°W",
+        "Weather_text": "Overcast with possible light rain, temperatures around 20°C.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.2800,
+          "East": 0.2800,
+          "South": 48.1000,
+          "North": 49.9000
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Air Bombardment Schedule",
+      "Sub-event_summary": "The bombardment started with fighter-bombers, followed by heavy bombers, then more fighter-bombers, and medium bombers, totaling 2,500 planes dropping 5,000 tons over six square miles.",
+      "Sub-event_fulltext": {
+        "Paragraph_105": "The air bombardment was to begin eighty minutes before the ground attack with a twenty-minute strike by 350 fighter-bombers. Most fighter-bombers were to attack the narrow target strip immediately south of and adjacent to the road, although several flights were to bomb and strafe six enemy strongpoints north of the Périers--St. Lô highway.<sup>[75](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn75)</sup> Following immediately, 1,800 heavy bombers, in an hour-long strike, were to blast the main target area, a rectangular \"carpet\" adjacent to and south of the narrow strip. Upon conclusion of the heavy bomber attack--the beginning of the ground attack--350 fighter-bombers were to strafe and bomb the narrow strip again for twenty minutes. Ten minutes after the completion of this strike, 396 medium bombers were to attack the southern half of the rectangle for forty-five minutes. Throughout the duration of the bombardment, 500 fighters were to fly bomber cover.<sup>[76](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn76)</sup> For the ground troops, the narrow strip was the threshold, the target area the entrance to the Marigny-St. Gilles gap. To blast open a passageway on the ground, approximately 2,500 planes in a bombardment lasting two hours and twenty-five minutes were to strike a target area of six square miles with almost 5,000 tons of high explosive, jellied gasoline, and white phosphorus."
+      },
+      "Footnote_References": [
+        "75",
+        "76"
+      ],
+      "Place_Name": "Marigny-St. Gilles gap, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 312300Zjun44"
+      },
+      "TOE": {
+        "Unit": "Ninth U.S. Air Force",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Ninth U.S. Air Force",
+          "Commander": "Brereton",
+          "Name": "Lewis H. Brereton",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Lewis_H._Brereton",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": {
+          "Unit": "IX Tactical Air Command",
+          "Name": "Elwood Richard Quesada",
+          "Rank": "General",
+          "Date": "jul44",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Elwood_Richard_Quesada",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "High Explosive Bombs",
+              "Identifier": "HE",
+              "Quantity": "5000 tons (total with others)",
+              "Web_Reference": "https://en.wikipedia.org/wiki/High_explosive",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Jellied Gasoline (Napalm)",
+              "Identifier": "Napalm",
+              "Quantity": "Part of 5000 tons",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Napalm",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "White Phosphorus",
+              "Identifier": "WP",
+              "Quantity": "Part of 5000 tons",
+              "Web_Reference": "https://en.wikipedia.org/wiki/White_phosphorus_munitions",
+              "Web_Image_Reference": null,
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Marigny-St. Gilles gap, France",
+        "Place_GPS_coordinate": "49.0992°N 1.2422°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Marigny-St. Gilles gap, France",
+        "Place_GPS_coordinate": "49.0992°N 1.2422°W",
+        "Weather_text": "Variable July weather, with periods of rain and overcast skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5222,
+          "East": 0.0378,
+          "South": 48.1992,
+          "North": 49.9992
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Coordination and Safety Measures",
+      "Sub-event_summary": "Coordination was critical to avoid friendly casualties from heavy bombers. Safety measures included artillery smoke, troop withdrawal, fluorescent panels, and repainted insignia.",
+      "Sub-event_fulltext": {
+        "Paragraph_106": "This kind of air power, many times the equivalent of available artillery, required careful co-ordination to avoid striking U.S. troops, particularly since the employment of heavy bombers intensified the usual problems and dangers of close air support. The size of the individual plane bomb load gave each bomber a considerable casualty-producing potentiality, but since heavy bombers attacked in units, with a lead bombardier controlling the bomb release of a dozen or so planes, an error in computation or a failure to identify a landmark properly could easily result in disaster. The absence of direct radio communication between the troops on the ground and the heavy bombers in flight made reliance on visual signals necessary. To define the northern limit of the heavy bomber target area during the air attack, artillery was to place red smoke every two minutes on the narrow fighter-bomber strip.<sup>[77](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn77)</sup> This precaution was far from foolproof, for strategic aircraft bombed from high altitudes, and ground haze, mist, dust, or a sudden change of wind direction might render visual signals worthless. Ground troops on the front were to withdraw one hour before the air attack, leaving a protective shell of light forces in position until twenty minutes before the air bombardment, when they too were to withdraw. After the withdrawal, the ground troops were to mark their locations with fluorescent panels. All units participating in COBRA were to have repainted the Allied white-star insignia on their vehicles and tanks.<sup>[78](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn78)</sup> In the same way that infantry failure to follow an artillery preparation closely tends to cancel the effect of a well-delivered concentration, the inability of the COBRA ground attack to take quick advantage of the bombardment would waste the blast effect of the bombs on the enemy. The ground troops were to cross the three quarters of a mile that separated them from the air target at the conclusion of the heavy bomber strike while fighter-bombers still were strafing and bombing the narrow strip immediately south to the Périers-St. Lô road. The arrival of the infantry at the line of departure and the conclusion of the fighter-bomber strike were to be simultaneous. Medium bombers were then to commence attacking the southern half of the carpet and to continue until the ground troops were across the road and the narrow strip. To insure coordination, the units on the ground were to move forward at the rate of one hundred feet a minute.<sup>[79](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn79)</sup> Artillery was to deliver normal preparatory fires, reinforced by tank destroyer concentrations and antiaircraft artillery ground fire, on the area between the troops and the bombarding planes."
+      },
+      "Footnote_References": [
+        "77",
+        "78",
+        "79"
+      ],
+      "Place_Name": "Périers-St. Lô highway, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 312300Zjun44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Collins",
+          "Name": "Joseph Lawton Collins",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Périers-St. Lô highway, France",
+        "Place_GPS_coordinate": "49.1864°N 1.4072°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Périers-St. Lô highway, France",
+        "Place_GPS_coordinate": "49.1864°N 1.4072°W",
+        "Weather_text": "Variable July weather, with periods of rain and overcast skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.6872,
+          "East": -0.1272,
+          "South": 48.2864,
+          "North": 50.0864
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Post-Bombardment Air Support",
+      "Sub-event_summary": "After the ground attack, fighter-bombers and medium bombers were available for support, with dive bombers on notice and column cover for armored spearheads if needed.",
+      "Sub-event_fulltext": {
+        "Paragraph_107": "One hour after the ground attack jumped off, all the fighter-bombers of the IX Tactical Air Command and one group of RAF Typhoon planes were to be available to support the First Army for the rest of the day with assault area cover, offensive fighter operations, armed reconnaissance, and air support request missions. Six hours after the ground attack, medium bombers, after having returned to England for refueling and reloading, were to become available for additional missions as necessary. Dive bombers were to be ready for missions on one hour's notice. If the infantry divisions made rapid progress and the exploiting forces were employed at once, fighter-bombers were to furnish column cover by flying protection and reconnaissance for the armored spearheads.<sup>[80](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn80)</sup>"
+      },
+      "Footnote_References": [
+        "80"
+      ],
+      "Place_Name": "Normandy, France",
+      "Dates": {
+        "Date_group_of_event": "APPROX 010000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "APPROX 312300Zjun44"
+      },
+      "TOE": {
+        "Unit": "IX Tactical Air Command",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "IX Tactical Air Command",
+          "Commander": "Quesada",
+          "Name": "Elwood Richard Quesada",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Elwood_Richard_Quesada",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": null,
+          "Allied_Employed": [
+            {
+              "Origination_Country": "GB",
+              "Name": "Typhoon Planes",
+              "Identifier": "Hawker Typhoon",
+              "Quantity": "1 group",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Hawker_Typhoon",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Hawker_Typhoon.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 21, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy, France",
+        "Place_GPS_coordinate": "49.0000°N 1.0000°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy, France",
+        "Place_GPS_coordinate": "49.0000°N 1.0000°W",
+        "Weather_text": "Variable July weather, with periods of rain and overcast skies.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.2800,
+          "East": 0.2800,
+          "South": 48.1000,
+          "North": 49.9000
+        }
+      }
+    },
+    {
+      "Event": "The Breakthrough Plan",
+      "Sub-event": "Final Preparations and Weather Forecast",
+      "Sub-event_summary": "On 23 July, weather experts predicted favorable conditions for 24 and 25 July, leading to the decision to launch COBRA.",
+      "Sub-event_fulltext": {
+        "Paragraph_108": "This was the plan on which the Allies counted so much, and on 23 July Allied weather experts expressed a cautious hope that COBRA might soon be launched. Predicting that a slight overcast might break in the late morning of 24 July and that morning haze and light fog would disappear later that day, the forecasters reported that the weather on 24 and 25 July would be favorable for ground operations and moderately favorable for air activity.<sup>[81](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html#fn81)</sup> After a week of waiting, the Allies found the prospect tempting. With Caen and St. Lô in Allied hands, the arrival of fresh infantry and armored divisions on the Continent, mounting stocks of supplies and equipment increasingly available, and the Germans suffering from attrition, a lack of supplies, and an absence of air support, the situation appeared favorable for the breakthrough operation. Air Chief Marshal Leigh-Mallory gave the green light, and the dormant body of COBRA prepared to strike."
+      },
+      "Footnote_References": [
+        "81"
+      ],
+      "Place_Name": "Normandy, France",
+      "Dates": {
+        "Date_group_of_event": "230000Zjul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+        "Zulu_date_group_of_event": "222300Zjul44"
+      },
+      "TOE": {
+        "Unit": "Allied Expeditionary Air Force",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "Allied Expeditionary Air Force",
+          "Commander": "Leigh-Mallory",
+          "Name": "Trafford Leigh-Mallory",
+          "Rank": "Air Chief Marshal",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Trafford_Leigh-Mallory",
+          "Biographical_reference_Capture_Date": "December 21, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": null,
+        "Equipments": {
+          "Supply": "Mounting stocks of supplies and equipment",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy, France",
+        "Place_GPS_coordinate": "49.0000°N 1.0000°W",
+        "Map_Reference": null,
+        "Map_Link": null,
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Normandy, France",
+        "Place_GPS_coordinate": "49.0000°N 1.0000°W",
+        "Weather_text": "Slight overcast might break in the late morning of 24 July, morning haze and light fog would disappear later that day, favorable for ground operations and moderately favorable for air activity on 24 and 25 July.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.2800,
+          "East": 0.2800,
+          "South": 48.1000,
+          "North": 49.9000
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "55a",
+      "Footnote_Number": "55",
+      "Footnote_Text": "FUSA G-3 Conf Notes, 12 Jul, FUSA G-3 Misc File",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "FUSA G-3 Conf Notes, 12 Jul, FUSA G-3 Misc File"
+    },
+    {
+      "Footnote": "55b",
+      "Footnote_Number": "55",
+      "Footnote_Text": "Garth, Battle for Normandy, pp. 156, 171.",
+      "Footnote_Referenced_Source": "Book",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Published Book",
+      "NonDigital_Library_Address": "Various Libraries",
+      "NonDigital_Library_References": "Garth, Battle for Normandy, pp. 156, 171"
+    },
+    {
+      "Footnote": "56a",
+      "Footnote_Number": "56",
+      "Footnote_Text": "FUSA G-3 Conf Notes, 12 Jul",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "FUSA G-3 Conf Notes, 12 Jul"
+    },
+    {
+      "Footnote": "56b",
+      "Footnote_Number": "56",
+      "Footnote_Text": "FUSA Outline Plan, Opn COBRA, 13 Jul",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "FUSA Outline Plan, Opn COBRA, 13 Jul"
+    },
+    {
+      "Footnote": "56c",
+      "Footnote_Number": "56",
+      "Footnote_Text": "Bradley, Soldier's Story, p. 318.",
+      "Footnote_Referenced_Source": "Book",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Published Book",
+      "NonDigital_Library_Address": "Various Libraries",
+      "NonDigital_Library_References": "Bradley, Soldier's Story, p. 318"
+    },
+    {
+      "Footnote": "57",
+      "Footnote_Number": "57",
+      "Footnote_Text": "VII Corps Tactical Study of the Terrain, 28 Jun.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "VII Corps Tactical Study of the Terrain, 28 Jun"
+    },
+    {
+      "Footnote": "58a",
+      "Footnote_Number": "58",
+      "Footnote_Text": "FUSA Outline Plan COBRA, 13 Jul, with artillery and tank destroyer fire support plans, overlays, and amendments",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "FUSA Outline Plan COBRA, 13 Jul, with artillery and tank destroyer fire support plans, overlays, and amendments"
+    },
+    {
+      "Footnote": "58b",
+      "Footnote_Number": "58",
+      "Footnote_Text": "FUSA Msg, 2055, 14 Jul, and IX TAC Msg, 17 Jul (Amendment 1 to IX TAC Order 84). Both in FUSA G-3 Jnl",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "FUSA Msg, 2055, 14 Jul, and IX TAC Msg, 17 Jul (Amendment 1 to IX TAC Order 84). Both in FUSA G-3 Jnl"
+    },
+    {
+      "Footnote": "58c",
+      "Footnote_Number": "58",
+      "Footnote_Text": "Annex 2 (Overlay) to VIII Corps FO 8, 15 Jul",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Annex 2 (Overlay) to VIII Corps FO 8, 15 Jul"
+    },
+    {
+      "Footnote": "58d",
+      "Footnote_Number": "58",
+      "Footnote_Text": "VII Corps Opns Memos 38 and 44, 15 and 20 Jul. Bombardment on 17 July rendered eight bridges around the COBRA battlefield unserviceable and damaged five; seven bridges escaped damage. Collins Msg, 1230, 23 Jul, 30th Div G-3 Jnl and File",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "VII Corps Opns Memos 38 and 44, 15 and 20 Jul. Bombardment on 17 July rendered eight bridges around the COBRA battlefield unserviceable and damaged five; seven bridges escaped damage. Collins Msg, 1230, 23 Jul, 30th Div G-3 Jnl and File"
+    },
+    {
+      "Footnote": "58e",
+      "Footnote_Number": "58",
+      "Footnote_Text": "For the British-American boundary changes that permitted the movement of the 2d Armored and 1st Division from the V Corps to the VII Corps sector, see FUSA Msgs, 14 and 17 Jul, and V Corps Msg, 23 Jul, FUSA G-3 Jnl; 21 AGp Dir, M-510, 10 Jul; Bradley, Soldier's Story, pp. 326-28.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "For the British-American boundary changes that permitted the movement of the 2d Armored and 1st Division from the V Corps to the VII Corps sector, see FUSA Msgs, 14 and 17 Jul, and V Corps Msg, 23 Jul, FUSA G-3 Jnl; 21 AGp Dir, M-510, 10 Jul; Bradley, Soldier's Story, pp. 326-28."
+    },
+    {
+      "Footnote": "59a",
+      "Footnote_Number": "59",
+      "Footnote_Text": "FUSA Outline Plan COBRA, 13 Jul",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "FUSA Outline Plan COBRA, 13 Jul"
+    },
+    {
+      "Footnote": "59b",
+      "Footnote_Number": "59",
+      "Footnote_Text": "Corlett to OCMH, 19 Jan 54. Plans at the beginning of July had envisioned the eventual displacement of the XIX Corps west of the Vire. These plans had projected an easy capture of St. Lô, and the displacement was to have occurred south of that city. Map Overlay to accompany V Corps FO 9, 1 Jul, in V Corps Operations in the ETO, p. 103.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Corlett to OCMH, 19 Jan 54. Plans at the beginning of July had envisioned the eventual displacement of the XIX Corps west of the Vire. These plans had projected an easy capture of St. Lô, and the displacement was to have occurred south of that city. Map Overlay to accompany V Corps FO 9, 1 Jul, in V Corps Operations in the ETO, p. 103"
+    },
+    {
+      "Footnote": "60a",
+      "Footnote_Number": "60",
+      "Footnote_Text": "First U.S. Army, Report of Operations, I, 98",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Normandy/index.html", // assuming similar series
+      "Web_Link_Capture_Date": "December 21, 2025",
+      "NonDigital_Library_Source": null,
+      "NonDigital_Library_Address": null,
+      "NonDigital_Library_References": null
+    },
+    {
+      "Footnote": "60b",
+      "Footnote_Number": "60",
+      "Footnote_Text": "VII Corps G-3 Ltr, Info Relative to Opn COBRA, 29 Oct 45, and Ltr, Gen Collins to Maj Kenneth W. Hechler, 13 Nov 45, both cited on p. 27 of Hechler's VII Corps in Operation COBRA, a preliminary MS, Hist Div, USAFET, OCMH Files. The Hechler manuscript has been used extensively in the chapters dealing with the breakthrough.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "VII Corps G-3 Ltr, Info Relative to Opn COBRA, 29 Oct 45, and Ltr, Gen Collins to Maj Kenneth W. Hechler, 13 Nov 45, both cited on p. 27 of Hechler's VII Corps in Operation COBRA, a preliminary MS, Hist Div, USAFET, OCMH Files"
+    },
+    {
+      "Footnote": "61",
+      "Footnote_Number": "61",
+      "Footnote_Text": "FUSA Outline Plan COBRA, 13 Jul; see also Annex 2 (Overlay) to VIII Corps FO 8, 15 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "FUSA Outline Plan COBRA, 13 Jul; see also Annex 2 (Overlay) to VIII Corps FO 8, 15 Jul"
+    },
+    {
+      "Footnote": "62",
+      "Footnote_Number": "62",
+      "Footnote_Text": "VII Corps FO 6 (rev), 20 Jul; FUSA G-3 Conf Notes, 12 Jul; Ltr, Collins to Hechler, 9 Dec 45, quoted in Hechler, VII Corps in Opn COBRA, p. 27.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "VII Corps FO 6 (rev), 20 Jul; FUSA G-3 Conf Notes, 12 Jul; Ltr, Collins to Hechler, 9 Dec 45, quoted in Hechler, VII Corps in Opn COBRA, p. 27"
+    },
+    {
+      "Footnote": "63",
+      "Footnote_Number": "63",
+      "Footnote_Text": "Annex 1 (Overlay) to VII Corps FO 6 (rev), 20 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Annex 1 (Overlay) to VII Corps FO 6 (rev), 20 Jul"
+    },
+    {
+      "Footnote": "64",
+      "Footnote_Number": "64",
+      "Footnote_Text": "FUSA Msg to VIII Corps, 24 Jul, FUSA G-3 Jnl.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "FUSA Msg to VIII Corps, 24 Jul, FUSA G-3 Jnl"
+    },
+    {
+      "Footnote": "65",
+      "Footnote_Number": "65",
+      "Footnote_Text": "VIII Corps had 108, XIX Corps 100, V Corps 98. Draft MS, Arty in Opn COBRA, App. C to Gen Bd Rpts, ML-2229.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "VIII Corps had 108, XIX Corps 100, V Corps 98. Draft MS, Arty in Opn COBRA, App. C to Gen Bd Rpts, ML-2229"
+    },
+    {
+      "Footnote": "66",
+      "Footnote_Number": "66",
+      "Footnote_Text": "Ibid. VIII Corps received about 42,000 rounds, XIX Corps 31,000, and V Corps 27,000, for 105-mm. howitzers, 155-mm. howitzers and guns, 4.5-inch guns, 8-inch howitzers and guns, 240-mm. howitzers, and 90-mm. guns.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Ibid. VIII Corps received about 42,000 rounds, XIX Corps 31,000, and V Corps 27,000, for 105-mm. howitzers, 155-mm. howitzers and guns, 4.5-inch guns, 8-inch howitzers and guns, 240-mm. howitzers, and 90-mm. guns"
+    },
+    {
+      "Footnote": "67",
+      "Footnote_Number": "67",
+      "Footnote_Text": "Each armored division received two self-propelled battalions, the 9th Division received two towed battalions, and the 30th Division received one towed battalion. The 30th also received the 92d Chemical Battalion, less one company. VII Corps Opns Memo 45, 22 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Each armored division received two self-propelled battalions, the 9th Division received two towed battalions, and the 30th Division received one towed battalion. The 30th also received the 92d Chemical Battalion, less one company. VII Corps Opns Memo 45, 22 Jul"
+    },
+    {
+      "Footnote": "68",
+      "Footnote_Number": "68",
+      "Footnote_Text": "VII Corps Letters, Primary Target List--Operation COBRA--Artillery and Air, and Secondary Target List . . . , both dated 20 July, list 42 primary targets and 75 secondary targets.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "VII Corps Letters, Primary Target List--Operation COBRA--Artillery and Air, and Secondary Target List . . . , both dated 20 July, list 42 primary targets and 75 secondary targets"
+    },
+    {
+      "Footnote": "69",
+      "Footnote_Number": "69",
+      "Footnote_Text": "FUSA G-3 Conf, 12 Jul; Garth, Battle for Normandy, p. 165.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "FUSA G-3 Conf, 12 Jul; Garth, Battle for Normandy, p. 165"
+    },
+    {
+      "Footnote": "70",
+      "Footnote_Number": "70",
+      "Footnote_Text": "FUSA G-3 Conf, 12 Jul; Ltrs, Leigh-Mallory to Bradley, 19 Jul, and Bradley to Leigh-Mallory, 23 Jul, OCMH Files; Bradley, Soldier's Story, p. 341.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "FUSA G-3 Conf, 12 Jul; Ltrs, Leigh-Mallory to Bradley, 19 Jul, and Bradley to Leigh-Mallory, 23 Jul, OCMH Files; Bradley, Soldier's Story, p. 341"
+    },
+    {
+      "Footnote": "71",
+      "Footnote_Number": "71",
+      "Footnote_Text": "Eighth AF Draft Ltr, Summary of Plng and Execution of Missions 24 and 25 Jul 44, n.d., Rpts of Bombing Errors Made on 25 Jul, 8 Aug 44, USAF Hist Sec Files.",
+      "Footnote_Referenced_Source": "USAF",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAF Historical Section",
+      "NonDigital_Library_Address": "Air Force Historical Research Agency, Maxwell AFB, AL",
+      "NonDigital_Library_References": "Eighth AF Draft Ltr, Summary of Plng and Execution of Missions 24 and 25 Jul 44, n.d., Rpts of Bombing Errors Made on 25 Jul, 8 Aug 44"
+    },
+    {
+      "Footnote": "72",
+      "Footnote_Number": "72",
+      "Footnote_Text": "Some commanders, notably General Eddy of the 9th Division, later protested any withdrawal to General Bradley, for they were reluctant to give up terrain acquired with much difficulty. Bradley Soldier's Story, pp. 340-41.",
+      "Footnote_Referenced_Source": "Book",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Published Book",
+      "NonDigital_Library_Address": "Various Libraries",
+      "NonDigital_Library_References": "Bradley Soldier's Story, pp. 340-41"
+    },
+    {
+      "Footnote": "73",
+      "Footnote_Number": "73",
+      "Footnote_Text": "Ltr, Leigh-Mallory to Bradley, 19 Jul; Eighth AF, Spec Rpt on Opns 24 and 25 Jul, USAF Hist Sec Files.",
+      "Footnote_Referenced_Source": "OCMH and USAF",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH and USAF Historical Section",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA and Air Force Historical Research Agency, Maxwell AFB, AL",
+      "NonDigital_Library_References": "Ltr, Leigh-Mallory to Bradley, 19 Jul; Eighth AF, Spec Rpt on Opns 24 and 25 Jul"
+    },
+    {
+      "Footnote": "74",
+      "Footnote_Number": "74",
+      "Footnote_Text": "Eighth AF, Tactical Mission Rpts, Operations 492 and 494, 24 and 25 July, USAF Hist Sec Files, give a most straightforward account of the air operation.",
+      "Footnote_Referenced_Source": "USAF",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAF Historical Section",
+      "NonDigital_Library_Address": "Air Force Historical Research Agency, Maxwell AFB, AL",
+      "NonDigital_Library_References": "Eighth AF, Tactical Mission Rpts, Operations 492 and 494, 24 and 25 July"
+    },
+    {
+      "Footnote": "75",
+      "Footnote_Number": "75",
+      "Footnote_Text": "VII Corps Opns Memo 45, 22 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "VII Corps Opns Memo 45, 22 Jul"
+    },
+    {
+      "Footnote": "76a",
+      "Footnote_Number": "76",
+      "Footnote_Text": "AEAF Opn COBRA, 20 Jul, AEAF/TS.13165/Air, USAF Hist Sec Files, set the planning in motion",
+      "Footnote_Referenced_Source": "USAF",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAF Historical Section",
+      "NonDigital_Library_Address": "Air Force Historical Research Agency, Maxwell AFB, AL",
+      "NonDigital_Library_References": "AEAF Opn COBRA, 20 Jul, AEAF/TS.13165/Air"
+    },
+    {
+      "Footnote": "76b",
+      "Footnote_Number": "76",
+      "Footnote_Text": "IX TAC Opns Order 88 and 89, 19 and 20 Jul, and Annex 4 to VII Corps FO 6, 20 Jul, are the basic planning documents",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "IX TAC Opns Order 88 and 89, 19 and 20 Jul, and Annex 4 to VII Corps FO 6, 20 Jul"
+    },
+    {
+      "Footnote": "76c",
+      "Footnote_Number": "76",
+      "Footnote_Text": "See also Leigh-Mallory, \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946, p. 65; Bradley, Soldier's Story, p. 341; AAF III, pp. 231-32.",
+      "Footnote_Referenced_Source": "Various",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "Published Documents",
+      "NonDigital_Library_Address": "Various Libraries",
+      "NonDigital_Library_References": "Leigh-Mallory, \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946, p. 65; Bradley, Soldier's Story, p. 341; AAF III, pp. 231-32"
+    },
+    {
+      "Footnote": "77",
+      "Footnote_Number": "77",
+      "Footnote_Text": "VII Corps Opns Memo 45, 22 Jul; Annex 3 to 30th Div FO 13, Air Support Plan, 22 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "VII Corps Opns Memo 45, 22 Jul; Annex 3 to 30th Div FO 13, Air Support Plan, 22 Jul"
+    },
+    {
+      "Footnote": "78",
+      "Footnote_Number": "78",
+      "Footnote_Text": "Sketch showing prebombardment withdrawal, n.d., 9th Div G-3 Jnl and File; VII Corps Opns Memo 43, 20 Jul; Bradley, Effect of Air Power, p. 104.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Sketch showing prebombardment withdrawal, n.d., 9th Div G-3 Jnl and File; VII Corps Opns Memo 43, 20 Jul; Bradley, Effect of Air Power, p. 104"
+    },
+    {
+      "Footnote": "79",
+      "Footnote_Number": "79",
+      "Footnote_Text": "Misc Notes, n.d., 30th Div G-3 Jnl and File; Overlay, Amendment 1 to Incl 1, Annex 3 to 30th Div FO 13, 22 Jul; VII Corps Opns Memo 43, 20 Jul.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "Misc Notes, n.d., 30th Div G-3 Jnl and File; Overlay, Amendment 1 to Incl 1, Annex 3 to 30th Div FO 13, 22 Jul; VII Corps Opns Memo 43, 20 Jul"
+    },
+    {
+      "Footnote": "80",
+      "Footnote_Number": "80",
+      "Footnote_Text": "IX TAC Opns Order 90, 20 Jul, IX TAC Opns COBRA, USAF Hist Sec Files.",
+      "Footnote_Referenced_Source": "USAF",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAF Historical Section",
+      "NonDigital_Library_Address": "Air Force Historical Research Agency, Maxwell AFB, AL",
+      "NonDigital_Library_References": "IX TAC Opns Order 90, 20 Jul, IX TAC Opns COBRA"
+    },
+    {
+      "Footnote": "81",
+      "Footnote_Number": "81",
+      "Footnote_Text": "21 Weather Squadron Msg, 23 Jul, 30th Div G-3 Jnl and File.",
+      "Footnote_Referenced_Source": "OCMH",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, Carlisle, PA",
+      "NonDigital_Library_References": "21 Weather Squadron Msg, 23 Jul, 30th Div G-3 Jnl and File"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn11.html",
+  "Source_Footnote_Link_Capture_Date": "December 21, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+  "Source_Link_Capture_Date": "December 21, 2025"
+}

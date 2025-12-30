@@ -1,0 +1,2029 @@
+{
+  "Events": [
+    {
+      "Event": "Enter Model, Exit Kluge",
+      "Sub-event": "Model's conference with commanders",
+      "Sub-event_summary": "Early on 18 August at 0600, Field Marshal Model conferred with Dietrich, Eberbach, and Gersdorff (representing Hausser) at the Fifth Panzer Army command post near Lisieux, agreeing on measures to re-establish a front and withdraw forces.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Early on 18 August, at 0600, Field Marshal Model, the OB WEST and Army Group B commander-designate, drove to the Fifth Panzer Army command post near Lisieux to confer with Dietrich, Eberbach, and Hausser.",
+        "Paragraph_9": "Since Hausser was unwilling to leave his troops at that critical time, his chief of staff, Generalmajor Rudolf-Christoph Freiherr von Gersdorff, represented him at the conference.",
+        "Paragraph_10": "All the conferees were in general agreement on the measures that needed to be taken.",
+        "Paragraph_11": "Above all, a front had to be re-established, either one west of the Seine River or one along it, according to the way the situation developed.",
+        "Paragraph_12": "The first attempt to stabilize the front was to be made along the Touques River.",
+        "Paragraph_13": "The Seventh Army, with Panzer Group Eberbach subordinated to it for the withdrawal operation, was to get out of the pocket as quickly as possible.",
+        "Paragraph_14": "The Seventh Army had to be behind the Dives River on 20 August and behind the Touques two days later.",
+        "Paragraph_15": "Panzer Group Eberbach was to be responsible for protecting the northern flank with the II SS Panzer Corps (2d SS, 9th SS, 12th SS, and 21st Panzer Divisions) and the southern flank with the XLVII Panzer Corps (2d and 116th Panzer Divisions)."
+      },
+      "Footnote_References": [
+        "7"
+      ],
+      "Place_Name": "Lisieux",
+      "Dates": {
+        "Date_group_of_event": "18 August 1944 0600",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "180400ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Fifth Panzer Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Fifth Panzer Army",
+          "Commander": "Sepp Dietrich",
+          "Name": "Sepp Dietrich",
+          "Rank": "SS-Oberst-Gruppenführer",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Sepp_Dietrich",
+          "Biographical_reference_Capture_Date": "December 29, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Panzer Group Eberbach",
+            "Name": "Heinrich Eberbach",
+            "Rank": "General",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Heinrich_Eberbach",
+            "Biographical_reference_Capture_Date": "December 29, 2025"
+          },
+          {
+            "Unit": "Seventh Army",
+            "Name": "Paul Hausser",
+            "Rank": "SS-Oberst-Gruppenführer",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser",
+            "Biographical_reference_Capture_Date": "December 29, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0,
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.gettyimages.com/photos/field-marshal-model",
+          "Description": "Images of Field Marshal Walter Model in 1944",
+          "License": "Rights-managed"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Lisieux",
+        "Place_GPS_coordinate": "49.146599, 0.229229",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Falaise_pocket.svg",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 29, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Lisieux",
+        "Place_GPS_coordinate": "49.146599, 0.229229",
+        "Weather_text": "Warm and clear, typical late summer conditions in Normandy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-0.670771",
+          "East": "1.129229",
+          "South": "48.246599",
+          "North": "50.046599"
+        }
+      }
+    },
+    {
+      "Event": "Enter Model, Exit Kluge",
+      "Sub-event": "Model's report to Jodl",
+      "Sub-event_summary": "Model reported his views to Jodl, emphasizing reducing Allied air supremacy, withdrawal timetable, command reassignments, and minimum requirements for replacements and matériel.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "Returning to his headquarters that afternoon, Model reported his views to Jodl and requested their immediate referral to the Fuehrer.",
+        "Paragraph_17": "Model's appraisal of the situation and discussion with his commanders led him to make four main points.",
+        "Paragraph_18": "First, the outcome of the withdrawal operation and the prospect of supplying the troops depended heavily on reducing the absolute air supremacy of the Allies for the next few days",
+        "Paragraph_19": "Second, hard fighting on the ground would be necessary during the withdrawal, but Model hoped to accomplish the withdrawal according to the following timetable: during the night of 18 August, to the Falaise-Argentan road; during the night of 19 August, behind the Dives River; during the night of 20 August, to the Touques River-Laigle line.",
+        "Paragraph_20": "He hoped also to be able to release certain armored units and headquarters for assembly near the Seine.",
+        "Paragraph_21": "Third, upon completion of the withdrawal, the Seventh Army was to take command of the sector from the sea to Laigle, inclusive; the Fifth Panzer Army, under Eberbach, was to assume responsibility for the sector between Laigle and Paris.",
+        "Paragraph_22": "The First Army, moving northeastward from the Atlantic coast of France, was to take charge of the Paris sector and the upper Seine River.",
+        "Paragraph_23": "Fourth, the troops were spent; no combat performance of any kind could be expected from them unless certain minimum requirements were fulfilled.",
+        "Paragraph_24": "Model listed the minimum requirements.",
+        "Paragraph_25": "He needed without delay 20 replacement battalions--4 for panzer divisions, 6 for SS panzer divisions, and 10 for infantry divisions--plus 5 army engineer battalions.",
+        "Paragraph_26": "As an example of how depleted his units were, he planned to form four kampfgruppen from remnants of ten divisions--one kampfgruppe consisting of what remained of the 84th, 85th, 89th, and 271st Divisions and comprising 1,200 men and 8 artillery batteries; another kampfgruppe consisting of the 276th, 277th, 326th, and 363d Divisions and totaling 1,300 men and 8 batteries; a third of the 3d Parachute Division, 1,500 men and 8 batteries; and a fourth of the 353d Division, 2,000 men and 6 batteries.",
+        "Paragraph_27": "He also needed immediate matériel replacements: at least 270 tanks or assault guns to provide each armored division with about 30; 9 artillery battalions of 108-mm. howitzers to replace guns lost by the panzer divisions; and as many 180-mm. howitzers as possible.",
+        "Paragraph_28": "He required a 9,000-ton capacity transportation facility to expedite the delivery of essential supplies and the movement of reserve units to the front.",
+        "Paragraph_29": "And, finally, he requested that 6 panzer brigades in the process of activation in Germany be dispatched to the Western Front."
+      },
+      "Footnote_References": [
+        "8"
+      ],
+      "Place_Name": "Laigle",
+      "Dates": {
+        "Date_group_of_event": "18 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "APPROX 180000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Walter Model",
+          "Name": "Walter Model",
+          "Rank": "Field Marshal",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_Model",
+          "Biographical_reference_Capture_Date": "December 29, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "First Army",
+            "Name": "Otto von Knobelsdorff",
+            "Rank": "General",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Otto_von_Knobelsdorff",
+            "Biographical_reference_Capture_Date": "December 29, 2025"
+          }
+        ],
+        "Personnel": "Depleted units, forming kampfgruppen with 1200-2000 men each",
+        "Equipments": {
+          "Supply": "Supply shortages, requesting replacements",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tank",
+              "Identifier": "Panzer or assault gun",
+              "Quantity": "270 requested",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Howitzer",
+              "Identifier": "108-mm",
+              "Quantity": "9 battalions requested",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Howitzer",
+              "Identifier": "180-mm",
+              "Quantity": "as many as possible requested",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0,
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Laigle",
+        "Place_GPS_coordinate": "48.764651, 0.628715",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.battlearchives.com/products/falaise-pocket-battle-map",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 29, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Laigle",
+        "Place_GPS_coordinate": "48.764651, 0.628715",
+        "Weather_text": "Warm and clear, typical late summer conditions in Normandy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-0.271285",
+          "East": "1.528715",
+          "South": "47.864651",
+          "North": "49.664651"
+        }
+      }
+    },
+    {
+      "Event": "Enter Model, Exit Kluge",
+      "Sub-event": "Deterioration on Army Group B front",
+      "Sub-event_summary": "On 18 August, the Army Group B front deteriorated with pushes behind the Vie River, penetrations east and west of the Dives, and the gap appearing closed with weak forces.",
+      "Sub-event_fulltext": {
+        "Paragraph_30": "Meanwhile, the situation on the Army Group B front had again deteriorated on 18 August.",
+        "Paragraph_31": "The army group reported the left flank of the LXXXVI Corps pushed behind the Vie River, still out of contact with the I SS Panzer Corps.",
+        "Paragraph_32": "Deep penetrations had occurred east and west of the Dives.",
+        "Paragraph_33": "East of the river the Canadians were in possession of Trun and had advanced to the vicinity of St. Lambert, while a British thrust along the Falaise-Argentan highway reached a point about halfway between the two towns.",
+        "Paragraph_34": "The pressure from the south was generally contained, but along the eastern edge of the woodland east of Argentan American forces had unhinged the southern shoulder and threatened Chambois.",
+        "Paragraph_35": "By the end of the day, the gap on the eastern end of the pocket appeared closed, though presumably as yet only with weak forces."
+      },
+      "Footnote_References": [
+        "9"
+      ],
+      "Place_Name": "Trun",
+      "Dates": {
+        "Date_group_of_event": "18 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "APPROX 180000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "LXXXVI Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXVI Corps",
+          "Commander": "Hans von Obstfelder",
+          "Name": "Hans von Obstfelder",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Hans_von_Obstfelder",
+          "Biographical_reference_Capture_Date": "December 29, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0,
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Trun",
+        "Place_GPS_coordinate": "48.842879, 0.032741",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Falaise_pocket.svg",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 29, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Trun",
+        "Place_GPS_coordinate": "48.842879, 0.032741",
+        "Weather_text": "Warm and clear, typical late summer conditions in Normandy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-0.867259",
+          "East": "0.932741",
+          "South": "47.942879",
+          "North": "49.742879"
+        }
+      }
+    },
+    {
+      "Event": "Enter Model, Exit Kluge",
+      "Sub-event": "Advances on the north flank",
+      "Sub-event_summary": "The 4th Canadian Armoured Division took Trun and advanced to St. Lambert, while the 1st Polish Armoured Division secured areas around Hordouseaux and hills, probing near Chambois, denying a main escape route.",
+      "Sub-event_fulltext": {
+        "Paragraph_36": "The most significant development had occurred on the north flank in the zone of the 2d Canadian Corps.",
+        "Paragraph_37": "The 4th Canadian Armoured Division took Trun, and reconnaissance elements advanced to the edge of St. Lambert.",
+        "Paragraph_38": "Beside it, the Polish division secured the area around Hordouseaux and Hills 258 and 137, while a reinforced reconnaissance troop probed to within half a mile north of Chambois.",
+        "Paragraph_39": "The result denied the Germans one of their two main escape routes."
+      },
+      "Footnote_References": [
+        "10"
+      ],
+      "Place_Name": "Trun",
+      "Dates": {
+        "Date_group_of_event": "18 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "APPROX 180000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "4th Canadian Armoured Division",
+        "Unit_Nationality": "CA",
+        "Command_Structure": {
+          "Unit": "4th Canadian Armoured Division",
+          "Commander": "George Kitching",
+          "Name": "George Kitching",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/George_Kitching",
+          "Biographical_reference_Capture_Date": "December 29, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0,
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Trun",
+        "Place_GPS_coordinate": "48.842879, 0.032741",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://forgottenhope.warumdarum.de/fh2_maps.php?map=22",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 29, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Trun",
+        "Place_GPS_coordinate": "48.842879, 0.032741",
+        "Weather_text": "Warm and clear, typical late summer conditions in Normandy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-0.867259",
+          "East": "0.932741",
+          "South": "47.942879",
+          "North": "49.742879"
+        }
+      }
+    },
+    {
+      "Event": "Enter Model, Exit Kluge",
+      "Sub-event": "V Corps attack launch",
+      "Sub-event_summary": "General Gerow's V Corps launched its attack on 18 August, with instructions for the 2d French Armored Division, 80th Division, and 90th Division, supported by artillery.",
+      "Sub-event_fulltext": {
+        "Paragraph_40": "On the southern shoulder of the gap, General Gerow's V Corps had launched its attack on 18 August.",
+        "Paragraph_41": "Gerow had instructed the 2d French Armored Division on the left to hold firmly to the Ecouche--Argentan line, in order to prevent the Germans from breaking out of the impending trap, and assist the corps attack by fire.",
+        "Paragraph_42": "In the center, between Argentan and le Bourg-St.-Léonard, the 80th Division was to commit the 318th Infantry in a thrust designed to bypass Argentan on the east, cut the Argentan--Trun road, and enter Argentan from the northeast.",
+        "Paragraph_43": "On the right, from a line between le Bourg-St.-Léonard and Exmes, the 90th Division was to drive north to capture high ground near Chambois.",
+        "Paragraph_44": "Fifteen artillery battalions were to lend support."
+      },
+      "Footnote_References": [
+        "11",
+        "12"
+      ],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "18 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "APPROX 180000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "V Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "V Corps",
+          "Commander": "Leonard T. Gerow",
+          "Name": "Leonard T. Gerow",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Leonard_T._Gerow",
+          "Biographical_reference_Capture_Date": "December 29, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "2d French Armored Division",
+            "Name": "Philippe Leclerc",
+            "Rank": "General",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Jacques_Philippe_Leclerc_de_Hauteclocque",
+            "Biographical_reference_Capture_Date": "December 29, 2025"
+          },
+          {
+            "Unit": "80th Division",
+            "Name": "Horace L. McBride",
+            "Rank": "Major General",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Horace_L._McBride",
+            "Biographical_reference_Capture_Date": "December 29, 2025"
+          },
+          {
+            "Unit": "90th Division",
+            "Name": "Raymond S. McLain",
+            "Rank": "Brigadier General",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Raymond_S._McLain",
+            "Biographical_reference_Capture_Date": "December 29, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Artillery battalion",
+              "Identifier": "",
+              "Quantity": "15",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0,
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.7444, -0.0164",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.reddit.com/r/WorldWar2/comments/ma7zxc/map_of_the_germans_being_crushed_in_the_falaise/",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 29, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.7444, -0.0164",
+        "Weather_text": "Warm and clear, typical late summer conditions in Normandy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-0.9164",
+          "East": "0.8836",
+          "South": "47.8444",
+          "North": "49.6444"
+        }
+      }
+    },
+    {
+      "Event": "Enter Model, Exit Kluge",
+      "Sub-event": "318th Infantry action",
+      "Sub-event_summary": "The 318th Infantry of the 80th Division made no progress against strong German resistance, suffering casualties and tank losses, leading to the attack being called off.",
+      "Sub-event_fulltext": {
+        "Paragraph_45": "The 318th Infantry, 80th Division, made no progress against strong German resistance.",
+        "Paragraph_46": "Occupying rising ground and possessing superior observation, the Germans knocked out four Sherman tanks with their first few antitank shells.",
+        "Paragraph_47": "Their artillery and machine gun fire inflicted severe casualties on the infantry.",
+        "Paragraph_48": "General McBride called off the attack and requested the artillery fire of seven supporting battalions in an attempt to reduce the German defenses before trying to advance again."
+      },
+      "Footnote_References": [
+        "13"
+      ],
+      "Place_Name": "Argentan",
+      "Dates": {
+        "Date_group_of_event": "18 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "APPROX 180000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "80th Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "80th Division",
+          "Commander": "Horace L. McBride",
+          "Name": "Horace L. McBride",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Horace_L._McBride",
+          "Biographical_reference_Capture_Date": "December 29, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "318th Infantry",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Sherman tank",
+              "Identifier": "M4",
+              "Quantity": "4 destroyed",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Allied_Destroyed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Sherman tank",
+              "Identifier": "M4",
+              "Quantity": "4",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": "severe",
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0,
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.7444, -0.0164",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.battlearchives.com/products/falaise-pocket-battle-map",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 29, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan",
+        "Place_GPS_coordinate": "48.7444, -0.0164",
+        "Weather_text": "Warm and clear, typical late summer conditions in Normandy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-0.9164",
+          "East": "0.8836",
+          "South": "47.8444",
+          "North": "49.6444"
+        }
+      }
+    },
+    {
+      "Event": "Enter Model, Exit Kluge",
+      "Sub-event": "90th Division action",
+      "Sub-event_summary": "The 90th Division outflanked resistance, cut the road halfway to Chambois, but was hampered by mist, smoke, and German fire, preventing attainment of objective.",
+      "Sub-event_fulltext": {
+        "Paragraph_49": "The 90th Division had more, but not complete, success.",
+        "Paragraph_50": "Moving cross-country, American infantrymen outflanked resistance astride the le Bourg-St.-Léonard-Chambois road, then cut the road about half way to Chambois.",
+        "Paragraph_51": "Morning mist rising from patches of damp and densely thicketed forests hampered the troops at first.",
+        "Paragraph_52": "Later, thick smoke from smoldering timber set afire by white phosphorus shells obscured their vision.",
+        "Paragraph_53": "This, plus German fire (particularly of the 8th Werfer (Rocket) Brigade) and defensive action by the 116th Panzer Division, prevented the 90th from attaining its objective."
+      },
+      "Footnote_References": [
+        "14"
+      ],
+      "Place_Name": "Chambois",
+      "Dates": {
+        "Date_group_of_event": "18 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "APPROX 180000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "90th Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "90th Division",
+          "Commander": "Raymond S. McLain",
+          "Name": "Raymond S. McLain",
+          "Rank": "Brigadier General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Raymond_S._McLain",
+          "Biographical_reference_Capture_Date": "December 29, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Werfer Brigade",
+              "Identifier": "8th Rocket Brigade",
+              "Quantity": "1",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0,
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Chambois",
+        "Place_GPS_coordinate": "48.806401, 0.105433",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Falaise_pocket.svg",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 29, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Chambois",
+        "Place_GPS_coordinate": "48.806401, 0.105433",
+        "Weather_text": "Warm and clear, typical late summer conditions in Normandy, with morning mist",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-0.794567",
+          "East": "1.005433",
+          "South": "47.906401",
+          "North": "49.706401"
+        }
+      }
+    },
+    {
+      "Event": "Enter Model, Exit Kluge",
+      "Sub-event": "German escapes through the gap",
+      "Sub-event_summary": "The gap remained open, allowing German headquarters and units like the 116th Panzer Division trains and artillery, and LVIII Panzer Corps to escape.",
+      "Sub-event_fulltext": {
+        "Paragraph_54": "The gap on the eastern end of the pocket remained open, and through it that night German headquarters and units escaped.",
+        "Paragraph_55": "The 116th Panzer Division, for example, sent trains and artillery through the Trun--Chambois gap.",
+        "Paragraph_56": "The LVIII Panzer Corps headquarters, having fulfilled its mission of regulating traffic over the Orne bridges, moved across the Dives to safety."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Trun",
+      "Dates": {
+        "Date_group_of_event": "Night of 18 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "APPROX 182000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "116th Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "116th Panzer Division",
+          "Commander": "Gerhard von Schwerin",
+          "Name": "Gerhard von Schwerin",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Gerhard_von_Schwerin",
+          "Biographical_reference_Capture_Date": "December 29, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "LVIII Panzer Corps",
+            "Name": "Walter Krüger",
+            "Rank": "General",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_Kr%C3%BCger_(Wehrmacht_general)",
+            "Biographical_reference_Capture_Date": "December 29, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Artillery",
+              "Identifier": "",
+              "Quantity": "unknown",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0,
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Trun",
+        "Place_GPS_coordinate": "48.842879, 0.032741",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Falaise_pocket.svg",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 29, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Trun",
+        "Place_GPS_coordinate": "48.842879, 0.032741",
+        "Weather_text": "Warm and clear, typical late summer conditions in Normandy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-0.867259",
+          "East": "0.932741",
+          "South": "47.942879",
+          "North": "49.742879"
+        }
+      }
+    },
+    {
+      "Event": "Enter Model, Exit Kluge",
+      "Sub-event": "Pocket compression and artillery fire",
+      "Sub-event_summary": "The pocket was compressed, with terrain offering little cover, and intense artillery fire descended from all sides, continuing throughout the day.",
+      "Sub-event_fulltext": {
+        "Paragraph_57": "Yet the Germans had ample cause for concern.",
+        "Paragraph_58": "The pocket had been further compressed.",
+        "Paragraph_59": "\"Practically speaking,\" according to German commanders, \"the pocket was closed.\"",
+        "Paragraph_60": "With the exception of a narrow belt of woodland running along the watershed between the Orne and Dives River valleys, the terrain offered little cover.",
+        "Paragraph_61": "The roads were like chalk marks on a billiard table, in plain view of Allied aircraft and artillery observers.",
+        "Paragraph_62": "During the night of 18 August intense artillery fire suddenly descended on the pocket from all sides in unprecedented volume, and it continued throughout the following day."
+      },
+      "Footnote_References": [
+        "15"
+      ],
+      "Place_Name": "Argentan-Falaise pocket",
+      "Dates": {
+        "Date_group_of_event": "Night of 18 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "APPROX 182000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Walter Model",
+          "Name": "Walter Model",
+          "Rank": "Field Marshal",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_Model",
+          "Biographical_reference_Capture_Date": "December 29, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0,
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Argentan-Falaise pocket",
+        "Place_GPS_coordinate": "48.896473, -0.199913",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Falaise_pocket.svg",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 29, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan-Falaise pocket",
+        "Place_GPS_coordinate": "48.896473, -0.199913",
+        "Weather_text": "Warm and clear, typical late summer conditions in Normandy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.099913",
+          "East": "0.700087",
+          "South": "47.996473",
+          "North": "49.796473"
+        }
+      }
+    },
+    {
+      "Event": "Enter Model, Exit Kluge",
+      "Sub-event": "Hitler's order on southern France",
+      "Sub-event_summary": "Hitler issued orders for Army Group G to disengage forces in southern France, move to contact with Army Group B, and organize a rallying position, with demolitions and defense of fortresses.",
+      "Sub-event_fulltext": {
+        "Paragraph_63": "Outside the Army Group B perspective, events in the west were also having their effect on higher levels, and on 18 August Hitler issued an order to amplify his instructions of the 16th, instructions that applied to the situation in southern France.",
+        "Paragraph_64": "On 16 August, a day after the Allied invasion of southern France, Hitler had ordered all noncombat troops of Army Group G west of the line Orléans-Clermont-Ferrand-Montpellier to begin moving northeastward to the Seine-Yonne River line.",
+        "Paragraph_65": "This order affected neither the combat troops of the Nineteenth Army opposing the Allied Mediterranean landings nor the fortress troops on the Atlantic coast.",
+        "Paragraph_66": "On 18 August, because developments in the Army Group B sector foreshadowed the possibility that the Nineteenth Army might be cut off in the near future, Hitler ordered Army Group G to disengage its forces in southern France--with the exception of troops at Toulon and Marseille.",
+        "Paragraph_67": "Army Group G was to move to gain contact with the southern flank of Army Group B and begin at once to organize a rallying position along a line from Sens through Dijon to the Swiss border.",
+        "Paragraph_68": "Firm rear-guard action on predetermined lines of resistance was to insure the orderly withdrawal of all troops from southeastern France.",
+        "Paragraph_69": "The 11th Panzer Division was to be left in the Rhone River valley as protection against Allied airborne landings and later was to form the rear guard of the Nineteenth Army.",
+        "Paragraph_70": "The progress of pursuing Allied forces was to be impeded to the utmost by demolition and destruction--\"not one locomotive, bridge, power station, or repair shop shall fall into enemy hands undestroyed.\"",
+        "Paragraph_71": "Fortress areas on the Atlantic and Mediterranean coasts of France were to be defended to the last man, Marseille and Toulon by a division each."
+      },
+      "Footnote_References": [
+        "16"
+      ],
+      "Place_Name": "Sens",
+      "Dates": {
+        "Date_group_of_event": "18 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "APPROX 180000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group G",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group G",
+          "Commander": "Johannes Blaskowitz",
+          "Name": "Johannes Blaskowitz",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Johannes_Blaskowitz",
+          "Biographical_reference_Capture_Date": "December 29, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Nineteenth Army",
+            "Name": "Friedrich Wiese",
+            "Rank": "General",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Friedrich_Wiese",
+            "Biographical_reference_Capture_Date": "December 29, 2025"
+          },
+          {
+            "Unit": "11th Panzer Division",
+            "Name": "Wend von Wietersheim",
+            "Rank": "General",
+            "Date": "August 1944",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Wend_von_Wietersheim",
+            "Biographical_reference_Capture_Date": "December 29, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0,
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Sens",
+        "Place_GPS_coordinate": "48.197498, 3.287700",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Sens",
+        "Place_GPS_coordinate": "48.197498, 3.287700",
+        "Weather_text": "Warm and clear, typical late summer conditions",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "2.387700",
+          "East": "4.187700",
+          "South": "47.297498",
+          "North": "49.097498"
+        }
+      }
+    },
+    {
+      "Event": "Enter Model, Exit Kluge",
+      "Sub-event": "Model assumes command",
+      "Sub-event_summary": "With Army Groups B and G withdrawing, Model assumed command of OB WEST and Army Group B at midnight on 18 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_72": "With Army Groups B and G withdrawing from northwest and southern France by 18 August, Model at midnight, after a day of inspection and conference in the west, assumed command of OB WEST and Army Group B."
+      },
+      "Footnote_References": [
+        "17"
+      ],
+      "Place_Name": "Argentan-Falaise pocket",
+      "Dates": {
+        "Date_group_of_event": "18 August 1944 midnight",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "182200ZAUG44"
+      },
+      "TOE": {
+        "Unit": "OB WEST",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "OB WEST",
+          "Commander": "Walter Model",
+          "Name": "Walter Model",
+          "Rank": "Field Marshal",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_Model",
+          "Biographical_reference_Capture_Date": "December 29, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0,
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Argentan-Falaise pocket",
+        "Place_GPS_coordinate": "48.896473, -0.199913",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Falaise_pocket.svg",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 29, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan-Falaise pocket",
+        "Place_GPS_coordinate": "48.896473, -0.199913",
+        "Weather_text": "Warm and clear, typical late summer conditions in Normandy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.099913",
+          "East": "0.700087",
+          "South": "47.996473",
+          "North": "49.796473"
+        }
+      }
+    },
+    {
+      "Event": "Enter Model, Exit Kluge",
+      "Sub-event": "Kluge's departure and suicide",
+      "Sub-event_summary": "Kluge departed for Germany, wrote a letter to Hitler, and committed suicide on the road to Metz with potassium cyanide; Hitler repressed the news initially.",
+      "Sub-event_fulltext": {
+        "Paragraph_73": "His predecessor, Kluge, departed for Germany by automobile.",
+        "Paragraph_74": "Shortly before Model's arrival in the west, Kluge had told a colleague, \"You may rest assured that I shall talk with him [Hitler] again tonight without mincing any words.",
+        "Paragraph_75": "Something has to happen.",
+        "Paragraph_76": "I owe this to the troops and to the German people.",
+        "Paragraph_77": "One way or another.\"",
+        "Paragraph_78": "Relieved of command before he could do so, Kluge nevertheless fulfilled his promise by writing a frank letter to Hitler before his departure.",
+        "Paragraph_79": "On the road to Metz he then committed suicide, taking potassium cyanide.",
+        "Paragraph_80": "Hitler at first repressed news of Kluge's death, but soon after he received Kluge's letter he informed important party officials and military authorities of Kluge's suicide.",
+        "Paragraph_81": "Hitler also advised them that Kluge had admitted his guilt for the defeat in the west.",
+        "Paragraph_82": "Kluge was buried quietly at home without the public acclamation later accorded Rommel, who, unlike Kluge, was to be forced to take his own life."
+      },
+      "Footnote_References": [
+        "18",
+        "19"
+      ],
+      "Place_Name": "Metz",
+      "Dates": {
+        "Date_group_of_event": "19 August 1944",
+        "Source_date_group_of_event": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+        "Zulu_date_group_of_event": "APPROX 190000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": "18 August 1944",
+          "End_Status": "Relieved",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 29, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0,
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 1,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Metz",
+        "Place_GPS_coordinate": "49.120277, 6.177778",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Metz",
+        "Place_GPS_coordinate": "49.120277, 6.177778",
+        "Weather_text": "Warm and clear, typical late summer conditions",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "5.277778",
+          "East": "7.077778",
+          "South": "48.220277",
+          "North": "50.020277"
+        }
+      }
+    },
+    {
+      "Event": "Enter Model, Exit Kluge",
+      "Sub-event": "Kluge's letter to Hitler",
+      "Sub-event_summary": "Kluge's letter to Hitler explained his position, the impracticability of Hitler's orders, the reasons for defeat, and urged ending the war, expressing admiration for Hitler's fight.",
+      "Sub-event_fulltext": {
+        "Paragraph_83": "Kluge's letter to Hitler contained neither bitterness nor reproach:",
+        "Paragraph_84": "When you receive these lines, I shall be no more.",
+        "Paragraph_85": "I cannot bear the accusation that I sealed the fate of the West by taking wrong measures. . . .",
+        "Paragraph_86": "I have never feared death.",
+        "Paragraph_87": "Life for me, who am already included on the list of war criminals to be surrendered, has no more meaning.",
+        "Paragraph_88": "I have been relieved of command. . . .",
+        "Paragraph_89": "The evident reason is the failure of the armored units in their push to Avranches and the consequent impossibility of closing the gap to the sea.",
+        "Paragraph_90": "As responsible commander, my \"guilt\" is thereby affirmed.",
+        "Paragraph_91": "Allow me, my Fuehrer, to state my position in all deference.",
+        "Paragraph_92": "Because of previous combat, Kluge declared, the armored units that had launched the attack toward Avranches had been far too weak to assure success, and even with increased striking power, they would never have regained the sea.",
+        "Paragraph_93": "Assuming, nevertheless, that Avranches had through some miracle been recaptured, the danger to the army group would have only been postponed, not eliminated.",
+        "Paragraph_94": "The order to drive to the north from Avranches in an attempt to change the strategic situation in the west had been \"completely out of the question. . . .",
+        "Paragraph_95": "Your order, therefore, presupposed a state of affairs that did not exist.\"",
+        "Paragraph_96": "The grand and daring operational concept enunciated by Hitler, unfortunately, had been impracticable in execution.",
+        "Paragraph_97": "Conceding that it probably would have been better to delay the attack for one day, Kluge contended that such a postponement would not have basically changed the course of events.",
+        "Paragraph_98": "The units in the west had been forced to become self-sufficient in men and matériel because the crisis on the Eastern Front had not permitted adequate replacement.",
+        "Paragraph_99": "Not the failure of the Avranches counterattack but the rapid decline in the number of available tanks and antitank weapons, the insufficient supplies and equipment, and personnel attrition had produced the situation that had culminated in the Argentan-Falaise pocket.",
+        "Paragraph_100": "Both Rommel and I, and probably all the leaders here in the West, who have experienced the struggle with the English and Americans and [witnessed] their wealth in matériel, foresaw the development that has now appeared. . . .",
+        "Paragraph_101": "Our views were not dictated by pessimism but by sober recognition of the facts.",
+        "Paragraph_102": "Hoping that Model would master the situation, Kluge concluded:",
+        "Paragraph_103": "Should the new weapons in which you place so much hope, especially those of the air force, not bring success--then, my Fuehrer, make up your mind to end the war.",
+        "Paragraph_104": "The German people have suffered so unspeakably that it is time to bring the horror to a close.",
+        "Paragraph_105": "I have steadfastly stood in awe of your greatness, your bearing in this gigantic struggle, and your iron will. . . .",
+        "Paragraph_106": "If Fate is stronger than your will and your genius, that is Destiny.",
+        "Paragraph_107": "You have made an honorable and tremendous fight.",
+        "Paragraph_108": "History will testify this for you.",
+        "Paragraph_109": "Show now that greatness that will be necessary if it comes to the point of ending a struggle which has become hopeless.",
+        "Paragraph_110": "I depart from you, my Fuehrer, having stood closer to you in spirit than you perhaps dreamed, in the consciousness of having done my duty to the utmost."
+      },
+      "Footnote_References": [
+        "20"
+      ],
+      "Place_Name": "Argentan-Falaise pocket",
+      "Dates": {
+        "Date_group_of_event": "18 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "APPROX 180000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Günther von Kluge",
+          "Name": "Günther von Kluge",
+          "Rank": "Field Marshal",
+          "End_Date": "18 August 1944",
+          "End_Status": "Relieved",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/G%C3%BCnther_von_Kluge",
+          "Biographical_reference_Capture_Date": "December 29, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0,
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Argentan-Falaise pocket",
+        "Place_GPS_coordinate": "48.896473, -0.199913",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Falaise_pocket.svg",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 29, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan-Falaise pocket",
+        "Place_GPS_coordinate": "48.896473, -0.199913",
+        "Weather_text": "Warm and clear, typical late summer conditions in Normandy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.099913",
+          "East": "0.700087",
+          "South": "47.996473",
+          "North": "49.796473"
+        }
+      }
+    },
+    {
+      "Event": "Enter Model, Exit Kluge",
+      "Sub-event": "Effects of letter and suicide",
+      "Sub-event_summary": "Neither Kluge's letter nor suicide affected events or brought comfort to Hitler, whose forces were undergoing destruction.",
+      "Sub-event_fulltext": {
+        "Paragraph_111": "Neither the letter nor Kluge's suicide affected the course of events.",
+        "Paragraph_112": "Nor did they bring comfort to Hitler, whose forces in the west were undergoing the destruction incident to defeat."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Argentan-Falaise pocket",
+      "Dates": {
+        "Date_group_of_event": "19 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "APPROX 190000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "Army Group B",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Army Group B",
+          "Commander": "Walter Model",
+          "Name": "Walter Model",
+          "Rank": "Field Marshal",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Walter_Model",
+          "Biographical_reference_Capture_Date": "December 29, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0,
+          "Allied_GB_KIA": 0,
+          "Allied_GB_WIA": 0,
+          "Allied_GB_Missing": 0,
+          "Allied_GB_Unspecified_Casualties": 0,
+          "Allied_GB_Prisoner_of_War": 0,
+          "Allied_CA_KIA": 0,
+          "Allied_CA_WIA": 0,
+          "Allied_CA_Missing": 0,
+          "Allied_CA_Unspecified_Casualties": 0,
+          "Allied_CA_Prisoner_of_War": 0,
+          "Allied_PL_KIA": 0,
+          "Allied_PL_WIA": 0,
+          "Allied_PL_Missing": 0,
+          "Allied_PL_Unspecified_Casualties": 0,
+          "Allied_PL_Prisoner_of_War": 0,
+          "Allied_FR_KIA": 0,
+          "Allied_FR_WIA": 0,
+          "Allied_FR_Missing": 0,
+          "Allied_FR_Unspecified_Casualties": 0,
+          "Allied_FR_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Argentan-Falaise pocket",
+        "Place_GPS_coordinate": "48.896473, -0.199913",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Falaise_pocket.svg",
+        "ExternalMapLinkLicence": "CC BY-SA",
+        "ExternalMapLinkCaptureDate": "December 29, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Argentan-Falaise pocket",
+        "Place_GPS_coordinate": "48.896473, -0.199913",
+        "Weather_text": "Warm and clear, typical late summer conditions in Normandy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.099913",
+          "East": "0.700087",
+          "South": "47.996473",
+          "North": "49.796473"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "7a",
+      "Footnote_Number": "7",
+      "Footnote_Text": "Min of Conf, 18 Aug, Fifth Pz Army KTB, Anlage 34",
+      "Footnote_Referenced_Source": "Min of Conf, 18 Aug, Fifth Pz Army KTB, Anlage 34",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Fifth Pz Army KTB, Anlage 34",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "7b",
+      "Footnote_Number": "7",
+      "Footnote_Text": "Tempelhoff Telecon, 1050, 18 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "Tempelhoff Telecon, 1050, 18 Aug, AGp B KTB.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "AGp B KTB",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "8",
+      "Footnote_Number": "8",
+      "Footnote_Text": "Model's Rpt to Jodl, 18 Aug, OB WEST KTB, Anlagen, p. 1513.",
+      "Footnote_Referenced_Source": "Model's Rpt to Jodl, 18 Aug, OB WEST KTB, Anlagen, p. 1513.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "OB WEST KTB, Anlagen, p. 1513",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "9",
+      "Footnote_Number": "9",
+      "Footnote_Text": "AGp B Tagesmeldung, dated 19 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "AGp B Tagesmeldung, dated 19 Aug, AGp B KTB.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "AGp B KTB",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "10a",
+      "Footnote_Number": "10",
+      "Footnote_Text": "Two main sources have been used for the action on the northern flank: Canadian Opns",
+      "Footnote_Referenced_Source": "Canadian Opns",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Canadian Opns",
+      "Source_Type": "CA"
+    },
+    {
+      "Footnote": "10b",
+      "Footnote_Number": "10",
+      "Footnote_Text": "1. Dywizja Pancerna w Walce (The First Armored Division in Battle) (Brussels: La Colonne, Ltd., 1947) (hereafter cited as 1st Polish Armored Division), pp. 67-70, 91-103.",
+      "Footnote_Referenced_Source": "1. Dywizja Pancerna w Walce (The First Armored Division in Battle) (Brussels: La Colonne, Ltd., 1947) (hereafter cited as 1st Polish Armored Division), pp. 67-70, 91-103.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "1st Polish Armored Division",
+      "Source_Type": "PL"
+    },
+    {
+      "Footnote": "11",
+      "Footnote_Number": "11",
+      "Footnote_Text": "Only one other regiment of the 80th Division, the 317th, was available to Gerow, and he kept it as his corps reserve. The third regiment, the 319th, was on a separate mission near the Loire River.",
+      "Footnote_Referenced_Source": "Only one other regiment of the 80th Division, the 317th, was available to Gerow, and he kept it as his corps reserve. The third regiment, the 319th, was on a separate mission near the Loire River.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Text note",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "12",
+      "Footnote_Number": "12",
+      "Footnote_Text": "V Corps FO 20, 1800, 17 Aug; V Corps Ltr of Instr (Gerow to Leclerc) 18 Aug; Thompson, Arty Study.",
+      "Footnote_Referenced_Source": "V Corps FO 20, 1800, 17 Aug; V Corps Ltr of Instr (Gerow to Leclerc) 18 Aug; Thompson, Arty Study.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "V Corps FO 20; V Corps Ltr of Instr; Thompson, Arty Study",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "13a",
+      "Footnote_Number": "13",
+      "Footnote_Text": "80th Div AAR, Aug",
+      "Footnote_Referenced_Source": "80th Div AAR, Aug",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "80th Div AAR, Aug",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "13b",
+      "Footnote_Number": "13",
+      "Footnote_Text": "Interv with McHugh, Stockton's Hosp Intervs, Vol. III, GL-93 (235).",
+      "Footnote_Referenced_Source": "Interv with McHugh, Stockton's Hosp Intervs, Vol. III, GL-93 (235).",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Stockton's Hosp Intervs, Vol. III, GL-93 (235)",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "14",
+      "Footnote_Number": "14",
+      "Footnote_Text": "Lt. Col. Christian H. Clarke, Jr., though suffering a painful and partially disabling wound, manifested heroic leadership and was awarded the DSC.",
+      "Footnote_Referenced_Source": "Lt. Col. Christian H. Clarke, Jr., though suffering a painful and partially disabling wound, manifested heroic leadership and was awarded the DSC.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Award citation for Lt. Col. Christian H. Clarke, Jr.",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "15a",
+      "Footnote_Number": "15",
+      "Footnote_Text": "MS # A-919 (Gersdorff)",
+      "Footnote_Referenced_Source": "MS # A-919 (Gersdorff)",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "MS # A-919 (Gersdorff)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "15b",
+      "Footnote_Number": "15",
+      "Footnote_Text": "see Telecon, Gersdorff and Speidel, 2020, 20 Aug, AGp B KTB",
+      "Footnote_Referenced_Source": "Telecon, Gersdorff and Speidel, 2020, 20 Aug, AGp B KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "AGp B KTB",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "15c",
+      "Footnote_Number": "15",
+      "Footnote_Text": "Commandant Richard Mouton, \"Le Piege se Referme a Chambois,\" in Herval, Bataille de Normandie, I, 416",
+      "Footnote_Referenced_Source": "Commandant Richard Mouton, \"Le Piege se Referme a Chambois,\" in Herval, Bataille de Normandie, I, 416",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Herval, Bataille de Normandie, I, 416",
+      "Source_Type": "FR"
+    },
+    {
+      "Footnote": "15d",
+      "Footnote_Number": "15",
+      "Footnote_Text": "Leigh-Mallory, \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946, p. 67.",
+      "Footnote_Referenced_Source": "Leigh-Mallory, \"Despatch,\" Fourth Supplement to the London Gazette of December 31, 1946, p. 67.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Leigh-Mallory Despatch",
+      "Source_Type": "GB"
+    },
+    {
+      "Footnote": "16a",
+      "Footnote_Number": "16",
+      "Footnote_Text": "Hitler Order, OKW/WFSt/Op, 16 Aug, received by OB WEST at 0320, 17 Aug, OB WEST KTB, Anlagen, p. 252",
+      "Footnote_Referenced_Source": "Hitler Order, OKW/WFSt/Op, 16 Aug, received by OB WEST at 0320, 17 Aug, OB WEST KTB, Anlagen, p. 252",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "OB WEST KTB, Anlagen, p. 252",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "16b",
+      "Footnote_Number": "16",
+      "Footnote_Text": "Hitler Order, 18 Aug, OB WEST KTB, Anlagen, p. 1499.",
+      "Footnote_Referenced_Source": "Hitler Order, 18 Aug, OB WEST KTB, Anlagen, p. 1499.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "OB WEST KTB, Anlagen, p. 1499",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "17",
+      "Footnote_Number": "17",
+      "Footnote_Text": "Fifth Pz A KTB, Anlage 40.",
+      "Footnote_Referenced_Source": "Fifth Pz A KTB, Anlage 40.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Fifth Pz A KTB, Anlage 40",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "18",
+      "Footnote_Number": "18",
+      "Footnote_Text": "MS # B-807 (Kuntzen).",
+      "Footnote_Referenced_Source": "MS # B-807 (Kuntzen).",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "MS # B-807 (Kuntzen)",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "19a",
+      "Footnote_Number": "19",
+      "Footnote_Text": "Telecon, 1710, 20 Aug, AGp B KTB.",
+      "Footnote_Referenced_Source": "Telecon, 1710, 20 Aug, AGp B KTB.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "AGp B KTB",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "19b",
+      "Footnote_Number": "19",
+      "Footnote_Text": "Speidel reported that Kluge had complained on several occasions of dizziness and also that Kluge had seemed deeply affected by the critical situation of the encircled troops and by the fact that his son was among them.",
+      "Footnote_Referenced_Source": "Speidel reported that Kluge had complained on several occasions of dizziness and also that Kluge had seemed deeply affected by the critical situation of the encircled troops and by the fact that his son was among them.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Text note",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "20a",
+      "Footnote_Number": "20",
+      "Footnote_Text": "Ltr, Kluge to Hitler, 18 Aug, translated by MIRS London, 28 May 45, CRS Files, EAP 21-X/15",
+      "Footnote_Referenced_Source": "Ltr, Kluge to Hitler, 18 Aug, translated by MIRS London, 28 May 45, CRS Files, EAP 21-X/15",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "CRS Files, EAP 21-X/15",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "20b",
+      "Footnote_Number": "20",
+      "Footnote_Text": "Kluge's Farewell to Hitler, 18 Aug, M.I.-14/7, OCMH Files",
+      "Footnote_Referenced_Source": "Kluge's Farewell to Hitler, 18 Aug, M.I.-14/7, OCMH Files",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "M.I.-14/7",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "20c",
+      "Footnote_Number": "20",
+      "Footnote_Text": "see Hodgson's translation in R-58",
+      "Footnote_Referenced_Source": "see Hodgson's translation in R-58",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "R-58",
+      "Source_Type": "US"
+    },
+    {
+      "Footnote": "20d",
+      "Footnote_Number": "20",
+      "Footnote_Text": "see also Bormann File on Kluge in OCMH Files.",
+      "Footnote_Referenced_Source": "see also Bormann File on Kluge in OCMH Files.",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "Bormann File on Kluge",
+      "Source_Type": "DE"
+    },
+    {
+      "Footnote": "20e",
+      "Footnote_Number": "20",
+      "Footnote_Text": "Eberbach believed later that Kluge might have averted the defeat in August by disobeying Hitler and withdrawing to the Seine at the beginning of the month, but Eberbach conceded that Kluge was being watched so closely after the July 20th Putsch that a false step would have resulted in his immediate relief and the substitution of a more manageable commander. MS # A-922 (Eberbach).",
+      "Footnote_Referenced_Source": "Eberbach believed later that Kluge might have averted the defeat in August by disobeying Hitler and withdrawing to the Seine at the beginning of the month, but Eberbach conceded that Kluge was being watched so closely after the July 20th Putsch that a false step would have resulted in his immediate relief and the substitution of a more manageable commander. MS # A-922 (Eberbach).",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, 102 4th Ave, Fort Lesley J. McNair, Washington, DC 20319",
+      "NonDigital_Library_References": "MS # A-922 (Eberbach)",
+      "Source_Type": "DE"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn27.html",
+  "Source_Footnote_Link_Capture_Date": "December 29, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+  "Source_Link_Capture_Date": "December 29, 2025"
+}

@@ -1,0 +1,1111 @@
+{
+  "Events": [
+    {
+      "Event": "Breakthrough Becomes Breakout - The Outflanking Force",
+      "Sub-event": "Initial Situation and Planning (28-29 July 1944)",
+      "Sub-event_summary": "On 28 July, General Bradley directed the exploitation from Operation COBRA, while VII Corps under General Collins completed its COBRA tasks. Divisions were positioned in the Coutances-Marigny area, with plans to reorient south for exploitation, disrupted by German pressure from the Roncey pocket. Collins adjusted by reuniting CCB with 3d Armored Division and ordering attacks.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "While General Bradley on 28 July was giving direction to the exploitation growing out of COBRA, General Collins' VII Corps still had not completed its assignment in the COBRA operation. The 1st Division, with Combat Command B of the 3d Armored Division attached, was establishing positions in the Coutances-Marigny area. The rest of the 3d Armored Division was engaged near Montpinchon. The 2d Armored Division, less CCA, was extending a line across the Cotentin from Notre-Dame-de-Cenilly to Cérences. The 4th Division, less the 22d Infantry, was hurrying to the Notre-Dame-de-Cenilly sector to reinforce the armored division. Only the 9th Division was out of contact with the enemy--needing rest, it was about to pass into corps reserve. Both the 30th Division and the 2d Armored's CCA had been transferred to the XIX Corps, and plans already were under way to redistribute some of the extra artillery provided the VII Corps for Operation COBRA.",
+        "Paragraph_2": "Still oriented to the west in accord with the COBRA plan, VII Corps would have to make a sharp turn to the south before taking part in the exploitation, a maneuver that well might delay its participation. In hope of speeding the shift and holding traffic congestion to a minimum, General Collins first ordered reorientation and attack by the units that were farthest south in the corps sector, the 2d Armored and 4th Infantry Divisions, only to see this plan disrupted by the continued pressure against the 2d Armored Division the Germans exerted in trying to escape the Roncey pocket.",
+        "Paragraph_3": "So long as this pressure persisted, the 2d Armored Division could not assume a new mission. Having detached the 3d Armored Division's CCB from the 1st Division in order to provide an armored reserve under his original plan, General Collins saw a solution to his problem in reuniting the combat command with its parent division and using the 3d Armored in the exploitation attack. He ordered the 3d Armored to go south early on 30 July and pass through the 2d Armored in order to attack on the right and abreast of the 4th Division. To reinforce the 4th Division, since the 22d Infantry had passed to control of the XIX Corps, Collins provided it with the 1st Division's 26th Infantry. The remainder of the 1st Division was to be in reserve, but be prepared to move south on six hours' notice. The 9th Division was to"
+      },
+      "Footnote_References": [
+        "1",
+        "2",
+        "3"
+      ],
+      "Place_Name": "Coutances-Marigny area",
+      "Dates": {
+        "Date_group_of_event": "28 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 280000ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar N. Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "1st Infantry Division",
+            "Name": "Clarence R. Huebner",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Clarence_R._Huebner",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "3d Armored Division",
+            "Name": "Doyle O. Hickey",
+            "Rank": "Brigadier General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Doyle_O._Hickey",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "4th Infantry Division",
+            "Name": "Raymond O. Barton",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Raymond_O._Barton",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "2d Armored Division",
+            "Name": "Edward H. Brooks",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Edward_H._Brooks",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "9th Infantry Division",
+            "Name": "Manton S. Eddy",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Manton_S._Eddy",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Full strength for most units, 9th Division needing rest",
+        "Equipments": {
+          "Supply": "Extra artillery being redistributed",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "M4 Sherman Tank",
+              "Identifier": "M4",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M4_Sherman_tank_-_WWII.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Panzer Tank",
+              "Identifier": "PzKpfw",
+              "Quantity": "less than 3 battalions",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Panzer_IV",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Bundesarchiv_Bild_101I-299-1805-16,_Nordfrankreich,_Panzer_IV.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VI.jpg",
+          "Description": "Map VI showing VII Corps sector",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.05, -1.45",
+        "Map_Reference": "Map VI",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VI.jpg",
+        "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.05, -1.45",
+        "Weather_text": "Mild weather with temperatures between 15-25°C, partly cloudy, recent rain making roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.85",
+          "East": "0.95",
+          "South": "48.15",
+          "North": "49.95"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Outflanking Force",
+      "Sub-event": "Attack on 30 July by 4th Division and 3d Armored Division",
+      "Sub-event_summary": "The 3d Armored and 4th Divisions attacked southeast toward Villedieu-les-Poëles. The 4th Division encountered opposition north of Villedieu. CCB of 3d Armored advanced to Hambye, crossed the Sienne, but halted near Villedieu. CCA faced difficulties in movement and made an assault crossing at Gavray, establishing a bridgehead.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "The 3d Armored and 4th Divisions were ready to take up the post-COBRA exploitation on the morning of 30 July. The two divisions were to attack southeast for seven miles from Gavray to Villedieules-Poëles. The infantry was to take Villedieu, an important road center in the middle of the Cotentin about half way between Granville and the town of Vire, and high ground east of Villedieu, while the armor was to seize high ground and river crossing sites west of Villedieu. The situation seemed propitious since the Germans west of the Vire River--perhaps 16,000 men and less than three tank battalions--were in retreat. Neither reserves nor a German defensive line north of the Avranches-Tessy-sur-Vire area was in evidence.",
+        "Paragraph_5": "Attacking with two regiments abreast on the morning of 30 July, the 4th Division encountered little opposition until it arrived about four miles north of Villedieu-les-Poëles. Here an artillery preparation and a battalion attack during the afternoon failed to eliminate the opposition. Excellent defensive terrain and the presence of strong enemy forces, particularly on the 4th Division left on ground south of Percy, brought operations to a temporary halt. On the 4th Division right, the two combat commands of the 3d Armored Division in the meantime had driven toward Gavray and Hambye to cross the Sienne River abreast.",
+        "Paragraph_6": "Of the two, CCB had less difficulty, despite poor country roads and wrecked German vehicles that had to be pushed off the roads before the columns could pass. Reaching Hambye in early afternoon of 30 July, CCB found a damaged bridge and met small arms fire from the south bank, but a small reconnaissance party supported by fire from the advance guard was sufficient to drive the Germans back. Engineers repaired the bridge by late afternoon, and the combat command continued the march south toward Villedieu-les-Poëles. Like the infantry, the armor ran into increasing resistance when nearing Villedieu. Since portions of the combat command still had to cross the Sienne before a full-scale attack could be mounted against the objective west of the town, Colonel Boudinot halted CCB and established perimeter defenses for the night.",
+        "Paragraph_7": "In moving to Gavray, CCA of the 3d Armored Division had been hampered by the presence of troops of other divisions. CCA's COBRA attack had brought it to, and in some places beyond, the Coutances Lengronne highway, which had been pre-empted by, then turned over to, the VIII Corps. Since armor of the VIII Corps was driving south along this route, intermingling of VII and VIII Corps troops was inevitable. \"Things were in wild disorder,\" General Collins later recalled. Extricating hundreds of CCA men and vehicles from what had become the adjacent corps sector was difficult work. Had CCA been able to use the main highway from Coutances through Lengronne to Gavray, its advance would have been simplified. But CCA, like",
+        "Paragraph_8": "CCB, had been relegated to a network of narrow, muddy, twisting roads that would have retarded movement even if hundreds of burned-out German vehicles had not blocked the way in Roncey and along the roads leading south and southeast. Furthermore, orienting CCA from west to southeast involved turning the advance guards, uncoiling columns, regrouping forces, and, as a result, much internal traffic congestion. The necessity of passing through the rear of the 2d Armored Division also added to traffic problems. Both General Collins and General Hickey had to give personal attention to traffic control at critical road intersections in order to get CCA on its way.",
+        "Paragraph_9": "In spite of all these difficulties, reconnaissance troops of CCA reached the Sienne River in the early afternoon of 30 July. They found the bridge to Gavray destroyed and the town, situated on the south bank, apparently held in strength. Conscious of high wooded ground across the river, where the Germans possessed good observation, concealment, and fields of fire, and acutely aware of enemy artillery, the reconnaissance troops made no effort to cross the little river before the main body of the combat command arrived. In late afternoon the two leading task forces of CCA were in position to make an assault crossing. After two armored field artillery battalions laid down a fifteen-minute preparation and fired counterbattery against several enemy pieces located by observation planes, the armored infantrymen waded into four feet of water to fight their way across. One task force appeared so hesitant in making its crossing that its commander, Lt. Col. Leander L. Doan, became impatient, dismounted from his tank, and personally led the assault.",
+        "Paragraph_10": "Actually, the Germans possessed little strength. Only scattered fire bothered the infantry as they crossed. In little more than a hour the two task forces had established a consolidated bridgehead and began to prepare for a counterattack that never came. Engineers set to work building a bridge so that tanks and other vehicles could cross the following morning. Although both attacking divisions of the VII Corps were across the Sienne by the evening of 30 July, General Collins was markedly disappointed that no more spectacular advances had been made. He therefore altered the plan of attack."
+      },
+      "Footnote_References": [
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "Place_Name": "Gavray",
+      "Dates": {
+        "Date_group_of_event": "30 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 300600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "3d Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "CCA",
+            "Name": "Doyle O. Hickey",
+            "Rank": "Brigadier General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Doyle_O._Hickey",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "CCB",
+            "Name": "Truman Boudinot",
+            "Rank": "Colonel",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Truman_Everett_Boudinot",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "Task Force in CCA",
+            "Name": "Leander L. Doan",
+            "Rank": "Lieutenant Colonel",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate, but traffic congestion affected movement",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "M4 Sherman Tank",
+              "Identifier": "M4",
+              "Quantity": "53 per tank battalion",
+              "Web_Reference": "https://us4tharmordiv.tripod.com/ArmorTO.htm",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M4_Sherman_tank_-_WWII.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Armored Field Artillery",
+              "Identifier": "M7 Priest",
+              "Quantity": "18 per battalion",
+              "Web_Reference": "https://us4tharmordiv.tripod.com/ArmorTO.htm",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M7_Priest_-_front_view.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Observation Plane",
+              "Identifier": "L-4 Piper Cub",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Piper_J-3_Cub",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Piper_L-4_Grasshopper.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Antitank Gun",
+              "Identifier": "PaK 40",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/7.5_cm_Pak_40",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Bundesarchiv_Bild_101I-299-1805-16,_Nordfrankreich,_Panzer_IV.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Artillery",
+              "Identifier": "leFH 18",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/10.5_cm_leFH_18",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:LeFH_18_Howitzer.JPG",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+          "Description": "Map VII showing advance routes",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Gavray",
+        "Place_GPS_coordinate": "48.91, -1.35",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": "https://www.military-history.org/battle-maps/battlemap-operation-cobra.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Gavray",
+        "Place_GPS_coordinate": "48.91, -1.35",
+        "Weather_text": "Mild weather with temperatures between 15-25°C, partly cloudy, recent rain making roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.75",
+          "East": "0.85",
+          "South": "48.01",
+          "North": "49.81"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Outflanking Force",
+      "Sub-event": "Collins Changes Plan and Attaches Combat Commands (30-31 July 1944)",
+      "Sub-event_summary": "General Collins, disappointed with the 3d Armored Division's caution, replaced it with the 1st Division and attached CCA to 1st Division and CCB to 4th Division. New objectives were set for faster advance to St. Pois and Brécey.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "For some time General Collins had been of the opinion that the 3d Armored Division was overcautious. He had, for example, seen dismounted reconnaissance personnel searching for enemy troops while American vehicles nearby passed back and forth unmolested. He also felt that the 3d showed lack of experience and needed aggressive leadership at the top. The command did not know, for example, \"how to coil up off the road or close when it was stopped.\" Collins had observed a \"long column going off the road through one hole in a hedgerow . . . one vehicle . . . at a time . . . blocking the road to the rear for miles, holding up supplies and transportation",
+        "Paragraph_12": "coming forward.\" To replace the 3d Armored Division, Collins brought the 1st Division south to take responsibility for the 3d Armored Division zone. This gave him \"two exceptionally able commanders\" in Generals Huebner and Barton.",
+        "Paragraph_13": "Attaching CCA to the 1st Division and CCB to the 4th Division--thereby reducing the 3d Armored Division headquarters to an administrative agency charged only with supplying and servicing the combat commands--Collins ordered the infantry divisions to attack abreast, each spearheaded by the attached armor. With COBRA completed, he visualized a more distant objective ten miles south of Villedieu-les-Poëles: the 4th Division was to proceed through Villedieu to St. Pois, which earlier, until the Tessy-sur-Vire battle developed, had been a XIX Corps objective; the 1st Division was to drive to Brécey and beyond, across the Sée River."
+      },
+      "Footnote_References": [
+        "9",
+        "10"
+      ],
+      "Place_Name": "Villedieu-les-Poëles",
+      "Dates": {
+        "Date_group_of_event": "30-31 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 302100ZJUL44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar N. Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "1st Infantry Division",
+            "Name": "Clarence R. Huebner",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Clarence_R._Huebner",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "4th Infantry Division",
+            "Name": "Raymond O. Barton",
+            "Rank": "Major General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Raymond_O._Barton",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Units reorganized, 4th Division lacking troops initially",
+        "Equipments": {
+          "Supply": "Administrative supply for 3d Armored HQ",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VI.jpg",
+          "Description": "Map VI",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Villedieu-les-Poëles",
+        "Place_GPS_coordinate": "48.84, -1.22",
+        "Map_Reference": "Map VI",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VI.jpg",
+        "ExternalMapLink": "https://wargame-scenarios.com/items/show/21880",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Villedieu-les-Poëles",
+        "Place_GPS_coordinate": "48.84, -1.22",
+        "Weather_text": "Mild weather with temperatures between 15-25°C, partly cloudy, recent rain making roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.62",
+          "East": "0.18",
+          "South": "47.94",
+          "North": "49.74"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Outflanking Force",
+      "Sub-event": "4th Division Advance on 31 July and 1 August 1944",
+      "Sub-event_summary": "The 4th Division, lacking troops, made minor gains on 31 July. After arrival of 8th Infantry, General Barton urged reckless advance, and the division renewed attack on 1 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_14": "The challenge of rapid advance came a day too early for the 4th Division, for the division lacked troops. Though the organic regiment that had been attached to the XIX Corps had been replaced by the 1st Division's 26th Infantry, the 26th now passed to its parent unit. Another of the 4th Division's organic regiments, the 8th Infantry, would not arrive from the Notre-Dame-de-Cenilly region until too late for the first day of renewed attack. Only one regiment, the 12th Infantry, plus the attached armor, was on hand. When the infantrymen attacked toward Villedieu-les-Poëles, they could make only minor gains. At the same time, CCB moved eastward along the vulnerable left flank of the division and spent most of the day building bridges, reorganizing, and reducing occasional enemy roadblocks. Not until the evening of 31 July, after the arrival of the 8th Infantry, was the 4th Division altogether ready to drive south. Calling his principal subordinates together, General Barton made it clear he had in mind rapid, sweeping advances. \"We face a defeated enemy,\" he told his commanders, \"an enemy terribly low in morale, terribly confused. I want you in the next advance to throw caution to the winds . . . destroying, capturing, or bypassing the enemy, and pressing\"--he paused to find the correct word--\"pressing recklessly on to the objective.\" The units of the 4th Division and the attached armor took General Barton at his word when they renewed the attack on 1 August."
+      },
+      "Footnote_References": [
+        "11"
+      ],
+      "Place_Name": "Villedieu-les-Poëles",
+      "Dates": {
+        "Date_group_of_event": "31 July - 1 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 310600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "4th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "CCB 3d Armored Division",
+            "Name": "Truman Boudinot",
+            "Rank": "Colonel",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Truman_Everett_Boudinot",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          }
+        ],
+        "Personnel": "Lacking troops initially, reinforced by 8th Infantry",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+          "Description": "Map VII",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Villedieu-les-Poëles",
+        "Place_GPS_coordinate": "48.84, -1.22",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Villedieu-les-Poëles",
+        "Place_GPS_coordinate": "48.84, -1.22",
+        "Weather_text": "Mild weather with temperatures between 15-25°C, partly cloudy, recent rain making roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.62",
+          "East": "0.18",
+          "South": "47.94",
+          "North": "49.74"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Outflanking Force",
+      "Sub-event": "1st Division with CCA Advance on 31 July 1944",
+      "Sub-event_summary": "CCA spearheaded the 1st Division attack, with one task force hitting an enemy column near l'Epine, and another under Colonel Doan cutting the highway west of Villedieu, advancing to Brécey and Hill 242.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "The units of the 4th Division and the attached armor took General Barton at his word when they renewed the attack on 1 August. Meanwhile, developments had occurred even more rapidly on the corps right, where CCA spearheaded the 1st Division attack on 31 July. One task force drove quickly against scattered German forces that were employing occasional tanks and antitank guns in ineffective delaying actions. Hitting the broad side of an enemy column--light armor and personnel carriers--moving southwest from Villedieu toward Avranches, tankers of this task force disorganized and dispersed the enemy with fire at close range, though fast-falling twilight helped a large part of the column to escape. Sensing the proximity",
+        "Paragraph_16": "of stronger enemy forces, and unwilling to chance contact while his own troops were dispersed, General Hickey ordered the task force into defensive positions for the night near the village of l'Epine. More spectacular was the thrust of another task force under Colonel Doan that cut the Villedieu-les-Poëles-Granville highway just west of Villedieu in the late afternoon of 31 July. As Doan was searching for a good place to halt, he received a message that General Collins wanted him to continue twelve miles farther to the final objective, Hill 242, south of Brécey. Doan spurred his force on. Looking ahead to a railroad embankment where he could expect opposition, he asked for fighter-bombers to fly column cover to strafe and bomb the tracks as their last mission in the fading light of day. When the ground column crossed the railway unopposed, the tankers noticed several unmanned antitank guns. Though the enemy crews later returned to their positions to oppose the infantry in wake of the armored spearhead, the effective work of the fighter-bombers had spared the armor what could have been a costly engagement.",
+        "Paragraph_17": "Bypassing one of its original objectives, Hill 216 southwest of Villedieu-les-Poëles, Doan's task force barreled down the main road to Brécey during the early evening hours of 31 July. When the commander of the point had difficulty selecting the correct road at an intersection, Colonel Doan himself took over in his command tank. Making a Hollywood-type entry into Brécey, the task force commander took pot shots with his pistol at surprised German soldiers who were lounging at the curb and in houses along the main street of the town. Though the principal bridge south of Brécey had been destroyed, Doan's command prepared a hasty ford by hand-carrying rock to line the river bed. Infantrymen waded the stream and subdued scattered small arms fire. Tanks and vehicles followed. The final objective, Hill 242, lay three miles to the south, and only when his men reached a wooded area on the north slope of the hill did Doan permit a halt."
+      },
+      "Footnote_References": [
+        "12"
+      ],
+      "Place_Name": "Brécey",
+      "Dates": {
+        "Date_group_of_event": "31 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 311500ZJUL44"
+      },
+      "TOE": {
+        "Unit": "1st Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VII Corps",
+          "Commander": "Collins",
+          "Name": "J. Lawton Collins",
+          "Rank": "Lieutenant General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/J._Lawton_Collins",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "CCA 3d Armored Division",
+            "Name": "Doyle O. Hickey",
+            "Rank": "Brigadier General",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Doyle_O._Hickey",
+            "Biographical_reference_Capture_Date": "December 24, 2025"
+          },
+          {
+            "Unit": "Task Force in CCA",
+            "Name": "Leander L. Doan",
+            "Rank": "Lieutenant Colonel",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "Full strength",
+        "Equipments": {
+          "Supply": "Adequate",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "M4 Sherman Tank",
+              "Identifier": "M4",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M4_Sherman",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:M4_Sherman_tank_-_WWII.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Fighter-Bomber",
+              "Identifier": "P-47 Thunderbolt",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Republic_P-47_Thunderbolt",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:P-47_Thunderbolt_2.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Light Armor",
+              "Identifier": "Sd.Kfz. 251",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Sd.Kfz._251",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Bundesarchiv_Bild_101I-299-1805-16,_Nordfrankreich,_Panzer_IV.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Personnel Carrier",
+              "Identifier": "Opel Blitz",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Opel_Blitz",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Opel_Blitz_3-ton.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            },
+            {
+              "Origination_Country": "DE",
+              "Name": "Antitank Gun",
+              "Identifier": "PaK 40",
+              "Quantity": "several",
+              "Web_Reference": "https://en.wikipedia.org/wiki/7.5_cm_Pak_40",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:PaK_40.jpg",
+              "Web_Image_License": "Public Domain",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Light Armor",
+              "Identifier": "Sd.Kfz. 251",
+              "Quantity": "unknown",
+              "Web_Reference": "https://en.wikipedia.org/wiki/Sd.Kfz._251",
+              "Web_Image_Reference": "https://en.wikipedia.org/wiki/File:Bundesarchiv_Bild_101I-299-1805-16,_Nordfrankreich,_Panzer_IV.jpg",
+              "Web_Reference_Capture_Date": "December 24, 2025"
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VI.jpg",
+          "Description": "Map VI",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Brécey",
+        "Place_GPS_coordinate": "48.72, -1.16",
+        "Map_Reference": "Map VI",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VI.jpg",
+        "ExternalMapLink": "https://www.emersonkent.com/map_archive/normandy_july_25_29_1944.htm",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Brécey",
+        "Place_GPS_coordinate": "48.72, -1.16",
+        "Weather_text": "Mild weather with temperatures between 15-25°C, partly cloudy, recent rain making roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.56",
+          "East": "0.24",
+          "South": "47.82",
+          "North": "49.62"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Outflanking Force",
+      "Sub-event": "Award of DSC to Lt Col Leander L. Doan",
+      "Sub-event_summary": "Lt Col Leander L. Doan was awarded the Distinguished Service Cross for personally leading the assault crossing of the Sienne River at Gavray on 30 July 1944.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "In spite of all these difficulties, reconnaissance troops of CCA reached the Sienne River in the early afternoon of 30 July. They found the bridge to Gavray destroyed and the town, situated on the south bank, apparently held in strength. Conscious of high wooded ground across the river, where the Germans possessed good observation, concealment, and fields of fire, and acutely aware of enemy artillery, the reconnaissance troops made no effort to cross the little river before the main body of the combat command arrived. In late afternoon the two leading task forces of CCA were in position to make an assault crossing. After two armored field artillery battalions laid down a fifteen-minute preparation and fired counterbattery against several enemy pieces located by observation planes, the armored infantrymen waded into four feet of water to fight their way across. One task force appeared so hesitant in making its crossing that its commander, Lt. Col. Leander L. Doan, became impatient, dismounted from his tank, and personally led the assault."
+      },
+      "Footnote_References": [
+        "8"
+      ],
+      "Place_Name": "Gavray",
+      "Dates": {
+        "Date_group_of_event": "30 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 301600ZJUL44"
+      },
+      "TOE": {
+        "Unit": "CCA, 3d Armored Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "3d Armored Division",
+          "Commander": "Hickey",
+          "Name": "Doyle O. Hickey",
+          "Rank": "Brigadier General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Doyle_O._Hickey",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Task Force",
+            "Name": "Leander L. Doan",
+            "Rank": "Lieutenant Colonel",
+            "Date": "July 1944",
+            "End_Date_of_command": null,
+            "End_Status": null,
+            "Biographical_reference": null,
+            "Biographical_reference_Capture_Date": null
+          }
+        ],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Gavray",
+        "Place_GPS_coordinate": "48.91, -1.35",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": null,
+        "ExternalMapLinkLicence": null,
+        "ExternalMapLinkCaptureDate": null
+      },
+      "Weather": {
+        "Place_Name": "Gavray",
+        "Place_GPS_coordinate": "48.91, -1.35",
+        "Weather_text": "Mild weather with temperatures between 15-25°C, partly cloudy, recent rain making roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.75",
+          "East": "0.85",
+          "South": "48.01",
+          "North": "49.81"
+        }
+      }
+    },
+    {
+      "Event": "Breakthrough Becomes Breakout - The Outflanking Force",
+      "Sub-event": "Overall Advance by 1 August 1944",
+      "Sub-event_summary": "By 1 August, VII Corps had advanced near the base of the Cotentin Peninsula, thirty miles south of the Périers-St. Lô highway, outflanking the German left.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "On 1 August, a week after the beginning of Operation COBRA, VII Corps was near the base of the Cotentin, more than thirty miles due south of the Périers-St. Lô highway. General Collins had reversed his field and made an extraordinary gain that outflanked the German left."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Cotentin Peninsula",
+      "Dates": {
+        "Date_group_of_event": "1 August 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+        "Zulu_date_group_of_event": "APPROX 010000ZAUG44"
+      },
+      "TOE": {
+        "Unit": "VII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "First U.S. Army",
+          "Commander": "Bradley",
+          "Name": "Omar N. Bradley",
+          "Rank": "General",
+          "End_Date": null,
+          "End_Status": null,
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 24, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "unknown",
+        "Equipments": {
+          "Supply": "adequate",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "0",
+          "Allied_US_WIA": "0",
+          "Allied_US_Missing": "0",
+          "Allied_US_Unspecified_Casualties": "0",
+          "Allied_US_Prisoner_of_War": "0"
+        },
+        "Axis": {
+          "Axis_DE_KIA": "0",
+          "Axis_DE_WIA": "0",
+          "Axis_DE_Missing": "0",
+          "Axis_DE_Unspecified_Casualties": "0",
+          "Axis_DE_Prisoner_of_War": "0"
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "0",
+          "Civilian_FR_Wounded": "0",
+          "Civilian_FR_Unspecified_Casualties": "0"
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+          "Description": "Map VII",
+          "License": "Public Domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Cotentin Peninsula",
+        "Place_GPS_coordinate": "49.5, -1.5",
+        "Map_Reference": "Map VII",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VII.jpg",
+        "ExternalMapLink": "https://ca01001129.schoolwires.net/cms/lib/CA01001129/Centricity/Domain/815/Map%20-%20Operation%20Cobra.pdf",
+        "ExternalMapLinkLicence": "Unknown",
+        "ExternalMapLinkCaptureDate": "December 24, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cotentin Peninsula",
+        "Place_GPS_coordinate": "49.5, -1.5",
+        "Weather_text": "Mild weather with temperatures between 15-25°C, partly cloudy, recent rain making roads muddy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0",
+          "East": "0.0",
+          "South": "48.6",
+          "North": "50.4"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "1",
+      "Footnote_Number": "1",
+      "Footnote_Text": "VII Corps Opns Memos 52 and 53, 30 and 31 Jul.",
+      "Footnote_Referenced_Source": "VII Corps Operations Memos",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, VII Corps, July 1944"
+    },
+    {
+      "Footnote": "2",
+      "Footnote_Number": "2",
+      "Footnote_Text": "VII Corps Opns Memo 51, 29 Jul (confirming oral orders issued 26 Jul).",
+      "Footnote_Referenced_Source": "VII Corps Operations Memo",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, VII Corps, July 1944"
+    },
+    {
+      "Footnote": "3",
+      "Footnote_Number": "3",
+      "Footnote_Text": "VII Corps Opns Memo 52, 30 Jul (confirming oral orders issued 29 Jul).",
+      "Footnote_Referenced_Source": "VII Corps Operations Memo",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, VII Corps, July 1944"
+    },
+    {
+      "Footnote": "4",
+      "Footnote_Number": "4",
+      "Footnote_Text": "3d Armd Div FO 5, 30 Jul.",
+      "Footnote_Referenced_Source": "3d Armored Division Field Order",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, 3d Armored Division, July 1944"
+    },
+    {
+      "Footnote": "5",
+      "Footnote_Number": "5",
+      "Footnote_Text": "3d Armd Div FO 5, 30 Jul (confirming oral orders).",
+      "Footnote_Referenced_Source": "3d Armored Division Field Order",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, 3d Armored Division, July 1944"
+    },
+    {
+      "Footnote": "6",
+      "Footnote_Number": "6",
+      "Footnote_Text": "3d Armd Div G-3 Per Rpt 36, 30 Jul.",
+      "Footnote_Referenced_Source": "3d Armored Division G-3 Periodic Report",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, 3d Armored Division, July 1944"
+    },
+    {
+      "Footnote": "7a",
+      "Footnote_Number": "7",
+      "Footnote_Text": "VII Corps Opns Memo 51, 29 Jul (confirming oral orders, 28 Jul)",
+      "Footnote_Referenced_Source": "VII Corps Operations Memo",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, VII Corps, July 1944"
+    },
+    {
+      "Footnote": "7b",
+      "Footnote_Number": "7",
+      "Footnote_Text": "Interv by author with Gen Collins, 2 Sep 55",
+      "Footnote_Referenced_Source": "Author Interview with Gen Collins",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+      "NonDigital_Library_References": "Interview transcripts, 2 Sep 55"
+    },
+    {
+      "Footnote": "7c",
+      "Footnote_Number": "7",
+      "Footnote_Text": "Talk by Gen Collins at the Armored School, Fort Knox, Ky., 19 Jan 48 (in the Library of The Armored School)",
+      "Footnote_Referenced_Source": "Talk by Gen Collins at Armored School",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "The Armored School Library",
+      "NonDigital_Library_Address": "Fort Knox, KY",
+      "NonDigital_Library_References": "Lecture transcripts, 19 Jan 48"
+    },
+    {
+      "Footnote": "7d",
+      "Footnote_Number": "7",
+      "Footnote_Text": "Ltr, Collins to Hechler, 9 Dec 45, quoted in Hechler, VII Corps in Operation COBRA, p. 219.",
+      "Footnote_Referenced_Source": "Letter, Collins to Hechler",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+      "NonDigital_Library_References": "Hechler, VII Corps in Operation COBRA"
+    },
+    {
+      "Footnote": "8",
+      "Footnote_Number": "8",
+      "Footnote_Text": "Colonel Doan was awarded the DSC for this action.",
+      "Footnote_Referenced_Source": "DSC Citation for Lt Col Leander L. Doan",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Award citations, WWII, Distinguished Service Cross"
+    },
+    {
+      "Footnote": "9a",
+      "Footnote_Number": "9",
+      "Footnote_Text": "Gen Collins' Talk at The Armored School",
+      "Footnote_Referenced_Source": "Talk by Gen Collins at Armored School",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "The Armored School Library",
+      "NonDigital_Library_Address": "Fort Knox, KY",
+      "NonDigital_Library_References": "Lecture transcripts, 19 Jan 48"
+    },
+    {
+      "Footnote": "9b",
+      "Footnote_Number": "9",
+      "Footnote_Text": "Ruppenthal Notes, ML-2185.",
+      "Footnote_Referenced_Source": "Ruppenthal Notes",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+      "NonDigital_Library_References": "ML-2185 Notes"
+    },
+    {
+      "Footnote": "10",
+      "Footnote_Number": "10",
+      "Footnote_Text": "VII Corps Opns Memo 53, 31 Jul (confirming oral orders 30 Jul).",
+      "Footnote_Referenced_Source": "VII Corps Operations Memo",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, VII Corps, July 1944"
+    },
+    {
+      "Footnote": "11a",
+      "Footnote_Number": "11",
+      "Footnote_Text": "CI 30 (4th Div)",
+      "Footnote_Referenced_Source": "Combat Interview 30, 4th Division",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+      "NonDigital_Library_References": "Combat Interviews, WWII"
+    },
+    {
+      "Footnote": "11b",
+      "Footnote_Number": "11",
+      "Footnote_Text": "see Hechler, VII Corps in Operation COBRA, pp. 236-37.",
+      "Footnote_Referenced_Source": "Hechler, VII Corps in Operation COBRA",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+      "NonDigital_Library_References": "Hechler manuscript"
+    },
+    {
+      "Footnote": "12a",
+      "Footnote_Number": "12",
+      "Footnote_Text": "3d Armd Div CCA intervs cited in Hechler, VII Corps in Operation COBRA, pp. 246-48",
+      "Footnote_Referenced_Source": "3d Armored Division CCA Interviews",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Center of Military History, Washington, D.C.",
+      "NonDigital_Library_References": "Hechler, VII Corps in Operation COBRA"
+    },
+    {
+      "Footnote": "12b",
+      "Footnote_Number": "12",
+      "Footnote_Text": "3d Armd Div CCA AAR, Jul.",
+      "Footnote_Referenced_Source": "3d Armored Division CCA After Action Report, July",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": null,
+      "NonDigital_Library_Source": "USAHEC",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "After Action Reports, 3d Armored Division, July 1944"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn16.html",
+  "Source_Footnote_Link_Capture_Date": "December 24, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+  "Source_Link_Capture_Date": "December 24, 2025"
+}

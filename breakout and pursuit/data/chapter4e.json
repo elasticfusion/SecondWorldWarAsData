@@ -1,0 +1,1561 @@
+{
+  "Events": [
+    {
+      "Event": "The Offensive Launched - Montgardon Ridge",
+      "Sub-event": "79th Division Overview and Objective",
+      "Sub-event_summary": "The 79th Division, considered a good combat unit with high morale under Maj. Gen. Ira T. Wyche, aimed to clear the zone to the Ay River estuary, seven miles south.",
+      "Sub-event_fulltext": {
+        "Paragraph_51": "While the 90th Division had been attacking Mont Castre and probing the corridor leading toward Périers, the 79th Division, on the VIII Corps right, had made its effort along the west coast of the Cotentin. On the basis of the attack on Cherbourg in June, the 79th was considered a good combat unit. 40",
+        "Paragraph_52": "Imbued with high morale and commanded by the officer who had directed its training and baptism of fire, Maj. Gen. Ira T. Wyche, the division was in far better shape for the July assignment than was the 90th.",
+        "Paragraph_53": "During the first phase of the VIII Corps drive to Coutances, General Wyche was expected to clear his zone as far south as the Ay River estuary, seven miles away. He anticipated little difficulty. 41"
+      },
+      "Footnote_References": [40, 41],
+      "Place_Name": "Ay River estuary, west coast of the Cotentin, Cherbourg",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING jul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jul44"
+      },
+      "TOE": {
+        "Unit": "79th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Ira T. Wyche",
+          "Name": "Ira T. Wyche",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Ira_T._Wyche",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "High morale, good combat unit",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Ay River estuary",
+        "Place_GPS_coordinate": "49.235, -1.6",
+        "Map_Reference": "Map 3",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-3.jpg",
+        "ExternalMapLink": "https://www.google.com/maps/place/Ay+River/@49.235,-1.6,14z",
+        "ExternalMapLinkLicence": "Google Maps",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Ay River estuary",
+        "Place_GPS_coordinate": "49.235, -1.6",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5,
+          "East": -0.7,
+          "South": 48.335,
+          "North": 50.135
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Montgardon Ridge",
+      "Sub-event": "Plan to Secure High Ground",
+      "Sub-event_summary": "Plan to secure Montgardon ridge and Hill 84, cross lowland defended by 243d and 353d Divisions, frontal assault, seize Hill 121.",
+      "Sub-event_fulltext": {
+        "Paragraph_54": "To reach his objective, he had first to secure the high ground in his path near la Haye-du-Puits--the Montgardon ridge and its high point, the flat top of Hill 84. Capture of the height would give General Wyche positions dominating la Haye-du-Puits and the ground descending southward to the Ay, would make la Haye-du-Puits untenable for the Germans, and would permit the 79th to meet the 90th approaching from the corps left.",
+        "Paragraph_55": "To take the Montgardon ridge, the 79th Division had to cross six miles of hedgerowed lowland defended by remnants of the 243d Division and under the eyes of a battalion of the 353d Division entrenched on the ridge. Only a frontal assault was possible. The division was also to seize the incidental objective of Hill 121, a mound near the left boundary that provided good observation toward la Haye-du-Puits and Montgardon. General Wyche planned to send the 314th Infantry against Hill 121 on the left while the 315th moved toward the Montgardon ridge on the right."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Montgardon ridge, Hill 84, la Haye-du-Puits, Hill 121",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING jul44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jul44"
+      },
+      "TOE": {
+        "Unit": "79th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Ira T. Wyche",
+          "Name": "Ira T. Wyche",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Ira_T._Wyche",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "314th Infantry Regiment",
+            "Name": "Warren A. Robinson",
+            "Rank": "Colonel",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://www.findagrave.com/memorial/49275107/warren-a-robinson",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "315th Infantry Regiment",
+            "Name": "Bernard B. McMahon",
+            "Rank": "Colonel",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://www.findagrave.com/memorial/49275098/bernard-b-mcmahon",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Allied_Invasion_Force.jpg/800px-Allied_Invasion_Force.jpg",
+          "Description": "Allied Invasion Force map including Normandy areas",
+          "License": "Public domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Montgardon ridge",
+        "Place_GPS_coordinate": "49.25, -1.58",
+        "Map_Reference": "Map 3",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-3.jpg",
+        "ExternalMapLink": "https://www.google.com/maps/place/Montgardon/@49.25,-1.58,14z",
+        "ExternalMapLinkLicence": "Google Maps",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Montgardon ridge",
+        "Place_GPS_coordinate": "49.25, -1.58",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.48,
+          "East": -0.68,
+          "South": 48.35,
+          "North": 50.15
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Montgardon Ridge",
+      "Sub-event": "Attack on Hill 121 by 314th Infantry, 3 July",
+      "Sub-event_summary": "314th Infantry attempted to outflank Hill 121 on rainy morning, stopped by fire, advanced 3 miles by end of afternoon, set up blocking positions.",
+      "Sub-event_fulltext": {
+        "Paragraph_56": "Attempting to outflank Hill 121, the 314th Infantry (Col. Warren A. Robinson) drove toward la Haye-du-Puits on the rainy morning of 3 July with a rifle company on each side of the main road. 42",
+        "Paragraph_57": "Machine gun and mortar fire from a railway embankment parallel to the road stopped the leading units after a half-mile advance, but the heroic action of a single soldier, Pfc. William Thurston, got the attack moving again. Charging the embankment and eliminating the enemy machine gunners in one position with rifle fire, Thurston penetrated the German line and unhinged it. 43",
+        "Paragraph_58": "His companions quickly exploited the breach, and by the end of the afternoon they had gained about three miles. There, the leading battalion halted and set up blocking positions to protect a separate advance on Hill 121. Another battalion that had followed was to turn left and approach the hill in a flanking maneuver from the southwest."
+      },
+      "Footnote_References": [42, 43],
+      "Place_Name": "Hill 121, la Haye-du-Puits",
+      "Dates": {
+        "Date_group_of_event": "3 July morning BDST 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030400Zjul44"
+      },
+      "TOE": {
+        "Unit": "314th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "79th Infantry Division",
+          "Commander": "Warren A. Robinson",
+          "Name": "Warren A. Robinson",
+          "Rank": "Colonel",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://www.findagrave.com/memorial/49275107/warren-a-robinson",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 121",
+        "Place_GPS_coordinate": "49.3, -1.53",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.google.com/maps/place/49.3,-1.53",
+        "ExternalMapLinkLicence": "Google Maps",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Hill 121",
+        "Place_GPS_coordinate": "49.3, -1.53",
+        "Weather_text": "Rainy morning",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.43,
+          "East": -0.63,
+          "South": 48.4,
+          "North": 50.2
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Montgardon Ridge",
+      "Sub-event": "Pfc. William Thurston DSC Award",
+      "Sub-event_summary": "Pfc. William Thurston awarded DSC posthumously for extraordinary heroism on 3 July 1944 near St. Saveur du Pierre Pont, charging machine gun post.",
+      "Sub-event_fulltext": {
+        "Paragraph_57": "Machine gun and mortar fire from a railway embankment parallel to the road stopped the leading units after a half-mile advance, but the heroic action of a single soldier, Pfc. William Thurston, got the attack moving again. Charging the embankment and eliminating the enemy machine gunners in one position with rifle fire, Thurston penetrated the German line and unhinged it. 43"
+      },
+      "Footnote_References": [43],
+      "Place_Name": "St. Saveur du Pierre Pont",
+      "Dates": {
+        "Date_group_of_event": "3 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "Company B, 1st Battalion, 314th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "314th Infantry Regiment",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Pfc. William Thurston (ASN: 32996506)",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Rifle",
+              "Identifier": "M1 Garand",
+              "Quantity": "1",
+              "Web_Reference": "https://en.wikipedia.org/wiki/M1_Garand",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/4/4b/M1_Garand_rifle_USA_1936.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Machine Gun",
+              "Identifier": "MG42",
+              "Quantity": "1 position",
+              "Web_Reference": "https://en.wikipedia.org/wiki/MG_42",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/5/5e/MG_42.jpg",
+              "Web_Image_License": "Public domain",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Machine Gun",
+              "Identifier": "MG42",
+              "Quantity": "1 position",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "St. Saveur du Pierre Pont",
+        "Place_GPS_coordinate": "49.31, -1.55",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://www.google.com/maps/place/Saint-Sauveur-de-Pierrepont/@49.31,-1.55,14z",
+        "ExternalMapLinkLicence": "Google Maps",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "St. Saveur du Pierre Pont",
+        "Place_GPS_coordinate": "49.31, -1.55",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.45,
+          "East": -0.65,
+          "South": 48.41,
+          "North": 50.21
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Montgardon Ridge",
+      "Sub-event": "Description of Hill 121",
+      "Sub-event_summary": "Hill 121 described as large bare mound with ruined stone house, romanesque chapel, water tower, German fortifications.",
+      "Sub-event_fulltext": {
+        "Paragraph_59": "A large bare mound, Hill 121 was adorned by a small ruined stone house reputed to be of Roman times, a romanesque chapel, and a water tower. Also visible were German fortifications of sandbagged logs. Spearheaded by a twelve-man patrol, the battalion started toward the base of the hill at dusk."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Hill 121",
+      "Dates": {
+        "Date_group_of_event": "3 July evening BDST 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "031800Zjul44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Fortifications",
+              "Identifier": "sandbagged logs",
+              "Quantity": "",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 121",
+        "Place_GPS_coordinate": "49.3, -1.53",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Hill 121",
+        "Place_GPS_coordinate": "49.3, -1.53",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.43,
+          "East": -0.63,
+          "South": 48.4,
+          "North": 50.2
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Montgardon Ridge",
+      "Sub-event": "Night Advance and Communication Loss on Hill 121",
+      "Sub-event_summary": "Battalion advanced at dusk, lost communications, reported closing on objective at 0230 4 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_60": "As the men disappeared into the hedgerows, the regimental commander lost communications with the command party. At 2300, when General Wyche instructed his regiments to halt for the night, no acknowledgment came from the men moving on Hill 121.",
+        "Paragraph_61": "Not until 0230, 4 July, when an artillery liaison officer who apparently possessed the only working radio in the command reported the battalion closing on the objective did any word emerge. An hour later the same officer provided the encouraging news that the battalion was on the hill."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Hill 121",
+      "Dates": {
+        "Date_group_of_event": "3 July 2300 BDST 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "032100Zjul44"
+      },
+      "TOE": {
+        "Unit": "314th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 121",
+        "Place_GPS_coordinate": "49.3, -1.53",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Hill 121",
+        "Place_GPS_coordinate": "49.3, -1.53",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.43,
+          "East": -0.63,
+          "South": 48.4,
+          "North": 50.2
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Montgardon Ridge",
+      "Sub-event": "Capture of Hill 121, 4 July",
+      "Sub-event_summary": "Reserve battalion assisted, cleared slopes, secure by midmorning 4 July, provided observation, moved to la Haye-du-Puits, contact with 82d Airborne.",
+      "Sub-event_fulltext": {
+        "Paragraph_62": "Upon receipt of the first message, Colonel Robinson, the commander of the 314th, had immediately dispatched his reserve battalion to assist. At daybreak both forces were clearing the slopes of Hill 121. The Germans had held the hill with only small outposts. By midmorning of 4 July Hill 121 was secure. The division artillery had an excellent observation post for the battle of the Montgardon ridge and la Haye-du-Puits. On 4 July the 314th Infantry moved to within two miles of la Haye-du-Puits and that evening established contact with the 82d Airborne Division on the left. Because heavy German fire denied the regiment entry into la Haye-du-Puits, the infantry dug in and left the artillery to duel with the enemy."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Hill 121, la Haye-du-Puits",
+      "Dates": {
+        "Date_group_of_event": "4 July midmorning BDST 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "040800Zjul44"
+      },
+      "TOE": {
+        "Unit": "314th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 121",
+        "Place_GPS_coordinate": "49.3, -1.53",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Hill 121",
+        "Place_GPS_coordinate": "49.3, -1.53",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.43,
+          "East": -0.63,
+          "South": 48.4,
+          "North": 50.2
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Montgardon Ridge",
+      "Sub-event": "315th Infantry Advance, 3 July",
+      "Sub-event_summary": "315th Infantry advanced slowly, disrupted by German armored vehicles, panic, reorganized, advanced 1 mile by nightfall.",
+      "Sub-event_fulltext": {
+        "Paragraph_63": "The artillery would be needed on the Montgardon ridge because the 315th Infantry (Col. Bernard B. McMahon) still had a long way to go toward that objective, despite encouraging progress during the morning of 3 July. With two battalions abreast and in columns of companies, the third echeloned to the right rear, and a company of tanks in close support, the regiment at first advanced slowly but steadily; self-assurance and optimism vanished just before noon when three concealed and bypassed German armored vehicles on the coastal flank opened fire. The loss of several tanks promoted panic, and infantrymen streamed to the rear in confusion.",
+        "Paragraph_64": "Because artillery and antitank weapons reacted effectively, the disruption to the attack proved only temporary, although not until midafternoon were tanks and infantry sufficiently reorganized to resume the attack. By nightfall the 315th had advanced a little over a mile."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Montgardon ridge",
+      "Dates": {
+        "Date_group_of_event": "3 July morning BDST 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030400Zjul44"
+      },
+      "TOE": {
+        "Unit": "315th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "79th Infantry Division",
+          "Commander": "Bernard B. McMahon",
+          "Name": "Bernard B. McMahon",
+          "Rank": "Colonel",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://www.findagrave.com/memorial/49275098/bernard-b-mcmahon",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Tanks",
+              "Identifier": "M4 Sherman",
+              "Quantity": "Company",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Allied_Destroyed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Tanks",
+              "Identifier": "M4 Sherman",
+              "Quantity": "Several",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Armored Vehicles",
+              "Identifier": "",
+              "Quantity": "3",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Montgardon ridge",
+        "Place_GPS_coordinate": "49.25, -1.58",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Montgardon ridge",
+        "Place_GPS_coordinate": "49.25, -1.58",
+        "Weather_text": "Rainy",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.48,
+          "East": -0.68,
+          "South": 48.35,
+          "North": 50.15
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Montgardon Ridge",
+      "Sub-event": "4 July Advance by 315th and German Counterattack",
+      "Sub-event_summary": "Slow advance, observation from Hill 121 helps, progress afternoon, evening counterattack by German infantry and armored, surrounded companies held, defensive perimeter, counterattack to cover withdrawal, 64 prisoners taken.",
+      "Sub-event_fulltext": {
+        "Paragraph_65": "Movement through the hedgerows toward Montgardon was slow again on the second day of the attack until the observation provided by the 314th Infantry's conquest of Hill 121 began to show effect. Such good progress had been made by afternoon that the division artillery displaced its battalions forward.",
+        "Paragraph_66": "Not until evening, when the infantry was two miles short of Hill 84 and taking a rest, did the Germans react with other than passive defense. Enemy infantry supported by armored vehicles suddenly emerged from the hedgerows. Two rifle companies that had halted along a sunken road were temporarily surrounded, but 50 men and 4 officers held firm to provide a bulwark around which the dispersed troops could be reorganized. As the division artillery went into action with heavy fire, the regiment built up a solid defensive perimeter. The Germans had counterattacked to cover a withdrawal of the 243d to the main line of defense on the Montgardon ridge.",
+        "Paragraph_67": "During the action the Germans took 64 prisoners. 44"
+      },
+      "Footnote_References": [44],
+      "Place_Name": "Hill 84",
+      "Dates": {
+        "Date_group_of_event": "4 July evening BDST 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "041800Zjul44"
+      },
+      "TOE": {
+        "Unit": "315th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Armored Vehicles",
+              "Identifier": "",
+              "Quantity": "",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 64
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 84",
+        "Place_GPS_coordinate": "49.26, -1.58",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Hill 84",
+        "Place_GPS_coordinate": "49.26, -1.58",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.48,
+          "East": -0.68,
+          "South": 48.36,
+          "North": 50.16
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Montgardon Ridge",
+      "Sub-event": "Attempt to Enter la Haye-du-Puits, 5 July",
+      "Sub-event_summary": "314th Infantry attempted to enter la Haye-du-Puits to outflank, short-lived success, driven back by fire.",
+      "Sub-event_fulltext": {
+        "Paragraph_68": "Temporarily checked in the drive on the Montgardon ridge, General Wyche ordered the 314th Infantry to enter la Haye-du-Puits the next morning, 5 July, in the hope of outflanking the German positions on the high ground. Moving down mined and cratered roads to the northeastern outskirts of town, one company formed a base of fire while another slipped into the railroad yard. The success was short-lived, for enemy artillery and mortar fire soon drove the company back."
+      },
+      "Footnote_References": [],
+      "Place_Name": "la Haye-du-Puits",
+      "Dates": {
+        "Date_group_of_event": "5 July morning BDST 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "050400Zjul44"
+      },
+      "TOE": {
+        "Unit": "314th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.290954, -1.545299",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.290954, -1.545299",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.445299,
+          "East": -0.645299,
+          "South": 48.390954,
+          "North": 50.190954
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Montgardon Ridge",
+      "Sub-event": "Commitment of 313th Infantry, 5 July",
+      "Sub-event_summary": "Committed 313th in wide envelopment to Ay, slowed by terrain, stalled by artillery, counterattacked, driven back, regrouped by daybreak 6 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_69": "By midmorning of 5 July General Wyche had decided on a new, bold move, which he hoped might explode the division out of its slow hedgerow-by-hedgerow advance and perhaps trap a sizable number of Germans north of the Ay River. He committed his reserve, the 313th Infantry (Col. Sterling A. Wood), in a wide envelopment to the right, to pass across the western end of the Montgardon ridge and drive rapidly downhill to the Ay.",
+        "Paragraph_70": "Starting at noon on 5 July, the 313th Infantry moved toward the ridge with a two-company tank-infantry task force in the lead. Marshy terrain and lack of adequate roads slowed the movement. By late afternoon the task force was still several hundred yards short of the ridge. As the troops reached a water-filled ditch running through the center of a flat grassy meadow, they came under such a volume of artillery fire that the advance stalled. Just before dark the enemy counterattacked twice and drove the task force and the rest of the regiment several miles back in confusion.",
+        "Paragraph_71": "Before daybreak, 6 July, few would have attested either to the location or the integrity of the regiment. Mercifully, the Germans did not exploit their success. The regiment found time to regroup."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Montgardon ridge, Ay River",
+      "Dates": {
+        "Date_group_of_event": "5 July noon BDST 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "051000Zjul44"
+      },
+      "TOE": {
+        "Unit": "313th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "79th Infantry Division",
+          "Commander": "Sterling A. Wood",
+          "Name": "Sterling A. Wood",
+          "Rank": "Colonel",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://www.findagrave.com/memorial/49275134/sterling-a-wood",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Tank",
+              "Identifier": "M4 Sherman",
+              "Quantity": "Two-company task force",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Montgardon ridge",
+        "Place_GPS_coordinate": "49.25, -1.58",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Montgardon ridge",
+        "Place_GPS_coordinate": "49.25, -1.58",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.48,
+          "East": -0.68,
+          "South": 48.35,
+          "North": 50.15
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Montgardon Ridge",
+      "Sub-event": "Renewed Attack on Hill 84, 5 July",
+      "Sub-event_summary": "Sent 315th against Hill 84 late 5 July, supported by tanks and tank destroyers, reached north slope.",
+      "Sub-event_fulltext": {
+        "Paragraph_72": "Disappointed in the results of the 313th Infantry advance even before the counterattack, General Wyche late on 5 July had again sent the 315th, supported by tanks and tank destroyers, directly against Hill 84. This time the regiment reached the north slope of the hill. The 79th Division at last had a toehold on the highest part of the Montgardon ridge."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Hill 84",
+      "Dates": {
+        "Date_group_of_event": "5 July late BDST 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "051600Zjul44"
+      },
+      "TOE": {
+        "Unit": "315th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Tanks",
+              "Identifier": "M4 Sherman",
+              "Quantity": "",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Tank Destroyers",
+              "Identifier": "M10",
+              "Quantity": "",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Hill 84",
+        "Place_GPS_coordinate": "49.26, -1.58",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Hill 84",
+        "Place_GPS_coordinate": "49.26, -1.58",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.48,
+          "East": -0.68,
+          "South": 48.36,
+          "North": 50.16
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Montgardon Ridge",
+      "Sub-event": "Regimental Adjustments and Afternoon Attack, 6 July",
+      "Sub-event_summary": "Jockeyed regiments, 314th gained eastern slope, 313th support, positions by noon, attack afternoon, 313th no gain, 315th overran Hill 84, 314th eastern portion.",
+      "Sub-event_fulltext": {
+        "Paragraph_73": "To reinforce this success and prepare for final conquest of the ridge, General Wyche on 6 July jockeyed his other two regiments. He ordered the 314th to swing its right around la Haye-du-Puits and gain a foothold on the eastern slope. The regiment accomplished its mission during the morning. He turned the 313th eastward from its location on the division right rear to positions in support of the troops on Hill 84. By noon of 6 July, the fourth day of the attack, the 314th and 315th Regiments were on the northern and eastern slopes of Montgardon, while the 313th was echeloned to the right rear at the base of the ridge.",
+        "Paragraph_74": "In ordering all three regiments to attack during the afternoon to carry the crest, General Wyche bowed to the compartmentalizing effect of the hedgerow terrain and told each commander to attack alone when ready. The technique worked. Although the 313th Infantry on the right gained no ground against strong positions protected by wire and mines, the 315th in the center overran Hill 84, and the 314th on the left completed occupation of the eastern portion of the main ridge."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Montgardon, Hill 84",
+      "Dates": {
+        "Date_group_of_event": "6 July noon BDST 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "061000Zjul44"
+      },
+      "TOE": {
+        "Unit": "313th Infantry Regiment",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Montgardon",
+        "Place_GPS_coordinate": "49.25, -1.58",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Montgardon",
+        "Place_GPS_coordinate": "49.25, -1.58",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.48,
+          "East": -0.68,
+          "South": 48.35,
+          "North": 50.15
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Montgardon Ridge",
+      "Sub-event": "Status and German Hold, 7 July Morning",
+      "Sub-event_summary": "By daybreak 7 July, la Haye-du-Puits outflanked, Germans held high ground and town, patrol failed to enter.",
+      "Sub-event_fulltext": {
+        "Paragraph_75": "By daybreak of 7 July the 79th Division could note that la Haye-du-Puits was outflanked, that the Germans ought now to abandon the town, and that as soon as earlier advances were extended to cover the entire ridge, the division might head south toward the Ay River.",
+        "Paragraph_76": "It did not take long on 7 July for General Wyche and his subordinate commanders to realize that this kind of thinking was premature. The Germans held doggedly to the rest of the high ground. They also stayed in la Haye-du-Puits; an American patrol accompanied by a German prisoner who was recruited to talk the garrison into surrender could not even get past the first houses. The Germans not only refused to budge from the high ground and the town, they prepared to attack. Having hurriedly reinforced the la Haye-du-Puits sector with a small portion of the 2d SS Panzer Division, Choltitz launched his counterattack on the afternoon of 7 July as armored contingents in about two-battalion strength assaulted the Montgardon ridge. 45"
+      },
+      "Footnote_References": [45],
+      "Place_Name": "la Haye-du-Puits",
+      "Dates": {
+        "Date_group_of_event": "7 July daybreak BDST 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "070400Zjul44"
+      },
+      "TOE": {
+        "Unit": "2d SS Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "LXXXIV Corps",
+          "Commander": "Heinrich von Lüttwitz",
+          "Name": "Heinrich von Lüttwitz",
+          "Rank": "Generalleutnant",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Heinrich_von_L%C3%BCttwitz",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Small portion, armored contingents two-battalion strength",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tanks",
+              "Identifier": "",
+              "Quantity": "3",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ]
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.290954, -1.545299",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.290954, -1.545299",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.445299,
+          "East": -0.645299,
+          "South": 48.390954,
+          "North": 50.190954
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Montgardon Ridge",
+      "Sub-event": "German Counterattack 7 July",
+      "Sub-event_summary": "Germans reinforced with 2d SS Panzer, counterattacked afternoon, violence almost pushed off ridge, coordinated defense, destroyed 3 tanks, stopped by nightfall.",
+      "Sub-event_fulltext": {
+        "Paragraph_77": "The German armored troops struck with such violence and behind such a volume of supporting fire that the first blow almost pushed the 79th Division off the ridge. In an attempt to achieve better co-ordination between the two regiments on the main ridge, General Wyche placed both under one commander.",
+        "Paragraph_78": "The expedient worked. Soon the infantry, artillery, tanks, and tank destroyers began to execute a co-ordinated defense. Destruction of three German tanks appeared to extinguish the spark of the German drive. 46",
+        "Paragraph_79": "By nightfall the Germans were stopped, but gone was the optimistic belief that a quick drive to the Ay would be possible."
+      },
+      "Footnote_References": [46],
+      "Place_Name": "Montgardon ridge",
+      "Dates": {
+        "Date_group_of_event": "7 July afternoon BDST 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "071200Zjul44"
+      },
+      "TOE": {
+        "Unit": "2d SS Panzer Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tanks",
+              "Identifier": "",
+              "Quantity": "3 destroyed",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 1000,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Montgardon ridge",
+        "Place_GPS_coordinate": "49.25, -1.58",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Montgardon ridge",
+        "Place_GPS_coordinate": "49.25, -1.58",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.48,
+          "East": -0.68,
+          "South": 48.35,
+          "North": 50.15
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - Montgardon Ridge",
+      "Sub-event": "Results and Casualties",
+      "Sub-event_summary": "Five days fighting, attained crest, short of objective, casualties over 2,000, depleted, need rest, some demoralized.",
+      "Sub-event_fulltext": {
+        "Paragraph_80": "In five days of hedgerow fighting, the 79th Division had attained the crest of the Montgardon ridge but was still short of the intermediate objective. Though the division casualties in the hedgerows had not been consistently high, the fighting on the high ground on 7 July alone resulted in over 1,000 killed, wounded, and missing. The cumulative total for five days of battle was over 2,000. 47",
+        "Paragraph_81": "Seriously depleted in numbers, its remaining troops badly in need of rest, and some units close to demoralization in the face of seemingly incessant German shelling, the 79th Division was no longer the effective force that had marched to Cherbourg the preceding month. For the moment the 79th seemed no more capable of effective offensive combat than did the 90th."
+      },
+      "Footnote_References": [47],
+      "Place_Name": "",
+      "Dates": {
+        "Date_group_of_event": "3-7 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "79th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "Seriously depleted, need rest, some demoralized",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 2000,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {}
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "Footnote_40",
+      "Footnote_Number": "40",
+      "Footnote_Text": "Ltr, Eisenhower to Marshall, 5 Jul, Pogue Files.",
+      "Footnote_Referenced_Source": "Letter, Eisenhower to Marshall",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Pogue Files",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Ltr, Eisenhower to Marshall, 5 Jul"
+    },
+    {
+      "Footnote": "Footnote_41",
+      "Footnote_Number": "41",
+      "Footnote_Text": "79th Div Intel Annex 2 to FO 5, 1 Jul.",
+      "Footnote_Referenced_Source": "79th Div Intel Annex 2 to FO 5",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "79th Div Intel Annex 2 to FO 5, 1 Jul"
+    },
+    {
+      "Footnote": "Footnote_42",
+      "Footnote_Number": "42",
+      "Footnote_Text": "Records of the 79th Division are sketchy. The After Action Report is in reality a daily summary of each regimental effort. The G-3 Journal is thin. Combat Interviews 153 contains only fragmentary material. The unofficial history of the 314th Infantry, Through Combat, is helpful, and General Wyche has kindly made available his personal journal.",
+      "Footnote_Referenced_Source": "79th Division records",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "AAR, G-3 Jnl, Combat Interviews 153, Through Combat, Wyche journal"
+    },
+    {
+      "Footnote": "Footnote_43",
+      "Footnote_Number": "43",
+      "Footnote_Text": "Thurston was awarded the DSC.",
+      "Footnote_Referenced_Source": "DSC award",
+      "Web_Link": "https://valor.militarytimes.com/hero/33036",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "Footnote_44a",
+      "Footnote_Number": "44a",
+      "Footnote_Text": "Seventh Army KTB, 5 Jul",
+      "Footnote_Referenced_Source": "Seventh Army KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "KTB, 5 Jul"
+    },
+    {
+      "Footnote": "Footnote_44b",
+      "Footnote_Number": "44b",
+      "Footnote_Text": "MS # A-983 (Mahlmann)",
+      "Footnote_Referenced_Source": "MS # A-983",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "MS # A-983 (Mahlmann)"
+    },
+    {
+      "Footnote": "Footnote_45",
+      "Footnote_Number": "45",
+      "Footnote_Text": "Seventh Army KTB, 7 Jul.",
+      "Footnote_Referenced_Source": "Seventh Army KTB",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "KTB, 7 Jul"
+    },
+    {
+      "Footnote": "Footnote_46",
+      "Footnote_Number": "46",
+      "Footnote_Text": "FUSA G-3 Jnl, 7 Jul.",
+      "Footnote_Referenced_Source": "First U.S. Army G-3 Journal",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "G-3 Jnl, 7 Jul"
+    },
+    {
+      "Footnote": "Footnote_47",
+      "Footnote_Number": "47",
+      "Footnote_Text": "FUSA Daily Estimated Loss Rpt, Jul.",
+      "Footnote_Referenced_Source": "First U.S. Army Daily Estimated Loss Report",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Daily Estimated Loss Rpt, Jul"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn4.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

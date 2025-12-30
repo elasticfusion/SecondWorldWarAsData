@@ -1,0 +1,451 @@
+{
+  "Events": [
+    {
+      "Event": "The Allies' Tactics in the European Theater of Operations (Breakout and Pursuit Phase)",
+      "Sub-event": "Lack of Preparation for Hedgerow Tactics",
+      "Sub-event_summary": "The OVERLORD and NEPTUNE plans focused heavily on the initial assault, with little attention to hedgerow terrain inland. No operational techniques or special equipment were developed, and units had minimal training for hedgerow tactics. Some British officers anticipated difficulties based on past experiences.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "The O VERLORD and N EPTUNE plans had been so concerned with the scope and complexity of the problem of getting troops ashore on the Continent that the bulk of the invasion preparations had pointed only toward the initial assault. In comparison to the wealth of material on the physiography of the coastal region, little attention had been given to the hedgerows inland. Operational techniques had not been developed, nor had special equipment been devised. The combat units had devoted little time in England to training for hedgerow tactics. Looking beyond the landing, some British officers, particularly those who had withdrawn across France toward Cherbourg in 1940, were convinced that the Allies could not wage effective warfare in the hedgerows against a strongly established enemy. Such leaders as Field Marshal Sir Alan Brooke, Chief of the British Imperial General Staff, and Lt. Gen. Sir Frederick E. Morgan, the chief COSSAC planner, were among those who anticipated serious difficulties. They remembered also the poorly armed Chouans, who in the last decade of the eighteenth century had utilized the hedgerows to fight an effective guerrilla war of ambush against the superior armies of the Republic."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Cotentin",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Allied Invasion Forces",
+        "Unit_Nationality": "US,GB",
+        "Command_Structure": {
+          "Unit": "Combined Chiefs of Staff",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [
+          {
+            "Unit": "COSSAC",
+            "Name": "Frederick E. Morgan",
+            "Rank": "Lieutenant General",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Frederick_E._Morgan",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "Combat units with little hedgerow training",
+        "Equipments": {
+          "Supply": "No special equipment for hedgerows",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {
+        "Allied": {},
+        "Axis": {},
+        "Civilian": {}
+      },
+      "Media": {
+        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-1.jpg",
+        "Description": "Map 1. The Bocage Country",
+        "License": "Public Domain"
+      },
+      "Place": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5, -1.5",
+        "Map_Reference": "Map 1",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-1.jpg",
+        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Cotentin_hedgerow_map_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5, -1.5",
+        "Weather_text": "Gloomy conditions in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.8818",
+          "East": "-0.1182",
+          "South": "48.5991",
+          "North": "50.4009"
+        }
+      }
+    },
+    {
+      "Event": "The Allies' Tactics in the European Theater of Operations (Breakout and Pursuit Phase)",
+      "Sub-event": "Importance and Failure to Capture Caen",
+      "Sub-event_summary": "Caen was a vital objective for communications, armored operations, airfields, and ports. Failure to capture it by 1 July led to concerns of stalemate. Some British officers believed hedgerows made effective warfare difficult.",
+      "Sub-event_fulltext": {
+        "Paragraph_2": "Other invasion planners had found argument to support the contrary contention. They felt that the natural defensive features of the hedgerow country would aid the Allies in maintaining their initial continental foothold during the critical early period of the build-up. They believed that the Germans would be unable to stop an attack mounted across a wide front. And they expected enough progress to be made by the British through Caen, the gateway to the Seine, to outflank the Cotentin. Failure to secure Caen by 1 July was the greatest single disappointment of the invasion. A vital communications center, Caen was the key to operations eastward to the Seine and southeastward to the Paris-Orléans gap. Held by the Germans who blocked the comparatively flat plain that invited the use of armor and the construction of airfields, Caen also offered harbor installations for small ships. Three groups clamored for the capture of Caen: the proponents of armored warfare, who were in search of mobility; the tactical air force engineers, who were looking for airfield sites; and the logistical organizations, which were seeking port facilities. In addition, continued German occupation of Caen seemed to be dramatic evidence of Allied impotence. Without Caen, the Allies were vulnerable to an enemy armored thrust to the sea, a drive that would, if successful, split the Allied foothold and imperil the entire invasion effort. To some observers, the failure to take the city savored of hesitation and excessive caution."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "010000B JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+        "Zulu_date_group_of_event": "302200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "British Second Army",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "21 Army Group",
+          "Commander": "Miles C. Dempsey",
+          "Name": "Miles C. Dempsey",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Miles_Dempsey",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "GB",
+            "Name": "Armor",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:Caen_map_1944.jpg",
+        "ExternalMapLinkLicence": "Public Domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Weather_text": "Rainy weather affecting operations in late June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7418",
+          "East": "1.0146",
+          "South": "48.2805",
+          "North": "50.0823"
+        }
+      }
+    },
+    {
+      "Event": "The Allies' Tactics in the European Theater of Operations (Breakout and Pursuit Phase)",
+      "Sub-event": "Montgomery's Tactical Principles",
+      "Sub-event_summary": "General Montgomery directed operations with calm, focusing on retaining initiative, avoiding setbacks, and balancing offense and defense. He aimed to pull enemy forces to the British front to facilitate U.S. advances.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "Conspicuously untroubled about Caen, and apparently unaware of the concern the situation was causing, General Montgomery directed the tactical operations on the Continent with what might have seemed like exasperating calm. For Montgomery, the commander of the Allied ground forces, the important factors at this stage of the campaign were not necessarily the capture of specific geographical objectives, or even the expansion of the continental foothold. Retaining the initiative and avoiding setbacks and reverses were the guiding principles that determined his course of action. These aims were paradoxical. Retaining the initiative was possible only by continued offensive operations; yet this course was often risky because the Germans had massed the bulk of their armor in front of the British sector of operations. If in trying to maintain a balance between offense and defense General Montgomery seemed to give more weight to preventing Allied reverses, he was motivated by his belief that holding the beachhead securely was more important at that time. By directing General Dempsey to make a series of limited objective attacks with his British Second Army during June, however, General Montgomery had prevented the Germans from regrouping their forces for a major counterattack and thus had denied them the initiative.",
+        "Paragraph_4": "From the equilibrium that General Montgomery established, a corollary principle was evolved. Unable to move through Caen for the moment, General Montgomery reasoned that if he could \"pull the enemy on the Second Army,\" he would facilitate the U.S. First Army advance to the south. General Eisenhower had come to the same conclusion and expressed the hope that General Bradley could attack south while Montgomery had \"got the enemy by the throat on the east.\" Both men were harking back to the O VERLORD concept, which had proposed that the British institute operations toward the east in order to cover American operations to the south. Attracting the bulk of the enemy strength was a dangerous game, but the Germans, for other reasons, had already concentrated a larger part of their power in front of the British sector. General Montgomery thus had little alternative but to contain these forces. He had begun to do so even before the Americans were ready to attack to the south. While the U.S. First Army was driving north toward Cherbourg, General Montgomery had planned an attack by the British Second Army to insure, as he later wrote, \"the retention of the bulk of the enemy armour on the Second Army front.\""
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "21 Army Group",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "Allied Ground Forces",
+          "Commander": "Bernard L. Montgomery",
+          "Name": "Bernard L. Montgomery",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "British Second Army",
+            "Name": "Miles C. Dempsey",
+            "Rank": "Lieutenant General",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://grokipedia.com/page/Miles_Dempsey",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          },
+          {
+            "Unit": "U.S. First Army",
+            "Name": "Omar N. Bradley",
+            "Rank": "Lieutenant General",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+            "Biographical_reference_Capture_Date": "December 20, 2025"
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": {
+            "Origination_Country": "GB",
+            "Name": "Armor",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Weather_text": "Rainy weather in late June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7418",
+          "East": "1.0146",
+          "South": "48.2805",
+          "North": "50.0823"
+        }
+      }
+    },
+    {
+      "Event": "The Allies' Tactics in the European Theater of Operations (Breakout and Pursuit Phase)",
+      "Sub-event": "British Attacks in June",
+      "Sub-event_summary": "British Second Army launched an attack on 25 June to capture Caen and Orne bridgeheads, but rainy weather and enemy resistance prevented success. Germans counterattacked on 29 June but were dispersed by artillery.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "Originally set for 18 June, the British attack had been postponed because certain essential units were still unloading on the beaches and artillery ammunition was temporarily in short supply. Not until a week later, on 25 June, had the British Second Army jumped off--its objective the capture of Caen and bridgeheads across the Orne River south of that city. Rainy weather and determined enemy resistance balked the British of gaining their objectives, and Caen remained in enemy hands. Yet the nearness of the British to Caen threatened the city, and on 29 June, in order to insure retention of it, the Germans launched a large-scale counterattack. The British dispersed by massed artillery fire what turned out to be un-co-ordinated thrusts. The situation then became relatively calm."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "250000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+        "Zulu_date_group_of_event": "242200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "British Second Army",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "21 Army Group",
+          "Commander": "Miles C. Dempsey",
+          "Name": "Miles C. Dempsey",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Miles_Dempsey",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Essential units unloading",
+        "Equipments": {
+          "Supply": "Artillery ammunition short supply",
+          "Allied_Employed": {
+            "Origination_Country": "GB",
+            "Name": "Artillery",
+            "Identifier": "",
+            "Quantity": "",
+            "Web_Reference": "",
+            "Web_Image_Reference": "",
+            "Web_Reference_Capture_Date": ""
+          }
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Orne River",
+        "Place_GPS_coordinate": "49.0, -0.3",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Caen",
+        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Weather_text": "Rainy weather on 25 June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7418",
+          "East": "1.0146",
+          "South": "48.2805",
+          "North": "50.0823"
+        }
+      }
+    },
+    {
+      "Event": "The Allies' Tactics in the European Theater of Operations (Breakout and Pursuit Phase)",
+      "Sub-event": "Results and Comparisons",
+      "Sub-event_summary": "Montgomery's tactics held the eastern flank and kept enemy armor on British front. Comparison showed British tasked with Caen but changed, while Americans captured Cherbourg on schedule.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "The results of General Montgomery's activity were clear in retrospect. He had held the eastern flank firmly and had continued to keep a great part of the German strength on the British front. But if this had been General Montgomery's basic intention, his apparent determination to take Caen had obscured it. Even General Eisenhower seemed bewildered, particularly since Montgomery had informed him that the British offensive launched on 25 June was to be a \"blitz attack.\" General Montgomery had certainly wanted Caen. That he had not secured it led to inevitable comparison and contrast of the British and the American operations. On 18 June General Montgomery had given the Americans the \"immediate task\" of seizing Cherbourg and the British the \"immediate task\" of capturing Caen. He had quickly changed the British task after judging the difficulties too great for immediate execution. The Americans had secured Cherbourg on schedule."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Cherbourg",
+      "Dates": {
+        "Date_group_of_event": "180000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+        "Zulu_date_group_of_event": "172200Z JUN44"
+      },
+      "TOE": {
+        "Unit": "U.S. First Army",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "21 Army Group",
+          "Commander": "Omar N. Bradley",
+          "Name": "Omar N. Bradley",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.63, -1.62",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.63, -1.62",
+        "Weather_text": "Post-storm conditions in late June 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-3.0109",
+          "East": "-0.2291",
+          "South": "48.7291",
+          "North": "50.5309"
+        }
+      }
+    },
+    {
+      "Event": "The Allies' Tactics in the European Theater of Operations (Breakout and Pursuit Phase)",
+      "Sub-event": "Debate on Montgomery's Intentions",
+      "Sub-event_summary": "Debate arose over whether Montgomery planned from the start to contain enemy on British front or rationalized after failing at Caen. British stalled at Caen, leading to U.S. attack in difficult Cotentin terrain.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "Debate had already arisen over General Montgomery's intentions, a debate that was to grow as time passed. Did Montgomery, from the beginning of the invasion, plan to attract and contain the bulk of the German power to facilitate an American advance on the right? Or did he develop the plan later as a rationalization for his failure to advance through Caen? Was he more concerned with conserving the limited British manpower and was his containment of the enemy therefore a brilliant expedient that emerged from the tactical situation in June? The questions were interesting but irrelevant, for the Germans had massed their power opposite the British without regard for General Montgomery's original intentions. Whatever Montgomery's intent--which was obviously not clear to other Allied commanders at the time--the British seemed to be stalled before Caen. Denied access to the desirable terrain east of Caen and to the main approaches to the Seine and Paris, the Allies looked to General Bradley's U.S. First Army for operational progress. Thus it came about that, although the British sector offered terrain more favorable for offensive operations, American troops in July were to undertake the unenviable task of launching a major attack in the Cotentin through terrain ideally suited for defense."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Caen",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "British Forces",
+        "Unit_Nationality": "GB",
+        "Command_Structure": {
+          "Unit": "21 Army Group",
+          "Commander": "Bernard L. Montgomery",
+          "Name": "Bernard L. Montgomery",
+          "Rank": "General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://grokipedia.com/page/Bernard_Montgomery",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Limited British manpower",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5, -1.5",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5, -1.5",
+        "Weather_text": "Conditions in July 1944 suitable for defense.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.8818",
+          "East": "-0.1182",
+          "South": "48.5991",
+          "North": "50.4009"
+        }
+      }
+    },
+    {
+      "Event": "The Allies' Tactics in the European Theater of Operations (Breakout and Pursuit Phase)",
+      "Sub-event": "Historical Context of Cotentin",
+      "Sub-event_summary": "Cotentin had historical battles but was tranquil until WWII. Inhabitants hoped for distant landing but faced devastation, creating new ruins amid ancient ones.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Romans, Franks, Bretons, and Normans had fought on the Cotentin, and innumerable skirmishes had occurred there between the English and the French. But since the devastating civil wars of religion and revolution, little had disturbed the tranquillity and prosperity of the inhabitants. Even the German occupation had had little effect on the habits of people who were mainly concerned with the problems of cattle breeding and the production of butter and cheese. Although they had \"prayed for an Allied landing,\" they had \"hoped that it would take place far from them.\" They were not spared. Where megalithic monuments of prehistoric times lay beside the remains of medieval monasteries, the armies of World War II marked the land in their turn, creating their own historic ruins to crumble with the others."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Cotentin",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5, -1.5",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Cotentin",
+        "Place_GPS_coordinate": "49.5, -1.5",
+        "Weather_text": "Tranquil conditions disrupted by war in July 1944.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.8818",
+          "East": "-0.1182",
+          "South": "48.5991",
+          "North": "50.4009"
+        }
+      }
+    }
+  ],
+  "Footnotes": [],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn1.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}

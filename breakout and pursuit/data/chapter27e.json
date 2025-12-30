@@ -1,0 +1,542 @@
+{
+  "Events": [
+    {
+      "Event": "Introduction to German Breakout Efforts",
+      "Sub-event": "Overview of Escape Activities",
+      "Sub-event_summary": "Meindl's leadership highlighted as central to the German breakout from the Falaise Pocket, with diverse unit actions over 24 hours after darkness on 19 August contributing to partial success.",
+      "Sub-event_fulltext": {
+        "Paragraph_43": "Meindl's leadership was without doubt one of the significant actions of the German breakout, perhaps the focal incident. Other commanders and other units had also contributed to the final, though only partially successful, outcome of the operation. Their activities during the twenty-four hours following the arrival of darkness on 19 August were diverse, illustrating clearly the nature and the complexity of the event."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Falaise Pocket area, Normandy, France",
+      "Dates": {
+        "Date_group_of_event": "19-20 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "BEGINNING 200000Z Aug 1944"
+      },
+      "TOE": {
+        "Unit": "II Parachute Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "Generaloberst",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser"
+        },
+        "Subordinates": [
+          {
+            "Unit": "II Parachute Corps",
+            "Name": "Eugen Meindl",
+            "Rank": "General der Fallschirmtruppe",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Eugen_Meindl"
+          }
+        ]
+      },
+      "Casualties": {
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": 0
+        }
+      },
+      "Weather": {
+        "Place_Name": "Falaise Pocket area, Normandy, France",
+        "Place_GPS_coordinate": "48.8900 N, 0.2000 E",
+        "Weather_text": "Not specified; night movement after darkness on 19 August.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": 0.10,
+          "East": 0.30,
+          "South": 48.79,
+          "North": 48.99
+        }
+      }
+    },
+    {
+      "Event": "353d Division Breakout",
+      "Sub-event": "Assembly, Initial Movement, and Halt at Tournai-sur-Dives",
+      "Sub-event_summary": "353d Division under Mahlmann assembled near Vorche evening 19 August, moved at nightfall toward Dives with main effort shifted to Chambois area; halted at burning Tournai-sur-Dives due to blocked streets, cleared passage in three hours under harassing fire with no losses.",
+      "Sub-event_fulltext": {
+        "Paragraph_44": "The *353d Division,* under Generalleutnant Paul Mahlmann, had also executed a breakout attack as part of the *II Parachute Corps* effort. Assembled on the evening of 19 August in woods near Vorche, six miles west of the Dives, the division started its movement at nightfall. Meindl had instructed Mahlmann to make his main effort at St. Lambert on the left, while sending his vehicles through Chambois. A little later Mahlmann received information that both localities were in Allied hands. He therefore decided to make his main thrust across the Dives in the Chambois area to try to save his vehicles.",
+        "Paragraph_45": "At Tournai-sur-Dives, about halfway to the river, the division came to a halt. The village was burning and its streets were blocked by wrecked vehicles, dead horses, and abandoned tanks. The terrain around Tournai did not permit bypassing the village, so a passage had to be cleared. This took three hours. Though the area lay under harassing artillery fire, the division suffered no losses from it."
+      },
+      "Footnote_References": [34],
+      "Place_Name": "Tournai-sur-Dives / Vorche area, France",
+      "Dates": {
+        "Date_group_of_event": "19-20 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "200300Z Aug 1944"
+      },
+      "TOE": {
+        "Unit": "353d Infantry Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "II Parachute Corps",
+          "Commander": "Eugen Meindl",
+          "Name": "Eugen Meindl",
+          "Rank": "General der Fallschirmtruppe",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Eugen_Meindl"
+        },
+        "Subordinates": [
+          {
+            "Unit": "353d Infantry Division",
+            "Name": "Paul Mahlmann",
+            "Rank": "Generalleutnant",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Mahlmann"
+          }
+        ],
+        "Equipments": {
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Vehicles and equipment",
+            "Quantity": "Significant"
+          }
+        }
+      },
+      "Casualties": {
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": 0
+        }
+      },
+      "Weather": {
+        "Place_Name": "Tournai-sur-Dives, France",
+        "Place_GPS_coordinate": "48.9200 N, 0.1500 E",
+        "Weather_text": "Night conditions; no specific weather noted beyond darkness.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": 0.05,
+          "East": 0.25,
+          "South": 48.82,
+          "North": 49.02
+        }
+      }
+    },
+    {
+      "Event": "353d Division Breakout",
+      "Sub-event": "Crossing at Moissy and Heavy Allied Fire",
+      "Sub-event_summary": "Mahlmann approached Chambois pre-dawn, linked with tanks crossing at Moissy; followed across Dives but Allied tanks closed gap, intense artillery caused high losses and disorganization in Moissy; reorganized briefly with stray tanks (destroyed), then led small group east via concealed road, leaving wounded and most materiel.",
+      "Sub-event_fulltext": {
+        "Paragraph_46": "Shortly before dawn Mahlmann, in the column on the right, was approaching Chambois. He made contact with a group of tanks, which, according to the officer in charge, had the mission of cleaning the enemy out of the Chambois area. But because this appeared impossible, the tank commander decided to cross the Dives River at Moissy. The tanks moved out around daybreak. Mahlmann and his column, along with stragglers from other units who had joined, followed them closely across the river. The tanks continued through Moissy and disappeared into the distance. Shortly afterward Allied tanks appeared in the vicinity and closed the gap. Their appearance was followed by an intense concentration of Allied artillery fire on the village jammed with German troops. Losses were high, and all semblance of organization vanished.",
+        "Paragraph_47": "Mahlmann finally succeeded in bringing some order out of chaos. He organized a breakout attempt with the help of two stray tanks found in the village. The tanks had barely left the village when Allied fire knocked them out. Again, disorganization and apathy set in--spent, dispirited, resigned to their fate, men huddled under whatever cover they could find.",
+        "Paragraph_48": "Taking a dozen stouthearted fellows, Mahlmann reconnoitred a concealed road leading to the east, receiving a light head wound in the process. The road enabled Mahlmann to get at least part of the men in Moissy out. Most of the wounded had to be left. All guns and vehicles, except two or three amphibious jeeps, along with part of the division staff, were lost. Mahlmann headed for the southern eminence of Mt. Ormel, and that afternoon he and those who accompanied him began to climb the western slope of the hill. The whole area seemed covered with an amorphous mass of German soldiers hastening toward the ridge. An American observation plane circled leisurely, seeming to hang in the sky, as it directed artillery fire on the retreating troops."
+      },
+      "Footnote_References": [34],
+      "Place_Name": "Moissy / Chambois, France",
+      "Dates": {
+        "Date_group_of_event": "20 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "200600Z Aug 1944"
+      },
+      "TOE": {
+        "Unit": "353d Infantry Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "II Parachute Corps",
+          "Commander": "Eugen Meindl",
+          "Name": "Eugen Meindl",
+          "Rank": "General der Fallschirmtruppe"
+        },
+        "Subordinates": [
+          {
+            "Unit": "353d Infantry Division",
+            "Name": "Paul Mahlmann",
+            "Rank": "Generalleutnant"
+          }
+        ],
+        "Equipments": {
+          "Axis_Destroyed": {
+            "Origination_Country": "DE",
+            "Name": "Guns, vehicles, tanks",
+            "Quantity": "Most"
+          }
+        }
+      },
+      "Casualties": {
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": "High"
+        }
+      },
+      "Weather": {
+        "Place_Name": "Moissy / Chambois, France",
+        "Place_GPS_coordinate": "48.8300 N, 0.1000 E",
+        "Weather_text": "Daybreak conditions; clear for observation plane activity.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": 0.00,
+          "East": 0.20,
+          "South": 48.73,
+          "North": 48.93
+        }
+      }
+    },
+    {
+      "Event": "353d Division Consolidation",
+      "Sub-event": "Occupation and Withdrawal from Mt. Ormel Ridge",
+      "Sub-event_summary": "Mahlmann reached southern Mt. Ormel without opposition (Poles diverted north), organized three combat groups on ridge; withdrew east to Vie River line evening after flank report; contacted Seventh Army for further orders.",
+      "Sub-event_fulltext": {
+        "Paragraph_49": "As he approached his objective, Mahlmann faced a situation quite different from that which had confronted the *3d Parachute Division* on his left. German pressure on the northern part of Ormel had forced the Poles to call off their advance to Hill 262 (south) in the morning. Thus Mahlmann was able to occupy his objective without opposition.",
+        "Paragraph_50": "There Mahlmann organized three combat groups and deployed them along the ridge line facing west, one composed of SS men on the right, another of men of his own division on the left, and the third of paratroopers in reserve. His efforts to establish contact with units on the flanks and with higher headquarters were unsuccessful.",
+        "Paragraph_51": "Late in the afternoon, when the SS group reported hostile reconnaissance units on the north flank, Mahlmann decided to fall back three miles to the east to a new line behind the Vie River. He accomplished his withdrawal without undue interference, and that evening infantrymen and paratroopers occupied the new position. The SS group, disobeying orders, continued to move eastward and vanished.",
+        "Paragraph_52": "Soon afterward Mahlmann made personal contact with *Seventh Army* headquarters and received instructions to remain on the Vie until the next day, when his division would be pulled back and sent to the rear for rehabilitation."
+      },
+      "Footnote_References": [34],
+      "Place_Name": "Mt. Ormel (Hill 262 area), France",
+      "Dates": {
+        "Date_group_of_event": "20 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "201200Z Aug 1944"
+      },
+      "TOE": {
+        "Unit": "353d Infantry Division",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "Generaloberst",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Paul_Hausser"
+        }
+      },
+      "Casualties": {
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": 0
+        }
+      },
+      "Weather": {
+        "Place_Name": "Mt. Ormel, France",
+        "Place_GPS_coordinate": "48.8378 N, 0.1428 E",
+        "Weather_text": "Daylight with American observation plane directing fire; no precipitation noted.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": 0.04,
+          "East": 0.24,
+          "South": 48.74,
+          "North": 48.94
+        }
+      }
+    },
+    {
+      "Event": "XLVII Panzer Corps Breakout",
+      "Sub-event": "Corps Assembly and 2d Panzer Division Delay",
+      "Sub-event_summary": "XLVII Panzer Corps tasked with southern flank opening; 2d Panzer Division order received late 19 August, attack delayed to 0400 20 August due to road congestion; tanks and armor at head, infantry rear guard.",
+      "Sub-event_fulltext": {
+        "Paragraph_53": "Like Meindl's paratroop corps for the north flank, the *XLVII Panzer Corps* had the task of opening the way for the surrounded forces on the southern flank.",
+        "Paragraph_54": "Funck's *XLVII Panzer Corps* had the *1st SS* and *2d Panzer Divisions* (probably the *10th SS Panzer Division* also) assembled in the Fôret de Gouffern, the *116th Panzer Division* holding a long thin line practically from Argentan to the Dives. The corps was to cross the river in the St. Lambert--Chambois area, with the *116th* covering the rear.",
+        "Paragraph_55": "The corps breakout order did not reach the *2d Panzer Division* commander, Generalleutnant Freiherr Heinrich von Luettwitz, until around 1900, 19 August. Because reconnaissance revealed the roads so clogged with wreckage as to make night movement impossible, Luettwitz decided to hold off his attack until 0400, 20 August. He placed all of his tanks (about fifteen) and his armored vehicles at the head of his column, left an infantry regiment reinforced with several antitank guns as a rear guard, and ordered what remained of his artillery to support his advance."
+      },
+      "Footnote_References": [35, 36],
+      "Place_Name": "Fôret de Gouffern / St. Lambert area, France",
+      "Dates": {
+        "Date_group_of_event": "19-20 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "200400Z Aug 1944"
+      },
+      "TOE": {
+        "Unit": "XLVII Panzer Corps",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Paul Hausser",
+          "Name": "Paul Hausser",
+          "Rank": "Generaloberst"
+        },
+        "Subordinates": [
+          {
+            "Unit": "XLVII Panzer Corps",
+            "Name": "Heinrich Eberbach",
+            "Rank": "General der Panzertruppen",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Heinrich_Eberbach"
+          },
+          {
+            "Unit": "2d Panzer Division",
+            "Name": "Heinrich von Lüttwitz",
+            "Rank": "Generalleutnant",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Heinrich_von_L%C3%BCttwitz"
+          }
+        ],
+        "Equipments": {
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Tanks",
+            "Identifier": "Various",
+            "Quantity": "About 15"
+          }
+        }
+      },
+      "Casualties": {
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": 0
+        }
+      }
+    },
+    {
+      "Event": "XLVII Panzer Corps Breakout",
+      "Sub-event": "2d Panzer Division Advance and Crossing at St. Lambert",
+      "Sub-event_summary": "Dense fog aided initial movement toward St. Lambert; fog lift brought devastating artillery; only armor reached village orderly ~1000, crossed intact bridge amid gruesome scene; Luettwitz wounded afternoon, departed 2100, reached safety 21 August.",
+      "Sub-event_fulltext": {
+        "Paragraph_56": "A dense fog hung over the area that morning, and the *2d Panzer Division* was not the only unit moving toward St. Lambert. Columns composed of all sorts of components streamed through the fog, sometimes eight abreast. When the fog lifted, a \"hurricane\" of Allied artillery fire descended. Vehicles dashed toward the Dives, Luettwitz later remembered, \"turned around, circled, got entangled, stopped, and were destroyed. Tall pillars of flame from burning gasoline tanks leaped into the sky, ammunition exploded, and wild horses, some severely wounded, raced\" in aimless terror. Effective control was impossible.",
+        "Paragraph_57": "Only the armored elements and part of an armored infantry regiment reached St. Lambert in an orderly manner about 1000. Luettwitz led an attack across the river into the village. Incredibly, the bridge across the Dives still stood despite the bombs and shells that had fallen nearby. \"The crossing of the Dives bridge,\" Luettwitz recalled later, \"was particularly horrible, the bodies of killed men, dead horses, vehicles, and other equipment having been hurled from the bridge into the river to form there a gruesome tangled mass.\"",
+        "Paragraph_58": "On the east bank of the river, Luettwitz organized and dispatched combat troops for passage through the hail of Allied fire. Wounded that afternoon, he finally departed around 2100, reaching Orville and safety early on 21 August."
+      },
+      "Footnote_References": [36],
+      "Place_Name": "St. Lambert-sur-Dives, France",
+      "Dates": {
+        "Date_group_of_event": "20 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "201000Z Aug 1944"
+      },
+      "TOE": {
+        "Unit": "2d Panzer Division",
+        "Unit_Nationality": "DE",
+        "Subordinates": [
+          {
+            "Unit": "2d Panzer Division",
+            "Name": "Heinrich von Lüttwitz",
+            "Rank": "Generalleutnant",
+            "End_Status": "WIA"
+          }
+        ]
+      },
+      "Casualties": {
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": "Heavy from artillery"
+        }
+      },
+      "Weather": {
+        "Place_Name": "St. Lambert-sur-Dives, France",
+        "Place_GPS_coordinate": "48.8500 N, 0.0800 E",
+        "Weather_text": "Dense morning fog lifting to clear conditions enabling artillery observation.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -0.02,
+          "East": 0.18,
+          "South": 48.75,
+          "North": 48.95
+        }
+      }
+    },
+    {
+      "Event": "XLVII Panzer Corps Breakout",
+      "Sub-event": "Corps HQ and 1st SS Panzer Division Crossing; 116th Panzer Division Rear Guard",
+      "Sub-event_summary": "Corps HQ and 1st SS likely crossed early morning 20 August; 116th Panzer lost comms, pulled back under pressure, broke out midnight at St. Lambert with staff, remnants, and vehicles; Argentan group lost near Trun.",
+      "Sub-event_fulltext": {
+        "Paragraph_59": "Meanwhile the *XLVII Panzer Corps* headquarters and the *1st SS Panzer Division* had probably fought across the Dives River in the St. Lambert-Chambois area early on the morning of 20 August. More than likely they completed their breakout that afternoon.",
+        "Paragraph_60": "Covering the *XLVII Panzer Corps* rear, the *116th Panzer Division* had deployed in two groups on the evening of 19 August. One was in the Argentan area, the other north of the Fôret de Gouffern near Bon-Ménil. About 0900, 20 August, the division lost radio communication with the corps headquarters. In the afternoon, when heavy Allied pressure developed against the Argentan group, it pulled back to positions north of the forest.",
+        "Paragraph_61": "The pressure was exerted by the 80th Division, which finally took Argentan that day.",
+        "Paragraph_62": "On the same day British troops approaching from the west moved to the Falaise-Argentan road. Both groups of the *116th Panzer Division* remained in place during the rest of the day. When the division commander, Col. Gerhard Mueller, learned around 1800 that the corps headquarters was east of the Dives, he prepared to break out during the night at St. Lambert. Mueller sent a reconnaissance party to St. Lambert after nightfall. Allied artillery fire on the village indicated it was not yet in Allied hands. After strenuous efforts, the troops cleared a narrow passage through the wreckage in the streets. During a two-hour period around midnight, 20 August, the division staff, remnants of the infantry regiment, 5 artillery pieces, and about 50 combat vehicles passed through the village without significant losses. They continued to Coudehard, then to Orville and safety. The Argentan group-about 8 tanks, 10 20-mm. antiaircraft guns, and about 80 Engineer troops--lost its way in the darkness, tried to break out near Trun, and was taken prisoner."
+      },
+      "Footnote_References": [37, 38, 39],
+      "Place_Name": "St. Lambert / Argentan area, France",
+      "Dates": {
+        "Date_group_of_event": "20 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "202300Z Aug 1944"
+      },
+      "TOE": {
+        "Unit": "116th Panzer Division",
+        "Unit_Nationality": "DE",
+        "Subordinates": [
+          {
+            "Unit": "116th Panzer Division",
+            "Name": "Gerhard Mueller",
+            "Rank": "Colonel"
+          }
+        ],
+        "Equipments": {
+          "Axis_Employed": {
+            "Origination_Country": "DE",
+            "Name": "Combat vehicles, artillery",
+            "Quantity": "About 50 vehicles, 5 artillery"
+          }
+        }
+      },
+      "Casualties": {
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": "Minimal for main group; Argentan group captured"
+        }
+      }
+    },
+    {
+      "Event": "LXXXIV Corps Breakout",
+      "Sub-event": "12th SS Panzer Division Remnants Movement and Commanders' Fates",
+      "Sub-event_summary": "LXXXIV Corps with 12th SS remnants split into motorized and infantry groups; infantry moved early 20 August, joined SS tanks at Chambois but stalled; infantry crossed in small groups; Elfeldt surrendered near St. Lambert, Meyer reached Mt. Ormel; most artillery lost.",
+      "Sub-event_fulltext": {
+        "Paragraph_63": "The missions of the two remaining corps, the *LXXXIV* and the *LXXIV,* were to cover, respectively, the northern flank and the rear of the breakout operation. Both were then to move across the Dives in the wake of the paratroopers and tankers.",
+        "Paragraph_64": "The *LXXXIV Corps* had only remnants of the *12th SS Panzer Division* under its command. Because of the chaotic conditions on the roads and the complete disruption of communications, the division organized its units into two groups for better control. The motorized elements, including what remained of the artillery and the division radio section, were to follow the *1st SS Panzer Division* across the river at Chambois.",
+        "Paragraph_65": "The rest of the division, mostly infantry, subdivided into task forces for independent action if necessary, was to follow the *3d Parachute Division* through St. Lambert. Four or five tanks or tank destroyers were to cover the rear. General Elfeldt, the corps commander, and Lt. Col. Hubert Meyer, the division commander, accompanied the infantry group.",
+        "Paragraph_66": "Around midnight of 19 August, Meyer sent a liaison patrol to the *3d Parachute Division* to obtain word on the outcome of the breakout. The patrol did not return. As all remained quiet along the Dives River, Meyer assumed that the paratroopers' penetration by stealth had succeeded. Therefore, in the very early hours of 20 August, he ordered the infantry group to move out.",
+        "Paragraph_67": "At daybreak the group came into contact with several tanks of the *1st SS Panzer Division* preparing to attack through Chambois. The armored infantrymen joined the tanks, but intense Allied artillery, tank, and antitank fire from high ground south of Chambois soon stalled the attack. Because the German armor was drawing the Allied fire, the infantry detached itself and in small groups began to cross the river between Chambois and St. Lambert. Some troops of other units were advancing toward the Allied positions and waving white handkerchiefs and flags.",
+        "Paragraph_68": "The two commanders became separated. Elfeldt and his staff took part in an action near St. Lambert with a hastily assembled group of soldiers. Meeting strong opposition and \"having literally spent his last cartridge,\" Elfeldt, the *LXXXIV Corps* commander, surrendered. Meyer, having crossed the Dives, took command of a group of soldiers and led them on foot across the plain toward the southern spur of Mt. Ormel. Using whatever natural concealment was available, they reached safety. Some of the motorized elements of the *12th SS Panzer Division* also escaped that afternoon. Most of the artillery was lost."
+      },
+      "Footnote_References": [40],
+      "Place_Name": "Chambois / St. Lambert, France",
+      "Dates": {
+        "Date_group_of_event": "19-20 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "201200Z Aug 1944"
+      },
+      "TOE": {
+        "Unit": "LXXXIV Corps",
+        "Unit_Nationality": "DE",
+        "Subordinates": [
+          {
+            "Unit": "LXXXIV Corps",
+            "Name": "Otto Elfeldt",
+            "Rank": "General der Infanterie",
+            "End_Status": "Captured"
+          },
+          {
+            "Unit": "12th SS Panzer Division",
+            "Name": "Hubert Meyer",
+            "Rank": "Lt. Col."
+          }
+        ]
+      },
+      "Casualties": {
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": "Most artillery lost"
+        }
+      }
+    },
+    {
+      "Event": "LXXIV Corps Breakout",
+      "Sub-event": "Corps Communications Chaos and 277th Division Breakout",
+      "Sub-event_summary": "LXXIV Corps with limited comms; 277th Division fell back, broke out night 20 August northwest of St. Lambert ~900 men; reached II SS Panzer lines 21 August, assembled ~2500 later.",
+      "Sub-event_fulltext": {
+        "Paragraph_69": "The *LXXIV Corps,* designated the covering force in the rear of the breakout attack, had, on 19 August, three of its five infantry divisions *(276th, 277th,* and *326th)* along the northwestern perimeter of the pocket, the other two *(84th* and *363d)* assembled in the Bois de Feuillet. The two latter divisions were ready to cross the Dives River in the wake of the *LXXXIV Corps,* the other three were to follow on order.",
+        "Paragraph_70": "Communications were practically nonexistent. Orders from corps to division could be transmitted only by staff officers. There was no liaison with the *II Parachute Corps--*General der Infanterie Erich Straube, the *LXXIV Corps* commander, had no knowledge of the time set for the breakout attack. All efforts to establish contact with the *Seventh Army* failed.",
+        "Paragraph_71": "The state of affairs in the *LXXIV Corps* sector was therefore somewhat chaotic. The *277th Division* on the corps right was in contact with two corps headquarters, its own and the *LXXXIV,* and for a while received contradictory orders from both. The two divisions farther to the south, the *276th* and *326th,* were out of touch with corps headquarters throughout the day, and both division commanders pondered the problem of whether they should continue to wait for orders or act on their own initiative.",
+        "Paragraph_72": "In the early hours of 20 August, after the *12th SS Panzer Division* pulled out of the line on the *277th Division* right, the *277th* fell back to a position along a curved line facing west and northwest-- about one and a half miles from Villedieu-les-Bailleul. There the division remained for the rest of the day. Around 2300, still without orders from the corps, his men exhausted, and short ammunition even for the infantry weapons, the division commander, Colonel Wilhelm Viebig, decided to break out that night. The remnants of the division, about 900 men, moved from their positions to a previously reconnoitred crossing site on the Dives northwest of St. Lambert. The noise of the crossing brought Allied artillery and machine gun fire, and in the ensuing confusion Viebig lost control. Nevertheless, small groups screened by heavy rain continued to move, and what remained of the division reached the *II SS Panzer Corps* lines on the morning of 21 August. A few days later, when Viebig assembled his command--combat units, administrative elements, stragglers, hospital returnees-he had about 2,500 men, of whom approximately 1,000 were combat troops."
+      },
+      "Footnote_References": [41, 42],
+      "Place_Name": "Villedieu-les-Bailleul / St. Lambert area, France",
+      "Dates": {
+        "Date_group_of_event": "19-21 Aug 1944",
+        "Source_date_group_of_event": "Source Link: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+        "Zulu_date_group_of_event": "210600Z Aug 1944"
+      },
+      "TOE": {
+        "Unit": "LXXIV Corps",
+        "Unit_Nationality": "DE",
+        "Subordinates": [
+          {
+            "Unit": "LXXIV Corps",
+            "Name": "Erich Straube",
+            "Rank": "General der Infanterie",
+            "Biographical_reference": "https://en.wikipedia.org/wiki/Erich_Straube"
+          },
+          {
+            "Unit": "277th Infantry Division",
+            "Name": "Wilhelm Viebig",
+            "Rank": "Colonel"
+          }
+        ]
+      },
+      "Casualties": {
+        "Axis": {
+          "Axis_DE_Unspecified_Casualties": "Significant; ~900 crossed initially"
+        }
+      },
+      "Weather": {
+        "Place_Name": "St. Lambert area, France",
+        "Place_GPS_coordinate": "48.8500 N, 0.0800 E",
+        "Weather_text": "Heavy rain during night breakout aiding small groups.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -0.02,
+          "East": 0.18,
+          "South": 48.75,
+          "North": 48.95
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "34",
+      "Footnote_Number": "34",
+      "Footnote_Text": "MS # A-985 (Mahlmann).",
+      "Footnote_Referenced_Source": "Post-war manuscript by Generalleutnant Paul Mahlmann",
+      "Web_Link": null,
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "",
+      "Source_Type": ""
+    },
+    {
+      "Footnote": "35",
+      "Footnote_Number": "35",
+      "Footnote_Text": "There is a scarcity of information regarding the activities of this corps.",
+      "Footnote_Referenced_Source": "U.S. historical analysis",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "",
+      "Source_Type": ""
+    },
+    {
+      "Footnote": "36",
+      "Footnote_Number": "36",
+      "Footnote_Text": "MS # A-904 (Luettwitz).",
+      "Footnote_Referenced_Source": "Post-war manuscript by Generalleutnant Heinrich von Lüttwitz",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "",
+      "Source_Type": ""
+    },
+    {
+      "Footnote": "37",
+      "Footnote_Number": "37",
+      "Footnote_Text": "No information is available from corps and division sources. The above has been deduced from statements by Blauensteiner, II Parachute Corps chief of staff, and from incidents described by Mahlmann, Meindl, and Lt. Col. Hubert Meyer.",
+      "Footnote_Referenced_Source": "Composite deduction from German sources",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "",
+      "Source_Type": ""
+    },
+    {
+      "Footnote": "39",
+      "Footnote_Number": "39",
+      "Footnote_Text": "MS # B-162 (Mueller).",
+      "Footnote_Referenced_Source": "Post-war manuscript by Col. Gerhard Mueller",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "",
+      "Source_Type": ""
+    },
+    {
+      "Footnote": "40",
+      "Footnote_Number": "40",
+      "Footnote_Text": "MS # A-968 (Elfeldt), MS # B-784 (Criegern), MS # P-164 (Meyer).",
+      "Footnote_Referenced_Source": "Post-war manuscripts by Elfeldt, Criegern, Meyer",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "",
+      "Source_Type": ""
+    },
+    {
+      "Footnote": "41",
+      "Footnote_Number": "41",
+      "Footnote_Text": "MS # B-824 (Straube).",
+      "Footnote_Referenced_Source": "Post-war manuscript by General der Infanterie Erich Straube",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "",
+      "Source_Type": ""
+    },
+    {
+      "Footnote": "42",
+      "Footnote_Number": "42",
+      "Footnote_Text": "MS # B-610 (Viebig).",
+      "Footnote_Referenced_Source": "Post-war manuscript by Colonel Wilhelm Viebig",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": "",
+      "Source_Type": ""
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn27.html",
+  "Source_Footnote_Link_Capture_Date": "2025-12-29",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-27.html",
+  "Source_Link_Capture_Date": "2025-12-29"
+}
