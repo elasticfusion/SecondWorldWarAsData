@@ -1,42 +1,33 @@
 {
   "Events": [
     {
-      "Event": "The Allies' Terrain Considerations in the European Theater of Operations (Breakout and Pursuit Phase)",
-      "Sub-event": "Strategic Choices Post-Cherbourg and Terrain Impediment",
-      "Sub-event_summary": "After capturing Cherbourg in late June, General Eisenhower considered directing forces east to Seine ports or south to Breton ports. The terrain posed a major impediment to the southward drive favored for logistical reasons.",
+      "Event": "Terrain Considerations in the Breakout and Pursuit Phase",
+      "Sub-event": "Strategic Options Following Capture of Cherbourg",
+      "Sub-event_summary": "With the capture of Cherbourg concluding the initial phase of continental operations at the end of June 1944, General Eisenhower faced a choice between directing forces eastward toward the Seine ports (Le Havre and Rouen) for a direct thrust into Germany or southward toward the Breton ports (principally St. Nazaire, Lorient, and Brest). The eastward option appeared bolder but risky without evident German withdrawal or collapse. A southward American advance to secure Breton ports, supported by British and Canadian operations through Caen toward the Seine, was deemed more logical, though significantly impeded by terrain characteristics.",
       "Sub-event_fulltext": {
         "Paragraph_30": "With the capture of Cherbourg at the end of June marking the close of the first phase of continental operations, General Eisenhower had the choice in the next phase of directing action east toward the Seine ports of Le Havre and Rouen, or south toward the Breton ports, principally St. Nazaire, Lorient, and Brest. A move to the Seine ports, a more direct thrust toward Germany, was the bolder course of action, but unless the Germans were already withdrawing from France or at the point of collapse, success appeared dubious. More logical was an American drive southward to capture the Breton ports while the British and Canadians covered American operations by striking through Caen and later toward the Seine. A major impediment to this course of action was the terrain. (Map 1)"
       },
       "Footnote_References": [],
-      "Place_Name": "Cherbourg",
+      "Place_Name": "Normandy (Cherbourg and surrounding areas)",
       "Dates": {
         "Date_group_of_event": "END JUN44",
         "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
         "Zulu_date_group_of_event": "END JUN44"
       },
       "TOE": {
-        "Unit": "",
-        "Unit_Nationality": "",
+        "Unit": "Supreme Headquarters Allied Expeditionary Force (SHAEF)",
+        "Unit_Nationality": "US,GB,CA",
         "Command_Structure": {
-          "Unit": "",
-          "Commander": "",
-          "Name": "",
-          "Rank": "",
+          "Unit": "Allied Expeditionary Force",
+          "Commander": "Dwight D. Eisenhower",
+          "Name": "Dwight D. Eisenhower",
+          "Rank": "General",
           "End_Date": "",
           "End_Status": "",
-          "Biographical_reference": "",
-          "Biographical_reference_Capture_Date": ""
+          "Biographical_reference": "https://grokipedia.com/page/Dwight_D._Eisenhower",
+          "Biographical_reference_Capture_Date": "December 30, 2025"
         },
-        "Subordinates": {
-          "Unit": "",
-          "Name": "",
-          "Rank": "",
-          "Date": "",
-          "End_Date_of_command": "",
-          "End_Status": "",
-          "Biographical_reference": "",
-          "Biographical_reference_Capture_Date": ""
-        },
+        "Subordinates": [],
         "Personnel": "",
         "Equipments": {
           "Supply": "",
@@ -70,38 +61,38 @@
       "Media": {
         "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-1.jpg",
         "Description": "Map 1. The Bocage Country",
-        "License": "Public Domain"
+        "License": "Public Domain (U.S. Government publication)"
       },
       "Place": {
         "Place_Name": "Cherbourg",
-        "Place_GPS_coordinate": "49.63, -1.62",
+        "Place_GPS_coordinate": "49.6383, -1.6258",
         "Map_Reference": "Map 1",
         "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-1.jpg",
         "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:Bocage_country_map_Normandy_1944.jpg",
         "ExternalMapLinkLicence": "Public Domain",
-        "ExternalMapLinkCaptureDate": "December 20, 2025"
+        "ExternalMapLinkCaptureDate": "December 30, 2025"
       },
       "Weather": {
         "Place_Name": "Cherbourg",
-        "Place_GPS_coordinate": "49.63, -1.62",
-        "Weather_text": "Post-storm conditions in late June 1944, transitioning to July weather.",
+        "Place_GPS_coordinate": "49.6383, -1.6258",
+        "Weather_text": "Late June 1944 transition following the severe Channel storm of 19-21 June; conditions remained variable with occasional rain, moderate temperatures in the 50s-60s°F, and persistent overcast skies typical of the region.",
         "Spatial_Bounding_Box Coordinates": {
-          "West": "-3.0109",
-          "East": "-0.2291",
-          "South": "48.7291",
-          "North": "50.5309"
+          "West": "-2.6258",
+          "East": "-0.6258",
+          "South": "48.6383",
+          "North": "50.6383"
         }
       }
     },
     {
-      "Event": "The Allies' Terrain Considerations in the European Theater of Operations (Breakout and Pursuit Phase)",
-      "Sub-event": "Diversified Nature of the Battlefield",
-      "Sub-event_summary": "The July battlefield featured diversified terrain: open plains near Caen-Falaise suitable for armor and airfields, broken ground in the center, marshy depression near Carentan, and hills on the right flank anchoring German defense.",
+      "Event": "Terrain Considerations in the Breakout and Pursuit Phase",
+      "Sub-event": "Description of Diversified Battlefield Terrain",
+      "Sub-event_summary": "The July 1944 battlefield exhibited diverse characteristics: open, rolling Caen-Falaise plain suitable for armor and airfields on the Allied left; broken ground with hills, ridges, and valleys in the center; marshy depression near Carentan west of the Vire River; and dominating hills on the extreme right anchoring the German flank. These features compartmentalized the terrain, restricting Allied maneuver while favoring German defense.",
       "Sub-event_fulltext": {
-        "Paragraph_31": "The ground that was to serve as the battlefield in July was of a diversified nature. 15 On the Allied left was the Caen-Falaise plain, gently rolling open country of cultivated fields and pastures, dry and firm ground suitable for large-scale armored operations and airfield construction. Facing the Allied center between the Orne and Vire Rivers were the northern fringes of a sprawling mass of broken ground--small hills, low ridges, and narrow valleys--gradually rising in height toward the south. West of the Vire River in the Carentan area was a marshy depression crisscrossed by sluggish streams and drainage ditches. On the extreme right of the Allied front, between the marshland and the coast, a cluster of hills dominated the countryside and gave the Germans a solid anchor for their left flank."
+        "Paragraph_31": "The ground that was to serve as the battlefield in July was of a diversified nature. On the Allied left was the Caen-Falaise plain, gently rolling open country of cultivated fields and pastures, dry and firm ground suitable for large-scale armored operations and airfield construction. Facing the Allied center between the Orne and Vire Rivers were the northern fringes of a sprawling mass of broken ground--small hills, low ridges, and narrow valleys--gradually rising in height toward the south. West of the Vire River in the Carentan area was a marshy depression crisscrossed by sluggish streams and drainage ditches. On the extreme right of the Allied front, between the marshland and the coast, a cluster of hills dominated the countryside and gave the Germans a solid anchor for their left flank."
       },
-      "Footnote_References": "15",
-      "Place_Name": "Caen-Falaise plain",
+      "Footnote_References": ["15"],
+      "Place_Name": "Normandy Battlefield (Caen-Falaise to Cotentin)",
       "Dates": {
         "Date_group_of_event": "BEGINNING JUL44",
         "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
@@ -111,187 +102,39 @@
       "Casualties": {},
       "Media": {},
       "Place": {
-        "Place_Name": "Caen-Falaise plain",
-        "Place_GPS_coordinate": "48.95, -0.2",
-        "Map_Reference": "",
-        "Map_Link": "",
-        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Caen_Falaise_plain_map.jpg",
-        "ExternalMapLinkLicence": "CC BY-SA",
-        "ExternalMapLinkCaptureDate": "December 20, 2025"
-      },
-      "Weather": {
-        "Place_Name": "Caen-Falaise plain",
-        "Place_GPS_coordinate": "48.95, -0.2",
-        "Weather_text": "Dry and firm ground in July 1944.",
-        "Spatial_Bounding_Box Coordinates": {
-          "West": "-1.5799",
-          "East": "1.1799",
-          "South": "48.0491",
-          "North": "49.8509"
-        }
-      }
-    },
-    {
-      "Event": "The Allies' Terrain Considerations in the European Theater of Operations (Breakout and Pursuit Phase)",
-      "Sub-event": "Compartmentalized Character and Limitations",
-      "Sub-event_summary": "Except for the Caen-Falaise plain, the battlefield was compartmentalized, restricting Allied maneuver, favoring German defense, and aggravated by hedgerows enclosing small plots of land.",
-      "Sub-event_fulltext": {
-        "Paragraph_32": "With the exception of the Caen-Falaise plain, the battlefield had a compartmentalized character that was bound to impose limitations on the Allies. It restricted maneuver and by the same token favored the German defense. The natural limitations were further aggravated by a man-made feature encountered at every turn, the hedgerow, the result of the practice of Norman farmers for centuries of enclosing each plot of arable land, pasture as well as orchard, no matter how small."
-      },
-      "Footnote_References": [],
-      "Place_Name": "Normandy",
-      "Dates": {
-        "Date_group_of_event": "BEGINNING JUL44",
-        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
-        "Zulu_date_group_of_event": "BEGINNING JUL44"
-      },
-      "TOE": {},
-      "Casualties": {},
-      "Media": {},
-      "Place": {
-        "Place_Name": "Normandy",
-        "Place_GPS_coordinate": "48.88, 0.17",
-        "Map_Reference": "",
-        "Map_Link": "",
-        "ExternalMapLink": "",
-        "ExternalMapLinkLicence": "",
-        "ExternalMapLinkCaptureDate": ""
-      },
-      "Weather": {
-        "Place_Name": "Normandy",
-        "Place_GPS_coordinate": "48.88, 0.17",
-        "Weather_text": "Gloomy with grey skies in July 1944.",
-        "Spatial_Bounding_Box Coordinates": {
-          "West": "-1.1999",
-          "East": "1.5399",
-          "South": "47.9791",
-          "North": "49.7809"
-        }
-      }
-    },
-    {
-      "Event": "The Allies' Terrain Considerations in the European Theater of Operations (Breakout and Pursuit Phase)",
-      "Sub-event": "Hedgerow Description",
-      "Sub-event_summary": "Hedgerows consist of earthen walls 3-12 feet high topped with hedges 3-15 feet tall, enclosing small irregular fields of 200 by 400 yards, providing protection and firewood but creating innumerable enclosures without pattern.",
-      "Sub-event_fulltext": {
-        "Paragraph_33": "The hedgerow is a fence, half earth, half hedge. The wall at the base is a dirt parapet that varies in thickness from one to four or more feet and in height from three to twelve feet. Growing out of the wall is a hedge of hawthorn, brambles, vines, and trees, in thickness from one to three feet, in height from three to fifteen feet. Originally property demarcations, hedgerows protect crops and cattle from the ocean winds that sweep across the land. They provide the inhabitants with firewood. Delimiting each field, they break the terrain into numerous walled enclosures. Since the fields are tiny, about 200 by 400 yards in size, the hedgerows are innumerable. Because the fields are irregular in shape, the hedgerows follow no logical pattern."
-      },
-      "Footnote_References": [],
-      "Place_Name": "Bocage Country",
-      "Dates": {
-        "Date_group_of_event": "BEGINNING JUL44",
-        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
-        "Zulu_date_group_of_event": "BEGINNING JUL44"
-      },
-      "TOE": {},
-      "Casualties": {},
-      "Media": {},
-      "Place": {
-        "Place_Name": "Bocage Country",
-        "Place_GPS_coordinate": "49.00, -1.00",
+        "Place_Name": "Caen-Falaise Plain",
+        "Place_GPS_coordinate": "49.0000, -0.5000",
         "Map_Reference": "Map 1",
         "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-1.jpg",
-        "ExternalMapLink": "https://www.normandie-tourisme.fr/en/the-bocage-country/",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/Category:Maps_of_Operation_Overlord",
         "ExternalMapLinkLicence": "Public Domain",
-        "ExternalMapLinkCaptureDate": "December 20, 2025"
+        "ExternalMapLinkCaptureDate": "December 30, 2025"
       },
       "Weather": {
-        "Place_Name": "Bocage Country",
-        "Place_GPS_coordinate": "49.00, -1.00",
-        "Weather_text": "Influenced by ocean winds, typical Normandy weather in July 1944.",
+        "Place_Name": "Caen-Falaise Plain",
+        "Place_GPS_coordinate": "49.0000, -0.5000",
+        "Weather_text": "Early July 1944 conditions were predominantly gloomy with frequent overcast skies, periods of rain, and moderate temperatures in the 50s-60s°F range; terrain remained firm in open areas despite occasional precipitation.",
         "Spatial_Bounding_Box Coordinates": {
-          "West": "-2.3818",
-          "East": "0.3818",
-          "South": "48.0991",
-          "North": "49.9009"
+          "West": "-1.7199",
+          "East": "0.7199",
+          "South": "48.1000",
+          "North": "49.9000"
         }
       }
     },
     {
-      "Event": "The Allies' Terrain Considerations in the European Theater of Operations (Breakout and Pursuit Phase)",
-      "Sub-event": "Field Access and Sunken Lanes",
-      "Sub-event_summary": "Each field has hedgerow openings for access; non-road-adjacent fields reached via wagon trails resembling sunken lanes, forming gloomy, damp labyrinths where high hedgerows overarch.",
+      "Event": "Terrain Considerations in the Breakout and Pursuit Phase",
+      "Sub-event": "Impact of Hedgerows (Bocage) on Operations",
+      "Sub-event_summary": "The Norman hedgerow system—earth banks topped with dense vegetation—compartmentalized the battlefield into small, enclosed fields, severely restricting maneuver, obscuring observation, hindering artillery adjustment, and limiting armor and supporting arms effectiveness. This natural and man-made feature strongly favored defensive operations and posed significant tactical challenges to Allied advances.",
       "Sub-event_fulltext": {
-        "Paragraph_34": "Each field has an opening in the hedgerows for human beings, cattle, and wagons. For passage to fields that do not lie adjacent to a road, innumerable wagon trails wind among the hedgerows. The trails appear to be sunken lanes, and where the hedgerows are high and the tops overarch and shut out the light, they form a cavelike labyrinth, gloomy and damp."
-      },
-      "Footnote_References": [],
-      "Place_Name": "Normandy",
-      "Dates": {
-        "Date_group_of_event": "BEGINNING JUL44",
-        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
-        "Zulu_date_group_of_event": "BEGINNING JUL44"
-      },
-      "TOE": {},
-      "Casualties": {},
-      "Media": {},
-      "Place": {
-        "Place_Name": "Normandy",
-        "Place_GPS_coordinate": "48.88, 0.17",
-        "Map_Reference": "",
-        "Map_Link": "",
-        "ExternalMapLink": "",
-        "ExternalMapLinkLicence": "",
-        "ExternalMapLinkCaptureDate": ""
-      },
-      "Weather": {
-        "Place_Name": "Normandy",
-        "Place_GPS_coordinate": "48.88, 0.17",
-        "Weather_text": "Gloomy and damp conditions exacerbated by terrain.",
-        "Spatial_Bounding_Box Coordinates": {
-          "West": "-1.1999",
-          "East": "1.5399",
-          "South": "47.9791",
-          "North": "49.7809"
-        }
-      }
-    },
-    {
-      "Event": "The Allies' Terrain Considerations in the European Theater of Operations (Breakout and Pursuit Phase)",
-      "Sub-event": "Tactical Implications of Terrain",
-      "Sub-event_summary": "Tactically, each field forms a tiny compartment; adjoining fields create defensive positions in depth. Vegetation provides camouflage, obstructs observation, hinders fire adjustment, and limits armor use.",
-      "Sub-event_fulltext": {
-        "Paragraph_35": "From a tactical point of view, each field is a tiny terrain compartment. Several adjoining fields together form a natural defensive position echeloned in depth. The abundant vegetation and ubiquitous trees provide effective camouflage, obstruct observation, hinder the adjustment of artillery and heavy weapons fire, and limit the use of armor and the supporting arms."
-      },
-      "Footnote_References": [],
-      "Place_Name": "Bocage Country",
-      "Dates": {
-        "Date_group_of_event": "BEGINNING JUL44",
-        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
-        "Zulu_date_group_of_event": "BEGINNING JUL44"
-      },
-      "TOE": {},
-      "Casualties": {},
-      "Media": {},
-      "Place": {
-        "Place_Name": "Bocage Country",
-        "Place_GPS_coordinate": "49.00, -1.00",
-        "Map_Reference": "Map 1",
-        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-1.jpg",
-        "ExternalMapLink": "",
-        "ExternalMapLinkLicence": "",
-        "ExternalMapLinkCaptureDate": ""
-      },
-      "Weather": {
-        "Place_Name": "Bocage Country",
-        "Place_GPS_coordinate": "49.00, -1.00",
-        "Weather_text": "Conditions hindering observation in July 1944.",
-        "Spatial_Bounding_Box Coordinates": {
-          "West": "-2.3818",
-          "East": "0.3818",
-          "South": "48.0991",
-          "North": "49.9009"
-        }
-      }
-    },
-    {
-      "Event": "The Allies' Terrain Considerations in the European Theater of Operations (Breakout and Pursuit Phase)",
-      "Sub-event": "Hedgerow Persistence in Cotentin",
-      "Sub-event_summary": "Hedgerows dominate the Cotentin landscape; American soldiers dubbed it 'hedgerow country' or 'this goddam country,' familiar to many from June combats, with more to encounter it soon.",
-      "Sub-event_fulltext": {
+        "Paragraph_32": "With the exception of the Caen-Falaise plain, the battlefield had a compartmentalized character that was bound to impose limitations on the Allies. It restricted maneuver and by the same token favored the German defense. The natural limitations were further aggravated by a man-made feature encountered at every turn, the hedgerow, the result of the practice of Norman farmers for centuries of enclosing each plot of arable land, pasture as well as orchard, no matter how small.",
+        "Paragraph_33": "The hedgerow is a fence, half earth, half hedge. The wall at the base is a dirt parapet that varies in thickness from one to four or more feet and in height from three to twelve feet. Growing out of the wall is a hedge of hawthorn, brambles, vines, and trees, in thickness from one to three feet, in height from three to fifteen feet. Originally property demarcations, hedgerows protect crops and cattle from the ocean winds that sweep across the land. They provide the inhabitants with firewood. Delimiting each field, they break the terrain into numerous walled enclosures. Since the fields are tiny, about 200 by 400 yards in size, the hedgerows are innumerable. Because the fields are irregular in shape, the hedgerows follow no logical pattern.",
+        "Paragraph_34": "Each field has an opening in the hedgerows for human beings, cattle, and wagons. For passage to fields that do not lie adjacent to a road, innumerable wagon trails wind among the hedgerows. The trails appear to be sunken lanes, and where the hedgerows are high and the tops overarch and shut out the light, they form a cavelike labyrinth, gloomy and damp.",
+        "Paragraph_35": "From a tactical point of view, each field is a tiny terrain compartment. Several adjoining fields together form a natural defensive position echeloned in depth. The abundant vegetation and ubiquitous trees provide effective camouflage, obstruct observation, hinder the adjustment of artillery and heavy weapons fire, and limit the use of armor and the supporting arms.",
         "Paragraph_36": "The hedgerow is the most persistent feature in the Cotentin. Unimpressed by fine terrain distinctions, American soldiers called the whole area the hedgerow country, often simply \"this goddam country.\" Many troops had already become familiar with it in June, and before long many more would come to know and detest it."
       },
-      "Footnote_References": [],
-      "Place_Name": "Cotentin",
+      "Footnote_References": ["15"],
+      "Place_Name": "Cotentin (Hedgerow Country / Bocage)",
       "Dates": {
         "Date_group_of_event": "BEGINNING JUL44",
         "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
@@ -299,32 +142,36 @@
       },
       "TOE": {},
       "Casualties": {},
-      "Media": {},
+      "Media": {
+        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-1.jpg",
+        "Description": "Map 1. The Bocage Country",
+        "License": "Public Domain (U.S. Government publication)"
+      },
       "Place": {
-        "Place_Name": "Cotentin",
-        "Place_GPS_coordinate": "49.5, -1.5",
-        "Map_Reference": "",
-        "Map_Link": "",
-        "ExternalMapLink": "https://en.wikipedia.org/wiki/File:Cotentin_peninsula_map_1944.jpg",
+        "Place_Name": "Cotentin Peninsula",
+        "Place_GPS_coordinate": "49.5000, -1.5000",
+        "Map_Reference": "Map 1",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-1.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/File:Bocage_country_map_Normandy_1944.jpg",
         "ExternalMapLinkLicence": "Public Domain",
-        "ExternalMapLinkCaptureDate": "December 20, 2025"
+        "ExternalMapLinkCaptureDate": "December 30, 2025"
       },
       "Weather": {
-        "Place_Name": "Cotentin",
-        "Place_GPS_coordinate": "49.5, -1.5",
-        "Weather_text": "Ocean winds influencing the area in July 1944.",
+        "Place_Name": "Cotentin Peninsula",
+        "Place_GPS_coordinate": "49.5000, -1.5000",
+        "Weather_text": "July 1944 weather featured frequent overcast conditions, intermittent rain, and moderate temperatures; hedgerows created damp, gloomy sunken lanes even during dry spells due to overhanging vegetation.",
         "Spatial_Bounding_Box Coordinates": {
-          "West": "-2.8818",
-          "East": "-0.1182",
-          "South": "48.5991",
-          "North": "50.4009"
+          "West": "-2.5000",
+          "East": "-0.5000",
+          "South": "48.5000",
+          "North": "50.5000"
         }
       }
     }
   ],
   "Footnotes": [
     {
-      "Footnote": "",
+      "Footnote": "15a",
       "Footnote_Number": "15a",
       "Footnote_Text": "Institut National de la Statistique et des Etudes Economiques, Régions géographiques de la France (Paris, n.d.), pp. 263-65",
       "Footnote_Referenced_Source": "Régions géographiques de la France",
@@ -335,7 +182,7 @@
       "NonDigital_Library_References": "Régions géographiques de la France (Paris, n.d.), pp. 263-65"
     },
     {
-      "Footnote": "",
+      "Footnote": "15b",
       "Footnote_Number": "15b",
       "Footnote_Text": "British Admiralty, Handbook Series, France, 3 vols. (London, 1942), Vol. I, p. 12, fig. 7, and p. 18, Vol. II, passim",
       "Footnote_Referenced_Source": "Handbook Series, France",
@@ -346,7 +193,7 @@
       "NonDigital_Library_References": "Handbook Series, France, 3 vols. (London, 1942)"
     },
     {
-      "Footnote": "",
+      "Footnote": "15c",
       "Footnote_Number": "15c",
       "Footnote_Text": "Atlas Bottin, 2 vols. (Paris, 1951), II, 145",
       "Footnote_Referenced_Source": "Atlas Bottin",
@@ -357,30 +204,30 @@
       "NonDigital_Library_References": "Atlas Bottin, 2 vols. (Paris, 1951), II, 145"
     },
     {
-      "Footnote": "",
+      "Footnote": "15d",
       "Footnote_Number": "15d",
       "Footnote_Text": "Opn Plan NEPTUNE (20 May 44)",
       "Footnote_Referenced_Source": "Opn Plan NEPTUNE",
       "Web_Link": "",
       "Web_Link_Capture_Date": "",
-      "NonDigital_Library_Source": "Opn Plan NEPTUNE (20 May 44)",
+      "NonDigital_Library_Source": "",
       "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
       "NonDigital_Library_References": "Operation Neptune Plan, dated 20 May 1944"
     },
     {
-      "Footnote": "",
+      "Footnote": "15e",
       "Footnote_Number": "15e",
       "Footnote_Text": "First U.S. Army, Report of Operations, 20 October 1943-1 August 1944, 7 vols. (Paris, 1945), I, 124-25",
       "Footnote_Referenced_Source": "First U.S. Army, Report of Operations",
       "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-FUSA/index.html",
-      "Web_Link_Capture_Date": "December 20, 2025",
+      "Web_Link_Capture_Date": "December 30, 2025",
       "NonDigital_Library_Source": "",
       "NonDigital_Library_Address": "",
       "NonDigital_Library_References": ""
     }
   ],
   "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn1.html",
-  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Footnote_Link_Capture_Date": "December 30, 2025",
   "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
-  "Source_Link_Capture_Date": "December 20, 2025"
+  "Source_Link_Capture_Date": "December 30, 2025"
 }
