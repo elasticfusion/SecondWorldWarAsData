@@ -1,0 +1,1311 @@
+{
+  "Events": [
+    {
+      "Event": "The Offensive Launched - The Preparations",
+      "Sub-event": "Mission and Terrain Overview",
+      "Sub-event_summary": "Overview of VIII Corps mission to advance along the Cotentin west coast, secure high ground near Coutances, and facilitate the army advance by threatening enemy flanks.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "Designated to lead off in the U.S. First Army offensive to the south, VIII Corps was to advance twenty miles along the Cotentin west coast, secure high ground near Coutances, and form the western shoulder of a new army line extending to Caumont. The line was to be gained after VII, XIX, and V Corps attacked in turn in their respective zones. A quick thrust by VIII Corps promised to facilitate the entire army advance. By threatening the flank of enemy units opposing U.S. forces in the center, the corps would help its neighbors across the water obstacles and the mire of the Cotentin. At the conclusion of the offensive action across the army front, the Americans would be out of the swampland and on the dry ground of Normandy bocage.",
+        "Paragraph_2": "The VIII Corps held a fifteen-mile front in a shallow arc facing a complex of hills around the important crossroads town of la Haye-du-Puits. Athwart the Cherbourg-Coutances highway and dominating the surrounding countryside, these hills formed a natural defensive position on which the Germans anchored the western flank of their Normandy front. Just to the south of the hill mass, the firm ground in the corps zone narrowed to seven miles between the Prairies Marécageuses de Gorges and the tidal flats of the Ay River. This ground was the VIII Corps' initial objective. (Map 3)"
+      },
+      "Footnote_References": [],
+      "Place_Name": "Cotentin west coast, Coutances, Caumont, la Haye-du-Puits, Prairies Marécageuses de Gorges, Ay River, Normandy bocage, Cherbourg-Coutances highway",
+      "Dates": {
+        "Date_group_of_event": "Late June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jun44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "U.S. First Army",
+          "Commander": "Omar Bradley",
+          "Name": "Omar Bradley",
+          "Rank": "Lieutenant General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Omar_Bradley",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "VII Corps",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "XIX Corps",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          },
+          {
+            "Unit": "V Corps",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "Veterans of June fighting, fully staffed assumed",
+        "Equipments": {
+          "Supply": "Adequate ammunition stocks",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "",
+              "Identifier": "",
+              "Quantity": "",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://upload.wikimedia.org/wikipedia/commons/e/e5/L%27Haye-du-Puits_en_haut_%C3%A0_droite_du_clich%C3%A9_Havre_de_Saint-germain-sur-Ay.jpg",
+          "Description": "Aerial view of La Haye-du-Puits area during WWII",
+          "License": "Public domain"
+        }
+      ],
+      "Place": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.290954, -1.545299",
+        "Map_Reference": "Map 3",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-3.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/en/battle-of-normandy/cities/la-haye-du-puits",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.290954, -1.545299",
+        "Weather_text": "Adverse weather conditions with rain",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.445299,
+          "East": -0.645299,
+          "South": 48.390954,
+          "North": 50.190954
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Preparations",
+      "Sub-event": "Command and Leadership",
+      "Sub-event_summary": "Description of Maj. Gen. Troy H. Middleton's background and command of VIII Corps, with mission to protect rear during Cherbourg drive.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "Charged with the task of unhinging the German line at its western end was Maj. Gen. Troy H. Middleton, a soldier with a distinguished and extensive combat career. He had enlisted in the Regular Army in 1910 and had risen during World War I to regimental command and the rank of colonel. He had demonstrated his competence in World War II as a division commander in Sicily and Italy. Several months before the invasion of western Europe he had assumed command of the VIII Corps, and nine days after the continental landing the corps headquarters had become operational in France with the mission of protecting the rear of the forces driving on Cherbourg. The terrain that had been of great assistance to the VIII Corps in June now inversely became an aid to the enemy."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Cherbourg",
+      "Dates": {
+        "Date_group_of_event": "June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jun44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Troy H. Middleton",
+          "Name": "Troy H. Middleton",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Troy_H._Middleton",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Experienced combat leader",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.6337, -1.6221",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.6337, -1.6221",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.5221,
+          "East": -0.7221,
+          "South": 48.7337,
+          "North": 50.5337
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Preparations",
+      "Sub-event": "Terrain Details and Divisions Deployed",
+      "Sub-event_summary": "Detailed description of terrain around la Haye-du-Puits and the three divisions in line: 79th Infantry, 82d Airborne, 90th Infantry.",
+      "Sub-event_fulltext": {
+        "Paragraph_4": "Looking south across hedgerowed lowland toward la Haye-du-Puits, General Middleton faced high ground between sea and marsh, heights that shield the town on three sides. On the southwest, Hill 84 is the high point of the Montgardon ridge, an eminence stretching almost to the sea. On the north, twin hills, 121 and 131 meters in height, and the triplet hills of the Poterie ridge rise abruptly. To the east, Mont Castre lifts its slopes out of the marshes. The adjacent lowlands make the hill masses seem more rugged and steep than they are. To reach the initial objective, VIII Corps had first to take this commanding terrain. General Middleton had three divisions, veterans of the June fighting. All were in the line, the 79th Infantry on the right (west), the 82d Airborne in the center, and the 90th Infantry on the left."
+      },
+      "Footnote_References": [],
+      "Place_Name": "la Haye-du-Puits, Hill 84, Montgardon ridge, Hill 121, Hill 131, Poterie ridge, Mont Castre",
+      "Dates": {
+        "Date_group_of_event": "June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jun44"
+      },
+      "TOE": {
+        "Unit": "79th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Ira T. Wyche",
+          "Name": "Ira T. Wyche",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Ira_T._Wyche",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Veterans of June fighting",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://c8.alamy.com/comp/CW6C3A/american-soldiers-on-the-alert-in-la-haye-du-puits-area-in-normandy-CW6C3A.jpg",
+          "Description": "American soldiers on the alert in La Haye du Puits area in Normandy, 1944",
+          "License": "Alamy Stock Photo"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.27, -1.48",
+        "Map_Reference": "Map 3",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-3.jpg",
+        "ExternalMapLink": "https://www.dday-overlord.com/en/battle-of-normandy/cities/mont-castre",
+        "ExternalMapLinkLicence": "Public domain",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "Mont Castre",
+        "Place_GPS_coordinate": "49.27, -1.48",
+        "Weather_text": "Torrential rains in the region",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.38,
+          "East": -0.58,
+          "South": 48.37,
+          "North": 50.17
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Preparations",
+      "Sub-event": "Scheme of Maneuver",
+      "Sub-event_summary": "Plan for the attack with limited objective for 82d Airborne, convergence of 79th and 90th to pinch out the airborne, dictated by terrain.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "Because the 82d was soon to be returned to England to prepare for projected airborne operations, General Middleton assigned the division only a limited objective, part of the high ground north of la Haye-du-Puits. The 79th Division on the right and the 90th on the left were to converge and meet below the town to pinch out the airborne infantrymen. Thus, the corps attack was to resemble a V-shaped thrust, with the 82d clearing the interior of the wedge. The terrain dictated the scheme of maneuver, for the configuration of the coast and the westward extension of the marecage narrowed the corps zone south of la Haye-du-Puits."
+      },
+      "Footnote_References": [],
+      "Place_Name": "la Haye-du-Puits",
+      "Dates": {
+        "Date_group_of_event": "Early July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jul44"
+      },
+      "TOE": {
+        "Unit": "82d Airborne Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Matthew Ridgway",
+          "Name": "Matthew Ridgway",
+          "Rank": "Major General",
+          "End_Date": "27 August 1944",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Matthew_Ridgway",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Scheduled for return to England",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.290954, -1.545299",
+        "Map_Reference": "Map 3",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-3.jpg",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.290954, -1.545299",
+        "Weather_text": "Adverse weather",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.445299,
+          "East": -0.645299,
+          "South": 48.390954,
+          "North": 50.190954
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Preparations",
+      "Sub-event": "Replacement Division",
+      "Sub-event_summary": "8th Division to join the corps to replace 82d Airborne, scheduled for commitment to secure final objective at Coutances.",
+      "Sub-event_fulltext": {
+        "Paragraph_6": "To replace the airborne troops, the 8th Division was to join the corps upon its arrival in France. Expecting to use the 8th Division beyond the initial objective, staff officers at corps headquarters tentatively scheduled its commitment to secure the final objective, Coutances."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Coutances",
+      "Dates": {
+        "Date_group_of_event": "Early July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jul44"
+      },
+      "TOE": {
+        "Unit": "8th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Donald A. Stroh",
+          "Name": "Donald A. Stroh",
+          "Rank": "Major General",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Donald_A._Stroh",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Newly arrived in France",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.047808, -1.4452609",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.047808, -1.4452609",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.3452609,
+          "East": -0.5452609,
+          "South": 48.147808,
+          "North": 49.947808
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Preparations",
+      "Sub-event": "Objectives and Support",
+      "Sub-event_summary": "Division objectives on heights around la Haye-du-Puits, reliance on artillery support including 240mm howitzers.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "Thus the VIII Corps was to make its attack with three divisions abreast. Each was to secure a portion of the heights forming a horseshoe around la Haye-du-Puits: the 79th was to seize the Montgardon ridge on the west and Hill 121; the 82d Airborne was to capture Hill 131 and the triplet hills of the Poterie ridge in the center; and the 90th, making the main effort, was to take Mont Castre on the east. With the commanding ground about la Haye-du-Puits in hand, the 79th Division was to push south to Lessay. There, where the tidal flats of the Ay River extend four miles inland and provide an effective barrier to continuing military operations southward, the 79th was to halt temporarily while the 90th continued with the newly arrived 8th. 1"
+      },
+      "Footnote_References": [1],
+      "Place_Name": "la Haye-du-Puits, Montgardon ridge, Hill 121, Hill 131, Poterie ridge, Mont Castre, Lessay, Ay River",
+      "Dates": {
+        "Date_group_of_event": "3 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030000Zjul44"
+      },
+      "TOE": {
+        "Unit": "90th Infantry Division",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "Eugene M. Landrum",
+          "Name": "Eugene M. Landrum",
+          "Rank": "Major General",
+          "End_Date": "30 Jul 1944",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Eugene_M._Landrum",
+          "Biographical_reference_Capture_Date": "December 20, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "Veterans of June fighting",
+        "Equipments": {
+          "Supply": "No shortages mentioned",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "240 mm Howitzer",
+              "Identifier": "M1",
+              "Quantity": "12 (two battalions, 6 guns each)",
+              "Web_Reference": "https://en.wikipedia.org/wiki/240_mm_howitzer_M1",
+              "Web_Image_Reference": "https://upload.wikimedia.org/wikipedia/commons/0/04/240_mm_howitzer_M1.jpg",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://www.normandyamericanheroes.com/hs-fs/hubfs/La%20Haye%20du%20Puits%201944%20-%2010.jpg?width=960&height=618&name=La%20Haye%20du%20Puits%201944%20-%2010.jpg",
+          "Description": "Soldiers in La Haye du Puits 1944",
+          "License": "Copyright Normandy American Heroes"
+        }
+      ],
+      "Place": {
+        "Place_Name": "Lessay",
+        "Place_GPS_coordinate": "49.2177999, -1.530385",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Lessay",
+        "Place_GPS_coordinate": "49.2177999, -1.530385",
+        "Weather_text": "Torrential rains",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.430385,
+          "East": -0.630385,
+          "South": 48.3177999,
+          "North": 50.1177999
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Preparations",
+      "Sub-event": "Air Support Request",
+      "Sub-event_summary": "Reliance on artillery and air support, with expanded request for air bombardment on front-line targets.",
+      "Sub-event_fulltext": {
+        "Paragraph_8": "Two problems confronted VIII Corps at the start of the attack: the hedgerow terrain north of la Haye-du-Puits and the German observation points on the commanding ground around the town. To overcome them, General Middleton placed great reliance on his nine battalions of medium and heavy artillery, which included two battalions of 240mm. howitzers; he also had the temporary assistance of four battalions of the VII Corps Artillery. Only on the afternoon before the attack did he learn that he was also to have extensive air support. In accordance with routine procedure, the air liaison officer at corps headquarters had forwarded a list of five targets considered suitable for air bombardment--suspected supply dumps and troop concentration areas deep in the enemy rear. A telephone call from First Army headquarters disclosed that General Eisenhower had made available a large number of aircraft for employment in the VIII Corps zone. When assured \"You can get all you want,\" the corps commander submitted an enlarged request that listed targets immediately in front of the combat troops. 2"
+      },
+      "Footnote_References": [2],
+      "Place_Name": "la Haye-du-Puits",
+      "Dates": {
+        "Date_group_of_event": "2 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "021800Zjul44"
+      },
+      "TOE": {
+        "Unit": "VIII Corps Artillery",
+        "Unit_Nationality": "US",
+        "Command_Structure": {
+          "Unit": "VIII Corps",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "No shortages",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Medium Artillery",
+              "Identifier": "155mm",
+              "Quantity": "Approximately 84 guns (7 battalions x 12)",
+              "Web_Reference": "https://armyhistory.org/u-s-and-german-field-artillery-in-world-war-ii-a-comparison/",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            },
+            {
+              "Origination_Country": "US",
+              "Name": "Aircraft",
+              "Identifier": "Various bombers",
+              "Quantity": "Large number",
+              "Web_Reference": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": "December 20, 2025"
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.290954, -1.545299",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.290954, -1.545299",
+        "Weather_text": "Drizzling rain turning to downpour",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.445299,
+          "East": -0.645299,
+          "South": 48.390954,
+          "North": 50.190954
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Preparations",
+      "Sub-event": "Intelligence on German Reaction",
+      "Sub-event_summary": "Conflicting intelligence on German reaction, with higher headquarters expecting counterattack while corps G-2 deemed it unlikely.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "Allied intelligence was not altogether in agreement on the probable German reaction to the American offensive. Expecting a major German counterattack momentarily, higher headquarters anticipated strong resistance. 3",
+        "Paragraph_10": "On the other hand, the VIII Corps G-2, Col. Andrew R. Reeves, thought either a counterattack or a strong defense most unlikely. Because of the inability or reluctance of the Germans to reinforce the Cherbourg garrison, because of their apparent shortage of artillery ammunition and their lack of air support, and because of the probable low morale of their soldiers, he considered an immediate counterattack improbable. Nevertheless, he recognized that if the Germans were to keep the Allies from expanding their bridgehead, they would eventually have to counterattack. Until they could, it was logical that they try to keep the Allied beachhead shallow by defending where they stood. Colonel Reeves believed, however, that they lacked the strength to remain where they were. He expected that as soon as they were driven from their main line of resistance near la Haye-du-Puits, they would withdraw through a series of delaying positions to the high ground near Coutances. 4"
+      },
+      "Footnote_References": [3, 4],
+      "Place_Name": "Cherbourg, la Haye-du-Puits, Coutances",
+      "Dates": {
+        "Date_group_of_event": "Late June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jun44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "German shortage of artillery ammunition",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.047808, -1.4452609",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Coutances",
+        "Place_GPS_coordinate": "49.047808, -1.4452609",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.3452609,
+          "East": -0.5452609,
+          "South": 48.147808,
+          "North": 49.947808
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Preparations",
+      "Sub-event": "Strength Estimates and Optimism",
+      "Sub-event_summary": "Optimism due to perceived superior force, with intelligence underestimating German strength.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "That VIII Corps would drive the enemy back was a matter of little doubt, since it was generally believed on the lower levels that the corps had \"assembled a force overwhelmingly superior in all arms. . . .\" 5 Below the army echelon, intelligence reports exaggerated the fragmentary nature of German units and underestimated German organizational efficiency and flexibility. The First Army G-2 cautiously estimated that the German infantry divisions in Normandy averaged 75 percent of authorized strength and lacked much equipment. But the VIII Corps G-2 judged that among the enemy forces on his immediate front \"the German divisional unit as such . . . has apparently ceased to exist.\" 6 Perhaps true in the last week of June, the latter statement was not accurate by the first week in July."
+      },
+      "Footnote_References": [5, 6],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "Late June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "END jun44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "German divisions at 75% strength",
+        "Equipments": {
+          "Supply": "German lacking equipment",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829, -0.3709",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.1829, -0.3709",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.2709,
+          "East": 0.5291,
+          "South": 48.2829,
+          "North": 50.0829
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Preparations",
+      "Sub-event": "German Activities and Morale",
+      "Sub-event_summary": "Noted German strengthening of positions, improved morale, but still judged low efficiency.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "For all the optimism, combat patrols noted that the Germans had set up an exceptionally strong outpost screen, replenished their supplies, reorganized their forces, and resumed active reconnaissance and patrolling. It was therefore reasonable to assume that the enemy had strengthened his main line of resistance and rear areas. Morale had undoubtedly improved. On the other hand, intelligence officers judged that enemy morale and combat efficiency had risen only from poor to fair. Germans still lacked aggressiveness when patrolling; critical shortages of mines and wire existed; and artillery fired but sporadically, indicating that the Germans were undoubtedly conserving their meager ammunition supplies to cover delaying action as they withdrew. 7"
+      },
+      "Footnote_References": [7],
+      "Place_Name": "",
+      "Dates": {
+        "Date_group_of_event": "First week July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "BEGINNING jul44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "German shortages of mines and wire, meager ammunition",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {}
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Preparations",
+      "Sub-event": "Ammunition and Confidence",
+      "Sub-event_summary": "Relaxed ammunition restrictions indicating confidence in quick advance, with heavy fire planned for two days.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "Confidence and assurance gained in the Cherbourg campaign led most Americans to expect no serious interruption in the offensive to the south. A schedule of artillery ammunition expenditures allotted for the attack revealed temporary removal of restrictions and a new system of self-imposed unit rationing. Although ammunition stocks on the Continent were not copious, they appeared to be more than adequate. Even though officers at First Army warned that unreasonable expenditures would result in a return to strict controls, the implicit premise underlying the relaxation of controls for the attack was the belief that each corps would have to make a strong or major effort for only two days. Two days of heavy artillery fire by each corps was considered adequate to propel the army to the Coutances-Caumont line. 8"
+      },
+      "Footnote_References": [8],
+      "Place_Name": "Cherbourg, Coutances, Caumont",
+      "Dates": {
+        "Date_group_of_event": "Late June 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "END jun44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "Adequate ammunition stocks on Continent",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "Caumont",
+        "Place_GPS_coordinate": "49.0911, -0.8039",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Caumont",
+        "Place_GPS_coordinate": "49.0911, -0.8039",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -1.7039,
+          "East": 0.0961,
+          "South": 48.1911,
+          "North": 49.9911
+        }
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Preparations",
+      "Sub-event": "Pre-Attack Enemy Behavior",
+      "Sub-event_summary": "Increased German activity in the two days before attack, interpreted as preparation for show of resistance before withdrawal.",
+      "Sub-event_fulltext": {
+        "Paragraph_14": "In the two days immediately preceding the attack, U.S. units on the VIII Corps front noted a marked change in enemy behavior. German artillery became more active; several tanks and assault guns made brief appearances; small arms, automatic weapons, and mortar fire increased in volume; infantrymen seemed more alert. American patrols began to have difficulty moving into hostile territory. Only in the corps center could reconnaissance patrols move more freely into areas formerly denied them. From these indications, corps concluded that the enemy was preparing to make a show of resistance before withdrawing. 9"
+      },
+      "Footnote_References": [9],
+      "Place_Name": "",
+      "Dates": {
+        "Date_group_of_event": "1-2 July 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "010000Zjul44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [
+            {
+              "Origination_Country": "DE",
+              "Name": "Tanks and assault guns",
+              "Identifier": "",
+              "Quantity": "Several",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Image_License": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [],
+      "Place": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "",
+        "Place_GPS_coordinate": "",
+        "Weather_text": "",
+        "Spatial_Bounding_Box Coordinates": {}
+      }
+    },
+    {
+      "Event": "The Offensive Launched - The Preparations",
+      "Sub-event": "Weather and Attack Initiation",
+      "Sub-event_summary": "Rain forced cancellation of air support, but attack proceeded with artillery preparation at 0515 on 3 July.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "Commanders and troops making last-minute preparations for the jump-off watched in some dismay a few minutes after midnight, 2 July, as a drizzling rain began to fall. The early morning attack hour was fast approaching when the rain became a downpour. It was obvious that the heavy air program promised in support of the offensive would have to be canceled. 10 As events developed, not even the small observation planes, invaluable for locating artillery targets in the hedgerow country, were able to get off the ground. Despite this early disappointment, the attack otherwise began as scheduled. American troops plodded through the darkness and the mud toward the line of departure. At 0515, 3 July, the artillery started a 15-minute preparation."
+      },
+      "Footnote_References": [10],
+      "Place_Name": "la Haye-du-Puits",
+      "Dates": {
+        "Date_group_of_event": "3 July 0515 BDST 1944",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+        "Zulu_date_group_of_event": "030315Zjul44"
+      },
+      "TOE": {
+        "Unit": "",
+        "Unit_Nationality": "",
+        "Command_Structure": {
+          "Unit": "",
+          "Commander": "",
+          "Name": "",
+          "Rank": "",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "",
+          "Biographical_reference_Capture_Date": ""
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {
+          "Supply": "",
+          "Allied_Employed": [
+            {
+              "Origination_Country": "US",
+              "Name": "Observation planes",
+              "Identifier": "",
+              "Quantity": "Small number",
+              "Web_Reference": "",
+              "Web_Image_Reference": "",
+              "Web_Reference_Capture_Date": ""
+            }
+          ],
+          "Allied_Destroyed": [],
+          "Axis_Employed": [],
+          "Axis_Destroyed": []
+        }
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": 0,
+          "Allied_US_WIA": 0,
+          "Allied_US_Missing": 0,
+          "Allied_US_Unspecified_Casualties": 0,
+          "Allied_US_Prisoner_of_War": 0
+        },
+        "Axis": {
+          "Axis_DE_KIA": 0,
+          "Axis_DE_WIA": 0,
+          "Axis_DE_Missing": 0,
+          "Axis_DE_Unspecified_Casualties": 0,
+          "Axis_DE_Prisoner_of_War": 0
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": 0,
+          "Civilian_FR_Wounded": 0,
+          "Civilian_FR_Unspecified_Casualties": 0
+        }
+      },
+      "Media": [
+        {
+          "Link": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=926963640766762",
+          "Description": "Colorized photo of La Haye-du-Puits, July 1944",
+          "License": "Facebook content"
+        }
+      ],
+      "Place": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.290954, -1.545299",
+        "Map_Reference": "Map 3",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-3.jpg",
+        "ExternalMapLink": "https://standinthedoor1944.com/products/paper-map-la-hayes-du-puits-d-day",
+        "ExternalMapLinkLicence": "Commercial",
+        "ExternalMapLinkCaptureDate": "December 20, 2025"
+      },
+      "Weather": {
+        "Place_Name": "la Haye-du-Puits",
+        "Place_GPS_coordinate": "49.290954, -1.545299",
+        "Weather_text": "Drizzling rain beginning after midnight 2 July, turning to downpour, continuing into 3 July",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": -2.445299,
+          "East": -0.645299,
+          "South": 48.390954,
+          "North": 50.190954
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "Footnote 1",
+      "Footnote_Number": "1",
+      "Footnote_Text": "VIII Corps AAR, Jul.",
+      "Footnote_Referenced_Source": "After Action Report",
+      "Web_Link": "http://www.90thdivisionassoc.org/afteractionreports/PDF/VIII%20AAR%2007-44.pdf",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "Footnote 2",
+      "Footnote_Number": "2",
+      "Footnote_Text": "VIII Corps G-3 Jnl File, 2 Jul. Requests for air support usually came from the G-3 Air Section of a division and were tunneled through the corps and army G-3 Air Sections to the IX TAC, which fulfilled the requests according to the availability of planes. For a detailed study of air-ground liaison, see Kent Roberts Greenfield, Army Ground Forces and the Air-Ground Battle Team Including Organic Light Aviation, AGF Study 35 (Hist Sec, AGF, 1948), particularly pp. 69ff.",
+      "Footnote_Referenced_Source": "Kent Roberts Greenfield, Army Ground Forces and the Air-Ground Battle Team Including Organic Light Aviation, AGF Study 35 (Hist Sec, AGF, 1948)",
+      "Web_Link": "https://apps.dtic.mil/sti/tr/pdf/ADA954913.pdf",
+      "Web_Link_Capture_Date": "December 20, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    },
+    {
+      "Footnote": "Footnote 3a",
+      "Footnote_Number": "3a",
+      "Footnote_Text": "21 AGp Dir, M-505, 30 Jun, Pogue Files",
+      "Footnote_Referenced_Source": "21 Army Group Directive",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Pogue Files"
+    },
+    {
+      "Footnote": "Footnote 3b",
+      "Footnote_Number": "3b",
+      "Footnote_Text": "FUSA G-2 Est 7, 29 Jun.",
+      "Footnote_Referenced_Source": "First U.S. Army G-2 Estimate 7",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "G-2 Estimate 7"
+    },
+    {
+      "Footnote": "Footnote 4",
+      "Footnote_Number": "4",
+      "Footnote_Text": "VIII Corps G-2 Est 2, 28 Jun.",
+      "Footnote_Referenced_Source": "VIII Corps G-2 Estimate 2",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "G-2 Estimate 2"
+    },
+    {
+      "Footnote": "Footnote 5",
+      "Footnote_Number": "5",
+      "Footnote_Text": "82d Abn Div G-2 Est, 1 Jul. The G-2 reports of the 82d are typical of those published by the other divisions of VIII Corps.",
+      "Footnote_Referenced_Source": "82d Airborne Division G-2 Estimate",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "G-2 Estimate"
+    },
+    {
+      "Footnote": "Footnote 6a",
+      "Footnote_Number": "6a",
+      "Footnote_Text": "FUSA G-2 Est 7, 29 Jun",
+      "Footnote_Referenced_Source": "First U.S. Army G-2 Estimate 7",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "G-2 Estimate 7"
+    },
+    {
+      "Footnote": "Footnote 6b",
+      "Footnote_Number": "6b",
+      "Footnote_Text": "VIII Corps G-2 Est 2, 28 Jun.",
+      "Footnote_Referenced_Source": "VIII Corps G-2 Estimate 2",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "G-2 Estimate 2"
+    },
+    {
+      "Footnote": "Footnote 7a",
+      "Footnote_Number": "7a",
+      "Footnote_Text": "82d Abn Div Rev Intel Annex to FO 7 (Rev), 28 Jun",
+      "Footnote_Referenced_Source": "82d Airborne Division Revised Intelligence Annex to Field Order 7",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Revised Intel Annex to FO 7"
+    },
+    {
+      "Footnote": "Footnote 7b",
+      "Footnote_Number": "7b",
+      "Footnote_Text": "G-2 Est, 1 Jul.",
+      "Footnote_Referenced_Source": "G-2 Estimate",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "G-2 Estimate"
+    },
+    {
+      "Footnote": "Footnote 8a",
+      "Footnote_Number": "8a",
+      "Footnote_Text": "FUSA Ltr, Fld Arty Ammo Expenditures, 2 Jul, VIII Corps G-3 Jnl File",
+      "Footnote_Referenced_Source": "First U.S. Army Letter, Field Artillery Ammunition Expenditures",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "VIII Corps G-3 Journal File"
+    },
+    {
+      "Footnote": "Footnote 8b",
+      "Footnote_Number": "8b",
+      "Footnote_Text": "83d Div G-2, G-3 Jnl and File, 2 and 3 Jul.",
+      "Footnote_Referenced_Source": "83d Division G-2, G-3 Journal and File",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "G-2, G-3 Journal and File"
+    },
+    {
+      "Footnote": "Footnote 9",
+      "Footnote_Number": "9",
+      "Footnote_Text": "VIII Corps Weekly Per Rpt, 1 Jul.",
+      "Footnote_Referenced_Source": "VIII Corps Weekly Periodic Report",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "Weekly Periodic Report"
+    },
+    {
+      "Footnote": "Footnote 10",
+      "Footnote_Number": "10",
+      "Footnote_Text": "FUSA G-3 Jnl, 0340, 3 Jul. Note: The hours of the day in this volume are British Double Time when used in connection with Allied activities, one hour earlier for the Germans--so that 1300 for the Allies is the same as 1200 (noon) for the Germans.",
+      "Footnote_Referenced_Source": "First U.S. Army G-3 Journal",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "OCMH",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013",
+      "NonDigital_Library_References": "G-3 Journal"
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn4.html",
+  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+  "Source_Link_Capture_Date": "December 20, 2025"
+}
