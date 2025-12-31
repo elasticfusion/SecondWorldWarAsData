@@ -7,6 +7,7 @@
 Review Times and dates:
   - Does content comply with the requirements of:
       - description_of_data.yaml
+  - does data structure comply with:
       - json-structure.yaml
   - Are time and dates correctly identified form content in the JSON?
       - As described in Event.Sub-event.Dates
