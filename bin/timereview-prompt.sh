@@ -2,8 +2,8 @@
 
 BOOK="BreakoutAndPursuit"
 BOOKNAME="Breakout and Pursuit"
-CHAPTER=1
-SECTION=d
+CHAPTER=2
+SECTION=c
 CHAPTERFOLDER="../$BOOK/data/prompts/chapter$CHAPTER"
 REVIEWFOLDER="chapter$CHAPTER$SECTION-review"
 TARGETFILE="00-chapter$CHAPTER$SECTION-review.yaml"

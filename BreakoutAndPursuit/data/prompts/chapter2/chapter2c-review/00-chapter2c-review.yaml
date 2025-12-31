@@ -1,14 +1,19 @@
+- Treat this document as a requirements document.
+
 - Breakout and Pursuit
 - SourceLink='https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html'
 - Footnotelink='https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn2.html'
 
 Review Times and dates:
-  - Limit the update to time date considerations
   - Does content comply with the requirements of:
-      - timedate.yaml
+      - description_of_data.yaml
+  - does data structure comply with:
+      - json-structure.yaml
   - Are time and dates correctly identified form content in the JSON?
       - As described in Event.Sub-event.Dates
   - Are the requirements identified in timedate.yaml fully satisfied.
   - Updating the JSON:
-    - Only update if required
+    - update if the JSON content if require
     - When updating, be complete, do not omit data for conciseness
+    - Account for all paragraphs within Events.Sub-event_fulltext between versions
+    - Account for all footnotes within Footnote.Footnote_Number between versions

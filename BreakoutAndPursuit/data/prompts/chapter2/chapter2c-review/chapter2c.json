@@ -1,0 +1,352 @@
+{
+  "Events": [
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Seventh Army Command and Headquarters Assessment",
+      "Sub-event_summary": "The German Seventh Army, under Generaloberst Friedrich Dollmann since September 1939, held responsibility for Normandy and Brittany from the Orne River to the Loire. Its headquarters at Le Mans, accustomed to long occupation duty, exhibited bureaucratic tendencies and limited initiative in supply handling and operational responsiveness following the invasion.",
+      "Sub-event_fulltext": {
+        "Paragraph_16": "While the higher commands were preoccupied with offensive planning, the tactical units facing the Allies were occupied with the practical necessity of fighting a defensive war.",
+        "Paragraph_17": "When the Allies landed in France, the German Seventh Army controlled Normandy and Brittany from the Orne River to the Loire. Commanded since September 1939 by Generaloberst Friedrich Dollman, who had led it to victory over the French in 1940, the army had its headquarters in comfortable buildings at le Mans. The long peacetime occupation duty had apparently dulled the headquarters' capacities, for even after the invasion it seemed to carry on business as usual. Subordinate commands complained of its bureaucracy in handling supplies, while higher headquarters sometimes felt a lack of personal initiative among its members."
+      },
+      "Footnote_References": ["35"],
+      "Place_Name": "Le Mans / Normandy",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Friedrich Dollmann",
+          "Name": "Friedrich Dollmann",
+          "Rank": "Generaloberst",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Friedrich_Dollmann",
+          "Biographical_reference_Capture_Date": "December 30, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {
+        "Allied": {
+          "Allied_US_KIA": "",
+          "Allied_US_WIA": "",
+          "Allied_US_Missing": "",
+          "Allied_US_Unspecified_Casualties": "",
+          "Allied_US_Prisoner_of_War": ""
+        },
+        "Axis": {
+          "Axis_DE_KIA": "",
+          "Axis_DE_WIA": "",
+          "Axis_DE_Missing": "",
+          "Axis_DE_Unspecified_Casualties": "",
+          "Axis_DE_Prisoner_of_War": ""
+        },
+        "Civilian": {
+          "Civilian_FR_Killed": "",
+          "Civilian_FR_Wounded": "",
+          "Civilian_FR_Unspecified_Casualties": ""
+        }
+      },
+      "Media": {},
+      "Place": {
+        "Place_Name": "Le Mans",
+        "Place_GPS_coordinate": "48.0070, 0.1980",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Le Mans",
+        "Place_GPS_coordinate": "48.0070, 0.1980",
+        "Weather_text": "July 1944 conditions in western France featured frequent overcast skies, periods of rain, and moderate temperatures in the 50s to 60s°F range.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.0000",
+          "East": "1.0000",
+          "South": "47.0000",
+          "North": "49.0000"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Consideration of Command Reorganization and Operational Continuity",
+      "Sub-event_summary": "Concerns regarding Seventh Army headquarters efficiency prompted proposals to relegate it to Brittany and transfer Normandy responsibility to Panzer Group West or an upgraded corps. Allied bombings destroyed Panzer Group West headquarters and killed General Marcks, leaving Seventh Army in control of combat operations at the end of June.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "Doubts as to the efficiency of the Seventh Army headquarters had led to discussion of relieving the army of responsibility for the Normandy battlefield and of relegating it to Brittany. The commitment of Panzer Group West and the plan to upgrade a corps were attempts to replace the Seventh Army command, but because of the destruction of the Panzer Group West headquarters and the death of General Marcks, both by Allied bombings, the Seventh Army at the end of June still directed combat operations. (See Map I.)"
+      },
+      "Footnote_References": ["36"],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "END JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "END JUN44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Friedrich Dollmann",
+          "Name": "Friedrich Dollmann",
+          "Rank": "Generaloberst",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Friedrich_Dollmann",
+          "Biographical_reference_Capture_Date": "December 30, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "Panzer Group West (destroyed)",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "END JUN44",
+            "End_Status": "Destroyed",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {
+        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-1.jpg",
+        "Description": "Map I - Tactical Dispositions in Normandy",
+        "License": "Public Domain (U.S. Government publication)"
+      },
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, -0.5000",
+        "Map_Reference": "Map I",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-1.jpg",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, -0.5000",
+        "Weather_text": "Late June 1944 weather in Normandy included persistent overcast and rain, impacting ground operations and mobility.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7199",
+          "East": "0.7199",
+          "South": "48.1000",
+          "North": "49.9000"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Expansion of Subordinate Headquarters and Operational Complexity",
+      "Sub-event_summary": "By late June, subordinate headquarters under Seventh Army increased from one corps in contact at invasion to six, reflecting growing operational complexity as German forces faced expanding Allied pressure across Normandy.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "By then the task had become exceedingly complicated. From one corps in contact with the Allies at the time of the invasion, the subordinate headquarters in contact and under the Seventh Army had increased to six. Initially, the LXXXIV Corps, commanded by..."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy",
+      "Dates": {
+        "Date_group_of_event": "END JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "END JUN44"
+      },
+      "TOE": {
+        "Unit": "Seventh Army",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Friedrich Dollmann",
+          "Name": "Friedrich Dollmann",
+          "Rank": "Generaloberst",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Friedrich_Dollmann",
+          "Biographical_reference_Capture_Date": "December 30, 2025"
+        },
+        "Subordinates": [
+          {
+            "Unit": "LXXXIV Corps",
+            "Name": "",
+            "Rank": "",
+            "Date": "",
+            "End_Date_of_command": "",
+            "End_Status": "",
+            "Biographical_reference": "",
+            "Biographical_reference_Capture_Date": ""
+          }
+        ],
+        "Personnel": "",
+        "Equipments": {}
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, -0.5000",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, -0.5000",
+        "Weather_text": "End-of-June 1944 conditions in Normandy included persistent overcast and rain, impacting ground operations and mobility.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7199",
+          "East": "0.7199",
+          "South": "48.1000",
+          "North": "49.9000"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "Impact of V-Weapons and Allied Response",
+      "Sub-event_summary": "The V-1 flying bomb campaign began in mid-June 1944, prompting intense Allied air attacks on launch sites. General Eisenhower prioritized these targets on 29 June. Despite causing significant damage in England, V-weapons had no direct effect on tactical or logistical operations in Normandy, though they represented a perceived major threat to Allied command.",
+      "Sub-event_fulltext": {
+        "Paragraph_20": "...inadequate defense against the reality of the V-1 attack and the potentiality of the V-2, General Eisenhower on 29 June ordered the air attacks to \"continue to receive top priority.\" Without effective defenses to combat either the V-1 or the V-2, the Allies could only hope that ground forces on the Continent would soon overrun the launching sites. Though the guided missile attacks caused widespread death and destruction in England, they had no effect on Allied tactical or logistical operations. Yet in late June and early July the V-1s and the V-2's were a \"threat of the first magnitude\" to the Allied command, for \"no member of the Allied forces, at any level, knew exactly what the new German weapons might accomplish.\""
+      },
+      "Footnote_References": ["58"],
+      "Place_Name": "Southern England / Normandy Launch Sites",
+      "Dates": {
+        "Date_group_of_event": "290000B JUN44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "282200Z JUN44"
+      },
+      "TOE": {},
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Southern England",
+        "Place_GPS_coordinate": "51.0000, -0.5000",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Southern England",
+        "Place_GPS_coordinate": "51.0000, -0.5000",
+        "Weather_text": "Late June 1944 weather in southern England included variable conditions with overcast skies and occasional rain, consistent with Channel weather patterns.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-2.0000",
+          "East": "1.0000",
+          "South": "50.0000",
+          "North": "52.0000"
+        }
+      }
+    },
+    {
+      "Event": "German Tactical Dispositions in Normandy",
+      "Sub-event": "German Ground Troop Morale and Leadership Assessment",
+      "Sub-event_summary": "Despite Allied air superiority, supply shortages, replacement deficiencies, and FFI harassment, German ground troop morale remained generally high. Discipline remained effective, leadership was strong at combat levels, and personnel (including SS, paratroopers, and conscripts) focused on duty. Only foreign volunteer troops proved unreliable.",
+      "Sub-event_fulltext": {
+        "Paragraph_21": "Though many difficulties and disadvantages faced the German ground soldiers, morale was generally high. Discipline continued to be an effective cohesive power. Leadership, though often not entirely unified at the higher echelons of command, was excellent at the combat levels. Career and reserve officers and men, as well as conscripted personnel, professed to be uninterested in politics and concerned only with performing their duty. SS officers and noncommissioned leaders were hard-bitten Nazis who were literal minded about their pledge to fight until they died.",
+        "Paragraph_22": "Paratroopers were excellent soldiers. Only the volunteer foreign troops serving with German units were undependable under fire, and they constituted but a small part of the entire German force.",
+        "Paragraph_23": "Despite complaints of impotence due to Allied air superiority, despite a shortage of replacements and supplies, despite the harassing operations of the FFI that slowed the movement of reserves to the battlefield, the Germans in the west had yet to be beaten."
+      },
+      "Footnote_References": [],
+      "Place_Name": "Normandy Battlefield",
+      "Dates": {
+        "Date_group_of_event": "BEGINNING JUL44",
+        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+        "Zulu_date_group_of_event": "BEGINNING JUL44"
+      },
+      "TOE": {
+        "Unit": "German Ground Forces (Normandy)",
+        "Unit_Nationality": "DE",
+        "Command_Structure": {
+          "Unit": "Seventh Army",
+          "Commander": "Friedrich Dollmann",
+          "Name": "Friedrich Dollmann",
+          "Rank": "Generaloberst",
+          "End_Date": "",
+          "End_Status": "",
+          "Biographical_reference": "https://en.wikipedia.org/wiki/Friedrich_Dollmann",
+          "Biographical_reference_Capture_Date": "December 30, 2025"
+        },
+        "Subordinates": [],
+        "Personnel": "High morale; excellent combat-level leadership; SS and paratroopers reliable; foreign volunteers undependable",
+        "Equipments": {
+          "Supply": "Shortages of replacements and supplies reported",
+          "Allied_Employed": {},
+          "Allied_Destroyed": {},
+          "Axis_Employed": {},
+          "Axis_Destroyed": {}
+        }
+      },
+      "Casualties": {},
+      "Media": {},
+      "Place": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, -0.5000",
+        "Map_Reference": "",
+        "Map_Link": "",
+        "ExternalMapLink": "",
+        "ExternalMapLinkLicence": "",
+        "ExternalMapLinkCaptureDate": ""
+      },
+      "Weather": {
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, -0.5000",
+        "Weather_text": "Early July 1944 weather featured frequent overcast conditions, intermittent rain, and moderate temperatures in the 50s to 60s°F range.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7199",
+          "East": "0.7199",
+          "South": "48.1000",
+          "North": "49.9000"
+        }
+      }
+    }
+  ],
+  "Footnotes": [
+    {
+      "Footnote": "35",
+      "Footnote_Number": "35",
+      "Footnote_Text": "See, for example, Msg, AGp B to OB WEST, 29 Jun, AGp B KTB Anl. 33.",
+      "Footnote_Referenced_Source": "AGp B KTB Anl. 33",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "Army Group B War Diary Annex",
+      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
+      "NonDigital_Library_References": "AGp B KTB Annex 33"
+    },
+    {
+      "Footnote": "36",
+      "Footnote_Number": "36",
+      "Footnote_Text": "See, for example, OB WEST, a Study in Command, I, 46-47.",
+      "Footnote_Referenced_Source": "OB WEST, a Study in Command",
+      "Web_Link": "",
+      "Web_Link_Capture_Date": "",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "U.S. Army Heritage and Education Center, 950 Soldiers Drive, Carlisle, PA 17013-5021",
+      "NonDigital_Library_References": "OB WEST study, Volume I"
+    },
+    {
+      "Footnote": "58",
+      "Footnote_Number": "58",
+      "Footnote_Text": "For a discussion of the Allied reaction to the V-weapons, see Pogue, Supreme Command, pp. 199-201, 224-25; see also below, Chapter XXIX.",
+      "Footnote_Referenced_Source": "The Supreme Command",
+      "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Supreme/index.html",
+      "Web_Link_Capture_Date": "December 30, 2025",
+      "NonDigital_Library_Source": "",
+      "NonDigital_Library_Address": "",
+      "NonDigital_Library_References": ""
+    }
+  ],
+  "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn2.html",
+  "Source_Footnote_Link_Capture_Date": "December 30, 2025",
+  "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+  "Source_Link_Capture_Date": "December 30, 2025"
+}

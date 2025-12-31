@@ -39,7 +39,6 @@ Events:
 	- A sub-event is classified as an event that occurs at roughly the same Place/Date and should be treated a unique entry with the same event.
 	- Sub-event_fulltext.Paragraph_[nn] (for example, it should document the absolute paragraph for all paragraphs in the entire $SourceLink and include all text used in analysis.
 		- In the Sub-event_fulltext.Paragraph_[nn], the brakets are for documentation purposes only and should not be included in the data
-		- Each paragraph should have it's own unique paragraph number.
 	- The goal of paragraph number is to be able to easily find the paragraph in the original document.
 	- Never summarize Sub-event_fulltext.Paragraph_[nn].
 	- The goal of '"Footnote_References":' is to relate to to the original footnote.  An original footnote will be exclusively a whole number (1, 2, 3, for example)
