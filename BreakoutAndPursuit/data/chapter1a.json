@@ -26,7 +26,7 @@
           "End_Date": "",
           "End_Status": "",
           "Biographical_reference": "https://grokipedia.com/page/Dwight_D._Eisenhower",
-          "Biographical_reference_Capture_Date": "December 20, 2025"
+          "Biographical_reference_Capture_Date": "December 30, 2025"
         },
         "Subordinates": [
           {
@@ -37,7 +37,7 @@
             "End_Date_of_command": "",
             "End_Status": "",
             "Biographical_reference": "https://grokipedia.com/page/Omar_Bradley",
-            "Biographical_reference_Capture_Date": "December 20, 2025"
+            "Biographical_reference_Capture_Date": "December 30, 2025"
           },
           {
             "Unit": "Second British Army",
@@ -47,7 +47,7 @@
             "End_Date_of_command": "",
             "End_Status": "",
             "Biographical_reference": "https://grokipedia.com/page/Miles_Dempsey",
-            "Biographical_reference_Capture_Date": "December 20, 2025"
+            "Biographical_reference_Capture_Date": "December 30, 2025"
           },
           {
             "Unit": "First Canadian Army",
@@ -57,7 +57,7 @@
             "End_Date_of_command": "",
             "End_Status": "",
             "Biographical_reference": "https://grokipedia.com/page/Harry_Crerar",
-            "Biographical_reference_Capture_Date": "December 20, 2025"
+            "Biographical_reference_Capture_Date": "December 30, 2025"
           }
         ],
         "Personnel": "Nearly one million men by late June 1944",
@@ -70,7 +70,7 @@
             "Quantity": "150,000",
             "Web_Reference": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
             "Web_Image_Reference": "",
-            "Web_Reference_Capture_Date": "December 20, 2025"
+            "Web_Reference_Capture_Date": "December 30, 2025"
           },
           "Allied_Destroyed": {},
           "Axis_Employed": {},
@@ -99,28 +99,28 @@
         }
       },
       "Media": {
-        "Link": "",
-        "Description": "",
-        "License": ""
+        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p5.jpg",
+        "Description": "Typical Cotentin Terrain, looking westward from UTAH Beach",
+        "License": "Public Domain (U.S. Government publication)"
       },
       "Place": {
         "Place_Name": "Normandy",
-        "Place_GPS_coordinate": "48.88, 0.17",
+        "Place_GPS_coordinate": "49.0000, -0.5000",
         "Map_Reference": "Map I",
-        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
-        "ExternalMapLink": "https://www.normandy1944.info/home/maps/d-day-invasion-map",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-1.jpg",
+        "ExternalMapLink": "https://commons.wikimedia.org/wiki/Category:Maps_of_Operation_Overlord",
         "ExternalMapLinkLicence": "Public Domain",
-        "ExternalMapLinkCaptureDate": "December 20, 2025"
+        "ExternalMapLinkCaptureDate": "December 30, 2025"
       },
       "Weather": {
         "Place_Name": "Normandy",
-        "Place_GPS_coordinate": "48.88, 0.17",
-        "Weather_text": "Gloomy with grey skies in July 1944, with only a few bright warm spells in August.",
+        "Place_GPS_coordinate": "49.0000, -0.5000",
+        "Weather_text": "Exceptionally gloomy July 1944 under grey skies with frequent rain and limited bright warm spells; severe Channel storm 19-21 June 1944 with strong north-easterly winds (Force 6-7+), high waves (>2.5m peaks), and major logistical disruption.",
         "Spatial_Bounding_Box Coordinates": {
-          "West": "-1.1999",
-          "East": "1.5399",
-          "South": "47.9791",
-          "North": "49.7809"
+          "West": "-1.7199",
+          "East": "0.7199",
+          "South": "48.1000",
+          "North": "49.9000"
         }
       }
     },
@@ -132,19 +132,23 @@
         "Paragraph_3": "The cross-Channel attack, launched from England on 6 June 1944, had accomplished the first phase of the invasion by 1 July. Ground troops had broken through the crust of the German coastal defenses and had also established a continental abutment for a figurative bridge that was to carry men and supplies from the United Kingdom to France. At the beginning of July the Allies looked forward to executing the second stage of the invasion: expanding their continental foothold to the size of a projected lodgment area.",
         "Paragraph_4": "Lodgment was a preliminary requirement for the offensive operations aimed toward the heart of Germany. Before the Allies could launch their definitive attack, they had to assemble enough men and material on the Continent to assure success. The plans that had shaped the invasion effort--OVERLORD and NEPTUNE--defined the boundaries of the lodgment area selected. Securing this region was the Allied objective at the beginning of July."
       },
-      "Footnote_References": "2",
-      "Place_Name": "England",
+      "Footnote_References": ["2"],
+      "Place_Name": "Normandy / Lodgment Area",
       "Dates": {
         "Date_group_of_event": "060000B JUN44",
         "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
-        "Zulu_date_group_of_event": "052200Z JUN44"
+        "Zulu_date_group_of_event": "050200Z JUN44"
       },
       "TOE": {},
       "Casualties": {},
-      "Media": {},
+      "Media": {
+        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p7.jpg",
+        "Description": "General Eisenhower with American field commanders (left to right) Generals Bradley, Gerow, and Collins",
+        "License": "Public Domain (U.S. Government publication)"
+      },
       "Place": {
-        "Place_Name": "Caen",
-        "Place_GPS_coordinate": "49.18139, -0.36361",
+        "Place_Name": "Caen region",
+        "Place_GPS_coordinate": "49.1814, -0.3636",
         "Map_Reference": "",
         "Map_Link": "",
         "ExternalMapLink": "",
@@ -152,14 +156,14 @@
         "ExternalMapLinkCaptureDate": ""
       },
       "Weather": {
-        "Place_Name": "Caen",
-        "Place_GPS_coordinate": "49.18139, -0.36361",
-        "Weather_text": "Temperatures in the middle to upper 50s F, with varying conditions in June 1944; a severe Channel storm occurred between 19 and 21 June, with strong north-easterly winds and high waves.",
+        "Place_Name": "Caen region",
+        "Place_GPS_coordinate": "49.1814, -0.3636",
+        "Weather_text": "Temperatures in the middle to upper 50s F in early June 1944; severe Channel storm 19-21 June with strong NE winds and high waves; gloomy conditions persisting into July.",
         "Spatial_Bounding_Box Coordinates": {
-          "West": "-1.7418",
-          "East": "1.0146",
-          "South": "48.2805",
-          "North": "50.0823"
+          "West": "-1.3636",
+          "East": "0.6364",
+          "South": "48.1814",
+          "North": "50.1814"
         }
       }
     },
@@ -171,8 +175,8 @@
         "Paragraph_5": "The lodgment area contemplated in the master plan consisted of that part of northwest France bounded on the north and the east by the Seine and the Eure Rivers and on the south by the Loire, an area encompassing almost all of Normandy, Brittany in its entirety, and parts of the ancient provinces of Anjou, Maine, and Orléans. Offering adequate maneuver room for ground troops and providing terrain suitable for airfields, it was within range of air and naval support based in England. Perhaps most important, its ocean coast line of more than",
         "Paragraph_6": "five hundred miles contained enough port facilities to receive and nourish a powerful military force. The Seine ports of Rouen and Le Havre; Cherbourg; St. Malo, Brest, Lorient, and Vannes in Brittany; St. Nazaire and Nantes at the mouth of the Loire--these and a number of smaller harbors had the capacity to handle the flow of men and matériel deemed necessary to bolster and augment the invasion force. (See Maps I, VIII, XII.)"
       },
-      "Footnote_References": "",
-      "Place_Name": "Brittany",
+      "Footnote_References": [],
+      "Place_Name": "Northwest France Lodgment Area",
       "Dates": {
         "Date_group_of_event": "BEGINNING JUL44",
         "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
@@ -180,138 +184,38 @@
       },
       "TOE": {},
       "Casualties": {},
-      "Media": {
-        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
-        "Description": "Map I - Lodgment Area",
-        "License": "Public Domain"
-      },
+      "Media": {},
       "Place": {
         "Place_Name": "Brittany",
-        "Place_GPS_coordinate": "48.00, -3.00",
+        "Place_GPS_coordinate": "48.0000, -3.0000",
         "Map_Reference": "Map VIII",
-        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-VIII.jpg",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-8.jpg",
         "ExternalMapLink": "https://commons.wikimedia.org/wiki/Maps_of_Operation_Overlord",
         "ExternalMapLinkLicence": "CC BY-SA",
-        "ExternalMapLinkCaptureDate": "December 20, 2025"
+        "ExternalMapLinkCaptureDate": "December 30, 2025"
       },
       "Weather": {
         "Place_Name": "Brittany",
-        "Place_GPS_coordinate": "48.00, -3.00",
-        "Weather_text": "Similar to Normandy, gloomy conditions in July 1944.",
+        "Place_GPS_coordinate": "48.0000, -3.0000",
+        "Weather_text": "Gloomy conditions in July 1944 similar to Normandy, with grey skies and rain; influenced by June storm patterns.",
         "Spatial_Bounding_Box Coordinates": {
-          "West": "-4.3464",
-          "East": "-1.6536",
-          "South": "47.0991",
-          "North": "48.9009"
+          "West": "-4.0000",
+          "East": "-2.0000",
+          "South": "47.0000",
+          "North": "49.0000"
         }
       }
     },
     {
       "Event": "The Allies' Mission in the European Theater of Operations (Breakout and Pursuit Phase)",
-      "Sub-event": "Accomplishments by Late June",
-      "Sub-event_summary": "By late June, the Allies had seized landing beaches, pushed inland, captured Cherbourg and minor ports, secured lateral communications, and brought nearly one million men, 500,000 tons of supplies, and over 150,000 vehicles to the Continent.",
+      "Sub-event": "Accomplishments by Late June and Deficiencies",
+      "Sub-event_summary": "By late June, the Allies had seized landing beaches, pushed inland 5-20 miles, captured Cherbourg and minor ports, secured lateral communications, and brought nearly one million men, 500,000 tons of supplies, and over 150,000 vehicles to the Continent. However, progress lagged behind plans, with only ~1/5 of Normandy held, insufficient airfields/squadrons, congestion, and Caen still in German hands.",
       "Sub-event_fulltext": {
-        "Paragraph_7": "The planners felt that Allied troops could take the lodgment area in three months, and in June the Allies had already secured a small part of it. After seizing the landing beaches, the troops pushed inland to a depth varying from five to twenty miles. They captured Cherbourg and the minor ports of St. Vaast, Carentan, Isigny, and Grandcamp. They possessed a good lateral route of communications from Cherbourg, through Valognes, Carentan, and Bayeux, toward Caen. Almost one million men, about 500,000 tons of supplies, and over 150,000 vehicles had arrived on the Continent. 3"
+        "Paragraph_7": "The planners felt that Allied troops could take the lodgment area in three months, and in June the Allies had already secured a small part of it. After seizing the landing beaches, the troops pushed inland to a depth varying from five to twenty miles. They captured Cherbourg and the minor ports of St. Vaast, Carentan, Isigny, and Grandcamp. They possessed a good lateral route of communications from Cherbourg, through Valognes, Carentan, and Bayeux, toward Caen. Almost one million men, about 500,000 tons of supplies, and over 150,000 vehicles had arrived on the Continent.",
+        "Paragraph_8": "Despite this impressive accomplishment, certain deficiencies were apparent. According to the planners' calculations, the Allies at the end of June should have held virtually all of Normandy within the confines of the lodgment area; in actuality, they occupied an area scarcely one fifth that size. The amounts of personnel, equipment, and supplies broughtto the Continent lagged behind the planners' expectations, and the 31 air squadrons that operated from 17 continental airfields contrasted with the planners' requirements for 62 squadrons based on 27 fields. In addition, the small Allied beachhead was crammed and congested. Airstrips were so close to the beaches that flight operations sometimes interfered with ground traffic. Carentan, a major communications center on the single lateral road held by the Allies, was little more than three miles from the front, and the city and its small but important highway bridge received periodic shelling from German field artillery. Caen, a D-Day objective, still remained in German hands and blocked the approaches to the Seine over a comparatively flat plain that favored tank warfare and the construction of airfields."
       },
-      "Footnote_References": "3",
-      "Place_Name": "Cherbourg",
-      "Dates": {
-        "Date_group_of_event": "END JUN44",
-        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
-        "Zulu_date_group_of_event": "END JUN44"
-      },
-      "TOE": {
-        "Unit": "Allied Ground Troops",
-        "Unit_Nationality": "US",
-        "Command_Structure": {},
-        "Subordinates": {},
-        "Personnel": "Almost one million men",
-        "Equipments": {
-          "Supply": "About 500,000 tons",
-          "Allied_Employed": {
-            "Origination_Country": "GB",
-            "Name": "Supplies",
-            "Identifier": "",
-            "Quantity": "500,000 tons",
-            "Web_Reference": "https://www.ibiblio.org/hyperwar/USA/USA-E-Logistics1/index.html",
-            "Web_Image_Reference": "",
-            "Web_Reference_Capture_Date": "December 20, 2025"
-          }
-        }
-      },
-      "Casualties": {},
-      "Media": {},
-      "Place": {
-        "Place_Name": "Cherbourg",
-        "Place_GPS_coordinate": "49.63, -1.62",
-        "Map_Reference": "",
-        "Map_Link": "",
-        "ExternalMapLink": "",
-        "ExternalMapLinkLicence": "",
-        "ExternalMapLinkCaptureDate": ""
-      },
-      "Weather": {
-        "Place_Name": "Cherbourg",
-        "Place_GPS_coordinate": "49.63, -1.62",
-        "Weather_text": "Middle to upper 50s F in June 1944, with a severe storm from 19-21 June featuring Force 6 winds and 8-10 foot waves.",
-        "Spatial_Bounding_Box Coordinates": {
-          "West": "-3.0109",
-          "East": "-0.2291",
-          "South": "48.7291",
-          "North": "50.5309"
-        }
-      }
-    },
-    {
-      "Event": "The Allies' Mission in the European Theater of Operations (Breakout and Pursuit Phase)",
-      "Sub-event": "Deficiencies and Disparities Between Plans and Reality",
-      "Sub-event_summary": "Despite accomplishments, the Allies held only one-fifth of the planned lodgment area, with build-up lagging, fewer airfields, congestion, and vulnerability. Caen remained in German hands, blocking advances.",
-      "Sub-event_fulltext": {
-        "Paragraph_8": "Despite this impressive accomplishment, certain deficiencies were apparent. According to the planners' calculations, the Allies at the end of June should have held virtually all of Normandy within the confines of the lodgment area; in actuality, they occupied an area scarcely one fifth that size. The amounts of personnel, equipment, and supplies broughtto the Continent lagged behind the planners' expectations, and the 31 air squadrons that operated from 17 continental airfields contrasted with the planners' requirements for 62 squadrons based on 27 fields. In addition, the small Allied beachhead was crammed and congested. Airstrips were so close to the beaches that flight operations sometimes interfered with ground traffic. Carentan, a major communications center on the single lateral road held by the Allies, was little more than three miles from the front, and the city and its small but important highway bridge received periodic shelling from German field artillery. Caen, a D-Day objective, still remained in German hands and blocked the approaches to the Seine over a comparatively flat plain that favored tank warfare and the construction of airfields. 4"
-      },
-      "Footnote_References": "4",
-      "Place_Name": "Caen",
-      "Dates": {
-        "Date_group_of_event": "END JUN44",
-        "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
-        "Zulu_date_group_of_event": "END JUN44"
-      },
-      "TOE": {
-        "Personnel": "Disproportion between combat and service troops"
-      },
-      "Casualties": {},
-      "Media": {},
-      "Place": {
-        "Place_Name": "Carentan",
-        "Place_GPS_coordinate": "49.30, -1.25",
-        "Map_Reference": "",
-        "Map_Link": "",
-        "ExternalMapLink": "",
-        "ExternalMapLinkLicence": "",
-        "ExternalMapLinkCaptureDate": ""
-      },
-      "Weather": {
-        "Place_Name": "Carentan",
-        "Place_GPS_coordinate": "49.30, -1.25",
-        "Weather_text": "Varying conditions in June 1944, with periodic artillery fire but no specific weather noted.",
-        "Spatial_Bounding_Box Coordinates": {
-          "West": "-2.6315",
-          "East": "0.1315",
-          "South": "48.3991",
-          "North": "50.2009"
-        }
-      }
-    },
-    {
-      "Event": "The Allies' Mission in the European Theater of Operations (Breakout and Pursuit Phase)",
-      "Sub-event": "Speculation and Build-Up Revisions",
-      "Sub-event_summary": "Disparities led to speculation of stalemate and revisions to build-up schedules, prioritizing combat troops over service units, despite risks to logistical support if rapid advances occurred. The basic need was space for maneuver and security.",
-      "Sub-event_fulltext": {
-        "Paragraph_9": "The disparity between plans and reality prompted speculation as to whether the Allies had lost their momentum, whether a military stalemate had already been reached, and whether trench warfare similar to that of World War I was to recur. It also caused revision of the build-up schedules. Additional combat troops were ferried to the Continent at",
-        "Paragraph_10": "Typical Cotentin Terrain, looking westward from U TAH Beach. the expense of service units. The disruption of the planned equilibrium of combat and service troops was not serious, for the lines of communication were short and required only a small administrative establishment; but if the Allies suddenly surged forward and overran a large area, the disproportionately small number of service troops might prove unequal to the task of maintaining adequate logistical support. Despite this unpleasant possibility, the Allies had little choice. Their basic need was space--room for maneuver, space for the build-up, and more depth in the beachhead for security. 5"
-      },
-      "Footnote_References": "5",
-      "Place_Name": "Cotentin",
+      "Footnote_References": ["3", "4"],
+      "Place_Name": "Cotentin Peninsula / Normandy",
       "Dates": {
         "Date_group_of_event": "END JUN44",
         "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
@@ -319,14 +223,10 @@
       },
       "TOE": {},
       "Casualties": {},
-      "Media": {
-        "Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
-        "Description": "Typical Cotentin Terrain, looking westward from U T AH Beach.",
-        "License": "Public Domain"
-      },
+      "Media": {},
       "Place": {
-        "Place_Name": "Utah Beach",
-        "Place_GPS_coordinate": "49.41806, -1.17639",
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.6383, -1.6258",
         "Map_Reference": "",
         "Map_Link": "",
         "ExternalMapLink": "",
@@ -334,38 +234,37 @@
         "ExternalMapLinkCaptureDate": ""
       },
       "Weather": {
-        "Place_Name": "Utah Beach",
-        "Place_GPS_coordinate": "49.41806, -1.17639",
-        "Weather_text": "Conditions in late June 1944 included the aftermath of the Channel storm.",
+        "Place_Name": "Cherbourg",
+        "Place_GPS_coordinate": "49.6383, -1.6258",
+        "Weather_text": "Severe Channel storm 19-21 June 1944 with strong north-easterly winds (Force 6-7+), high waves exceeding 2.5m at peaks, and major interruption to logistics; gloomy transition into July.",
         "Spatial_Bounding_Box Coordinates": {
-          "West": "-2.5613",
-          "East": "0.2085",
-          "South": "48.5172",
-          "North": "50.3190"
+          "West": "-2.6258",
+          "East": "-0.6258",
+          "South": "48.6383",
+          "North": "50.6383"
         }
       }
     },
     {
       "Event": "The Allies' Mission in the European Theater of Operations (Breakout and Pursuit Phase)",
-      "Sub-event": "Port Capacity and Logistical Priorities",
-      "Sub-event_summary": "Capture of Cherbourg confirmed German destruction of harbors, leading to reliance on beach landings. A Channel storm in June interrupted operations, highlighting the need for permanent ports in Brittany and along the Seine.",
+      "Sub-event": "Impact of Cherbourg Capture and Storm",
+      "Sub-event_summary": "Capture of Cherbourg confirmed German destruction of major ports, requiring lengthy rehabilitation. Minor ports restored but insufficient; Allies relied on beach improvisation. Severe 19-21 June storm disrupted operations, destroyed one Mulberry harbor, and underscored need for permanent ports.",
       "Sub-event_fulltext": {
-        "Paragraph_11": "Tied to the need for space was a corollary requirement for port capacity. Capture",
-        "Paragraph_12": "of Cherbourg had confirmed the expectation that the Germans would destroy the major harbors before allowing them to fall to the Allies. The destruction of the Cherbourg facilities had been so thorough that extensive and lengthy rehabilitation was necessary. Although restoration of the minor ports was practically complete by the beginning of July, their facilities could accommodate only a relatively insignificant portion of the build-up requirements. Consequently, as anticipated by the planners, the Allies were relying on improvisation at the invasion beaches. At the end of June the Allies did not yet appreciate the surprisingly large tonnage capacities developed there. What seemed more important were the effects of a severe Channel storm that had occurred between 19 and 21 June, a storm that had interrupted logistical operations, deranged shipping schedules, diminished the rate of build-up, and destroyed beyond repair one of two artificial harbors. This seemed to indicate beyond doubt the pressing need for permanent installations that would be serviceable in the autumn and winter as well as the summer of 1944. 6"
+        "Paragraph_9": "Tied to the need for space was a corollary requirement for port capacity. Capture of Cherbourg had confirmed the expectation that the Germans would destroy the major harbors before allowing them to fall to the Allies. The destruction of the Cherbourg facilities had been so thorough that extensive and lengthy rehabilitation was necessary. Although restoration of the minor ports was practically complete by the beginning of July, their facilities could accommodate only a relatively insignificant portion of the build-up requirements. Consequently, as anticipated by the planners, the Allies were relying on improvisation at the invasion beaches. At the end of June the Allies did not yet appreciate the surprisingly large tonnage capacities developed there. What seemed more important were the effects of a severe Channel storm that had occurred between 19 and 21 June, a storm that had interrupted logistical operations, deranged shipping schedules, diminished the rate of build-up, and destroyed beyond repair one of two artificial harbors. This seemed to indicate beyond doubt the pressing need for permanent installations that would be serviceable in the autumn and winter as well as the summer of 1944."
       },
-      "Footnote_References": "6",
+      "Footnote_References": ["6"],
       "Place_Name": "Cherbourg",
       "Dates": {
-        "Date_group_of_event": "192000B JUN44",
+        "Date_group_of_event": "192100B JUN44",
         "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
-        "Zulu_date_group_of_event": "191800Z JUN44"
+        "Zulu_date_group_of_event": "191900Z JUN44"
       },
       "TOE": {},
       "Casualties": {},
       "Media": {},
       "Place": {
         "Place_Name": "Cherbourg",
-        "Place_GPS_coordinate": "49.63, -1.62",
+        "Place_GPS_coordinate": "49.6383, -1.6258",
         "Map_Reference": "",
         "Map_Link": "",
         "ExternalMapLink": "",
@@ -374,13 +273,13 @@
       },
       "Weather": {
         "Place_Name": "Cherbourg",
-        "Place_GPS_coordinate": "49.63, -1.62",
-        "Weather_text": "Severe Channel storm between 19 and 21 June 1944, with strong north-easterly winds at Force 6 or above, high waves exceeding 1.5m, peaking at over 2.5m.",
+        "Place_GPS_coordinate": "49.6383, -1.6258",
+        "Weather_text": "Severe Channel storm 19-21 June 1944: strong NE winds (Force 6-7+), high waves (>2.5m), disrupted landings and destroyed Mulberry harbor; gloomy and rainy conditions persisting.",
         "Spatial_Bounding_Box Coordinates": {
-          "West": "-3.0109",
-          "East": "-0.2291",
-          "South": "48.7291",
-          "North": "50.5309"
+          "West": "-2.6258",
+          "East": "-0.6258",
+          "South": "48.6383",
+          "North": "50.6383"
         }
       }
     },
@@ -389,10 +288,10 @@
       "Sub-event": "Expansion Objectives",
       "Sub-event_summary": "Securing major ports depended on acquiring more space, with hopes to expand the foothold to gain ports in Brittany and along the Seine.",
       "Sub-event_fulltext": {
-        "Paragraph_13": "Securing major continental ports to sustain the invasion effort depended on the acquisition of more space, and so the Allies hoped to expand their continental foothold to gain first the ports of Brittany and later those of the Seine."
+        "Paragraph_10": "Securing major continental ports to sustain the invasion effort depended on the acquisition of more space, and so the Allies hoped to expand their continental foothold to gain first the ports of Brittany and later those of the Seine."
       },
-      "Footnote_References": "",
-      "Place_Name": "Brittany",
+      "Footnote_References": [],
+      "Place_Name": "Brittany / Seine Ports",
       "Dates": {
         "Date_group_of_event": "BEGINNING JUL44",
         "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
@@ -402,23 +301,23 @@
       "Casualties": {},
       "Media": {},
       "Place": {
-        "Place_Name": "Seine",
-        "Place_GPS_coordinate": "49.44278, 1.08861",
+        "Place_Name": "Seine (Rouen area)",
+        "Place_GPS_coordinate": "49.4428, 1.0886",
         "Map_Reference": "Map XII",
-        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XII.jpg",
+        "Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-12.jpg",
         "ExternalMapLink": "",
         "ExternalMapLinkLicence": "",
         "ExternalMapLinkCaptureDate": ""
       },
       "Weather": {
-        "Place_Name": "Rouen",
-        "Place_GPS_coordinate": "49.44278, 1.08861",
-        "Weather_text": "Similar regional conditions as Normandy in July 1944.",
+        "Place_Name": "Seine (Rouen area)",
+        "Place_GPS_coordinate": "49.4428, 1.0886",
+        "Weather_text": "Regional conditions similar to Normandy in July 1944: gloomy with grey skies and rain.",
         "Spatial_Bounding_Box Coordinates": {
-          "West": "-0.2969",
-          "East": "2.4742",
-          "South": "48.5419",
-          "North": "50.3437"
+          "West": "-0.9114",
+          "East": "3.0886",
+          "South": "48.4428",
+          "North": "50.4428"
         }
       }
     },
@@ -427,9 +326,9 @@
       "Sub-event": "Confidence Amid Challenges",
       "Sub-event_summary": "Despite not keeping pace with plans, there was confidence in ultimate victory, though the difficulty of July combat exceeded expectations, while August advances surpassed them.",
       "Sub-event_fulltext": {
-        "Paragraph_14": "Though achievement had not kept pace with the blueprint, there was good reason in the summer of 1944 for Allied confidence in ultimate victory. Expecting quick success in their endeavors, the Allies were not aware of the heartbreaking combat that awaited them in Normandy. The difficulty of the campaign in July was to exceed the forebodings of the most pessimistic, even as comparatively rapid advances in August were to surpass the prophecies of the most daring."
+        "Paragraph_11": "Though achievement had not kept pace with the blueprint, there was good reason in the summer of 1944 for Allied confidence in ultimate victory. Expecting quick success in their endeavors, the Allies were not aware of the heartbreaking combat that awaited them in Normandy. The difficulty of the campaign in July was to exceed the forebodings of the most pessimistic, even as comparatively rapid advances in August were to surpass the prophecies of the most daring."
       },
-      "Footnote_References": "",
+      "Footnote_References": [],
       "Place_Name": "Normandy",
       "Dates": {
         "Date_group_of_event": "APPROX 010000B JUL44",
@@ -441,7 +340,7 @@
       "Media": {},
       "Place": {
         "Place_Name": "Normandy",
-        "Place_GPS_coordinate": "48.88, 0.17",
+        "Place_GPS_coordinate": "49.0000, -0.5000",
         "Map_Reference": "",
         "Map_Link": "",
         "ExternalMapLink": "",
@@ -450,13 +349,13 @@
       },
       "Weather": {
         "Place_Name": "Normandy",
-        "Place_GPS_coordinate": "48.88, 0.17",
-        "Weather_text": "Exceptionally gloomy July under grey skies.",
+        "Place_GPS_coordinate": "49.0000, -0.5000",
+        "Weather_text": "Exceptionally gloomy July 1944 under grey skies with frequent rain; only a few bright warm spells in August.",
         "Spatial_Bounding_Box Coordinates": {
-          "West": "-1.1999",
-          "East": "1.5399",
-          "South": "47.9791",
-          "North": "49.7809"
+          "West": "-1.7199",
+          "East": "0.7199",
+          "South": "48.1000",
+          "North": "49.9000"
         }
       }
     },
@@ -465,22 +364,22 @@
       "Sub-event": "Broader Global Context",
       "Sub-event_summary": "The cross-Channel attack was part of global operations against the Axis, including Pacific advances, Russian offensives, and Italian withdrawals, with the Allies taking the initiative.",
       "Sub-event_fulltext": {
-        "Paragraph_15": "The operations in western Europe comprised but one act of the larger performance on the stage of World War II. In widely separated theaters of operations the war against the Axis powers had entered the decisive phase. In the same month that Allied troops invaded western Europe, U.S. forces in the Pacific invaded the Marianas and gained an important naval victory in the Philippine Sea. In Burma and India, the Allies put the Japanese on the defensive. In southern Europe the capture of Rome prompted the Germans to start withdrawing 150 miles up the Italian peninsula toward Florence and Pisa. Only in China was the enemy still conducting offensive operations, but this was to be his last major attack of the war. The Russians broke the Mannerheim Line in Finland and were gathering strength for advances in the Minsk area and western Ukraine, and also in Poland and Rumania. Arrangements were being completed for an Allied invasion of the Mediterranean coast of France in support of OVERLORD .",
-        "Paragraph_16": "Of all these actions, the cross-Channel attack was perhaps the most dramatic. It illustrated clearly that the Allies had taken the initiative. By the summer of 1944, Allied strategy rather than Axis aims had become the controlling factor in the bitter struggle."
+        "Paragraph_12": "The operations in western Europe comprised but one act of the larger performance on the stage of World War II. In widely separated theaters of operations the war against the Axis powers had entered the decisive phase. In the same month that Allied troops invaded western Europe, U.S. forces in the Pacific invaded the Marianas and gained an important naval victory in the Philippine Sea. In Burma and India, the Allies put the Japanese on the defensive. In southern Europe the capture of Rome prompted the Germans to start withdrawing 150 miles up the Italian peninsula toward Florence and Pisa. Only in China was the enemy still conducting offensive operations, but this was to be his last major attack of the war. The Russians broke the Mannerheim Line in Finland and were gathering strength for advances in the Minsk area and western Ukraine, and also in Poland and Rumania. Arrangements were being completed for an Allied invasion of the Mediterranean coast of France in support of OVERLORD.",
+        "Paragraph_13": "Of all these actions, the cross-Channel attack was perhaps the most dramatic. It illustrated clearly that the Allies had taken the initiative. By the summer of 1944, Allied strategy rather than Axis aims had become the controlling factor in the bitter struggle."
       },
-      "Footnote_References": "",
-      "Place_Name": "Pacific",
+      "Footnote_References": [],
+      "Place_Name": "Multiple Theaters (Western Europe focus)",
       "Dates": {
-        "Date_group_of_event": "APPROX 010000B JUN44",
+        "Date_group_of_event": "BEGINNING JUN44",
         "Source_date_group_of_event": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
-        "Zulu_date_group_of_event": "312200Z MAY44"
+        "Zulu_date_group_of_event": "BEGINNING JUN44"
       },
       "TOE": {},
       "Casualties": {},
       "Media": {},
       "Place": {
-        "Place_Name": "Mediterranean coast of France",
-        "Place_GPS_coordinate": "",
+        "Place_Name": "Normandy / Global",
+        "Place_GPS_coordinate": "49.0000, -0.5000",
         "Map_Reference": "",
         "Map_Link": "",
         "ExternalMapLink": "",
@@ -488,27 +387,32 @@
         "ExternalMapLinkCaptureDate": ""
       },
       "Weather": {
-        "Place_Name": "Mediterranean coast of France",
-        "Place_GPS_coordinate": "",
-        "Weather_text": "",
-        "Spatial_Bounding_Box Coordinates": {}
+        "Place_Name": "Normandy",
+        "Place_GPS_coordinate": "49.0000, -0.5000",
+        "Weather_text": "As above: gloomy July 1944; global theaters not weather-specific in text.",
+        "Spatial_Bounding_Box Coordinates": {
+          "West": "-1.7199",
+          "East": "0.7199",
+          "South": "48.1000",
+          "North": "49.9000"
+        }
       }
     }
   ],
   "Footnotes": [
     {
-      "Footnote": "",
+      "Footnote": "2a",
       "Footnote_Number": "2a",
       "Footnote_Text": "COSSAC (43) 28, Opn OVERLORD, 15 Jul 43, conveniently digested in Harrison, Cross-Channel Attack, App. A",
       "Footnote_Referenced_Source": "COSSAC (43) 28, Opn OVERLORD, 15 Jul 43",
       "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-A.html",
-      "Web_Link_Capture_Date": "December 20, 2025",
+      "Web_Link_Capture_Date": "December 30, 2025",
       "NonDigital_Library_Source": "",
       "NonDigital_Library_Address": "",
       "NonDigital_Library_References": ""
     },
     {
-      "Footnote": "",
+      "Footnote": "2b",
       "Footnote_Number": "2b",
       "Footnote_Text": "NEPTUNE Initial Jt Plan by the ANCXF, the CinC 21 AGp, and the Air CinC AEAF, 1 Feb 44, NJC 1004, copy 100, SHAEF RG 910",
       "Footnote_Referenced_Source": "NEPTUNE Initial Jt Plan, 1 Feb 44",
@@ -519,18 +423,18 @@
       "NonDigital_Library_References": "NJC 1004, copy 100"
     },
     {
-      "Footnote": "",
+      "Footnote": "3",
       "Footnote_Number": "3",
       "Footnote_Text": "Roland G. Ruppenthal, Logistical Support of the Armies, Volume I, UNITED STATES ARMY IN WORLD WAR II (Washington, 1953) (hereafter cited as Ruppenthal, Logistical Support, I), 421, 422, 422n .",
       "Footnote_Referenced_Source": "Logistical Support of the Armies, Volume I",
       "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Logistics1/index.html",
-      "Web_Link_Capture_Date": "December 20, 2025",
+      "Web_Link_Capture_Date": "December 30, 2025",
       "NonDigital_Library_Source": "",
       "NonDigital_Library_Address": "",
       "NonDigital_Library_References": ""
     },
     {
-      "Footnote": "",
+      "Footnote": "4",
       "Footnote_Number": "4",
       "Footnote_Text": "Air Chief Marshal Sir Trafford Leigh-Mallory, \"Despatch, Air Operations by the Allied Expeditionary Air Force in N.W. Europe, November 1944,\" Fourth Supplement to the London Gazette of December 31, 1946 (January 2, 1947); PS/SHAEF (44) 13 (Final), SHAEF Plng Staff, Post-NEPTUNE Plng Forecast 1, 27 May 44, and SHAEF (44) 17, Comments on NEPTUNE Initial Jt Plan and Annexes, 12 Feb 44, both in SGS SHAEF File 381, Post-OVERLORD Plng; Annex A to SHAEF/1062/7/GDP, 17 Jun, Summary of Manoeuvre, SHAEF File 307.2, Logistic Studies; CS (44) 16th Mtg (19 May), Min of CofS Conf, SGS SHAEF File 337/3; IX Engr Comd Prog Rpt, 8 Jul, and 5th ESB Tel Rpt, 28 Jun, FUSA G-3 Jnl File; Ruppenthal, Logistical Support, I, 415-16 .",
       "Footnote_Referenced_Source": "Despatch, Air Operations by the Allied Expeditionary Air Force",
@@ -541,41 +445,19 @@
       "NonDigital_Library_References": "Air Chief Marshal Sir Trafford Leigh-Mallory Despatch"
     },
     {
-      "Footnote": "",
-      "Footnote_Number": "5a",
-      "Footnote_Text": "Ltr, General Dwight D. Eisenhower to Lt Gen Omar N. Bradley, 25 Jun, FUSA G-3 Jnl File",
-      "Footnote_Referenced_Source": "Ltr, Eisenhower to Bradley, 25 Jun",
-      "Web_Link": "",
-      "Web_Link_Capture_Date": "",
-      "NonDigital_Library_Source": "FUSA G-3 Jnl File, RG 338",
-      "NonDigital_Library_Address": "National Archives at College Park, 8601 Adelphi Road, College Park, MD 20740-6001",
-      "NonDigital_Library_References": "First U.S. Army G-3 Journal File"
-    },
-    {
-      "Footnote": "",
-      "Footnote_Number": "5b",
-      "Footnote_Text": "Dwight D. Eisenhower, Crusade in Europe (New York: Doubleday &Company, Inc., 1948), pp 245, 265",
-      "Footnote_Referenced_Source": "Crusade in Europe",
-      "Web_Link": "",
-      "Web_Link_Capture_Date": "",
-      "NonDigital_Library_Source": "Crusade in Europe",
-      "NonDigital_Library_Address": "Dwight D. Eisenhower Presidential Library, 200 Southeast Fourth Street, Abilene, KS 67410",
-      "NonDigital_Library_References": "Dwight D. Eisenhower, 1948"
-    },
-    {
-      "Footnote": "",
+      "Footnote": "6",
       "Footnote_Number": "6",
       "Footnote_Text": "Ruppenthal, Logistical Support, I, 406-15 ; Msg, NCWTF to ANCXF, 28 Jun, FUSA G-3 Jnl File.",
       "Footnote_Referenced_Source": "Logistical Support of the Armies, I",
       "Web_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Logistics1/index.html",
-      "Web_Link_Capture_Date": "December 20, 2025",
+      "Web_Link_Capture_Date": "December 30, 2025",
       "NonDigital_Library_Source": "",
       "NonDigital_Library_Address": "",
       "NonDigital_Library_References": ""
     }
   ],
   "Source_Footnote_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn1.html",
-  "Source_Footnote_Link_Capture_Date": "December 20, 2025",
+  "Source_Footnote_Link_Capture_Date": "December 30, 2025",
   "Source_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
-  "Source_Link_Capture_Date": "December 20, 2025"
+  "Source_Link_Capture_Date": "December 30, 2025"
 }
