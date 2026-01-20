@@ -1,0 +1,71 @@
+> ### *To the West Wall*
+> 
+> The reorientation of First Army on 3 September from a northward to an eastward direction involved some complications. Gerow's V Corps in the center, virtually pinched out by the converging advances of the corps on its flanks, was to move across the rear of Collins' VII Corps to a new zone on the army right. Corlett's XIX Corps and Collins' VII Corps, turning to the right, were to advance, respectively, on the left and in, the center of the army zone.<sup>[55](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn55)</sup> Since Meuse River crossings were the most urgent objective, Hodges diverted available gasoline supplies to the V and VII Corps, which were closer to the Meuse and which were to strike at once toward the river between Sedan and Namur. The XIX Corps thus remained inactive for several days.
+> 
+> Ordered to move through the Ardennes to fill the gap between the First and Third Armies, Gerow designated an assembly area in his new zone. Some units assembled there before marching eastward, others moved at once because of an absence of opposition. While the 4th Division on 4 September cleared some slight resistance near St. Quentin in the old zone, the 102d Cavalry Group and the 5th Armored Division abreast, the latter particularly troubled by gasoline shortages, started toward the Meuse. By 5 September they had crossed the river without difficulty. As the 4th Division followed the cavalry and the 28th Division trailed the armor, V Corps began to move through the Ardennes. A rugged wooded plateau, the Ardennes extends in a northeasterly direction across the Meuse River valley in France, through Belgium and north Luxembourg, almost to the Rhine. The corps was to sweep the region, maintain contact with the Third Army, and eventually support Patton's projected Rhine River crossings.
+> 
+> Spread thin over a fifty-mile front, the corps moved through southern Belgium
+
+*\--692--*
+
+<a id="page693"></a>
+
+* * *
+
+> and Luxembourg in a dozen or more parallel battalion columns several miles apart. The troops encountered only the most perfunctory resistance and advanced as rapidly as their limited transportation permitted. When the 5th Armored Division ran out of gas on 7 September, Gerow passed the 28th through and diverted his meager supplies of gasoline to the infantry, which consumed less than armor. The 4th and 2.8th both moved steadily forward on foot and by motor.
+> 
+> On 8 September Gerow looked ahead to the West Wall, prepared an attack against it for 10 September, and designated Koblenz as the objective. Choosing to make his main effort on the left,<sup>[56](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn56)</sup> he shifted his infantry to the north and aimed at Pruem in an approach to Koblenz. Conducting a virtually independent operation, his cavalry screens maintaining only light contact with units on his flanks, yet instructed to support a Third Army crossing of the Rhine, Gerow nevertheless turned toward closer contact with the First Army. If he concentrated the bulk of his strength at Trier, he would be forty miles from the closest Third Army forces at Metz. Perhaps recognizing the significance of the stable defenses the Germans seemed to have erected at the Moselle, Gerow turned the 4th and 28th Divisions northeastward into a narrowing zone of advance that led to the juncture of the borders of Belgium, Luxembourg, and Germany.
+> 
+> Meanwhile, the 5th Armored Division, with an infantry regiment attached, refueled on 9 September, passed through the 28th Division, and entered Luxembourg. On the following day, as the inhabitants of Luxembourg gave an enthusiastic welcome, the armored troops entered and liberated the capital unopposed. With them came Prince Felix, consort of the Grand Duchess and at the time a brigadier in the British Army. East of the city, American tankers came into contact with some enemy forces. His troops extended over a sector about thirty miles wide, General Oliver halted his advance briefly to await instructions concerning the West Wall.
+> 
+> That afternoon General Gerow ordered his divisions to close the next day into assembly areas previously designated on the St. Vith-Echternach line. From there they were to probe the West Wall positions.
+> 
+> Although the Rhine River was only fifty miles away and the end of the war seemed at hand, General Hodges was about to postpone a co-ordinated attack on the fortifications for a day or two until sufficient artillery ammunition for an attack on the fortified line could be moved forward. Obscured by the prevailing optimism, the pause turned out to be a significant event--it marked the end of the pursuit.<sup>[57](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn57)</sup>
+> 
+> On the evening of 3 September, the three divisions of Collins' VII Corps were deployed on a 20-mile front from Mons to a point south of Charleroi. The 3d Armored and 1st Divisions were around Mons, the 9th was at Philippeville. Screening the right flank of the corps along the Meuse River, the 4th Cavalry Group was at M&ecute;zières and
+
+*\--693--*
+
+<a id="page694"></a>
+
+* * *
+
+> Rocroi. Instructed to move eastward through Liège and Aachen to the Rhine near Bonn, Collins ordered the 9th Division to seize a Meuse River bridgehead near Dinant. The division moved out, hoping to be across the Meuse within twenty-four hours.<sup>[58](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn58)</sup>
+> 
+> An unexpectedly large number of roadblocks slowed the advance. At the river between Givet and Namar, the division discovered that Germans held the east bank in some strength. Two regiments established shallow bridgeheads north and south of Dinant, but success was far from certain. With excellent observation of the crossing sites and the bridgeheads, German troops counterattacked while their artillery shelled supply parties and potential bridge sites. One American battalion, partially surrounded, lost over two hundred men.
+> 
+> The German stand at Dinant was the first attempt to defend a water line since the Seine, and to the American troops it was a surprising divergence from the pattern of the pursuit. Veteran elements of the *2d SS* and *12th SS Panzer Divisions,* under I *SS Panzer Corps* control, forced the 9th Division to cling grimly for thirty-six tense hours to footholds on the east bank. The Americans were unable to reinforce the bridgeheads properly, expand and consolidate them, or construct bridges for armor and supply vehicles. During the evening of 6 September, an American company commander on the east bank reported the approach of an unidentified tank column from the east, exclaiming, "We are either the luckiest people in the army or we are all going to be *kaput."* They were lucky. The tanks were part of a task force dispatched on Collins' order by the 3d Armored Division, which had crossed the Meuse farther north. The task force soon broke the German defenses. Infantrymen took Dinant on the morning of 7 September without opposition and that afternoon began to advance rapidly eastward.<sup>[59](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn59)</sup>
+> 
+> The 3d Armored Division, immobilized at Mons twenty-four hours for lack of gasoline (the troops took more than 2,500 prisoners while waiting-- "Hunting was excellent"), began a forty-mile march to Namur on 4 September. Tanks moved on both sides of the Sambre River; infantrymen crossed the Meuse on a damaged bridge and dispersed light German forces defending Namur. By morning of 6 September tanks were rolling over the river on a 505-foot floating treadway bridge. While an armored task force moved south to help the 9th Division, the remainder of the division again found itself out of gasoline. Meanwhile, the 1st Division had cleaned up the Mons pocket, and the infantry moved up to sweep the corps left.
+> 
+> When gasoline was again available, the armor advanced east of Namur astride the Meuse River, reached the town of Huy that evening, and captured the bridges there intact. On the afternoon of 7 September, after another short halt while gasoline was brought up, the 3d Armored Division moved the fifteen remaining miles to Liège practically unopposed. The Liège bridges were destroyed, but enemy opposition was
+
+*\--694--*
+
+<a id="page695"></a>
+
+* * *
+
+> weak. Hindered somewhat by the enthusiastic welcome of the inhabitants, the troops completed routine mopping up. One of the participants later remarked:
+> 
+> > Our chief difficulty was the fact that there were so many civilians trying to get out of town. We carried on a battle anyway, firing over their heads. At one point my tank ran over four of them as we backed up . . . several civilians crawled up on the tank and begged for guns. We had none for them. We entered the town and our tanks went up parallel streets cleaning out Ger mans. This took us all afternoon and we suffered no casualties.<sup>[60](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn60)</sup>
+> 
+> In the slightly bored tone that indicated that they had become accustomed to this sort of thing, the troops reported, "Once again cognac, champagne, and pretty girls."<sup>[61](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn61)</sup>
+> 
+> Advancing on the Liège-Aachen axis, the best invasion route into Germany, the VII Corps took Verviers and Eupen on 9 and 11 September, respectively. Although resistance was still sporadic, it seemed to be increasing. There were no more V-for-Victory signs, no more flowers, no more shouts of *Vive I'Amerique.* Instead, a sullen border populace showed hatred, and occasional snipers fired into the columns.<sup>[62](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn62)</sup>
+> 
+> By the end of 10 September the VII Corps was deployed along a front extending from Malmédy through Verviers to Herve, eleven miles east of Liège. The 9th Division had lost contact with the enemy, and it appeared that the Germans were disengaging to take positions in the West Wall. With German soil within reach, pursuit came to an end for the VII Corps too. Ahead lay the task of breaching the West Wall.<sup>[63](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn63)</sup>
+> 
+> Corlett's XIX Corps--which remained temporarily out of action near Tournai awaiting gasoline--trained, rested, and incidentally gathered almost nine hundred prisoners. The 79th Division departed the corps to rejoin the Third Army.<sup>[64](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn64)</sup> By the time gasoline arrived and the corps was ready to move, the Allied forces on both sides had already outflanked the Germans in the new zone of advance leading east toward the Albert Canal and Meuse River between Hasselt and Liège. Bypassing or overrunning ineffectual rear-guard detachments, the 113th Cavalry Group rushed past the historic battlefields near Waterloo and reached the canal line on 7 September. The 2d Armored and 30th Divisions followed as rapidly as fuel supplies permitted, the infantry marching a good part of the way on foot. The units closed to the water barrier by 10 September.
+> 
+> Cavalrymen had meanwhile explored the situation along the water line and discovered all bridges destroyed and apparently strong German detachments dug in on the east bank. Since the British on his left already had a bridgehead across the Albert Canal and the VII Corps on his right was beyond both the Albert Canal and the Meuse, Corlett saw no reason for his corps to stage what
+
+*\--695--*
+
+<a id="page696"></a>
+
+* * *
+
+> would probably be a costly assault crossing. While General Corlett made arrangements with his neighbors to use their bridges across the water obstacles, XIX Corps, like V and VII Corps, paused briefly.<sup>[65](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn65)</sup>
+> 
+> No one knew it yet, but the pursuit was over. The troops were soon to discard the "carnival garlands, ribbons, and souvenirs gathered during the liberation parade" through northern France, Belgium, and Luxembourg and become caught up again in hard fighting.<sup>[66](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn66)</sup> Patton's Third Army was already immersed in the difficulties of the Lorraine campaign. Immobilized by lack of gasoline for several days, the army attacked on 5 September to gain Moselle River bridgeheads near Metz and Nancy. Five days later, though some troops had seized Toul in the Moselle bend, others had been repulsed at Pont-à-Mousson, and the army was fighting furiously for bridgeheads in the Metz and Nancy areas. Hodges' First Army was soon to be involved in problems of similar difficulty at the West Wall.<sup>[67](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn32.html#fn67)</sup> The war of movement set in motion by Operation Cobra in the last days of July was merging imperceptibly into a war of position.

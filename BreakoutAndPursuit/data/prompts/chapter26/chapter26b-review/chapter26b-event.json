@@ -1,0 +1,66 @@
+{
+  "Chapter": "Breakout and Pursuit",
+  "Event": "The Canadians at Falaise",
+  "Sub-events": [
+    {
+      "Sub-event": "Initial Delay and Diversionary Action",
+      "Sub-event_summary": "Despite Montgomery's call for speed, General Crerar's Canadian army, halted by 9 August in the Caen-Falaise corridor, regrouped and launched a diversionary action on 12 August in division strength to outflank German positions along the Caen-Falaise road, continuing into difficult fighting without substantial advance.",
+      "Sub-event_fulltext": {
+        "Paragraph_19": "Despite Montgomery's injunction for speed in getting to Falaise and beyond from the north, General Crerar, whose Canadian army had been stopped in the Caen-Falaise corridor by 9 August, was unable to mount a full-scale operation at once. While Crerar regrouped his forces and arranged for air support, he launched a diversionary action on his right on 12 August in division strength, hoping thereby to outflank German positions along the Caen-Falaise road. On 14 August, as the diversion continued into its third day of difficult fighting without substantial advance, he kicked off his main effort."
+      },
+      "Sub-Event-Images": [],
+      "Sub-Event-Maps": [],
+      "Sub-Event-Dates": {
+        "Date(s)_of_event": "9 August; 12 August; 14 August"
+      },
+      "Sub-Event-Places": ["Falaise", "Caen-Falaise corridor", "Caen-Falaise road"],
+      "Endnote_References": [12],
+      "Footnote_References": []
+    },
+    {
+      "Sub-event": "Main Canadian Offensive",
+      "Sub-event_summary": "On 14 August, the main effort involved a concentrated attack on a narrow front without artillery preparation for surprise, using smoke for cover and medium bombers. Despite difficulties with smoke and dust, armored columns bypassed resistance and advanced, followed by heavy bombing that inflicted casualties on Allied units but allowed progress to within three miles of Falaise.",
+      "Sub-event_fulltext": {
+        "Paragraph_20": "The main effort was \"a concentrated, very heavy blow on a decidedly narrow front,\" much like the first attack seven days earlier, but it dispensed with artillery preparation to gain surprise, used smoke to provide cover, and employed a \"short fierce stroke by medium bombers.\" Smoke and dust made it difficult for armor and infantry to maintain proper orientation toward the objective, but two armored columns bypassed the resistance astride the main road and approached the objective from the northeast. More than 800 heavy bombers of the RAF and RCAF then dropped 3,700 tons of bombs in the area. Although several bomb loads fell short of their targets and inflicted almost 400 casualties and heavy equipment losses on Canadian and Polish units, the attack advanced to within three miles of Falaise on the first day."
+      },
+      "Sub-Event-Images": [],
+      "Sub-Event-Maps": [],
+      "Sub-Event-Dates": {
+        "Date(s)_of_event": "14 August"
+      },
+      "Sub-Event-Places": ["Falaise"],
+      "Endnote_References": [13, 14],
+      "Footnote_References": []
+    },
+    {
+      "Sub-event": "Capture of Falaise",
+      "Sub-event_summary": "With Germans off balance, Canadian troops entered Falaise from the northwest on 16 August and cleared the heavily damaged town by the end of 17 August, where artillery and bombardment had reduced it to rubble.",
+      "Sub-event_fulltext": {
+        "Paragraph_21": "With the Germans off balance, Canadian troops entered Falaise from the northwest on 16 August and cleared the town by the end of the following day. Artillery shells and air bombardment had transformed the town of William the Conqueror into a pile of rubble. Bulldozer operators, trying to open routes for traffic, could hardly determine where the streets had been."
+      },
+      "Sub-Event-Images": [],
+      "Sub-Event-Maps": [],
+      "Sub-Event-Dates": {
+        "Date(s)_of_event": "16 August; 17 August"
+      },
+      "Sub-Event-Places": ["Falaise"],
+      "Endnote_References": [15],
+      "Footnote_References": []
+    },
+    {
+      "Sub-event": "Narrowing of the Gap and Eisenhower's Assessment",
+      "Sub-event_summary": "Although Canadians reached Falaise, U.S. troops remained south of Argentan, leaving a fifteen-mile gap. Eisenhower noted to Marshall that strong German measures north of Falaise might reduce the anticipated prisoner capture.",
+      "Sub-event_fulltext": {
+        "Paragraph_22": "Though the Canadians had finally reached Falaise, U.S. troops were still just south of Argentan. The gap had been narrowed, but fifteen miles still separated the Allies. \"Due to the extraordinary measures taken by the enemy north of Falaise,\" General Eisenhower wrote to Marshall, \". . . it is possible that our total bag of prisoners will not be so great as I first anticipated.\""
+      },
+      "Sub-Event-Images": [],
+      "Sub-Event-Maps": [],
+      "Sub-Event-Dates": {
+        "Date(s)_of_event": "After 17 August"
+      },
+      "Sub-Event-Places": ["Falaise", "Argentan"],
+      "Endnote_References": [16],
+      "Footnote_References": []
+    }
+  ]
+}

@@ -1,0 +1,178 @@
+{
+  "Chapter": "Breakout and Pursuit",
+  "Event": "Bradley's Decision",
+  "Sub-events": [
+    {
+      "Sub-event": "Formation of the Argentan-Falaise Gap and Initial Halt",
+      "Sub-event_summary": "General Bradley halted the XV Corps south of Argentan on 13 August, creating the Argentan-Falaise Gap of less than twenty-five miles between American and Canadian forces. Rumors attributed the halt to warnings about time bombs, but these were short-delay explosives sown between 10 and 13 August and posed no risk to advancing troops.",
+      "Sub-event_fulltext": {
+        "Paragraph_1": "When General Bradley halted the XV Corps just south of Argentan on 13 August, the Canadian army was still several miles north of Falaise. The stretch of terrain--less than twenty-five miles--that separated Canadian and American forces became known as the Argentan-Falaise Gap. Why Bradley did not allow Patton to try to close the gap and seal the Argentan--Falaise pocket later became the subject of a considerable polemic.",
+        "Paragraph_2": "Rumor soon after the event ascribed the halt to warnings by the Allied air forces that planes had dropped time bombs along the highways in the Argentan--Falaise area to harass German movements; further northward movement by the XV Corps would have exposed American troops to this hazard. Whether this had a part in shaping Bradley's decision or not, the fact was that fighter-bomber pilots had sown delayed-action explosives over a wide area between 10 and 13 August, though the bombs were fused for a maximum of twelve hours delay and thus could not have endangered the troops."
+      },
+      "Sub-Event-Images": [],
+      "Sub-Events-Maps": [],
+      "Sub-Event-Dates": {
+        "Date(s)_of_event": "13 August; 10-13 August"
+      },
+      "Sub-Event-Places": ["Argentan", "Falaise", "Argentan-Falaise Gap"],
+      "Endnote_References": [1],
+      "Footnote_References": []
+    },
+    {
+      "Sub-event": "Bradley’s Explanation: Risk of Head-On Meeting",
+      "Sub-event_summary": "Bradley later explained the halt as avoiding a dangerous head-on meeting between Canadian and American forces that could lead to friendly fire incidents. He subsequently proposed coordination solutions, such as selecting a landmark or shifting axes of advance.",
+      "Sub-event_fulltext": {
+        "Paragraph_3": "Perhaps more to the point was General Bradley's later explanation that a head-on meeting of Canadians and Americans would have been a \"dangerous and uncontrollable maneuver\" that (in General Eisenhower's words) might have caused a \"calamitous battle between friends.\"",
+        "Paragraph_4": "Yet General Bradley himself afterwards offered two solutions that might have been applied to co-ordinate the artillery fires of the forces coming together: a distinctive terrain feature or conspicuous landmark could have been selected as the place of juncture, or the Canadian or American axis of advance could have been shifted several miles east or west to provide a double (and stronger) barrier across the German escape routes without the danger of a head-on meeting."
+      },
+      "Sub-Event-Images": [],
+      "Sub-Events-Maps": [],
+      "Sub-Event-Dates": {
+        "Date(s)_of_event": "13 August"
+      },
+      "Sub-Event-Places": ["Argentan", "Falaise"],
+      "Endnote_References": [2, 3],
+      "Footnote_References": []
+    },
+    {
+      "Sub-event": "Impact on Artillery and Air Operations",
+      "Sub-event_summary": "Closing the gap would restrict artillery and air support, increasing risks of bombing errors. Air operations remained effective until 17 August, when close support officially ceased.",
+      "Sub-event_fulltext": {
+        "Paragraph_5": "A disadvantage of bringing Canadians and Americans closer together was that it would have hampered artillery and particularly air operations. Close support missions would have become increasingly restricted and the danger of bombing error greater. As it was, the extremely fluid front necessitated considerable shifting of bomb lines to protect the ground troops and made the work of the Allied pilots a delicate matter.",
+        "Paragraph_6": "Yet for all the hazards of error, Allied aircraft operated in the Argentan-Falaise area with excellent effect until 17 August, when the bomb line in that sector was removed and close air support, at least officially, ceased."
+      },
+      "Sub-Event-Images": [],
+      "Sub-Events-Maps": [],
+      "Sub-Event-Dates": {
+        "Date(s)_of_event": "Until 17 August"
+      },
+      "Sub-Event-Places": ["Argentan-Falaise area"],
+      "Endnote_References": [4],
+      "Footnote_References": []
+    },
+    {
+      "Sub-event": "Preference for a Solid Shoulder at Argentan",
+      "Sub-event_summary": "Bradley preferred a solid defensive shoulder at Argentan over a fragile closure at Falaise. He doubted the XV Corps could hold the gap against perceived German stampedes, despite not doubting their ability to reach it.",
+      "Sub-event_fulltext": {
+        "Paragraph_7": "Another reason contributing to General Bradley's reluctance to send American troops beyond Argentan was his preference, as he later said, for \"a solid shoulder at Argentan to a broken neck at Falaise.\" Although he afterwards stated that he had not doubted the ability of the XV Corps to close the gap (despite increasing resistance on the morning of 13 August), he had questioned the ability of the corps to keep the gap closed. Incorrectly believing that elements of nineteen German divisions were already stampeding eastward through the gap, he thought it conceivable that they would trample the thin line of American troops.",
+        "Paragraph_8": "Holding the XV Corps at Argentan conformed with General Bradley's concept of destroying the enemy by closing two jaws, for at Argentan the XV Corps formed the lower front teeth of a not yet solid mandible."
+      },
+      "Sub-Event-Images": [],
+      "Sub-Events-Maps": [],
+      "Sub-Event-Dates": {
+        "Date(s)_of_event": "13 August"
+      },
+      "Sub-Event-Places": ["Argentan", "Falaise"],
+      "Endnote_References": [5, 6],
+      "Footnote_References": []
+    },
+    {
+      "Sub-event": "Exposed Position of the XV Corps",
+      "Sub-event_summary": "The XV Corps had open flanks, particularly the left, where a gap existed between American and French forces. A potential German counterattack under Eberbach could exploit this vulnerability.",
+      "Sub-event_fulltext": {
+        "Paragraph_9": "Actually, the XV Corps was already in an exposed position. Both flanks were open. There were no German forces to speak of to threaten the right flank, but the situation was quite the opposite on the left.",
+        "Paragraph_10": "American intelligence officers did not seem aware of Eberbach's mission to launch a massive attack against the deep XV Corps left flank, yet if Eberbach had been able to get it off, the attack would have struck exactly through a gap in the American line. Between the 1st Division troops firmly ensconced at Mayenne and French forces at Carrouges there was a gap of about twenty-five miles. American troops started to close the gap on the morning of 13 August, but until they actually did, a XV Corps advance beyond Argentan to close the Falaise gap would have extended the Mayenne gap. Although General Bradley did not mention this fact in his later account, it was reasonable for him to be concerned at the time with the exposed position of the XV Corps."
+      },
+      "Sub-Event-Images": [],
+      "Sub-Events-Maps": [],
+      "Sub-Event-Dates": {
+        "Date(s)_of_event": "13 August"
+      },
+      "Sub-Event-Places": ["Argentan", "Mayenne", "Carrouges", "Falaise"],
+      "Endnote_References": [],
+      "Footnote_References": []
+    },
+    {
+      "Sub-event": "Command Authority and Inter-Allied Boundaries",
+      "Sub-event_summary": "Bradley was reluctant to advance beyond Argentan without Montgomery's consent, as it would cross into the 21 Army Group zone. Montgomery did not initiate movement of the boundary.",
+      "Sub-event_fulltext": {
+        "Paragraph_11": "These reasons were sufficient to justify General Bradley's decision, but he may also have felt he could not let the XV Corps go to and beyond Argentan without exceeding his authority. Near Argentan the American troops were already across the army group boundary and impinging on the 21 Army Group zone. Since General Montgomery commanded the ground forces in France, Bradley needed his consent to go farther. Although Montgomery did not prohibit American advance beyond the boundary, neither did Bradley propose it."
+      },
+      "Sub-Event-Images": [],
+      "Sub-Events-Maps": [],
+      "Sub-Event-Dates": {
+        "Date(s)_of_event": "13 August"
+      },
+      "Sub-Event-Places": ["Argentan", "21 Army Group zone"],
+      "Endnote_References": [7],
+      "Footnote_References": []
+    },
+    {
+      "Sub-event": "Montgomery’s Strategic Perspective",
+      "Sub-event_summary": "Montgomery expected the Canadians to close the gap faster from the north, having shifted from a wide envelopment plan to a shorter one exploiting the Canadian advance toward Falaise.",
+      "Sub-event_fulltext": {
+        "Paragraph_12": "General Montgomery did not take the initiative, probably because he thought the Canadians would close the gap from the north. Early in August he had planned to have Patton's Third Army make a wide envelopment to the Seine. Instead, Bradley had reacted to the Mortain counterattack by suggesting and securing approval for a shorter envelopment--the right hook thrust by the XV Corps to Argentan. The virtue of this maneuver was that it took advantage of the Canadian attack on 8 August toward Falaise, an attack launched out of an entirely different context. Juncture of the two forces was implicit. Yet the Americans were at that time much farther from Argentan than the Canadians. Montgomery, estimating that the Germans would shift their defensive strength to protect their southern flank against the Americans, consequently felt that the Canadians, attacking from the opposite flank, could cover the shorter distance to Argentan more quickly."
+      },
+      "Sub-Event-Images": [],
+      "Sub-Events-Maps": [],
+      "Sub-Event-Dates": {
+        "Date(s)_of_event": "Early August; 8 August"
+      },
+      "Sub-Event-Places": ["Seine", "Mortain", "Falaise", "Argentan"],
+      "Endnote_References": [8],
+      "Footnote_References": []
+    },
+    {
+      "Sub-event": "Retrospective Criticisms of the Halt",
+      "Sub-event_summary": "In retrospect, many Allied and German commanders viewed the halt as a tactical error. Bradley later blamed Montgomery, recalling frustration as Germans escaped.",
+      "Sub-event_fulltext": {
+        "Paragraph_13": "Halting the XV Corps at Argentan seemed in retrospect to many commanders, Allied and German, to have been a tactical error, a failure to take full advantage of German vulnerability.",
+        "Paragraph_14": "General Bradley, too, seemed afterwards to consider the halt a mistake, and he sought to refute criticism by placing the responsibility for the halt on Montgomery. In that connection, he recalled that he and Patton had doubted \"Monty's ability to close the gap at Argentan\" from the north, and had \"waited impatiently\" for word to continue northward. While waiting, Bradley wrote, he and Patton saw the Germans reinforce the shoulders of the Argentan-Falaise gap and watched the enemy pour troops and materiel eastward to escape out of the unsealed pocket. It seemed to him and Patton, Bradley remembered, that Dempsey's British army by driving from the northwest was accelerating German movement eastward and facilitating German escape, actually pushing the Germans out of the open end of the pocket, like squeezing a tube of tooth paste. \"If Monty's tactics mystified me,\" Bradley later wrote, \"they dismayed Eisenhower even more. And… a shocked Third Army looked on helplessly as its quarry fled [while] Patton raged at Montgomery's blunder.\""
+      },
+      "Sub-Event-Images": [],
+      "Sub-Events-Maps": [],
+      "Sub-Event-Dates": {
+        "Date(s)_of_event": "13 August"
+      },
+      "Sub-Event-Places": ["Argentan", "Falaise"],
+      "Endnote_References": [9, 10],
+      "Footnote_References": []
+    },
+    {
+      "Sub-event": "Analysis of Bradley’s Memory and Eisenhower’s Role",
+      "Sub-event_summary": "Bradley’s recollection may have been inaccurate regarding German flight on 13 August. Eisenhower did not intervene in the tactical decision.",
+      "Sub-event_fulltext": {
+        "Paragraph_15": "It was true that the Germans were building up the shoulders of the gap by 13 August, but by that date they were not fleeing eastward to escape encirclement. Either Bradley and Patton were anticipating what was soon to occur or General Bradley's memory was faulty by several days. If Patton, in a subordinate role, could only rage, and if Bradley thought he might offend a sensitive Montgomery, Eisenhower, who was in France and following combat developments, might have resolved the situation had he thought it necessary to do so. Yet General Eisenhower did not intervene. Interfering with a tactical decision made by a commander who was in closer contact with the situation was not Eisenhower's method of exercising command. Long after the event, General Eisenhower implied that the gap might have been closed, which, he thought,",
+        "Paragraph_16": "\"might have won us a complete battle of annihilation.\""
+      },
+      "Sub-Event-Images": [],
+      "Sub-Events-Maps": [],
+      "Sub-Event-Dates": {
+        "Date(s)_of_event": "13 August"
+      },
+      "Sub-Event-Places": ["Argentan", "Falaise"],
+      "Endnote_References": [11],
+      "Footnote_References": []
+    },
+    {
+      "Sub-event": "Coalition Warfare and Decision-Making Dynamics",
+      "Sub-event_summary": "Bradley did not propose advancing beyond Argentan, as it would transfer risk responsibility to Montgomery in a coalition context where finesse was required.",
+      "Sub-event_fulltext": {
+        "Paragraph_17": "If this had been clear to Bradley at the time, he probably would have picked up the telephone and proposed to Montgomery that the XV Corps proceed beyond the army group boundary to make contact with the Canadians. Yet to propose was, in effect, to recommend, particularly in a situation where Montgomery and Bradley were both army group commanders and where one was British, the other American. Because sending the XV Corps through and beyond Argentan was risky, Bradley probably felt he could not in good conscience recommend such a course of action without reservation. Because Montgomery would, more than likely, have felt impelled to accept the recommendation, given the circumstances of the command setup. Where the assumption of risk was involved, finesse, good manners, and the subtleties of coalition warfare required the responsible commander to make the responsible decision without prompting, and this only Montgomery--or Eisenhower--could have done."
+      },
+      "Sub-Event-Images": [],
+      "Sub-Events-Maps": [],
+      "Sub-Event-Dates": {
+        "Date(s)_of_event": "13 August"
+      },
+      "Sub-Event-Places": ["Argentan"],
+      "Endnote_References": [],
+      "Footnote_References": []
+    },
+    {
+      "Sub-event": "Bradley’s Five Tactical Considerations",
+      "Sub-event_summary": "Bradley halted based on five factors: lack of boundary adjustment by Montgomery, increasing resistance, exposed flanks, intelligence errors on German escape, and expectation of Canadian closure.",
+      "Sub-event_fulltext": {
+        "Paragraph_18": "What might have seemed clear to commanders from the perspective of a later vantage point was not so clear at the moment of decision. Bradley himself made the decision to halt, probably on the basis of five tactical considerations: (1) Montgomery, the ground force commander, had not moved the army group boundary, nor did he seem about to do so, and thus he appeared not to favor further American advance. (2) On the evidence of the increasing resistance to the XV Corps on the morning of 13 August, there was no certainty that American troops could move through or around Argentan and beyond. (3) Since the XV Corps was already in an exposed position by virtue of the vacuums on both flanks, there was no point in closing the Argentan-Falaise gap at the expense of further exposing the corps, particularly by enlarging the gap on the left. (4) Intelligence estimates inclined to the incorrect view that the bulk of the German forces had already escaped the pocket. (5) The Canadians were about to launch their second attack to Falaise, an effort that, it was hoped, would get troops beyond Falaise to Argentan and preclude further American advance into the 21 Army Group sector."
+      },
+      "Sub-Event-Images": [],
+      "Sub-Events-Maps": [],
+      "Sub-Event-Dates": {
+        "Date(s)_of_event": "13 August"
+      },
+      "Sub-Event-Places": ["Argentan", "Falaise", "21 Army Group sector"],
+      "Endnote_References": [],
+      "Footnote_References": []
+    }
+  ]
+}
