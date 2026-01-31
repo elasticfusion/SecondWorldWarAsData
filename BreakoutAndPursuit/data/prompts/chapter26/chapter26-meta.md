@@ -3,6 +3,6 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter XXIX - The Liberation of Paris
+Chapter XXVI - The Argentan-Falaise Pocket
 
-
+License: Public Domain

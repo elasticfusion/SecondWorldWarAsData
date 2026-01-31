@@ -3,5 +3,6 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter XX - "Take Brest"
+Chapter XXIII - Opportunities and Intentions
 
+License: Public Domain

@@ -3,7 +3,7 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter III - The Situation
+Chapter XXIV - The Mortain Counterattack
 
-
+License: Public Domain
 

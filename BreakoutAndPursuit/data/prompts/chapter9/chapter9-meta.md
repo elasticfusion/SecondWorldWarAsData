@@ -3,5 +3,6 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter XXII - Week of Decision
+Chapter IX - The Conclusions
 
+License: Public Domain

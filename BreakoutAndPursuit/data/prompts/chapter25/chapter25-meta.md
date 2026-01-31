@@ -3,8 +3,6 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter V - The Offensive Broadened
+Chapter XXV - Encirclement
 
-
-
-
+License: Public Domain

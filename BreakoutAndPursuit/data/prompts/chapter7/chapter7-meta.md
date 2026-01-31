@@ -5,6 +5,6 @@ Martin Blumenson
 
 Chapter VII - The Offensive Continued
 
+License: Public Domain
 
-
-
+\

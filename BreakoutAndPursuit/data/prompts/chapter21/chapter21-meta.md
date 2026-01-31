@@ -3,5 +3,6 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter IX - The Conclusions
+Chapter XXI - St. Malo and the North Shore
 
+License: Public Domain

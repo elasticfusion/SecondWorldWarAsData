@@ -3,7 +3,6 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter IV - The Offensive Launched
+Chapter XXII - Week of Decision
 
-
-
+License: Public Domain

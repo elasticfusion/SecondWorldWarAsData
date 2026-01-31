@@ -3,5 +3,8 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter XXIII - Opportunities and Intentions
+Chapter XXIX - The Liberation of Paris
+
+
+License: Public Domain
 

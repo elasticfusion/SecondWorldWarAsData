@@ -3,5 +3,8 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter XIX - Rennes, Lorient, and Nantes
+Chapter VI - The Attempt to Exploit
+
+License: Public Domain
+
 

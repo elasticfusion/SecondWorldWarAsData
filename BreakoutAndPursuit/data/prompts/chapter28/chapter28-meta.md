@@ -3,6 +3,7 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter XXX - The Battle for Brest
+Chapter XXVIII - The Drive to the Seine
 
+License: Public Domain
 

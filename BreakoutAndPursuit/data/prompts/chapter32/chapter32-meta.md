@@ -3,6 +3,6 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter II - The Enemy
+Chapter XXXII - Towards the Heart of Germany
 
-
+License: Public Domain

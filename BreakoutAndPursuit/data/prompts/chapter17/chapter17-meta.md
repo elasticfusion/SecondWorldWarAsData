@@ -3,5 +3,6 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter XXVI - The Argentan-Falaise Pocket
+Chapter XVII - The "Incalculable" Results
 
+License: Public Domain

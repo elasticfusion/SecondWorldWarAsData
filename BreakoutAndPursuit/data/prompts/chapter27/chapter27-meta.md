@@ -3,5 +3,7 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter XXIV - The Mortain Counterattack
+Chapter XXVII - Closing the Pocket
+
+License: Public Domain
 

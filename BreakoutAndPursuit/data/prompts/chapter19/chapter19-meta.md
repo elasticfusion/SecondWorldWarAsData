@@ -3,5 +3,7 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter XXI - St. Malo and the North Shore
+Chapter XIX - Rennes, Lorient, and Nantes
+
+License: Public Domain
 

@@ -3,5 +3,7 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter XXV - Encirclement
+Chapter IV - The Offensive Launched
+
+License: Public Domain
 

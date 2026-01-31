@@ -3,5 +3,7 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter XXVII - Closing the Pocket
+Chapter III - The Situation
+
+License: Public Domain
 

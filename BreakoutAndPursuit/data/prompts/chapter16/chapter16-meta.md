@@ -3,6 +3,6 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter XVII - The "Incalculable" Results
+Chapter XVI - Breakthrough Becomes Breakout
 
-
+License: Public Domain

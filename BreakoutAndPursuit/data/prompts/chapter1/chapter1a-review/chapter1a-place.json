@@ -1,0 +1,953 @@
+{
+  "Event_Doc": "chapter1a-event.json",
+  "Source_Doc": "chapter1-meta.md",
+  "SubEvents": [
+    {
+      "Sub-event_summary": "Overview of the Allied strategic objective in summer 1944, contrasting the situation on 1 July 1944 with progress by September, and confirming the initial phase success of the cross-Channel attack by early July.",
+      "Places": {
+        "Channel coast of France": {
+          "GPS_Coordinate": "49.4944, 0.1000",
+          "BoundingBox": {
+            "North": 50.3953009009009,
+            "South": 48.5934990990991,
+            "East": 1.4870205983564575,
+            "West": -1.2870205983564573
+          },
+          "External_Maps": [
+            {
+              "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USMA/WEurope1/maps/WEurope1-3.jpg",
+              "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USMA/WEurope1/WEurope1-3.html",
+              "External_Map_Description": "The War in Western Europe: Allied Invasion Force and German Dispositions 6 June 1944",
+              "External_Map_Capture_Date": "1944",
+              "External_Map_Licence": "Public Domain"
+            },
+            {
+              "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/d/d5/Exploitation.jpg",
+              "External_Map_Page": "https://www.bigpigeon.us/northern-france--belgium.html",
+              "External_Map_Description": "Northwestern France, 1944: The Exploitation Operations, 14-25 August 1944",
+              "External_Map_Capture_Date": "1944",
+              "External_Map_Licence": "Public Domain"
+            },
+            {
+              "External_Map_Link": "https://www.worldhistory.org/uploads/images/18983.png",
+              "External_Map_Page": "https://www.worldhistory.org/D-Day/",
+              "External_Map_Description": "Allied D-Day Landings of WWII, June 1944",
+              "External_Map_Capture_Date": "1944",
+              "External_Map_Licence": "Public Domain"
+            }
+          ],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.4944,0.1000,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.4944/0.1000"
+          }
+        },
+        "England": {
+          "GPS_Coordinate": "52.3555, -1.1743",
+          "BoundingBox": {
+            "North": 53.2564009009009,
+            "South": 51.4545990990991,
+            "East": 0.30074816324008835,
+            "West": -2.649348163240088
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@52.3555,-1.1743,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/52.3555/-1.1743"
+          }
+        },
+        "France": {
+          "GPS_Coordinate": "46.2276, 2.2137",
+          "BoundingBox": {
+            "North": 47.1285009009009,
+            "South": 45.3266990990991,
+            "East": 3.515964922390536,
+            "West": 0.9114350776094637
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@46.2276,2.2137,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/46.2276/2.2137"
+          }
+        },
+        "Germany": {
+          "GPS_Coordinate": "51.1657, 10.4515",
+          "BoundingBox": {
+            "North": 52.0666009009009,
+            "South": 50.2647990990991,
+            "East": 11.888182578395323,
+            "West": 9.014817421604675
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@51.1657,10.4515,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/51.1657/10.4515"
+          }
+        },
+        "Siegfried Line": {
+          "GPS_Coordinate": "50.7753, 6.0839",
+          "BoundingBox": {
+            "North": 51.6762009009009,
+            "South": 49.8743990990991,
+            "East": 7.508557112314236,
+            "West": 4.659242887685764
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@50.7753,6.0839,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/50.7753/6.0839"
+          }
+        },
+        "Belgium": {
+          "GPS_Coordinate": "50.5039, 4.4699",
+          "BoundingBox": {
+            "North": 51.4048009009009,
+            "South": 49.6029990990991,
+            "East": 5.886353622216923,
+            "West": 3.0534463777830765
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@50.5039,4.4699,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/50.5039/4.4699"
+          }
+        },
+        "Luxembourg": {
+          "GPS_Coordinate": "49.8153, 6.1296",
+          "BoundingBox": {
+            "North": 50.7162009009009,
+            "South": 48.9143990990991,
+            "East": 7.525796403215093,
+            "West": 4.733403596784907
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.8153,6.1296,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.8153/6.1296"
+          }
+        },
+        "Netherlands": {
+          "GPS_Coordinate": "52.1326, 5.2913",
+          "BoundingBox": {
+            "North": 53.0335009009009,
+            "South": 51.231699099099096,
+            "East": 6.758957013440371,
+            "West": 3.823642986559628
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@52.1326,5.2913,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/52.1326/5.2913"
+          }
+        }
+      }
+    },
+    {
+      "Sub-event_summary": "Definition and strategic importance of the lodgment area as a prerequisite for the main offensive into Germany, including its geographic boundaries, advantages, and key ports.",
+      "Places": {
+        "northwest France": {
+          "GPS_Coordinate": "48.5, -1.5",
+          "BoundingBox": {
+            "North": 49.4009009009009,
+            "South": 47.5990990990991,
+            "East": -0.14039595039903885,
+            "West": -2.859604049600961
+          },
+          "External_Maps": [
+            {
+              "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-1.jpg",
+              "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/",
+              "External_Map_Description": "Map I (referenced in context of lodgment area and ports)",
+              "External_Map_Capture_Date": "1961",
+              "External_Map_Licence": "Public Domain"
+            },
+            {
+              "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-8.jpg",
+              "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/",
+              "External_Map_Description": "Map VIII (referenced in context of lodgment area and ports)",
+              "External_Map_Capture_Date": "1961",
+              "External_Map_Licence": "Public Domain"
+            },
+            {
+              "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-12.jpg",
+              "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/",
+              "External_Map_Description": "Map XII (referenced in context of lodgment area and ports)",
+              "External_Map_Capture_Date": "1961",
+              "External_Map_Licence": "Public Domain"
+            },
+            {
+              "External_Map_Link": "http://johnsmilitaryhistory.com/operationchastityUSA-E-Breakout-VIIIb.jpg",
+              "External_Map_Page": "http://johnsmilitaryhistory.com/OperationChastity.html",
+              "External_Map_Description": "Breakout Into Brittany 1-12 Aug 1944",
+              "External_Map_Capture_Date": "1944",
+              "External_Map_Licence": "Public Domain"
+            },
+            {
+              "External_Map_Link": "https://achillestheheel.com/wp-content/uploads/2024/05/overall-normandy-map-v2-01.jpg",
+              "External_Map_Page": "https://achillestheheel.com/2024/06/08/normandy-1-prelude-to-battle/",
+              "External_Map_Description": "Normandy 1944",
+              "External_Map_Capture_Date": "1944",
+              "External_Map_Licence": "Public Domain"
+            }
+          ],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@48.5,-1.5,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/48.5/-1.5"
+          }
+        },
+        "Seine River": {
+          "GPS_Coordinate": "49.4833, 0.1",
+          "BoundingBox": {
+            "North": 50.3842009009009,
+            "South": 48.5823990990991,
+            "East": 1.4867061393835412,
+            "West": -1.286706139383541
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.4833,0.1,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.4833/0.1"
+          }
+        },
+        "Eure River": {
+          "GPS_Coordinate": "49.4333, 0.3667",
+          "BoundingBox": {
+            "North": 50.3342009009009,
+            "South": 48.5323990990991,
+            "East": 1.7519920675209355,
+            "West": -1.0185920675209355
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.4333,0.3667,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.4333/0.3667"
+          }
+        },
+        "Loire River": {
+          "GPS_Coordinate": "47.2764, -2.2089",
+          "BoundingBox": {
+            "North": 48.1773009009009,
+            "South": 46.3754990990991,
+            "East": -0.8810430627256529,
+            "West": -3.5367569372743466
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@47.2764,-2.2089,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/47.2764/-2.2089"
+          }
+        },
+        "Normandy": {
+          "GPS_Coordinate": "49.1829, -0.3707",
+          "BoundingBox": {
+            "North": 50.0838009009009,
+            "South": 48.281999099099096,
+            "East": 1.0075692930501379,
+            "West": -1.748969293050138
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.1829,-0.3707,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.1829/-0.3707"
+          }
+        },
+        "Brittany": {
+          "GPS_Coordinate": "48.1173, -1.6778",
+          "BoundingBox": {
+            "North": 49.0182009009009,
+            "South": 47.2163990990991,
+            "East": -0.3283536340367952,
+            "West": -3.0272463659632045
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@48.1173,-1.6778,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/48.1173/-1.6778"
+          }
+        },
+        "Anjou": {
+          "GPS_Coordinate": "47.4784, -0.5632",
+          "BoundingBox": {
+            "North": 48.3793009009009,
+            "South": 46.5774990990991,
+            "East": 0.7697537110744946,
+            "West": -1.8961537110744948
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@47.4784,-0.5632,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/47.4784/-0.5632"
+          }
+        },
+        "Maine": {
+          "GPS_Coordinate": "48.0061, 0.1996",
+          "BoundingBox": {
+            "North": 48.907000900900904,
+            "South": 47.1051990990991,
+            "East": 1.5461344939772586,
+            "West": -1.1469344939772586
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@48.0061,0.1996,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/48.0061/0.1996"
+          }
+        },
+        "Orléans": {
+          "GPS_Coordinate": "47.9030, 1.9093",
+          "BoundingBox": {
+            "North": 48.8039009009009,
+            "South": 47.0020990990991,
+            "East": 3.2531504452702102,
+            "West": 0.5654495547297897
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@47.9030,1.9093,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/47.9030/1.9093"
+          }
+        },
+        "Rouen": {
+          "GPS_Coordinate": "49.4432, 1.0993",
+          "BoundingBox": {
+            "North": 50.3441009009009,
+            "South": 48.5422990990991,
+            "East": 2.484871740961763,
+            "West": -0.2862717409617632
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.4432,1.0993,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.4432/1.0993"
+          }
+        },
+        "Le Havre": {
+          "GPS_Coordinate": "49.4944, 0.1079",
+          "BoundingBox": {
+            "North": 50.3953009009009,
+            "South": 48.5934990990991,
+            "East": 1.4949205983564573,
+            "West": -1.2791205983564575
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.4944,0.1079,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.4944/0.1079"
+          }
+        },
+        "Cherbourg": {
+          "GPS_Coordinate": "49.6339, -1.6222",
+          "BoundingBox": {
+            "North": 50.5348009009009,
+            "South": 48.732999099099096,
+            "East": -0.23121076381966432,
+            "West": -3.013189236180336
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.6339,-1.6222,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.6339/-1.6222"
+          }
+        },
+        "St. Malo": {
+          "GPS_Coordinate": "48.6493, -2.0257",
+          "BoundingBox": {
+            "North": 49.5502009009009,
+            "South": 47.748399099099096,
+            "East": -0.662075048139386,
+            "West": -3.389324951860614
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@48.6493,-2.0257,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/48.6493/-2.0257"
+          }
+        },
+        "Brest": {
+          "GPS_Coordinate": "48.3904, -4.4861",
+          "BoundingBox": {
+            "North": 49.2913009009009,
+            "South": 47.4894990990991,
+            "East": -3.129426754819654,
+            "West": -5.8427732451803465
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@48.3904,-4.4861,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/48.3904/-4.4861"
+          }
+        },
+        "Lorient": {
+          "GPS_Coordinate": "47.7481, -3.3702",
+          "BoundingBox": {
+            "North": 48.6490009009009,
+            "South": 46.8471990990991,
+            "East": -2.0303539474884307,
+            "West": -4.7100460525115695
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@47.7481,-3.3702,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/47.7481/-3.3702"
+          }
+        },
+        "Vannes": {
+          "GPS_Coordinate": "47.6582, -2.7605",
+          "BoundingBox": {
+            "North": 48.5591009009009,
+            "South": 46.7572990990991,
+            "East": -1.4229625954649385,
+            "West": -4.098037404535061
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@47.6582,-2.7605,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/47.6582/-2.7605"
+          }
+        },
+        "St. Nazaire": {
+          "GPS_Coordinate": "47.2769, -2.2136",
+          "BoundingBox": {
+            "North": 48.1778009009009,
+            "South": 46.3759990990991,
+            "East": -0.885730515419,
+            "West": -3.541469484581
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@47.2769,-2.2136,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/47.2769/-2.2136"
+          }
+        },
+        "Nantes": {
+          "GPS_Coordinate": "47.2184, -1.5536",
+          "BoundingBox": {
+            "North": 48.1193009009009,
+            "South": 46.3174990990991,
+            "East": -0.22719625797443888,
+            "West": -2.8800037420255613
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@47.2184,-1.5536,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/47.2184/-1.5536"
+          }
+        }
+      }
+    },
+    {
+      "Sub-event_summary": "Assessment of Allied progress by June/July 1944 against planning expectations, including achievements in beachheads, captures, build-up figures, and identified deficiencies such as limited territorial control, logistical shortfalls, congestion, and the status of Caen.",
+      "Places": {
+        "Normandy": {
+          "GPS_Coordinate": "49.1829, -0.3707",
+          "BoundingBox": {
+            "North": 50.0838009009009,
+            "South": 48.281999099099096,
+            "East": 1.0075692930501379,
+            "West": -1.748969293050138
+          },
+          "External_Maps": [
+            {
+              "External_Map_Link": "https://www.worldhistory.org/uploads/images/18983.png",
+              "External_Map_Page": "https://www.worldhistory.org/D-Day/",
+              "External_Map_Description": "Allied D-Day Landings of WWII, June 1944",
+              "External_Map_Capture_Date": "1944",
+              "External_Map_Licence": "Public Domain"
+            },
+            {
+              "External_Map_Link": "https://achillestheheel.com/wp-content/uploads/2019/01/normandy-epsom-6.jpg",
+              "External_Map_Page": "https://achillestheheel.com/2019/01/26/a-day-at-the-beach-normandy-1944/",
+              "External_Map_Description": "Operation Epsom 25 to 30 June 1944",
+              "External_Map_Capture_Date": "1944",
+              "External_Map_Licence": "Public Domain"
+            }
+          ],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.1829,-0.3707,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.1829/-0.3707"
+          }
+        },
+        "Cherbourg": {
+          "GPS_Coordinate": "49.6339, -1.6222",
+          "BoundingBox": {
+            "North": 50.5348009009009,
+            "South": 48.732999099099096,
+            "East": -0.23121076381966432,
+            "West": -3.013189236180336
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.6339,-1.6222,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.6339/-1.6222"
+          }
+        },
+        "St. Vaast": {
+          "GPS_Coordinate": "49.5883, -1.2667",
+          "BoundingBox": {
+            "North": 50.4892009009009,
+            "South": 48.687399099099096,
+            "East": 0.12298855823893584,
+            "West": -2.6563885582389357
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.5883,-1.2667,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.5883/-1.2667"
+          }
+        },
+        "Carentan": {
+          "GPS_Coordinate": "49.3037, -1.2425",
+          "BoundingBox": {
+            "North": 50.2046009009009,
+            "South": 48.4027990990991,
+            "East": 0.13914507122589126,
+            "West": -2.6241450712258914
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.3037,-1.2425,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.3037/-1.2425"
+          }
+        },
+        "Isigny": {
+          "GPS_Coordinate": "49.3194, -1.1014",
+          "BoundingBox": {
+            "North": 50.2203009009009,
+            "South": 48.4184990990991,
+            "East": 0.28068547684016254,
+            "West": -2.4834854768401624
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.3194,-1.1014,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.3194/-1.1014"
+          }
+        },
+        "Grandcamp": {
+          "GPS_Coordinate": "49.3881, -1.0389",
+          "BoundingBox": {
+            "North": 50.2890009009009,
+            "South": 48.4871990990991,
+            "East": 0.34511713243287256,
+            "West": -2.4229171324328727
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.3881,-1.0389,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.3881/-1.0389"
+          }
+        },
+        "Valognes": {
+          "GPS_Coordinate": "49.5083, -1.4703",
+          "BoundingBox": {
+            "North": 50.4092009009009,
+            "South": 48.6073990990991,
+            "East": -0.08288534505912915,
+            "West": -2.857714654940871
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.5083,-1.4703,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.5083/-1.4703"
+          }
+        },
+        "Bayeux": {
+          "GPS_Coordinate": "49.2765, -0.7025",
+          "BoundingBox": {
+            "North": 50.1774009009009,
+            "South": 48.3755990990991,
+            "East": 0.6783829847990289,
+            "West": -2.083382984799029
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.2765,-0.7025,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.2765/-0.7025"
+          }
+        },
+        "Caen": {
+          "GPS_Coordinate": "49.1829, -0.3707",
+          "BoundingBox": {
+            "North": 50.0838009009009,
+            "South": 48.281999099099096,
+            "East": 1.0075692930501379,
+            "West": -1.748969293050138
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.1829,-0.3707,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.1829/-0.3707"
+          }
+        },
+        "Seine": {
+          "GPS_Coordinate": "49.4833, 0.1",
+          "BoundingBox": {
+            "North": 50.3842009009009,
+            "South": 48.5823990990991,
+            "East": 1.4867061393835412,
+            "West": -1.286706139383541
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.4833,0.1,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.4833/0.1"
+          }
+        }
+      }
+    },
+    {
+      "Sub-event_summary": "Consequences of planning-reality gaps, including speculation on stalemate, adjustments to build-up priorities favoring combat troops, logistical risks, and the critical need for additional space and port capacity following Cherbourg's destruction and the June Channel storm.",
+      "Places": {
+        "Cherbourg": {
+          "GPS_Coordinate": "49.6339, -1.6222",
+          "BoundingBox": {
+            "North": 50.5348009009009,
+            "South": 48.732999099099096,
+            "East": -0.23121076381966432,
+            "West": -3.013189236180336
+          },
+          "External_Maps": [
+            {
+              "External_Map_Link": "http://johnsmilitaryhistory.com/operationchastityUSA-E-Breakout-VIIIb.jpg",
+              "External_Map_Page": "http://johnsmilitaryhistory.com/OperationChastity.html",
+              "External_Map_Description": "Breakout Into Brittany 1-12 Aug 1944",
+              "External_Map_Capture_Date": "1944",
+              "External_Map_Licence": "Public Domain"
+            }
+          ],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.6339,-1.6222,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.6339/-1.6222"
+          }
+        },
+        "Brittany": {
+          "GPS_Coordinate": "48.1173, -1.6778",
+          "BoundingBox": {
+            "North": 49.0182009009009,
+            "South": 47.2163990990991,
+            "East": -0.3283536340367952,
+            "West": -3.0272463659632045
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@48.1173,-1.6778,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/48.1173/-1.6778"
+          }
+        },
+        "Seine": {
+          "GPS_Coordinate": "49.4833, 0.1",
+          "BoundingBox": {
+            "North": 50.3842009009009,
+            "South": 48.5823990990991,
+            "East": 1.4867061393835412,
+            "West": -1.286706139383541
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.4833,0.1,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.4833/0.1"
+          }
+        }
+      }
+    },
+    {
+      "Sub-event_summary": "Broader context of Allied confidence despite setbacks, anticipation of difficult combat in Normandy, and the global strategic picture in summer 1944 across multiple theaters, emphasizing the cross-Channel attack as a demonstration of Allied initiative.",
+      "Places": {
+        "Normandy": {
+          "GPS_Coordinate": "49.1829, -0.3707",
+          "BoundingBox": {
+            "North": 50.0838009009009,
+            "South": 48.281999099099096,
+            "East": 1.0075692930501379,
+            "West": -1.748969293050138
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.1829,-0.3707,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.1829/-0.3707"
+          }
+        },
+        "western Europe": {
+          "GPS_Coordinate": "50.0, 5.0",
+          "BoundingBox": {
+            "North": 50.9009009009009,
+            "South": 49.0990990990991,
+            "East": 6.401552997171542,
+            "West": 3.5984470028284576
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@50.0,5.0,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/50.0/5.0"
+          }
+        },
+        "Pacific": {
+          "GPS_Coordinate": "0.0, -160.0",
+          "BoundingBox": {
+            "North": 0.9009009009009009,
+            "South": -0.9009009009009009,
+            "East": -159.0990990990991,
+            "West": -160.9009009009009
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@0.0,-160.0,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/0.0/-160.0"
+          }
+        },
+        "Marianas": {
+          "GPS_Coordinate": "15.1833, 145.75",
+          "BoundingBox": {
+            "North": 16.0842009009009,
+            "South": 14.282399099099099,
+            "East": 146.68348622231025,
+            "West": 144.81651377768975
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@15.1833,145.75,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/15.1833/145.75"
+          }
+        },
+        "Philippine Sea": {
+          "GPS_Coordinate": "18.0, 130.0",
+          "BoundingBox": {
+            "North": 18.9009009009009,
+            "South": 17.0990990990991,
+            "East": 130.94726326507953,
+            "West": 129.05273673492047
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@18.0,130.0,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/18.0/130.0"
+          }
+        },
+        "Burma": {
+          "GPS_Coordinate": "22.0, 96.0",
+          "BoundingBox": {
+            "North": 22.9009009009009,
+            "South": 21.0990990990991,
+            "East": 96.97165292133116,
+            "West": 95.02834707866884
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@22.0,96.0,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/22.0/96.0"
+          }
+        },
+        "India": {
+          "GPS_Coordinate": "20.5937, 78.9629",
+          "BoundingBox": {
+            "North": 21.4946009009009,
+            "South": 19.692799099099098,
+            "East": 79.92529997518784,
+            "West": 78.00050002481217
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@20.5937,78.9629,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/20.5937/78.9629"
+          }
+        },
+        "southern Europe": {
+          "GPS_Coordinate": "40.0, 15.0",
+          "BoundingBox": {
+            "North": 40.9009009009009,
+            "South": 39.0990990990991,
+            "East": 16.176042603002053,
+            "West": 13.823957396997947
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@40.0,15.0,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/40.0/15.0"
+          }
+        },
+        "Rome": {
+          "GPS_Coordinate": "41.9028, 12.4964",
+          "BoundingBox": {
+            "North": 42.8037009009009,
+            "South": 41.0018990990991,
+            "East": 13.706834542943302,
+            "West": 11.285965457056697
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@41.9028,12.4964,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/41.9028/12.4964"
+          }
+        },
+        "Italian peninsula": {
+          "GPS_Coordinate": "42.0, 12.0",
+          "BoundingBox": {
+            "North": 42.9009009009009,
+            "South": 41.0990990990991,
+            "East": 13.212281738384123,
+            "West": 10.787718261615877
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@42.0,12.0,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/42.0/12.0"
+          }
+        },
+        "Florence": {
+          "GPS_Coordinate": "43.7696, 11.2558",
+          "BoundingBox": {
+            "North": 44.6705009009009,
+            "South": 42.868699099099096,
+            "East": 12.50336510550144,
+            "West": 10.008234894498562
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@43.7696,11.2558,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/43.7696/11.2558"
+          }
+        },
+        "Pisa": {
+          "GPS_Coordinate": "43.7228, 10.4017",
+          "BoundingBox": {
+            "North": 44.6237009009009,
+            "South": 42.8218990990991,
+            "East": 11.648290108283906,
+            "West": 9.155109891716094
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@43.7228,10.4017,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/43.7228/10.4017"
+          }
+        },
+        "China": {
+          "GPS_Coordinate": "35.0, 105.0",
+          "BoundingBox": {
+            "North": 35.9009009009009,
+            "South": 34.0990990990991,
+            "East": 106.09979692681212,
+            "West": 103.90020307318788
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@35.0,105.0,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/35.0/105.0"
+          }
+        },
+        "Finland": {
+          "GPS_Coordinate": "64.0, 26.0",
+          "BoundingBox": {
+            "North": 64.90090090090091,
+            "South": 63.0990990990991,
+            "East": 28.055109939373747,
+            "West": 23.944890060626253
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@64.0,26.0,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/64.0/26.0"
+          }
+        },
+        "Minsk area": {
+          "GPS_Coordinate": "53.9006, 27.5590",
+          "BoundingBox": {
+            "North": 54.8015009009009,
+            "South": 52.9996990990991,
+            "East": 29.088055343650016,
+            "West": 26.029944656349986
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@53.9006,27.5590,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/53.9006/27.5590"
+          }
+        },
+        "western Ukraine": {
+          "GPS_Coordinate": "49.8430, 24.0311",
+          "BoundingBox": {
+            "North": 50.743900900900904,
+            "South": 48.9420990990991,
+            "East": 25.42809621145475,
+            "West": 22.634103788545247
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@49.8430,24.0311,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.8430/24.0311"
+          }
+        },
+        "Poland": {
+          "GPS_Coordinate": "52.0, 20.0",
+          "BoundingBox": {
+            "North": 52.9009009009009,
+            "South": 51.0990990990991,
+            "East": 21.46330562656103,
+            "West": 18.53669437343897
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@52.0,20.0,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/52.0/20.0"
+          }
+        },
+        "Rumania": {
+          "GPS_Coordinate": "46.0, 25.0",
+          "BoundingBox": {
+            "North": 46.9009009009009,
+            "South": 45.0990990990991,
+            "East": 26.2968977834466,
+            "West": 23.7031022165534
+          },
+          "External_Maps": [],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@46.0,25.0,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/46.0/25.0"
+          }
+        },
+        "Mediterranean coast of France": {
+          "GPS_Coordinate": "43.2965, 5.3698",
+          "BoundingBox": {
+            "North": 44.1974009009009,
+            "South": 42.3955990990991,
+            "East": 6.607616386644066,
+            "West": 4.131983613355933
+          },
+          "External_Maps": [
+            {
+              "External_Map_Link": "https://www.militaryhistoryonline.com/images/wwii/forgot7.jpg",
+              "External_Map_Page": "https://www.militaryhistoryonline.com/WWII/OperationDragoon",
+              "External_Map_Description": "The Seventh Army Assault 15-16 August 1944",
+              "External_Map_Capture_Date": "1944",
+              "External_Map_Licence": "Public Domain"
+            },
+            {
+              "External_Map_Link": "https://www.iwm.org.uk/sites/default/files/styles/text_with_media_desktop_1x/public/2018-08/12.jpg.webp?itok=kcNJAvGI",
+              "External_Map_Page": "https://www.iwm.org.uk/history/13-maps-from-the-second-world-war",
+              "External_Map_Description": "Japanese conquests in Asia Pacific during WWII",
+              "External_Map_Capture_Date": "1944",
+              "External_Map_Licence": "Public Domain"
+            },
+            {
+              "External_Map_Link": "https://www.emersonkent.com/images/battle_of_leyte_gulf_1944.jpg",
+              "External_Map_Page": "https://www.emersonkent.com/map_archive/battle_of_leyte_gulf_1944.htm",
+              "External_Map_Description": "Battle of Leyte Gulf, 1944",
+              "External_Map_Capture_Date": "1944",
+              "External_Map_Licence": "Public Domain"
+            },
+            {
+              "External_Map_Link": "https://external-preview.redd.it/wY21nrnCjamK3nI4fbfZh8eEP7dDJ9oh-W00ITMFomM.png?auto=webp&s=243502d3bfaede2d1047a6c4a6b076c89f66bbd5",
+              "External_Map_Page": "https://www.reddit.com/r/MapPorn/comments/4smxix/worldmap_during_the_height_of_world_war_2_4972/",
+              "External_Map_Description": "World map during the height of World War II",
+              "External_Map_Capture_Date": "1944",
+              "External_Map_Licence": "Public Domain"
+            }
+          ],
+          "ModernMap": {
+            "googlemaps_link": "https://www.google.com/maps/@43.2965,5.3698,8z",
+            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/43.2965/5.3698"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -5,3 +5,5 @@ Breakout and Pursuit
 Martin Blumenson
 
 Chapter I - The Allies
+
+License: Public Domain[']

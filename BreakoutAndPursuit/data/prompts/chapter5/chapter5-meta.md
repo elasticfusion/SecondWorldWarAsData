@@ -3,6 +3,8 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter XVI - Breakthrough Becomes Breakout
+Chapter V - The Offensive Broadened
+
+License: Public Domain
 
 

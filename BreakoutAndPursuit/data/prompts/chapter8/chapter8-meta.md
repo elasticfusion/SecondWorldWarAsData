@@ -3,5 +3,9 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter XXXII - Towards the Heart of Germany
+Chapter VIII - The Battle for St. Lô
+
+
+License: Public Domain
+
 

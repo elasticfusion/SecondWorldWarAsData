@@ -3,8 +3,7 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter VI - The Attempt to Exploit
+Chapter XXX - The Battle for Brest
 
-
-
+License: Public Domain
 

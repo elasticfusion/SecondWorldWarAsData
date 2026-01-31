@@ -3,9 +3,7 @@ European Theater of Operations
 Breakout and Pursuit
 Martin Blumenson
 
-Chapter VIII - The Battle for St. Lô
+Chapter II - The Enemy
 
 
-
-
-
+License: Public Domain
