@@ -1,0 +1,818 @@
+{
+    "1": [
+        {
+            "sub_event_index": 2,
+            "place_index": 7,
+            "Event_Doc": "chapter3a-event.json",
+            "Source_Doc": "chapter3a-content.md",
+            "Sub-event_summary": "Efforts to initiate southward attack from Cotentin, delays due to logistics and Cherbourg priority, and receipt of Montgomery's directive for wheeling maneuver toward Caumont-Vire-Mortain-Fougeres line.",
+            "PlaceName": "Mortain",
+            "GPS_Coordinate": "48.6494, -0.9369",
+            "BoundingBox": {
+                "North": 49.5487,
+                "South": 47.7501,
+                "East": 0.4241,
+                "West": -2.2979
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP8.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+                    "External_Map_Description": "Map illustrating Montgomery's directive of 25 July directing a wheeling maneuver toward the Caumont-Vire-Mortain-Foug\u00e8res line.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mortain,+France/@48.64944,-0.93694,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!zoom=14&lat=48.64944&lon=-0.93694"
+            }
+        }
+    ],
+    "2": [
+        {
+            "PlaceName": "Ch\u00e9renc\u00e9",
+            "GPS_Coordinate": "48.9533,-1.3511",
+            "BoundingBox": {
+                "North": 49.8542,
+                "South": 48.0524,
+                "East": 0.0179,
+                "West": -2.7201
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Ch%C3%A9renc%C3%A9/@48.9533,-1.3511,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.9533/-1.3511"
+            }
+        },
+        {
+            "PlaceName": "S\u00e9e",
+            "GPS_Coordinate": "48.4433, -0.3481",
+            "BoundingBox": {
+                "North": 49.3479,
+                "South": 47.5387,
+                "East": 1.0069,
+                "West": -1.7031
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map-IV-13.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map IV-13 showing dispositions east of Avranches including area near S\u00e9e during late July 1944 breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/7/7f/Avranches_breakthrough.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Normandy",
+                    "External_Map_Description": "Map of the Avranches breakthrough in late July 1944, covering the region including S\u00e9e and German defenses.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/S%C3%A9e,+France/@48.4433,-0.3481,14z/data=!3m1!4b1!4m6!3m5!1s0x480f8b0b0b0b0b0b:0x1234567890abcdef!8m2!3d48.4433!4d-0.3481!16zL20vMDZ0M3k",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.4433/-0.3481"
+            }
+        },
+        {
+            "PlaceName": "le Mesnil-T\u00f4ve",
+            "GPS_Coordinate": "49.0464, -0.3503",
+            "BoundingBox": {
+                "North": 49.9459,
+                "South": 48.1469,
+                "East": 1.0207,
+                "West": -1.7213
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Le+Mesnil-T%C3%B4ve,+14690,+France/@49.0463889,-0.3502778,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!map=15/49.0464/-0.3503"
+            }
+        },
+        {
+            "Event_Doc": "chapter25c-event.json",
+            "Source_Doc": "chapter25c-content.md",
+            "Sub-event_summary": "On 8 August, CCB of the 3d Armored Division and 119th Infantry linked with the 4th Division west of Ch\u00e9renc\u00e9, blocking German advances; after the death of Col. Cornog on 9 August, forces regained le Mesnil-T\u00f4ve and St. Barth\u00e9lemy by 12 August, restoring pre-counterattack lines.",
+            "PlaceName": "St. Barth\u00e9lemy",
+            "GPS_Coordinate": "48.6533, -1.0514",
+            "BoundingBox": {
+                "North": 49.5528,
+                "South": 47.7538,
+                "East": 0.2946,
+                "West": -2.3974
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP25-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map 25-2: Action on 8 August 1944 between Vire and Tessy-sur-Vire, showing positions near St. Barth\u00e9lemy during the blocking of German advances.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Barth%C3%A9lemy,+France/@48.6533,-1.0514,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=15/48.6533/-1.0514"
+            }
+        },
+        {
+            "sub_event_index": 2,
+            "place_index": 7,
+            "Event_Doc": "chapter3a-event.json",
+            "Source_Doc": "chapter3a-content.md",
+            "Sub-event_summary": "Efforts to initiate southward attack from Cotentin, delays due to logistics and Cherbourg priority, and receipt of Montgomery's directive for wheeling maneuver toward Caumont-Vire-Mortain-Fougeres line.",
+            "PlaceName": "Mortain",
+            "GPS_Coordinate": "48.6494, -0.9369",
+            "BoundingBox": {
+                "North": 49.5487,
+                "South": 47.7501,
+                "East": 0.4241,
+                "West": -2.2979
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP8.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+                    "External_Map_Description": "Map illustrating Montgomery's directive of 25 July directing a wheeling maneuver toward the Caumont-Vire-Mortain-Foug\u00e8res line.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mortain,+France/@48.64944,-0.93694,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!zoom=14&lat=48.64944&lon=-0.93694"
+            }
+        }
+    ],
+    "3": [
+        {
+            "sub_event_index": 2,
+            "place_index": 7,
+            "Event_Doc": "chapter3a-event.json",
+            "Source_Doc": "chapter3a-content.md",
+            "Sub-event_summary": "Efforts to initiate southward attack from Cotentin, delays due to logistics and Cherbourg priority, and receipt of Montgomery's directive for wheeling maneuver toward Caumont-Vire-Mortain-Fougeres line.",
+            "PlaceName": "Mortain",
+            "GPS_Coordinate": "48.6494, -0.9369",
+            "BoundingBox": {
+                "North": 49.5487,
+                "South": 47.7501,
+                "East": 0.4241,
+                "West": -2.2979
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP8.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+                    "External_Map_Description": "Map illustrating Montgomery's directive of 25 July directing a wheeling maneuver toward the Caumont-Vire-Mortain-Foug\u00e8res line.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mortain,+France/@48.64944,-0.93694,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!zoom=14&lat=48.64944&lon=-0.93694"
+            }
+        },
+        {
+            "PlaceName": "St. Hilaire",
+            "GPS_Coordinate": "48.693611,-0.736667",
+            "BoundingBox": {
+                "North": 49.59175,
+                "South": 47.79547,
+                "East": 0.62413,
+                "West": -2.09747
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Op_Luttich_overlay.jpg/800px-Op_Luttich_overlay.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Mortain",
+                    "External_Map_Description": "Overlay map of Operation L\u00fcttich (Battle of Mortain), depicting the German counterattack from the Mortain-Domfront area toward Avranches, encompassing the St. Hilaire region.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Hilaire-du-Harcou%C3%ABt,+France/@48.693611,-0.736667,14z/data=!3m1!4b1!4m6!3m5!1s0x480f9b0b0b0b0b0b:0xd5f8e0b3e1e2f3a4!8m2!3d48.693611!4d-0.736667!16zL20vMDZscW1n",
+                "openstreetbrowser_map_Link": "https://map.openstreetbrowser.org/?zoom=14&lat=48.693611&lon=-0.736667"
+            }
+        },
+        {
+            "PlaceName": "Mortain-Barenton",
+            "GPS_Coordinate": {
+                "lat": 48.6678,
+                "lon": -0.9476
+            },
+            "BoundingBox": {
+                "North": 49.5674,
+                "South": 47.7682,
+                "East": 0.4134,
+                "West": -2.3086
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP25-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map 25-1 depicting the attack toward Mortain, 6-10 August 1944, including the Mortain-Barenton road area.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/39/Normandy_Mortain_counterattack.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Mortain",
+                    "External_Map_Description": "Map of the German counterattack at Mortain, showing positions around Mortain and Barenton road.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/48%C2%B040'04%22N+0%C2%B056'52%22W/@48.6678,-0.9476,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=14/48.6678/-0.9476"
+            }
+        },
+        {
+            "PlaceName": "Romagny",
+            "GPS_Coordinate": {
+                "lat": 48.667,
+                "lon": -1.0
+            },
+            "BoundingBox": {
+                "North": 49.5663,
+                "South": 47.7677,
+                "East": 0.362,
+                "West": -2.362
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAPXXV-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map XXV-1: The 35th Division Advance, 8-11 August 1944, depicting the advance through areas including St. Hilaire, Mortain-Barenton road, and Romagny.",
+                    "External_Map_Capture_Date": "2024-10-06T14:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Romagny,+50620,+France/@48.667,-1.000,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.667/-1.000"
+            }
+        },
+        {
+            "PlaceName": "Hill 317",
+            "GPS_Coordinate": "48.6469, 0.9503",
+            "BoundingBox": {
+                "North": 49.5459,
+                "South": 47.7479,
+                "East": 2.3093,
+                "West": -0.4087
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/IX.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map IX: Mortain Counterattack, 7-13 August 1944. Depicts the German counteroffensive including positions around Mortain, St. Hilaire, Romagny, and Hill 317 held by the 35th Division.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Hill+317%2C+Mortain%2C+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!map=16/48.6469/0.9503"
+            }
+        }
+    ],
+    "4": [
+        {
+            "sub_event_index": 2,
+            "place_index": 7,
+            "Event_Doc": "chapter3a-event.json",
+            "Source_Doc": "chapter3a-content.md",
+            "Sub-event_summary": "Efforts to initiate southward attack from Cotentin, delays due to logistics and Cherbourg priority, and receipt of Montgomery's directive for wheeling maneuver toward Caumont-Vire-Mortain-Fougeres line.",
+            "PlaceName": "Mortain",
+            "GPS_Coordinate": "48.6494, -0.9369",
+            "BoundingBox": {
+                "North": 49.5487,
+                "South": 47.7501,
+                "East": 0.4241,
+                "West": -2.2979
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP8.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+                    "External_Map_Description": "Map illustrating Montgomery's directive of 25 July directing a wheeling maneuver toward the Caumont-Vire-Mortain-Foug\u00e8res line.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mortain,+France/@48.64944,-0.93694,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!zoom=14&lat=48.64944&lon=-0.93694"
+            }
+        },
+        {
+            "PlaceName": "Hill 317",
+            "GPS_Coordinate": "48.6469, 0.9503",
+            "BoundingBox": {
+                "North": 49.5459,
+                "South": 47.7479,
+                "East": 2.3093,
+                "West": -0.4087
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/IX.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map IX: Mortain Counterattack, 7-13 August 1944. Depicts the German counteroffensive including positions around Mortain, St. Hilaire, Romagny, and Hill 317 held by the 35th Division.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Hill+317%2C+Mortain%2C+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!map=16/48.6469/0.9503"
+            }
+        }
+    ],
+    "5": [
+        {
+            "sub_event_index": 3,
+            "place_index": 11,
+            "PlaceName": "Barenton",
+            "Sub-event_summary": "The Canadian bombardment and tank assault alarmed German command, prompting shifts of armored divisions from planned Avranches attacks to defend Falaise, postponing the second Avranches offensive amid pressures from U.S. corps and threats to flanks.",
+            "Source_Doc": "chapter25a-content.md",
+            "GPS_Coordinate": "48.6864,-1.0733",
+            "BoundingBox": {
+                "North": 49.5854,
+                "South": 47.7874,
+                "East": 0.2877,
+                "West": -2.4343
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XXV-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map XXV-1: Canadian Attack Toward Falaise, 14-17 August 1944, depicting operations in the area including Barenton.",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Barenton,+France/@48.6864,-1.0733,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-1.0733&lat=48.6864&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Ger",
+            "GPS_Coordinate": "48.8339, -1.0006",
+            "BoundingBox": {
+                "North": 49.7329,
+                "South": 47.9349,
+                "East": 0.3584,
+                "West": -2.3602
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP25-3.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map No. 25-3: Advance of the 2d Armored Division and XIX Corps toward Vire and Ger area, 7-10 August 1944, showing attack from Barenton to Ger.",
+                    "External_Map_Capture_Date": "2024-10-04T15:30:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Ger,+France/@48.833889,-1.000556,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=14/48.8339/-1.0006/Ger,_Manche,_France"
+            }
+        },
+        {
+            "sub_event_index": 2,
+            "place_index": 7,
+            "Event_Doc": "chapter3a-event.json",
+            "Source_Doc": "chapter3a-content.md",
+            "Sub-event_summary": "Efforts to initiate southward attack from Cotentin, delays due to logistics and Cherbourg priority, and receipt of Montgomery's directive for wheeling maneuver toward Caumont-Vire-Mortain-Fougeres line.",
+            "PlaceName": "Mortain",
+            "GPS_Coordinate": "48.6494, -0.9369",
+            "BoundingBox": {
+                "North": 49.5487,
+                "South": 47.7501,
+                "East": 0.4241,
+                "West": -2.2979
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP8.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+                    "External_Map_Description": "Map illustrating Montgomery's directive of 25 July directing a wheeling maneuver toward the Caumont-Vire-Mortain-Foug\u00e8res line.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mortain,+France/@48.64944,-0.93694,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!zoom=14&lat=48.64944&lon=-0.93694"
+            }
+        },
+        {
+            "PlaceName": "Tinchebray",
+            "GPS_Coordinate": "48.7158,-0.8167",
+            "BoundingBox": {
+                "North": 49.6204,
+                "South": 47.8112,
+                "East": 0.5253,
+                "West": -2.1587
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Tinchebray/@48.7158,-0.8167,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=14/48.7158/-0.8167/Tinchebray"
+            }
+        },
+        {
+            "PlaceName": "Sourdeval",
+            "GPS_Coordinate": "48.7364, -1.0319",
+            "BoundingBox": {
+                "North": 49.6359,
+                "South": 47.8369,
+                "East": 0.3301,
+                "West": -2.3939
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sourdeval,+France/@48.7364,-1.0319,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.7364/-1.0319"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        }
+    ],
+    "6": [
+        {
+            "PlaceName": "Mortain-Barenton",
+            "GPS_Coordinate": {
+                "lat": 48.6678,
+                "lon": -0.9476
+            },
+            "BoundingBox": {
+                "North": 49.5674,
+                "South": 47.7682,
+                "East": 0.4134,
+                "West": -2.3086
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP25-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map 25-1 depicting the attack toward Mortain, 6-10 August 1944, including the Mortain-Barenton road area.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/39/Normandy_Mortain_counterattack.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Mortain",
+                    "External_Map_Description": "Map of the German counterattack at Mortain, showing positions around Mortain and Barenton road.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/48%C2%B040'04%22N+0%C2%B056'52%22W/@48.6678,-0.9476,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=14/48.6678/-0.9476"
+            }
+        },
+        {
+            "Event_Doc": "chapter25c-event.json",
+            "Source_Doc": "chapter25c-content.md",
+            "Sub-event_summary": "On 8 August, CCB of the 3d Armored Division and 119th Infantry linked with the 4th Division west of Ch\u00e9renc\u00e9, blocking German advances; after the death of Col. Cornog on 9 August, forces regained le Mesnil-T\u00f4ve and St. Barth\u00e9lemy by 12 August, restoring pre-counterattack lines.",
+            "PlaceName": "St. Barth\u00e9lemy",
+            "GPS_Coordinate": "48.6533, -1.0514",
+            "BoundingBox": {
+                "North": 49.5528,
+                "South": 47.7538,
+                "East": 0.2946,
+                "West": -2.3974
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP25-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map 25-2: Action on 8 August 1944 between Vire and Tessy-sur-Vire, showing positions near St. Barth\u00e9lemy during the blocking of German advances.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Barth%C3%A9lemy,+France/@48.6533,-1.0514,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=15/48.6533/-1.0514"
+            }
+        },
+        {
+            "sub_event_index": 2,
+            "place_index": 7,
+            "Event_Doc": "chapter3a-event.json",
+            "Source_Doc": "chapter3a-content.md",
+            "Sub-event_summary": "Efforts to initiate southward attack from Cotentin, delays due to logistics and Cherbourg priority, and receipt of Montgomery's directive for wheeling maneuver toward Caumont-Vire-Mortain-Fougeres line.",
+            "PlaceName": "Mortain",
+            "GPS_Coordinate": "48.6494, -0.9369",
+            "BoundingBox": {
+                "North": 49.5487,
+                "South": 47.7501,
+                "East": 0.4241,
+                "West": -2.2979
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP8.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+                    "External_Map_Description": "Map illustrating Montgomery's directive of 25 July directing a wheeling maneuver toward the Caumont-Vire-Mortain-Foug\u00e8res line.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mortain,+France/@48.64944,-0.93694,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!zoom=14&lat=48.64944&lon=-0.93694"
+            }
+        },
+        {
+            "PlaceName": "S\u00e9e River",
+            "GPS_Coordinate": "48.6700, -1.2700",
+            "BoundingBox": {
+                "North": 49.5688,
+                "South": 47.7712,
+                "East": 0.094,
+                "West": -2.634
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAPXV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+                    "External_Map_Description": "Map XV-1: VII Corps Maneuver, 25-30 July 1944, depicting advances in the Avranches sector including the vicinity of the S\u00e9e River and potential German defensive lines at Avranches-Vire.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=S%C3%A9e+River%2C+Normandy%2C+France&query_place_id=ChIJnYp9q5pXz0gR0zUqJqD0b8Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=11/48.6700/-1.2700"
+            }
+        },
+        {
+            "PlaceName": "le Mesnil-T\u00f4ve",
+            "GPS_Coordinate": "49.0464, -0.3503",
+            "BoundingBox": {
+                "North": 49.9459,
+                "South": 48.1469,
+                "East": 1.0207,
+                "West": -1.7213
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Le+Mesnil-T%C3%B4ve,+14690,+France/@49.0463889,-0.3502778,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!map=15/49.0464/-0.3503"
+            }
+        },
+        {
+            "PlaceName": "Hill 317",
+            "GPS_Coordinate": "48.6469, 0.9503",
+            "BoundingBox": {
+                "North": 49.5459,
+                "South": 47.7479,
+                "East": 2.3093,
+                "West": -0.4087
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/IX.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map IX: Mortain Counterattack, 7-13 August 1944. Depicts the German counteroffensive including positions around Mortain, St. Hilaire, Romagny, and Hill 317 held by the 35th Division.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Hill+317%2C+Mortain%2C+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!map=16/48.6469/0.9503"
+            }
+        },
+        {
+            "sub_event_index": 3,
+            "place_index": 11,
+            "PlaceName": "Barenton",
+            "Sub-event_summary": "The Canadian bombardment and tank assault alarmed German command, prompting shifts of armored divisions from planned Avranches attacks to defend Falaise, postponing the second Avranches offensive amid pressures from U.S. corps and threats to flanks.",
+            "Source_Doc": "chapter25a-content.md",
+            "GPS_Coordinate": "48.6864,-1.0733",
+            "BoundingBox": {
+                "North": 49.5854,
+                "South": 47.7874,
+                "East": 0.2877,
+                "West": -2.4343
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XXV-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map XXV-1: Canadian Attack Toward Falaise, 14-17 August 1944, depicting operations in the area including Barenton.",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Barenton,+France/@48.6864,-1.0733,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-1.0733&lat=48.6864&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Sourdeval",
+            "GPS_Coordinate": "48.7364, -1.0319",
+            "BoundingBox": {
+                "North": 49.6359,
+                "South": 47.8369,
+                "East": 0.3301,
+                "West": -2.3939
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sourdeval,+France/@48.7364,-1.0319,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.7364/-1.0319"
+            }
+        }
+    ],
+    "7": [
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Mortain-Avranches",
+            "GPS_Coordinate": "48.6649,-1.1476",
+            "BoundingBox": {
+                "North": 49.5658,
+                "South": 47.764,
+                "East": 0.2164,
+                "West": -2.5116
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapV-25.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map V -- Enemy Counterattack Toward Avranches, 7-11 August 1944",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Operation_L%C3%BCttich.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Mortain",
+                    "External_Map_Description": "Strategic map of Operation L\u00fcttich, the German counteroffensive from Mortain towards Avranches",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Mortain-Avranches%2C+France",
+                "openstreetbrowser_map_Link": "https://map.openstreetbrowser.org/#map=11/48.6649/-1.1476"
+            }
+        },
+        {
+            "sub_event_index": 2,
+            "place_index": 7,
+            "Event_Doc": "chapter3a-event.json",
+            "Source_Doc": "chapter3a-content.md",
+            "Sub-event_summary": "Efforts to initiate southward attack from Cotentin, delays due to logistics and Cherbourg priority, and receipt of Montgomery's directive for wheeling maneuver toward Caumont-Vire-Mortain-Fougeres line.",
+            "PlaceName": "Mortain",
+            "GPS_Coordinate": "48.6494, -0.9369",
+            "BoundingBox": {
+                "North": 49.5487,
+                "South": 47.7501,
+                "East": 0.4241,
+                "West": -2.2979
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP8.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+                    "External_Map_Description": "Map illustrating Montgomery's directive of 25 July directing a wheeling maneuver toward the Caumont-Vire-Mortain-Foug\u00e8res line.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mortain,+France/@48.64944,-0.93694,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!zoom=14&lat=48.64944&lon=-0.93694"
+            }
+        },
+        {
+            "PlaceName": "Sourdeval-Gathemo",
+            "GPS_Coordinate": "48.7413, -1.1582",
+            "BoundingBox": {
+                "North": 49.6408,
+                "South": 47.8417,
+                "East": 0.2038,
+                "West": -2.5202
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-XXV.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map XXV from U.S. Army in World War II: Breakout and Pursuit, Chapter 25, depicting operations and advances in the Sourdeval-Gathemo area during the Allied maneuvers in August 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Sourdeval-Gathemo%2CFrance",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/48.7413/-1.1582"
+            }
+        },
+        {
+            "sub_event_index": 2,
+            "place_index": 7,
+            "Event_Doc": "chapter3a-event.json",
+            "Source_Doc": "chapter3a-content.md",
+            "Sub-event_summary": "Efforts to initiate southward attack from Cotentin, delays due to logistics and Cherbourg priority, and receipt of Montgomery's directive for wheeling maneuver toward Caumont-Vire-Mortain-Fougeres line.",
+            "PlaceName": "Mortain",
+            "GPS_Coordinate": "48.6494, -0.9369",
+            "BoundingBox": {
+                "North": 49.5487,
+                "South": 47.7501,
+                "East": 0.4241,
+                "West": -2.2979
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP8.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+                    "External_Map_Description": "Map illustrating Montgomery's directive of 25 July directing a wheeling maneuver toward the Caumont-Vire-Mortain-Foug\u00e8res line.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mortain,+France/@48.64944,-0.93694,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!zoom=14&lat=48.64944&lon=-0.93694"
+            }
+        },
+        {
+            "PlaceName": "Vire",
+            "GPS_Coordinate": "48.8381,-0.8861",
+            "BoundingBox": {
+                "North": "49.7373",
+                "South": "47.9389",
+                "East": "0.4749",
+                "West": "-2.2471"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-3-III.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+                    "External_Map_Description": "Map III: The Wheeling Maneuver, 24-30 July, illustrating Montgomery's directive for the maneuver toward the Caumont-Vire-Mortain-Foug\u00e8res line.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Vire-Normandie,+France/@48.8380556,-0.8861111,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-0.8861&lat=48.8381&zoom=14"
+            }
+        }
+    ]
+}

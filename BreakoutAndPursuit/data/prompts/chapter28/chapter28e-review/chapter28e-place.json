@@ -1,0 +1,2530 @@
+{
+    "1": [
+        {
+            "PlaceName": "lower Seine",
+            "GPS_Coordinate": "49.4432, 1.0998",
+            "BoundingBox": {
+                "North": 50.3412,
+                "South": 48.5452,
+                "East": 2.477,
+                "West": -0.277
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-BreakoutMaps/map28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 28-1 depicting operations around the Seine River crossings during the breakout and pursuit phase in August 1944",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Avancierende_Alliierten_Armeen_Aug44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_pocket",
+                    "External_Map_Description": "Map showing Allied advances towards the Seine River in August 1944 during the Normandy breakout",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.4432,1.0998,10z?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#map=10/49.4432/1.0998"
+            }
+        },
+        {
+            "PlaceName": "upper Seine",
+            "GPS_Coordinate": "48.3864, 2.9511",
+            "BoundingBox": {
+                "North": 49.2847,
+                "South": 47.4881,
+                "East": 4.3031,
+                "West": 1.5991
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map illustrating XII Corps advance dashing German hopes for Paris-Orl\u00e9ans gap defense, with First Army and LXXX Corps movements to Fontainebleau and Reims for the upper Seine line around 10 August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@48.3864,2.9511,10z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!zoom=10&lat=48.3864&lon=2.9511&layers=B"
+            }
+        },
+        {
+            "PlaceName": "Paris",
+            "GPS_Coordinate": "48.8567, 2.3528",
+            "BoundingBox": {
+                "North": 49.7562,
+                "South": 47.9572,
+                "East": 3.7218,
+                "West": 0.9838
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Paris,+France/@48.8567,2.3528,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.8567/2.3528"
+            }
+        },
+        {
+            "PlaceName": "Dreux",
+            "GPS_Coordinate": "48.7358, 1.3714",
+            "BoundingBox": {
+                "North": 49.6341,
+                "South": 47.8375,
+                "East": 2.7294,
+                "West": 0.0134
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map XXVI: Panzer Group Eberbach, 15-19 August 1944, depicting the front lines and movements during the period relevant to the sub-event involving withdrawal east of Flers and engagements with LXVIII Corps.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dreux,+France/@48.7358,1.3714,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!map=14/48.7358/1.3714/Dreux"
+            }
+        },
+        {
+            "PlaceName": "Chartres",
+            "GPS_Coordinate": {
+                "lat": 48.4472,
+                "lng": 1.4866
+            },
+            "BoundingBox": {
+                "North": 49.3467,
+                "South": 47.5477,
+                "East": 2.8446,
+                "West": 0.1286
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Chartres,+France/@48.4472,1.4866,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.4472/1.4866"
+            }
+        },
+        {
+            "PlaceName": "Ch\u00e2teaudun",
+            "GPS_Coordinate": "48.0722, 1.5383",
+            "BoundingBox": {
+                "North": 48.9722,
+                "South": 47.1722,
+                "East": 2.8823,
+                "West": 0.1943
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map depicting the advance of Third Army elements northeast from Angers toward objectives including Dreux, Ch\u00e2teaudun, and Orl\u00e9ans in mid-August 1944.",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Ch%C3%A2teaudun,+France/@48.0722,1.5383,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.0722/1.5383/Ch%C3%A2teaudun"
+            }
+        },
+        {
+            "PlaceName": "Orl\u00e9ans",
+            "GPS_Coordinate": "47.902964, 1.903636",
+            "BoundingBox": {
+                "North": 48.801,
+                "South": 47.005,
+                "East": 3.2346,
+                "West": 0.5726
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: The Lodgment Area, circa late August 1944, depicting the geographic boundaries of the Allied lodgment including the line to Orl\u00e9ans.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Orl%C3%A9ans,+France/@47.902964,1.903636,10z/data=!3m1!4b1!4m6!3m5!1s0x47dd292b6d3e7c81:0x395f7f5a5d7b!8m2!3d47.902964!4d1.903636!16zL20vMDVscW4",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!zoom=10;lat=47.902964;lon=1.903636;layers=B"
+            }
+        },
+        {
+            "PlaceName": "Paris-Orl\u00e9ans gap",
+            "GPS_Coordinate": "48.4344, 2.1667",
+            "BoundingBox": {
+                "North": 49.3344,
+                "South": 47.5344,
+                "East": 3.5197,
+                "West": 0.8137
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-I.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: The Battlefield at Nightfall, 1 July 1944, depicting strategic areas including the Paris-Orl\u00e9ans gap as a key communications and armor route from Caen region.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/48.4344,2.1667/@48.4344,2.1667,10z/data=!3m1!4b1!4m4!3m3!8m2!3d48.4344!4d2.1667",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/48.4344/2.1667"
+            }
+        },
+        {
+            "PlaceName": "Seine River",
+            "GPS_Coordinate": "49.4404,1.0819",
+            "BoundingBox": {
+                "North": 50.3384,
+                "South": 48.5424,
+                "East": 2.4589,
+                "West": -0.2951
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map 1. The Lodgment Area as of 26 June 1944, depicting the geographic boundaries including the Seine River as the eastern limit.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/91/Normandybeachheadmap.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:NORMANDYBEACHHEADMAP.jpg",
+                    "External_Map_Description": "Normandy beachhead map showing the Allied lodgment area expansion towards the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Seine+River%2C+Normandy%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0819&lat=49.4404&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Nemours",
+            "GPS_Coordinate": "48.2686, 2.7028",
+            "BoundingBox": {
+                "North": 49.1695,
+                "South": 47.3677,
+                "East": 4.0548,
+                "West": 1.3508
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map IX: XX Corps advance toward Melun and the Seine bridges, 20-24 August 1944, covering the Paris-Orl\u00e9ans gap area including Nemours region.",
+                    "External_Map_Capture_Date": "2024-11-08T15:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Nemours,+France/@48.268611,2.702778,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=14/48.2686/2.7028/Nemours,_France"
+            }
+        },
+        {
+            "PlaceName": "Montargis",
+            "GPS_Coordinate": "48.0014, 2.7339",
+            "BoundingBox": {
+                "North": 48.9004,
+                "South": 47.1024,
+                "East": 4.0759,
+                "West": 1.3919
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXVIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVIII from 'Breakout and Pursuit' showing German dispositions and concentrations, including 708th Division remnants at Montargis, on 21 August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Montargis,+France/@48.0014,2.7339,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.0014&lon=2.7339&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Gien",
+            "GPS_Coordinate": "47.7019,2.6203",
+            "BoundingBox": {
+                "North": 48.6007,
+                "South": 46.8031,
+                "East": 3.951,
+                "West": 1.2896
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVIII: XII Corps Drive Southeast From Chartres-Orleans, 21-25 August 1944, depicting advances toward Paris-Orleans gap relevant to Gien area.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Gien,+France/@47.701944,2.620278,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=47.701944&lon=2.620278&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Western Front",
+            "GPS_Coordinate": "50.7531, 2.2697",
+            "BoundingBox": {
+                "North": 51.6531,
+                "South": 49.8531,
+                "East": 3.6867,
+                "West": 0.8527
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Westfront_1944-07_Montgomery.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Western_Front_(World_War_II)",
+                    "External_Map_Description": "Map depicting the Western Front in July 1944, showing German army dispositions including the Fifteenth Army in the Pas-de-Calais region relevant to Operation Fortitude deceptions.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=50.7531,2.2697",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=9&lat=50.7531&lon=2.2697"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Melun",
+            "GPS_Coordinate": {
+                "lat": 48.5404,
+                "lon": 2.6614
+            },
+            "BoundingBox": {
+                "North": 49.4398,
+                "South": 47.641,
+                "East": 4.0184,
+                "West": 1.3044
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map XXII: Closing to the Seine, 19-25 August 1944, from U.S. Army in World War II series 'Breakout and Pursuit'. Depicts Allied advances and German dispositions southeast of Paris, including concentrations at Melun, Fontainebleau, and Montereau during the pursuit across France.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Melun,+France/@48.5404,2.6614,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!map=14/48.5404/2.6614/Melun"
+            }
+        },
+        {
+            "PlaceName": "Fontainebleau",
+            "GPS_Coordinate": "48.404722,2.701111",
+            "BoundingBox": {
+                "North": 49.3042,
+                "South": 47.5052,
+                "East": 4.0451,
+                "West": 1.3571
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 28-1 from U.S. Army in World War II: Breakout and Pursuit, Chapter 28, illustrating German First Army and LXXX Corps positions and movements toward Fontainebleau and the upper Seine line in August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Fontainebleau,+France/@48.404722,2.701111,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.404722/2.701111"
+            }
+        },
+        {
+            "PlaceName": "Montereau",
+            "GPS_Coordinate": "48.3931, 2.9503",
+            "BoundingBox": {
+                "North": 49.2923,
+                "South": 47.4939,
+                "East": 4.2946,
+                "West": 1.606
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map27.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 27. Enemy concentrations southwest of Paris, circa 20-21 August 1944, showing German 48th and 338th Infantry Divisions at Montereau.",
+                    "External_Map_Capture_Date": "2024-10-06T10:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Montereau-Fault-Yonne,+France/@48.3931,2.9503,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/48.3931/2.9503"
+            }
+        },
+        {
+            "PlaceName": "northern France",
+            "GPS_Coordinate": "49.5000,2.6000",
+            "BoundingBox": {
+                "North": 50.399,
+                "South": 48.601,
+                "East": 3.983,
+                "West": 1.217
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/CH2-MAP1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II-1: OB WEST Tactical Organization about 1 June 1944, depicting Army Group B in northern France north of the Loire-Geneva line.",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=northern+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=9/49.5/2.6"
+            }
+        },
+        {
+            "PlaceName": "First Army",
+            "GPS_Coordinate": "48.3311, 2.7620",
+            "BoundingBox": {
+                "North": 49.23,
+                "South": 47.432,
+                "East": 4.115,
+                "West": 1.409
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map No. 28: Crossings of the Seine, 21-28 August 1944, showing German dispositions including First Army concentrations at Melun, Fontainebleau, Montereau, and Montargis.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=48.3311%2C2.7620",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/48.3311/2.762"
+            }
+        }
+    ],
+    "2": [
+        {
+            "PlaceName": "Yonne River",
+            "GPS_Coordinate": "48.1975, 2.4503",
+            "BoundingBox": {
+                "North": 49.0958,
+                "South": 47.2992,
+                "East": 3.7963,
+                "West": 1.1043
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map17.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map XVII from 'Breakout and Pursuit': The Seizure of Sens, 21-22 August 1944. Shows Combat Command A (CCA) of the 4th Armored Division bypassing Montargis, advancing to Souppes-sur-Loing, Sens, and establishing a bridgehead east of the Yonne River.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Yonne+River%2C+Sens%2C+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#zoom=12&lat=48.1975&lon=2.4503"
+            }
+        },
+        {
+            "Event_Doc": "chapter28e-event.json",
+            "Source_Doc": "chapter28e-content.md",
+            "Sub-event_summary": "General Eddy took XII Corps, mission to Yonne at Sens; attached 137th Infantry to 4th Armored, ordered attack 20 August; CCA bypassed Montargis, to Souppes-sur-Loing 21 August, to Sens afternoon, surprised garrison, bridgehead east Yonne by 22 morning.",
+            "PlaceName": "Sens",
+            "GPS_Coordinate": "48.1969, 2.8028",
+            "BoundingBox": {
+                "North": 49.1015,
+                "South": 47.2923,
+                "East": 4.1598,
+                "West": 1.4458
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXVII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVII: Third Army Maneuver, 19-25 August 1944, showing XII Corps advance towards Sens and the Yonne River.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sens,+Yonne,+France/@48.196944,2.802778,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/?lat=48.196944&lon=2.802778&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Orl\u00e9ans",
+            "GPS_Coordinate": "47.902964, 1.903636",
+            "BoundingBox": {
+                "North": 48.801,
+                "South": 47.005,
+                "East": 3.2346,
+                "West": 0.5726
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: The Lodgment Area, circa late August 1944, depicting the geographic boundaries of the Allied lodgment including the line to Orl\u00e9ans.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Orl%C3%A9ans,+France/@47.902964,1.903636,10z/data=!3m1!4b1!4m6!3m5!1s0x47dd292b6d3e7c81:0x395f7f5a5d7b!8m2!3d47.902964!4d1.903636!16zL20vMDVscW4",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!zoom=10;lat=47.902964;lon=1.903636;layers=B"
+            }
+        },
+        {
+            "PlaceName": "Montargis",
+            "GPS_Coordinate": "48.0014, 2.7339",
+            "BoundingBox": {
+                "North": 48.9004,
+                "South": 47.1024,
+                "East": 4.0759,
+                "West": 1.3919
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXVIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVIII from 'Breakout and Pursuit' showing German dispositions and concentrations, including 708th Division remnants at Montargis, on 21 August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Montargis,+France/@48.0014,2.7339,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.0014&lon=2.7339&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Loing River",
+            "GPS_Coordinate": "48.1714, 2.7153",
+            "BoundingBox": {
+                "North": 49.071,
+                "South": 47.2718,
+                "East": 4.0583,
+                "West": 1.3723
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map-XXVIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVIII: Advance of Third Army, 19-25 August 1944, depicting XII Corps movements bypassing Montargis to Souppes-sur-Loing on the Loing River and onward to Sens.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Loing+River%2C+Souppes-sur-Loing%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.1714/2.7153"
+            }
+        },
+        {
+            "PlaceName": "Souppes-sur-Loing",
+            "GPS_Coordinate": "48.1700,2.7181",
+            "BoundingBox": {
+                "North": 49.0697,
+                "South": 47.2703,
+                "East": 4.0601,
+                "West": 1.3761
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/USA-E-Breakout-28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 28-1 depicting the advance of Combat Command A (CCA), 4th Armored Division, XII Corps, bypassing Montargis, reaching Souppes-sur-Loing on 21 August 1944, and continuing to Sens, with bridgehead over Yonne River by 22 August.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Souppes-sur-Loing,+France/@48.1700,2.7181,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.1700/2.7181"
+            }
+        }
+    ],
+    "3": [
+        {
+            "PlaceName": "Montargis",
+            "GPS_Coordinate": "48.0014, 2.7339",
+            "BoundingBox": {
+                "North": 48.9004,
+                "South": 47.1024,
+                "East": 4.0759,
+                "West": 1.3919
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXVIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVIII from 'Breakout and Pursuit' showing German dispositions and concentrations, including 708th Division remnants at Montargis, on 21 August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Montargis,+France/@48.0014,2.7339,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.0014&lon=2.7339&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Loing River",
+            "GPS_Coordinate": "48.1714, 2.7153",
+            "BoundingBox": {
+                "North": 49.071,
+                "South": 47.2718,
+                "East": 4.0583,
+                "West": 1.3723
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map-XXVIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVIII: Advance of Third Army, 19-25 August 1944, depicting XII Corps movements bypassing Montargis to Souppes-sur-Loing on the Loing River and onward to Sens.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Loing+River%2C+Souppes-sur-Loing%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.1714/2.7153"
+            }
+        },
+        {
+            "PlaceName": "Souppes",
+            "GPS_Coordinate": "48.0200, 2.7167",
+            "BoundingBox": {
+                "North": 48.9192,
+                "South": 47.1208,
+                "East": 4.0594,
+                "West": 1.374
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map VIII: The Attack on Montargis, 24 August 1944, depicting CCB crossing the Loing River at Souppes to outflank Montargis.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Souppes-sur-Loing,+France/@48.0200,2.7167,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=14/48.0200/2.7167/Souppes-sur-Loing,_France"
+            }
+        },
+        {
+            "Event_Doc": "chapter28e-event.json",
+            "Source_Doc": "chapter28e-content.md",
+            "Sub-event_summary": "General Eddy took XII Corps, mission to Yonne at Sens; attached 137th Infantry to 4th Armored, ordered attack 20 August; CCA bypassed Montargis, to Souppes-sur-Loing 21 August, to Sens afternoon, surprised garrison, bridgehead east Yonne by 22 morning.",
+            "PlaceName": "Sens",
+            "GPS_Coordinate": "48.1969, 2.8028",
+            "BoundingBox": {
+                "North": 49.1015,
+                "South": 47.2923,
+                "East": 4.1598,
+                "West": 1.4458
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXVII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVII: Third Army Maneuver, 19-25 August 1944, showing XII Corps advance towards Sens and the Yonne River.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sens,+Yonne,+France/@48.196944,2.802778,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/?lat=48.196944&lon=2.802778&zoom=14"
+            }
+        }
+    ],
+    "4": [
+        {
+            "Event_Doc": "chapter28e-event.json",
+            "Source_Doc": "chapter28e-content.md",
+            "Sub-event_summary": "General Eddy took XII Corps, mission to Yonne at Sens; attached 137th Infantry to 4th Armored, ordered attack 20 August; CCA bypassed Montargis, to Souppes-sur-Loing 21 August, to Sens afternoon, surprised garrison, bridgehead east Yonne by 22 morning.",
+            "PlaceName": "Sens",
+            "GPS_Coordinate": "48.1969, 2.8028",
+            "BoundingBox": {
+                "North": 49.1015,
+                "South": 47.2923,
+                "East": 4.1598,
+                "West": 1.4458
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXVII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVII: Third Army Maneuver, 19-25 August 1944, showing XII Corps advance towards Sens and the Yonne River.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sens,+Yonne,+France/@48.196944,2.802778,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/?lat=48.196944&lon=2.802778&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Troyes",
+            "GPS_Coordinate": {
+                "lat": 48.296944,
+                "lon": 4.071389
+            },
+            "BoundingBox": {
+                "North": 49.196944,
+                "South": 47.396944,
+                "East": 5.422389,
+                "West": 2.720389
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-VIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "MAP NO. VIII: Seine Crossings by Third Army, 25-28 August 1944, depicting 4th Armored Division's advance from Sens to Troyes, frontal attack, street fighting, and crossing north of Troyes.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Troyes,+France/@48.296944,4.071389,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=48.296944&lon=4.071389&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        }
+    ],
+    "5": [
+        {
+            "PlaceName": "Joigny",
+            "GPS_Coordinate": {
+                "latitude": 47.98,
+                "longitude": 3.3886
+            },
+            "BoundingBox": {
+                "North": 48.8793,
+                "South": 47.0807,
+                "East": 4.7316,
+                "West": 2.0456
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP28-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVIII-1 showing XII Corps right flank operations, 24-30 August 1944, including 35th Division advance through Joigny area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Joigny,+89100,+France/@47.9800,3.3886,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#47.9800/3.3886/14"
+            }
+        },
+        {
+            "PlaceName": "St. Florentin",
+            "GPS_Coordinate": "47.9894, 3.7220",
+            "BoundingBox": {
+                "North": 48.8884,
+                "South": 47.0904,
+                "East": 5.064,
+                "West": 2.38
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Florentin,+89130,+France/@47.9894,3.7220,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#47.9894/3.7220"
+            }
+        },
+        {
+            "PlaceName": "Orl\u00e9ans",
+            "GPS_Coordinate": "47.902964, 1.903636",
+            "BoundingBox": {
+                "North": 48.801,
+                "South": 47.005,
+                "East": 3.2346,
+                "West": 0.5726
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: The Lodgment Area, circa late August 1944, depicting the geographic boundaries of the Allied lodgment including the line to Orl\u00e9ans.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Orl%C3%A9ans,+France/@47.902964,1.903636,10z/data=!3m1!4b1!4m6!3m5!1s0x47dd292b6d3e7c81:0x395f7f5a5d7b!8m2!3d47.902964!4d1.903636!16zL20vMDVscW4",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!zoom=10;lat=47.902964;lon=1.903636;layers=B"
+            }
+        },
+        {
+            "PlaceName": "Montargis",
+            "GPS_Coordinate": "48.0014, 2.7339",
+            "BoundingBox": {
+                "North": 48.9004,
+                "South": 47.1024,
+                "East": 4.0759,
+                "West": 1.3919
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXVIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVIII from 'Breakout and Pursuit' showing German dispositions and concentrations, including 708th Division remnants at Montargis, on 21 August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Montargis,+France/@48.0014,2.7339,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.0014&lon=2.7339&zoom=14"
+            }
+        }
+    ],
+    "6": [
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Loire River",
+            "GPS_Coordinate": "47.3939,0.6853",
+            "BoundingBox": {
+                "North": 48.2939,
+                "South": 46.4939,
+                "East": 2.0153,
+                "West": -0.6447
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: The Lodgment Area, 13 June 1944, depicting the strategic lodgment area bounded by the Loire River to the south.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Loire+River/@47.3939,0.6853,10z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/47.3939/0.6853"
+            }
+        },
+        {
+            "PlaceName": "Orl\u00e9ans",
+            "GPS_Coordinate": "47.902964, 1.903636",
+            "BoundingBox": {
+                "North": 48.801,
+                "South": 47.005,
+                "East": 3.2346,
+                "West": 0.5726
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: The Lodgment Area, circa late August 1944, depicting the geographic boundaries of the Allied lodgment including the line to Orl\u00e9ans.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Orl%C3%A9ans,+France/@47.902964,1.903636,10z/data=!3m1!4b1!4m6!3m5!1s0x47dd292b6d3e7c81:0x395f7f5a5d7b!8m2!3d47.902964!4d1.903636!16zL20vMDVscW4",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!zoom=10;lat=47.902964;lon=1.903636;layers=B"
+            }
+        },
+        {
+            "PlaceName": "Gien",
+            "GPS_Coordinate": "47.7019,2.6203",
+            "BoundingBox": {
+                "North": 48.6007,
+                "South": 46.8031,
+                "East": 3.951,
+                "West": 1.2896
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVIII: XII Corps Drive Southeast From Chartres-Orleans, 21-25 August 1944, depicting advances toward Paris-Orleans gap relevant to Gien area.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Gien,+France/@47.701944,2.620278,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=47.701944&lon=2.620278&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Joigny",
+            "GPS_Coordinate": {
+                "latitude": 47.98,
+                "longitude": 3.3886
+            },
+            "BoundingBox": {
+                "North": 48.8793,
+                "South": 47.0807,
+                "East": 4.7316,
+                "West": 2.0456
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP28-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVIII-1 showing XII Corps right flank operations, 24-30 August 1944, including 35th Division advance through Joigny area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Joigny,+89100,+France/@47.9800,3.3886,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#47.9800/3.3886/14"
+            }
+        },
+        {
+            "PlaceName": "Angers",
+            "GPS_Coordinate": {
+                "lat": 47.4734,
+                "lon": -0.5601
+            },
+            "BoundingBox": {
+                "North": 48.3729,
+                "South": 46.5739,
+                "East": 0.7709,
+                "West": -1.8911
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Angers,+Maine-et-Loire,+France/@47.4734,-0.5601,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=47.4734&lon=-0.5601&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Argentan",
+            "GPS_Coordinate": "48.7422,0.0156",
+            "BoundingBox": {
+                "North": 49.6415,
+                "South": 47.8429,
+                "East": 1.3586,
+                "West": -1.3274
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-VII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map VII. Operation GOODWOOD, 18-20 July 1944, showing armored advance relevant to the sub-event context toward Falaise.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-X.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map X. Pursuit to Argentan Area, 7-13 August 1944, depicting the region including Argentan in the breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Argentan,+France/@48.7422,0.0156,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.7422/0.0156"
+            }
+        }
+    ],
+    "7": [
+        {
+            "PlaceName": "XII Corps",
+            "GPS_Coordinate": "48.3613, 2.2360",
+            "BoundingBox": {
+                "North": 49.2593,
+                "South": 47.4633,
+                "East": 3.584,
+                "West": 0.888
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=48.3613,2.2360",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=9/48.3613/2.2360"
+            }
+        },
+        {
+            "PlaceName": "Dreux",
+            "GPS_Coordinate": "48.7358, 1.3714",
+            "BoundingBox": {
+                "North": 49.6341,
+                "South": 47.8375,
+                "East": 2.7294,
+                "West": 0.0134
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map XXVI: Panzer Group Eberbach, 15-19 August 1944, depicting the front lines and movements during the period relevant to the sub-event involving withdrawal east of Flers and engagements with LXVIII Corps.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dreux,+France/@48.7358,1.3714,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!map=14/48.7358/1.3714/Dreux"
+            }
+        },
+        {
+            "PlaceName": "Melun",
+            "GPS_Coordinate": {
+                "lat": 48.5404,
+                "lon": 2.6614
+            },
+            "BoundingBox": {
+                "North": 49.4398,
+                "South": 47.641,
+                "East": 4.0184,
+                "West": 1.3044
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map XXII: Closing to the Seine, 19-25 August 1944, from U.S. Army in World War II series 'Breakout and Pursuit'. Depicts Allied advances and German dispositions southeast of Paris, including concentrations at Melun, Fontainebleau, and Montereau during the pursuit across France.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Melun,+France/@48.5404,2.6614,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!map=14/48.5404/2.6614/Melun"
+            }
+        },
+        {
+            "PlaceName": "Montereau",
+            "GPS_Coordinate": "48.3931, 2.9503",
+            "BoundingBox": {
+                "North": 49.2923,
+                "South": 47.4939,
+                "East": 4.2946,
+                "West": 1.606
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map27.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 27. Enemy concentrations southwest of Paris, circa 20-21 August 1944, showing German 48th and 338th Infantry Divisions at Montereau.",
+                    "External_Map_Capture_Date": "2024-10-06T10:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Montereau-Fault-Yonne,+France/@48.3931,2.9503,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/48.3931/2.9503"
+            }
+        },
+        {
+            "PlaceName": "Rambouillet",
+            "GPS_Coordinate": "48.6439,1.8333",
+            "BoundingBox": {
+                "North": 49.5429,
+                "South": 47.7449,
+                "East": 3.1943,
+                "West": 0.4723
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Rambouillet,+France/@48.6439,1.8333,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6439/1.8333"
+            }
+        },
+        {
+            "PlaceName": "Seine River",
+            "GPS_Coordinate": "49.4404,1.0819",
+            "BoundingBox": {
+                "North": 50.3384,
+                "South": 48.5424,
+                "East": 2.4589,
+                "West": -0.2951
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map 1. The Lodgment Area as of 26 June 1944, depicting the geographic boundaries including the Seine River as the eastern limit.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/91/Normandybeachheadmap.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:NORMANDYBEACHHEADMAP.jpg",
+                    "External_Map_Description": "Normandy beachhead map showing the Allied lodgment area expansion towards the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Seine+River%2C+Normandy%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0819&lat=49.4404&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Chartres",
+            "GPS_Coordinate": {
+                "lat": 48.4472,
+                "lng": 1.4866
+            },
+            "BoundingBox": {
+                "North": 49.3467,
+                "South": 47.5477,
+                "East": 2.8446,
+                "West": 0.1286
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Chartres,+France/@48.4472,1.4866,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.4472/1.4866"
+            }
+        },
+        {
+            "PlaceName": "Fontainebleau",
+            "GPS_Coordinate": "48.404722,2.701111",
+            "BoundingBox": {
+                "North": 49.3042,
+                "South": 47.5052,
+                "East": 4.0451,
+                "West": 1.3571
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 28-1 from U.S. Army in World War II: Breakout and Pursuit, Chapter 28, illustrating German First Army and LXXX Corps positions and movements toward Fontainebleau and the upper Seine line in August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Fontainebleau,+France/@48.404722,2.701111,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.404722/2.701111"
+            }
+        },
+        {
+            "PlaceName": "Essonne",
+            "GPS_Coordinate": "48.4333,2.4500",
+            "BoundingBox": {
+                "North": 49.3323,
+                "South": 47.5343,
+                "East": 3.801,
+                "West": 1.099
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-No-28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map No. 28-1: VII Corps Advance Toward the Seine, 23-24 August 1944, depicting 7th Armored Division and 5th Infantry Division movements from Chartres area through Fontainebleau and Montereau, crossing valleys and rivers including Essonne and Loing.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Essonne,+France/@48.4333,2.45,10z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=2.45&lat=48.4333&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Loing",
+            "GPS_Coordinate": "48.2506, 2.7728",
+            "BoundingBox": {
+                "North": 49.1552,
+                "South": 47.346,
+                "East": 4.1248,
+                "West": 1.4208
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map28.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 28\u2014Pursuit to the Seine, 24-30 August 1944, showing VII Corps advances including 7th Armored Division from Dreux to Melun and 5th Armored Division from Chartres to Fontainebleau and Montereau, crossing the Loing River.",
+                    "External_Map_Capture_Date": "2024-10-06T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Rivi%C3%A8re+Loing/@48.2506,2.7728,12z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?zoom=12&lat=48.2506&lon=2.7728"
+            }
+        },
+        {
+            "Event_Doc": "chapter28e-event.json",
+            "Source_Doc": "chapter28e-content.md",
+            "Sub-event_summary": "On left, 7th Armored from Dreux to Melun, patrols to Rambouillet and Seine, little enemy; 5th Division from Chartres to Fontainebleau and Montereau, terrain with valleys, Essonne, Loing Rivers.",
+            "PlaceName": "Seine River defenses",
+            "GPS_Coordinate": "48.5408, 2.6614",
+            "BoundingBox": {
+                "North": 49.4402,
+                "South": 47.6414,
+                "East": 4.0184,
+                "West": 1.3044
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map VIII showing Pursuit Across France: XII Corps movements including 7th Armored Division from Dreux to Melun with patrols toward Rambouillet and Seine River defenses, and 5th Infantry Division from Chartres to Fontainebleau and Montereau, 23-30 August 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=48.5408,2.6614",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=11/48.5408/2.6614"
+            }
+        },
+        {
+            "PlaceName": "Malesherbes",
+            "GPS_Coordinate": "48.316944, 2.416667",
+            "BoundingBox": {
+                "North": 49.2161,
+                "South": 47.4177,
+                "East": 3.7657,
+                "West": 1.0677
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Historical WWII map illustrating the advance of the U.S. 7th Armored Division from Dreux toward Melun and patrols to Rambouillet and the Seine, alongside the 5th Infantry Division from Chartres to Fontainebleau and Montereau, during the pursuit to the Seine.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Malesherbes,+77760,+France/@48.316944,2.416667,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://map.openstreetbrowser.org/?zoom=14&lat=48.316944&lon=2.416667"
+            }
+        },
+        {
+            "PlaceName": "Essonne River",
+            "GPS_Coordinate": "48.6131, 2.4853",
+            "BoundingBox": {
+                "North": 49.5123,
+                "South": 47.7139,
+                "East": 3.8473,
+                "West": 1.1233
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Essonne+River/@48.6131,2.4853,11z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=11/48.6131/2.4853"
+            }
+        },
+        {
+            "PlaceName": "Etampes",
+            "GPS_Coordinate": "48.4344,2.1672",
+            "BoundingBox": {
+                "North": 49.3339,
+                "South": 47.5349,
+                "East": 3.5212,
+                "West": 0.8132
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map28.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map VIII: Pursuit to the Seine, 20-24 August 1944, depicting 7th Armored Division and 5th Infantry Division advances through areas including Etampes region.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/%C3%89tampes,+France/@48.434444,2.167222,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=14/48.4344/2.1672/Europe/France/%C3%89tampes"
+            }
+        }
+    ],
+    "8": [
+        {
+            "PlaceName": "Malesherbes",
+            "GPS_Coordinate": "48.316944, 2.416667",
+            "BoundingBox": {
+                "North": 49.2161,
+                "South": 47.4177,
+                "East": 3.7657,
+                "West": 1.0677
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Historical WWII map illustrating the advance of the U.S. 7th Armored Division from Dreux toward Melun and patrols to Rambouillet and the Seine, alongside the 5th Infantry Division from Chartres to Fontainebleau and Montereau, during the pursuit to the Seine.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Malesherbes,+77760,+France/@48.316944,2.416667,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://map.openstreetbrowser.org/?zoom=14&lat=48.316944&lon=2.416667"
+            }
+        },
+        {
+            "PlaceName": "la Chapelle",
+            "GPS_Coordinate": "48.3064, 2.4953",
+            "BoundingBox": {
+                "North": 49.2044,
+                "South": 47.4084,
+                "East": 3.8433,
+                "West": 1.1473
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAPVIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map VIII: The XII Corps Drive, 22-25 August 1944, depicting the area around la Chapelle during the advance toward Fontainebleau.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Army Center of Military History publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/La+Chapelle-la-Reine,+France/@48.306389,2.495278,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.3064/2.4953/La%20Chapelle-la-Reine"
+            }
+        },
+        {
+            "PlaceName": "Fontainebleau",
+            "GPS_Coordinate": "48.404722,2.701111",
+            "BoundingBox": {
+                "North": 49.3042,
+                "South": 47.5052,
+                "East": 4.0451,
+                "West": 1.3571
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 28-1 from U.S. Army in World War II: Breakout and Pursuit, Chapter 28, illustrating German First Army and LXXX Corps positions and movements toward Fontainebleau and the upper Seine line in August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Fontainebleau,+France/@48.404722,2.701111,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.404722/2.701111"
+            }
+        },
+        {
+            "PlaceName": "Montereau",
+            "GPS_Coordinate": "48.3931, 2.9503",
+            "BoundingBox": {
+                "North": 49.2923,
+                "South": 47.4939,
+                "East": 4.2946,
+                "West": 1.606
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map27.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 27. Enemy concentrations southwest of Paris, circa 20-21 August 1944, showing German 48th and 338th Infantry Divisions at Montereau.",
+                    "External_Map_Capture_Date": "2024-10-06T10:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Montereau-Fault-Yonne,+France/@48.3931,2.9503,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/48.3931/2.9503"
+            }
+        }
+    ],
+    "9": [
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        }
+    ],
+    "10": [
+        {
+            "PlaceName": "Fontainebleau",
+            "GPS_Coordinate": "48.404722,2.701111",
+            "BoundingBox": {
+                "North": 49.3042,
+                "South": 47.5052,
+                "East": 4.0451,
+                "West": 1.3571
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 28-1 from U.S. Army in World War II: Breakout and Pursuit, Chapter 28, illustrating German First Army and LXXX Corps positions and movements toward Fontainebleau and the upper Seine line in August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Fontainebleau,+France/@48.404722,2.701111,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.404722/2.701111"
+            }
+        },
+        {
+            "PlaceName": "Montereau",
+            "GPS_Coordinate": "48.3931, 2.9503",
+            "BoundingBox": {
+                "North": 49.2923,
+                "South": 47.4939,
+                "East": 4.2946,
+                "West": 1.606
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map27.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 27. Enemy concentrations southwest of Paris, circa 20-21 August 1944, showing German 48th and 338th Infantry Divisions at Montereau.",
+                    "External_Map_Capture_Date": "2024-10-06T10:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Montereau-Fault-Yonne,+France/@48.3931,2.9503,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/48.3931/2.9503"
+            }
+        },
+        {
+            "PlaceName": "Loing River",
+            "GPS_Coordinate": "48.1714, 2.7153",
+            "BoundingBox": {
+                "North": 49.071,
+                "South": 47.2718,
+                "East": 4.0583,
+                "West": 1.3723
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map-XXVIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVIII: Advance of Third Army, 19-25 August 1944, depicting XII Corps movements bypassing Montargis to Souppes-sur-Loing on the Loing River and onward to Sens.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Loing+River%2C+Souppes-sur-Loing%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.1714/2.7153"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Nemours",
+            "GPS_Coordinate": "48.2686, 2.7028",
+            "BoundingBox": {
+                "North": 49.1695,
+                "South": 47.3677,
+                "East": 4.0548,
+                "West": 1.3508
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map IX: XX Corps advance toward Melun and the Seine bridges, 20-24 August 1944, covering the Paris-Orl\u00e9ans gap area including Nemours region.",
+                    "External_Map_Capture_Date": "2024-11-08T15:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Nemours,+France/@48.268611,2.702778,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=14/48.2686/2.7028/Nemours,_France"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        }
+    ],
+    "11": [
+        {
+            "PlaceName": "Etampes",
+            "GPS_Coordinate": "48.4344,2.1672",
+            "BoundingBox": {
+                "North": 49.3339,
+                "South": 47.5349,
+                "East": 3.5212,
+                "West": 0.8132
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map28.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map VIII: Pursuit to the Seine, 20-24 August 1944, depicting 7th Armored Division and 5th Infantry Division advances through areas including Etampes region.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/%C3%89tampes,+France/@48.434444,2.167222,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=14/48.4344/2.1672/Europe/France/%C3%89tampes"
+            }
+        },
+        {
+            "PlaceName": "Yonne River",
+            "GPS_Coordinate": "48.1975, 2.4503",
+            "BoundingBox": {
+                "North": 49.0958,
+                "South": 47.2992,
+                "East": 3.7963,
+                "West": 1.1043
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map17.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map XVII from 'Breakout and Pursuit': The Seizure of Sens, 21-22 August 1944. Shows Combat Command A (CCA) of the 4th Armored Division bypassing Montargis, advancing to Souppes-sur-Loing, Sens, and establishing a bridgehead east of the Yonne River.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Yonne+River%2C+Sens%2C+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#zoom=12&lat=48.1975&lon=2.4503"
+            }
+        },
+        {
+            "PlaceName": "Montereau",
+            "GPS_Coordinate": "48.3931, 2.9503",
+            "BoundingBox": {
+                "North": 49.2923,
+                "South": 47.4939,
+                "East": 4.2946,
+                "West": 1.606
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map27.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 27. Enemy concentrations southwest of Paris, circa 20-21 August 1944, showing German 48th and 338th Infantry Divisions at Montereau.",
+                    "External_Map_Capture_Date": "2024-10-06T10:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Montereau-Fault-Yonne,+France/@48.3931,2.9503,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/48.3931/2.9503"
+            }
+        },
+        {
+            "Event_Doc": "chapter28e-event.json",
+            "Source_Doc": "chapter28e-content.md",
+            "Sub-event_summary": "General Eddy took XII Corps, mission to Yonne at Sens; attached 137th Infantry to 4th Armored, ordered attack 20 August; CCA bypassed Montargis, to Souppes-sur-Loing 21 August, to Sens afternoon, surprised garrison, bridgehead east Yonne by 22 morning.",
+            "PlaceName": "Sens",
+            "GPS_Coordinate": "48.1969, 2.8028",
+            "BoundingBox": {
+                "North": 49.1015,
+                "South": 47.2923,
+                "East": 4.1598,
+                "West": 1.4458
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXVII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVII: Third Army Maneuver, 19-25 August 1944, showing XII Corps advance towards Sens and the Yonne River.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sens,+Yonne,+France/@48.196944,2.802778,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/?lat=48.196944&lon=2.802778&zoom=14"
+            }
+        }
+    ],
+    "12": [
+        {
+            "PlaceName": "Montereau",
+            "GPS_Coordinate": "48.3931, 2.9503",
+            "BoundingBox": {
+                "North": 49.2923,
+                "South": 47.4939,
+                "East": 4.2946,
+                "West": 1.606
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map27.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 27. Enemy concentrations southwest of Paris, circa 20-21 August 1944, showing German 48th and 338th Infantry Divisions at Montereau.",
+                    "External_Map_Capture_Date": "2024-10-06T10:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Montereau-Fault-Yonne,+France/@48.3931,2.9503,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/48.3931/2.9503"
+            }
+        },
+        {
+            "PlaceName": "Fontainebleau",
+            "GPS_Coordinate": "48.404722,2.701111",
+            "BoundingBox": {
+                "North": 49.3042,
+                "South": 47.5052,
+                "East": 4.0451,
+                "West": 1.3571
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 28-1 from U.S. Army in World War II: Breakout and Pursuit, Chapter 28, illustrating German First Army and LXXX Corps positions and movements toward Fontainebleau and the upper Seine line in August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Fontainebleau,+France/@48.404722,2.701111,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.404722/2.701111"
+            }
+        }
+    ],
+    "13": [
+        {
+            "PlaceName": "Dreux",
+            "GPS_Coordinate": "48.7358, 1.3714",
+            "BoundingBox": {
+                "North": 49.6341,
+                "South": 47.8375,
+                "East": 2.7294,
+                "West": 0.0134
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map XXVI: Panzer Group Eberbach, 15-19 August 1944, depicting the front lines and movements during the period relevant to the sub-event involving withdrawal east of Flers and engagements with LXVIII Corps.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dreux,+France/@48.7358,1.3714,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!map=14/48.7358/1.3714/Dreux"
+            }
+        },
+        {
+            "PlaceName": "Melun",
+            "GPS_Coordinate": {
+                "lat": 48.5404,
+                "lon": 2.6614
+            },
+            "BoundingBox": {
+                "North": 49.4398,
+                "South": 47.641,
+                "East": 4.0184,
+                "West": 1.3044
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map XXII: Closing to the Seine, 19-25 August 1944, from U.S. Army in World War II series 'Breakout and Pursuit'. Depicts Allied advances and German dispositions southeast of Paris, including concentrations at Melun, Fontainebleau, and Montereau during the pursuit across France.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Melun,+France/@48.5404,2.6614,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!map=14/48.5404/2.6614/Melun"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Fontainebleau",
+            "GPS_Coordinate": "48.404722,2.701111",
+            "BoundingBox": {
+                "North": 49.3042,
+                "South": 47.5052,
+                "East": 4.0451,
+                "West": 1.3571
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 28-1 from U.S. Army in World War II: Breakout and Pursuit, Chapter 28, illustrating German First Army and LXXX Corps positions and movements toward Fontainebleau and the upper Seine line in August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Fontainebleau,+France/@48.404722,2.701111,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.404722/2.701111"
+            }
+        },
+        {
+            "PlaceName": "Paris",
+            "GPS_Coordinate": "48.8567, 2.3528",
+            "BoundingBox": {
+                "North": 49.7562,
+                "South": 47.9572,
+                "East": 3.7218,
+                "West": 0.9838
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Paris,+France/@48.8567,2.3528,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.8567/2.3528"
+            }
+        },
+        {
+            "PlaceName": "Montereau",
+            "GPS_Coordinate": "48.3931, 2.9503",
+            "BoundingBox": {
+                "North": 49.2923,
+                "South": 47.4939,
+                "East": 4.2946,
+                "West": 1.606
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map27.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 27. Enemy concentrations southwest of Paris, circa 20-21 August 1944, showing German 48th and 338th Infantry Divisions at Montereau.",
+                    "External_Map_Capture_Date": "2024-10-06T10:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Montereau-Fault-Yonne,+France/@48.3931,2.9503,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/48.3931/2.9503"
+            }
+        },
+        {
+            "PlaceName": "Corbeil",
+            "GPS_Coordinate": "48.6131, 2.4867",
+            "BoundingBox": {
+                "North": 49.5126,
+                "South": 47.7136,
+                "East": 3.8437,
+                "West": 1.1297
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Corbeil-Essonnes,+France/@48.613056,2.486667,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.6131&lon=2.4867&zoom=14"
+            }
+        }
+    ],
+    "14": [
+        {
+            "PlaceName": "Melun",
+            "GPS_Coordinate": {
+                "lat": 48.5404,
+                "lon": 2.6614
+            },
+            "BoundingBox": {
+                "North": 49.4398,
+                "South": 47.641,
+                "East": 4.0184,
+                "West": 1.3044
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map XXII: Closing to the Seine, 19-25 August 1944, from U.S. Army in World War II series 'Breakout and Pursuit'. Depicts Allied advances and German dispositions southeast of Paris, including concentrations at Melun, Fontainebleau, and Montereau during the pursuit across France.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Melun,+France/@48.5404,2.6614,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!map=14/48.5404/2.6614/Melun"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Dreux",
+            "GPS_Coordinate": "48.7358, 1.3714",
+            "BoundingBox": {
+                "North": 49.6341,
+                "South": 47.8375,
+                "East": 2.7294,
+                "West": 0.0134
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map XXVI: Panzer Group Eberbach, 15-19 August 1944, depicting the front lines and movements during the period relevant to the sub-event involving withdrawal east of Flers and engagements with LXVIII Corps.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dreux,+France/@48.7358,1.3714,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!map=14/48.7358/1.3714/Dreux"
+            }
+        },
+        {
+            "PlaceName": "Paris",
+            "GPS_Coordinate": "48.8567, 2.3528",
+            "BoundingBox": {
+                "North": 49.7562,
+                "South": 47.9572,
+                "East": 3.7218,
+                "West": 0.9838
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Paris,+France/@48.8567,2.3528,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.8567/2.3528"
+            }
+        }
+    ],
+    "15": [
+        {
+            "PlaceName": "Rambouillet",
+            "GPS_Coordinate": "48.6439,1.8333",
+            "BoundingBox": {
+                "North": 49.5429,
+                "South": 47.7449,
+                "East": 3.1943,
+                "West": 0.4723
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Rambouillet,+France/@48.6439,1.8333,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6439/1.8333"
+            }
+        },
+        {
+            "PlaceName": "Arpajon",
+            "GPS_Coordinate": "48.5906, 2.2561",
+            "BoundingBox": {
+                "North": 49.4901,
+                "South": 47.6911,
+                "East": 3.6161,
+                "West": 0.8961
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map28.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVIII: Advance of XII Corps toward Melun and across the Seine, 21-25 August 1944. Depicts operations including artillery positions near Arpajon that delayed CCA on 22 August.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Arpajon,+France/@48.5906,2.2561,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.5906/2.2561"
+            }
+        },
+        {
+            "PlaceName": "Melun",
+            "GPS_Coordinate": {
+                "lat": 48.5404,
+                "lon": 2.6614
+            },
+            "BoundingBox": {
+                "North": 49.4398,
+                "South": 47.641,
+                "East": 4.0184,
+                "West": 1.3044
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map XXII: Closing to the Seine, 19-25 August 1944, from U.S. Army in World War II series 'Breakout and Pursuit'. Depicts Allied advances and German dispositions southeast of Paris, including concentrations at Melun, Fontainebleau, and Montereau during the pursuit across France.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Melun,+France/@48.5404,2.6614,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!map=14/48.5404/2.6614/Melun"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        }
+    ],
+    "16": [
+        {
+            "PlaceName": "Melun",
+            "GPS_Coordinate": {
+                "lat": 48.5404,
+                "lon": 2.6614
+            },
+            "BoundingBox": {
+                "North": 49.4398,
+                "South": 47.641,
+                "East": 4.0184,
+                "West": 1.3044
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map XXII: Closing to the Seine, 19-25 August 1944, from U.S. Army in World War II series 'Breakout and Pursuit'. Depicts Allied advances and German dispositions southeast of Paris, including concentrations at Melun, Fontainebleau, and Montereau during the pursuit across France.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Melun,+France/@48.5404,2.6614,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!map=14/48.5404/2.6614/Melun"
+            }
+        },
+        {
+            "PlaceName": "Arpajon",
+            "GPS_Coordinate": "48.5906, 2.2561",
+            "BoundingBox": {
+                "North": 49.4901,
+                "South": 47.6911,
+                "East": 3.6161,
+                "West": 0.8961
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map28.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVIII: Advance of XII Corps toward Melun and across the Seine, 21-25 August 1944. Depicts operations including artillery positions near Arpajon that delayed CCA on 22 August.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Arpajon,+France/@48.5906,2.2561,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.5906/2.2561"
+            }
+        }
+    ],
+    "17": [
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        },
+        {
+            "Event_Doc": "chapter28e-event.json",
+            "Source_Doc": "chapter28e-content.md",
+            "Sub-event_summary": "Prodded 23 August, CCA to Seine near Ponthierry afternoon; bridge destroyed, infantrymen crossed at Tilly, bridgehead evening; engineers bridged night.",
+            "PlaceName": "Ponthierry",
+            "GPS_Coordinate": {
+                "latitude": 48.5342,
+                "longitude": 2.6703
+            },
+            "BoundingBox": {
+                "North": 49.4322,
+                "South": 47.6362,
+                "East": 4.0263,
+                "West": 1.3143
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map depicting Combat Command A (CCA) advance and Seine River crossing operations near Ponthierry on 23 August 1944 during the breakout and pursuit phase.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Ponthierry,+France/@48.5342,2.6703,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.5342/2.6703"
+            }
+        },
+        {
+            "PlaceName": "Melun",
+            "GPS_Coordinate": {
+                "lat": 48.5404,
+                "lon": 2.6614
+            },
+            "BoundingBox": {
+                "North": 49.4398,
+                "South": 47.641,
+                "East": 4.0184,
+                "West": 1.3044
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map XXII: Closing to the Seine, 19-25 August 1944, from U.S. Army in World War II series 'Breakout and Pursuit'. Depicts Allied advances and German dispositions southeast of Paris, including concentrations at Melun, Fontainebleau, and Montereau during the pursuit across France.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Melun,+France/@48.5404,2.6614,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!map=14/48.5404/2.6614/Melun"
+            }
+        },
+        {
+            "PlaceName": "Tilly",
+            "GPS_Coordinate": "49.0661, -0.8333",
+            "BoundingBox": {
+                "North": 49.9649,
+                "South": 48.1673,
+                "East": 0.5367,
+                "West": -2.2033
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map-12-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Map XII-1: The Battlefield, 25 July 1944, showing dispositions relevant to Operation COBRA and Panzer Group West.",
+                    "External_Map_Capture_Date": "2024-10-06T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map-12-2.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Map XII-2: Armor on the Breakthrough Battlefield, Evening 25 July 1944, illustrating German Panzer positions including Panzer Group West.",
+                    "External_Map_Capture_Date": "2024-10-06T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Tilly/@49.0661,-0.8333,14z/data=!3m1!4b1!4m5!3m4!1s0x480fa0d4f4e0b5b7:0x4b0e4e4e4e4e4e4e!8m2!3d49.0661!4d-0.8333",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#lon=-0.8333&lat=49.0661&z=14"
+            }
+        }
+    ],
+    "18": [
+        {
+            "PlaceName": "Melun",
+            "GPS_Coordinate": {
+                "lat": 48.5404,
+                "lon": 2.6614
+            },
+            "BoundingBox": {
+                "North": 49.4398,
+                "South": 47.641,
+                "East": 4.0184,
+                "West": 1.3044
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map XXII: Closing to the Seine, 19-25 August 1944, from U.S. Army in World War II series 'Breakout and Pursuit'. Depicts Allied advances and German dispositions southeast of Paris, including concentrations at Melun, Fontainebleau, and Montereau during the pursuit across France.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Melun,+France/@48.5404,2.6614,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!map=14/48.5404/2.6614/Melun"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        }
+    ],
+    "19": [
+        {
+            "PlaceName": "Tilly",
+            "GPS_Coordinate": "49.0661, -0.8333",
+            "BoundingBox": {
+                "North": 49.9649,
+                "South": 48.1673,
+                "East": 0.5367,
+                "West": -2.2033
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map-12-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Map XII-1: The Battlefield, 25 July 1944, showing dispositions relevant to Operation COBRA and Panzer Group West.",
+                    "External_Map_Capture_Date": "2024-10-06T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map-12-2.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Map XII-2: Armor on the Breakthrough Battlefield, Evening 25 July 1944, illustrating German Panzer positions including Panzer Group West.",
+                    "External_Map_Capture_Date": "2024-10-06T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Tilly/@49.0661,-0.8333,14z/data=!3m1!4b1!4m5!3m4!1s0x480fa0d4f4e0b5b7:0x4b0e4e4e4e4e4e4e!8m2!3d49.0661!4d-0.8333",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#lon=-0.8333&lat=49.0661&z=14"
+            }
+        },
+        {
+            "PlaceName": "Dreux",
+            "GPS_Coordinate": "48.7358, 1.3714",
+            "BoundingBox": {
+                "North": 49.6341,
+                "South": 47.8375,
+                "East": 2.7294,
+                "West": 0.0134
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map XXVI: Panzer Group Eberbach, 15-19 August 1944, depicting the front lines and movements during the period relevant to the sub-event involving withdrawal east of Flers and engagements with LXVIII Corps.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dreux,+France/@48.7358,1.3714,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!map=14/48.7358/1.3714/Dreux"
+            }
+        },
+        {
+            "PlaceName": "Melun",
+            "GPS_Coordinate": {
+                "lat": 48.5404,
+                "lon": 2.6614
+            },
+            "BoundingBox": {
+                "North": 49.4398,
+                "South": 47.641,
+                "East": 4.0184,
+                "West": 1.3044
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map XXII: Closing to the Seine, 19-25 August 1944, from U.S. Army in World War II series 'Breakout and Pursuit'. Depicts Allied advances and German dispositions southeast of Paris, including concentrations at Melun, Fontainebleau, and Montereau during the pursuit across France.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Melun,+France/@48.5404,2.6614,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!map=14/48.5404/2.6614/Melun"
+            }
+        }
+    ],
+    "20": [
+        {
+            "PlaceName": "upper Seine River",
+            "GPS_Coordinate": "48.6450, 2.8950",
+            "BoundingBox": {
+                "North": 49.545,
+                "South": 47.745,
+                "East": 4.26,
+                "West": 1.53
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BreakoutVIII-3.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Bridgeheads Across the Seine, 23-26 August 1944, showing XII and XX Corps bridgeheads on the upper Seine between Melun and Troyes, and First Army at Mantes-Gassicourt.",
+                    "External_Map_Capture_Date": "2024-11-07T10:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@48.6450,2.8950,10z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/48.6450/2.8950"
+            }
+        },
+        {
+            "PlaceName": "Paris",
+            "GPS_Coordinate": "48.8567, 2.3528",
+            "BoundingBox": {
+                "North": 49.7562,
+                "South": 47.9572,
+                "East": 3.7218,
+                "West": 0.9838
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Paris,+France/@48.8567,2.3528,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.8567/2.3528"
+            }
+        },
+        {
+            "PlaceName": "Melun",
+            "GPS_Coordinate": {
+                "lat": 48.5404,
+                "lon": 2.6614
+            },
+            "BoundingBox": {
+                "North": 49.4398,
+                "South": 47.641,
+                "East": 4.0184,
+                "West": 1.3044
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map XXII: Closing to the Seine, 19-25 August 1944, from U.S. Army in World War II series 'Breakout and Pursuit'. Depicts Allied advances and German dispositions southeast of Paris, including concentrations at Melun, Fontainebleau, and Montereau during the pursuit across France.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Melun,+France/@48.5404,2.6614,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!map=14/48.5404/2.6614/Melun"
+            }
+        },
+        {
+            "PlaceName": "Troyes",
+            "GPS_Coordinate": {
+                "lat": 48.296944,
+                "lon": 4.071389
+            },
+            "BoundingBox": {
+                "North": 49.196944,
+                "South": 47.396944,
+                "East": 5.422389,
+                "West": 2.720389
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-VIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "MAP NO. VIII: Seine Crossings by Third Army, 25-28 August 1944, depicting 4th Armored Division's advance from Sens to Troyes, frontal attack, street fighting, and crossing north of Troyes.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Troyes,+France/@48.296944,4.071389,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=48.296944&lon=4.071389&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "lower Seine",
+            "GPS_Coordinate": "49.4432, 1.0998",
+            "BoundingBox": {
+                "North": 50.3412,
+                "South": 48.5452,
+                "East": 2.477,
+                "West": -0.277
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-BreakoutMaps/map28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 28-1 depicting operations around the Seine River crossings during the breakout and pursuit phase in August 1944",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Avancierende_Alliierten_Armeen_Aug44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_pocket",
+                    "External_Map_Description": "Map showing Allied advances towards the Seine River in August 1944 during the Normandy breakout",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.4432,1.0998,10z?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#map=10/49.4432/1.0998"
+            }
+        },
+        {
+            "PlaceName": "Mantes-Gassicourt",
+            "GPS_Coordinate": {
+                "lat": 48.9833,
+                "lon": 1.7167
+            },
+            "BoundingBox": {
+                "North": 49.8821,
+                "South": 48.0845,
+                "East": 3.0867,
+                "West": 0.3467
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mantes-Gassicourt,+France/@48.9833,1.7167,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/?lat=48.9833&lon=1.7167&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Paris",
+            "GPS_Coordinate": "48.8567, 2.3528",
+            "BoundingBox": {
+                "North": 49.7562,
+                "South": 47.9572,
+                "East": 3.7218,
+                "West": 0.9838
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Paris,+France/@48.8567,2.3528,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.8567/2.3528"
+            }
+        }
+    ]
+}

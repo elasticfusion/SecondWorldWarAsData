@@ -41,6 +41,7 @@ Rules_Data_Definitions:
 		- Occasionally an approximate time will be mentioned, include it with the date.
 		- Occasionally an exact time will be mentioned, include it with the date.
 	Sub-Event-Places: See the JSON structure below, places are to be aligned with the sub-event.
+		- Deduplicate places
 	Endnotes: Capture the number as presented in the text.
 	Footnote: Capture the footnote, including the symbol in the text document the footnote reference
 

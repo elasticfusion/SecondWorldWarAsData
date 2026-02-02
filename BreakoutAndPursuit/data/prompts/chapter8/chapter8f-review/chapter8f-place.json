@@ -1,0 +1,686 @@
+{
+    "1": [
+        {
+            "PlaceName": "Martinville ridge",
+            "GPS_Coordinate": "49.0700, -1.0300",
+            "BoundingBox": {
+                "North": 49.97,
+                "South": 48.17,
+                "East": 0.35,
+                "West": -2.41
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MAP-VIII.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+                    "External_Map_Description": "Map VIII: The Terrain Around St. L\u00f4 (1:50,000 scale map from 12 July 1944), depicting St. L\u00f4, Vire River loop, Hill 122, Martinville ridge, Hill 192, and converging road routes.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.0700,-1.0300,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#49.0700/-1.0300/14"
+            }
+        },
+        {
+            "PlaceName": "St. L\u00f4",
+            "GPS_Coordinate": "49.1167, -1.0833",
+            "BoundingBox": {
+                "North": 50.0176,
+                "South": 48.2158,
+                "East": 0.2887,
+                "West": -2.4553
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Saint-Lo_advance.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_for_Saint-L%C3%B4",
+                    "External_Map_Description": "Map showing the advance toward Saint-L\u00f4, 11\u201315 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP9-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map IX: VII Corps Drive Toward Saint-L\u00f4, 11-15 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army historical publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-L%C3%B4,+France/@49.1167,-1.0833,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.0833&lat=49.1167&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "B\u00e9rigny highway",
+            "GPS_Coordinate": "49.0828, -1.0161",
+            "BoundingBox": {
+                "North": 49.987,
+                "South": 48.1788,
+                "East": 0.353,
+                "West": -2.3851
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP27-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+                    "External_Map_Description": "Map 27: Hill 192 and vicinity, showing terrain, roads including highways near B\u00e9rigny, and dispositions prior to 2d Infantry Division assault on 11 July 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+                    "External_Map_Description": "Map 28: 2d Infantry Division attack on Hill 192, 11 July, illustrating phase lines, objectives, and advance routes along highways from B\u00e9rigny area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/B%C3%A9rigny+highway,+Normandy/@49.0828,-1.0161,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=49.0828&lon=-1.0161&zoom=14"
+            }
+        }
+    ],
+    "2": [
+        {
+            "PlaceName": "Martinville",
+            "GPS_Coordinate": "49.1197,-1.2039",
+            "BoundingBox": {
+                "North": 50.0206,
+                "South": 48.2188,
+                "East": 0.1681,
+                "West": -2.5759
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP8.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/index.html",
+                    "External_Map_Description": "Map VIII: VII Corps Attack Toward Saint-L\u00f4, 11-18 July 1944, depicting operations including resupply efforts near Martinville involving the 116th Infantry.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Martinville/@49.119722,-1.203889,16z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=16/49.1197/-1.2039"
+            }
+        },
+        {
+            "PlaceName": "B\u00e9rigny highway",
+            "GPS_Coordinate": "49.0828, -1.0161",
+            "BoundingBox": {
+                "North": 49.987,
+                "South": 48.1788,
+                "East": 0.353,
+                "West": -2.3851
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP27-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+                    "External_Map_Description": "Map 27: Hill 192 and vicinity, showing terrain, roads including highways near B\u00e9rigny, and dispositions prior to 2d Infantry Division assault on 11 July 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+                    "External_Map_Description": "Map 28: 2d Infantry Division attack on Hill 192, 11 July, illustrating phase lines, objectives, and advance routes along highways from B\u00e9rigny area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/B%C3%A9rigny+highway,+Normandy/@49.0828,-1.0161,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=49.0828&lon=-1.0161&zoom=14"
+            }
+        }
+    ],
+    "3": [
+        {
+            "PlaceName": "Martinville ridge",
+            "GPS_Coordinate": "49.0700, -1.0300",
+            "BoundingBox": {
+                "North": 49.97,
+                "South": 48.17,
+                "East": 0.35,
+                "West": -2.41
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MAP-VIII.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+                    "External_Map_Description": "Map VIII: The Terrain Around St. L\u00f4 (1:50,000 scale map from 12 July 1944), depicting St. L\u00f4, Vire River loop, Hill 122, Martinville ridge, Hill 192, and converging road routes.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.0700,-1.0300,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#49.0700/-1.0300/14"
+            }
+        },
+        {
+            "PlaceName": "B\u00e9rigny highway",
+            "GPS_Coordinate": "49.0828, -1.0161",
+            "BoundingBox": {
+                "North": 49.987,
+                "South": 48.1788,
+                "East": 0.353,
+                "West": -2.3851
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP27-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+                    "External_Map_Description": "Map 27: Hill 192 and vicinity, showing terrain, roads including highways near B\u00e9rigny, and dispositions prior to 2d Infantry Division assault on 11 July 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+                    "External_Map_Description": "Map 28: 2d Infantry Division attack on Hill 192, 11 July, illustrating phase lines, objectives, and advance routes along highways from B\u00e9rigny area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/B%C3%A9rigny+highway,+Normandy/@49.0828,-1.0161,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=49.0828&lon=-1.0161&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Hill 122",
+            "GPS_Coordinate": "49.0458,-1.4417",
+            "BoundingBox": {
+                "North": 49.9441,
+                "South": 48.1475,
+                "East": -0.0717,
+                "West": -2.8117
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-IV.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV showing VII Corps operations 3-12 July 1944, including 90th Infantry Division actions at Mont Castre and Hill 122.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.0458,-1.4417",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.0458/-1.4417"
+            }
+        },
+        {
+            "PlaceName": "St. L\u00f4",
+            "GPS_Coordinate": "49.1167, -1.0833",
+            "BoundingBox": {
+                "North": 50.0176,
+                "South": 48.2158,
+                "East": 0.2887,
+                "West": -2.4553
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Saint-Lo_advance.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_for_Saint-L%C3%B4",
+                    "External_Map_Description": "Map showing the advance toward Saint-L\u00f4, 11\u201315 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP9-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map IX: VII Corps Drive Toward Saint-L\u00f4, 11-15 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army historical publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-L%C3%B4,+France/@49.1167,-1.0833,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.0833&lat=49.1167&zoom=14"
+            }
+        }
+    ],
+    "4": [
+        {
+            "PlaceName": "St. L\u00f4",
+            "GPS_Coordinate": "49.1167, -1.0833",
+            "BoundingBox": {
+                "North": 50.0176,
+                "South": 48.2158,
+                "East": 0.2887,
+                "West": -2.4553
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Saint-Lo_advance.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_for_Saint-L%C3%B4",
+                    "External_Map_Description": "Map showing the advance toward Saint-L\u00f4, 11\u201315 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP9-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map IX: VII Corps Drive Toward Saint-L\u00f4, 11-15 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army historical publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-L%C3%B4,+France/@49.1167,-1.0833,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.0833&lat=49.1167&zoom=14"
+            }
+        }
+    ],
+    "5": [
+        {
+            "PlaceName": "St. L\u00f4",
+            "GPS_Coordinate": "49.1167, -1.0833",
+            "BoundingBox": {
+                "North": 50.0176,
+                "South": 48.2158,
+                "East": 0.2887,
+                "West": -2.4553
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Saint-Lo_advance.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_for_Saint-L%C3%B4",
+                    "External_Map_Description": "Map showing the advance toward Saint-L\u00f4, 11\u201315 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP9-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map IX: VII Corps Drive Toward Saint-L\u00f4, 11-15 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army historical publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-L%C3%B4,+France/@49.1167,-1.0833,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.0833&lat=49.1167&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Vire River",
+            "GPS_Coordinate": "48.8836,-0.8931",
+            "BoundingBox": {
+                "North": 49.7845,
+                "South": 47.9827,
+                "East": 0.4766,
+                "West": -2.2622
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map 1: Terrain of the Battlefield, July 1944, from Breakout and Pursuit by the U.S. Army Center of Military History, illustrating diversified terrain including bocage west of the Orne River, marshy areas near Carentan, open plains near Caen-Falaise, and the Vire River.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/Vire+River,+Normandy,+France/@48.8836,-0.8931,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-0.8931&lat=48.8836&zoom=12"
+            }
+        }
+    ],
+    "6": [
+        {
+            "PlaceName": "St. L\u00f4",
+            "GPS_Coordinate": "49.1167, -1.0833",
+            "BoundingBox": {
+                "North": 50.0176,
+                "South": 48.2158,
+                "East": 0.2887,
+                "West": -2.4553
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Saint-Lo_advance.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_for_Saint-L%C3%B4",
+                    "External_Map_Description": "Map showing the advance toward Saint-L\u00f4, 11\u201315 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP9-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map IX: VII Corps Drive Toward Saint-L\u00f4, 11-15 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army historical publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-L%C3%B4,+France/@49.1167,-1.0833,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.0833&lat=49.1167&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Vire River",
+            "GPS_Coordinate": "48.8836,-0.8931",
+            "BoundingBox": {
+                "North": 49.7845,
+                "South": 47.9827,
+                "East": 0.4766,
+                "West": -2.2622
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map 1: Terrain of the Battlefield, July 1944, from Breakout and Pursuit by the U.S. Army Center of Military History, illustrating diversified terrain including bocage west of the Orne River, marshy areas near Carentan, open plains near Caen-Falaise, and the Vire River.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/Vire+River,+Normandy,+France/@48.8836,-0.8931,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-0.8931&lat=48.8836&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Hill 122",
+            "GPS_Coordinate": "49.0458,-1.4417",
+            "BoundingBox": {
+                "North": 49.9441,
+                "South": 48.1475,
+                "East": -0.0717,
+                "West": -2.8117
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-IV.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV showing VII Corps operations 3-12 July 1944, including 90th Infantry Division actions at Mont Castre and Hill 122.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.0458,-1.4417",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.0458/-1.4417"
+            }
+        }
+    ],
+    "7": [
+        {
+            "PlaceName": "St. L\u00f4",
+            "GPS_Coordinate": "49.1167, -1.0833",
+            "BoundingBox": {
+                "North": 50.0176,
+                "South": 48.2158,
+                "East": 0.2887,
+                "West": -2.4553
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Saint-Lo_advance.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_for_Saint-L%C3%B4",
+                    "External_Map_Description": "Map showing the advance toward Saint-L\u00f4, 11\u201315 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP9-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map IX: VII Corps Drive Toward Saint-L\u00f4, 11-15 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army historical publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-L%C3%B4,+France/@49.1167,-1.0833,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.0833&lat=49.1167&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Hill 122",
+            "GPS_Coordinate": "49.0458,-1.4417",
+            "BoundingBox": {
+                "North": 49.9441,
+                "South": 48.1475,
+                "East": -0.0717,
+                "West": -2.8117
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-IV.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV showing VII Corps operations 3-12 July 1944, including 90th Infantry Division actions at Mont Castre and Hill 122.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.0458,-1.4417",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.0458/-1.4417"
+            }
+        },
+        {
+            "PlaceName": "Martinville ridge",
+            "GPS_Coordinate": "49.0700, -1.0300",
+            "BoundingBox": {
+                "North": 49.97,
+                "South": 48.17,
+                "East": 0.35,
+                "West": -2.41
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MAP-VIII.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+                    "External_Map_Description": "Map VIII: The Terrain Around St. L\u00f4 (1:50,000 scale map from 12 July 1944), depicting St. L\u00f4, Vire River loop, Hill 122, Martinville ridge, Hill 192, and converging road routes.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.0700,-1.0300,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#49.0700/-1.0300/14"
+            }
+        },
+        {
+            "PlaceName": "Hill 192",
+            "GPS_Coordinate": "49.1083, -1.1500",
+            "BoundingBox": {
+                "North": 50.0079,
+                "South": 48.2087,
+                "East": 0.221,
+                "West": -2.521
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP8.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+                    "External_Map_Description": "Map No. 8: Terrain around St. L\u00f4 and vicinity, 17-18 July 1944, depicting Hill 192, Hill 122, Martinville ridge, Vire River loop, and converging road routes.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Hill%20192%2C%20St.%20L%C3%B4%2C%20France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.1083/-1.1500"
+            }
+        },
+        {
+            "PlaceName": "B\u00e9rigny road",
+            "GPS_Coordinate": "49.0667,-1.1700",
+            "BoundingBox": {
+                "North": 49.9655,
+                "South": 48.1679,
+                "East": 0.202,
+                "West": -2.542
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map8-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+                    "External_Map_Description": "Map 8-1 from 'Breakout and Pursuit': The 2d Infantry Division's Attack Toward Hill 192, 10-11 July 1944, depicting the area including B\u00e9rigny road and surrounding terrain during the U.S. advance.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=B%C3%A9rigny%20road%2C%20Normandy%2C%20France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?zoom=14&lat=49.0667&lon=-1.1700"
+            }
+        },
+        {
+            "PlaceName": "Vire River",
+            "GPS_Coordinate": "48.8836,-0.8931",
+            "BoundingBox": {
+                "North": 49.7845,
+                "South": 47.9827,
+                "East": 0.4766,
+                "West": -2.2622
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map 1: Terrain of the Battlefield, July 1944, from Breakout and Pursuit by the U.S. Army Center of Military History, illustrating diversified terrain including bocage west of the Orne River, marshy areas near Carentan, open plains near Caen-Falaise, and the Vire River.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/Vire+River,+Normandy,+France/@48.8836,-0.8931,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-0.8931&lat=48.8836&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        }
+    ],
+    "8": [
+        {
+            "PlaceName": "St. L\u00f4",
+            "GPS_Coordinate": "49.1167, -1.0833",
+            "BoundingBox": {
+                "North": 50.0176,
+                "South": 48.2158,
+                "East": 0.2887,
+                "West": -2.4553
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Saint-Lo_advance.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_for_Saint-L%C3%B4",
+                    "External_Map_Description": "Map showing the advance toward Saint-L\u00f4, 11\u201315 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP9-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map IX: VII Corps Drive Toward Saint-L\u00f4, 11-15 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army historical publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-L%C3%B4,+France/@49.1167,-1.0833,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.0833&lat=49.1167&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Vire River",
+            "GPS_Coordinate": "48.8836,-0.8931",
+            "BoundingBox": {
+                "North": 49.7845,
+                "South": 47.9827,
+                "East": 0.4766,
+                "West": -2.2622
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map 1: Terrain of the Battlefield, July 1944, from Breakout and Pursuit by the U.S. Army Center of Military History, illustrating diversified terrain including bocage west of the Orne River, marshy areas near Carentan, open plains near Caen-Falaise, and the Vire River.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/Vire+River,+Normandy,+France/@48.8836,-0.8931,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-0.8931&lat=48.8836&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Couvains-Calvaire road",
+            "GPS_Coordinate": "49.1531,-1.0414",
+            "BoundingBox": {
+                "North": "50.0540",
+                "South": "48.2522",
+                "East": "0.3316",
+                "West": "-2.4148"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAPVIII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+                    "External_Map_Description": "Map VIII-1 depicting the St. L\u00f4 breakthrough area on 10 July 1944, illustrating XIX Corps dispositions across the front north of the city, including the vicinity of Couvains.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=49.1531,-1.0414",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/49.1531/-1.0414"
+            }
+        },
+        {
+            "PlaceName": "Ste. Croix church",
+            "GPS_Coordinate": "49.1158, -1.0830",
+            "BoundingBox": {
+                "North": 50.0154,
+                "South": 48.2162,
+                "East": 0.286,
+                "West": -2.452
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-8.html",
+                    "External_Map_Description": "Map 35: The Attack on St. Lo (15-18 July 1944), depicting operations in the St. L\u00f4 area including vicinity of Ste. Croix church during the battle and post-capture phase.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/%C3%89glise+Sainte-Croix/@49.11582,-1.08296,17z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=17/49.11582/-1.08296"
+            }
+        }
+    ]
+}

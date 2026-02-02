@@ -1,953 +1,1315 @@
 {
-  "Event_Doc": "chapter1a-event.json",
-  "Source_Doc": "chapter1-meta.md",
-  "SubEvents": [
-    {
-      "Sub-event_summary": "Overview of the Allied strategic objective in summer 1944, contrasting the situation on 1 July 1944 with progress by September, and confirming the initial phase success of the cross-Channel attack by early July.",
-      "Places": {
-        "Channel coast of France": {
-          "GPS_Coordinate": "49.4944, 0.1000",
-          "BoundingBox": {
-            "North": 50.3953009009009,
-            "South": 48.5934990990991,
-            "East": 1.4870205983564575,
-            "West": -1.2870205983564573
-          },
-          "External_Maps": [
-            {
-              "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USMA/WEurope1/maps/WEurope1-3.jpg",
-              "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USMA/WEurope1/WEurope1-3.html",
-              "External_Map_Description": "The War in Western Europe: Allied Invasion Force and German Dispositions 6 June 1944",
-              "External_Map_Capture_Date": "1944",
-              "External_Map_Licence": "Public Domain"
+    "2": [
+        {
+            "PlaceName": "northwest France",
+            "GPS_Coordinate": "49.3000,-0.8500",
+            "BoundingBox": {
+                "North": 50.2048,
+                "South": 48.3952,
+                "East": 0.5337,
+                "West": -2.2337
             },
-            {
-              "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/d/d5/Exploitation.jpg",
-              "External_Map_Page": "https://www.bigpigeon.us/northern-france--belgium.html",
-              "External_Map_Description": "Northwestern France, 1944: The Exploitation Operations, 14-25 August 1944",
-              "External_Map_Capture_Date": "1944",
-              "External_Map_Licence": "Public Domain"
-            },
-            {
-              "External_Map_Link": "https://www.worldhistory.org/uploads/images/18983.png",
-              "External_Map_Page": "https://www.worldhistory.org/D-Day/",
-              "External_Map_Description": "Allied D-Day Landings of WWII, June 1944",
-              "External_Map_Capture_Date": "1944",
-              "External_Map_Licence": "Public Domain"
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Buildup Area, 19 June 1944, illustrating the Allied lodgment area in northwest France, its boundaries, and strategic features.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.3000,-0.8500,8z?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.3000/-0.8500"
             }
-          ],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.4944,0.1000,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.4944/0.1000"
-          }
         },
-        "England": {
-          "GPS_Coordinate": "52.3555, -1.1743",
-          "BoundingBox": {
-            "North": 53.2564009009009,
-            "South": 51.4545990990991,
-            "East": 0.30074816324008835,
-            "West": -2.649348163240088
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@52.3555,-1.1743,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/52.3555/-1.1743"
-          }
-        },
-        "France": {
-          "GPS_Coordinate": "46.2276, 2.2137",
-          "BoundingBox": {
-            "North": 47.1285009009009,
-            "South": 45.3266990990991,
-            "East": 3.515964922390536,
-            "West": 0.9114350776094637
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@46.2276,2.2137,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/46.2276/2.2137"
-          }
-        },
-        "Germany": {
-          "GPS_Coordinate": "51.1657, 10.4515",
-          "BoundingBox": {
-            "North": 52.0666009009009,
-            "South": 50.2647990990991,
-            "East": 11.888182578395323,
-            "West": 9.014817421604675
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@51.1657,10.4515,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/51.1657/10.4515"
-          }
-        },
-        "Siegfried Line": {
-          "GPS_Coordinate": "50.7753, 6.0839",
-          "BoundingBox": {
-            "North": 51.6762009009009,
-            "South": 49.8743990990991,
-            "East": 7.508557112314236,
-            "West": 4.659242887685764
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@50.7753,6.0839,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/50.7753/6.0839"
-          }
-        },
-        "Belgium": {
-          "GPS_Coordinate": "50.5039, 4.4699",
-          "BoundingBox": {
-            "North": 51.4048009009009,
-            "South": 49.6029990990991,
-            "East": 5.886353622216923,
-            "West": 3.0534463777830765
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@50.5039,4.4699,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/50.5039/4.4699"
-          }
-        },
-        "Luxembourg": {
-          "GPS_Coordinate": "49.8153, 6.1296",
-          "BoundingBox": {
-            "North": 50.7162009009009,
-            "South": 48.9143990990991,
-            "East": 7.525796403215093,
-            "West": 4.733403596784907
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.8153,6.1296,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.8153/6.1296"
-          }
-        },
-        "Netherlands": {
-          "GPS_Coordinate": "52.1326, 5.2913",
-          "BoundingBox": {
-            "North": 53.0335009009009,
-            "South": 51.231699099099096,
-            "East": 6.758957013440371,
-            "West": 3.823642986559628
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@52.1326,5.2913,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/52.1326/5.2913"
-          }
-        }
-      }
-    },
-    {
-      "Sub-event_summary": "Definition and strategic importance of the lodgment area as a prerequisite for the main offensive into Germany, including its geographic boundaries, advantages, and key ports.",
-      "Places": {
-        "northwest France": {
-          "GPS_Coordinate": "48.5, -1.5",
-          "BoundingBox": {
-            "North": 49.4009009009009,
-            "South": 47.5990990990991,
-            "East": -0.14039595039903885,
-            "West": -2.859604049600961
-          },
-          "External_Maps": [
-            {
-              "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-1.jpg",
-              "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/",
-              "External_Map_Description": "Map I (referenced in context of lodgment area and ports)",
-              "External_Map_Capture_Date": "1961",
-              "External_Map_Licence": "Public Domain"
+        {
+            "PlaceName": "Seine River",
+            "GPS_Coordinate": "49.4404,1.0819",
+            "BoundingBox": {
+                "North": 50.3384,
+                "South": 48.5424,
+                "East": 2.4589,
+                "West": -0.2951
             },
-            {
-              "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-8.jpg",
-              "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/",
-              "External_Map_Description": "Map VIII (referenced in context of lodgment area and ports)",
-              "External_Map_Capture_Date": "1961",
-              "External_Map_Licence": "Public Domain"
-            },
-            {
-              "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-12.jpg",
-              "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/",
-              "External_Map_Description": "Map XII (referenced in context of lodgment area and ports)",
-              "External_Map_Capture_Date": "1961",
-              "External_Map_Licence": "Public Domain"
-            },
-            {
-              "External_Map_Link": "http://johnsmilitaryhistory.com/operationchastityUSA-E-Breakout-VIIIb.jpg",
-              "External_Map_Page": "http://johnsmilitaryhistory.com/OperationChastity.html",
-              "External_Map_Description": "Breakout Into Brittany 1-12 Aug 1944",
-              "External_Map_Capture_Date": "1944",
-              "External_Map_Licence": "Public Domain"
-            },
-            {
-              "External_Map_Link": "https://achillestheheel.com/wp-content/uploads/2024/05/overall-normandy-map-v2-01.jpg",
-              "External_Map_Page": "https://achillestheheel.com/2024/06/08/normandy-1-prelude-to-battle/",
-              "External_Map_Description": "Normandy 1944",
-              "External_Map_Capture_Date": "1944",
-              "External_Map_Licence": "Public Domain"
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map 1. The Lodgment Area as of 26 June 1944, depicting the geographic boundaries including the Seine River as the eastern limit.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/91/Normandybeachheadmap.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:NORMANDYBEACHHEADMAP.jpg",
+                    "External_Map_Description": "Normandy beachhead map showing the Allied lodgment area expansion towards the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Seine+River%2C+Normandy%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0819&lat=49.4404&zoom=10"
             }
-          ],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@48.5,-1.5,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/48.5/-1.5"
-          }
         },
-        "Seine River": {
-          "GPS_Coordinate": "49.4833, 0.1",
-          "BoundingBox": {
-            "North": 50.3842009009009,
-            "South": 48.5823990990991,
-            "East": 1.4867061393835412,
-            "West": -1.286706139383541
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.4833,0.1,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.4833/0.1"
-          }
-        },
-        "Eure River": {
-          "GPS_Coordinate": "49.4333, 0.3667",
-          "BoundingBox": {
-            "North": 50.3342009009009,
-            "South": 48.5323990990991,
-            "East": 1.7519920675209355,
-            "West": -1.0185920675209355
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.4333,0.3667,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.4333/0.3667"
-          }
-        },
-        "Loire River": {
-          "GPS_Coordinate": "47.2764, -2.2089",
-          "BoundingBox": {
-            "North": 48.1773009009009,
-            "South": 46.3754990990991,
-            "East": -0.8810430627256529,
-            "West": -3.5367569372743466
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@47.2764,-2.2089,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/47.2764/-2.2089"
-          }
-        },
-        "Normandy": {
-          "GPS_Coordinate": "49.1829, -0.3707",
-          "BoundingBox": {
-            "North": 50.0838009009009,
-            "South": 48.281999099099096,
-            "East": 1.0075692930501379,
-            "West": -1.748969293050138
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.1829,-0.3707,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.1829/-0.3707"
-          }
-        },
-        "Brittany": {
-          "GPS_Coordinate": "48.1173, -1.6778",
-          "BoundingBox": {
-            "North": 49.0182009009009,
-            "South": 47.2163990990991,
-            "East": -0.3283536340367952,
-            "West": -3.0272463659632045
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@48.1173,-1.6778,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/48.1173/-1.6778"
-          }
-        },
-        "Anjou": {
-          "GPS_Coordinate": "47.4784, -0.5632",
-          "BoundingBox": {
-            "North": 48.3793009009009,
-            "South": 46.5774990990991,
-            "East": 0.7697537110744946,
-            "West": -1.8961537110744948
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@47.4784,-0.5632,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/47.4784/-0.5632"
-          }
-        },
-        "Maine": {
-          "GPS_Coordinate": "48.0061, 0.1996",
-          "BoundingBox": {
-            "North": 48.907000900900904,
-            "South": 47.1051990990991,
-            "East": 1.5461344939772586,
-            "West": -1.1469344939772586
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@48.0061,0.1996,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/48.0061/0.1996"
-          }
-        },
-        "Orléans": {
-          "GPS_Coordinate": "47.9030, 1.9093",
-          "BoundingBox": {
-            "North": 48.8039009009009,
-            "South": 47.0020990990991,
-            "East": 3.2531504452702102,
-            "West": 0.5654495547297897
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@47.9030,1.9093,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/47.9030/1.9093"
-          }
-        },
-        "Rouen": {
-          "GPS_Coordinate": "49.4432, 1.0993",
-          "BoundingBox": {
-            "North": 50.3441009009009,
-            "South": 48.5422990990991,
-            "East": 2.484871740961763,
-            "West": -0.2862717409617632
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.4432,1.0993,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.4432/1.0993"
-          }
-        },
-        "Le Havre": {
-          "GPS_Coordinate": "49.4944, 0.1079",
-          "BoundingBox": {
-            "North": 50.3953009009009,
-            "South": 48.5934990990991,
-            "East": 1.4949205983564573,
-            "West": -1.2791205983564575
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.4944,0.1079,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.4944/0.1079"
-          }
-        },
-        "Cherbourg": {
-          "GPS_Coordinate": "49.6339, -1.6222",
-          "BoundingBox": {
-            "North": 50.5348009009009,
-            "South": 48.732999099099096,
-            "East": -0.23121076381966432,
-            "West": -3.013189236180336
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.6339,-1.6222,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.6339/-1.6222"
-          }
-        },
-        "St. Malo": {
-          "GPS_Coordinate": "48.6493, -2.0257",
-          "BoundingBox": {
-            "North": 49.5502009009009,
-            "South": 47.748399099099096,
-            "East": -0.662075048139386,
-            "West": -3.389324951860614
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@48.6493,-2.0257,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/48.6493/-2.0257"
-          }
-        },
-        "Brest": {
-          "GPS_Coordinate": "48.3904, -4.4861",
-          "BoundingBox": {
-            "North": 49.2913009009009,
-            "South": 47.4894990990991,
-            "East": -3.129426754819654,
-            "West": -5.8427732451803465
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@48.3904,-4.4861,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/48.3904/-4.4861"
-          }
-        },
-        "Lorient": {
-          "GPS_Coordinate": "47.7481, -3.3702",
-          "BoundingBox": {
-            "North": 48.6490009009009,
-            "South": 46.8471990990991,
-            "East": -2.0303539474884307,
-            "West": -4.7100460525115695
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@47.7481,-3.3702,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/47.7481/-3.3702"
-          }
-        },
-        "Vannes": {
-          "GPS_Coordinate": "47.6582, -2.7605",
-          "BoundingBox": {
-            "North": 48.5591009009009,
-            "South": 46.7572990990991,
-            "East": -1.4229625954649385,
-            "West": -4.098037404535061
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@47.6582,-2.7605,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/47.6582/-2.7605"
-          }
-        },
-        "St. Nazaire": {
-          "GPS_Coordinate": "47.2769, -2.2136",
-          "BoundingBox": {
-            "North": 48.1778009009009,
-            "South": 46.3759990990991,
-            "East": -0.885730515419,
-            "West": -3.541469484581
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@47.2769,-2.2136,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/47.2769/-2.2136"
-          }
-        },
-        "Nantes": {
-          "GPS_Coordinate": "47.2184, -1.5536",
-          "BoundingBox": {
-            "North": 48.1193009009009,
-            "South": 46.3174990990991,
-            "East": -0.22719625797443888,
-            "West": -2.8800037420255613
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@47.2184,-1.5536,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/47.2184/-1.5536"
-          }
-        }
-      }
-    },
-    {
-      "Sub-event_summary": "Assessment of Allied progress by June/July 1944 against planning expectations, including achievements in beachheads, captures, build-up figures, and identified deficiencies such as limited territorial control, logistical shortfalls, congestion, and the status of Caen.",
-      "Places": {
-        "Normandy": {
-          "GPS_Coordinate": "49.1829, -0.3707",
-          "BoundingBox": {
-            "North": 50.0838009009009,
-            "South": 48.281999099099096,
-            "East": 1.0075692930501379,
-            "West": -1.748969293050138
-          },
-          "External_Maps": [
-            {
-              "External_Map_Link": "https://www.worldhistory.org/uploads/images/18983.png",
-              "External_Map_Page": "https://www.worldhistory.org/D-Day/",
-              "External_Map_Description": "Allied D-Day Landings of WWII, June 1944",
-              "External_Map_Capture_Date": "1944",
-              "External_Map_Licence": "Public Domain"
+        {
+            "Event_Doc": "chapter1a-event.json",
+            "Source_Doc": "chapter1a-content.md",
+            "Sub-event_summary": "Definition and strategic importance of the lodgment area as a prerequisite for the main offensive into Germany, including its geographic boundaries, advantages, and key ports.",
+            "PlaceName": "Eure River",
+            "GPS_Coordinate": "49.2172, 1.2340",
+            "BoundingBox": {
+                "North": "50.1164",
+                "South": "48.3179",
+                "East": "2.6070",
+                "West": "-0.1389"
             },
-            {
-              "External_Map_Link": "https://achillestheheel.com/wp-content/uploads/2019/01/normandy-epsom-6.jpg",
-              "External_Map_Page": "https://achillestheheel.com/2019/01/26/a-day-at-the-beach-normandy-1944/",
-              "External_Map_Description": "Operation Epsom 25 to 30 June 1944",
-              "External_Map_Capture_Date": "1944",
-              "External_Map_Licence": "Public Domain"
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: The Lodgment Area as of 25 August 1944, depicting the southeastern boundary along the Eure River in the context of the Allied breakout from Normandy.",
+                    "External_Map_Capture_Date": "2024-09-18T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army Center of Military History publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/%C3%89ure+River/@49.2172,1.2340,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=49.2172&lon=1.2340&zoom=12"
             }
-          ],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.1829,-0.3707,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.1829/-0.3707"
-          }
         },
-        "Cherbourg": {
-          "GPS_Coordinate": "49.6339, -1.6222",
-          "BoundingBox": {
-            "North": 50.5348009009009,
-            "South": 48.732999099099096,
-            "East": -0.23121076381966432,
-            "West": -3.013189236180336
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.6339,-1.6222,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.6339/-1.6222"
-          }
-        },
-        "St. Vaast": {
-          "GPS_Coordinate": "49.5883, -1.2667",
-          "BoundingBox": {
-            "North": 50.4892009009009,
-            "South": 48.687399099099096,
-            "East": 0.12298855823893584,
-            "West": -2.6563885582389357
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.5883,-1.2667,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.5883/-1.2667"
-          }
-        },
-        "Carentan": {
-          "GPS_Coordinate": "49.3037, -1.2425",
-          "BoundingBox": {
-            "North": 50.2046009009009,
-            "South": 48.4027990990991,
-            "East": 0.13914507122589126,
-            "West": -2.6241450712258914
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.3037,-1.2425,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.3037/-1.2425"
-          }
-        },
-        "Isigny": {
-          "GPS_Coordinate": "49.3194, -1.1014",
-          "BoundingBox": {
-            "North": 50.2203009009009,
-            "South": 48.4184990990991,
-            "East": 0.28068547684016254,
-            "West": -2.4834854768401624
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.3194,-1.1014,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.3194/-1.1014"
-          }
-        },
-        "Grandcamp": {
-          "GPS_Coordinate": "49.3881, -1.0389",
-          "BoundingBox": {
-            "North": 50.2890009009009,
-            "South": 48.4871990990991,
-            "East": 0.34511713243287256,
-            "West": -2.4229171324328727
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.3881,-1.0389,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.3881/-1.0389"
-          }
-        },
-        "Valognes": {
-          "GPS_Coordinate": "49.5083, -1.4703",
-          "BoundingBox": {
-            "North": 50.4092009009009,
-            "South": 48.6073990990991,
-            "East": -0.08288534505912915,
-            "West": -2.857714654940871
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.5083,-1.4703,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.5083/-1.4703"
-          }
-        },
-        "Bayeux": {
-          "GPS_Coordinate": "49.2765, -0.7025",
-          "BoundingBox": {
-            "North": 50.1774009009009,
-            "South": 48.3755990990991,
-            "East": 0.6783829847990289,
-            "West": -2.083382984799029
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.2765,-0.7025,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.2765/-0.7025"
-          }
-        },
-        "Caen": {
-          "GPS_Coordinate": "49.1829, -0.3707",
-          "BoundingBox": {
-            "North": 50.0838009009009,
-            "South": 48.281999099099096,
-            "East": 1.0075692930501379,
-            "West": -1.748969293050138
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.1829,-0.3707,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.1829/-0.3707"
-          }
-        },
-        "Seine": {
-          "GPS_Coordinate": "49.4833, 0.1",
-          "BoundingBox": {
-            "North": 50.3842009009009,
-            "South": 48.5823990990991,
-            "East": 1.4867061393835412,
-            "West": -1.286706139383541
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.4833,0.1,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.4833/0.1"
-          }
-        }
-      }
-    },
-    {
-      "Sub-event_summary": "Consequences of planning-reality gaps, including speculation on stalemate, adjustments to build-up priorities favoring combat troops, logistical risks, and the critical need for additional space and port capacity following Cherbourg's destruction and the June Channel storm.",
-      "Places": {
-        "Cherbourg": {
-          "GPS_Coordinate": "49.6339, -1.6222",
-          "BoundingBox": {
-            "North": 50.5348009009009,
-            "South": 48.732999099099096,
-            "East": -0.23121076381966432,
-            "West": -3.013189236180336
-          },
-          "External_Maps": [
-            {
-              "External_Map_Link": "http://johnsmilitaryhistory.com/operationchastityUSA-E-Breakout-VIIIb.jpg",
-              "External_Map_Page": "http://johnsmilitaryhistory.com/OperationChastity.html",
-              "External_Map_Description": "Breakout Into Brittany 1-12 Aug 1944",
-              "External_Map_Capture_Date": "1944",
-              "External_Map_Licence": "Public Domain"
+        {
+            "PlaceName": "Loire River",
+            "GPS_Coordinate": "47.3939,0.6853",
+            "BoundingBox": {
+                "North": 48.2939,
+                "South": 46.4939,
+                "East": 2.0153,
+                "West": -0.6447
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-I.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: The Lodgment Area, 13 June 1944, depicting the strategic lodgment area bounded by the Loire River to the south.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Loire+River/@47.3939,0.6853,10z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/47.3939/0.6853"
             }
-          ],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.6339,-1.6222,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.6339/-1.6222"
-          }
         },
-        "Brittany": {
-          "GPS_Coordinate": "48.1173, -1.6778",
-          "BoundingBox": {
-            "North": 49.0182009009009,
-            "South": 47.2163990990991,
-            "East": -0.3283536340367952,
-            "West": -3.0272463659632045
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@48.1173,-1.6778,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/48.1173/-1.6778"
-          }
-        },
-        "Seine": {
-          "GPS_Coordinate": "49.4833, 0.1",
-          "BoundingBox": {
-            "North": 50.3842009009009,
-            "South": 48.5823990990991,
-            "East": 1.4867061393835412,
-            "West": -1.286706139383541
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.4833,0.1,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.4833/0.1"
-          }
-        }
-      }
-    },
-    {
-      "Sub-event_summary": "Broader context of Allied confidence despite setbacks, anticipation of difficult combat in Normandy, and the global strategic picture in summer 1944 across multiple theaters, emphasizing the cross-Channel attack as a demonstration of Allied initiative.",
-      "Places": {
-        "Normandy": {
-          "GPS_Coordinate": "49.1829, -0.3707",
-          "BoundingBox": {
-            "North": 50.0838009009009,
-            "South": 48.281999099099096,
-            "East": 1.0075692930501379,
-            "West": -1.748969293050138
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.1829,-0.3707,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.1829/-0.3707"
-          }
-        },
-        "western Europe": {
-          "GPS_Coordinate": "50.0, 5.0",
-          "BoundingBox": {
-            "North": 50.9009009009009,
-            "South": 49.0990990990991,
-            "East": 6.401552997171542,
-            "West": 3.5984470028284576
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@50.0,5.0,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/50.0/5.0"
-          }
-        },
-        "Pacific": {
-          "GPS_Coordinate": "0.0, -160.0",
-          "BoundingBox": {
-            "North": 0.9009009009009009,
-            "South": -0.9009009009009009,
-            "East": -159.0990990990991,
-            "West": -160.9009009009009
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@0.0,-160.0,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/0.0/-160.0"
-          }
-        },
-        "Marianas": {
-          "GPS_Coordinate": "15.1833, 145.75",
-          "BoundingBox": {
-            "North": 16.0842009009009,
-            "South": 14.282399099099099,
-            "East": 146.68348622231025,
-            "West": 144.81651377768975
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@15.1833,145.75,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/15.1833/145.75"
-          }
-        },
-        "Philippine Sea": {
-          "GPS_Coordinate": "18.0, 130.0",
-          "BoundingBox": {
-            "North": 18.9009009009009,
-            "South": 17.0990990990991,
-            "East": 130.94726326507953,
-            "West": 129.05273673492047
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@18.0,130.0,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/18.0/130.0"
-          }
-        },
-        "Burma": {
-          "GPS_Coordinate": "22.0, 96.0",
-          "BoundingBox": {
-            "North": 22.9009009009009,
-            "South": 21.0990990990991,
-            "East": 96.97165292133116,
-            "West": 95.02834707866884
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@22.0,96.0,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/22.0/96.0"
-          }
-        },
-        "India": {
-          "GPS_Coordinate": "20.5937, 78.9629",
-          "BoundingBox": {
-            "North": 21.4946009009009,
-            "South": 19.692799099099098,
-            "East": 79.92529997518784,
-            "West": 78.00050002481217
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@20.5937,78.9629,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/20.5937/78.9629"
-          }
-        },
-        "southern Europe": {
-          "GPS_Coordinate": "40.0, 15.0",
-          "BoundingBox": {
-            "North": 40.9009009009009,
-            "South": 39.0990990990991,
-            "East": 16.176042603002053,
-            "West": 13.823957396997947
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@40.0,15.0,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/40.0/15.0"
-          }
-        },
-        "Rome": {
-          "GPS_Coordinate": "41.9028, 12.4964",
-          "BoundingBox": {
-            "North": 42.8037009009009,
-            "South": 41.0018990990991,
-            "East": 13.706834542943302,
-            "West": 11.285965457056697
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@41.9028,12.4964,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/41.9028/12.4964"
-          }
-        },
-        "Italian peninsula": {
-          "GPS_Coordinate": "42.0, 12.0",
-          "BoundingBox": {
-            "North": 42.9009009009009,
-            "South": 41.0990990990991,
-            "East": 13.212281738384123,
-            "West": 10.787718261615877
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@42.0,12.0,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/42.0/12.0"
-          }
-        },
-        "Florence": {
-          "GPS_Coordinate": "43.7696, 11.2558",
-          "BoundingBox": {
-            "North": 44.6705009009009,
-            "South": 42.868699099099096,
-            "East": 12.50336510550144,
-            "West": 10.008234894498562
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@43.7696,11.2558,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/43.7696/11.2558"
-          }
-        },
-        "Pisa": {
-          "GPS_Coordinate": "43.7228, 10.4017",
-          "BoundingBox": {
-            "North": 44.6237009009009,
-            "South": 42.8218990990991,
-            "East": 11.648290108283906,
-            "West": 9.155109891716094
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@43.7228,10.4017,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/43.7228/10.4017"
-          }
-        },
-        "China": {
-          "GPS_Coordinate": "35.0, 105.0",
-          "BoundingBox": {
-            "North": 35.9009009009009,
-            "South": 34.0990990990991,
-            "East": 106.09979692681212,
-            "West": 103.90020307318788
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@35.0,105.0,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/35.0/105.0"
-          }
-        },
-        "Finland": {
-          "GPS_Coordinate": "64.0, 26.0",
-          "BoundingBox": {
-            "North": 64.90090090090091,
-            "South": 63.0990990990991,
-            "East": 28.055109939373747,
-            "West": 23.944890060626253
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@64.0,26.0,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/64.0/26.0"
-          }
-        },
-        "Minsk area": {
-          "GPS_Coordinate": "53.9006, 27.5590",
-          "BoundingBox": {
-            "North": 54.8015009009009,
-            "South": 52.9996990990991,
-            "East": 29.088055343650016,
-            "West": 26.029944656349986
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@53.9006,27.5590,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/53.9006/27.5590"
-          }
-        },
-        "western Ukraine": {
-          "GPS_Coordinate": "49.8430, 24.0311",
-          "BoundingBox": {
-            "North": 50.743900900900904,
-            "South": 48.9420990990991,
-            "East": 25.42809621145475,
-            "West": 22.634103788545247
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@49.8430,24.0311,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/49.8430/24.0311"
-          }
-        },
-        "Poland": {
-          "GPS_Coordinate": "52.0, 20.0",
-          "BoundingBox": {
-            "North": 52.9009009009009,
-            "South": 51.0990990990991,
-            "East": 21.46330562656103,
-            "West": 18.53669437343897
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@52.0,20.0,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/52.0/20.0"
-          }
-        },
-        "Rumania": {
-          "GPS_Coordinate": "46.0, 25.0",
-          "BoundingBox": {
-            "North": 46.9009009009009,
-            "South": 45.0990990990991,
-            "East": 26.2968977834466,
-            "West": 23.7031022165534
-          },
-          "External_Maps": [],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@46.0,25.0,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/46.0/25.0"
-          }
-        },
-        "Mediterranean coast of France": {
-          "GPS_Coordinate": "43.2965, 5.3698",
-          "BoundingBox": {
-            "North": 44.1974009009009,
-            "South": 42.3955990990991,
-            "East": 6.607616386644066,
-            "West": 4.131983613355933
-          },
-          "External_Maps": [
-            {
-              "External_Map_Link": "https://www.militaryhistoryonline.com/images/wwii/forgot7.jpg",
-              "External_Map_Page": "https://www.militaryhistoryonline.com/WWII/OperationDragoon",
-              "External_Map_Description": "The Seventh Army Assault 15-16 August 1944",
-              "External_Map_Capture_Date": "1944",
-              "External_Map_Licence": "Public Domain"
+        {
+            "PlaceName": "Normandy",
+            "GPS_Coordinate": "49.05, -1.40",
+            "BoundingBox": {
+                "North": 49.95,
+                "South": 48.15,
+                "East": -0.03,
+                "West": -2.77
             },
-            {
-              "External_Map_Link": "https://www.iwm.org.uk/sites/default/files/styles/text_with_media_desktop_1x/public/2018-08/12.jpg.webp?itok=kcNJAvGI",
-              "External_Map_Page": "https://www.iwm.org.uk/history/13-maps-from-the-second-world-war",
-              "External_Map_Description": "Japanese conquests in Asia Pacific during WWII",
-              "External_Map_Capture_Date": "1944",
-              "External_Map_Licence": "Public Domain"
-            },
-            {
-              "External_Map_Link": "https://www.emersonkent.com/images/battle_of_leyte_gulf_1944.jpg",
-              "External_Map_Page": "https://www.emersonkent.com/map_archive/battle_of_leyte_gulf_1944.htm",
-              "External_Map_Description": "Battle of Leyte Gulf, 1944",
-              "External_Map_Capture_Date": "1944",
-              "External_Map_Licence": "Public Domain"
-            },
-            {
-              "External_Map_Link": "https://external-preview.redd.it/wY21nrnCjamK3nI4fbfZh8eEP7dDJ9oh-W00ITMFomM.png?auto=webp&s=243502d3bfaede2d1047a6c4a6b076c89f66bbd5",
-              "External_Map_Page": "https://www.reddit.com/r/MapPorn/comments/4smxix/worldmap_during_the_height_of_world_war_2_4972/",
-              "External_Map_Description": "World map during the height of World War II",
-              "External_Map_Capture_Date": "1944",
-              "External_Map_Licence": "Public Domain"
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapIV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1: VIII Corps zone of action and attacks, 22-25 June 1944, showing advances southward along the Cotentin west coast toward Coutances and la Haye-du-Puits.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/94/US_FHH_Normandy_22jun44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:US_FHH_Normandy_22jun44.png",
+                    "External_Map_Description": "Front lines in Normandy on 22 June 1944, illustrating the positions during the VIII Corps offensive in the Cotentin Peninsula.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.05,-1.4,9z?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=9/49.05/-1.4"
             }
-          ],
-          "ModernMap": {
-            "googlemaps_link": "https://www.google.com/maps/@43.2965,5.3698,8z",
-            "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=8/43.2965/5.3698"
-          }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Anjou",
+            "GPS_Coordinate": "47.47, -0.56",
+            "BoundingBox": {
+                "North": 48.375,
+                "South": 46.565,
+                "East": 0.772,
+                "West": -1.892
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Allied_breakout_from_Normandy_overlay.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Cobra",
+                    "External_Map_Description": "Overlay map depicting the Allied breakout from the Normandy lodgment area, illustrating strategic boundaries and expansion relevant to the context of the lodgment area's geographic extent.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Anjou,+France/@47.47,-0.56,10z/data=!3m1!4b1!4m6!3m5!1s0x480de5e5e5e5e5e5:0xb8e9f6d5c4a3b2c1!8m2!3d47.47!4d-0.56!16zL20vMDZ4d3Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/47.47/-0.56"
+            }
+        },
+        {
+            "PlaceName": "Maine",
+            "GPS_Coordinate": {
+                "lat": 47.9934,
+                "lon": 0.2027
+            },
+            "BoundingBox": {
+                "North": 48.898,
+                "South": 47.089,
+                "East": 1.554,
+                "West": -1.148
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Maine+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=47.9934&lon=0.2027&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Orl\u00e9ans",
+            "GPS_Coordinate": "47.902964, 1.903636",
+            "BoundingBox": {
+                "North": 48.801,
+                "South": 47.005,
+                "East": 3.2346,
+                "West": 0.5726
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: The Lodgment Area, circa late August 1944, depicting the geographic boundaries of the Allied lodgment including the line to Orl\u00e9ans.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Orl%C3%A9ans,+France/@47.902964,1.903636,10z/data=!3m1!4b1!4m6!3m5!1s0x47dd292b6d3e7c81:0x395f7f5a5d7b!8m2!3d47.902964!4d1.903636!16zL20vMDVscW4",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!zoom=10;lat=47.902964;lon=1.903636;layers=B"
+            }
+        },
+        {
+            "Event_Doc": "chapter1a-event.json",
+            "Source_Doc": "chapter1a-content.md",
+            "Sub-event_summary": "Definition and strategic importance of the lodgment area as a prerequisite for the main offensive into Germany, including its geographic boundaries, advantages, and key ports.",
+            "PlaceName": "Rouen",
+            "GPS_Coordinate": {
+                "lat": 49.4432,
+                "lon": 1.0998
+            },
+            "BoundingBox": {
+                "North": 50.3442,
+                "South": 48.5422,
+                "East": 2.4828,
+                "West": -0.2832
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP1-25X36.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "MAP I: Lodgment Area, 25 July 1944, showing the expanded beachhead area in Normandy including boundaries near Rouen on the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Rouen,+France/@49.4432321,1.0999719,13z/data=!3m1!4b1!4m6!3m5!1s0x47e00d7b7e7b7e7b:0x40b82c3688ac34a2!8m2!3d49.4432321!4d1.0999719!16zL20vMDV2c2s",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/49.4432/1.0998/Rouen"
+            }
+        },
+        {
+            "PlaceName": "Le Havre",
+            "GPS_Coordinate": {
+                "lat": 49.4944,
+                "lng": 0.1078
+            },
+            "BoundingBox": {
+                "North": 50.3953,
+                "South": 48.5935,
+                "East": 1.4878,
+                "West": -1.2722
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/index.html",
+                    "External_Map_Description": "Map I: Normandy Lodgment Area, 25 June 1944. Depicts the Allied beachhead lodgment area, its geographic boundaries, and strategic ports including reference to Le Havre area.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Le+Havre,+France/@49.4944,0.1078,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=12&lat=49.4944&lon=0.1078"
+            }
+        },
+        {
+            "PlaceName": "Cherbourg",
+            "GPS_Coordinate": "49.6469, -1.6214",
+            "BoundingBox": {
+                "North": 50.5517,
+                "South": 48.7421,
+                "East": -0.2284,
+                "West": -3.0144
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP4-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV: VII Corps Maneuver Toward Cherbourg, showing advances along the Cotentin Peninsula including positions near Cherbourg.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Battle_of_Cherbourg_map.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Cherbourg",
+                    "External_Map_Description": "Map of the Battle of Cherbourg, illustrating the U.S. VII Corps assault on the port of Cherbourg in late June 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Cherbourg-en-Cotentin,+France/@49.646944,-1.621389,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#49.646944/-1.621389/14"
+            }
+        },
+        {
+            "PlaceName": "St. Malo",
+            "GPS_Coordinate": "48.6475, -2.0133",
+            "BoundingBox": {
+                "North": 49.5465,
+                "South": 47.7485,
+                "East": -0.6513,
+                "West": -3.3753
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MapII.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/mapII.html",
+                    "External_Map_Description": "Map II from 'Breakout and Pursuit': The Brittany Ports, depicting key ports including St. Malo relevant to the lodgment area and strategic planning for the offensive.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Bataille_St_Malo.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siege_of_Saint-Malo",
+                    "External_Map_Description": "Map of the Battle of Saint-Malo showing dispositions around the port in August-September 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Malo,+France/@48.6475,-2.0133,14z/data=!3m1!4b1!4m6!3m5!1s0x480f7b5c6b5b5b5b:0x4b0e4b0e4b0e4b0e!8m2!3d48.6475!4d-2.0133!16zL20vMDZ0aXc",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6475/-2.0133/St. Malo"
+            }
+        },
+        {
+            "PlaceName": "Brest",
+            "GPS_Coordinate": "48.3904,-4.4861",
+            "BoundingBox": {
+                "North": 49.2894,
+                "South": 47.4914,
+                "East": -3.1331,
+                "West": -5.8391
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/BrPt1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map No. 1: The Cotentin and Brittany Peninsulas, depicting the lodgment area boundaries and key ports including Brest in the context of strategic planning for breakout.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brest,+France/@48.3904,-4.4861,12z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.3904/-4.4861/Brest"
+            }
+        },
+        {
+            "PlaceName": "Lorient",
+            "GPS_Coordinate": "47.7460,-3.3810",
+            "BoundingBox": {
+                "North": 48.6453,
+                "South": 46.8467,
+                "East": -2.0512,
+                "West": -4.7108
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Uboat_bases_1942.png",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Uboat_bases_1942.png",
+                    "External_Map_Description": "Map of German U-boat bases in occupied France, 1942, showing Lorient as a major submarine base relevant to Allied port capture objectives in the lodgment expansion.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Lorient,+France/@47.7460,-3.3810,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=47.7460&lon=-3.3810&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Vannes",
+            "GPS_Coordinate": "47.6581, -2.7597",
+            "BoundingBox": {
+                "North": 48.5597,
+                "South": 46.7565,
+                "East": -1.4247,
+                "West": -4.0947
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map I: The Brittany Peninsula and Approaches, 1 July 1944. Depicts the strategic lodgment areas, including key ports in the region such as those near Vannes, relevant to the breakout planning.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Vannes,+France/@47.6581,-2.7597,13z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=13/47.6581/-2.7597"
+            }
+        },
+        {
+            "PlaceName": "St. Nazaire",
+            "GPS_Coordinate": "47.273611, -2.201944",
+            "BoundingBox": {
+                "North": 48.1729,
+                "South": 46.3743,
+                "East": -0.8809,
+                "West": -3.5229
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/1/1e/U-boot-Basen_Westfrankreich.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/German_submarine_bases",
+                    "External_Map_Description": "Map showing the locations of German U-boat bases along the Atlantic coast of France during World War II, with St. Nazaire prominently featured as a key strategic port.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "CC BY-SA 4.0"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Nazaire,+France/@47.273611,-2.201944,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-2.201944&lat=47.273611&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Nantes",
+            "GPS_Coordinate": "47.2184,-1.5536",
+            "BoundingBox": {
+                "North": 48.1175,
+                "South": 46.3192,
+                "East": -0.2339,
+                "West": -2.8733
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Nantes,+France/@47.2184,-1.5536,12z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/47.2184/-1.5536"
+            }
         }
-      }
-    }
-  ]
+    ],
+    "3": [
+        {
+            "PlaceName": "Normandy",
+            "GPS_Coordinate": "49.05, -1.40",
+            "BoundingBox": {
+                "North": 49.95,
+                "South": 48.15,
+                "East": -0.03,
+                "West": -2.77
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapIV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1: VIII Corps zone of action and attacks, 22-25 June 1944, showing advances southward along the Cotentin west coast toward Coutances and la Haye-du-Puits.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/94/US_FHH_Normandy_22jun44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:US_FHH_Normandy_22jun44.png",
+                    "External_Map_Description": "Front lines in Normandy on 22 June 1944, illustrating the positions during the VIII Corps offensive in the Cotentin Peninsula.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.05,-1.4,9z?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=9/49.05/-1.4"
+            }
+        },
+        {
+            "PlaceName": "Cherbourg",
+            "GPS_Coordinate": "49.6469, -1.6214",
+            "BoundingBox": {
+                "North": 50.5517,
+                "South": 48.7421,
+                "East": -0.2284,
+                "West": -3.0144
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP4-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV: VII Corps Maneuver Toward Cherbourg, showing advances along the Cotentin Peninsula including positions near Cherbourg.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Battle_of_Cherbourg_map.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Cherbourg",
+                    "External_Map_Description": "Map of the Battle of Cherbourg, illustrating the U.S. VII Corps assault on the port of Cherbourg in late June 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Cherbourg-en-Cotentin,+France/@49.646944,-1.621389,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#49.646944/-1.621389/14"
+            }
+        },
+        {
+            "PlaceName": "St. Vaast",
+            "GPS_Coordinate": {
+                "lat": 49.6564,
+                "lon": -1.2444
+            },
+            "BoundingBox": {
+                "North": 50.5544,
+                "South": 48.7584,
+                "East": 0.1386,
+                "West": -2.6274
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Vaast-la-Hougue,+France/@49.6564,-1.2444,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.2444&lat=49.6564&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Carentan",
+            "GPS_Coordinate": {
+                "lat": 49.3067,
+                "lon": -1.2428
+            },
+            "BoundingBox": {
+                "North": 50.2061,
+                "South": 48.4073,
+                "East": 0.1332,
+                "West": -2.6188
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-V.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V: VII Corps Drive to the Southwest, 25-30 June 1944, illustrating redeployment to Carentan sector and offensive toward Coutances-St. L\u00f4 highway.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Carentan/@49.3067,-1.2428,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.3067&lon=-1.2428&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Isigny",
+            "GPS_Coordinate": "49.2831, -1.0503",
+            "BoundingBox": {
+                "North": 50.1821,
+                "South": 48.3841,
+                "East": 0.3287,
+                "West": -2.4296
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.history.navy.mil/content/dam/nhhc/research/archives/digital-exhibits/overlord/maps/map04_lg.jpg",
+                    "External_Map_Page": "https://www.history.navy.mil/our-collections/art/exhibits/conflicts-and-operations/world-war-ii/european-theater/operation-neptune/maps/map-4-normandy-beachhead-1700-d-plus-4.html",
+                    "External_Map_Description": "Map 4: Normandy Beachhead at 1700 on D-Day plus 4 (10 June 1944), illustrating Allied advances from Omaha Beach, including positions near Isigny which was captured around this time, relevant to early beachhead expansion and captures.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/CH1-MAP1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I from Breakout and Pursuit Chapter 1: Allied situation in Normandy beachhead area by late June 1944, showing territorial control including Isigny in the context of progress assessments.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army Official History)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Isigny/@49.283056,-1.050278,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.283056/-1.050278/Isigny"
+            }
+        },
+        {
+            "PlaceName": "Grandcamp",
+            "GPS_Coordinate": "49.3586,-1.0136",
+            "BoundingBox": {
+                "North": 50.2576,
+                "South": 48.4596,
+                "East": 0.3644,
+                "West": -2.3916
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Fig1-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map 1\u2014Beachhead situation, 13 June 1944, showing Allied progress including Omaha Beach area near Grandcamp.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Omaha_Beach-Map.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Omaha_Beach",
+                    "External_Map_Description": "Map of Omaha Beach D-Day assault sectors, including areas near Grandcamp-Maisy.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Grandcamp-Maisy/@49.358611,-1.013611,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!zoom=15;lat=49.3586;lon=-1.0136;layers=B"
+            }
+        },
+        {
+            "PlaceName": "Valognes",
+            "GPS_Coordinate": {
+                "latitude": 49.5089,
+                "longitude": -1.4681
+            },
+            "BoundingBox": {
+                "North": 50.4069,
+                "South": 48.6109,
+                "East": -0.0861,
+                "West": -2.8501
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP1-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "MAP NO. 1-2: VII Corps Drive on Cherbourg, 10-27 June 1944. Illustrates U.S. VII Corps advances in the Cotentin Peninsula, including capture of Valognes, relevant to early July 1944 assessments of Allied progress, beachhead expansions, and territorial control.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3b/Cherbourg_18-30_June_1944.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Cherbourg",
+                    "External_Map_Description": "U.S. Army map of the Battle of Cherbourg, 18-30 June 1944, showing operations south and east of Cherbourg where Valognes is located, contextualizing Allied build-up, captures, and logistical challenges in Normandy by late June/early July 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Valognes,+France/@49.5089,-1.4681,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.4681&lat=49.5089&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Bayeux",
+            "GPS_Coordinate": "49.2764, -0.7025",
+            "BoundingBox": {
+                "North": 50.1756,
+                "South": 48.3772,
+                "East": 0.676,
+                "West": -2.081
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "MAP 1 - Normandy beachheads and initial advances as of early June 1944, showing capture of Bayeux.",
+                    "External_Map_Capture_Date": "2024-10-05T10:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/8/8e/Operation_Overlord_021025.jpg",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Operation_Overlord_021025.jpg",
+                    "External_Map_Description": "Operation Overlord situation map in Normandy as of 30 June 1944, illustrating Allied beachheads, build-up, and territorial control including Bayeux.",
+                    "External_Map_Capture_Date": "2024-10-05T10:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Bayeux,+Calvados,+France/@49.2764,-0.7025,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.2764&lon=-0.7025&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Caen",
+            "GPS_Coordinate": "49.1833,-0.3600",
+            "BoundingBox": {
+                "North": "50.0828",
+                "South": "48.2838",
+                "East": "1.0180",
+                "West": "-1.7380"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/8/8b/Allied_exploits%2C_13%E2%80%9330_June_1944.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:Allied_exploits,_13%E2%80%9330_June_1944.png",
+                    "External_Map_Description": "Map depicting Allied advances and encircled areas in Normandy from 13 to 30 June 1944, illustrating the limited progress toward Caen and other objectives.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USAE-Breakout-MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I from 'Breakout and Pursuit': Situation in Normandy beachhead area, evening 12 June 1944, showing early positions relevant to Caen objectives.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Army Center of Military History)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Caen,+Calvados,+France/@49.1833333,-0.3705556,14z/data=!3m1!4b1!4m6!3m5!1s0x480ca7e987e1b4b7:0x401a066f84d963bb!8m2!3d49.1833333!4d-0.3705556!16zL20vMDV2a3A?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.1833/-0.3600"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        }
+    ],
+    "4": [
+        {
+            "PlaceName": "Cherbourg",
+            "GPS_Coordinate": "49.6469, -1.6214",
+            "BoundingBox": {
+                "North": 50.5517,
+                "South": 48.7421,
+                "East": -0.2284,
+                "West": -3.0144
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP4-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV: VII Corps Maneuver Toward Cherbourg, showing advances along the Cotentin Peninsula including positions near Cherbourg.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Battle_of_Cherbourg_map.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Cherbourg",
+                    "External_Map_Description": "Map of the Battle of Cherbourg, illustrating the U.S. VII Corps assault on the port of Cherbourg in late June 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Cherbourg-en-Cotentin,+France/@49.646944,-1.621389,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#49.646944/-1.621389/14"
+            }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        }
+    ],
+    "5": [
+        {
+            "PlaceName": "Normandy",
+            "GPS_Coordinate": "49.05, -1.40",
+            "BoundingBox": {
+                "North": 49.95,
+                "South": 48.15,
+                "East": -0.03,
+                "West": -2.77
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapIV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1: VIII Corps zone of action and attacks, 22-25 June 1944, showing advances southward along the Cotentin west coast toward Coutances and la Haye-du-Puits.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/94/US_FHH_Normandy_22jun44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:US_FHH_Normandy_22jun44.png",
+                    "External_Map_Description": "Front lines in Normandy on 22 June 1944, illustrating the positions during the VIII Corps offensive in the Cotentin Peninsula.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.05,-1.4,9z?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=9/49.05/-1.4"
+            }
+        },
+        {
+            "PlaceName": "western Europe",
+            "GPS_Coordinate": "48.8469,-1.5625",
+            "BoundingBox": {
+                "North": 49.7469,
+                "South": 47.9469,
+                "East": -0.1925,
+                "West": -2.9325
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV: The C\u00f4te de la Haye-du-Puits, 3-14 July 1944, depicting terrain and defenses relevant to VIII Corps operations in the hedgerowed lowlands and high ground area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=48.8469,-1.5625",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.8469&lon=-1.5625&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Pacific",
+            "GPS_Coordinate": "0.0, -160.0",
+            "BoundingBox": {
+                "North": 0.9,
+                "South": -0.9,
+                "East": -159.1,
+                "West": -160.9
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Battle_of_the_Philippine_Sea_Marianas.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_the_Philippine_Sea",
+                    "External_Map_Description": "Map depicting the Battle of the Philippine Sea and Marianas campaign in June-July 1944, key events in the Pacific theater during summer 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Navy historical image)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@0,-160.0,1z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=1&lat=0&lon=-160"
+            }
+        },
+        {
+            "PlaceName": "Marianas",
+            "GPS_Coordinate": "15.1667, 145.75",
+            "BoundingBox": {
+                "North": 16.0677,
+                "South": 14.2657,
+                "East": 146.683,
+                "West": 144.817
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/45/US_attack_on_the_Mariana_Islands_June_1944.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:US_attack_on_the_Mariana_Islands_June_1944.png",
+                    "External_Map_Description": "Map depicting the U.S. attack on the Mariana Islands in June 1944, showing naval dispositions and invasion plans during the Mariana Islands campaign.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain (U.S. Navy)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Mariana_Islands_in_WWII.svg/1200px-Mariana_Islands_in_WWII.svg.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:Mariana_Islands_in_WWII.svg",
+                    "External_Map_Description": "Strategic map of the Mariana Islands during World War II, highlighting key locations in the 1944 campaign.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mariana+Islands/@15.1667,145.75,9z/data=!3m1!4b1!4m6!3m5!1s0x6a6a8f8f8f8f8f8f:0xa1b2c3d4e5f67890!8m2!3d15.1667!4d145.75!16zL20vMGZ0bG?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=9/15.17/145.75/Marianas"
+            }
+        },
+        {
+            "PlaceName": "Philippine Sea",
+            "GPS_Coordinate": "15.0000 N, 130.0000 E",
+            "BoundingBox": {
+                "North": "15.8993 N",
+                "South": "14.1007 N",
+                "East": "130.9311 E",
+                "West": "129.0689 E"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/8/8e/Battle_of_the_Philippine_Sea_19-20_June_1944.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_the_Philippine_Sea",
+                    "External_Map_Description": "Map of the Battle of the Philippine Sea, 19-20 June 1944, illustrating naval engagements in the Philippine Sea during summer 1944, relevant to the global strategic context.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public domain (U.S. Navy historical illustration)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Philippine+Sea/@15,130,4z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=15&lon=130&zoom=4"
+            }
+        },
+        {
+            "PlaceName": "Burma",
+            "GPS_Coordinate": {
+                "lat": 22.0,
+                "lon": 96.0
+            },
+            "BoundingBox": {
+                "North": 22.8994,
+                "South": 21.1006,
+                "East": 96.97,
+                "West": 95.03
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/91/SEAC_7_October_1944.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:SEAC_7_October_1944.png",
+                    "External_Map_Description": "Map showing the situation in the South-East Asia Command (SEAC) theater on 7 October 1944, relevant to the Burma campaign in summer 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain (U.S. Government work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Imphal_Kohima_1944.svg/1024px-Imphal_Kohima_1944.svg.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Imphal",
+                    "External_Map_Description": "Strategic map of the Battles of Imphal and Kohima in the Burma campaign, March\u2013July 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Myanmar/@22.0,96.0,6z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=22&lon=96&zoom=6"
+            }
+        },
+        {
+            "Event_Doc": "chapter1a-event.json",
+            "Source_Doc": "chapter1a-content.md",
+            "Sub-event_summary": "Broader context of Allied confidence despite setbacks, anticipation of difficult combat in Normandy, and the global strategic picture in summer 1944 across multiple theaters, emphasizing the cross-Channel attack as a demonstration of Allied initiative.",
+            "PlaceName": "India",
+            "GPS_Coordinate": "23.6167,78.2333",
+            "BoundingBox": {
+                "North": 24.5147,
+                "South": 22.7187,
+                "East": 79.2133,
+                "West": 77.2533
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/India/@23.6167,78.2333,6z/data=!3m1!4b1!4m6!3m5!1s0x0000000000000000:0x0000000000000000!8m2!3d23.6167!4d78.2333!16zL20vMDZjNQ",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=6/23.6167/78.2333"
+            }
+        },
+        {
+            "PlaceName": "southern Europe",
+            "GPS_Coordinate": "41.0000, 19.0000",
+            "BoundingBox": {
+                "North": 41.9,
+                "South": 40.1,
+                "East": 20.192,
+                "West": 17.808
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map I \u2014 The Strategic Situation in Europe, 6 June 1944. Depicts the global strategic picture including the Italian front in southern Europe and other theaters relevant to summer 1944 Allied operations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=southern%20Europe",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=6/41.0/19.0"
+            }
+        },
+        {
+            "PlaceName": "Rome",
+            "GPS_Coordinate": {
+                "lat": 41.9028,
+                "lon": 12.4964
+            },
+            "BoundingBox": {
+                "North": 42.8028,
+                "South": 41.0028,
+                "East": 13.7024,
+                "West": 11.2904
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/5/57/Italy_campaign_43-44.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:Italy_campaign_43-44.jpg",
+                    "External_Map_Description": "Map depicting the Italian Campaign from September 1943 to June 1944, highlighting the Allied advance through Italy culminating in the liberation of Rome in summer 1944.",
+                    "External_Map_Capture_Date": "2024-11-15T14:30:00Z",
+                    "External_Map_Licence": "Public domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Rome/@41.9028,12.4964,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/41.9028/12.4964"
+            }
+        },
+        {
+            "PlaceName": "Italian peninsula",
+            "GPS_Coordinate": {
+                "lat": 42.5,
+                "lon": 12.5
+            },
+            "BoundingBox": {
+                "North": 43.4044,
+                "South": 41.5956,
+                "East": 13.726,
+                "West": 11.274
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/90/Italian_Front_1944-05-23_to_1944-08-21.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Italian_campaign_(World_War_II)",
+                    "External_Map_Description": "Map showing the Italian front from 23 May to 21 August 1944, relevant to the summer 1944 strategic situation in the Italian theater.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "CC BY-SA 3.0"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@42.5,12.5,7z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=7/42.5/12.5"
+            }
+        },
+        {
+            "PlaceName": "Florence",
+            "GPS_Coordinate": "43.7696, 11.2558",
+            "BoundingBox": {
+                "North": 44.6676,
+                "South": 42.8716,
+                "East": 12.4958,
+                "West": 9.9958
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/0/09/Allied_army_positions_on_the_Italian_Front%2C_11_July_1944.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Italian_campaign_(World_War_II)",
+                    "External_Map_Description": "Map showing Allied army positions on the Italian Front as of 11 July 1944, relevant to the advance towards Florence in summer 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Gothic_Line_positions_August_1944.png/800px-Gothic_Line_positions_August_1944.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Gothic_Line",
+                    "External_Map_Description": "Map of Gothic Line positions in August 1944, illustrating the strategic situation around Florence during the Italian campaign in summer 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Florence,+Metropolitan+City+of+Florence,+Italy/@43.7695604,11.2558139,12z/data=!3m1!4b1!4m6!3m5!1s0x132a5f3384dbe37b:0xf0b0b1b9a70ac06c!8m2!3d43.7695604!4d11.2558139!16zL20vMDV2c2Q?entry=ttu",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#!map=12/43.7696/11.2558/Florence"
+            }
+        },
+        {
+            "Event_Doc": "chapter1a-event.json",
+            "Source_Doc": "chapter1a-content.md",
+            "Sub-event_summary": "Broader context of Allied confidence despite setbacks, anticipation of difficult combat in Normandy, and the global strategic picture in summer 1944 across multiple theaters, emphasizing the cross-Channel attack as a demonstration of Allied initiative.",
+            "PlaceName": "Pisa",
+            "GPS_Coordinate": "43.7142,10.3989",
+            "BoundingBox": {
+                "North": 44.614,
+                "South": 42.8144,
+                "East": 11.6399,
+                "West": 9.1579
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "http://legacy.lib.utexas.edu/maps/ams/italy_250k/gsgs4338_n33_livorno_1944.gif",
+                    "External_Map_Page": "https://maps.lib.utexas.edu/maps/ams/italy_250k/",
+                    "External_Map_Description": "WWII Allied military map GSGS 4338 Sheet N-33 Livorno 1:250,000 (1944), covers Pisa area in context of Italian Campaign summer 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/7/79/Italy_campaign_September_1944-October_1944.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Italian_campaign_(World_War_II)",
+                    "External_Map_Description": "Map of Italian front lines September-October 1944, showing Allied positions near Pisa in late summer 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pisa,+Province+of+Pisa,+Tuscany,+Italy/@43.7142,10.3989,13z/data=!3m1!4b1!4m6!3m5!1s0x132a4f3c801b83db:0xf0f4c9d5b3c7e8c8!8m2!3d43.7142!4d10.3989!16zL20vMDZ0a2Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/43.7142/10.3989"
+            }
+        },
+        {
+            "Event_Doc": "chapter1a-event.json",
+            "Source_Doc": "chapter1a-content.md",
+            "Sub-event_summary": "Broader context of Allied confidence despite setbacks, anticipation of difficult combat in Normandy, and the global strategic picture in summer 1944 across multiple theaters, emphasizing the cross-Channel attack as a demonstration of Allied initiative.",
+            "PlaceName": "China",
+            "GPS_Coordinate": "35.8617,104.1954",
+            "BoundingBox": {
+                "North": 36.76,
+                "South": 34.96,
+                "East": 105.305,
+                "West": 103.085
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/2/2f/China-Burma-India_theater.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/China%E2%80%93Burma%E2%80%93India_theater",
+                    "External_Map_Description": "Map of the China-Burma-India theater of operations circa 1944, illustrating the strategic situation in the CBI theater during summer 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/China/@35.8617,104.1954,5z/data=!3m1!4b1!4m6!3m5!1s0x35d63e83e268b357:0x17b3a5e21264ccfb!8m2!3d35.8617!4d104.1954",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/?lat=35.8617&lon=104.1954&zoom=5"
+            }
+        },
+        {
+            "PlaceName": "Finland",
+            "GPS_Coordinate": "64.0000,26.0000",
+            "BoundingBox": {
+                "North": 64.9,
+                "South": 63.1,
+                "East": 28.05,
+                "West": 23.95
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/7/77/Vybourg-Petrozavodsk_Offensive.png",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Vybourg-Petrozavodsk_Offensive.png",
+                    "External_Map_Description": "Map of the Soviet Vyborg\u2013Petrozavodsk Offensive against Finland in summer 1944, illustrating the strategic developments in the Finnish theater during that period.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Finland/@64.0000,26.0000,6z/data=!3m1!4b1!4m6!3m5!1s0x4692bc0fbdba6a69:0xa91abdc95e94c7e9!8m2!3d62.9597102!4d25.6146354!16zL20vMDZmbXA?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=26&lat=64&zoom=6"
+            }
+        },
+        {
+            "PlaceName": "Minsk area",
+            "GPS_Coordinate": "53.9006,27.5590",
+            "BoundingBox": {
+                "North": 54.8016,
+                "South": 52.9996,
+                "East": 29.081,
+                "West": 26.037
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Operation_Bagration.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Bagration",
+                    "External_Map_Description": "Schematic map of Operation Bagration (June\u2013August 1944), depicting Soviet advances across Belarus, including the encirclement and capture of Minsk area by the Red Army.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Minsk,+Belarus/@53.9006,27.5590,10z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=53.9006&lon=27.5590&zoom=10"
+            }
+        },
+        {
+            "Event_Doc": "chapter1a-event.json",
+            "Source_Doc": "chapter1a-content.md",
+            "Sub-event_summary": "Broader context of Allied confidence despite setbacks, anticipation of difficult combat in Normandy, and the global strategic picture in summer 1944 across multiple theaters, emphasizing the cross-Channel attack as a demonstration of Allied initiative.",
+            "PlaceName": "western Ukraine",
+            "GPS_Coordinate": {
+                "latitude": 49.841,
+                "longitude": 24.0311
+            },
+            "BoundingBox": {
+                "North": 50.7419,
+                "South": 48.9401,
+                "East": 25.4181,
+                "West": 22.6441
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Lvov-Sandomierz_Offensive_13%E2%80%9318_July_1944.svg/1280px-Lvov-Sandomierz_Offensive_13%E2%80%9318_July_1944.svg.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Lviv%E2%80%93Sandomierz_Offensive",
+                    "External_Map_Description": "Strategic map of the Lviv-Sandomierz Offensive (13-18 July 1944), depicting Soviet advances into western Ukraine during summer 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.8410,24.0311,9z?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#lat=49.8410;lon=24.0311;zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Poland",
+            "GPS_Coordinate": {
+                "lat": 52.2297,
+                "lon": 21.0122
+            },
+            "BoundingBox": {
+                "North": 53.128,
+                "South": 51.3314,
+                "East": 22.4722,
+                "West": 19.5522
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Op_Bagration_map_en.svg/1280px-Op_Bagration_map_en.svg.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Bagration",
+                    "External_Map_Description": "Strategic map depicting the initial phases of Operation Bagration (June-August 1944), the major Soviet offensive on the Eastern Front that advanced towards and into Polish territory, relevant to the summer 1944 global strategic picture.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@52.2297,21.0122,8z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=52.2297&lon=21.0122&zoom=8"
+            }
+        },
+        {
+            "PlaceName": "Rumania",
+            "GPS_Coordinate": "45.9200,24.9700",
+            "BoundingBox": {
+                "North": 46.824,
+                "South": 45.016,
+                "East": 26.271,
+                "West": 23.669
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Eastern_Front_1943-12_to_1944-12.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Eastern_Front_(World_War_II)",
+                    "External_Map_Description": "Map showing the progress of the Red Army on the Eastern Front from December 1943 to December 1944, highlighting Soviet advances into Rumania in summer 1944 relevant to the global strategic context.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/8/8e/Romania_territories_1939-1947.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Romania_in_World_War_II",
+                    "External_Map_Description": "Map of territorial changes of Rumania from 1939 to 1947, contextualizing its role in the European theater during summer 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported; GNU Free Documentation License"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Romania/@45.9200,24.9700,6z/data=!3m1!4b1!4m6!3m5!1s0x40b07acaf5ffff:0xf73ff4922ab68f5f!8m2!3d45.9432!4d24.9672!16zL20vMDZscG1x",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!map=6/45.92/24.97/Romania"
+            }
+        },
+        {
+            "PlaceName": "Mediterranean coast of France",
+            "GPS_Coordinate": {
+                "lat": 43.5,
+                "lon": 6.3
+            },
+            "BoundingBox": {
+                "North": 44.4,
+                "South": 42.6,
+                "East": 7.533,
+                "West": 5.067
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP12-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/index.html",
+                    "External_Map_Description": "Map depicting the invasion of southern France (Operation Dragoon), 15-28 August 1944, showing landings and advances along the Mediterranean coast.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Op_Dragoon.svg/1024px-Op_Dragoon.svg.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Dragoon",
+                    "External_Map_Description": "Schematic map of Operation Dragoon illustrating the Allied landings on the Mediterranean coast of France in August 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Mediterranean%20coast%20of%20France&query_place_id=ChIJnNbyG5q75kcR8vnfB8tzF9Q",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=9/43.5/6.3"
+            }
+        }
+    ]
 }

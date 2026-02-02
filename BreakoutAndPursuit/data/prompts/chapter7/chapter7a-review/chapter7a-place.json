@@ -1,0 +1,532 @@
+{
+    "1": [
+        {
+            "PlaceName": "Normandy",
+            "GPS_Coordinate": "49.05, -1.40",
+            "BoundingBox": {
+                "North": 49.95,
+                "South": 48.15,
+                "East": -0.03,
+                "West": -2.77
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapIV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1: VIII Corps zone of action and attacks, 22-25 June 1944, showing advances southward along the Cotentin west coast toward Coutances and la Haye-du-Puits.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/94/US_FHH_Normandy_22jun44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:US_FHH_Normandy_22jun44.png",
+                    "External_Map_Description": "Front lines in Normandy on 22 June 1944, illustrating the positions during the VIII Corps offensive in the Cotentin Peninsula.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.05,-1.4,9z?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=9/49.05/-1.4"
+            }
+        },
+        {
+            "PlaceName": "Pas-de-Calais (mentioned in context)",
+            "GPS_Coordinate": "50.4500, 2.3667",
+            "BoundingBox": {
+                "North": 51.3492,
+                "South": 49.5508,
+                "East": 3.7817,
+                "West": 0.9517
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/0/0f/V-1_launch_sites.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/V-1_flying_bomb",
+                    "External_Map_Description": "Map depicting V-1 flying bomb launch sites in the Pas-de-Calais department of northern France, relevant to German V-weapon deployments in July 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pas-de-Calais,+France/@50.4500,2.3667,9z/data=!3m1!4b1!4m6!3m5!1s0x47dd327b9f5b3d8d:0x6b4d2eabf7e5a5a!8m2!3d50.4500!4d2.3667!16zL20vMDZ4NXc",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=9&lat=50.4500&lon=2.3667"
+            }
+        }
+    ],
+    "2": [
+        {
+            "PlaceName": "Cotentin",
+            "GPS_Coordinate": "49.2500, -1.6000",
+            "BoundingBox": {
+                "North": "50.1510",
+                "South": "48.3490",
+                "East": "-0.2190",
+                "West": "-2.9810"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP4.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV: First Army Attack Plan, 30 June 1944, depicting the VIII Corps' role in the offensive southward along the Cotentin Peninsula west coast toward high ground near Coutances.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP5.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map V: The Battle on the West Coast, 3-14 July 1944, showing VIII Corps advances and key terrain around la Haye-du-Puits on the Cotentin Peninsula.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Cotentin+Peninsula/@49.2500,-1.6000,10z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#!map=10/49.2500/-1.6000"
+            }
+        },
+        {
+            "PlaceName": "British sector (Normandy)",
+            "GPS_Coordinate": "49.3750, -0.4500",
+            "BoundingBox": {
+                "North": 50.274,
+                "South": 48.476,
+                "East": 0.929,
+                "West": -1.829
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-VII-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Normandy Beachhead 13 June 1944, depicting the positions of Allied forces including the British sector around Gold, Juno, and Sword beaches.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/5/5b/1944-06-16_NormandyBeachheads.gif",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Normandy_landings",
+                    "External_Map_Description": "Allied beachheads in Normandy on 16 June 1944, showing expansion in the British sector.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.375,-0.45,10z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?zoom=10&lat=49.375&lon=-0.45"
+            }
+        }
+    ],
+    "3": [
+        {
+            "PlaceName": "Caen",
+            "GPS_Coordinate": "49.1833,-0.3600",
+            "BoundingBox": {
+                "North": "50.0828",
+                "South": "48.2838",
+                "East": "1.0180",
+                "West": "-1.7380"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/8/8b/Allied_exploits%2C_13%E2%80%9330_June_1944.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:Allied_exploits,_13%E2%80%9330_June_1944.png",
+                    "External_Map_Description": "Map depicting Allied advances and encircled areas in Normandy from 13 to 30 June 1944, illustrating the limited progress toward Caen and other objectives.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USAE-Breakout-MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I from 'Breakout and Pursuit': Situation in Normandy beachhead area, evening 12 June 1944, showing early positions relevant to Caen objectives.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Army Center of Military History)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Caen,+Calvados,+France/@49.1833333,-0.3705556,14z/data=!3m1!4b1!4m6!3m5!1s0x480ca7e987e1b4b7:0x401a066f84d963bb!8m2!3d49.1833333!4d-0.3705556!16zL20vMDV2a3A?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.1833/-0.3600"
+            }
+        },
+        {
+            "PlaceName": "Northern outskirts of Caen",
+            "GPS_Coordinate": "49.2150, -0.3000",
+            "BoundingBox": {
+                "North": 50.115,
+                "South": 48.315,
+                "East": 1.076,
+                "West": -1.676
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAPVII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map VII: Attack toward Caen, 4-9 July 1944, depicting operations including the assault on the northern outskirts of Caen.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Opn_Charnwood.svg/1024px-Opn_Charnwood.svg.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Charnwood",
+                    "External_Map_Description": "Map of Operation Charnwood showing advances into northern Caen by British and Canadian forces in July 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Northern+outskirts+of+Caen%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/?lat=49.2150&lon=-0.3000&zoom=13"
+            }
+        },
+        {
+            "PlaceName": "Cassino (historical reference)",
+            "GPS_Coordinate": "41.4925, 13.8119",
+            "BoundingBox": {
+                "North": 42.3925,
+                "South": 40.5925,
+                "East": 15.0109,
+                "West": 12.6129
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Monte_Cassino_1944-01-15_to_1944-05-18.png",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Monte_Cassino_1944-01-15_to_1944-05-18.png",
+                    "External_Map_Description": "Strategic overview map of the Battle of Monte Cassino operations from 15 January to 18 May 1944, including the abbey area historically referenced in bombing discussions.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=41.4925,13.8119",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=41.4925&lon=13.8119&zoom=13"
+            }
+        }
+    ],
+    "4": [
+        {
+            "PlaceName": "Caen",
+            "GPS_Coordinate": "49.1833,-0.3600",
+            "BoundingBox": {
+                "North": "50.0828",
+                "South": "48.2838",
+                "East": "1.0180",
+                "West": "-1.7380"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/8/8b/Allied_exploits%2C_13%E2%80%9330_June_1944.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:Allied_exploits,_13%E2%80%9330_June_1944.png",
+                    "External_Map_Description": "Map depicting Allied advances and encircled areas in Normandy from 13 to 30 June 1944, illustrating the limited progress toward Caen and other objectives.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USAE-Breakout-MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I from 'Breakout and Pursuit': Situation in Normandy beachhead area, evening 12 June 1944, showing early positions relevant to Caen objectives.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Army Center of Military History)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Caen,+Calvados,+France/@49.1833333,-0.3705556,14z/data=!3m1!4b1!4m6!3m5!1s0x480ca7e987e1b4b7:0x401a066f84d963bb!8m2!3d49.1833333!4d-0.3705556!16zL20vMDV2a3A?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.1833/-0.3600"
+            }
+        },
+        {
+            "Event_Doc": "chapter1b-event.json",
+            "Source_Doc": "chapter1b-content.md",
+            "Sub-event_summary": "Disposition of Allied combat forces in Normandy by early July, including British Second Army positions in the east and U.S. First Army positions in the west, with reference to planning for supply lines and port access.",
+            "PlaceName": "Orne River",
+            "GPS_Coordinate": "49.18, -0.36",
+            "BoundingBox": {
+                "North": 50.084,
+                "South": 48.276,
+                "East": 1.023,
+                "West": -1.743
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/USA-E-Breakout-MapI-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Allied Forces in Normandy, 1 July 1944. Depicts the disposition of forces with British Second Army in the east along the Orne River area.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Orne%20River%2CNormandy%2CFrance",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=11/49.18/-0.36"
+            }
+        },
+        {
+            "PlaceName": "Pas-de-Calais (Luftwaffe division origin)",
+            "GPS_Coordinate": "50.5000, 2.2500",
+            "BoundingBox": {
+                "North": "51.4000",
+                "South": "49.6000",
+                "East": "3.6600",
+                "West": "0.8400"
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pas-de-Calais,+France/@50.5000,2.2500,9z/data=!3m1!4b1!4m6!3m5!1s0x47dd36b85fd68d2d:0x9d4eabf3d4c8b3b7!8m2!3d50.5000!4d2.2500!16zL20vMGZ0a2Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=9/50.5000/2.2500"
+            }
+        }
+    ],
+    "5": [
+        {
+            "PlaceName": "Caen",
+            "GPS_Coordinate": "49.1833,-0.3600",
+            "BoundingBox": {
+                "North": "50.0828",
+                "South": "48.2838",
+                "East": "1.0180",
+                "West": "-1.7380"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/8/8b/Allied_exploits%2C_13%E2%80%9330_June_1944.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:Allied_exploits,_13%E2%80%9330_June_1944.png",
+                    "External_Map_Description": "Map depicting Allied advances and encircled areas in Normandy from 13 to 30 June 1944, illustrating the limited progress toward Caen and other objectives.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USAE-Breakout-MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I from 'Breakout and Pursuit': Situation in Normandy beachhead area, evening 12 June 1944, showing early positions relevant to Caen objectives.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Army Center of Military History)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Caen,+Calvados,+France/@49.1833333,-0.3705556,14z/data=!3m1!4b1!4m6!3m5!1s0x480ca7e987e1b4b7:0x401a066f84d963bb!8m2!3d49.1833333!4d-0.3705556!16zL20vMDV2a3A?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.1833/-0.3600"
+            }
+        },
+        {
+            "PlaceName": "Caumont",
+            "GPS_Coordinate": "49.0328, -0.9400",
+            "BoundingBox": {
+                "North": 49.9316,
+                "South": 48.134,
+                "East": 0.43,
+                "West": -2.31
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP22.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map 22. The Drive Toward St. Lo: VII Corps, 26 June-10 July 1944. Depicts the U.S. VII Corps advance in the Normandy breakout, including the army line extending to Caumont.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Caumont-l%27%C3%89vent%C3%A9/@49.0328,-0.94,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=14/49.0328/-0.94/Caumont-l%27%C3%89vent%C3%A9"
+            }
+        },
+        {
+            "PlaceName": "Falaise",
+            "GPS_Coordinate": "48.8931,-0.1992",
+            "BoundingBox": {
+                "North": 49.7914,
+                "South": 47.9948,
+                "East": 1.1638,
+                "West": -1.5622
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map 26: British Intentions, 10 July 1944, showing operations south of Caen towards Falaise area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Falaise,+14114+Falaise,+France/@48.8930571,-0.1991671,14z/data=!3m1!4b1!4m6!3m5!1s0x480f5b0d4b3e4c1d:0x4b4e4e4e4e4e4e4e!8m2!3d48.8930571!4d-0.1991671",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.8931/-0.1992/Falaise,France"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Cotentin",
+            "GPS_Coordinate": "49.2500, -1.6000",
+            "BoundingBox": {
+                "North": "50.1510",
+                "South": "48.3490",
+                "East": "-0.2190",
+                "West": "-2.9810"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP4.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV: First Army Attack Plan, 30 June 1944, depicting the VIII Corps' role in the offensive southward along the Cotentin Peninsula west coast toward high ground near Coutances.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP5.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map V: The Battle on the West Coast, 3-14 July 1944, showing VIII Corps advances and key terrain around la Haye-du-Puits on the Cotentin Peninsula.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Cotentin+Peninsula/@49.2500,-1.6000,10z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#!map=10/49.2500/-1.6000"
+            }
+        },
+        {
+            "PlaceName": "Coutances-Caumont line",
+            "GPS_Coordinate": "49.0404,-1.2025",
+            "BoundingBox": {
+                "North": 49.9399,
+                "South": 48.1409,
+                "East": 0.1665,
+                "West": -2.5715
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Coutances-Caumont+line%2C+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=11/49.0404/-1.2025"
+            }
+        },
+        {
+            "PlaceName": "Taute and Vire",
+            "GPS_Coordinate": "49.1158,-1.0853",
+            "BoundingBox": {
+                "North": "50.0150",
+                "South": "48.2166",
+                "East": "0.2864",
+                "West": "-2.4570"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-mapVIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map VIII: Montgomery's Offensive Plan (10 July 1944), depicting the situation including U.S. First Army positions in the Cotentin Peninsula and planning areas along the Taute and Vire rivers.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3f/VII_Corps_Saint-Lo_11-18_July_1944.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:VII_Corps_Saint-Lo_11-18_July_1944.png",
+                    "External_Map_Description": "U.S. VII Corps operations toward Saint-L\u00f4 from 11-18 July 1944, illustrating the advance bounded by the Taute and Vire rivers in the context of post-Caen breakout planning.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.1158,-1.0853,11z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=11&lat=49.1158&lon=-1.0853"
+            }
+        },
+        {
+            "Event_Doc": "chapter7a-event.json",
+            "Source_Doc": "chapter7a-content.md",
+            "Sub-event_summary": "Post-Caen assessment and new directives from Montgomery on 10 July for British Second Army operations south of Caen, alongside continued U.S. First Army efforts, amid American challenges in the Cotentin and planning for alternative advances.",
+            "PlaceName": "Lessay-St. L\u00f4-Caumont highway",
+            "GPS_Coordinate": "49.1231,-1.2721",
+            "BoundingBox": {
+                "North": 50.0221,
+                "South": 48.2241,
+                "East": 0.1069,
+                "West": -2.6511
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapVII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map VII-1: Situation in the Center, 10 July 1944, depicting the operational situation including key highways such as the Lessay-St. L\u00f4-Caumont area in the context of U.S. First Army advances.",
+                    "External_Map_Capture_Date": "2024-10-05T10:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/dir/Lessay,+France/Saint-L%C3%B4,+France/Caumont-l%27%C3%89vent%C3%A9,+France/@49.1231,-1.2721,11z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=49.1231&lon=-1.2721&zoom=11"
+            }
+        },
+        {
+            "PlaceName": "Breton ports",
+            "GPS_Coordinate": "48.25,-3.05",
+            "BoundingBox": {
+                "North": 49.1509,
+                "South": 47.3491,
+                "East": -1.704,
+                "West": -4.396
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/index.html",
+                    "External_Map_Description": "Map 2: The Brittany Peninsula on 1 July 1944, illustrating road networks, major ports, and terrain features relevant to the strategic decision to bypass Breton ports.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/7/7b/U-boot-Basen_in_Brest-Lorient-StNazaire.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Lorient_Submarine_Base",
+                    "External_Map_Description": "Map showing German U-boat bases in the Breton ports of Brest, Lorient, and Saint-Nazaire during World War II.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Bretagne,+France/@48.25,-3.05,8z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://map.openstreetbrowser.org/?zoom=8&lat=48.25&lon=-3.05"
+            }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        }
+    ]
+}

@@ -1,0 +1,57 @@
+- Treat this document as a requirements document.
+
+- Breakout and Pursuit
+- SourceLink='https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html'
+- Endnotelink='https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn4.html'
+
+- LocalSource='chapter4d-event.json'
+
+
+
+Review
+
+- Read the document BreakoutAndPursuit/data/prompts/chapter1/chapter1a-review/chapter1a-event.json
+
+Source_Doc: chapter4d-content.md
+Review_Doc: BreakoutAndPursuit/data/prompts/chapter1/chapter1a-review/00-chapter1a-event-review.yaml
+
+- Review each "Sub-event" in the document
+- Capture the "Sub-event_summary" for traceability purposes
+  - Do not include "Sub-event_fulltext" data
+- Review the Sub-Event-Places
+  - Review the list and deduplicate it
+  - Get the GPS coordinates for each place
+  - Create a GPS Bounding Box using 100 km from the center point of the GPS_Coordinate
+  - If the Sub-event contains a link to a map copy it to this file, to find the "Sub-Events-Maps" in the JSON, it contains two data fields, one for the link to the map and a description of the map
+  - Review web resources for other historical maps specific to the Sub-event, multiple references are OK
+    - Capture the direct link the link to the image
+    - Capture the any description of the map
+    - Note the license associated with the map
+    - Note the current date and time (UTC) for "External_Map_Capture_Date" using the ISO 8601 standard
+  - Capture a link to the place two map sources:
+      - Google Maps
+      - openstreetbrowser.org
+
+- Place the the JSON in a markdown text box
+- Using the requirements above, build a JSON based on the standard below:
+
+
+- Event_Doc:
+- Source_Doc:
+- Sub-event_summary:
+- PlaceName:
+  - GPS_Coordinate:
+  - BoundingBox:
+    - North:
+    - South:
+    - East:
+    - West:
+  - External_Maps:
+    - External_Map_Link:
+    - External_Map_Page:
+    - External_Map_Description:
+    - External_Map_Capture_Date:
+    - External_Map_Licence:
+  - ModernMap:
+    - googlemaps_link:
+    - openstreetbrowser_map_Link:

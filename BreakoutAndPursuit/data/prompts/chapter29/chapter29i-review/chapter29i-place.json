@@ -1,0 +1,381 @@
+{
+    "1": [
+        {
+            "PlaceName": "Paris",
+            "GPS_Coordinate": "48.8567, 2.3528",
+            "BoundingBox": {
+                "North": 49.7562,
+                "South": 47.9572,
+                "East": 3.7218,
+                "West": 0.9838
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Paris,+France/@48.8567,2.3528,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.8567/2.3528"
+            }
+        },
+        {
+            "PlaceName": "Etoile",
+            "GPS_Coordinate": "48.87396, 2.29502",
+            "BoundingBox": {
+                "North": 49.77326,
+                "South": 47.97466,
+                "East": 3.65702,
+                "West": 0.93302
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Paris_25-26_Aout_1944.svg/1280px-Paris_25-26_Aout_1944.svg.png",
+                    "External_Map_Page": "https://fr.wikipedia.org/wiki/Lib%C3%A9ration_de_Paris",
+                    "External_Map_Description": "Historical map depicting key events during the Liberation of Paris on 25-26 August 1944, including the route of General de Gaulle's parade starting from Place de l'\u00c9toile down the Champs-\u00c9lys\u00e9es.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "CC BY-SA 3.0"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Place+Charles+de+Gaulle,+75008+Paris,+France/@48.8737781,2.2950271,17z/data=!3m1!4b1!4m6!3m5!1s0x47e66e2964e34e2d:0xbcdf62d5aed8f6d2!8m2!3d48.8737781!4d2.2950271!16zL20vMDZ0b24",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=2.29502&lat=48.87396&zoom=16"
+            }
+        },
+        {
+            "PlaceName": "Place de la Concorde",
+            "GPS_Coordinate": "48.8656, 2.3214",
+            "BoundingBox": {
+                "North": 49.7644,
+                "South": 47.9668,
+                "East": 3.6824,
+                "West": 0.9604
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XIX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map XIX: The Seizure of Paris, 19-25 August 1944, depicting military operations and advances leading to the liberation of Paris, including central Paris areas relevant to subsequent events like de Gaulle's parade at Place de la Concorde.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/5/5a/Lib%C3%A9ration_de_Paris_1944_%28carte%29.svg",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Lib%C3%A9ration_de_Paris_1944_(carte).svg",
+                    "External_Map_Description": "Schematic map of the Liberation of Paris in August 1944, showing key routes, forces, and actions around central Paris, contextually relevant to General de Gaulle's entry and parade at Place de la Concorde on 26 August.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "CC BY-SA 4.0"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Place+de+la+Concorde/@48.8659849,2.3214417,17z/data=!3m1!4b1!4m6!3m5!1s0x47e66e2964e34e2d:0xb90a0924e227f8f5!8m2!3d48.865981!4d2.3236303!16zL20vMGNoX240",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=17/48.8656/2.3214"
+            }
+        },
+        {
+            "Event_Doc": "chapter29i-event.json",
+            "Source_Doc": "chapter29i-content.md",
+            "Sub-event_summary": "General de Gaulle's arrival and official entry into Paris on 25 and 26 August 1944, including a parade amidst command conflicts with Allied General Gerow over troop priorities, leading to de Gaulle's symbolic assertion of authority and establishment of a provisional government, while scattered German resistance and potential threats persisted.",
+            "PlaceName": "Meudon",
+            "GPS_Coordinate": "48.818611,2.240278",
+            "BoundingBox": {
+                "North": 49.717411,
+                "South": 47.919811,
+                "East": 3.601278,
+                "West": 0.879278
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP28.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVIII: Paris, 19-26 August 1944, showing Allied advances towards and into Paris during the liberation period relevant to sub-event.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/8/8f/Paris_1944-08-25.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Liberation_of_Paris",
+                    "External_Map_Description": "Map showing the situation in Paris on 25 August 1944, including approaches from the southwest near Meudon.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Meudon,+France/@48.818611,2.240278,14z/data=!3m1!4b1!4m6!3m5!1s0x47e66e296b5d5f2b:0x8b8b8b8b8b8b8b8b!8m2!3d48.818611!4d2.240278!16zL20vMDVsczEy",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=2.240278&lat=48.818611&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Clamart",
+            "GPS_Coordinate": {
+                "lat": 48.8028,
+                "lon": 2.2131
+            },
+            "BoundingBox": {
+                "North": 49.7022,
+                "South": 47.9034,
+                "East": 3.5731,
+                "West": 0.8531
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-IX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map IX: Paris Area, 19-25 August 1944, depicting military operations around Paris during the liberation period, including southwestern suburbs such as Clamart relevant to French forces movements and de Gaulle's arrival context.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Clamart,+France/@48.8028,2.2131,14z/data=!3m1!4b1!4m6!3m5!1s0x47e66e3b0b0b0b0b:0x9b0e4a4e4e4e4e4e!8m2!3d48.8028!4d2.2131!16zL20vMDV3b24",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.8028/2.2131"
+            }
+        },
+        {
+            "PlaceName": "Vincennes",
+            "GPS_Coordinate": "48.8439,2.4460",
+            "BoundingBox": {
+                "North": 49.743,
+                "South": 47.945,
+                "East": 3.807,
+                "West": 1.085
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/maps/USA-E-Breakout-MAP29-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map 29-1 depicting the Paris area from 19-26 August 1944, illustrating the advance and liberation of Paris, including eastern suburbs like Vincennes during de Gaulle's arrival and entry.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Vincennes,+France/@48.8439,2.4460,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.8439/2.4460/Vincennes,_France"
+            }
+        },
+        {
+            "PlaceName": "Montreuil",
+            "GPS_Coordinate": "48.9517, -1.3478",
+            "BoundingBox": {
+                "North": 49.8512,
+                "South": 48.0522,
+                "East": 0.0222,
+                "West": -2.7178
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP13-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map XIII: The German High Command Reacts to the American Breakout, 26-28 July 1944, showing dispositions in the area including la Chapelle-en-Juger and vicinity of Montreuil.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Montreuil,+France/@48.9517,-1.3478,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#map=15/48.9517/-1.3478/Montreuil"
+            }
+        },
+        {
+            "PlaceName": "Montmorency",
+            "GPS_Coordinate": "48.9831, 2.3167",
+            "BoundingBox": {
+                "North": 49.884,
+                "South": 48.0822,
+                "East": 3.6903,
+                "West": 0.9431
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=48.9831,2.3167",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#/?mlat=48.9831&mlon=2.3167&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "le Bourget",
+            "GPS_Coordinate": {
+                "lat": 48.96944,
+                "lon": 2.43944
+            },
+            "BoundingBox": {
+                "North": 49.8689,
+                "South": 48.0699,
+                "East": 3.8104,
+                "West": 1.0684
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-29-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map of Paris and environs showing German defensive positions during the liberation, with vicinity of Le Bourget airfield north of the city.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Le+Bourget+Airport/@48.96944,2.43944,14z/data=!3m1!4b1!4m6!3m5!1s0x47e66e296a4f4b2d:0x4b8f6e4a2d2e4f0!8m2!3d48.96944!4d2.43944!16s%2Fm%2F0ch_2",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.96944/2.43944"
+            }
+        },
+        {
+            "PlaceName": "Bois de Boulogne",
+            "GPS_Coordinate": "48.8672, 2.2533",
+            "BoundingBox": {
+                "North": 49.7719,
+                "South": 47.9625,
+                "East": 3.6303,
+                "West": 0.8763
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAPIX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Paris Area, 19-25 August 1944. Depicts the military situation and advances in the Paris region during the lead-up to and initial phases of the liberation, including areas like Bois de Boulogne where de Gaulle arrived.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Bois+de+Boulogne/@48.8672,2.2533,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.8672&lon=2.2533&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Champs-\u00c9lys\u00e9es",
+            "GPS_Coordinate": "48.8686, 2.3061",
+            "BoundingBox": {
+                "North": 49.7666,
+                "South": 47.9706,
+                "East": 3.6671,
+                "West": 0.9451
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Paris and Seine Bridges, 19-26 August 1944, depicting operations during the liberation of Paris including relevant context for de Gaulle's entry.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (US Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/92/Liberation_of_Paris_map.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Liberation_of_Paris",
+                    "External_Map_Description": "Schematic map of the main movements and forces involved in the Liberation of Paris, August 1944, covering the period of de Gaulle's arrival.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Champs-%C3%89lys%C3%A9es,+75008+Paris,+France/@48.8686,2.3061,16z/data=!3m1!4b1!4m6!3m5!1s0x47e66e2964e34e2d:0x8ddca9ee380ef7e0!8m2!3d48.8686!4d2.3061!16zL20vMDV2c2s",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=16/48.8686/2.3061"
+            }
+        }
+    ],
+    "2": [
+        {
+            "PlaceName": "Paris",
+            "GPS_Coordinate": "48.8567, 2.3528",
+            "BoundingBox": {
+                "North": 49.7562,
+                "South": 47.9572,
+                "East": 3.7218,
+                "West": 0.9838
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Paris,+France/@48.8567,2.3528,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.8567/2.3528"
+            }
+        },
+        {
+            "PlaceName": "Bois de Boulogne",
+            "GPS_Coordinate": "48.8672, 2.2533",
+            "BoundingBox": {
+                "North": 49.7719,
+                "South": 47.9625,
+                "East": 3.6303,
+                "West": 0.8763
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAPIX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Paris Area, 19-25 August 1944. Depicts the military situation and advances in the Paris region during the lead-up to and initial phases of the liberation, including areas like Bois de Boulogne where de Gaulle arrived.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Bois+de+Boulogne/@48.8672,2.2533,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.8672&lon=2.2533&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "United Kingdom",
+            "GPS_Coordinate": "55.3781,-3.4360",
+            "BoundingBox": {
+                "North": 56.2761,
+                "South": 54.4801,
+                "East": -1.855,
+                "West": -5.017
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/8/84/EnglandUSAAFbase1943-44.png",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:EnglandUSAAFbase1943-44.png",
+                    "External_Map_Description": "Map showing RAF and USAAF airfield locations in England during 1943-44, relevant to the build-up and strategic planning for Operation OVERLORD and the Normandy campaign.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/United+Kingdom/@55.3781,-3.436,6z/data=!3m1!4b1!4m6!3m5!1s0x25a3c342400b3d5df:0xddcc8db7852bf0db!8m2!3d55.378051!4d-3.435973!16zL20vMDZ4M3Y?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=6/55.38/-3.44"
+            }
+        }
+    ],
+    "3": [
+        {
+            "PlaceName": "Normandy",
+            "GPS_Coordinate": "49.05, -1.40",
+            "BoundingBox": {
+                "North": 49.95,
+                "South": 48.15,
+                "East": -0.03,
+                "West": -2.77
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapIV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1: VIII Corps zone of action and attacks, 22-25 June 1944, showing advances southward along the Cotentin west coast toward Coutances and la Haye-du-Puits.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/94/US_FHH_Normandy_22jun44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:US_FHH_Normandy_22jun44.png",
+                    "External_Map_Description": "Front lines in Normandy on 22 June 1944, illustrating the positions during the VIII Corps offensive in the Cotentin Peninsula.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.05,-1.4,9z?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=9/49.05/-1.4"
+            }
+        },
+        {
+            "PlaceName": "Paris",
+            "GPS_Coordinate": "48.8567, 2.3528",
+            "BoundingBox": {
+                "North": 49.7562,
+                "South": 47.9572,
+                "East": 3.7218,
+                "West": 0.9838
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Paris,+France/@48.8567,2.3528,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.8567/2.3528"
+            }
+        }
+    ]
+}

@@ -1,0 +1,481 @@
+{
+    "1": [
+        {
+            "PlaceName": "P\u00e9riers-St. L\u00f4 highway",
+            "GPS_Coordinate": "49.0853\u00b0 N, 1.1999\u00b0 W",
+            "BoundingBox": {
+                "North": 49.9836,
+                "South": 48.187,
+                "East": 0.1768,
+                "West": -2.5766
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MapV.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V: XIX Corps Plan of Attack, 10 July 1944, depicting dispositions astride the Vire River and objectives toward St. L\u00f4, including the P\u00e9riers-St. L\u00f4 highway area in the context of the two-step attack to seize high ground.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=P%C3%A9riers-St.+L%C3%B4+highway%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#49.0853/-1.1999/13"
+            }
+        }
+    ],
+    "2": [
+        {
+            "PlaceName": "Normandy front",
+            "GPS_Coordinate": "49.1500,-0.7270",
+            "BoundingBox": {
+                "North": 50.051,
+                "South": 48.249,
+                "East": 0.647,
+                "West": -2.101
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP14.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Map No. 14: The German Second Army Front, 23 July 1944, depicting the Normandy front lines just prior to 24 July.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP15.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Map No. 15: Situation in VII Corps Area, 24 July 1944, showing the front in the Normandy region on the specified date.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.1500,-0.7270,10z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?zoom=10&lat=49.1500&lon=-0.7270"
+            }
+        },
+        {
+            "PlaceName": "Panzer Group West sector",
+            "GPS_Coordinate": "49.1833,-0.3667",
+            "BoundingBox": {
+                "North": 50.0823,
+                "South": 48.2843,
+                "East": 0.9986,
+                "West": -1.7414
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP12-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Map No. 12-1: Situation in Normandy about 2300, 23 July 1944, depicting German dispositions in the Panzer Group West sector prior to 24 July reactions.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.1833,-0.3667",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/49.1833/-0.3667"
+            }
+        },
+        {
+            "PlaceName": "Seventh Army sector",
+            "GPS_Coordinate": "49.1167,-1.0833",
+            "BoundingBox": {
+                "North": 50.0157,
+                "South": 48.2177,
+                "East": 0.2867,
+                "West": -2.4533
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map12-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Map XII-1. Situation in the Seventh Army sector, 2200, 24 July 1944, showing German dispositions and front lines relevant to command reactions including Bayerlein, Hausser, and Kluge.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.1167,-1.0833",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-1.0833&lat=49.1167&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Vire bridges",
+            "GPS_Coordinate": "48.8469,-0.8878",
+            "BoundingBox": {
+                "North": 49.7454,
+                "South": 47.9484,
+                "East": 0.4682,
+                "West": -2.2438
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-VII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "MAP VII: VII Corps main effort toward Vire, 24 July 1944, depicting positions and movements relevant to German command reactions around Vire bridges.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Vire+bridges,+14500+Vire+Normandie,+France/@48.8469,-0.8878,16z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=16/48.8469/-0.8878"
+            }
+        },
+        {
+            "PlaceName": "St. L\u00f4",
+            "GPS_Coordinate": "49.1167, -1.0833",
+            "BoundingBox": {
+                "North": 50.0176,
+                "South": 48.2158,
+                "East": 0.2887,
+                "West": -2.4553
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Saint-Lo_advance.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_for_Saint-L%C3%B4",
+                    "External_Map_Description": "Map showing the advance toward Saint-L\u00f4, 11\u201315 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP9-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map IX: VII Corps Drive Toward Saint-L\u00f4, 11-15 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army historical publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-L%C3%B4,+France/@49.1167,-1.0833,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.0833&lat=49.1167&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "left wing",
+            "GPS_Coordinate": "49.1167,-1.0750",
+            "BoundingBox": {
+                "North": 50.016,
+                "South": 48.2174,
+                "East": 0.294,
+                "West": -2.444
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.1167,-1.0750",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/49.1167/-1.0750"
+            }
+        }
+    ],
+    "3": [
+        {
+            "PlaceName": "Panzer Group West front",
+            "GPS_Coordinate": "49.1833,-0.3713",
+            "BoundingBox": {
+                "North": 50.0821,
+                "South": 48.2845,
+                "East": 1.0007,
+                "West": -1.7433
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-12-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Map XII-1 showing the Normandy front dispositions on 25 July 1944, illustrating the Panzer Group West sector facing Allied forces near Caen.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.1833,-0.3713",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.1833&lon=-0.3713&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Tilly",
+            "GPS_Coordinate": "49.0661, -0.8333",
+            "BoundingBox": {
+                "North": 49.9649,
+                "South": 48.1673,
+                "East": 0.5367,
+                "West": -2.2033
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map-12-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Map XII-1: The Battlefield, 25 July 1944, showing dispositions relevant to Operation COBRA and Panzer Group West.",
+                    "External_Map_Capture_Date": "2024-10-06T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map-12-2.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Map XII-2: Armor on the Breakthrough Battlefield, Evening 25 July 1944, illustrating German Panzer positions including Panzer Group West.",
+                    "External_Map_Capture_Date": "2024-10-06T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Tilly/@49.0661,-0.8333,14z/data=!3m1!4b1!4m5!3m4!1s0x480fa0d4f4e0b5b7:0x4b0e4e4e4e4e4e4e!8m2!3d49.0661!4d-0.8333",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#lon=-0.8333&lat=49.0661&z=14"
+            }
+        },
+        {
+            "PlaceName": "Vire",
+            "GPS_Coordinate": "48.8381,-0.8861",
+            "BoundingBox": {
+                "North": "49.7373",
+                "South": "47.9389",
+                "East": "0.4749",
+                "West": "-2.2471"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-3-III.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+                    "External_Map_Description": "Map III: The Wheeling Maneuver, 24-30 July, illustrating Montgomery's directive for the maneuver toward the Caumont-Vire-Mortain-Foug\u00e8res line.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Vire-Normandie,+France/@48.8380556,-0.8861111,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-0.8861&lat=48.8381&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Seventh Army area",
+            "GPS_Coordinate": "48.7003, -1.0861",
+            "BoundingBox": {
+                "North": 49.5986,
+                "South": 47.802,
+                "East": 0.2719,
+                "West": -2.4441
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-12-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Map XII: Situation in Normandy at 0900, 25 July 1944, depicting the German Seventh Army sector opposite the U.S. forces prior to Operation COBRA.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@48.7003,-1.0861,9z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=9/48.7003/-1.0861"
+            }
+        }
+    ],
+    "4": [
+        {
+            "PlaceName": "P\u00e9riers-St. L\u00f4 highway",
+            "GPS_Coordinate": "49.0853\u00b0 N, 1.1999\u00b0 W",
+            "BoundingBox": {
+                "North": 49.9836,
+                "South": 48.187,
+                "East": 0.1768,
+                "West": -2.5766
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MapV.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V: XIX Corps Plan of Attack, 10 July 1944, depicting dispositions astride the Vire River and objectives toward St. L\u00f4, including the P\u00e9riers-St. L\u00f4 highway area in the context of the two-step attack to seize high ground.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=P%C3%A9riers-St.+L%C3%B4+highway%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#49.0853/-1.1999/13"
+            }
+        },
+        {
+            "PlaceName": "la Chapelle-en-Juger",
+            "GPS_Coordinate": "49.0325,-1.1997",
+            "BoundingBox": {
+                "North": 49.932,
+                "South": 48.133,
+                "East": 0.1713,
+                "West": -2.5707
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map12-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Map 12-1: Enemy situation west of the Vire River, 2300, 23 July 1944, depicting LXXXIV Corps dispositions including Panzer Lehr Division elements near la Chapelle-en-Juger.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/La+Chapelle-en-Juger,+50250,+France/@49.0325,-1.1997,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.0325&lon=-1.1997&zoom=14"
+            }
+        },
+        {
+            "sub_event_index": 4,
+            "place_index": 7,
+            "PlaceName": "H\u00e9b\u00e9cr\u00e9von",
+            "Sub-event_summary": "German misperception of the impending COBRA attack and detailed disposition of forces under LXXXIV Corps facing VII Corps, including specific unit strengths and Panzer Lehr's weakened state.",
+            "Event_Doc": "chapter12a-event.json",
+            "Source_Doc": "chapter12a-content.md",
+            "GPS_Coordinate": "48.9533,-1.2503",
+            "BoundingBox": {
+                "North": 49.8521,
+                "South": 48.0545,
+                "East": 0.1197,
+                "West": -2.6203
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Op_Cobra_Map.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Cobra",
+                    "External_Map_Description": "Map of Operation Cobra, 25\u201331 July 1944, showing the breakout area near Saint-L\u00f4 including vicinity of H\u00e9b\u00e9cr\u00e9von and German dispositions.",
+                    "External_Map_Capture_Date": "2024-09-19T14:30:00Z",
+                    "External_Map_Licence": "Public domain (PD-USGov)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/maps/Map-XII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Map XII-1 from Breakout and Pursuit: Enemy dispositions and VII Corps attack front before Operation COBRA, 24 July 1944.",
+                    "External_Map_Capture_Date": "2024-09-19T14:30:00Z",
+                    "External_Map_Licence": "Public domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/H%C3%A9b%C3%A9cr%C3%A9von,+France/@48.9533,-1.2503,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.9533/-1.2503/H%C3%A9b%C3%A9cr%C3%A9von"
+            }
+        },
+        {
+            "PlaceName": "Marigny",
+            "GPS_Coordinate": "49.0800, -1.2614",
+            "BoundingBox": {
+                "North": 49.98,
+                "South": 48.18,
+                "East": 0.11,
+                "West": -2.632
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP%2011-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map II: The VII Corps Drive to Coutances, 8-15 July 1944, depicting the advance including penetration to Marigny and St. Gilles.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/49%C2%B004'48%22N+1%C2%B015'41%22W/@49.0800,-1.2614,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/49.0800/-1.2614"
+            }
+        }
+    ],
+    "5": [
+        {
+            "PlaceName": "Seventh Army sector",
+            "GPS_Coordinate": "49.1167,-1.0833",
+            "BoundingBox": {
+                "North": 50.0157,
+                "South": 48.2177,
+                "East": 0.2867,
+                "West": -2.4533
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map12-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Map XII-1. Situation in the Seventh Army sector, 2200, 24 July 1944, showing German dispositions and front lines relevant to command reactions including Bayerlein, Hausser, and Kluge.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.1167,-1.0833",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-1.0833&lat=49.1167&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "west of the Vire",
+            "GPS_Coordinate": "48.8500,-0.9500",
+            "BoundingBox": {
+                "North": 49.7498,
+                "South": 47.9502,
+                "East": 0.413,
+                "West": -2.313
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP12-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Historical map depicting the Allied breakthrough and German Seventh Army dispositions near Vire during late July 1944, relevant to the sector west of Vire.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@48.8500,-0.9500,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.8500/-0.9500"
+            }
+        },
+        {
+            "PlaceName": "St. L\u00f4",
+            "GPS_Coordinate": "49.1167, -1.0833",
+            "BoundingBox": {
+                "North": 50.0176,
+                "South": 48.2158,
+                "East": 0.2887,
+                "West": -2.4553
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Saint-Lo_advance.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_for_Saint-L%C3%B4",
+                    "External_Map_Description": "Map showing the advance toward Saint-L\u00f4, 11\u201315 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP9-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map IX: VII Corps Drive Toward Saint-L\u00f4, 11-15 July 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army historical publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-L%C3%B4,+France/@49.1167,-1.0833,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.0833&lat=49.1167&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Panzer Group West sector",
+            "GPS_Coordinate": "49.1833,-0.3667",
+            "BoundingBox": {
+                "North": 50.0823,
+                "South": 48.2843,
+                "East": 0.9986,
+                "West": -1.7414
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP12-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-12.html",
+                    "External_Map_Description": "Map No. 12-1: Situation in Normandy about 2300, 23 July 1944, depicting German dispositions in the Panzer Group West sector prior to 24 July reactions.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.1833,-0.3667",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/49.1833/-0.3667"
+            }
+        }
+    ]
+}

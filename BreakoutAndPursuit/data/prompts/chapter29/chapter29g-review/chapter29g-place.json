@@ -1,0 +1,881 @@
+{
+    "1": [
+        {
+            "PlaceName": "Paris",
+            "GPS_Coordinate": "48.8567, 2.3528",
+            "BoundingBox": {
+                "North": 49.7562,
+                "South": 47.9572,
+                "East": 3.7218,
+                "West": 0.9838
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Paris,+France/@48.8567,2.3528,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.8567/2.3528"
+            }
+        },
+        {
+            "PlaceName": "Argentan",
+            "GPS_Coordinate": "48.7422,0.0156",
+            "BoundingBox": {
+                "North": 49.6415,
+                "South": 47.8429,
+                "East": 1.3586,
+                "West": -1.3274
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-VII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map VII. Operation GOODWOOD, 18-20 July 1944, showing armored advance relevant to the sub-event context toward Falaise.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-X.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map X. Pursuit to Argentan Area, 7-13 August 1944, depicting the region including Argentan in the breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Argentan,+France/@48.7422,0.0156,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.7422/0.0156"
+            }
+        },
+        {
+            "PlaceName": "Cherbourg",
+            "GPS_Coordinate": "49.6469, -1.6214",
+            "BoundingBox": {
+                "North": 50.5517,
+                "South": 48.7421,
+                "East": -0.2284,
+                "West": -3.0144
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP4-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV: VII Corps Maneuver Toward Cherbourg, showing advances along the Cotentin Peninsula including positions near Cherbourg.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Battle_of_Cherbourg_map.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Cherbourg",
+                    "External_Map_Description": "Map of the Battle of Cherbourg, illustrating the U.S. VII Corps assault on the port of Cherbourg in late June 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Cherbourg-en-Cotentin,+France/@49.646944,-1.621389,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#49.646944/-1.621389/14"
+            }
+        },
+        {
+            "PlaceName": "Seine River",
+            "GPS_Coordinate": "49.4404,1.0819",
+            "BoundingBox": {
+                "North": 50.3384,
+                "South": 48.5424,
+                "East": 2.4589,
+                "West": -0.2951
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map 1. The Lodgment Area as of 26 June 1944, depicting the geographic boundaries including the Seine River as the eastern limit.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/91/Normandybeachheadmap.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:NORMANDYBEACHHEADMAP.jpg",
+                    "External_Map_Description": "Normandy beachhead map showing the Allied lodgment area expansion towards the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Seine+River%2C+Normandy%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0819&lat=49.4404&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "S\u00e9es",
+            "GPS_Coordinate": {
+                "lat": 48.603611,
+                "lon": 0.330278
+            },
+            "BoundingBox": {
+                "North": 49.5029,
+                "South": 47.7043,
+                "East": 1.6923,
+                "West": -1.0317
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/S%C3%A9es,+France/@48.6036111,0.3302778,14z/data=!3m1!4b1!4m6!3m5!1s0x480f9b5f3b0e4b1d:0x4d5a4e6b4b5c4d5e!8m2!3d48.6036111!4d0.3302778",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.603611&lon=0.330278&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Mortagne",
+            "GPS_Coordinate": "48.7328, 0.4883",
+            "BoundingBox": {
+                "North": 49.6311,
+                "South": 47.8345,
+                "East": 1.8513,
+                "West": -0.8747
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XXII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map XXII: The XII Corps Drive Eastward, 13-16 August 1944, depicting operations near Mortagne-au-Perche where the 79th Infantry Division cleared German vehicles.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mortagne-au-Perche,+France/@48.7328,0.4883,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.7328/0.4883"
+            }
+        },
+        {
+            "PlaceName": "Ch\u00e2teau-en-Thymerais",
+            "GPS_Coordinate": {
+                "lat": 48.6197,
+                "lon": 1.1772
+            },
+            "BoundingBox": {
+                "North": 49.5189,
+                "South": 47.7205,
+                "East": 2.5342,
+                "West": -0.1798
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/GIF/mapVIII-2.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map VIII\u20132 showing the drive on Paris, 22\u201325 August 1944, depicting Allied advances including routes southwest of Paris.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Ch%C3%A2teau-en-Thymerais,+28300,+France/@48.619722,1.177222,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6197/1.1772/Ch%C3%A2teau-en-Thymerais"
+            }
+        },
+        {
+            "PlaceName": "Maintenon",
+            "GPS_Coordinate": "48.5867,1.5667",
+            "BoundingBox": {
+                "North": 49.4855,
+                "South": 47.6879,
+                "East": 2.9257,
+                "West": 0.2077
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-Map28.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map XXVIII: Advance Toward Paris, 22-25 August 1944, depicting the routes of V Corps and 2d French Armored Division southwest of Paris where German defenses were encountered.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Maintenon,+28300,+France/@48.5867,1.5667,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.5867/1.5667/Maintenon"
+            }
+        },
+        {
+            "PlaceName": "Rambouillet",
+            "GPS_Coordinate": "48.6439,1.8333",
+            "BoundingBox": {
+                "North": 49.5429,
+                "South": 47.7449,
+                "East": 3.1943,
+                "West": 0.4723
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Rambouillet,+France/@48.6439,1.8333,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6439/1.8333"
+            }
+        },
+        {
+            "PlaceName": "Versailles",
+            "GPS_Coordinate": "48.8049, 2.1204",
+            "BoundingBox": {
+                "North": 49.7044,
+                "South": 47.9054,
+                "East": 3.4804,
+                "West": 0.7604
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP28.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map XXVIII: The Liberation of Paris, 19-25 August 1944, depicting Allied advances including routes southwest of Paris toward Versailles.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Versailles,+78000+France/@48.8049,2.1204,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=2.1204&lat=48.8049&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Alen\u00e7on",
+            "GPS_Coordinate": "48.4304, 0.0914",
+            "BoundingBox": {
+                "North": 49.3284,
+                "South": 47.5324,
+                "East": 1.4334,
+                "West": -1.2506
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map XXV: The Canadian Attack, 10-13 August 1944, showing operations relevant to German shifts towards Falaise defense area near Alen\u00e7on.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Closing_of_the_Falaise_Pocket.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_Pocket",
+                    "External_Map_Description": "Map showing the closing of the Falaise Pocket 12-16 August 1944, with Alen\u00e7on in the vicinity of Argentan encirclement.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Alen%C3%A7on,+France/@48.4304,0.0914,13z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/48.4304/0.0914"
+            }
+        },
+        {
+            "PlaceName": "Nogent-le-Rotrou",
+            "GPS_Coordinate": {
+                "lat": 48.321944,
+                "lon": 0.821389
+            },
+            "BoundingBox": {
+                "North": 49.220944,
+                "South": 47.422944,
+                "East": 2.172389,
+                "West": -0.529611
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-M28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVIII\u20131: Advance of VII Corps, 12-16 August 1944, showing 7th Armored Division movements toward Nogent-le-Rotrou",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Nogent-le-Rotrou,+France/@48.321944,0.821389,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=48.321944&lon=0.821389"
+            }
+        },
+        {
+            "PlaceName": "Chartres",
+            "GPS_Coordinate": {
+                "lat": 48.4472,
+                "lng": 1.4866
+            },
+            "BoundingBox": {
+                "North": 49.3467,
+                "South": 47.5477,
+                "East": 2.8446,
+                "West": 0.1286
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Chartres,+France/@48.4472,1.4866,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.4472/1.4866"
+            }
+        },
+        {
+            "PlaceName": "Limours",
+            "GPS_Coordinate": "48.4214, 2.0081",
+            "BoundingBox": {
+                "North": 49.3198,
+                "South": 47.5229,
+                "East": 3.3601,
+                "West": 0.6561
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP29-7.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map VII. Seizure of Paris Area, 19-25 August 1944. Depicts V Corps advances southwest of Paris, including routes and German defenses near Limours during the liberation of Paris.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Limours,+France/@48.4214,2.0081,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=2.0081&lat=48.4214&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Palaiseau",
+            "GPS_Coordinate": {
+                "lat": 48.710833,
+                "lon": 2.221667
+            },
+            "BoundingBox": {
+                "North": 49.609833,
+                "South": 47.811833,
+                "East": 3.584667,
+                "West": 0.858667
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XXIX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map No. XXIX: The Advance Toward Paris, 19-25 August 1944, depicting Allied advances on two routes toward Paris, including encounters with German defenses southwest of Paris near Palaiseau.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Palaiseau,+France/@48.710833,2.221667,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#!map=14/48.71083/2.22167/Palaiseau"
+            }
+        },
+        {
+            "PlaceName": "northern France",
+            "GPS_Coordinate": "49.5000,2.6000",
+            "BoundingBox": {
+                "North": 50.399,
+                "South": 48.601,
+                "East": 3.983,
+                "West": 1.217
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/CH2-MAP1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II-1: OB WEST Tactical Organization about 1 June 1944, depicting Army Group B in northern France north of the Loire-Geneva line.",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=northern+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=9/49.5/2.6"
+            }
+        },
+        {
+            "PlaceName": "lower Seine",
+            "GPS_Coordinate": "49.4432, 1.0998",
+            "BoundingBox": {
+                "North": 50.3412,
+                "South": 48.5452,
+                "East": 2.477,
+                "West": -0.277
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-BreakoutMaps/map28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map 28-1 depicting operations around the Seine River crossings during the breakout and pursuit phase in August 1944",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Avancierende_Alliierten_Armeen_Aug44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_pocket",
+                    "External_Map_Description": "Map showing Allied advances towards the Seine River in August 1944 during the Normandy breakout",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.4432,1.0998,10z?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#map=10/49.4432/1.0998"
+            }
+        },
+        {
+            "Event_Doc": "chapter29g-event.json",
+            "Source_Doc": "chapter29g-content.md",
+            "Sub-event_summary": "General Eisenhower and Bradley selected the 2d French Armored Division under Leclerc to lead the liberation of Paris for symbolic reasons, with V Corps, including the 4th U.S. Infantry Division, assigned the task on 22 August 1944; troops advanced on two routes encountering German defenses southwest of Paris by evening of 23 August, while Choltitz, despite Hitler's orders to destroy the city, refused to do so and prepared external defenses, leading to postponed Allied attack until 24 August.",
+            "PlaceName": "Notre Dame",
+            "GPS_Coordinate": "48.8530, 2.3499",
+            "BoundingBox": {
+                "North": 49.7512,
+                "South": 47.9548,
+                "East": 3.7189,
+                "West": 0.9809
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP29-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map IX: Advance Toward Paris, 19-25 August 1944, showing Allied advances including routes to Paris where Notre Dame is located.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/93/Liberation_of_paris_map-fr.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Liberation_of_Paris",
+                    "External_Map_Description": "Map of the Liberation of Paris in August 1944, illustrating key advances and areas around central Paris including Notre Dame Cathedral.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Notre-Dame+de+Paris/@48.8530,2.3499,17z/data=!3m1!4b1!4m6!3m5!1s0x47e66e2964e34e2d:0x8ddca9ee380ef7e!8m2!3d48.8530!4d2.3499!16zL20vMGNoX3lm?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=17/48.8530/2.3499"
+            }
+        },
+        {
+            "PlaceName": "Invalides",
+            "GPS_Coordinate": "48.8550, 2.3000",
+            "BoundingBox": {
+                "North": 49.7595,
+                "South": 47.9505,
+                "East": 3.663,
+                "West": 0.937
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XXIX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map XXIX: Liberation of Paris, 23-26 August 1944, showing Allied advances and German defenses around Paris including southwest approaches relevant to Invalides area.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/H%C3%B4tel+des+Invalides/@48.8550,2.3000,17z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=17/48.8550/2.3000"
+            }
+        },
+        {
+            "sub_event_index": 1,
+            "place_index": 20,
+            "Event_Doc": "chapter29g-event.json",
+            "Source_Doc": "chapter29g-content.md",
+            "Sub-event_summary": "General Eisenhower and Bradley selected the 2d French Armored Division under Leclerc to lead the liberation of Paris for symbolic reasons, with V Corps, including the 4th U.S. Infantry Division, assigned the task on 22 August 1944; troops advanced on two routes encountering German defenses southwest of Paris by evening of 23 August, while Choltitz, despite Hitler's orders to destroy the city, refused to do so and prepared external defenses, leading to postponed Allied attack until 24 August.",
+            "PlaceName": "Palais Bourbon",
+            "GPS_Coordinate": "48.8586, 2.3172",
+            "BoundingBox": {
+                "North": 49.7595,
+                "South": 47.9577,
+                "East": 3.6866,
+                "West": 0.9478
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XXIX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "MAP XXIX. The approaches to and liberation of Paris, 19-25 August 1944. US Army historical map showing Allied advances towards Paris.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Lib%C3%A9ration_de_Paris_1944_carte.svg",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Lib%C3%A9ration_de_Paris_1944_carte.svg",
+                    "External_Map_Description": "Carte d\u00e9taill\u00e9e de la lib\u00e9ration de Paris en ao\u00fbt 1944, montrant les mouvements des forces alli\u00e9es et fran\u00e7aises.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "CC BY-SA 4.0"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Palais+Bourbon/@48.858611,2.317222,17z/data=!3m1!4b1!4m6!3m5!1s0x47e66e384314a5b9:0x6a4b3f7d2f8e5c4d!8m2!3d48.858611!4d2.317222!16s%2Fg%2F11c5z5q8w",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=17/48.8586/2.3172"
+            }
+        },
+        {
+            "PlaceName": "Arc de Triomphe",
+            "GPS_Coordinate": "48.8738, 2.2950",
+            "BoundingBox": {
+                "North": 49.772,
+                "South": 47.9756,
+                "East": 3.664,
+                "West": 0.926
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-29.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map XXIX: Advance on Paris, 19-25 August 1944, showing Allied advances towards Paris including routes relevant to the liberation.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Paris_1944_aout_19-25.svg/1024px-Paris_1944_aout_19-25.svg.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Liberation_of_Paris",
+                    "External_Map_Description": "Map of the Liberation of Paris from 19 to 25 August 1944, depicting key advances and German positions around Paris landmarks including the Arc de Triomphe area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 4.0 International"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Arc+de+Triomphe/@48.8737938,2.2929994,17z/data=!3m1!4b1!4m6!3m5!1s0x47e66e2964e34e2d:0xddc0a9ee380ef7e0!8m2!3d48.8737938!4d2.2951743!16zL20vMDVscW1y",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=17/48.8738/2.2950/Arc+de+Triomphe"
+            }
+        },
+        {
+            "PlaceName": "Op\u00e9ra",
+            "GPS_Coordinate": "48.8711, 2.3305",
+            "BoundingBox": {
+                "North": 49.7706,
+                "South": 47.9716,
+                "East": 3.7005,
+                "West": 0.9605
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-29-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map 29-1: Paris Area, 22-25 August 1944, showing Allied advances towards and into Paris during the liberation.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/48.8711,2.3305/@48.8711,2.3305,17z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=2.3305&lat=48.8711&zoom=17"
+            }
+        },
+        {
+            "PlaceName": "Madeleine",
+            "GPS_Coordinate": "48.8706, 2.3303",
+            "BoundingBox": {
+                "North": 49.7701,
+                "South": 47.9711,
+                "East": 3.6953,
+                "West": 0.9653
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/maps/map22.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map XXII. The Liberation of Paris, depicting Allied advances and routes to central Paris.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/%C3%89glise+de+la+Madeleine,+Place+de+la+Madeleine,+75008+Paris,+France/@48.87058,2.33028,17z/data=!3m1!4b1!4m6!3m5!1s0x47e66e4a0e4b0b0d:0x8b5c5d4e2f6b8f2e!8m2!3d48.87058!4d2.33028!16zL20vMDVjOXc",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=16/48.8706/2.3303"
+            }
+        },
+        {
+            "sub_event_index": 1,
+            "place_index": 24,
+            "PlaceName": "Tour Eiffel",
+            "GPS_Coordinate": {
+                "lat": 48.85837,
+                "lon": 2.294481
+            },
+            "BoundingBox": {
+                "North": 49.757864,
+                "South": 47.958876,
+                "East": 3.665551,
+                "West": 0.923411
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP29-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map IX: The Seizure of the Paris Area, 19-25 August 1944, depicting Allied advances and German defenses around Paris during the liberation.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Lib%C3%A9ration_de_Paris_1944.svg/1280px-Lib%C3%A9ration_de_Paris_1944.svg.png",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Lib%C3%A9ration_de_Paris_1944.svg",
+                    "External_Map_Description": "Simplified schematic of the liberation of Paris from 19 to 26 August 1944, showing key movements and points in the city.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 4.0 International"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Tour+Eiffel/@48.8583701,2.294481,17z/data=!3m1!4b1!4m6!3m5!1s0x47e66e2964e34e2d:0x8ddca9ee380ef7e0!8m2!3d48.8583701!4d2.294481!16zL20vMDZmeXA?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.858370&lon=2.294481&zoom=17"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Trappes",
+            "GPS_Coordinate": "48.7714,2.0164",
+            "BoundingBox": {
+                "North": 49.6694,
+                "South": 47.8734,
+                "East": 3.3764,
+                "West": 0.6564
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/IX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map IX: Paris Area, 19-25 August 1944, depicting Allied advances toward Paris including routes southwest through areas like Trappes.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Trappes/@48.7714,2.0164,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=14/48.7714/2.0164"
+            }
+        },
+        {
+            "PlaceName": "Guyancourt",
+            "GPS_Coordinate": "48.7714, 2.0692",
+            "BoundingBox": {
+                "North": 49.6697,
+                "South": 47.8731,
+                "East": 3.4302,
+                "West": 0.7082
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map9-L.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map IX from 'Breakout and Pursuit': The Liberation of Paris, 19-25 August 1944, depicting Allied advances on two routes southwest of Paris where German defenses were encountered near Guyancourt.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Army Center of Military History publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Guyancourt,+France/@48.7713894,2.0691667,14z/data=!3m1!4b1!4m6!3m5!1s0x47e66efdcd4b8b9b:0x4a5a4b0b0b0b0b0b!8m2!3d48.7713894!4d2.0691667!16zL20vMDVmb3k",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=14/48.7714/2.0692"
+            }
+        },
+        {
+            "PlaceName": "Ch\u00e2teaufort",
+            "GPS_Coordinate": "48.7481, 2.1169",
+            "BoundingBox": {
+                "North": 49.6473,
+                "South": 47.8489,
+                "East": 3.4785,
+                "West": 0.7553
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP27.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map 27: Enemy dispositions and counterattacks southwest of Paris, 20-24 August 1944, relevant to German defenses near Ch\u00e2teaufort during the Allied advance on Paris.",
+                    "External_Map_Capture_Date": "2024-10-06T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/6/69/Paris_1944_august_19-25_map-fr.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Liberation_of_Paris",
+                    "External_Map_Description": "Map of the Liberation of Paris (19-25 August 1944) showing Allied advances including V Corps routes southwest of Paris near Ch\u00e2teaufort.",
+                    "External_Map_Capture_Date": "2024-10-06T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Ch%C3%A2teaufort,+78890,+France/@48.748056,2.116944,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.7481/2.1169/Ch%C3%A2teaufort"
+            }
+        },
+        {
+            "PlaceName": "Saclay",
+            "GPS_Coordinate": "48.7258, 2.2336",
+            "BoundingBox": {
+                "North": 49.6255,
+                "South": 47.8261,
+                "East": 3.5971,
+                "West": 0.8701
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-figures/Fig29-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map showing the advance toward Paris, 19-25 August 1944, including routes encountering German defenses southwest of Paris near Saclay.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saclay,+France/@48.725833,2.233611,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.7258/2.2336"
+            }
+        },
+        {
+            "PlaceName": "Massy",
+            "GPS_Coordinate": "48.7328,2.3031",
+            "BoundingBox": {
+                "North": 49.6328,
+                "South": 47.8328,
+                "East": 3.6681,
+                "West": 0.9381
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP23.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map XXIII - Paris and Vicinity, 19-25 August 1944, depicting Allied advances including routes southwest of Paris near Massy.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Massy,+France/@48.7328,2.3031,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/48.7328/2.3031"
+            }
+        },
+        {
+            "PlaceName": "Villeneuve-le-Roi",
+            "GPS_Coordinate": "48.7328,2.2928",
+            "BoundingBox": {
+                "North": 49.6318,
+                "South": 47.8338,
+                "East": 3.6558,
+                "West": 0.9298
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/USA-E-Breakout-29-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map depicting the advance of Allied forces toward Paris, 19-25 August 1944, showing routes southwest of Paris where German defenses were encountered near Villeneuve-le-Roi.",
+                    "External_Map_Capture_Date": "2024-10-05T10:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Villeneuve-le-Roi,+France/@48.7328,2.2928,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=14/48.7328/2.2928"
+            }
+        },
+        {
+            "Event_Doc": "chapter29g-event.json",
+            "Source_Doc": "chapter29g-content.md",
+            "Sub-event_summary": "General Eisenhower and Bradley selected the 2d French Armored Division under Leclerc to lead the liberation of Paris for symbolic reasons, with V Corps, including the 4th U.S. Infantry Division, assigned the task on 22 August 1944; troops advanced on two routes encountering German defenses southwest of Paris by evening of 23 August, while Choltitz, despite Hitler's orders to destroy the city, refused to do so and prepared external defenses, leading to postponed Allied attack until 24 August.",
+            "PlaceName": "Marcoussis",
+            "GPS_Coordinate": {
+                "lat": 48.7103,
+                "lon": 2.2197
+            },
+            "BoundingBox": {
+                "North": 49.6085,
+                "South": 47.8121,
+                "East": 3.5827,
+                "West": 0.8567
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-IX-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map IX: The Drive Toward Paris (V Corps, 23-25 August 1944), depicting Allied advances and German defenses southwest of Paris, including vicinity of Marcoussis.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Marcoussis,+France/@48.7102778,2.2197222,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=15/48.7103/2.2197/Marcoussis"
+            }
+        },
+        {
+            "PlaceName": "Montlh\u00e9ry",
+            "GPS_Coordinate": "48.6553, 2.2822",
+            "BoundingBox": {
+                "North": 49.5543,
+                "South": 47.7563,
+                "East": 3.6472,
+                "West": 0.9172
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapXXIX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map XXIX depicting the race to the Seine and advances toward Paris, including routes southwest of Paris passing near Montlh\u00e9ry where German defenses were encountered.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Montlh%C3%A9ry,+France/@48.6552778,2.2822222,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#map=15/48.6553/2.2822"
+            }
+        },
+        {
+            "PlaceName": "Longjumeau",
+            "GPS_Coordinate": "48.7131,2.3036",
+            "BoundingBox": {
+                "North": 49.6131,
+                "South": 47.8131,
+                "East": 3.6656,
+                "West": 0.9416
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP25.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map XXV: The Seizure of Paris, 19-25 August 1944, depicting Allied advances on Paris including routes and German defenses southwest of Paris near Longjumeau.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Longjumeau,+France/@48.7131,2.3036,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!map=15/48.7131/2.3036/Longjumeau"
+            }
+        },
+        {
+            "PlaceName": "Arpajon",
+            "GPS_Coordinate": "48.5906, 2.2561",
+            "BoundingBox": {
+                "North": 49.4901,
+                "South": 47.6911,
+                "East": 3.6161,
+                "West": 0.8961
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map28.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map XXVIII: Advance of XII Corps toward Melun and across the Seine, 21-25 August 1944. Depicts operations including artillery positions near Arpajon that delayed CCA on 22 August.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Arpajon,+France/@48.5906,2.2561,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.5906/2.2561"
+            }
+        }
+    ]
+}
