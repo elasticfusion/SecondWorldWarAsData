@@ -1,0 +1,3446 @@
+{
+    "1": [
+        {
+            "PlaceName": "Cotentin",
+            "GPS_Coordinate": "49.2500, -1.6000",
+            "BoundingBox": {
+                "North": "50.1510",
+                "South": "48.3490",
+                "East": "-0.2190",
+                "West": "-2.9810"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP4.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV: First Army Attack Plan, 30 June 1944, depicting the VIII Corps' role in the offensive southward along the Cotentin Peninsula west coast toward high ground near Coutances.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP5.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map V: The Battle on the West Coast, 3-14 July 1944, showing VIII Corps advances and key terrain around la Haye-du-Puits on the Cotentin Peninsula.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Cotentin+Peninsula/@49.2500,-1.6000,10z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#!map=10/49.2500/-1.6000"
+            }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        }
+    ],
+    "2": [
+        {
+            "PlaceName": "Coutances",
+            "GPS_Coordinate": "48.9492,-1.4453",
+            "BoundingBox": {
+                "North": 49.848,
+                "South": 48.0504,
+                "East": -0.0753,
+                "West": -2.8153
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1 depicting VIII Corps zone of action and objectives during the advance southward along the Cotentin west coast toward high ground near Coutances, 22-24 July 1944.",
+                    "External_Map_Capture_Date": "2024-09-18T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Coutances,+France/@48.9492,-1.4453,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/@48.9492,-1.4453,14z"
+            }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        }
+    ],
+    "3": [
+        {
+            "PlaceName": "Carentan-P\u00e9riers isthmus",
+            "GPS_Coordinate": "49.2559, -1.2888",
+            "BoundingBox": {
+                "North": 50.1609,
+                "South": 48.3509,
+                "East": 0.0882,
+                "West": -2.6668
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-NoVII-13Jul44.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map VII from 'Breakout and Pursuit': VII Corps gains on the Carentan-P\u00e9riers isthmus and advance toward Saint-L\u00f4, 8-13 July 1944, illustrating terrain, positions, and limited advances by 83d and 4th Infantry Divisions.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Carentan-P%C3%A9riers+isthmus%2C+Normandy%2C+France&query_place_id=ChIJnYpYkKxB34cR1zI2P5q3i7Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=13&lat=49.2559&lon=-1.2888"
+            }
+        },
+        {
+            "PlaceName": "P\u00e9riers",
+            "GPS_Coordinate": "49.1328, -1.3161",
+            "BoundingBox": {
+                "North": 50.0329,
+                "South": 48.2327,
+                "East": 0.0599,
+                "West": -2.6921
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-MapVII1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map VII-1: Advance of VII Corps toward St. L\u00f4\u2013P\u00e9riers ridge, 10\u201313 June 1944, depicting redeployment to Carentan sector and positions near P\u00e9riers.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/P%C3%A9riers/@49.1328,-1.3161,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.1328/-1.3161"
+            }
+        },
+        {
+            "PlaceName": "Coutances",
+            "GPS_Coordinate": "48.9492,-1.4453",
+            "BoundingBox": {
+                "North": 49.848,
+                "South": 48.0504,
+                "East": -0.0753,
+                "West": -2.8153
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1 depicting VIII Corps zone of action and objectives during the advance southward along the Cotentin west coast toward high ground near Coutances, 22-24 July 1944.",
+                    "External_Map_Capture_Date": "2024-09-18T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Coutances,+France/@48.9492,-1.4453,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/@48.9492,-1.4453,14z"
+            }
+        },
+        {
+            "PlaceName": "Monthuchon",
+            "GPS_Coordinate": "49.0167, -1.3831",
+            "BoundingBox": {
+                "North": 49.9157,
+                "South": 48.1177,
+                "East": -0.0041,
+                "West": -2.7621
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13-Map1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map depicting VII Corps operations including the 1st Division advance along Coutances-St. L\u00f4 highway with terrain features near Monthuchon.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Monthuchon,+50490+France/@49.0167,-1.3831,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/49.0167/-1.3831"
+            }
+        },
+        {
+            "PlaceName": "C\u00e9rences",
+            "GPS_Coordinate": "48.95167,-1.40361",
+            "BoundingBox": {
+                "North": 49.85167,
+                "South": 48.05167,
+                "East": -0.03161,
+                "West": -2.77561
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11-MAP12-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map XII: VII Corps Exploitation Toward Coutances, 27-31 July 1944, depicting blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/C%C3%A9rences,+France/@48.95167,-1.40361,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.95167/-1.40361"
+            }
+        }
+    ],
+    "4": [
+        {
+            "sub_event_index": 1,
+            "place_index": 4,
+            "PlaceName": "la Haye-du-Puits",
+            "Sub-event_summary": "The VIII Corps is designated to lead the U.S. First Army offensive southward along the Cotentin west coast, aiming to advance twenty miles to secure high ground near Coutances and form a new army line to Caumont. The plan involves sequential attacks by adjacent corps, with VIII Corps facilitating the advance by threatening enemy flanks. The corps targets key terrain around la Haye-du-Puits, including hills and ridges, using three divisions in a V-shaped thrust, with specific objectives assigned to each division, and plans for the 8th Division to replace the 82d Airborne.",
+            "Event_Doc": "chapter4a-event.json",
+            "Source_Doc": "chapter4a-content.md",
+            "GPS_Coordinate": {
+                "lat": 48.8531,
+                "lon": -1.5525
+            },
+            "BoundingBox": {
+                "North": 49.7523,
+                "South": 47.9539,
+                "East": -0.1901,
+                "West": -2.9149
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV-Map10.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map No. 10: VIII Corps zone of action toward La Haye-du-Puits and Barneville-sur-Mer, 14-18 June 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/La+Haye-du-Puits,+France/@48.8531,-1.5525,14z/data=!3m1!4b1!4m6!3m5!1s0x480f9b5eabf0b5b1:0x8f5a4c8b5e4d5e2!8m2!3d48.8531!4d-1.5525!16zL20vMDZ0a2Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/?lon=-1.5525&lat=48.8531&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Cotentin coast",
+            "GPS_Coordinate": "49.4167,-1.7500",
+            "BoundingBox": {
+                "North": 50.3154,
+                "South": 48.518,
+                "East": -0.369,
+                "West": -3.131
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map16.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map No. 16: The Exploitation Southwest of St. Lo, 27-30 July 1944. Illustrates the advance of the 6th Armored Division through the 79th Infantry Division sector towards Granville along the Cotentin coast.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Cotentin%20coast&query_place_id=&zoom=10&basemap=terrain",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/49.4167/-1.7500"
+            }
+        },
+        {
+            "PlaceName": "Coutances",
+            "GPS_Coordinate": "48.9492,-1.4453",
+            "BoundingBox": {
+                "North": 49.848,
+                "South": 48.0504,
+                "East": -0.0753,
+                "West": -2.8153
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1 depicting VIII Corps zone of action and objectives during the advance southward along the Cotentin west coast toward high ground near Coutances, 22-24 July 1944.",
+                    "External_Map_Capture_Date": "2024-09-18T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Coutances,+France/@48.9492,-1.4453,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/@48.9492,-1.4453,14z"
+            }
+        },
+        {
+            "PlaceName": "Granville",
+            "GPS_Coordinate": "48.8403, -1.5931",
+            "BoundingBox": {
+                "North": 49.7451,
+                "South": 47.9355,
+                "East": -0.2341,
+                "West": -2.9521
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Granville,+France/@48.8403,-1.5931,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=48.8403&lon=-1.5931"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        }
+    ],
+    "5": [
+        {
+            "PlaceName": "Granville",
+            "GPS_Coordinate": "48.8403, -1.5931",
+            "BoundingBox": {
+                "North": 49.7451,
+                "South": 47.9355,
+                "East": -0.2341,
+                "West": -2.9521
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Granville,+France/@48.8403,-1.5931,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=48.8403&lon=-1.5931"
+            }
+        },
+        {
+            "PlaceName": "C\u00e9rences",
+            "GPS_Coordinate": "48.95167,-1.40361",
+            "BoundingBox": {
+                "North": 49.85167,
+                "South": 48.05167,
+                "East": -0.03161,
+                "West": -2.77561
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11-MAP12-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map XII: VII Corps Exploitation Toward Coutances, 27-31 July 1944, depicting blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/C%C3%A9rences,+France/@48.95167,-1.40361,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.95167/-1.40361"
+            }
+        }
+    ],
+    "6": [
+        {
+            "PlaceName": "Lessay",
+            "GPS_Coordinate": "49.2136, -1.6028",
+            "BoundingBox": {
+                "North": 50.113,
+                "South": 48.3142,
+                "East": -0.2268,
+                "West": -2.9788
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/mapIII-4.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map III: The Attack by VIII Corps, 3-8 July 1944, showing the drive along the west coast toward la Haye-du-Puits, including the Lessay sector.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Lessay,+France/@49.2136,-1.6028,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.2136&lon=-1.6028&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Coutances",
+            "GPS_Coordinate": "48.9492,-1.4453",
+            "BoundingBox": {
+                "North": 49.848,
+                "South": 48.0504,
+                "East": -0.0753,
+                "West": -2.8153
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1 depicting VIII Corps zone of action and objectives during the advance southward along the Cotentin west coast toward high ground near Coutances, 22-24 July 1944.",
+                    "External_Map_Capture_Date": "2024-09-18T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Coutances,+France/@48.9492,-1.4453,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/@48.9492,-1.4453,14z"
+            }
+        },
+        {
+            "PlaceName": "Granville",
+            "GPS_Coordinate": "48.8403, -1.5931",
+            "BoundingBox": {
+                "North": 49.7451,
+                "South": 47.9355,
+                "East": -0.2341,
+                "West": -2.9521
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Granville,+France/@48.8403,-1.5931,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=48.8403&lon=-1.5931"
+            }
+        }
+    ],
+    "7": [
+        {
+            "PlaceName": "P\u00e9riers",
+            "GPS_Coordinate": "49.1328, -1.3161",
+            "BoundingBox": {
+                "North": 50.0329,
+                "South": 48.2327,
+                "East": 0.0599,
+                "West": -2.6921
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-MapVII1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map VII-1: Advance of VII Corps toward St. L\u00f4\u2013P\u00e9riers ridge, 10\u201313 June 1944, depicting redeployment to Carentan sector and positions near P\u00e9riers.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/P%C3%A9riers/@49.1328,-1.3161,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.1328/-1.3161"
+            }
+        },
+        {
+            "PlaceName": "Coutances",
+            "GPS_Coordinate": "48.9492,-1.4453",
+            "BoundingBox": {
+                "North": 49.848,
+                "South": 48.0504,
+                "East": -0.0753,
+                "West": -2.8153
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1 depicting VIII Corps zone of action and objectives during the advance southward along the Cotentin west coast toward high ground near Coutances, 22-24 July 1944.",
+                    "External_Map_Capture_Date": "2024-09-18T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Coutances,+France/@48.9492,-1.4453,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/@48.9492,-1.4453,14z"
+            }
+        },
+        {
+            "PlaceName": "St. Sauveur-Lendelin",
+            "GPS_Coordinate": "48.8839, -1.5667",
+            "BoundingBox": {
+                "North": 49.7819,
+                "South": 47.9859,
+                "East": -0.1947,
+                "West": -2.9387
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-Map13-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map 13-1: VII Corps Main Effort, 25-26 July 1944, showing penetrations and attacks west of the Taute River near St. Sauveur-Lendelin",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Sauveur-Lendelin,+50310,+France/@48.8839,-1.5667,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.5667&lat=48.8839&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Monthuchon",
+            "GPS_Coordinate": "49.0167, -1.3831",
+            "BoundingBox": {
+                "North": 49.9157,
+                "South": 48.1177,
+                "East": -0.0041,
+                "West": -2.7621
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13-Map1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map depicting VII Corps operations including the 1st Division advance along Coutances-St. L\u00f4 highway with terrain features near Monthuchon.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Monthuchon,+50490+France/@49.0167,-1.3831,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/49.0167/-1.3831"
+            }
+        },
+        {
+            "PlaceName": "Tessy-sur-Vire",
+            "GPS_Coordinate": "48.9200, -1.2694",
+            "BoundingBox": {
+                "North": 49.8194,
+                "South": 48.0206,
+                "East": 0.1016,
+                "West": -2.6404
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP13.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map 13 depicting Combat Command A (CCA), 4th Armored Division actions from 27-28 July 1944, relevant to objectives near Tessy-sur-Vire, le Mesnil-Herman, and Hill 183.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Tessy-sur-Vire,+France/@48.9200,-1.2694,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!zoom=15;lat=48.92;lon=-1.2694"
+            }
+        },
+        {
+            "PlaceName": "Tessy-Coutances",
+            "GPS_Coordinate": "48.9346,-1.3663",
+            "BoundingBox": {
+                "North": 49.8339,
+                "South": 48.0353,
+                "East": 0.0037,
+                "West": -2.7363
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-XVI-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI-1. Attack Toward Coutances, 27-28 July 1944, depicting the 4th Armored Division's advance through areas including P\u00e9riers toward Coutances, relevant to actions near Tessy-Coutances.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@48.9346,-1.3663,13z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=13/48.9346/-1.3663"
+            }
+        },
+        {
+            "PlaceName": "Tessy-Granville",
+            "GPS_Coordinate": "48.8778,-1.3888",
+            "BoundingBox": {
+                "North": 49.7766,
+                "South": 47.979,
+                "East": -0.0309,
+                "West": -2.7467
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP16-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI-1 depicting the advance of the XX Corps, including the 4th Armored Division's actions through P\u00e9riers, Tessy area, and toward Coutances and Granville sector on 27-28 July 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/dir/Tessy-sur-Vire,+France/Granville,+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.3888&lat=48.8778&zoom=11"
+            }
+        },
+        {
+            "PlaceName": "Tessy-Villedieu-les-Po\u00ebles-Avranches",
+            "GPS_Coordinate": "48.8179,-1.2876",
+            "BoundingBox": {
+                "North": 49.7173,
+                "South": 47.9185,
+                "East": 0.0754,
+                "West": -2.6506
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP18.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVIII: The Cobra Side Show, 25-30 July 1944, depicting operations including 4th Armored Division movements in the Tessy-Villedieu-les-Po\u00ebles-Avranches sector.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP19.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XIX: XIX Corps Drive to Avranches, 27-30 July 1944, illustrating the 4th Armored Division's advance through P\u00e9riers, minefields, and Coutances area towards Avranches.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/dir/Tessy-sur-Vire,+France/Villedieu-les-Po%C3%ABles,+France/Avranches,+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#48.8179/-1.2876/10"
+            }
+        }
+    ],
+    "8": [
+        {
+            "PlaceName": "Coutances",
+            "GPS_Coordinate": "48.9492,-1.4453",
+            "BoundingBox": {
+                "North": 49.848,
+                "South": 48.0504,
+                "East": -0.0753,
+                "West": -2.8153
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1 depicting VIII Corps zone of action and objectives during the advance southward along the Cotentin west coast toward high ground near Coutances, 22-24 July 1944.",
+                    "External_Map_Capture_Date": "2024-09-18T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Coutances,+France/@48.9492,-1.4453,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/@48.9492,-1.4453,14z"
+            }
+        },
+        {
+            "PlaceName": "Cotentin",
+            "GPS_Coordinate": "49.2500, -1.6000",
+            "BoundingBox": {
+                "North": "50.1510",
+                "South": "48.3490",
+                "East": "-0.2190",
+                "West": "-2.9810"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP4.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV: First Army Attack Plan, 30 June 1944, depicting the VIII Corps' role in the offensive southward along the Cotentin Peninsula west coast toward high ground near Coutances.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP5.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map V: The Battle on the West Coast, 3-14 July 1944, showing VIII Corps advances and key terrain around la Haye-du-Puits on the Cotentin Peninsula.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Cotentin+Peninsula/@49.2500,-1.6000,10z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#!map=10/49.2500/-1.6000"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Percy",
+            "GPS_Coordinate": "48.9178,-1.0836",
+            "BoundingBox": {
+                "North": 49.817,
+                "South": 48.0186,
+                "East": 0.2864,
+                "West": -2.4536
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/USA-E-Breakout-14-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map 14-1 depicting German LXXXIV Panzer Corps counterattacks and movements toward Percy, 28 July 1944, in the Normandy breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Percy,+50360+Manche,+France/@48.9178,-1.0836,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.9178/-1.0836/14"
+            }
+        },
+        {
+            "PlaceName": "Br\u00e9hal",
+            "GPS_Coordinate": "48.8492, -1.5214",
+            "BoundingBox": {
+                "North": 49.7487,
+                "South": 47.9497,
+                "East": -0.1504,
+                "West": -2.8924
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-III.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Historical map from 'Breakout and Pursuit' Chapter 11 showing VII Corps operations and maneuvers in the Coutances area during July 1944, contextually relevant to blocking positions near Br\u00e9hal, le Mesnil-Herman, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Br%C3%A9hal,+France/@48.8492,-1.5214,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.8492/-1.5214"
+            }
+        },
+        {
+            "PlaceName": "Gavray",
+            "GPS_Coordinate": "48.8808,-1.2264",
+            "BoundingBox": {
+                "North": 49.7801,
+                "South": 47.9815,
+                "East": 0.1526,
+                "West": -2.6054
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP14-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map XIV: Advance of VII Corps, 25-31 July 1944, depicting the 3d Armored Division's exploitation toward Carantilly, Canisy, Cerisy-la-Salle, Montpinchon, and the Coutances-Gavray highway area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Gavray/@48.8808,-1.2264,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.8808/-1.2264/Gavray"
+            }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Vire River",
+            "GPS_Coordinate": "48.8836,-0.8931",
+            "BoundingBox": {
+                "North": 49.7845,
+                "South": 47.9827,
+                "East": 0.4766,
+                "West": -2.2622
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map 1: Terrain of the Battlefield, July 1944, from Breakout and Pursuit by the U.S. Army Center of Military History, illustrating diversified terrain including bocage west of the Orne River, marshy areas near Carentan, open plains near Caen-Falaise, and the Vire River.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/Vire+River,+Normandy,+France/@48.8836,-0.8931,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-0.8931&lat=48.8836&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "bay of Mont St. Michel",
+            "GPS_Coordinate": "48.6350, -1.5115",
+            "BoundingBox": {
+                "North": 49.5343,
+                "South": 47.7357,
+                "East": -0.1495,
+                "West": -2.8735
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-16.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI depicting the situation in the Cotentin Peninsula and surrounding areas by the end of 28 July 1944, including the Bay of Mont St. Michel region relevant to German assessments and the push toward Avranches.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Overlord_map2.gif/800px-Overlord_map2.gif",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Overlord",
+                    "External_Map_Description": "Historical map of Normandy campaign operations, showing coastal areas including the Bay of Mont St. Michel in the context of the breakout phase around late July 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=bay+of+Mont+St.+Michel",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=11/48.635/-1.5115/bay%20of%20Mont%20St.%20Michel"
+            }
+        },
+        {
+            "PlaceName": "S\u00e9e",
+            "GPS_Coordinate": "48.4433, -0.3481",
+            "BoundingBox": {
+                "North": 49.3479,
+                "South": 47.5387,
+                "East": 1.0069,
+                "West": -1.7031
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map-IV-13.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map IV-13 showing dispositions east of Avranches including area near S\u00e9e during late July 1944 breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/7/7f/Avranches_breakthrough.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Normandy",
+                    "External_Map_Description": "Map of the Avranches breakthrough in late July 1944, covering the region including S\u00e9e and German defenses.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/S%C3%A9e,+France/@48.4433,-0.3481,14z/data=!3m1!4b1!4m6!3m5!1s0x480f8b0b0b0b0b0b:0x1234567890abcdef!8m2!3d48.4433!4d-0.3481!16zL20vMDZ0M3k",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.4433/-0.3481"
+            }
+        },
+        {
+            "PlaceName": "S\u00e9lune",
+            "GPS_Coordinate": "48.6647,-1.1636",
+            "BoundingBox": {
+                "North": 49.5647,
+                "South": 47.7647,
+                "East": 0.1974,
+                "West": -2.5246
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Avranches_breakthrough.jpg",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Avranches_breakthrough.jpg",
+                    "External_Map_Description": "Map depicting the Allied breakout at Avranches, late July 1944, relevant to the German situation assessment and lack of resistance by end of 28 July.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/S%C3%A9lune,+France/@48.6647,-1.1636,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6647/-1.1636"
+            }
+        },
+        {
+            "PlaceName": "Granville",
+            "GPS_Coordinate": "48.8403, -1.5931",
+            "BoundingBox": {
+                "North": 49.7451,
+                "South": 47.9355,
+                "East": -0.2341,
+                "West": -2.9521
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Granville,+France/@48.8403,-1.5931,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=48.8403&lon=-1.5931"
+            }
+        },
+        {
+            "PlaceName": "Villedieu-les-Po\u00ebles",
+            "GPS_Coordinate": "48.841944,-1.233889",
+            "BoundingBox": {
+                "North": 49.7409,
+                "South": 47.9429,
+                "East": 0.1291,
+                "West": -2.5969
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XVI.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "MAP XVI: The Breakout, 26-30 July 1944, from US Army Center of Military History 'Breakout and Pursuit', depicting the Allied advance including the area around Villedieu-les-Po\u00ebles and Avranches relevant to the German situation assessment at the end of 28 July.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Op_Cobra_25-31_July_1944.jpg",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Op_Cobra_25-31_July_1944.jpg",
+                    "External_Map_Description": "Map of Operation Cobra, 25-31 July 1944, showing US forces breakout positions including vicinity of Villedieu-les-Po\u00ebles and advance to Avranches.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Villedieu-les-Po%C3%ABles,+France/@48.841944,-1.233889,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.841944&lon=-1.233889&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Br\u00e9cey",
+            "GPS_Coordinate": "48.6686,-1.3144",
+            "BoundingBox": {
+                "North": 49.5678,
+                "South": 47.7694,
+                "East": 0.0461,
+                "West": -2.6749
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI: Situation in Army Group B on the evening of 28 July, depicting German positions and lack of organized resistance near Br\u00e9cey and Avranches area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Br%C3%A9cey,+%BFS50.+Manche,France/@48.668611,-1.314444,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/48.6686/-1.3144"
+            }
+        },
+        {
+            "PlaceName": "Pontaubault",
+            "GPS_Coordinate": "48.5342, -1.3819",
+            "BoundingBox": {
+                "North": 49.4351,
+                "South": 47.6333,
+                "East": -0.0209,
+                "West": -2.7429
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XVI.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI: The Exploitation West of the Vire, 28-30 July, depicting the advance through Avranches area including vicinity of Pontaubault.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pontaubault,+France/@48.5342,-1.3819,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=15/48.5342/-1.3819/Pontaubault"
+            }
+        }
+    ],
+    "9": [
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Granville",
+            "GPS_Coordinate": "48.8403, -1.5931",
+            "BoundingBox": {
+                "North": 49.7451,
+                "South": 47.9355,
+                "East": -0.2341,
+                "West": -2.9521
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Granville,+France/@48.8403,-1.5931,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=48.8403&lon=-1.5931"
+            }
+        },
+        {
+            "PlaceName": "C\u00e9rences",
+            "GPS_Coordinate": "48.95167,-1.40361",
+            "BoundingBox": {
+                "North": 49.85167,
+                "South": 48.05167,
+                "East": -0.03161,
+                "West": -2.77561
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11-MAP12-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map XII: VII Corps Exploitation Toward Coutances, 27-31 July 1944, depicting blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/C%C3%A9rences,+France/@48.95167,-1.40361,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.95167/-1.40361"
+            }
+        },
+        {
+            "PlaceName": "S\u00e9e River",
+            "GPS_Coordinate": "48.6700, -1.2700",
+            "BoundingBox": {
+                "North": 49.5688,
+                "South": 47.7712,
+                "East": 0.094,
+                "West": -2.634
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAPXV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+                    "External_Map_Description": "Map XV-1: VII Corps Maneuver, 25-30 July 1944, depicting advances in the Avranches sector including the vicinity of the S\u00e9e River and potential German defensive lines at Avranches-Vire.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=S%C3%A9e+River%2C+Normandy%2C+France&query_place_id=ChIJnYp9q5pXz0gR0zUqJqD0b8Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=11/48.6700/-1.2700"
+            }
+        },
+        {
+            "PlaceName": "Tirepied",
+            "GPS_Coordinate": {
+                "latitude": 48.9172,
+                "longitude": -1.3147
+            },
+            "BoundingBox": {
+                "North": 49.8165,
+                "South": 48.0179,
+                "East": 0.0573,
+                "West": -2.6867
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/IX-2.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map IX-2: Advance of Combat Command A, 6th Armored Division, 29 July 1944, showing movements in the area including crossing near Pont-de-la-Roque relevant to the sub-event context.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Tirepied,+France/@48.9172,-1.3147,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.9172/-1.3147"
+            }
+        },
+        {
+            "PlaceName": "S\u00e9e",
+            "GPS_Coordinate": "48.4433, -0.3481",
+            "BoundingBox": {
+                "North": 49.3479,
+                "South": 47.5387,
+                "East": 1.0069,
+                "West": -1.7031
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map-IV-13.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map IV-13 showing dispositions east of Avranches including area near S\u00e9e during late July 1944 breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/7/7f/Avranches_breakthrough.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Normandy",
+                    "External_Map_Description": "Map of the Avranches breakthrough in late July 1944, covering the region including S\u00e9e and German defenses.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/S%C3%A9e,+France/@48.4433,-0.3481,14z/data=!3m1!4b1!4m6!3m5!1s0x480f8b0b0b0b0b0b:0x1234567890abcdef!8m2!3d48.4433!4d-0.3481!16zL20vMDZ0M3k",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.4433/-0.3481"
+            }
+        },
+        {
+            "PlaceName": "S\u00e9lune River",
+            "GPS_Coordinate": {
+                "lat": 48.6617,
+                "lng": -1.3831
+            },
+            "BoundingBox": {
+                "North": 49.5612,
+                "South": 47.7622,
+                "East": -0.0261,
+                "West": -2.7401
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map16.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map No. 16: VII Corps Attack to Avranches, 26-30 July 1944, showing advances toward Avranches with river crossings in the S\u00e9lune and Sienne areas.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=S%C3%A9lune+River%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=13/48.6617/-1.3831/S%C3%A9lune+River"
+            }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Cotentin",
+            "GPS_Coordinate": "49.2500, -1.6000",
+            "BoundingBox": {
+                "North": "50.1510",
+                "South": "48.3490",
+                "East": "-0.2190",
+                "West": "-2.9810"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP4.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV: First Army Attack Plan, 30 June 1944, depicting the VIII Corps' role in the offensive southward along the Cotentin Peninsula west coast toward high ground near Coutances.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP5.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map V: The Battle on the West Coast, 3-14 July 1944, showing VIII Corps advances and key terrain around la Haye-du-Puits on the Cotentin Peninsula.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Cotentin+Peninsula/@49.2500,-1.6000,10z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#!map=10/49.2500/-1.6000"
+            }
+        },
+        {
+            "PlaceName": "Coutances",
+            "GPS_Coordinate": "48.9492,-1.4453",
+            "BoundingBox": {
+                "North": 49.848,
+                "South": 48.0504,
+                "East": -0.0753,
+                "West": -2.8153
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1 depicting VIII Corps zone of action and objectives during the advance southward along the Cotentin west coast toward high ground near Coutances, 22-24 July 1944.",
+                    "External_Map_Capture_Date": "2024-09-18T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Coutances,+France/@48.9492,-1.4453,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/@48.9492,-1.4453,14z"
+            }
+        },
+        {
+            "PlaceName": "Sienne River",
+            "GPS_Coordinate": "48.7833,-1.4000",
+            "BoundingBox": {
+                "North": 49.6831,
+                "South": 47.8835,
+                "East": -0.033,
+                "West": -2.767
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9-33KB.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map 9: VII Corps Drive Toward Coutances, 26-30 July 1944, depicting operations including routes to Coutances, blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences near the Sienne River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sienne+River/@48.7833,-1.4,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.7833/-1.4"
+            }
+        },
+        {
+            "PlaceName": "Pont-de-la-Roque",
+            "GPS_Coordinate": "48.6672, -1.1678",
+            "BoundingBox": {
+                "North": 49.5665,
+                "South": 47.7679,
+                "East": 0.1907,
+                "West": -2.5263
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-No.16-3.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI-3 showing the attack and advance of Combat Command A, 6th Armored Division, 28-30 July 1944, including crossing the S\u00e9e River at Pont-de-la-Roque during the exploitation toward Avranches.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Pont-de-la-Roque%2C%2050350%20Saint-P%C3%B4%2C%20France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.6672&lon=-1.1678&zoom=15"
+            }
+        }
+    ],
+    "10": [
+        {
+            "PlaceName": "Coutances-Hyenville-C\u00e9rences highway",
+            "GPS_Coordinate": "48.8800, -1.4150",
+            "BoundingBox": {
+                "North": 49.78,
+                "South": 47.98,
+                "East": -0.045,
+                "West": -2.785
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-XVIMAP.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI showing the advance of the 4th Armored Division to the S\u00e9e and Sienne Rivers, 28-30 July 1944, depicting parallel highways including the Coutances-Hyenville-C\u00e9rences route.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Coutances-Hyenville-C%C3%A9rences+highway%2C+France&query_place_id=&query_lat=48.8800&query_lon=-1.4150",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.415&lat=48.88&zoom=13"
+            }
+        },
+        {
+            "PlaceName": "Sienne River",
+            "GPS_Coordinate": "48.7833,-1.4000",
+            "BoundingBox": {
+                "North": 49.6831,
+                "South": 47.8835,
+                "East": -0.033,
+                "West": -2.767
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9-33KB.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map 9: VII Corps Drive Toward Coutances, 26-30 July 1944, depicting operations including routes to Coutances, blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences near the Sienne River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sienne+River/@48.7833,-1.4,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.7833/-1.4"
+            }
+        },
+        {
+            "PlaceName": "Coutances-Lengronne road",
+            "GPS_Coordinate": "48.9485,-1.4006",
+            "BoundingBox": {
+                "North": 49.8473,
+                "South": 48.0497,
+                "East": -0.0306,
+                "West": -2.7706
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-XVI-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI-1: Advance of Third Army, 28-31 July 1944, depicting the actions of the 4th Armored Division including parallel highways near Coutances and advance to the Sienne River.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Coutances-Lengronne+road%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.9485&lon=-1.4006&zoom=13"
+            }
+        },
+        {
+            "PlaceName": "Montpinchon",
+            "GPS_Coordinate": "48.9419, -1.3667",
+            "BoundingBox": {
+                "North": 49.8403,
+                "South": 48.0435,
+                "East": 0.0023,
+                "West": -2.7357
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/maps/map-XIII-3.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map XIII-3: VII Corps Maneuver, 27-31 July 1944, showing 1st Infantry Division advance and German defensive positions near Montpinchon and Coutances area during Operation Cobra breakout.",
+                    "External_Map_Capture_Date": "2024-10-04T15:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Montpinchon,+France/@48.9419407,-1.3666667,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b0f8b0b0b0b:0x9c8f2d5e4a2b3c1d!8m2!3d48.9419407!4d-1.3666667!16s%2Fg%2F1223k_xx",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.9419/-1.3667"
+            }
+        },
+        {
+            "PlaceName": "Coutances",
+            "GPS_Coordinate": "48.9492,-1.4453",
+            "BoundingBox": {
+                "North": 49.848,
+                "South": 48.0504,
+                "East": -0.0753,
+                "West": -2.8153
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1 depicting VIII Corps zone of action and objectives during the advance southward along the Cotentin west coast toward high ground near Coutances, 22-24 July 1944.",
+                    "External_Map_Capture_Date": "2024-09-18T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Coutances,+France/@48.9492,-1.4453,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/@48.9492,-1.4453,14z"
+            }
+        },
+        {
+            "PlaceName": "C\u00e9rences",
+            "GPS_Coordinate": "48.95167,-1.40361",
+            "BoundingBox": {
+                "North": 49.85167,
+                "South": 48.05167,
+                "East": -0.03161,
+                "West": -2.77561
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11-MAP12-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map XII: VII Corps Exploitation Toward Coutances, 27-31 July 1944, depicting blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/C%C3%A9rences,+France/@48.95167,-1.40361,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.95167/-1.40361"
+            }
+        },
+        {
+            "PlaceName": "Lengronne",
+            "Sub-event_summary": "XIX Corps to contain east of Vire, support VII Corps; V Corps diversionary attack D+2. VII Corps modifications: added 4th Infantry Division to assault (due to 9th/30th exhaustion); rerouted exploitation\u20141st Infantry (with 3d Armored CCB) direct to Coutances; reduced 3d Armored wider envelopment; 2d Armored (with 4th Division's 22d RCT) to left blocking at le Mesnil-Herman/Villebaudon/Tessy-sur-Vire and C\u00e9rences, providing VIII Corps corridor.",
+            "GPS_Coordinate": {
+                "lat": 48.953611,
+                "lon": -1.250556
+            },
+            "BoundingBox": {
+                "North": 49.853111,
+                "South": 48.054111,
+                "East": 0.120444,
+                "West": -2.621556
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3f/OpCobra27-31July44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:OpCobra27-31July44.png",
+                    "External_Map_Description": "Map showing Operation Cobra exploitation phase from 27-31 July 1944, depicting VII Corps advances toward Coutances and blocking positions near Tessy-sur-Vire region including vicinity of Lengronne.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/Maps/USA-E-Breakout/USAEBk11III.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map III from Breakout and Pursuit Chapter 11: VII Corps maneuver and exploitation, 27-31 July 1944, covering operations near Vire, Tessy-sur-Vire, and Coutances relevant to Lengronne area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Lengronne,+50500,+France/@48.953611,-1.250556,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b0b4e4b4b4b:0x4e4b4b4b4e4b4e4b!8m2!3d48.953611!4d-1.250556!16zL20vMDZ4d2Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.9536/-1.2506"
+            }
+        }
+    ],
+    "11": [
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Br\u00e9hal",
+            "GPS_Coordinate": "48.8492, -1.5214",
+            "BoundingBox": {
+                "North": 49.7487,
+                "South": 47.9497,
+                "East": -0.1504,
+                "West": -2.8924
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-III.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Historical map from 'Breakout and Pursuit' Chapter 11 showing VII Corps operations and maneuvers in the Coutances area during July 1944, contextually relevant to blocking positions near Br\u00e9hal, le Mesnil-Herman, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Br%C3%A9hal,+France/@48.8492,-1.5214,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.8492/-1.5214"
+            }
+        },
+        {
+            "PlaceName": "C\u00e9rences",
+            "GPS_Coordinate": "48.95167,-1.40361",
+            "BoundingBox": {
+                "North": 49.85167,
+                "South": 48.05167,
+                "East": -0.03161,
+                "West": -2.77561
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11-MAP12-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map XII: VII Corps Exploitation Toward Coutances, 27-31 July 1944, depicting blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/C%C3%A9rences,+France/@48.95167,-1.40361,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.95167/-1.40361"
+            }
+        },
+        {
+            "PlaceName": "Sienne River",
+            "GPS_Coordinate": "48.7833,-1.4000",
+            "BoundingBox": {
+                "North": 49.6831,
+                "South": 47.8835,
+                "East": -0.033,
+                "West": -2.767
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9-33KB.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map 9: VII Corps Drive Toward Coutances, 26-30 July 1944, depicting operations including routes to Coutances, blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences near the Sienne River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sienne+River/@48.7833,-1.4,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.7833/-1.4"
+            }
+        },
+        {
+            "PlaceName": "Carentan-P\u00e9riers isthmus",
+            "GPS_Coordinate": "49.2559, -1.2888",
+            "BoundingBox": {
+                "North": 50.1609,
+                "South": 48.3509,
+                "East": 0.0882,
+                "West": -2.6668
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-NoVII-13Jul44.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map VII from 'Breakout and Pursuit': VII Corps gains on the Carentan-P\u00e9riers isthmus and advance toward Saint-L\u00f4, 8-13 July 1944, illustrating terrain, positions, and limited advances by 83d and 4th Infantry Divisions.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Carentan-P%C3%A9riers+isthmus%2C+Normandy%2C+France&query_place_id=ChIJnYpYkKxB34cR1zI2P5q3i7Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=13&lat=49.2559&lon=-1.2888"
+            }
+        },
+        {
+            "PlaceName": "Br\u00e9hal",
+            "GPS_Coordinate": "48.8492, -1.5214",
+            "BoundingBox": {
+                "North": 49.7487,
+                "South": 47.9497,
+                "East": -0.1504,
+                "West": -2.8924
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-III.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Historical map from 'Breakout and Pursuit' Chapter 11 showing VII Corps operations and maneuvers in the Coutances area during July 1944, contextually relevant to blocking positions near Br\u00e9hal, le Mesnil-Herman, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Br%C3%A9hal,+France/@48.8492,-1.5214,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.8492/-1.5214"
+            }
+        },
+        {
+            "PlaceName": "Granville",
+            "GPS_Coordinate": "48.8403, -1.5931",
+            "BoundingBox": {
+                "North": 49.7451,
+                "South": 47.9355,
+                "East": -0.2341,
+                "West": -2.9521
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Granville,+France/@48.8403,-1.5931,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=48.8403&lon=-1.5931"
+            }
+        }
+    ],
+    "12": [
+        {
+            "PlaceName": "Pont-de-la-Roque",
+            "GPS_Coordinate": "48.6672, -1.1678",
+            "BoundingBox": {
+                "North": 49.5665,
+                "South": 47.7679,
+                "East": 0.1907,
+                "West": -2.5263
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-No.16-3.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI-3 showing the attack and advance of Combat Command A, 6th Armored Division, 28-30 July 1944, including crossing the S\u00e9e River at Pont-de-la-Roque during the exploitation toward Avranches.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Pont-de-la-Roque%2C%2050350%20Saint-P%C3%B4%2C%20France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.6672&lon=-1.1678&zoom=15"
+            }
+        },
+        {
+            "PlaceName": "Br\u00e9hal",
+            "GPS_Coordinate": "48.8492, -1.5214",
+            "BoundingBox": {
+                "North": 49.7487,
+                "South": 47.9497,
+                "East": -0.1504,
+                "West": -2.8924
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-III.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Historical map from 'Breakout and Pursuit' Chapter 11 showing VII Corps operations and maneuvers in the Coutances area during July 1944, contextually relevant to blocking positions near Br\u00e9hal, le Mesnil-Herman, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Br%C3%A9hal,+France/@48.8492,-1.5214,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.8492/-1.5214"
+            }
+        },
+        {
+            "PlaceName": "Granville",
+            "GPS_Coordinate": "48.8403, -1.5931",
+            "BoundingBox": {
+                "North": 49.7451,
+                "South": 47.9355,
+                "East": -0.2341,
+                "West": -2.9521
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Granville,+France/@48.8403,-1.5931,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=48.8403&lon=-1.5931"
+            }
+        }
+    ],
+    "13": [
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Sienne River",
+            "GPS_Coordinate": "48.7833,-1.4000",
+            "BoundingBox": {
+                "North": 49.6831,
+                "South": 47.8835,
+                "East": -0.033,
+                "West": -2.767
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9-33KB.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map 9: VII Corps Drive Toward Coutances, 26-30 July 1944, depicting operations including routes to Coutances, blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences near the Sienne River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sienne+River/@48.7833,-1.4,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.7833/-1.4"
+            }
+        },
+        {
+            "PlaceName": "C\u00e9rences",
+            "GPS_Coordinate": "48.95167,-1.40361",
+            "BoundingBox": {
+                "North": 49.85167,
+                "South": 48.05167,
+                "East": -0.03161,
+                "West": -2.77561
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11-MAP12-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map XII: VII Corps Exploitation Toward Coutances, 27-31 July 1944, depicting blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/C%C3%A9rences,+France/@48.95167,-1.40361,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.95167/-1.40361"
+            }
+        },
+        {
+            "PlaceName": "Lengronne",
+            "Sub-event_summary": "XIX Corps to contain east of Vire, support VII Corps; V Corps diversionary attack D+2. VII Corps modifications: added 4th Infantry Division to assault (due to 9th/30th exhaustion); rerouted exploitation\u20141st Infantry (with 3d Armored CCB) direct to Coutances; reduced 3d Armored wider envelopment; 2d Armored (with 4th Division's 22d RCT) to left blocking at le Mesnil-Herman/Villebaudon/Tessy-sur-Vire and C\u00e9rences, providing VIII Corps corridor.",
+            "GPS_Coordinate": {
+                "lat": 48.953611,
+                "lon": -1.250556
+            },
+            "BoundingBox": {
+                "North": 49.853111,
+                "South": 48.054111,
+                "East": 0.120444,
+                "West": -2.621556
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3f/OpCobra27-31July44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:OpCobra27-31July44.png",
+                    "External_Map_Description": "Map showing Operation Cobra exploitation phase from 27-31 July 1944, depicting VII Corps advances toward Coutances and blocking positions near Tessy-sur-Vire region including vicinity of Lengronne.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/Maps/USA-E-Breakout/USAEBk11III.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map III from Breakout and Pursuit Chapter 11: VII Corps maneuver and exploitation, 27-31 July 1944, covering operations near Vire, Tessy-sur-Vire, and Coutances relevant to Lengronne area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Lengronne,+50500,+France/@48.953611,-1.250556,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b0b4e4b4b4b:0x4e4b4b4b4e4b4e4b!8m2!3d48.953611!4d-1.250556!16zL20vMDZ4d2Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.9536/-1.2506"
+            }
+        },
+        {
+            "PlaceName": "La Haye-Pesnel",
+            "GPS_Coordinate": "48.8300, -1.1678",
+            "BoundingBox": {
+                "North": 49.731,
+                "South": 47.929,
+                "East": 0.2032,
+                "West": -2.5388
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP16-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI-1: The 4th Armored Division's Part in the Breakout, 27-30 July 1944, depicting advances toward Avranches including vicinity of La Haye-Pesnel.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/La+Haye-Pesnel,+France/@48.8300,-1.1678,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#!map=15/48.8300/-1.1678/La+Haye-Pesnel"
+            }
+        },
+        {
+            "PlaceName": "Sartilly",
+            "GPS_Coordinate": {
+                "lat": 48.67,
+                "lon": -1.3164
+            },
+            "BoundingBox": {
+                "North": 49.5693,
+                "South": 47.7707,
+                "East": 0.0456,
+                "West": -2.6784
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-XVI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI: The Exploitation by VII Corps, 27-31 July 1944, depicting the advance of the 4th Armored Division from Coutances toward Avranches, passing through areas including Sartilly, overcoming ambushes, and securing bridges.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sartilly,+50380,France/@48.6700,-1.3164,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.6700/-1.3164/Sartilly"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Br\u00e9cey",
+            "GPS_Coordinate": "48.6686,-1.3144",
+            "BoundingBox": {
+                "North": 49.5678,
+                "South": 47.7694,
+                "East": 0.0461,
+                "West": -2.6749
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI: Situation in Army Group B on the evening of 28 July, depicting German positions and lack of organized resistance near Br\u00e9cey and Avranches area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Br%C3%A9cey,+%BFS50.+Manche,France/@48.668611,-1.314444,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/48.6686/-1.3144"
+            }
+        },
+        {
+            "sub_event_index": 2,
+            "place_index": 7,
+            "Event_Doc": "chapter3a-event.json",
+            "Source_Doc": "chapter3a-content.md",
+            "Sub-event_summary": "Efforts to initiate southward attack from Cotentin, delays due to logistics and Cherbourg priority, and receipt of Montgomery's directive for wheeling maneuver toward Caumont-Vire-Mortain-Fougeres line.",
+            "PlaceName": "Mortain",
+            "GPS_Coordinate": "48.6494, -0.9369",
+            "BoundingBox": {
+                "North": 49.5487,
+                "South": 47.7501,
+                "East": 0.4241,
+                "West": -2.2979
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP8.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+                    "External_Map_Description": "Map illustrating Montgomery's directive of 25 July directing a wheeling maneuver toward the Caumont-Vire-Mortain-Foug\u00e8res line.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mortain,+France/@48.64944,-0.93694,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!zoom=14&lat=48.64944&lon=-0.93694"
+            }
+        },
+        {
+            "PlaceName": "S\u00e9e River",
+            "GPS_Coordinate": "48.6700, -1.2700",
+            "BoundingBox": {
+                "North": 49.5688,
+                "South": 47.7712,
+                "East": 0.094,
+                "West": -2.634
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAPXV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+                    "External_Map_Description": "Map XV-1: VII Corps Maneuver, 25-30 July 1944, depicting advances in the Avranches sector including the vicinity of the S\u00e9e River and potential German defensive lines at Avranches-Vire.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=S%C3%A9e+River%2C+Normandy%2C+France&query_place_id=ChIJnYp9q5pXz0gR0zUqJqD0b8Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=11/48.6700/-1.2700"
+            }
+        },
+        {
+            "PlaceName": "Tirepied",
+            "GPS_Coordinate": {
+                "latitude": 48.9172,
+                "longitude": -1.3147
+            },
+            "BoundingBox": {
+                "North": 49.8165,
+                "South": 48.0179,
+                "East": 0.0573,
+                "West": -2.6867
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/IX-2.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map IX-2: Advance of Combat Command A, 6th Armored Division, 29 July 1944, showing movements in the area including crossing near Pont-de-la-Roque relevant to the sub-event context.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Tirepied,+France/@48.9172,-1.3147,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.9172/-1.3147"
+            }
+        }
+    ],
+    "14": [
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Granville",
+            "GPS_Coordinate": "48.8403, -1.5931",
+            "BoundingBox": {
+                "North": 49.7451,
+                "South": 47.9355,
+                "East": -0.2341,
+                "West": -2.9521
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Granville,+France/@48.8403,-1.5931,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=48.8403&lon=-1.5931"
+            }
+        },
+        {
+            "PlaceName": "Villedieu-les-Po\u00ebles",
+            "GPS_Coordinate": "48.841944,-1.233889",
+            "BoundingBox": {
+                "North": 49.7409,
+                "South": 47.9429,
+                "East": 0.1291,
+                "West": -2.5969
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XVI.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "MAP XVI: The Breakout, 26-30 July 1944, from US Army Center of Military History 'Breakout and Pursuit', depicting the Allied advance including the area around Villedieu-les-Po\u00ebles and Avranches relevant to the German situation assessment at the end of 28 July.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Op_Cobra_25-31_July_1944.jpg",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Op_Cobra_25-31_July_1944.jpg",
+                    "External_Map_Description": "Map of Operation Cobra, 25-31 July 1944, showing US forces breakout positions including vicinity of Villedieu-les-Po\u00ebles and advance to Avranches.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Villedieu-les-Po%C3%ABles,+France/@48.841944,-1.233889,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.841944&lon=-1.233889&zoom=14"
+            }
+        },
+        {
+            "Event_Doc": "chapter16a-event.json",
+            "Source_Doc": "chapter16a-content.md",
+            "Sub-event_summary": "Situation on evening of 30 July, uncertainty about Avranches, evidence of German disorganization, and orders to push through to S\u00e9lune River.",
+            "PlaceName": "Mayenne",
+            "GPS_Coordinate": "48.3961, -0.6039",
+            "BoundingBox": {
+                "North": 49.2941,
+                "South": 47.4981,
+                "East": 0.7481,
+                "West": -1.9559
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP8.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map VIII. Third Army Maneuver, 27-30 July 1944, showing positions including the Mayenne area on evening of 30 July.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mayenne,+53100+Mayenne,+France/@48.3961,-0.6039,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=14/48.3961/-0.6039/Mayenne"
+            }
+        },
+        {
+            "PlaceName": "Gavray",
+            "GPS_Coordinate": "48.8808,-1.2264",
+            "BoundingBox": {
+                "North": 49.7801,
+                "South": 47.9815,
+                "East": 0.1526,
+                "West": -2.6054
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP14-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map XIV: Advance of VII Corps, 25-31 July 1944, depicting the 3d Armored Division's exploitation toward Carantilly, Canisy, Cerisy-la-Salle, Montpinchon, and the Coutances-Gavray highway area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Gavray/@48.8808,-1.2264,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.8808/-1.2264/Gavray"
+            }
+        },
+        {
+            "PlaceName": "Sienne River",
+            "GPS_Coordinate": "48.7833,-1.4000",
+            "BoundingBox": {
+                "North": 49.6831,
+                "South": 47.8835,
+                "East": -0.033,
+                "West": -2.767
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9-33KB.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map 9: VII Corps Drive Toward Coutances, 26-30 July 1944, depicting operations including routes to Coutances, blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences near the Sienne River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sienne+River/@48.7833,-1.4,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.7833/-1.4"
+            }
+        },
+        {
+            "PlaceName": "Gavray",
+            "GPS_Coordinate": "48.8808,-1.2264",
+            "BoundingBox": {
+                "North": 49.7801,
+                "South": 47.9815,
+                "East": 0.1526,
+                "West": -2.6054
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP14-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map XIV: Advance of VII Corps, 25-31 July 1944, depicting the 3d Armored Division's exploitation toward Carantilly, Canisy, Cerisy-la-Salle, Montpinchon, and the Coutances-Gavray highway area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Gavray/@48.8808,-1.2264,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.8808/-1.2264/Gavray"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "sub_event_index": 14,
+            "place_index": 9,
+            "PlaceName": "S\u00e9lune River",
+            "Sub-event_summary": "Situation on evening of 30 July, uncertainty about Avranches, evidence of German disorganization, and orders to push through to S\u00e9lune River.",
+            "GPS_Coordinate": "48.65,-1.20",
+            "BoundingBox": {
+                "North": 49.548,
+                "South": 47.752,
+                "East": 0.161,
+                "West": -2.561
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-ILL30.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map depicting the situation on the evening of 30 July 1944, showing U.S. advances and objectives toward the S\u00e9lune River amid German disorganization.",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=S%C3%A9lune+River%2C+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!zoom=12&lat=48.65&lon=-1.20&layers=B"
+            }
+        },
+        {
+            "PlaceName": "Granville",
+            "GPS_Coordinate": "48.8403, -1.5931",
+            "BoundingBox": {
+                "North": 49.7451,
+                "South": 47.9355,
+                "East": -0.2341,
+                "West": -2.9521
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Granville,+France/@48.8403,-1.5931,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=48.8403&lon=-1.5931"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Sartilly-la Haye-Pesnel line",
+            "GPS_Coordinate": "48.7456,-1.3085",
+            "BoundingBox": {
+                "North": 49.6444,
+                "South": 47.8468,
+                "East": 0.0545,
+                "West": -2.6715
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-V.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map V: VII Corps Maneuver and Enemy Dispositions, 27-31 July 1944, depicting German lines including the Sartilly-la Haye-Pesnel area on evening of 30 July.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=48.7456%2C-1.3085+%28Sartilly-la+Haye-Pesnel+line%29",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.7456/-1.3085"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "sub_event_index": 14,
+            "place_index": 9,
+            "PlaceName": "S\u00e9lune River",
+            "Sub-event_summary": "Situation on evening of 30 July, uncertainty about Avranches, evidence of German disorganization, and orders to push through to S\u00e9lune River.",
+            "GPS_Coordinate": "48.65,-1.20",
+            "BoundingBox": {
+                "North": 49.548,
+                "South": 47.752,
+                "East": 0.161,
+                "West": -2.561
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-ILL30.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map depicting the situation on the evening of 30 July 1944, showing U.S. advances and objectives toward the S\u00e9lune River amid German disorganization.",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=S%C3%A9lune+River%2C+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!zoom=12&lat=48.65&lon=-1.20&layers=B"
+            }
+        },
+        {
+            "PlaceName": "Pontaubault",
+            "GPS_Coordinate": "48.5342, -1.3819",
+            "BoundingBox": {
+                "North": 49.4351,
+                "South": 47.6333,
+                "East": -0.0209,
+                "West": -2.7429
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XVI.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI: The Exploitation West of the Vire, 28-30 July, depicting the advance through Avranches area including vicinity of Pontaubault.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pontaubault,+France/@48.5342,-1.3819,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=15/48.5342/-1.3819/Pontaubault"
+            }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "S\u00e9e",
+            "GPS_Coordinate": "48.4433, -0.3481",
+            "BoundingBox": {
+                "North": 49.3479,
+                "South": 47.5387,
+                "East": 1.0069,
+                "West": -1.7031
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map-IV-13.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map IV-13 showing dispositions east of Avranches including area near S\u00e9e during late July 1944 breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/7/7f/Avranches_breakthrough.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Normandy",
+                    "External_Map_Description": "Map of the Avranches breakthrough in late July 1944, covering the region including S\u00e9e and German defenses.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/S%C3%A9e,+France/@48.4433,-0.3481,14z/data=!3m1!4b1!4m6!3m5!1s0x480f8b0b0b0b0b0b:0x1234567890abcdef!8m2!3d48.4433!4d-0.3481!16zL20vMDZ0M3k",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.4433/-0.3481"
+            }
+        },
+        {
+            "PlaceName": "S\u00e9lune River",
+            "GPS_Coordinate": {
+                "lat": 48.6617,
+                "lng": -1.3831
+            },
+            "BoundingBox": {
+                "North": 49.5612,
+                "South": 47.7622,
+                "East": -0.0261,
+                "West": -2.7401
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map16.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map No. 16: VII Corps Attack to Avranches, 26-30 July 1944, showing advances toward Avranches with river crossings in the S\u00e9lune and Sienne areas.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=S%C3%A9lune+River%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=13/48.6617/-1.3831/S%C3%A9lune+River"
+            }
+        },
+        {
+            "PlaceName": "S\u00e9lune",
+            "GPS_Coordinate": "48.6647,-1.1636",
+            "BoundingBox": {
+                "North": 49.5647,
+                "South": 47.7647,
+                "East": 0.1974,
+                "West": -2.5246
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Avranches_breakthrough.jpg",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Avranches_breakthrough.jpg",
+                    "External_Map_Description": "Map depicting the Allied breakout at Avranches, late July 1944, relevant to the German situation assessment and lack of resistance by end of 28 July.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/S%C3%A9lune,+France/@48.6647,-1.1636,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6647/-1.1636"
+            }
+        },
+        {
+            "Event_Doc": "chapter16a-event.json",
+            "Source_Doc": "chapter16a-content.md",
+            "Sub-event_summary": "Situation on evening of 30 July, uncertainty about Avranches, evidence of German disorganization, and orders to push through to S\u00e9lune River.",
+            "PlaceName": "Ducey",
+            "GPS_Coordinate": "48.6575, -1.3083",
+            "BoundingBox": {
+                "North": 49.5565,
+                "South": 47.7585,
+                "East": 0.0527,
+                "West": -2.6693
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Ducey/@48.6575,-1.3083,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=15/48.6575/-1.3083"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "sub_event_index": 14,
+            "place_index": 9,
+            "PlaceName": "S\u00e9lune River",
+            "Sub-event_summary": "Situation on evening of 30 July, uncertainty about Avranches, evidence of German disorganization, and orders to push through to S\u00e9lune River.",
+            "GPS_Coordinate": "48.65,-1.20",
+            "BoundingBox": {
+                "North": 49.548,
+                "South": 47.752,
+                "East": 0.161,
+                "West": -2.561
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-ILL30.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map depicting the situation on the evening of 30 July 1944, showing U.S. advances and objectives toward the S\u00e9lune River amid German disorganization.",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=S%C3%A9lune+River%2C+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!zoom=12&lat=48.65&lon=-1.20&layers=B"
+            }
+        },
+        {
+            "Event_Doc": "chapter16a-event.json",
+            "Source_Doc": "chapter16a-content.md",
+            "Sub-event_summary": "Situation on evening of 30 July, uncertainty about Avranches, evidence of German disorganization, and orders to push through to S\u00e9lune River.",
+            "PlaceName": "Ducey",
+            "GPS_Coordinate": "48.6575, -1.3083",
+            "BoundingBox": {
+                "North": 49.5565,
+                "South": 47.7585,
+                "East": 0.0527,
+                "West": -2.6693
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Ducey/@48.6575,-1.3083,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=15/48.6575/-1.3083"
+            }
+        }
+    ],
+    "15": [
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "S\u00e9e River",
+            "GPS_Coordinate": "48.6700, -1.2700",
+            "BoundingBox": {
+                "North": 49.5688,
+                "South": 47.7712,
+                "East": 0.094,
+                "West": -2.634
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAPXV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+                    "External_Map_Description": "Map XV-1: VII Corps Maneuver, 25-30 July 1944, depicting advances in the Avranches sector including the vicinity of the S\u00e9e River and potential German defensive lines at Avranches-Vire.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=S%C3%A9e+River%2C+Normandy%2C+France&query_place_id=ChIJnYp9q5pXz0gR0zUqJqD0b8Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=11/48.6700/-1.2700"
+            }
+        },
+        {
+            "PlaceName": "Granville",
+            "GPS_Coordinate": "48.8403, -1.5931",
+            "BoundingBox": {
+                "North": 49.7451,
+                "South": 47.9355,
+                "East": -0.2341,
+                "West": -2.9521
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Granville,+France/@48.8403,-1.5931,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=48.8403&lon=-1.5931"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Granville",
+            "GPS_Coordinate": "48.8403, -1.5931",
+            "BoundingBox": {
+                "North": 49.7451,
+                "South": 47.9355,
+                "East": -0.2341,
+                "West": -2.9521
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Granville,+France/@48.8403,-1.5931,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=48.8403&lon=-1.5931"
+            }
+        },
+        {
+            "PlaceName": "S\u00e9e River",
+            "GPS_Coordinate": "48.6700, -1.2700",
+            "BoundingBox": {
+                "North": 49.5688,
+                "South": 47.7712,
+                "East": 0.094,
+                "West": -2.634
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAPXV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+                    "External_Map_Description": "Map XV-1: VII Corps Maneuver, 25-30 July 1944, depicting advances in the Avranches sector including the vicinity of the S\u00e9e River and potential German defensive lines at Avranches-Vire.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=S%C3%A9e+River%2C+Normandy%2C+France&query_place_id=ChIJnYp9q5pXz0gR0zUqJqD0b8Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=11/48.6700/-1.2700"
+            }
+        },
+        {
+            "PlaceName": "Villedieu-les-Po\u00ebles road",
+            "GPS_Coordinate": "48.7634,-1.2951",
+            "BoundingBox": {
+                "North": 49.6674,
+                "South": 47.8594,
+                "East": 0.0679,
+                "West": -2.6581
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP16-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map depicting enemy counterattacks toward Avranches, 30-31 July 1944, illustrating German columns advancing along roads including the Villedieu-les-Po\u00ebles road.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Villedieu-les-Po%C3%ABles+road%2C+Avranches%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.7634&lon=-1.2951&zoom=13"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Granville road",
+            "GPS_Coordinate": "48.6825, -1.3680",
+            "BoundingBox": {
+                "North": 49.5825,
+                "South": 47.7825,
+                "East": -0.004,
+                "West": -2.732
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map16.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI depicting the German counterattack toward Avranches, 30 July-1 August 1944, including approaches like Granville road.",
+                    "External_Map_Capture_Date": "2024-10-06T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Avranches_breakthrough.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Normandy",
+                    "External_Map_Description": "Map of the Allied breakout at Avranches, July 1944, showing key roads and German columns near Granville road.",
+                    "External_Map_Capture_Date": "2024-10-06T14:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Route+de+Granville,+50300+Avranches,+France/@48.6825,-1.3680,17z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=17/48.6825/-1.3680/Route+de+Granville,+Avranches"
+            }
+        },
+        {
+            "sub_event_index": 2,
+            "place_index": 7,
+            "Event_Doc": "chapter3a-event.json",
+            "Source_Doc": "chapter3a-content.md",
+            "Sub-event_summary": "Efforts to initiate southward attack from Cotentin, delays due to logistics and Cherbourg priority, and receipt of Montgomery's directive for wheeling maneuver toward Caumont-Vire-Mortain-Fougeres line.",
+            "PlaceName": "Mortain",
+            "GPS_Coordinate": "48.6494, -0.9369",
+            "BoundingBox": {
+                "North": 49.5487,
+                "South": 47.7501,
+                "East": 0.4241,
+                "West": -2.2979
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP8.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+                    "External_Map_Description": "Map illustrating Montgomery's directive of 25 July directing a wheeling maneuver toward the Caumont-Vire-Mortain-Foug\u00e8res line.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mortain,+France/@48.64944,-0.93694,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!zoom=14&lat=48.64944&lon=-0.93694"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Granville road",
+            "GPS_Coordinate": "48.6825, -1.3680",
+            "BoundingBox": {
+                "North": 49.5825,
+                "South": 47.7825,
+                "East": -0.004,
+                "West": -2.732
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map16.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI depicting the German counterattack toward Avranches, 30 July-1 August 1944, including approaches like Granville road.",
+                    "External_Map_Capture_Date": "2024-10-06T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Avranches_breakthrough.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Normandy",
+                    "External_Map_Description": "Map of the Allied breakout at Avranches, July 1944, showing key roads and German columns near Granville road.",
+                    "External_Map_Capture_Date": "2024-10-06T14:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Route+de+Granville,+50300+Avranches,+France/@48.6825,-1.3680,17z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=17/48.6825/-1.3680/Route+de+Granville,+Avranches"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        }
+    ],
+    "16": [
+        {
+            "PlaceName": "S\u00e9lune",
+            "GPS_Coordinate": "48.6647,-1.1636",
+            "BoundingBox": {
+                "North": 49.5647,
+                "South": 47.7647,
+                "East": 0.1974,
+                "West": -2.5246
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Avranches_breakthrough.jpg",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Avranches_breakthrough.jpg",
+                    "External_Map_Description": "Map depicting the Allied breakout at Avranches, late July 1944, relevant to the German situation assessment and lack of resistance by end of 28 July.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/S%C3%A9lune,+France/@48.6647,-1.1636,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6647/-1.1636"
+            }
+        },
+        {
+            "PlaceName": "Pontaubault",
+            "GPS_Coordinate": "48.5342, -1.3819",
+            "BoundingBox": {
+                "North": 49.4351,
+                "South": 47.6333,
+                "East": -0.0209,
+                "West": -2.7429
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XVI.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI: The Exploitation West of the Vire, 28-30 July, depicting the advance through Avranches area including vicinity of Pontaubault.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pontaubault,+France/@48.5342,-1.3819,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=15/48.5342/-1.3819/Pontaubault"
+            }
+        },
+        {
+            "Event_Doc": "chapter16a-event.json",
+            "Source_Doc": "chapter16a-content.md",
+            "Sub-event_summary": "Situation on evening of 30 July, uncertainty about Avranches, evidence of German disorganization, and orders to push through to S\u00e9lune River.",
+            "PlaceName": "Ducey",
+            "GPS_Coordinate": "48.6575, -1.3083",
+            "BoundingBox": {
+                "North": 49.5565,
+                "South": 47.7585,
+                "East": 0.0527,
+                "West": -2.6693
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Ducey/@48.6575,-1.3083,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=15/48.6575/-1.3083"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "S\u00e9lune",
+            "GPS_Coordinate": "48.6647,-1.1636",
+            "BoundingBox": {
+                "North": 49.5647,
+                "South": 47.7647,
+                "East": 0.1974,
+                "West": -2.5246
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Avranches_breakthrough.jpg",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Avranches_breakthrough.jpg",
+                    "External_Map_Description": "Map depicting the Allied breakout at Avranches, late July 1944, relevant to the German situation assessment and lack of resistance by end of 28 July.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/S%C3%A9lune,+France/@48.6647,-1.1636,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6647/-1.1636"
+            }
+        },
+        {
+            "Event_Doc": "chapter16a-event.json",
+            "Source_Doc": "chapter16a-content.md",
+            "Sub-event_summary": "Situation on evening of 30 July, uncertainty about Avranches, evidence of German disorganization, and orders to push through to S\u00e9lune River.",
+            "PlaceName": "Ducey",
+            "GPS_Coordinate": "48.6575, -1.3083",
+            "BoundingBox": {
+                "North": 49.5565,
+                "South": 47.7585,
+                "East": 0.0527,
+                "West": -2.6693
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Ducey/@48.6575,-1.3083,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=15/48.6575/-1.3083"
+            }
+        },
+        {
+            "PlaceName": "Pontaubault",
+            "GPS_Coordinate": "48.5342, -1.3819",
+            "BoundingBox": {
+                "North": 49.4351,
+                "South": 47.6333,
+                "East": -0.0209,
+                "West": -2.7429
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XVI.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI: The Exploitation West of the Vire, 28-30 July, depicting the advance through Avranches area including vicinity of Pontaubault.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pontaubault,+France/@48.5342,-1.3819,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=15/48.5342/-1.3819/Pontaubault"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Pontaubault",
+            "GPS_Coordinate": "48.5342, -1.3819",
+            "BoundingBox": {
+                "North": 49.4351,
+                "South": 47.6333,
+                "East": -0.0209,
+                "West": -2.7429
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XVI.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI: The Exploitation West of the Vire, 28-30 July, depicting the advance through Avranches area including vicinity of Pontaubault.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pontaubault,+France/@48.5342,-1.3819,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=15/48.5342/-1.3819/Pontaubault"
+            }
+        }
+    ],
+    "17": [
+        {
+            "PlaceName": "S\u00e9e River",
+            "GPS_Coordinate": "48.6700, -1.2700",
+            "BoundingBox": {
+                "North": 49.5688,
+                "South": 47.7712,
+                "East": 0.094,
+                "West": -2.634
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAPXV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-15.html",
+                    "External_Map_Description": "Map XV-1: VII Corps Maneuver, 25-30 July 1944, depicting advances in the Avranches sector including the vicinity of the S\u00e9e River and potential German defensive lines at Avranches-Vire.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=S%C3%A9e+River%2C+Normandy%2C+France&query_place_id=ChIJnYp9q5pXz0gR0zUqJqD0b8Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=11/48.6700/-1.2700"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Tirepied",
+            "GPS_Coordinate": {
+                "latitude": 48.9172,
+                "longitude": -1.3147
+            },
+            "BoundingBox": {
+                "North": 49.8165,
+                "South": 48.0179,
+                "East": 0.0573,
+                "West": -2.6867
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/IX-2.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map IX-2: Advance of Combat Command A, 6th Armored Division, 29 July 1944, showing movements in the area including crossing near Pont-de-la-Roque relevant to the sub-event context.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Tirepied,+France/@48.9172,-1.3147,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.9172/-1.3147"
+            }
+        },
+        {
+            "PlaceName": "S\u00e9lune",
+            "GPS_Coordinate": "48.6647,-1.1636",
+            "BoundingBox": {
+                "North": 49.5647,
+                "South": 47.7647,
+                "East": 0.1974,
+                "West": -2.5246
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Avranches_breakthrough.jpg",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Avranches_breakthrough.jpg",
+                    "External_Map_Description": "Map depicting the Allied breakout at Avranches, late July 1944, relevant to the German situation assessment and lack of resistance by end of 28 July.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/S%C3%A9lune,+France/@48.6647,-1.1636,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6647/-1.1636"
+            }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Granville",
+            "GPS_Coordinate": "48.8403, -1.5931",
+            "BoundingBox": {
+                "North": 49.7451,
+                "South": 47.9355,
+                "East": -0.2341,
+                "West": -2.9521
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Granville,+France/@48.8403,-1.5931,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=48.8403&lon=-1.5931"
+            }
+        },
+        {
+            "PlaceName": "la Haye-Pensel-Sartilly line",
+            "GPS_Coordinate": "48.7770, -1.4400",
+            "BoundingBox": {
+                "North": 49.6763,
+                "South": 47.8777,
+                "East": -0.08,
+                "West": -2.8
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP17-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "U.S. Army historical map depicting dispositions and operations in the Cotentin Peninsula during late July and early August 1944, relevant to German collapse and lines west of Avranches including areas near La Haye-du-Puits and Sartilly.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Federal Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/dir/La+Haye-du-Puits,+France/Sartilly,+France/@48.777,-1.44,11z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.777&lon=-1.44&zoom=11"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Pontaubault",
+            "GPS_Coordinate": "48.5342, -1.3819",
+            "BoundingBox": {
+                "North": 49.4351,
+                "South": 47.6333,
+                "East": -0.0209,
+                "West": -2.7429
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XVI.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map XVI: The Exploitation West of the Vire, 28-30 July, depicting the advance through Avranches area including vicinity of Pontaubault.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pontaubault,+France/@48.5342,-1.3819,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=15/48.5342/-1.3819/Pontaubault"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Vire-Laval-Rennes-Avranches region",
+            "GPS_Coordinate": "48.4251,-1.3167",
+            "BoundingBox": {
+                "North": "49.3231",
+                "South": "47.5271",
+                "East": "0.0353",
+                "West": "-2.6687"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP22.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map 22 from Breakout and Pursuit showing VII Corps advance toward Vire and Avranches region, 30 July - 2 August 1944, relevant to operations around 1 August.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=48.4251%2C-1.3167+%28Vire-Laval-Rennes-Avranches+region%29",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-1.3167&lat=48.4251&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Cotentin",
+            "GPS_Coordinate": "49.2500, -1.6000",
+            "BoundingBox": {
+                "North": "50.1510",
+                "South": "48.3490",
+                "East": "-0.2190",
+                "West": "-2.9810"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP4.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV: First Army Attack Plan, 30 June 1944, depicting the VIII Corps' role in the offensive southward along the Cotentin Peninsula west coast toward high ground near Coutances.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP5.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map V: The Battle on the West Coast, 3-14 July 1944, showing VIII Corps advances and key terrain around la Haye-du-Puits on the Cotentin Peninsula.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Cotentin+Peninsula/@49.2500,-1.6000,10z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#!map=10/49.2500/-1.6000"
+            }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Cotentin",
+            "GPS_Coordinate": "49.2500, -1.6000",
+            "BoundingBox": {
+                "North": "50.1510",
+                "South": "48.3490",
+                "East": "-0.2190",
+                "West": "-2.9810"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP4.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV: First Army Attack Plan, 30 June 1944, depicting the VIII Corps' role in the offensive southward along the Cotentin Peninsula west coast toward high ground near Coutances.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP5.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map V: The Battle on the West Coast, 3-14 July 1944, showing VIII Corps advances and key terrain around la Haye-du-Puits on the Cotentin Peninsula.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Cotentin+Peninsula/@49.2500,-1.6000,10z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#!map=10/49.2500/-1.6000"
+            }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        }
+    ]
+}

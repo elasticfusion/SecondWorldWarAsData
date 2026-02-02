@@ -2,8 +2,8 @@
 
 BOOK="BreakoutAndPursuit"
 BOOKNAME="Breakout and Pursuit"
-CHAPTER=32
-SECTION=e
+CHAPTER=4
+SECTION=a
 TYPE="event"
 CHAPTERFOLDER="../$BOOK/data/prompts/chapter$CHAPTER"
 REVIEWFOLDER="chapter$CHAPTER$SECTION-review"

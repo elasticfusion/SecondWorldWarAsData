@@ -1,0 +1,343 @@
+{
+    "1": [
+        {
+            "PlaceName": "Marigny",
+            "GPS_Coordinate": "49.0800, -1.2614",
+            "BoundingBox": {
+                "North": 49.98,
+                "South": 48.18,
+                "East": 0.11,
+                "West": -2.632
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP%2011-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map II: The VII Corps Drive to Coutances, 8-15 July 1944, depicting the advance including penetration to Marigny and St. Gilles.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/49%C2%B004'48%22N+1%C2%B015'41%22W/@49.0800,-1.2614,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/49.0800/-1.2614"
+            }
+        },
+        {
+            "PlaceName": "St. Gilles",
+            "GPS_Coordinate": "48.9844,-1.2339",
+            "BoundingBox": {
+                "North": 49.8832,
+                "South": 48.0856,
+                "East": 0.1361,
+                "West": -2.6039
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-V-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V-2: The Attack of XIX Corps, 7-11 July 1944, depicting dispositions and objectives astride the Vire River toward St. L\u00f4 and the Coutances-St. L\u00f4-Bayeux highway, relevant to St. Gilles area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Gilles,+50380+Saint-Gilles,+France/@48.9844,-1.2339,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.9844&lon=-1.2339&zoom=14"
+            }
+        }
+    ],
+    "2": [
+        {
+            "PlaceName": "Marigny",
+            "GPS_Coordinate": "49.0800, -1.2614",
+            "BoundingBox": {
+                "North": 49.98,
+                "South": 48.18,
+                "East": 0.11,
+                "West": -2.632
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP%2011-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map II: The VII Corps Drive to Coutances, 8-15 July 1944, depicting the advance including penetration to Marigny and St. Gilles.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/49%C2%B004'48%22N+1%C2%B015'41%22W/@49.0800,-1.2614,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/49.0800/-1.2614"
+            }
+        },
+        {
+            "PlaceName": "St. Gilles",
+            "GPS_Coordinate": "48.9844,-1.2339",
+            "BoundingBox": {
+                "North": 49.8832,
+                "South": 48.0856,
+                "East": 0.1361,
+                "West": -2.6039
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-V-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V-2: The Attack of XIX Corps, 7-11 July 1944, depicting dispositions and objectives astride the Vire River toward St. L\u00f4 and the Coutances-St. L\u00f4-Bayeux highway, relevant to St. Gilles area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Gilles,+50380+Saint-Gilles,+France/@48.9844,-1.2339,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.9844&lon=-1.2339&zoom=14"
+            }
+        }
+    ],
+    "3": [
+        {
+            "PlaceName": "Marigny",
+            "GPS_Coordinate": "49.0800, -1.2614",
+            "BoundingBox": {
+                "North": 49.98,
+                "South": 48.18,
+                "East": 0.11,
+                "West": -2.632
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP%2011-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map II: The VII Corps Drive to Coutances, 8-15 July 1944, depicting the advance including penetration to Marigny and St. Gilles.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/49%C2%B004'48%22N+1%C2%B015'41%22W/@49.0800,-1.2614,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/49.0800/-1.2614"
+            }
+        },
+        {
+            "PlaceName": "St. Gilles",
+            "GPS_Coordinate": "48.9844,-1.2339",
+            "BoundingBox": {
+                "North": 49.8832,
+                "South": 48.0856,
+                "East": 0.1361,
+                "West": -2.6039
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-V-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V-2: The Attack of XIX Corps, 7-11 July 1944, depicting dispositions and objectives astride the Vire River toward St. L\u00f4 and the Coutances-St. L\u00f4-Bayeux highway, relevant to St. Gilles area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Gilles,+50380+Saint-Gilles,+France/@48.9844,-1.2339,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.9844&lon=-1.2339&zoom=14"
+            }
+        }
+    ],
+    "4": [
+        {
+            "PlaceName": "P\u00e9riers-St. L\u00f4 highway",
+            "GPS_Coordinate": "49.0853\u00b0 N, 1.1999\u00b0 W",
+            "BoundingBox": {
+                "North": 49.9836,
+                "South": 48.187,
+                "East": 0.1768,
+                "West": -2.5766
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MapV.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V: XIX Corps Plan of Attack, 10 July 1944, depicting dispositions astride the Vire River and objectives toward St. L\u00f4, including the P\u00e9riers-St. L\u00f4 highway area in the context of the two-step attack to seize high ground.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=P%C3%A9riers-St.+L%C3%B4+highway%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#49.0853/-1.1999/13"
+            }
+        },
+        {
+            "PlaceName": "Marigny",
+            "GPS_Coordinate": "49.0800, -1.2614",
+            "BoundingBox": {
+                "North": 49.98,
+                "South": 48.18,
+                "East": 0.11,
+                "West": -2.632
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP%2011-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map II: The VII Corps Drive to Coutances, 8-15 July 1944, depicting the advance including penetration to Marigny and St. Gilles.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/49%C2%B004'48%22N+1%C2%B015'41%22W/@49.0800,-1.2614,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/49.0800/-1.2614"
+            }
+        },
+        {
+            "PlaceName": "Coutances",
+            "GPS_Coordinate": "48.9492,-1.4453",
+            "BoundingBox": {
+                "North": 49.848,
+                "South": 48.0504,
+                "East": -0.0753,
+                "West": -2.8153
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1 depicting VIII Corps zone of action and objectives during the advance southward along the Cotentin west coast toward high ground near Coutances, 22-24 July 1944.",
+                    "External_Map_Capture_Date": "2024-09-18T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Coutances,+France/@48.9492,-1.4453,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/@48.9492,-1.4453,14z"
+            }
+        }
+    ],
+    "5": [
+        {
+            "PlaceName": "Marigny",
+            "GPS_Coordinate": "49.0800, -1.2614",
+            "BoundingBox": {
+                "North": 49.98,
+                "South": 48.18,
+                "East": 0.11,
+                "West": -2.632
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP%2011-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map II: The VII Corps Drive to Coutances, 8-15 July 1944, depicting the advance including penetration to Marigny and St. Gilles.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/49%C2%B004'48%22N+1%C2%B015'41%22W/@49.0800,-1.2614,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/49.0800/-1.2614"
+            }
+        },
+        {
+            "PlaceName": "Coutances",
+            "GPS_Coordinate": "48.9492,-1.4453",
+            "BoundingBox": {
+                "North": 49.848,
+                "South": 48.0504,
+                "East": -0.0753,
+                "West": -2.8153
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1 depicting VIII Corps zone of action and objectives during the advance southward along the Cotentin west coast toward high ground near Coutances, 22-24 July 1944.",
+                    "External_Map_Capture_Date": "2024-09-18T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Coutances,+France/@48.9492,-1.4453,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/@48.9492,-1.4453,14z"
+            }
+        }
+    ],
+    "6": [
+        {
+            "PlaceName": "P\u00e9riers-St. L\u00f4 highway",
+            "GPS_Coordinate": "49.0853\u00b0 N, 1.1999\u00b0 W",
+            "BoundingBox": {
+                "North": 49.9836,
+                "South": 48.187,
+                "East": 0.1768,
+                "West": -2.5766
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MapV.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V: XIX Corps Plan of Attack, 10 July 1944, depicting dispositions astride the Vire River and objectives toward St. L\u00f4, including the P\u00e9riers-St. L\u00f4 highway area in the context of the two-step attack to seize high ground.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=P%C3%A9riers-St.+L%C3%B4+highway%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#49.0853/-1.1999/13"
+            }
+        },
+        {
+            "PlaceName": "St. Gilles",
+            "GPS_Coordinate": "48.9844,-1.2339",
+            "BoundingBox": {
+                "North": 49.8832,
+                "South": 48.0856,
+                "East": 0.1361,
+                "West": -2.6039
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-V-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V-2: The Attack of XIX Corps, 7-11 July 1944, depicting dispositions and objectives astride the Vire River toward St. L\u00f4 and the Coutances-St. L\u00f4-Bayeux highway, relevant to St. Gilles area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Gilles,+50380+Saint-Gilles,+France/@48.9844,-1.2339,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.9844&lon=-1.2339&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Canisy",
+            "GPS_Coordinate": "49.0331,-1.3167",
+            "BoundingBox": {
+                "North": 49.934,
+                "South": 48.1322,
+                "East": 0.0528,
+                "West": -2.6862
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11-MAP-XI-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map XI-1 from Breakout and Pursuit Chapter 11 showing VII Corps exploitation and blocking positions near Tessy-sur-Vire and surrounding areas including vicinity of Canisy, 11-14 July 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/0/0b/Op%C3%A9ration_Cobra.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Cobra",
+                    "External_Map_Description": "Strategic overview map of Operation Cobra, the breakout operation in Normandy encompassing the VII Corps area of operations near Canisy.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Canisy,+France/@49.0331,-1.3167,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.0331/-1.3167"
+            }
+        }
+    ]
+}

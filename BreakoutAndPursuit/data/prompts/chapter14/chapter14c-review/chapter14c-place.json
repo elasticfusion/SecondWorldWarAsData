@@ -1,0 +1,1846 @@
+{
+    "1": [
+        {
+            "PlaceName": "Vire River",
+            "GPS_Coordinate": "48.8836,-0.8931",
+            "BoundingBox": {
+                "North": 49.7845,
+                "South": 47.9827,
+                "East": 0.4766,
+                "West": -2.2622
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map 1: Terrain of the Battlefield, July 1944, from Breakout and Pursuit by the U.S. Army Center of Military History, illustrating diversified terrain including bocage west of the Orne River, marshy areas near Carentan, open plains near Caen-Falaise, and the Vire River.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/Vire+River,+Normandy,+France/@48.8836,-0.8931,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-0.8931&lat=48.8836&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Tessy-sur-Vire",
+            "GPS_Coordinate": "48.9200, -1.2694",
+            "BoundingBox": {
+                "North": 49.8194,
+                "South": 48.0206,
+                "East": 0.1016,
+                "West": -2.6404
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP13.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map 13 depicting Combat Command A (CCA), 4th Armored Division actions from 27-28 July 1944, relevant to objectives near Tessy-sur-Vire, le Mesnil-Herman, and Hill 183.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Tessy-sur-Vire,+France/@48.9200,-1.2694,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!zoom=15;lat=48.92;lon=-1.2694"
+            }
+        },
+        {
+            "PlaceName": "Canisy",
+            "GPS_Coordinate": "49.0331,-1.3167",
+            "BoundingBox": {
+                "North": 49.934,
+                "South": 48.1322,
+                "East": 0.0528,
+                "West": -2.6862
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11-MAP-XI-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map XI-1 from Breakout and Pursuit Chapter 11 showing VII Corps exploitation and blocking positions near Tessy-sur-Vire and surrounding areas including vicinity of Canisy, 11-14 July 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/0/0b/Op%C3%A9ration_Cobra.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Cobra",
+                    "External_Map_Description": "Strategic overview map of Operation Cobra, the breakout operation in Normandy encompassing the VII Corps area of operations near Canisy.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Canisy,+France/@49.0331,-1.3167,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.0331/-1.3167"
+            }
+        },
+        {
+            "PlaceName": "Br\u00e9hal",
+            "GPS_Coordinate": "48.8492, -1.5214",
+            "BoundingBox": {
+                "North": 49.7487,
+                "South": 47.9497,
+                "East": -0.1504,
+                "West": -2.8924
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-III.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Historical map from 'Breakout and Pursuit' Chapter 11 showing VII Corps operations and maneuvers in the Coutances area during July 1944, contextually relevant to blocking positions near Br\u00e9hal, le Mesnil-Herman, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Br%C3%A9hal,+France/@48.8492,-1.5214,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.8492/-1.5214"
+            }
+        },
+        {
+            "PlaceName": "C\u00e9rences",
+            "GPS_Coordinate": "48.95167,-1.40361",
+            "BoundingBox": {
+                "North": 49.85167,
+                "South": 48.05167,
+                "East": -0.03161,
+                "West": -2.77561
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11-MAP12-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map XII: VII Corps Exploitation Toward Coutances, 27-31 July 1944, depicting blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/C%C3%A9rences,+France/@48.95167,-1.40361,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.95167/-1.40361"
+            }
+        },
+        {
+            "PlaceName": "P\u00e9riers-St. L\u00f4 highway",
+            "GPS_Coordinate": "49.0853\u00b0 N, 1.1999\u00b0 W",
+            "BoundingBox": {
+                "North": 49.9836,
+                "South": 48.187,
+                "East": 0.1768,
+                "West": -2.5766
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MapV.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V: XIX Corps Plan of Attack, 10 July 1944, depicting dispositions astride the Vire River and objectives toward St. L\u00f4, including the P\u00e9riers-St. L\u00f4 highway area in the context of the two-step attack to seize high ground.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=P%C3%A9riers-St.+L%C3%B4+highway%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#49.0853/-1.1999/13"
+            }
+        },
+        {
+            "PlaceName": "Notre-Dame-de-Cenilly",
+            "GPS_Coordinate": "49.0833,-1.3167",
+            "BoundingBox": {
+                "North": 49.9833,
+                "South": 48.1833,
+                "East": 0.0603,
+                "West": -2.6937
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP11-III.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map III: VII Corps Drive to Coutances, 8-15 July 1944, showing operations in bocage area including vicinity of Notre-Dame-de-Cenilly",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Notre-Dame-de-Cenilly,+France/@49.0833,-1.3167,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/?mlat=49.0833&mlon=-1.3167#map=15/49.0833/-1.3167"
+            }
+        },
+        {
+            "PlaceName": "Lengronne",
+            "Sub-event_summary": "XIX Corps to contain east of Vire, support VII Corps; V Corps diversionary attack D+2. VII Corps modifications: added 4th Infantry Division to assault (due to 9th/30th exhaustion); rerouted exploitation\u20141st Infantry (with 3d Armored CCB) direct to Coutances; reduced 3d Armored wider envelopment; 2d Armored (with 4th Division's 22d RCT) to left blocking at le Mesnil-Herman/Villebaudon/Tessy-sur-Vire and C\u00e9rences, providing VIII Corps corridor.",
+            "GPS_Coordinate": {
+                "lat": 48.953611,
+                "lon": -1.250556
+            },
+            "BoundingBox": {
+                "North": 49.853111,
+                "South": 48.054111,
+                "East": 0.120444,
+                "West": -2.621556
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3f/OpCobra27-31July44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:OpCobra27-31July44.png",
+                    "External_Map_Description": "Map showing Operation Cobra exploitation phase from 27-31 July 1944, depicting VII Corps advances toward Coutances and blocking positions near Tessy-sur-Vire region including vicinity of Lengronne.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/Maps/USA-E-Breakout/USAEBk11III.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map III from Breakout and Pursuit Chapter 11: VII Corps maneuver and exploitation, 27-31 July 1944, covering operations near Vire, Tessy-sur-Vire, and Coutances relevant to Lengronne area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Lengronne,+50500,+France/@48.953611,-1.250556,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b0b4e4b4b4b:0x4e4b4b4b4e4b4e4b!8m2!3d48.953611!4d-1.250556!16zL20vMDZ4d2Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.9536/-1.2506"
+            }
+        },
+        {
+            "PlaceName": "Coutances",
+            "GPS_Coordinate": "48.9492,-1.4453",
+            "BoundingBox": {
+                "North": 49.848,
+                "South": 48.0504,
+                "East": -0.0753,
+                "West": -2.8153
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1 depicting VIII Corps zone of action and objectives during the advance southward along the Cotentin west coast toward high ground near Coutances, 22-24 July 1944.",
+                    "External_Map_Capture_Date": "2024-09-18T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Coutances,+France/@48.9492,-1.4453,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/@48.9492,-1.4453,14z"
+            }
+        }
+    ],
+    "2": [
+        {
+            "PlaceName": "P\u00e9riers-St. L\u00f4 highway",
+            "GPS_Coordinate": "49.0853\u00b0 N, 1.1999\u00b0 W",
+            "BoundingBox": {
+                "North": 49.9836,
+                "South": 48.187,
+                "East": 0.1768,
+                "West": -2.5766
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MapV.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V: XIX Corps Plan of Attack, 10 July 1944, depicting dispositions astride the Vire River and objectives toward St. L\u00f4, including the P\u00e9riers-St. L\u00f4 highway area in the context of the two-step attack to seize high ground.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=P%C3%A9riers-St.+L%C3%B4+highway%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#49.0853/-1.1999/13"
+            }
+        },
+        {
+            "PlaceName": "Canisy",
+            "GPS_Coordinate": "49.0331,-1.3167",
+            "BoundingBox": {
+                "North": 49.934,
+                "South": 48.1322,
+                "East": 0.0528,
+                "West": -2.6862
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11-MAP-XI-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map XI-1 from Breakout and Pursuit Chapter 11 showing VII Corps exploitation and blocking positions near Tessy-sur-Vire and surrounding areas including vicinity of Canisy, 11-14 July 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/0/0b/Op%C3%A9ration_Cobra.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Cobra",
+                    "External_Map_Description": "Strategic overview map of Operation Cobra, the breakout operation in Normandy encompassing the VII Corps area of operations near Canisy.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Canisy,+France/@49.0331,-1.3167,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.0331/-1.3167"
+            }
+        },
+        {
+            "PlaceName": "C\u00e9rences",
+            "GPS_Coordinate": "48.95167,-1.40361",
+            "BoundingBox": {
+                "North": 49.85167,
+                "South": 48.05167,
+                "East": -0.03161,
+                "West": -2.77561
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11-MAP12-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map XII: VII Corps Exploitation Toward Coutances, 27-31 July 1944, depicting blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/C%C3%A9rences,+France/@48.95167,-1.40361,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.95167/-1.40361"
+            }
+        },
+        {
+            "PlaceName": "Br\u00e9hal",
+            "GPS_Coordinate": "48.8492, -1.5214",
+            "BoundingBox": {
+                "North": 49.7487,
+                "South": 47.9497,
+                "East": -0.1504,
+                "West": -2.8924
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-III.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Historical map from 'Breakout and Pursuit' Chapter 11 showing VII Corps operations and maneuvers in the Coutances area during July 1944, contextually relevant to blocking positions near Br\u00e9hal, le Mesnil-Herman, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Br%C3%A9hal,+France/@48.8492,-1.5214,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.8492/-1.5214"
+            }
+        },
+        {
+            "PlaceName": "Lengronne",
+            "Sub-event_summary": "XIX Corps to contain east of Vire, support VII Corps; V Corps diversionary attack D+2. VII Corps modifications: added 4th Infantry Division to assault (due to 9th/30th exhaustion); rerouted exploitation\u20141st Infantry (with 3d Armored CCB) direct to Coutances; reduced 3d Armored wider envelopment; 2d Armored (with 4th Division's 22d RCT) to left blocking at le Mesnil-Herman/Villebaudon/Tessy-sur-Vire and C\u00e9rences, providing VIII Corps corridor.",
+            "GPS_Coordinate": {
+                "lat": 48.953611,
+                "lon": -1.250556
+            },
+            "BoundingBox": {
+                "North": 49.853111,
+                "South": 48.054111,
+                "East": 0.120444,
+                "West": -2.621556
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3f/OpCobra27-31July44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:OpCobra27-31July44.png",
+                    "External_Map_Description": "Map showing Operation Cobra exploitation phase from 27-31 July 1944, depicting VII Corps advances toward Coutances and blocking positions near Tessy-sur-Vire region including vicinity of Lengronne.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/Maps/USA-E-Breakout/USAEBk11III.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map III from Breakout and Pursuit Chapter 11: VII Corps maneuver and exploitation, 27-31 July 1944, covering operations near Vire, Tessy-sur-Vire, and Coutances relevant to Lengronne area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Lengronne,+50500,+France/@48.953611,-1.250556,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b0b4e4b4b4b:0x4e4b4b4b4e4b4e4b!8m2!3d48.953611!4d-1.250556!16zL20vMDZ4d2Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.9536/-1.2506"
+            }
+        },
+        {
+            "PlaceName": "Sienne River",
+            "GPS_Coordinate": "48.7833,-1.4000",
+            "BoundingBox": {
+                "North": 49.6831,
+                "South": 47.8835,
+                "East": -0.033,
+                "West": -2.767
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9-33KB.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map 9: VII Corps Drive Toward Coutances, 26-30 July 1944, depicting operations including routes to Coutances, blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences near the Sienne River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sienne+River/@48.7833,-1.4,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.7833/-1.4"
+            }
+        },
+        {
+            "PlaceName": "Cotentin west coast",
+            "GPS_Coordinate": "49.2211,-1.7767",
+            "BoundingBox": {
+                "North": 50.1191,
+                "South": 48.3231,
+                "East": -0.3997,
+                "West": -3.1537
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapIV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1: VIII Corps, 26 June-5 July 1944, depicting the advance of the 79th Infantry Division along the Cotentin west coast toward the Ay River estuary.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=49.2211,-1.7767",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.2211&lon=-1.7767&zoom=11"
+            }
+        }
+    ],
+    "3": [
+        {
+            "PlaceName": "Canisy",
+            "GPS_Coordinate": "49.0331,-1.3167",
+            "BoundingBox": {
+                "North": 49.934,
+                "South": 48.1322,
+                "East": 0.0528,
+                "West": -2.6862
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11-MAP-XI-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map XI-1 from Breakout and Pursuit Chapter 11 showing VII Corps exploitation and blocking positions near Tessy-sur-Vire and surrounding areas including vicinity of Canisy, 11-14 July 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/0/0b/Op%C3%A9ration_Cobra.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Cobra",
+                    "External_Map_Description": "Strategic overview map of Operation Cobra, the breakout operation in Normandy encompassing the VII Corps area of operations near Canisy.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Canisy,+France/@49.0331,-1.3167,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.0331/-1.3167"
+            }
+        },
+        {
+            "PlaceName": "Quibou",
+            "GPS_Coordinate": "49.0167,-1.3167",
+            "BoundingBox": {
+                "North": 49.9162,
+                "South": 48.1172,
+                "East": 0.0543,
+                "West": -2.6877
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BoP-Map13.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map XIII: German Situation about 1400, 27 July. Depicts German defensive lines and positions in the Coutances sector, relevant to defensive actions slowing the 1st Division advance near Quibou.",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Quibou,+France/@49.0167,-1.3167,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.3167&lat=49.0167&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Dangy",
+            "GPS_Coordinate": "48.953611,-1.251389",
+            "BoundingBox": {
+                "North": 49.8528,
+                "South": 48.0544,
+                "East": 0.1186,
+                "West": -2.6214
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/maps/MAP-V.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "MAP V: German Counterattacks Southwest of St. L\u00f4, 27-31 July 1944 (covers area including Dangy during relevant operations)",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dangy,+50360,+France/@48.953611,-1.251389,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.953611&lon=-1.251389&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Pont-Brocard",
+            "GPS_Coordinate": "48.9517,-1.4539",
+            "BoundingBox": {
+                "North": 49.851,
+                "South": 48.0524,
+                "East": -0.0832,
+                "West": -2.8246
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP13-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map XIII-2. VII Corps Drive to Coutances, 26-28 July 1944, showing German defensive positions including area around Pont-Brocard slowing 1st Infantry Division advance on 27 July.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP13-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map XIII-1. VII Corps Attack, 25 July 1944, contextual to the advance towards Coutances and Pont-Brocard region.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pont-Brocard/@48.9517,-1.4539,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.9517/-1.4539"
+            }
+        },
+        {
+            "PlaceName": "Soulle River",
+            "GPS_Coordinate": "48.9000, -1.3000",
+            "BoundingBox": {
+                "North": 49.801,
+                "South": 47.999,
+                "East": 0.083,
+                "West": -2.683
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-VIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map VIII: Pursuit to Avranches-Coutances Area, 25-31 July 1944, showing US 1st Infantry Division advance and German defensive positions along the Soulle (S\u00e9lune) River on 27 July.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=48.9000,-1.3000",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.3000&lat=48.9000&zoom=11"
+            }
+        },
+        {
+            "PlaceName": "Notre-Dame-de-Cenilly",
+            "GPS_Coordinate": "49.0833,-1.3167",
+            "BoundingBox": {
+                "North": 49.9833,
+                "South": 48.1833,
+                "East": 0.0603,
+                "West": -2.6937
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP11-III.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map III: VII Corps Drive to Coutances, 8-15 July 1944, showing operations in bocage area including vicinity of Notre-Dame-de-Cenilly",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Notre-Dame-de-Cenilly,+France/@49.0833,-1.3167,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/?mlat=49.0833&mlon=-1.3167#map=15/49.0833/-1.3167"
+            }
+        },
+        {
+            "PlaceName": "Marigny-St. Gilles gap",
+            "GPS_Coordinate": "49.0792,-1.1750",
+            "BoundingBox": {
+                "North": 49.9801,
+                "South": 48.1783,
+                "East": 0.1977,
+                "West": -2.5477
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/Map14.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map XIV: Attack of the Third Armored Division, 27-30 July 1944, depicting the exploitation through the Marigny-St. Gilles gap toward Carantilly, Canisy, and subsequent objectives.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Marigny-St.+Gilles+gap%2C+Normandy%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/49.0792/-1.1750"
+            }
+        },
+        {
+            "PlaceName": "Hambye",
+            "GPS_Coordinate": "48.9517,-1.2669",
+            "BoundingBox": {
+                "North": 49.85,
+                "South": 48.0534,
+                "East": 0.1031,
+                "West": -2.6369
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map IX: VII Corps plan of attack and exploitation, D+2 (27 July 1944), depicting routes and objectives near Vire and Coutances, including vicinity of Hambye.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Hambye,+France/@48.9517,-1.2669,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/?zoom=14&lat=48.9517&lon=-1.2669"
+            }
+        }
+    ],
+    "4": [
+        {
+            "PlaceName": "Notre-Dame-de-Cenilly",
+            "GPS_Coordinate": "49.0833,-1.3167",
+            "BoundingBox": {
+                "North": 49.9833,
+                "South": 48.1833,
+                "East": 0.0603,
+                "West": -2.6937
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP11-III.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map III: VII Corps Drive to Coutances, 8-15 July 1944, showing operations in bocage area including vicinity of Notre-Dame-de-Cenilly",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Notre-Dame-de-Cenilly,+France/@49.0833,-1.3167,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/?mlat=49.0833&mlon=-1.3167#map=15/49.0833/-1.3167"
+            }
+        },
+        {
+            "PlaceName": "Lengronne",
+            "Sub-event_summary": "XIX Corps to contain east of Vire, support VII Corps; V Corps diversionary attack D+2. VII Corps modifications: added 4th Infantry Division to assault (due to 9th/30th exhaustion); rerouted exploitation\u20141st Infantry (with 3d Armored CCB) direct to Coutances; reduced 3d Armored wider envelopment; 2d Armored (with 4th Division's 22d RCT) to left blocking at le Mesnil-Herman/Villebaudon/Tessy-sur-Vire and C\u00e9rences, providing VIII Corps corridor.",
+            "GPS_Coordinate": {
+                "lat": 48.953611,
+                "lon": -1.250556
+            },
+            "BoundingBox": {
+                "North": 49.853111,
+                "South": 48.054111,
+                "East": 0.120444,
+                "West": -2.621556
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3f/OpCobra27-31July44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:OpCobra27-31July44.png",
+                    "External_Map_Description": "Map showing Operation Cobra exploitation phase from 27-31 July 1944, depicting VII Corps advances toward Coutances and blocking positions near Tessy-sur-Vire region including vicinity of Lengronne.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/Maps/USA-E-Breakout/USAEBk11III.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map III from Breakout and Pursuit Chapter 11: VII Corps maneuver and exploitation, 27-31 July 1944, covering operations near Vire, Tessy-sur-Vire, and Coutances relevant to Lengronne area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Lengronne,+50500,+France/@48.953611,-1.250556,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b0b4e4b4b4b:0x4e4b4b4b4e4b4e4b!8m2!3d48.953611!4d-1.250556!16zL20vMDZ4d2Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.9536/-1.2506"
+            }
+        },
+        {
+            "PlaceName": "Sienne River",
+            "GPS_Coordinate": "48.7833,-1.4000",
+            "BoundingBox": {
+                "North": 49.6831,
+                "South": 47.8835,
+                "East": -0.033,
+                "West": -2.767
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9-33KB.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map 9: VII Corps Drive Toward Coutances, 26-30 July 1944, depicting operations including routes to Coutances, blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences near the Sienne River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sienne+River/@48.7833,-1.4,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.7833/-1.4"
+            }
+        },
+        {
+            "PlaceName": "Hambye",
+            "GPS_Coordinate": "48.9517,-1.2669",
+            "BoundingBox": {
+                "North": 49.85,
+                "South": 48.0534,
+                "East": 0.1031,
+                "West": -2.6369
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map IX: VII Corps plan of attack and exploitation, D+2 (27 July 1944), depicting routes and objectives near Vire and Coutances, including vicinity of Hambye.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Hambye,+France/@48.9517,-1.2669,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/?zoom=14&lat=48.9517&lon=-1.2669"
+            }
+        },
+        {
+            "PlaceName": "C\u00e9rences",
+            "GPS_Coordinate": "48.95167,-1.40361",
+            "BoundingBox": {
+                "North": 49.85167,
+                "South": 48.05167,
+                "East": -0.03161,
+                "West": -2.77561
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11-MAP12-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map XII: VII Corps Exploitation Toward Coutances, 27-31 July 1944, depicting blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/C%C3%A9rences,+France/@48.95167,-1.40361,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.95167/-1.40361"
+            }
+        },
+        {
+            "PlaceName": "Gavray",
+            "GPS_Coordinate": "48.8808,-1.2264",
+            "BoundingBox": {
+                "North": 49.7801,
+                "South": 47.9815,
+                "East": 0.1526,
+                "West": -2.6054
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP14-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map XIV: Advance of VII Corps, 25-31 July 1944, depicting the 3d Armored Division's exploitation toward Carantilly, Canisy, Cerisy-la-Salle, Montpinchon, and the Coutances-Gavray highway area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Gavray/@48.8808,-1.2264,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.8808/-1.2264/Gavray"
+            }
+        },
+        {
+            "PlaceName": "St. Denis-le-Gast",
+            "GPS_Coordinate": "48.8539,-1.1556",
+            "BoundingBox": {
+                "North": 49.7548,
+                "South": 47.953,
+                "East": 0.2084,
+                "West": -2.5196
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP29.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map IX: Attack of VII Corps, 18 July 1944, depicting operations in the Vire area including vicinity of St. Denis-le-Gast, Tessy-sur-Vire, and routes toward Coutances.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Denis-le-Gast,+France/@48.853889,-1.155556,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b8e4b0b0b0b:0x1234567890abcdef!8m2!3d48.853889!4d-1.155556!16s%2Fg%2F1223k4mx",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=15&lat=48.8539&lon=-1.1556"
+            }
+        },
+        {
+            "PlaceName": "Coutances-Gavray highway",
+            "GPS_Coordinate": "48.9136, -1.3576",
+            "BoundingBox": {
+                "North": 49.8128,
+                "South": 48.0144,
+                "East": 0.0129,
+                "West": -2.7281
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XIV-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map XIV-1. Advance Toward Coutances, 28-29 July 1944, depicting U.S. VIII Corps advances including CCA task forces reaching the Coutances-Gavray highway area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/5/5a/OpCobra28-30July44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Cobra",
+                    "External_Map_Description": "Map of Operation Cobra, 28-30 July 1944, showing U.S. armored advances in the Coutances sector, relevant to the Coutances-Gavray highway movement.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/dir/Coutances,+France/Gavray,+France/@48.9136,-1.3576,13z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.3576&lat=48.9136&zoom=13"
+            }
+        },
+        {
+            "PlaceName": "Cambry",
+            "GPS_Coordinate": "48.9517,-1.2669",
+            "BoundingBox": {
+                "North": 49.8512,
+                "South": 48.0522,
+                "East": 0.1031,
+                "West": -2.6369
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP14-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map XIV: Advance of CCA and CCB, Fourth Armored Division, 27-30 July 1944, depicting operations in the area including vicinity of Cambry, St. Denis-le-Gast, and Sienne River crossings.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Cambry,+France/@48.9519444,-1.2669444,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.9517&lon=-1.2669&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Pont-Brocard",
+            "GPS_Coordinate": "48.9517,-1.4539",
+            "BoundingBox": {
+                "North": 49.851,
+                "South": 48.0524,
+                "East": -0.0832,
+                "West": -2.8246
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP13-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map XIII-2. VII Corps Drive to Coutances, 26-28 July 1944, showing German defensive positions including area around Pont-Brocard slowing 1st Infantry Division advance on 27 July.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP13-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map XIII-1. VII Corps Attack, 25 July 1944, contextual to the advance towards Coutances and Pont-Brocard region.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pont-Brocard/@48.9517,-1.4539,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.9517/-1.4539"
+            }
+        },
+        {
+            "PlaceName": "Montpinchon",
+            "GPS_Coordinate": "48.9419, -1.3667",
+            "BoundingBox": {
+                "North": 49.8403,
+                "South": 48.0435,
+                "East": 0.0023,
+                "West": -2.7357
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/maps/map-XIII-3.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map XIII-3: VII Corps Maneuver, 27-31 July 1944, showing 1st Infantry Division advance and German defensive positions near Montpinchon and Coutances area during Operation Cobra breakout.",
+                    "External_Map_Capture_Date": "2024-10-04T15:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Montpinchon,+France/@48.9419407,-1.3666667,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b0f8b0b0b0b:0x9c8f2d5e4a2b3c1d!8m2!3d48.9419407!4d-1.3666667!16s%2Fg%2F1223k_xx",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.9419/-1.3667"
+            }
+        },
+        {
+            "PlaceName": "Cerisy-la-Salle",
+            "GPS_Coordinate": "48.953611,-1.284444",
+            "BoundingBox": {
+                "North": 49.8529,
+                "South": 48.0543,
+                "East": 0.0806,
+                "West": -2.6494
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP10.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map X: The Destruction of Panzer Lehr Division, 25-27 July 1944, depicting German positions and US advances near Cerisy-la-Salle and Coutances.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Cerisy-la-Salle,+France/@48.953611,-1.284444,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b0b0b0b0b0b:0xb5e4b5e4b5e4b5e4!8m2!3d48.953611!4d-1.284444!16zL20vMDVsczEy",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#zoom=15&lat=48.953611&lon=-1.284444"
+            }
+        },
+        {
+            "PlaceName": "Roncey",
+            "GPS_Coordinate": "48.9172, -1.1833",
+            "BoundingBox": {
+                "North": 49.8172,
+                "South": 48.0172,
+                "East": 0.1927,
+                "West": -2.5593
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Roncey,+France/@48.9172,-1.1833,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/48.9172/-1.1833"
+            }
+        }
+    ],
+    "5": [
+        {
+            "PlaceName": "Pont-Brocard",
+            "GPS_Coordinate": "48.9517,-1.4539",
+            "BoundingBox": {
+                "North": 49.851,
+                "South": 48.0524,
+                "East": -0.0832,
+                "West": -2.8246
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP13-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map XIII-2. VII Corps Drive to Coutances, 26-28 July 1944, showing German defensive positions including area around Pont-Brocard slowing 1st Infantry Division advance on 27 July.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP13-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map XIII-1. VII Corps Attack, 25 July 1944, contextual to the advance towards Coutances and Pont-Brocard region.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pont-Brocard/@48.9517,-1.4539,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.9517/-1.4539"
+            }
+        },
+        {
+            "PlaceName": "Soulle River",
+            "GPS_Coordinate": "48.9000, -1.3000",
+            "BoundingBox": {
+                "North": 49.801,
+                "South": 47.999,
+                "East": 0.083,
+                "West": -2.683
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-VIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map VIII: Pursuit to Avranches-Coutances Area, 25-31 July 1944, showing US 1st Infantry Division advance and German defensive positions along the Soulle (S\u00e9lune) River on 27 July.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=48.9000,-1.3000",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.3000&lat=48.9000&zoom=11"
+            }
+        },
+        {
+            "PlaceName": "Gavray",
+            "GPS_Coordinate": "48.8808,-1.2264",
+            "BoundingBox": {
+                "North": 49.7801,
+                "South": 47.9815,
+                "East": 0.1526,
+                "West": -2.6054
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP14-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map XIV: Advance of VII Corps, 25-31 July 1944, depicting the 3d Armored Division's exploitation toward Carantilly, Canisy, Cerisy-la-Salle, Montpinchon, and the Coutances-Gavray highway area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Gavray/@48.8808,-1.2264,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.8808/-1.2264/Gavray"
+            }
+        },
+        {
+            "PlaceName": "Coutances",
+            "GPS_Coordinate": "48.9492,-1.4453",
+            "BoundingBox": {
+                "North": 49.848,
+                "South": 48.0504,
+                "East": -0.0753,
+                "West": -2.8153
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1 depicting VIII Corps zone of action and objectives during the advance southward along the Cotentin west coast toward high ground near Coutances, 22-24 July 1944.",
+                    "External_Map_Capture_Date": "2024-09-18T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Coutances,+France/@48.9492,-1.4453,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/@48.9492,-1.4453,14z"
+            }
+        },
+        {
+            "PlaceName": "Percy",
+            "GPS_Coordinate": "48.9178,-1.0836",
+            "BoundingBox": {
+                "North": 49.817,
+                "South": 48.0186,
+                "East": 0.2864,
+                "West": -2.4536
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/USA-E-Breakout-14-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map 14-1 depicting German LXXXIV Panzer Corps counterattacks and movements toward Percy, 28 July 1944, in the Normandy breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Percy,+50360+Manche,+France/@48.9178,-1.0836,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.9178/-1.0836/14"
+            }
+        },
+        {
+            "PlaceName": "Br\u00e9hal",
+            "GPS_Coordinate": "48.8492, -1.5214",
+            "BoundingBox": {
+                "North": 49.7487,
+                "South": 47.9497,
+                "East": -0.1504,
+                "West": -2.8924
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-III.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Historical map from 'Breakout and Pursuit' Chapter 11 showing VII Corps operations and maneuvers in the Coutances area during July 1944, contextually relevant to blocking positions near Br\u00e9hal, le Mesnil-Herman, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Br%C3%A9hal,+France/@48.8492,-1.5214,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.8492/-1.5214"
+            }
+        },
+        {
+            "PlaceName": "Hambye",
+            "GPS_Coordinate": "48.9517,-1.2669",
+            "BoundingBox": {
+                "North": 49.85,
+                "South": 48.0534,
+                "East": 0.1031,
+                "West": -2.6369
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map IX: VII Corps plan of attack and exploitation, D+2 (27 July 1944), depicting routes and objectives near Vire and Coutances, including vicinity of Hambye.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Hambye,+France/@48.9517,-1.2669,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/?zoom=14&lat=48.9517&lon=-1.2669"
+            }
+        },
+        {
+            "PlaceName": "C\u00e9rences",
+            "GPS_Coordinate": "48.95167,-1.40361",
+            "BoundingBox": {
+                "North": 49.85167,
+                "South": 48.05167,
+                "East": -0.03161,
+                "West": -2.77561
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11-MAP12-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map XII: VII Corps Exploitation Toward Coutances, 27-31 July 1944, depicting blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/C%C3%A9rences,+France/@48.95167,-1.40361,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.95167/-1.40361"
+            }
+        },
+        {
+            "PlaceName": "St. Denis-le-Gast",
+            "GPS_Coordinate": "48.8539,-1.1556",
+            "BoundingBox": {
+                "North": 49.7548,
+                "South": 47.953,
+                "East": 0.2084,
+                "West": -2.5196
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP29.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map IX: Attack of VII Corps, 18 July 1944, depicting operations in the Vire area including vicinity of St. Denis-le-Gast, Tessy-sur-Vire, and routes toward Coutances.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Denis-le-Gast,+France/@48.853889,-1.155556,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b8e4b0b0b0b:0x1234567890abcdef!8m2!3d48.853889!4d-1.155556!16s%2Fg%2F1223k4mx",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=15&lat=48.8539&lon=-1.1556"
+            }
+        },
+        {
+            "PlaceName": "Vire River",
+            "GPS_Coordinate": "48.8836,-0.8931",
+            "BoundingBox": {
+                "North": 49.7845,
+                "South": 47.9827,
+                "East": 0.4766,
+                "West": -2.2622
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map 1: Terrain of the Battlefield, July 1944, from Breakout and Pursuit by the U.S. Army Center of Military History, illustrating diversified terrain including bocage west of the Orne River, marshy areas near Carentan, open plains near Caen-Falaise, and the Vire River.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/Vire+River,+Normandy,+France/@48.8836,-0.8931,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-0.8931&lat=48.8836&zoom=12"
+            }
+        }
+    ],
+    "6": [
+        {
+            "PlaceName": "Pont-Brocard",
+            "GPS_Coordinate": "48.9517,-1.4539",
+            "BoundingBox": {
+                "North": 49.851,
+                "South": 48.0524,
+                "East": -0.0832,
+                "West": -2.8246
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP13-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map XIII-2. VII Corps Drive to Coutances, 26-28 July 1944, showing German defensive positions including area around Pont-Brocard slowing 1st Infantry Division advance on 27 July.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP13-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map XIII-1. VII Corps Attack, 25 July 1944, contextual to the advance towards Coutances and Pont-Brocard region.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pont-Brocard/@48.9517,-1.4539,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.9517/-1.4539"
+            }
+        },
+        {
+            "PlaceName": "St. Denis-le-Gast",
+            "GPS_Coordinate": "48.8539,-1.1556",
+            "BoundingBox": {
+                "North": 49.7548,
+                "South": 47.953,
+                "East": 0.2084,
+                "West": -2.5196
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP29.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map IX: Attack of VII Corps, 18 July 1944, depicting operations in the Vire area including vicinity of St. Denis-le-Gast, Tessy-sur-Vire, and routes toward Coutances.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Denis-le-Gast,+France/@48.853889,-1.155556,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b8e4b0b0b0b:0x1234567890abcdef!8m2!3d48.853889!4d-1.155556!16s%2Fg%2F1223k4mx",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=15&lat=48.8539&lon=-1.1556"
+            }
+        },
+        {
+            "PlaceName": "Notre-Dame-de-Cenilly",
+            "GPS_Coordinate": "49.0833,-1.3167",
+            "BoundingBox": {
+                "North": 49.9833,
+                "South": 48.1833,
+                "East": 0.0603,
+                "West": -2.6937
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP11-III.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map III: VII Corps Drive to Coutances, 8-15 July 1944, showing operations in bocage area including vicinity of Notre-Dame-de-Cenilly",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Notre-Dame-de-Cenilly,+France/@49.0833,-1.3167,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/?mlat=49.0833&mlon=-1.3167#map=15/49.0833/-1.3167"
+            }
+        },
+        {
+            "PlaceName": "Montpinchon",
+            "GPS_Coordinate": "48.9419, -1.3667",
+            "BoundingBox": {
+                "North": 49.8403,
+                "South": 48.0435,
+                "East": 0.0023,
+                "West": -2.7357
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/maps/map-XIII-3.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-13.html",
+                    "External_Map_Description": "Map XIII-3: VII Corps Maneuver, 27-31 July 1944, showing 1st Infantry Division advance and German defensive positions near Montpinchon and Coutances area during Operation Cobra breakout.",
+                    "External_Map_Capture_Date": "2024-10-04T15:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Montpinchon,+France/@48.9419407,-1.3666667,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b0f8b0b0b0b:0x9c8f2d5e4a2b3c1d!8m2!3d48.9419407!4d-1.3666667!16s%2Fg%2F1223k_xx",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.9419/-1.3667"
+            }
+        },
+        {
+            "PlaceName": "Roncey",
+            "GPS_Coordinate": "48.9172, -1.1833",
+            "BoundingBox": {
+                "North": 49.8172,
+                "South": 48.0172,
+                "East": 0.1927,
+                "West": -2.5593
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Roncey,+France/@48.9172,-1.1833,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/48.9172/-1.1833"
+            }
+        },
+        {
+            "PlaceName": "Sienne River",
+            "GPS_Coordinate": "48.7833,-1.4000",
+            "BoundingBox": {
+                "North": 49.6831,
+                "South": 47.8835,
+                "East": -0.033,
+                "West": -2.767
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9-33KB.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map 9: VII Corps Drive Toward Coutances, 26-30 July 1944, depicting operations including routes to Coutances, blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences near the Sienne River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sienne+River/@48.7833,-1.4,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.7833/-1.4"
+            }
+        },
+        {
+            "PlaceName": "C\u00e9rences",
+            "GPS_Coordinate": "48.95167,-1.40361",
+            "BoundingBox": {
+                "North": 49.85167,
+                "South": 48.05167,
+                "East": -0.03161,
+                "West": -2.77561
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11-MAP12-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map XII: VII Corps Exploitation Toward Coutances, 27-31 July 1944, depicting blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/C%C3%A9rences,+France/@48.95167,-1.40361,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.95167/-1.40361"
+            }
+        },
+        {
+            "PlaceName": "Hambye",
+            "GPS_Coordinate": "48.9517,-1.2669",
+            "BoundingBox": {
+                "North": 49.85,
+                "South": 48.0534,
+                "East": 0.1031,
+                "West": -2.6369
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map IX: VII Corps plan of attack and exploitation, D+2 (27 July 1944), depicting routes and objectives near Vire and Coutances, including vicinity of Hambye.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Hambye,+France/@48.9517,-1.2669,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/?zoom=14&lat=48.9517&lon=-1.2669"
+            }
+        },
+        {
+            "PlaceName": "Percy",
+            "GPS_Coordinate": "48.9178,-1.0836",
+            "BoundingBox": {
+                "North": 49.817,
+                "South": 48.0186,
+                "East": 0.2864,
+                "West": -2.4536
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/USA-E-Breakout-14-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map 14-1 depicting German LXXXIV Panzer Corps counterattacks and movements toward Percy, 28 July 1944, in the Normandy breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Percy,+50360+Manche,+France/@48.9178,-1.0836,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.9178/-1.0836/14"
+            }
+        }
+    ],
+    "7": [
+        {
+            "PlaceName": "Notre-Dame-de-Cenilly",
+            "GPS_Coordinate": "49.0833,-1.3167",
+            "BoundingBox": {
+                "North": 49.9833,
+                "South": 48.1833,
+                "East": 0.0603,
+                "West": -2.6937
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP11-III.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map III: VII Corps Drive to Coutances, 8-15 July 1944, showing operations in bocage area including vicinity of Notre-Dame-de-Cenilly",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Notre-Dame-de-Cenilly,+France/@49.0833,-1.3167,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/?mlat=49.0833&mlon=-1.3167#map=15/49.0833/-1.3167"
+            }
+        },
+        {
+            "Event_Doc": "chapter14c-event.json",
+            "Source_Doc": "chapter14c-content.md",
+            "Sub-event_summary": "Before dawn on 29 July, German breakout attempts strike American positions near Notre-Dame-de-Cenilly and elsewhere. Key engagements include a crossroads battle where a self-propelled gun is disabled, and an outpost overrun near the 78th Armored Field Artillery Battalion that is repelled with artillery direct fire. Small groups filter through, but the cordon largely holds.",
+            "PlaceName": "Roncey area",
+            "GPS_Coordinate": "48.9161, -1.1831",
+            "BoundingBox": {
+                "North": 49.8161,
+                "South": 48.0161,
+                "East": 0.196,
+                "West": -2.5621
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map-IX-CT.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map IX (center section): Battle for the Roncey Pocket, 27-31 July 1944, depicting German forces and breakout attempts in the Roncey area.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Roncey,+50580+Manche,+France/@48.9169444,-1.1830556,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.9169/-1.1831"
+            }
+        }
+    ],
+    "8": [
+        {
+            "PlaceName": "Lengronne",
+            "Sub-event_summary": "XIX Corps to contain east of Vire, support VII Corps; V Corps diversionary attack D+2. VII Corps modifications: added 4th Infantry Division to assault (due to 9th/30th exhaustion); rerouted exploitation\u20141st Infantry (with 3d Armored CCB) direct to Coutances; reduced 3d Armored wider envelopment; 2d Armored (with 4th Division's 22d RCT) to left blocking at le Mesnil-Herman/Villebaudon/Tessy-sur-Vire and C\u00e9rences, providing VIII Corps corridor.",
+            "GPS_Coordinate": {
+                "lat": 48.953611,
+                "lon": -1.250556
+            },
+            "BoundingBox": {
+                "North": 49.853111,
+                "South": 48.054111,
+                "East": 0.120444,
+                "West": -2.621556
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3f/OpCobra27-31July44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:OpCobra27-31July44.png",
+                    "External_Map_Description": "Map showing Operation Cobra exploitation phase from 27-31 July 1944, depicting VII Corps advances toward Coutances and blocking positions near Tessy-sur-Vire region including vicinity of Lengronne.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/Maps/USA-E-Breakout/USAEBk11III.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map III from Breakout and Pursuit Chapter 11: VII Corps maneuver and exploitation, 27-31 July 1944, covering operations near Vire, Tessy-sur-Vire, and Coutances relevant to Lengronne area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Lengronne,+50500,+France/@48.953611,-1.250556,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b0b4e4b4b4b:0x4e4b4b4b4e4b4e4b!8m2!3d48.953611!4d-1.250556!16zL20vMDZ4d2Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.9536/-1.2506"
+            }
+        },
+        {
+            "PlaceName": "Sienne River",
+            "GPS_Coordinate": "48.7833,-1.4000",
+            "BoundingBox": {
+                "North": 49.6831,
+                "South": 47.8835,
+                "East": -0.033,
+                "West": -2.767
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9-33KB.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map 9: VII Corps Drive Toward Coutances, 26-30 July 1944, depicting operations including routes to Coutances, blocking positions at le Mesnil-Herman, Villebaudon, Tessy-sur-Vire, and C\u00e9rences near the Sienne River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sienne+River/@48.7833,-1.4,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.7833/-1.4"
+            }
+        },
+        {
+            "PlaceName": "Gavray",
+            "GPS_Coordinate": "48.8808,-1.2264",
+            "BoundingBox": {
+                "North": 49.7801,
+                "South": 47.9815,
+                "East": 0.1526,
+                "West": -2.6054
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP14-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map XIV: Advance of VII Corps, 25-31 July 1944, depicting the 3d Armored Division's exploitation toward Carantilly, Canisy, Cerisy-la-Salle, Montpinchon, and the Coutances-Gavray highway area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Gavray/@48.8808,-1.2264,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.8808/-1.2264/Gavray"
+            }
+        },
+        {
+            "PlaceName": "St. Denis-le-Gast",
+            "GPS_Coordinate": "48.8539,-1.1556",
+            "BoundingBox": {
+                "North": 49.7548,
+                "South": 47.953,
+                "East": 0.2084,
+                "West": -2.5196
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP29.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map IX: Attack of VII Corps, 18 July 1944, depicting operations in the Vire area including vicinity of St. Denis-le-Gast, Tessy-sur-Vire, and routes toward Coutances.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Denis-le-Gast,+France/@48.853889,-1.155556,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b8e4b0b0b0b:0x1234567890abcdef!8m2!3d48.853889!4d-1.155556!16s%2Fg%2F1223k4mx",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=15&lat=48.8539&lon=-1.1556"
+            }
+        },
+        {
+            "PlaceName": "Roncey",
+            "GPS_Coordinate": "48.9172, -1.1833",
+            "BoundingBox": {
+                "North": 49.8172,
+                "South": 48.0172,
+                "East": 0.1927,
+                "West": -2.5593
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Roncey,+France/@48.9172,-1.1833,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/48.9172/-1.1833"
+            }
+        }
+    ],
+    "9": [
+        {
+            "PlaceName": "Gavray",
+            "GPS_Coordinate": "48.8808,-1.2264",
+            "BoundingBox": {
+                "North": 49.7801,
+                "South": 47.9815,
+                "East": 0.1526,
+                "West": -2.6054
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP14-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map XIV: Advance of VII Corps, 25-31 July 1944, depicting the 3d Armored Division's exploitation toward Carantilly, Canisy, Cerisy-la-Salle, Montpinchon, and the Coutances-Gavray highway area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Gavray/@48.8808,-1.2264,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.8808/-1.2264/Gavray"
+            }
+        },
+        {
+            "PlaceName": "St. Denis-le-Gast",
+            "GPS_Coordinate": "48.8539,-1.1556",
+            "BoundingBox": {
+                "North": 49.7548,
+                "South": 47.953,
+                "East": 0.2084,
+                "West": -2.5196
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP29.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map IX: Attack of VII Corps, 18 July 1944, depicting operations in the Vire area including vicinity of St. Denis-le-Gast, Tessy-sur-Vire, and routes toward Coutances.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Denis-le-Gast,+France/@48.853889,-1.155556,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b8e4b0b0b0b:0x1234567890abcdef!8m2!3d48.853889!4d-1.155556!16s%2Fg%2F1223k4mx",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=15&lat=48.8539&lon=-1.1556"
+            }
+        },
+        {
+            "PlaceName": "Roncey pocket",
+            "GPS_Coordinate": "48.8667, -1.2667",
+            "BoundingBox": {
+                "North": 49.7647,
+                "South": 47.9687,
+                "East": 0.0923,
+                "West": -2.6257
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BoP-14.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map 14. Roncey Pocket, 28-30 July 1944",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Roncey,+50580+France/@48.8666667,-1.2666667,14z/data=!3m1!4b1!4m6!3m5!1s0x480f9b0b0b0b0b0b:0x1234567890abcdef!8m2!3d48.8666667!4d-1.2666667!16zL20vMDZ0aDY",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.2667&lat=48.8667&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Lengronne",
+            "Sub-event_summary": "XIX Corps to contain east of Vire, support VII Corps; V Corps diversionary attack D+2. VII Corps modifications: added 4th Infantry Division to assault (due to 9th/30th exhaustion); rerouted exploitation\u20141st Infantry (with 3d Armored CCB) direct to Coutances; reduced 3d Armored wider envelopment; 2d Armored (with 4th Division's 22d RCT) to left blocking at le Mesnil-Herman/Villebaudon/Tessy-sur-Vire and C\u00e9rences, providing VIII Corps corridor.",
+            "GPS_Coordinate": {
+                "lat": 48.953611,
+                "lon": -1.250556
+            },
+            "BoundingBox": {
+                "North": 49.853111,
+                "South": 48.054111,
+                "East": 0.120444,
+                "West": -2.621556
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3f/OpCobra27-31July44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Cobra#/media/File:OpCobra27-31July44.png",
+                    "External_Map_Description": "Map showing Operation Cobra exploitation phase from 27-31 July 1944, depicting VII Corps advances toward Coutances and blocking positions near Tessy-sur-Vire region including vicinity of Lengronne.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/Maps/USA-E-Breakout/USAEBk11III.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map III from Breakout and Pursuit Chapter 11: VII Corps maneuver and exploitation, 27-31 July 1944, covering operations near Vire, Tessy-sur-Vire, and Coutances relevant to Lengronne area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Lengronne,+50500,+France/@48.953611,-1.250556,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b0b4e4b4b4b:0x4e4b4b4b4e4b4e4b!8m2!3d48.953611!4d-1.250556!16zL20vMDZ4d2Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.9536/-1.2506"
+            }
+        },
+        {
+            "PlaceName": "Coutances-Gavray road",
+            "GPS_Coordinate": "48.9150, -1.3614",
+            "BoundingBox": {
+                "North": 49.8148,
+                "South": 48.0152,
+                "East": -0.0014,
+                "West": -2.7214
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map14.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map 14 showing German breakout attempts against the 2d Armored Division during the night of 29-30 July 1944, depicting positions and engagements near St. Denis-le-Gast, Cambry, and the Coutances-Gavray road area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Coutances-Gavray+road%2C+Normandy%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.915/-1.361"
+            }
+        },
+        {
+            "PlaceName": "Cambry",
+            "GPS_Coordinate": "48.9517,-1.2669",
+            "BoundingBox": {
+                "North": 49.8512,
+                "South": 48.0522,
+                "East": 0.1031,
+                "West": -2.6369
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP14-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map XIV: Advance of CCA and CCB, Fourth Armored Division, 27-30 July 1944, depicting operations in the area including vicinity of Cambry, St. Denis-le-Gast, and Sienne River crossings.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Cambry,+France/@48.9519444,-1.2669444,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.9517&lon=-1.2669&zoom=14"
+            }
+        }
+    ],
+    "10": [
+        {
+            "PlaceName": "Cotentin west coast",
+            "GPS_Coordinate": "49.2211,-1.7767",
+            "BoundingBox": {
+                "North": 50.1191,
+                "South": 48.3231,
+                "East": -0.3997,
+                "West": -3.1537
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapIV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1: VIII Corps, 26 June-5 July 1944, depicting the advance of the 79th Infantry Division along the Cotentin west coast toward the Ay River estuary.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=49.2211,-1.7767",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.2211&lon=-1.7767&zoom=11"
+            }
+        },
+        {
+            "PlaceName": "Roncey",
+            "GPS_Coordinate": "48.9172, -1.1833",
+            "BoundingBox": {
+                "North": 49.8172,
+                "South": 48.0172,
+                "East": 0.1927,
+                "West": -2.5593
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Roncey,+France/@48.9172,-1.1833,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/48.9172/-1.1833"
+            }
+        },
+        {
+            "PlaceName": "Percy",
+            "GPS_Coordinate": "48.9178,-1.0836",
+            "BoundingBox": {
+                "North": 49.817,
+                "South": 48.0186,
+                "East": 0.2864,
+                "West": -2.4536
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/USA-E-Breakout-14-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map 14-1 depicting German LXXXIV Panzer Corps counterattacks and movements toward Percy, 28 July 1944, in the Normandy breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Percy,+50360+Manche,+France/@48.9178,-1.0836,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.9178/-1.0836/14"
+            }
+        }
+    ],
+    "11": [
+        {
+            "PlaceName": "Gavray",
+            "GPS_Coordinate": "48.8808,-1.2264",
+            "BoundingBox": {
+                "North": 49.7801,
+                "South": 47.9815,
+                "East": 0.1526,
+                "West": -2.6054
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP14-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-14.html",
+                    "External_Map_Description": "Map XIV: Advance of VII Corps, 25-31 July 1944, depicting the 3d Armored Division's exploitation toward Carantilly, Canisy, Cerisy-la-Salle, Montpinchon, and the Coutances-Gavray highway area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Gavray/@48.8808,-1.2264,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.8808/-1.2264/Gavray"
+            }
+        },
+        {
+            "PlaceName": "Granville",
+            "GPS_Coordinate": "48.8403, -1.5931",
+            "BoundingBox": {
+                "North": 49.7451,
+                "South": 47.9355,
+                "East": -0.2341,
+                "West": -2.9521
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Granville,+France/@48.8403,-1.5931,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=48.8403&lon=-1.5931"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Cotentin west coast",
+            "GPS_Coordinate": "49.2211,-1.7767",
+            "BoundingBox": {
+                "North": 50.1191,
+                "South": 48.3231,
+                "East": -0.3997,
+                "West": -3.1537
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapIV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1: VIII Corps, 26 June-5 July 1944, depicting the advance of the 79th Infantry Division along the Cotentin west coast toward the Ay River estuary.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=49.2211,-1.7767",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.2211&lon=-1.7767&zoom=11"
+            }
+        }
+    ]
+}

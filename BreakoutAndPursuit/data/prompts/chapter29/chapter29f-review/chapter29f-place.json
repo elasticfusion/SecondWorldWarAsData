@@ -1,0 +1,87 @@
+{
+    "1": [
+        {
+            "PlaceName": "Paris",
+            "GPS_Coordinate": "48.8567, 2.3528",
+            "BoundingBox": {
+                "North": 49.7562,
+                "South": 47.9572,
+                "East": 3.7218,
+                "West": 0.9838
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Paris,+France/@48.8567,2.3528,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.8567/2.3528"
+            }
+        },
+        {
+            "PlaceName": "Germany",
+            "GPS_Coordinate": "51.1657,10.4515",
+            "BoundingBox": {
+                "North": 52.065,
+                "South": 50.2664,
+                "East": 11.8835,
+                "West": 9.0195
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Germany/@51.1657,10.4515,6z/data=!3m1!4b1!4m6!3m5!1s0x47a8e1ef8d9322bf:0x15e8590e62b9e8e2!8m2!3d51.1657!4d10.4515!16zL20vMDZmbXA",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=6/51.1657/10.4515/Germany"
+            }
+        },
+        {
+            "PlaceName": "Pas de Calais",
+            "GPS_Coordinate": "50.5078,2.3833",
+            "BoundingBox": {
+                "North": 51.407,
+                "South": 49.6086,
+                "East": 3.0903,
+                "West": 1.6763
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pas-de-Calais,+France/@50.5077778,2.3833333,9z/data=!3m1!4b1!4m6!3m5!1s0x47dd36f9b3e5c2b7:0xafea4a13b08d94d2!8m2!3d50.5077778!4d2.3833333!16zL20vMDV4Z3Q?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=9/50.5078/2.3833"
+            }
+        },
+        {
+            "PlaceName": "H\u00f4tel Meurice on the rue de Rivoli",
+            "GPS_Coordinate": "48.8658, 2.3314",
+            "BoundingBox": {
+                "North": 49.7667,
+                "South": 47.965,
+                "East": 3.6924,
+                "West": 0.9704
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/H%C3%B4tel+Meurice/@48.8657841,2.3322097,17z/data=!3m1!4b1!4m6!3m5!1s0x47e66e3b5af5d5d5:0x4b0b0b0b0b0b0b0b!8m2!3d48.8657841!4d2.3322097!16s%2Fg%2F11c1q_9v7v",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=17/48.8658/2.3314"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        }
+    ]
+}

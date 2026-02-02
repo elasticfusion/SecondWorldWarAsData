@@ -1,0 +1,677 @@
+{
+    "1": [
+        {
+            "PlaceName": "St. Malo",
+            "GPS_Coordinate": "48.6475, -2.0133",
+            "BoundingBox": {
+                "North": 49.5465,
+                "South": 47.7485,
+                "East": -0.6513,
+                "West": -3.3753
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MapII.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/mapII.html",
+                    "External_Map_Description": "Map II from 'Breakout and Pursuit': The Brittany Ports, depicting key ports including St. Malo relevant to the lodgment area and strategic planning for the offensive.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Bataille_St_Malo.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siege_of_Saint-Malo",
+                    "External_Map_Description": "Map of the Battle of Saint-Malo showing dispositions around the port in August-September 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Malo,+France/@48.6475,-2.0133,14z/data=!3m1!4b1!4m6!3m5!1s0x480f7b5c6b5b5b5b:0x4b0e4b0e4b0e4b0e!8m2!3d48.6475!4d-2.0133!16zL20vMDZ0aXc",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6475/-2.0133/St. Malo"
+            }
+        },
+        {
+            "PlaceName": "Dinan",
+            "GPS_Coordinate": "48.4542,-2.0508",
+            "BoundingBox": {
+                "North": 49.3536,
+                "South": 47.5548,
+                "East": -0.6968,
+                "West": -3.4048
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XVIII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+                    "External_Map_Description": "Map XVIII-1 showing VIII Corps advance in Brittany, 12-16 August 1944, with objectives including Dinan.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (US Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dinan,+22100+Dinan,+France/@48.4542,-2.0508,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.4542/-2.0508"
+            }
+        },
+        {
+            "PlaceName": "St. Brieuc",
+            "GPS_Coordinate": "48.5136, -2.7656",
+            "BoundingBox": {
+                "North": 49.413,
+                "South": 47.6142,
+                "East": -1.4086,
+                "West": -4.1226
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapVII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/index.html",
+                    "External_Map_Description": "Map VII-1: Brittany, First and Second Armies, 1-8 August 1944. Depicts operations including Task Force A advancing westward through northern Brittany, passing near St. Brieuc toward key bridges and Brest.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Brieuc,+C%C3%B4tes-d'Armor,+France/@48.513611,-2.765556,13z/data=!3m1!4b1!4m6!3m5!1s0x480e9a5b6f4b5b5d:0x4b8e4e4e4e4e4e4e!8m2!3d48.513611!4d-2.765556!16zL20vMDVscW4w",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/48.5136/-2.7656/St.%20Brieuc"
+            }
+        }
+    ],
+    "2": [
+        {
+            "PlaceName": "Ch\u00e2telaudren",
+            "GPS_Coordinate": "48.6169,-3.0370",
+            "BoundingBox": {
+                "North": 49.515,
+                "South": 47.7188,
+                "East": -1.676,
+                "West": -4.398
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXI-XXII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map XXI\u2013XXII: Brittany, 1\u201315 August 1944, depicting Allied advances in the region including the area around Ch\u00e2telaudren and Guingamp during the pursuit phase.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Ch%C3%A2telaudren,+22400+C%C3%B4tes-d'Armor,+France/@48.6169444,-3.0369444,15z/data=!3m1!4b1!4m6!3m5!1s0x480e9b5f5f5f5f5f:0x9b5f5f5f5f5f5f5f!8m2!3d48.6169444!4d-3.0369444!16zL20vMDV3c2Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.6169/-3.0370/Ch%C3%A2telaudren"
+            }
+        },
+        {
+            "PlaceName": "St. Brieuc",
+            "GPS_Coordinate": "48.5136, -2.7656",
+            "BoundingBox": {
+                "North": 49.413,
+                "South": 47.6142,
+                "East": -1.4086,
+                "West": -4.1226
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapVII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/index.html",
+                    "External_Map_Description": "Map VII-1: Brittany, First and Second Armies, 1-8 August 1944. Depicts operations including Task Force A advancing westward through northern Brittany, passing near St. Brieuc toward key bridges and Brest.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Brieuc,+C%C3%B4tes-d'Armor,+France/@48.513611,-2.765556,13z/data=!3m1!4b1!4m6!3m5!1s0x480e9a5b6f4b5b5d:0x4b8e4e4e4e4e4e4e!8m2!3d48.513611!4d-2.765556!16zL20vMDVscW4w",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/48.5136/-2.7656/St.%20Brieuc"
+            }
+        },
+        {
+            "PlaceName": "Guingamp",
+            "GPS_Coordinate": {
+                "lat": 48.5631,
+                "lon": -3.1614
+            },
+            "BoundingBox": {
+                "North": 49.4621,
+                "South": 47.6641,
+                "East": -1.8044,
+                "West": -4.5184
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAPVII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map VII: Brittany, 1-15 August 1944, depicting advances including Task Force A toward Guingamp and key bridges.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Guingamp,+France/@48.5631,-3.1614,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#lon=-3.1614&lat=48.5631&zoom=14"
+            }
+        }
+    ],
+    "3": [
+        {
+            "PlaceName": "Morlaix",
+            "GPS_Coordinate": {
+                "latitude": 48.5778,
+                "longitude": -3.8372
+            },
+            "BoundingBox": {
+                "North": 49.4758,
+                "South": 47.6798,
+                "East": -2.4962,
+                "West": -5.1782
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP18-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+                    "External_Map_Description": "Map XVIII-1: Enemy fortifications and troop dispositions in Brittany, circa late July 1944, showing key areas including Morlaix in the context of German defenses.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Morlaix,+France/@48.5778,-3.8372,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=48.5778&lon=-3.8372&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Guingamp",
+            "GPS_Coordinate": {
+                "lat": 48.5631,
+                "lon": -3.1614
+            },
+            "BoundingBox": {
+                "North": 49.4621,
+                "South": 47.6641,
+                "East": -1.8044,
+                "West": -4.5184
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAPVII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map VII: Brittany, 1-15 August 1944, depicting advances including Task Force A toward Guingamp and key bridges.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Guingamp,+France/@48.5631,-3.1614,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#lon=-3.1614&lat=48.5631&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "France",
+            "GPS_Coordinate": "46.6131,2.2172",
+            "BoundingBox": {
+                "North": 47.514,
+                "South": 45.7122,
+                "East": 3.5202,
+                "West": 0.9142
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=6/46.6131/2.2172"
+            }
+        }
+    ],
+    "4": [
+        {
+            "PlaceName": "Morlaix",
+            "GPS_Coordinate": {
+                "latitude": 48.5778,
+                "longitude": -3.8372
+            },
+            "BoundingBox": {
+                "North": 49.4758,
+                "South": 47.6798,
+                "East": -2.4962,
+                "West": -5.1782
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP18-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+                    "External_Map_Description": "Map XVIII-1: Enemy fortifications and troop dispositions in Brittany, circa late July 1944, showing key areas including Morlaix in the context of German defenses.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Morlaix,+France/@48.5778,-3.8372,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=48.5778&lon=-3.8372&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Brest",
+            "GPS_Coordinate": "48.3904,-4.4861",
+            "BoundingBox": {
+                "North": 49.2894,
+                "South": 47.4914,
+                "East": -3.1331,
+                "West": -5.8391
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/BrPt1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map No. 1: The Cotentin and Brittany Peninsulas, depicting the lodgment area boundaries and key ports including Brest in the context of strategic planning for breakout.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brest,+France/@48.3904,-4.4861,12z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.3904/-4.4861/Brest"
+            }
+        }
+    ],
+    "5": [
+        {
+            "PlaceName": "Morlaix",
+            "GPS_Coordinate": {
+                "latitude": 48.5778,
+                "longitude": -3.8372
+            },
+            "BoundingBox": {
+                "North": 49.4758,
+                "South": 47.6798,
+                "East": -2.4962,
+                "West": -5.1782
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP18-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+                    "External_Map_Description": "Map XVIII-1: Enemy fortifications and troop dispositions in Brittany, circa late July 1944, showing key areas including Morlaix in the context of German defenses.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Morlaix,+France/@48.5778,-3.8372,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=48.5778&lon=-3.8372&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Dinan",
+            "GPS_Coordinate": "48.4542,-2.0508",
+            "BoundingBox": {
+                "North": 49.3536,
+                "South": 47.5548,
+                "East": -0.6968,
+                "West": -3.4048
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XVIII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+                    "External_Map_Description": "Map XVIII-1 showing VIII Corps advance in Brittany, 12-16 August 1944, with objectives including Dinan.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (US Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dinan,+22100+Dinan,+France/@48.4542,-2.0508,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.4542/-2.0508"
+            }
+        },
+        {
+            "Event_Doc": "Breakout and Pursuit",
+            "Source_Doc": "chapter21b-content.md",
+            "Sub-event_summary": "On 9 August, Task Force A captures a bridge south of Morlaix, reports mission completion, with FFI extending control over roads, and records captures and low losses.",
+            "PlaceName": "Landivisiau",
+            "GPS_Coordinate": {
+                "lat": 48.5228,
+                "lon": -4.1517
+            },
+            "BoundingBox": {
+                "North": 49.422,
+                "South": 47.6236,
+                "East": -2.7927,
+                "West": -5.5107
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map XXI from Breakout and Pursuit showing operations in northern Brittany including areas around Morlaix and Landivisiau during August 1944 pursuit.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Landivisiau,+France/@48.5228,-4.1517,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=48.5228&lon=-4.1517&zoom=14"
+            }
+        }
+    ],
+    "6": [
+        {
+            "PlaceName": "Brest",
+            "GPS_Coordinate": "48.3904,-4.4861",
+            "BoundingBox": {
+                "North": 49.2894,
+                "South": 47.4914,
+                "East": -3.1331,
+                "West": -5.8391
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/BrPt1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map No. 1: The Cotentin and Brittany Peninsulas, depicting the lodgment area boundaries and key ports including Brest in the context of strategic planning for breakout.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brest,+France/@48.3904,-4.4861,12z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.3904/-4.4861/Brest"
+            }
+        },
+        {
+            "PlaceName": "Morlaix",
+            "GPS_Coordinate": {
+                "latitude": 48.5778,
+                "longitude": -3.8372
+            },
+            "BoundingBox": {
+                "North": 49.4758,
+                "South": 47.6798,
+                "East": -2.4962,
+                "West": -5.1782
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP18-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+                    "External_Map_Description": "Map XVIII-1: Enemy fortifications and troop dispositions in Brittany, circa late July 1944, showing key areas including Morlaix in the context of German defenses.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Morlaix,+France/@48.5778,-3.8372,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=48.5778&lon=-3.8372&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "St. Michel-en-Gr\u00e8ve",
+            "GPS_Coordinate": "48.6547, -3.4870",
+            "BoundingBox": {
+                "North": 49.5537,
+                "South": 47.7557,
+                "East": -2.124,
+                "West": -4.85
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP21-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map 21-1. The Brittany Peninsula, 4-18 August 1944. Depicts U.S. advances and landings in Brittany, including operations near St. Michel-en-Gr\u00e8ve beaches during the pursuit phase.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Michel-en-Gr%C3%A8ve,+France/@48.6547,-3.4870,15z/data=!3m1!4b1!4m6!3m5!1s0x480e9b0b0b0b0b0b:0x1234567890abcdef!8m2!3d48.6547!4d-3.4870!16zL20vMDZ0bG0w",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=15/48.6547/-3.4870"
+            }
+        },
+        {
+            "PlaceName": "England",
+            "GPS_Coordinate": "52.3553,-1.1743",
+            "BoundingBox": {
+                "North": "53.2562",
+                "South": "51.4544",
+                "East": "0.3007",
+                "West": "-2.6493"
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/England/@52.3553,-1.1743,7z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=7/52.3553/-1.1743"
+            }
+        }
+    ],
+    "7": [
+        {
+            "PlaceName": "St. Malo",
+            "GPS_Coordinate": "48.6475, -2.0133",
+            "BoundingBox": {
+                "North": 49.5465,
+                "South": 47.7485,
+                "East": -0.6513,
+                "West": -3.3753
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MapII.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/mapII.html",
+                    "External_Map_Description": "Map II from 'Breakout and Pursuit': The Brittany Ports, depicting key ports including St. Malo relevant to the lodgment area and strategic planning for the offensive.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Bataille_St_Malo.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siege_of_Saint-Malo",
+                    "External_Map_Description": "Map of the Battle of Saint-Malo showing dispositions around the port in August-September 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Malo,+France/@48.6475,-2.0133,14z/data=!3m1!4b1!4m6!3m5!1s0x480f7b5c6b5b5b5b:0x4b0e4b0e4b0e4b0e!8m2!3d48.6475!4d-2.0133!16zL20vMDZ0aXc",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6475/-2.0133/St. Malo"
+            }
+        },
+        {
+            "PlaceName": "Paimpol",
+            "GPS_Coordinate": "48.783056, -3.033056",
+            "BoundingBox": {
+                "North": 49.6878,
+                "South": 47.8784,
+                "East": -1.6641,
+                "West": -4.4021
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-XXI-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map XXI-1 depicting operations in northern Brittany during the conquest of Brittany (1 August-18 September 1944), including the Paimpol area and actions around Cap Frehel in mid-August 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Paimpol,+22400,+France/@48.783056,-3.033056,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=48.783056&lon=-3.033056"
+            }
+        },
+        {
+            "PlaceName": "St. Brieuc",
+            "GPS_Coordinate": "48.5136, -2.7656",
+            "BoundingBox": {
+                "North": 49.413,
+                "South": 47.6142,
+                "East": -1.4086,
+                "West": -4.1226
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapVII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/index.html",
+                    "External_Map_Description": "Map VII-1: Brittany, First and Second Armies, 1-8 August 1944. Depicts operations including Task Force A advancing westward through northern Brittany, passing near St. Brieuc toward key bridges and Brest.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Brieuc,+C%C3%B4tes-d'Armor,+France/@48.513611,-2.765556,13z/data=!3m1!4b1!4m6!3m5!1s0x480e9a5b6f4b5b5d:0x4b8e4e4e4e4e4e4e!8m2!3d48.513611!4d-2.765556!16zL20vMDVscW4w",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/48.5136/-2.7656/St.%20Brieuc"
+            }
+        },
+        {
+            "PlaceName": "Channel Island",
+            "GPS_Coordinate": "48.8833,-3.0167",
+            "BoundingBox": {
+                "North": 49.7842,
+                "South": 47.9824,
+                "East": -1.6537,
+                "West": -4.3797
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=48.8833,-3.0167",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.8833&lon=-3.0167&zoom=13"
+            }
+        },
+        {
+            "PlaceName": "Lezardrieux",
+            "GPS_Coordinate": "48.7831,-3.1478",
+            "BoundingBox": {
+                "North": 49.6877,
+                "South": 47.8785,
+                "East": -1.7788,
+                "West": -4.5168
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/L%C3%A9zardrieux,+France/@48.7831,-3.1478,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.7831/-3.1478"
+            }
+        },
+        {
+            "PlaceName": "Cap Frehel",
+            "GPS_Coordinate": {
+                "lat": 48.6931,
+                "lon": -2.2044
+            },
+            "BoundingBox": {
+                "North": 49.5931,
+                "South": 47.7931,
+                "East": -0.8444,
+                "West": -3.5644
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP21.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map 21 showing operations in Brittany, including the Paimpol area and Cap Frehel strongpoint captured by the 8th Infantry Division in August 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Cap+Frehel",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=48.6931&lon=-2.2044&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Dinan",
+            "GPS_Coordinate": "48.4542,-2.0508",
+            "BoundingBox": {
+                "North": 49.3536,
+                "South": 47.5548,
+                "East": -0.6968,
+                "West": -3.4048
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XVIII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+                    "External_Map_Description": "Map XVIII-1 showing VIII Corps advance in Brittany, 12-16 August 1944, with objectives including Dinan.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (US Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dinan,+22100+Dinan,+France/@48.4542,-2.0508,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.4542/-2.0508"
+            }
+        }
+    ],
+    "8": [
+        {
+            "PlaceName": "Dinan",
+            "GPS_Coordinate": "48.4542,-2.0508",
+            "BoundingBox": {
+                "North": 49.3536,
+                "South": 47.5548,
+                "East": -0.6968,
+                "West": -3.4048
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XVIII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+                    "External_Map_Description": "Map XVIII-1 showing VIII Corps advance in Brittany, 12-16 August 1944, with objectives including Dinan.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (US Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dinan,+22100+Dinan,+France/@48.4542,-2.0508,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.4542/-2.0508"
+            }
+        },
+        {
+            "Event_Doc": "Breakout and Pursuit",
+            "Source_Doc": "chapter21b-content.md",
+            "Sub-event_summary": "On 9 August, Task Force A captures a bridge south of Morlaix, reports mission completion, with FFI extending control over roads, and records captures and low losses.",
+            "PlaceName": "Landivisiau",
+            "GPS_Coordinate": {
+                "lat": 48.5228,
+                "lon": -4.1517
+            },
+            "BoundingBox": {
+                "North": 49.422,
+                "South": 47.6236,
+                "East": -2.7927,
+                "West": -5.5107
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map XXI from Breakout and Pursuit showing operations in northern Brittany including areas around Morlaix and Landivisiau during August 1944 pursuit.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Landivisiau,+France/@48.5228,-4.1517,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=48.5228&lon=-4.1517&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Brest",
+            "GPS_Coordinate": "48.3904,-4.4861",
+            "BoundingBox": {
+                "North": 49.2894,
+                "South": 47.4914,
+                "East": -3.1331,
+                "West": -5.8391
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/BrPt1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map No. 1: The Cotentin and Brittany Peninsulas, depicting the lodgment area boundaries and key ports including Brest in the context of strategic planning for breakout.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brest,+France/@48.3904,-4.4861,12z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.3904/-4.4861/Brest"
+            }
+        }
+    ]
+}

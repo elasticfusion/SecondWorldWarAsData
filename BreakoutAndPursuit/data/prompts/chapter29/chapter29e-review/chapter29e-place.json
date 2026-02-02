@@ -1,0 +1,176 @@
+{
+    "1": [
+        {
+            "PlaceName": "Paris",
+            "GPS_Coordinate": "48.8567, 2.3528",
+            "BoundingBox": {
+                "North": 49.7562,
+                "South": 47.9572,
+                "East": 3.7218,
+                "West": 0.9838
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Paris,+France/@48.8567,2.3528,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.8567/2.3528"
+            }
+        },
+        {
+            "PlaceName": "Argentan",
+            "GPS_Coordinate": "48.7422,0.0156",
+            "BoundingBox": {
+                "North": 49.6415,
+                "South": 47.8429,
+                "East": 1.3586,
+                "West": -1.3274
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-VII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map VII. Operation GOODWOOD, 18-20 July 1944, showing armored advance relevant to the sub-event context toward Falaise.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-X.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map X. Pursuit to Argentan Area, 7-13 August 1944, depicting the region including Argentan in the breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Argentan,+France/@48.7422,0.0156,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.7422/0.0156"
+            }
+        },
+        {
+            "PlaceName": "Strasbourg",
+            "GPS_Coordinate": "48.5734, 7.7521",
+            "BoundingBox": {
+                "North": 49.4717,
+                "South": 47.6751,
+                "East": 9.1091,
+                "West": 6.3951
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Strasbourg,+France/@48.5734,7.7521,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.5734/7.7521"
+            }
+        },
+        {
+            "Event_Doc": "chapter29e-event.json",
+            "Source_Doc": "chapter29e-content.md",
+            "Sub-event_summary": "French Resistance leaders in Paris sought external aid amid concerns of disorder and political upheaval, leading to canceled plans for arms airdrops, reaffirmation of using the 2d French Armored Division for liberation, de Gaulle's pressure on Eisenhower, and Leclerc's unauthorized dispatch of a reconnaissance force under Guillebon toward Paris on 21 August 1944, prompting disciplinary action from Gerow and Leclerc's appeal to higher command.",
+            "PlaceName": "Metz",
+            "GPS_Coordinate": "49.1203,6.1757",
+            "BoundingBox": {
+                "North": 50.0198,
+                "South": 48.2208,
+                "East": 7.5547,
+                "West": 4.7967
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map29-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map 29-1: Pursuit to the Moselle, 25 August-10 September 1944, depicting Allied advances toward the Moselle River region including the Metz area during the breakout and pursuit phase.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Metz,+France/@49.1203,6.1757,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/49.1203/6.1757"
+            }
+        },
+        {
+            "PlaceName": "Alsace",
+            "GPS_Coordinate": {
+                "lat": 48.47,
+                "lon": 7.35
+            },
+            "BoundingBox": {
+                "North": 49.3709,
+                "South": 47.5691,
+                "East": 8.707,
+                "West": 5.993
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Alsace,+France/@48.47,7.35,9z/data=!3m1!4b1!4m6!3m5!1s0x4796bc0c3358ec4d:0x45d459c628d4b5d2!8m2!3d48.47!4d7.35!16zL20vMDZ3OHI",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=9/48.47/7.35"
+            }
+        },
+        {
+            "PlaceName": "Lorraine",
+            "GPS_Coordinate": "48.6921, 6.1844",
+            "BoundingBox": {
+                "North": 49.5966,
+                "South": 47.7876,
+                "East": 7.5514,
+                "West": 4.8174
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Lorraine,+France/@48.6921,6.1844,9z/data=!3m1!4b1!4m6!3m5!1s0x47f5b6e4b3a2c5d1:0x1234567890abcdef!8m2!3d48.6921!4d6.1844!16zL20vMDFqczg?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=9/48.6921/6.1844"
+            }
+        },
+        {
+            "PlaceName": "Dreux",
+            "GPS_Coordinate": "48.7358, 1.3714",
+            "BoundingBox": {
+                "North": 49.6341,
+                "South": 47.8375,
+                "East": 2.7294,
+                "West": 0.0134
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map XXVI: Panzer Group Eberbach, 15-19 August 1944, depicting the front lines and movements during the period relevant to the sub-event involving withdrawal east of Flers and engagements with LXVIII Corps.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dreux,+France/@48.7358,1.3714,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!map=14/48.7358/1.3714/Dreux"
+            }
+        },
+        {
+            "PlaceName": "Argentan-Falaise pocket",
+            "GPS_Coordinate": "48.8181,-0.0928",
+            "BoundingBox": {
+                "North": 49.7174,
+                "South": 47.9188,
+                "East": 1.2718,
+                "West": -1.4574
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map26.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map 26 from 'Breakout and Pursuit' depicting the situation 13-16 August 1944, illustrating the closing of the Argentan-Falaise pocket by U.S. V, XIX, and VII Corps.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Falaise_Pocket.svg/1024px-Falaise_Pocket.svg.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_Pocket",
+                    "External_Map_Description": "Schematic diagram of the Falaise Pocket showing the encirclement of German forces between Argentan and Falaise in August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@48.8181,-0.0928,13z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/48.8181/-0.0928"
+            }
+        }
+    ]
+}

@@ -1,0 +1,105 @@
+{
+    "1": [
+        {
+            "PlaceName": "France",
+            "GPS_Coordinate": "46.6131,2.2172",
+            "BoundingBox": {
+                "North": 47.514,
+                "South": 45.7122,
+                "East": 3.5202,
+                "West": 0.9142
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=6/46.6131/2.2172"
+            }
+        },
+        {
+            "PlaceName": "Paris",
+            "GPS_Coordinate": "48.8567, 2.3528",
+            "BoundingBox": {
+                "North": 49.7562,
+                "South": 47.9572,
+                "East": 3.7218,
+                "West": 0.9838
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Paris,+France/@48.8567,2.3528,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.8567/2.3528"
+            }
+        },
+        {
+            "PlaceName": "Algiers",
+            "GPS_Coordinate": {
+                "lat": 36.7538,
+                "lng": 3.0588
+            },
+            "BoundingBox": {
+                "North": 37.653,
+                "South": 35.8546,
+                "East": 4.1788,
+                "West": 1.9388
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Algiers,+Algeria/@36.7538,3.0588,11z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=11/36.7538/3.0588/Algiers"
+            }
+        },
+        {
+            "PlaceName": "London",
+            "GPS_Coordinate": "51.5074,-0.1278",
+            "BoundingBox": {
+                "North": 52.4067,
+                "South": 50.6081,
+                "East": 1.3181,
+                "West": -1.5737
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/London,+United+Kingdom/@51.5074,-0.1278,10z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=10/51.5074/-0.1278"
+            }
+        },
+        {
+            "PlaceName": "Soviet Union",
+            "GPS_Coordinate": "55.7558,37.6173",
+            "BoundingBox": {
+                "North": 56.6567,
+                "South": 54.8549,
+                "East": 39.2173,
+                "West": 36.0173
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@55.7558,37.6173,10z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=55.7558&lon=37.6173&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Mediterranean coast",
+            "GPS_Coordinate": "43.2965,5.3698",
+            "BoundingBox": {
+                "North": 44.1953,
+                "South": 42.3977,
+                "East": 6.5988,
+                "West": 4.1408
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Dragoon_fr.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Dragoon",
+                    "External_Map_Description": "Strategic map of Operation Dragoon showing Allied landings on the Mediterranean coast of southern France in August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=43.2965,5.3698",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#10/43.2965/5.3698"
+            }
+        }
+    ]
+}

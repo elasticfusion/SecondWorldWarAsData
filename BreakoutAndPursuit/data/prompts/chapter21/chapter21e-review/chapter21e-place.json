@@ -1,0 +1,776 @@
+{
+    "1": [
+        {
+            "Event_Doc": "chapter21c-event.json",
+            "Source_Doc": "chapter21c-content.md",
+            "Sub-event_summary": "Geographical comparison of Avranches-St. Malo area to Normandy coastline, description of St. Malo as a historic port and its defenses forming the fortress complex with Dinard, and estimates of German garrison strength varying but actually over twelve thousand.",
+            "PlaceName": "Dinard",
+            "GPS_Coordinate": "48.59139, -2.06778",
+            "BoundingBox": {
+                "North": 49.4894,
+                "South": 47.6934,
+                "East": -0.7068,
+                "West": -3.4288
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map21.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map No. 21 depicting the St. Malo area including the fortress complex of St. Malo and Dinard, 10-17 August 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dinard,+35270+Ille-et-Vilaine,+France/@48.59139,-2.06778,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.59139/-2.06778"
+            }
+        },
+        {
+            "PlaceName": "St. Malo",
+            "GPS_Coordinate": "48.6475, -2.0133",
+            "BoundingBox": {
+                "North": 49.5465,
+                "South": 47.7485,
+                "East": -0.6513,
+                "West": -3.3753
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MapII.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/mapII.html",
+                    "External_Map_Description": "Map II from 'Breakout and Pursuit': The Brittany Ports, depicting key ports including St. Malo relevant to the lodgment area and strategic planning for the offensive.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Bataille_St_Malo.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siege_of_Saint-Malo",
+                    "External_Map_Description": "Map of the Battle of Saint-Malo showing dispositions around the port in August-September 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Malo,+France/@48.6475,-2.0133,14z/data=!3m1!4b1!4m6!3m5!1s0x480f7b5c6b5b5b5b:0x4b0e4b0e4b0e4b0e!8m2!3d48.6475!4d-2.0133!16zL20vMDZ0aXc",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6475/-2.0133/St. Malo"
+            }
+        },
+        {
+            "PlaceName": "Citadel",
+            "GPS_Coordinate": "48.6489, -2.0197",
+            "BoundingBox": {
+                "North": 49.5473,
+                "South": 47.7505,
+                "East": -0.664,
+                "West": -3.3754
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-21.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map No. 21\u2014St. Malo Area, depicting the fortress including the Citadel, Param\u00e9, St. Servan-sur-Mer, C\u00e9zembre Island, and surrounding strongpoints like Fort la Varde during the WWII battle.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/48.6489,-2.0197/@48.6489,-2.0197,17z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.6489&lon=-2.0197&zoom=17"
+            }
+        },
+        {
+            "PlaceName": "St. Ideuc",
+            "GPS_Coordinate": "48.6364,-1.9506",
+            "BoundingBox": {
+                "North": 49.5352,
+                "South": 47.7376,
+                "East": -0.5893,
+                "West": -3.3119
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-21-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map 21-1: The Saint-Malo Pocket, 4-17 September 1944, depicting the fortress area including strongpoints like St. Ideuc.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Ideuc,+35190,+France/@48.6364,-1.9506,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6364/-1.9506"
+            }
+        },
+        {
+            "PlaceName": "la Varde",
+            "GPS_Coordinate": {
+                "lat": 49.0919,
+                "lon": -1.3889
+            },
+            "BoundingBox": {
+                "North": 49.9913,
+                "South": 48.1925,
+                "East": -0.0169,
+                "West": -2.7609
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map IX: VII Corps Drive to Coutances (17-20 July), depicting the 83d Division's operations along the Taute River, including the la Varde causeway area near P\u00e9riers.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/La+Varde,+50500+Saint-Georges-de-Bohon,+France/@49.091944,-1.388889,17z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=17/49.0919/-1.3889"
+            }
+        },
+        {
+            "PlaceName": "C\u00e9zembre",
+            "GPS_Coordinate": "48.6667,-2.0333",
+            "BoundingBox": {
+                "North": 49.5676,
+                "South": 47.7658,
+                "East": -0.6703,
+                "West": -3.3963
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-21.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map No. 21 The Saint Malo Pocket 3-17 August 1944 depicting the fortifications around St. Malo including C\u00e9zembre island.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/C%C3%A9zembre/@48.6667,-2.0333,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-2.0333&lat=48.6667&zoom=15"
+            }
+        }
+    ],
+    "2": [
+        {
+            "PlaceName": "St. Servan",
+            "GPS_Coordinate": {
+                "lat": 48.6489,
+                "lon": -2.0247
+            },
+            "BoundingBox": {
+                "North": 49.5483,
+                "South": 47.7495,
+                "East": -0.6677,
+                "West": -3.3817
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BoP-map21.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map XXI: The St. Malo Pocket, 4-17 August 1944, showing advances including through St. Servan.",
+                    "External_Map_Capture_Date": "2024-10-05T10:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Servan,+35400+Saint-Malo,+France/@48.6489,-2.0247,14z/data=!3m1!4b1!4m6!3m5!1s0x480f7b9b0b0b0b0b:0x1234567890abcdef!8m2!3d48.6489!4d-2.0247!16s%2Fg%2F11c5m5n5n5",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-2.0247&lat=48.6489&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Param\u00e9",
+            "GPS_Coordinate": "48.668611, -2.018056",
+            "BoundingBox": {
+                "North": 49.5676,
+                "South": 47.7696,
+                "East": -0.6531,
+                "West": -3.3831
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Bk-20.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map 20. St. Malo and surrounding areas including Param\u00e9, showing fortifications and military actions from 5-17 September 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Param%C3%A9%2C%20Saint-Malo%2C%20France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.668611&lon=-2.018056&zoom=15"
+            }
+        },
+        {
+            "PlaceName": "Citadel",
+            "GPS_Coordinate": "48.6489, -2.0197",
+            "BoundingBox": {
+                "North": 49.5473,
+                "South": 47.7505,
+                "East": -0.664,
+                "West": -3.3754
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-21.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map No. 21\u2014St. Malo Area, depicting the fortress including the Citadel, Param\u00e9, St. Servan-sur-Mer, C\u00e9zembre Island, and surrounding strongpoints like Fort la Varde during the WWII battle.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/48.6489,-2.0197/@48.6489,-2.0197,17z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.6489&lon=-2.0197&zoom=17"
+            }
+        },
+        {
+            "PlaceName": "St. Malo",
+            "GPS_Coordinate": "48.6475, -2.0133",
+            "BoundingBox": {
+                "North": 49.5465,
+                "South": 47.7485,
+                "East": -0.6513,
+                "West": -3.3753
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MapII.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/mapII.html",
+                    "External_Map_Description": "Map II from 'Breakout and Pursuit': The Brittany Ports, depicting key ports including St. Malo relevant to the lodgment area and strategic planning for the offensive.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Bataille_St_Malo.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siege_of_Saint-Malo",
+                    "External_Map_Description": "Map of the Battle of Saint-Malo showing dispositions around the port in August-September 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Malo,+France/@48.6475,-2.0133,14z/data=!3m1!4b1!4m6!3m5!1s0x480f7b5c6b5b5b5b:0x4b0e4b0e4b0e4b0e!8m2!3d48.6475!4d-2.0133!16zL20vMDZ0aXc",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6475/-2.0133/St. Malo"
+            }
+        },
+        {
+            "PlaceName": "St. Ideuc",
+            "GPS_Coordinate": "48.6364,-1.9506",
+            "BoundingBox": {
+                "North": 49.5352,
+                "South": 47.7376,
+                "East": -0.5893,
+                "West": -3.3119
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-21-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map 21-1: The Saint-Malo Pocket, 4-17 September 1944, depicting the fortress area including strongpoints like St. Ideuc.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Ideuc,+35190,+France/@48.6364,-1.9506,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6364/-1.9506"
+            }
+        },
+        {
+            "PlaceName": "la Varde",
+            "GPS_Coordinate": {
+                "lat": 49.0919,
+                "lon": -1.3889
+            },
+            "BoundingBox": {
+                "North": 49.9913,
+                "South": 48.1925,
+                "East": -0.0169,
+                "West": -2.7609
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map IX: VII Corps Drive to Coutances (17-20 July), depicting the 83d Division's operations along the Taute River, including the la Varde causeway area near P\u00e9riers.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/La+Varde,+50500+Saint-Georges-de-Bohon,+France/@49.091944,-1.388889,17z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=17/49.0919/-1.3889"
+            }
+        }
+    ],
+    "3": [
+        {
+            "PlaceName": "St. Malo",
+            "GPS_Coordinate": "48.6475, -2.0133",
+            "BoundingBox": {
+                "North": 49.5465,
+                "South": 47.7485,
+                "East": -0.6513,
+                "West": -3.3753
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MapII.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/mapII.html",
+                    "External_Map_Description": "Map II from 'Breakout and Pursuit': The Brittany Ports, depicting key ports including St. Malo relevant to the lodgment area and strategic planning for the offensive.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Bataille_St_Malo.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siege_of_Saint-Malo",
+                    "External_Map_Description": "Map of the Battle of Saint-Malo showing dispositions around the port in August-September 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Malo,+France/@48.6475,-2.0133,14z/data=!3m1!4b1!4m6!3m5!1s0x480f7b5c6b5b5b5b:0x4b0e4b0e4b0e4b0e!8m2!3d48.6475!4d-2.0133!16zL20vMDZ0aXc",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6475/-2.0133/St. Malo"
+            }
+        },
+        {
+            "PlaceName": "Param\u00e9-St. Malo",
+            "GPS_Coordinate": "48.6772, -2.0156",
+            "BoundingBox": {
+                "North": 49.5818,
+                "South": 47.7726,
+                "East": -0.6516,
+                "West": -3.3796
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-XXI-2.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map XXI-2: Reduction of Strongpoint Param\u00e9, showing attacks toward St. Malo, causeway, chateau, and casino area during WWII.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Param%C3%A9,+35480+Saint-Malo,+France/@48.6772,-2.0156,14z/data=!3m1!4b1!4m6!3m5!1s0x480f7b6b0b0b0b0b:0x1234567890abcdef!8m2!3d48.6772!4d-2.0156!16s%2Fg%2F11c1q_9v9v",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=14/48.6772/-2.0156"
+            }
+        },
+        {
+            "PlaceName": "Param\u00e9",
+            "GPS_Coordinate": "48.668611, -2.018056",
+            "BoundingBox": {
+                "North": 49.5676,
+                "South": 47.7696,
+                "East": -0.6531,
+                "West": -3.3831
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Bk-20.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map 20. St. Malo and surrounding areas including Param\u00e9, showing fortifications and military actions from 5-17 September 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Param%C3%A9%2C%20Saint-Malo%2C%20France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.668611&lon=-2.018056&zoom=15"
+            }
+        }
+    ],
+    "4": [
+        {
+            "PlaceName": "St. Malo",
+            "GPS_Coordinate": "48.6475, -2.0133",
+            "BoundingBox": {
+                "North": 49.5465,
+                "South": 47.7485,
+                "East": -0.6513,
+                "West": -3.3753
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MapII.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/mapII.html",
+                    "External_Map_Description": "Map II from 'Breakout and Pursuit': The Brittany Ports, depicting key ports including St. Malo relevant to the lodgment area and strategic planning for the offensive.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Bataille_St_Malo.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siege_of_Saint-Malo",
+                    "External_Map_Description": "Map of the Battle of Saint-Malo showing dispositions around the port in August-September 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Malo,+France/@48.6475,-2.0133,14z/data=!3m1!4b1!4m6!3m5!1s0x480f7b5c6b5b5b5b:0x4b0e4b0e4b0e4b0e!8m2!3d48.6475!4d-2.0133!16zL20vMDZ0aXc",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6475/-2.0133/St. Malo"
+            }
+        }
+    ],
+    "5": [
+        {
+            "PlaceName": "St. Ideuc",
+            "GPS_Coordinate": "48.6364,-1.9506",
+            "BoundingBox": {
+                "North": 49.5352,
+                "South": 47.7376,
+                "East": -0.5893,
+                "West": -3.3119
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-21-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map 21-1: The Saint-Malo Pocket, 4-17 September 1944, depicting the fortress area including strongpoints like St. Ideuc.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Ideuc,+35190,+France/@48.6364,-1.9506,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6364/-1.9506"
+            }
+        },
+        {
+            "PlaceName": "la Varde",
+            "GPS_Coordinate": {
+                "lat": 49.0919,
+                "lon": -1.3889
+            },
+            "BoundingBox": {
+                "North": 49.9913,
+                "South": 48.1925,
+                "East": -0.0169,
+                "West": -2.7609
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-11.html",
+                    "External_Map_Description": "Map IX: VII Corps Drive to Coutances (17-20 July), depicting the 83d Division's operations along the Taute River, including the la Varde causeway area near P\u00e9riers.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/La+Varde,+50500+Saint-Georges-de-Bohon,+France/@49.091944,-1.388889,17z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=17/49.0919/-1.3889"
+            }
+        },
+        {
+            "PlaceName": "St. Malo",
+            "GPS_Coordinate": "48.6475, -2.0133",
+            "BoundingBox": {
+                "North": 49.5465,
+                "South": 47.7485,
+                "East": -0.6513,
+                "West": -3.3753
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MapII.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/mapII.html",
+                    "External_Map_Description": "Map II from 'Breakout and Pursuit': The Brittany Ports, depicting key ports including St. Malo relevant to the lodgment area and strategic planning for the offensive.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Bataille_St_Malo.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siege_of_Saint-Malo",
+                    "External_Map_Description": "Map of the Battle of Saint-Malo showing dispositions around the port in August-September 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Malo,+France/@48.6475,-2.0133,14z/data=!3m1!4b1!4m6!3m5!1s0x480f7b5c6b5b5b5b:0x4b0e4b0e4b0e4b0e!8m2!3d48.6475!4d-2.0133!16zL20vMDZ0aXc",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6475/-2.0133/St. Malo"
+            }
+        }
+    ],
+    "6": [
+        {
+            "PlaceName": "St. Malo peninsula",
+            "GPS_Coordinate": "48.6486,-2.0239",
+            "BoundingBox": {
+                "North": 49.5479,
+                "South": 47.7493,
+                "East": -0.6803,
+                "West": -3.3675
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map21-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map 21-1: The Brittany Peninsula, showing dispositions and advances towards St. Malo area in August 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/2/24/St_Malo-Dinard_pocket_4%E2%80%9317.8.44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Saint-Malo",
+                    "External_Map_Description": "Map of the St. Malo-Dinard pocket, 4-17 August 1944, illustrating the fortress complex and siege operations relevant to German defenses at St. Malo.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@48.6486,-2.0239,13z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=13/48.6486/-2.0239"
+            }
+        },
+        {
+            "PlaceName": "Fort National",
+            "GPS_Coordinate": "48.6492, -2.0256",
+            "BoundingBox": {
+                "North": 49.5482,
+                "South": 47.7502,
+                "East": -0.6666,
+                "West": -3.3846
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map20.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "MAP NO. 20 St. Malo (9-17 August 1944). Depicts the U.S. 83d Infantry Division's attack on St. Malo, including the north shore of the St. Malo peninsula, Fort National, and Grand B\u00e9 where the 329th Infantry conducted investigations and assaults leading to German surrenders.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Fort+National/@48.649167,-2.025556,17z/data=!3m1!4b1!4m6!3m5!1s0x480f7b0e2c5e5d4d:0xb4f6d5e1a2c3d4e5!8m2!3d48.649167!4d-2.025556!16zL20vMDZ0a3k?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.6492&lon=-2.0256&zoom=17"
+            }
+        },
+        {
+            "PlaceName": "Grand Bey",
+            "GPS_Coordinate": "48.651944,-2.024722",
+            "BoundingBox": {
+                "North": 49.551944,
+                "South": 47.751944,
+                "East": -0.680722,
+                "West": -3.368722
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAPIX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map IX: St. Malo area showing north shore fortifications including Fort National and Grand Bey during the assault on 16 August 1944.",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/5/5e/StMaloSept44.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siege_of_Saint-Malo",
+                    "External_Map_Description": "Map of the St. Malo pocket and fortifications in September 1944, relevant to the August surrender at Grand Bey.",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/%C3%8Ele+du+Grand+B%C3%A9/@48.651944,-2.024722,17z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=17/48.65194/-2.02472/Grand+B%C3%A9,+Saint-Malo"
+            }
+        }
+    ],
+    "7": [
+        {
+            "PlaceName": "Citadel",
+            "GPS_Coordinate": "48.6489, -2.0197",
+            "BoundingBox": {
+                "North": 49.5473,
+                "South": 47.7505,
+                "East": -0.664,
+                "West": -3.3754
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-21.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map No. 21\u2014St. Malo Area, depicting the fortress including the Citadel, Param\u00e9, St. Servan-sur-Mer, C\u00e9zembre Island, and surrounding strongpoints like Fort la Varde during the WWII battle.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/48.6489,-2.0197/@48.6489,-2.0197,17z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.6489&lon=-2.0197&zoom=17"
+            }
+        },
+        {
+            "PlaceName": "C\u00e9zembre",
+            "GPS_Coordinate": "48.6667,-2.0333",
+            "BoundingBox": {
+                "North": 49.5676,
+                "South": 47.7658,
+                "East": -0.6703,
+                "West": -3.3963
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-21.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map No. 21 The Saint Malo Pocket 3-17 August 1944 depicting the fortifications around St. Malo including C\u00e9zembre island.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/C%C3%A9zembre/@48.6667,-2.0333,15z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-2.0333&lat=48.6667&zoom=15"
+            }
+        },
+        {
+            "PlaceName": "St. Malo",
+            "GPS_Coordinate": "48.6475, -2.0133",
+            "BoundingBox": {
+                "North": 49.5465,
+                "South": 47.7485,
+                "East": -0.6513,
+                "West": -3.3753
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MapII.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/mapII.html",
+                    "External_Map_Description": "Map II from 'Breakout and Pursuit': The Brittany Ports, depicting key ports including St. Malo relevant to the lodgment area and strategic planning for the offensive.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Bataille_St_Malo.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siege_of_Saint-Malo",
+                    "External_Map_Description": "Map of the Battle of Saint-Malo showing dispositions around the port in August-September 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Malo,+France/@48.6475,-2.0133,14z/data=!3m1!4b1!4m6!3m5!1s0x480f7b5c6b5b5b5b:0x4b0e4b0e4b0e4b0e!8m2!3d48.6475!4d-2.0133!16zL20vMDZ0aXc",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6475/-2.0133/St. Malo"
+            }
+        },
+        {
+            "PlaceName": "Granville",
+            "GPS_Coordinate": "48.8403, -1.5931",
+            "BoundingBox": {
+                "North": 49.7451,
+                "South": 47.9355,
+                "East": -0.2341,
+                "West": -2.9521
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Granville,+France/@48.8403,-1.5931,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=48.8403&lon=-1.5931"
+            }
+        },
+        {
+            "PlaceName": "Cancale",
+            "GPS_Coordinate": "48.6781,-1.8522",
+            "BoundingBox": {
+                "North": 49.5761,
+                "South": 47.7801,
+                "East": -0.4912,
+                "West": -3.2132
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP21.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP21.html",
+                    "External_Map_Description": "MAP 21: Reduction of the Brittany Ports, 3-17 August 1944. Depicts operations in the St. Malo area including approaches toward Cancale.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP22.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP22.html",
+                    "External_Map_Description": "MAP 22: St. Malo, 4-17 August 1944. Shows detailed actions around St. Malo and eastern approaches including Chateauneuf and Cancale.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Cancale,+35260+Ille-et-Vilaine,+France/@48.6781,-1.8522,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.8522&lat=48.6781&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Lorient",
+            "GPS_Coordinate": "47.7460,-3.3810",
+            "BoundingBox": {
+                "North": 48.6453,
+                "South": 46.8467,
+                "East": -2.0512,
+                "West": -4.7108
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Uboat_bases_1942.png",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Uboat_bases_1942.png",
+                    "External_Map_Description": "Map of German U-boat bases in occupied France, 1942, showing Lorient as a major submarine base relevant to Allied port capture objectives in the lodgment expansion.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Lorient,+France/@47.7460,-3.3810,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=47.7460&lon=-3.3810&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Brest",
+            "GPS_Coordinate": "48.3904,-4.4861",
+            "BoundingBox": {
+                "North": 49.2894,
+                "South": 47.4914,
+                "East": -3.1331,
+                "West": -5.8391
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/BrPt1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map No. 1: The Cotentin and Brittany Peninsulas, depicting the lodgment area boundaries and key ports including Brest in the context of strategic planning for breakout.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brest,+France/@48.3904,-4.4861,12z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.3904/-4.4861/Brest"
+            }
+        }
+    ]
+}

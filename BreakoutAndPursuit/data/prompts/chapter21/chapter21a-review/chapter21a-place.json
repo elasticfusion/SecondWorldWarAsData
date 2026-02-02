@@ -1,0 +1,787 @@
+{
+    "1": [
+        {
+            "PlaceName": "Brest",
+            "GPS_Coordinate": "48.3904,-4.4861",
+            "BoundingBox": {
+                "North": 49.2894,
+                "South": 47.4914,
+                "East": -3.1331,
+                "West": -5.8391
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/BrPt1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map No. 1: The Cotentin and Brittany Peninsulas, depicting the lodgment area boundaries and key ports including Brest in the context of strategic planning for breakout.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brest,+France/@48.3904,-4.4861,12z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.3904/-4.4861/Brest"
+            }
+        },
+        {
+            "PlaceName": "Rennes",
+            "GPS_Coordinate": "48.1113,-1.6747",
+            "BoundingBox": {
+                "North": 49.0103,
+                "South": 47.2123,
+                "East": -0.3297,
+                "West": -3.0197
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP18-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+                    "External_Map_Description": "Map XVIII-1: Situation in Brittany on 15 August 1944, depicting German dispositions and key locations including Rennes in the context of depleted forces.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Rennes,+France/@48.1113,-1.6747,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#48.1113/-1.6747/12"
+            }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "France",
+            "GPS_Coordinate": "46.6131,2.2172",
+            "BoundingBox": {
+                "North": 47.514,
+                "South": 45.7122,
+                "East": 3.5202,
+                "West": 0.9142
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=6/46.6131/2.2172"
+            }
+        },
+        {
+            "PlaceName": "Avranches",
+            "GPS_Coordinate": "48.6803,-1.3572",
+            "BoundingBox": {
+                "North": 49.5783,
+                "South": 47.7823,
+                "East": 0.0048,
+                "West": -2.7192
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP2-25X35.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II: German Dispositions, Evening 25 June 1944, depicting front lines in Normandy including the Avranches sector relevant to withdrawal considerations.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Avranches,+France/@48.6803,-1.3572,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#48.6803,-1.3572,14"
+            }
+        },
+        {
+            "PlaceName": "Dol-de-Bretagne",
+            "GPS_Coordinate": "48.5436, -1.7494",
+            "BoundingBox": {
+                "North": 49.4429,
+                "South": 47.6443,
+                "East": -0.3904,
+                "West": -3.1084
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP18-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+                    "External_Map_Description": "Map XVIII-1: The Attack Toward Brittany, 31 July-4 August 1944, showing U.S. Third Army advances including toward Pontorson and Dol-de-Bretagne.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dol-de-Bretagne,+35120+Ille-et-Vilaine,+France/@48.543611,-1.749444,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b9c8c5b5b5b:0xd1a5f8e2f2f2f2f2!8m2!3d48.543611!4d-1.749444!16zL20vMDZsc3g",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.5436/-1.7494"
+            }
+        },
+        {
+            "PlaceName": "Dinan",
+            "GPS_Coordinate": "48.4542,-2.0508",
+            "BoundingBox": {
+                "North": 49.3536,
+                "South": 47.5548,
+                "East": -0.6968,
+                "West": -3.4048
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XVIII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+                    "External_Map_Description": "Map XVIII-1 showing VIII Corps advance in Brittany, 12-16 August 1944, with objectives including Dinan.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (US Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dinan,+22100+Dinan,+France/@48.4542,-2.0508,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.4542/-2.0508"
+            }
+        },
+        {
+            "PlaceName": "Guingamp",
+            "GPS_Coordinate": {
+                "lat": 48.5631,
+                "lon": -3.1614
+            },
+            "BoundingBox": {
+                "North": 49.4621,
+                "South": 47.6641,
+                "East": -1.8044,
+                "West": -4.5184
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAPVII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map VII: Brittany, 1-15 August 1944, depicting advances including Task Force A toward Guingamp and key bridges.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Guingamp,+France/@48.5631,-3.1614,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#lon=-3.1614&lat=48.5631&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Morlaix",
+            "GPS_Coordinate": {
+                "latitude": 48.5778,
+                "longitude": -3.8372
+            },
+            "BoundingBox": {
+                "North": 49.4758,
+                "South": 47.6798,
+                "East": -2.4962,
+                "West": -5.1782
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP18-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+                    "External_Map_Description": "Map XVIII-1: Enemy fortifications and troop dispositions in Brittany, circa late July 1944, showing key areas including Morlaix in the context of German defenses.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Morlaix,+France/@48.5778,-3.8372,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lat=48.5778&lon=-3.8372&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "St. Brieuc",
+            "GPS_Coordinate": "48.5136, -2.7656",
+            "BoundingBox": {
+                "North": 49.413,
+                "South": 47.6142,
+                "East": -1.4086,
+                "West": -4.1226
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapVII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/index.html",
+                    "External_Map_Description": "Map VII-1: Brittany, First and Second Armies, 1-8 August 1944. Depicts operations including Task Force A advancing westward through northern Brittany, passing near St. Brieuc toward key bridges and Brest.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Brieuc,+C%C3%B4tes-d'Armor,+France/@48.513611,-2.765556,13z/data=!3m1!4b1!4m6!3m5!1s0x480e9a5b6f4b5b5d:0x4b8e4e4e4e4e4e4e!8m2!3d48.513611!4d-2.765556!16zL20vMDVscW4w",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/48.5136/-2.7656/St.%20Brieuc"
+            }
+        }
+    ],
+    "2": [
+        {
+            "PlaceName": "Avranches-Pontaubault",
+            "GPS_Coordinate": "48.6085, -1.3751",
+            "BoundingBox": {
+                "North": 49.5075,
+                "South": 47.7095,
+                "East": -0.0131,
+                "West": -2.7371
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Avranches_breakthrough.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Operation_Cobra",
+                    "External_Map_Description": "Map showing the Avranches breakthrough, advance of U.S. forces through the area, and entry into Brittany highlighting key routes and the Pontaubault sector.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-17-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-17.html",
+                    "External_Map_Description": "Map XVII-1: Movement Into Brittany, 1-13 August 1944, depicting the critical bottleneck at Pontaubault and armored advances from Avranches.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/dir/Avranches,+France/Pontaubault,+France/@48.6085,-1.3751,12z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x480f7b4b4b4b4b4b:0x1234567890abcdef!2m2!1d-1.3681!2d48.6842!1m5!1m1!1s0x480f7a8a8a8a8a8a:0xfedcba9876543210!2m2!1d-1.3819!2d48.5322!3e0",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.6085/-1.3751"
+            }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Dol-de-Bretagne",
+            "GPS_Coordinate": "48.5436, -1.7494",
+            "BoundingBox": {
+                "North": 49.4429,
+                "South": 47.6443,
+                "East": -0.3904,
+                "West": -3.1084
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP18-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+                    "External_Map_Description": "Map XVIII-1: The Attack Toward Brittany, 31 July-4 August 1944, showing U.S. Third Army advances including toward Pontorson and Dol-de-Bretagne.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dol-de-Bretagne,+35120+Ille-et-Vilaine,+France/@48.543611,-1.749444,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b9c8c5b5b5b:0xd1a5f8e2f2f2f2f2!8m2!3d48.543611!4d-1.749444!16zL20vMDZsc3g",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.5436/-1.7494"
+            }
+        },
+        {
+            "PlaceName": "Dinan",
+            "GPS_Coordinate": "48.4542,-2.0508",
+            "BoundingBox": {
+                "North": 49.3536,
+                "South": 47.5548,
+                "East": -0.6968,
+                "West": -3.4048
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XVIII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+                    "External_Map_Description": "Map XVIII-1 showing VIII Corps advance in Brittany, 12-16 August 1944, with objectives including Dinan.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (US Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dinan,+22100+Dinan,+France/@48.4542,-2.0508,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.4542/-2.0508"
+            }
+        },
+        {
+            "PlaceName": "St. Malo",
+            "GPS_Coordinate": "48.6475, -2.0133",
+            "BoundingBox": {
+                "North": 49.5465,
+                "South": 47.7485,
+                "East": -0.6513,
+                "West": -3.3753
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MapII.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/mapII.html",
+                    "External_Map_Description": "Map II from 'Breakout and Pursuit': The Brittany Ports, depicting key ports including St. Malo relevant to the lodgment area and strategic planning for the offensive.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Bataille_St_Malo.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siege_of_Saint-Malo",
+                    "External_Map_Description": "Map of the Battle of Saint-Malo showing dispositions around the port in August-September 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Malo,+France/@48.6475,-2.0133,14z/data=!3m1!4b1!4m6!3m5!1s0x480f7b5c6b5b5b5b:0x4b0e4b0e4b0e4b0e!8m2!3d48.6475!4d-2.0133!16zL20vMDZ0aXc",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6475/-2.0133/St. Malo"
+            }
+        },
+        {
+            "PlaceName": "Miniac",
+            "GPS_Coordinate": "48.3667, -1.8833",
+            "BoundingBox": {
+                "North": 49.2712,
+                "South": 47.4622,
+                "East": -0.5243,
+                "West": -3.2423
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-XXI-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map XXI-1: Task Force A enters Brittany, 3 August 1944, illustrating advance near Dol-de-Bretagne, bypass, and opposition at Miniac and Ch\u00e2teauneuf-d'Ille-et-Vilaine.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Miniac-Morvan,+35190+France/@48.3667,-1.8833,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.8833&lat=48.3667&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Ch\u00e2teauneuf-d'Ille-et-Vilaine",
+            "GPS_Coordinate": {
+                "lat": 48.2936,
+                "lon": -1.92
+            },
+            "BoundingBox": {
+                "North": 49.1919,
+                "South": 47.3953,
+                "East": -0.572,
+                "West": -3.268
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapXXI-3.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map XXI-3 from Breakout and Pursuit depicting VII Corps operations toward Brest and St. Malo, covering the Brittany region including the area around Dol-de-Bretagne and Ch\u00e2teauneuf-d'Ille-et-Vilaine during early August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Ch%C3%A2teauneuf-d%27Ille-et-Vilaine%2C+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=14/48.2936/-1.9200"
+            }
+        }
+    ],
+    "3": [
+        {
+            "PlaceName": "St. Malo-Ch\u00e2teauneuf-Dol",
+            "GPS_Coordinate": "48.4891,-1.9080",
+            "BoundingBox": {
+                "North": 49.3891,
+                "South": 47.5891,
+                "East": -0.55,
+                "West": -3.266
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/G4812.B8S19.1944.U6.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map XXI\u2013I: The St. Malo Pocket, 3\u201317 August 1944",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=48.4891,-1.9080",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#!map=11/48.4891/-1.9080"
+            }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Dol-de-Bretagne",
+            "GPS_Coordinate": "48.5436, -1.7494",
+            "BoundingBox": {
+                "North": 49.4429,
+                "South": 47.6443,
+                "East": -0.3904,
+                "West": -3.1084
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP18-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+                    "External_Map_Description": "Map XVIII-1: The Attack Toward Brittany, 31 July-4 August 1944, showing U.S. Third Army advances including toward Pontorson and Dol-de-Bretagne.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dol-de-Bretagne,+35120+Ille-et-Vilaine,+France/@48.543611,-1.749444,15z/data=!3m1!4b1!4m6!3m5!1s0x480f9b9c8c5b5b5b:0xd1a5f8e2f2f2f2f2!8m2!3d48.543611!4d-1.749444!16zL20vMDZsc3g",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.5436/-1.7494"
+            }
+        },
+        {
+            "PlaceName": "Pontorson",
+            "GPS_Coordinate": "48.5386, -1.4992",
+            "BoundingBox": {
+                "North": 49.4376,
+                "South": 47.6396,
+                "East": -0.1422,
+                "West": -2.8562
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-Map18-3.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-18.html",
+                    "External_Map_Description": "Map XVIII-3: The Attack on Brittany, 1-4 August 1944, illustrating U.S. forces advances including to Pontorson south of Pontaubault.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pontorson,+France/@48.5386,-1.4992,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.4992&lat=48.5386&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Brest",
+            "GPS_Coordinate": "48.3904,-4.4861",
+            "BoundingBox": {
+                "North": 49.2894,
+                "South": 47.4914,
+                "East": -3.1331,
+                "West": -5.8391
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/BrPt1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map No. 1: The Cotentin and Brittany Peninsulas, depicting the lodgment area boundaries and key ports including Brest in the context of strategic planning for breakout.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brest,+France/@48.3904,-4.4861,12z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.3904/-4.4861/Brest"
+            }
+        },
+        {
+            "PlaceName": "Dol-de-Bretagne",
+            "GPS_Coordinate": "48.5356,-1.7494",
+            "BoundingBox": {
+                "North": 49.4344,
+                "South": 47.6368,
+                "East": -0.3934,
+                "West": -3.1054
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP21-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map XXI-1 showing the advance toward Brest on 4-12 August 1944, depicting the 83d Division's advance and securing of Dol-de-Bretagne area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dol-de-Bretagne,+35120+France/@48.5356,-1.7494,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-1.7494&lat=48.5356&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Ch\u00e2teauneuf-d'Ille-et-Vilaine",
+            "GPS_Coordinate": {
+                "lat": 48.2936,
+                "lon": -1.92
+            },
+            "BoundingBox": {
+                "North": 49.1919,
+                "South": 47.3953,
+                "East": -0.572,
+                "West": -3.268
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapXXI-3.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map XXI-3 from Breakout and Pursuit depicting VII Corps operations toward Brest and St. Malo, covering the Brittany region including the area around Dol-de-Bretagne and Ch\u00e2teauneuf-d'Ille-et-Vilaine during early August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Ch%C3%A2teauneuf-d%27Ille-et-Vilaine%2C+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=14/48.2936/-1.9200"
+            }
+        },
+        {
+            "PlaceName": "St. Malo",
+            "GPS_Coordinate": "48.6475, -2.0133",
+            "BoundingBox": {
+                "North": 49.5465,
+                "South": 47.7485,
+                "East": -0.6513,
+                "West": -3.3753
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MapII.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/mapII.html",
+                    "External_Map_Description": "Map II from 'Breakout and Pursuit': The Brittany Ports, depicting key ports including St. Malo relevant to the lodgment area and strategic planning for the offensive.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Bataille_St_Malo.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siege_of_Saint-Malo",
+                    "External_Map_Description": "Map of the Battle of Saint-Malo showing dispositions around the port in August-September 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Malo,+France/@48.6475,-2.0133,14z/data=!3m1!4b1!4m6!3m5!1s0x480f7b5c6b5b5b5b:0x4b0e4b0e4b0e4b0e!8m2!3d48.6475!4d-2.0133!16zL20vMDZ0aXc",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6475/-2.0133/St. Malo"
+            }
+        }
+    ],
+    "4": [
+        {
+            "PlaceName": "St. Malo",
+            "GPS_Coordinate": "48.6475, -2.0133",
+            "BoundingBox": {
+                "North": 49.5465,
+                "South": 47.7485,
+                "East": -0.6513,
+                "West": -3.3753
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MapII.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/mapII.html",
+                    "External_Map_Description": "Map II from 'Breakout and Pursuit': The Brittany Ports, depicting key ports including St. Malo relevant to the lodgment area and strategic planning for the offensive.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Bataille_St_Malo.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siege_of_Saint-Malo",
+                    "External_Map_Description": "Map of the Battle of Saint-Malo showing dispositions around the port in August-September 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Malo,+France/@48.6475,-2.0133,14z/data=!3m1!4b1!4m6!3m5!1s0x480f7b5c6b5b5b5b:0x4b0e4b0e4b0e4b0e!8m2!3d48.6475!4d-2.0133!16zL20vMDZ0aXc",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6475/-2.0133/St. Malo"
+            }
+        },
+        {
+            "PlaceName": "Brittany",
+            "GPS_Coordinate": "48.1833,-2.9167",
+            "BoundingBox": {
+                "North": 49.088,
+                "South": 47.2787,
+                "East": -1.5697,
+                "West": -4.2637
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map IX: Seizure of the Brittany Ports, 1-18 August 1944. Depicts operations to capture key ports in Brittany, relevant to the lodgment area's strategic importance and expansion.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brittany,+France/@48.1833,-2.9167,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-2.9167&lat=48.1833&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Brest",
+            "GPS_Coordinate": "48.3904,-4.4861",
+            "BoundingBox": {
+                "North": 49.2894,
+                "South": 47.4914,
+                "East": -3.1331,
+                "West": -5.8391
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/BrPt1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map No. 1: The Cotentin and Brittany Peninsulas, depicting the lodgment area boundaries and key ports including Brest in the context of strategic planning for breakout.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Brest,+France/@48.3904,-4.4861,12z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=12/48.3904/-4.4861/Brest"
+            }
+        },
+        {
+            "PlaceName": "Brittany north shore",
+            "GPS_Coordinate": "48.6500, -3.0000",
+            "BoundingBox": {
+                "North": 49.5509,
+                "South": 47.7491,
+                "East": -1.637,
+                "West": -4.363
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XXI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map XXI depicting operations and dispositions in Brittany during August 1944, relevant to German movements on the north shore.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Brittany+north+shore%2C+France&query_place_id=&query_lat=48.6500&query_lon=-3.0000",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-3.0000&lat=48.6500&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Ch\u00e2teauneuf",
+            "GPS_Coordinate": "48.4658,-2.0361",
+            "BoundingBox": {
+                "North": 49.37,
+                "South": 47.56,
+                "East": -0.68,
+                "West": -3.39
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP21-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map XXI-1 depicting operations around the Brittany ports including the St. Malo pocket on 1-13 August 1944, relevant to German movements and 83d Division actions near Ch\u00e2teauneuf.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Ch%C3%A2teauneuf,+35250+Ch%C3%A2teauneuf-d'Ille-et-Vilaine,+France/@48.4658333,-2.0361111,15z/data=!3m1!4b1!4m6!3m5!1s0x480e9b0b5f5f5f5f:0x9b0e4f8a4e4b4d4a!8m2!3d48.4658333!4d-2.0361111!16s%2Fg%2F1223k8m3",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=15/48.4658/-2.0361/Ch%C3%A2teauneuf"
+            }
+        }
+    ],
+    "5": [
+        {
+            "PlaceName": "St. Malo",
+            "GPS_Coordinate": "48.6475, -2.0133",
+            "BoundingBox": {
+                "North": 49.5465,
+                "South": 47.7485,
+                "East": -0.6513,
+                "West": -3.3753
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MapII.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/mapII.html",
+                    "External_Map_Description": "Map II from 'Breakout and Pursuit': The Brittany Ports, depicting key ports including St. Malo relevant to the lodgment area and strategic planning for the offensive.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Bataille_St_Malo.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siege_of_Saint-Malo",
+                    "External_Map_Description": "Map of the Battle of Saint-Malo showing dispositions around the port in August-September 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Malo,+France/@48.6475,-2.0133,14z/data=!3m1!4b1!4m6!3m5!1s0x480f7b5c6b5b5b5b:0x4b0e4b0e4b0e4b0e!8m2!3d48.6475!4d-2.0133!16zL20vMDZ0aXc",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6475/-2.0133/St. Malo"
+            }
+        },
+        {
+            "PlaceName": "Brittany's north shore",
+            "GPS_Coordinate": "48.6494, -2.0276",
+            "BoundingBox": {
+                "North": 49.5512,
+                "South": 47.7485,
+                "East": -0.6726,
+                "West": -3.3826
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP21-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-21.html",
+                    "External_Map_Description": "Map XXI-1: St. Malo-Dinard Area, 4-17 August 1944, showing operations along Brittany's north shore including Task Force A movements",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@48.6494,-2.0276,11z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=-2.0276&lat=48.6494&zoom=11"
+            }
+        }
+    ]
+}

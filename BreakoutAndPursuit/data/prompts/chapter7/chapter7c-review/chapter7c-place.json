@@ -1,0 +1,566 @@
+{
+    "1": [
+        {
+            "PlaceName": "Carentan-P\u00e9riers isthmus",
+            "GPS_Coordinate": "49.2559, -1.2888",
+            "BoundingBox": {
+                "North": 50.1609,
+                "South": 48.3509,
+                "East": 0.0882,
+                "West": -2.6668
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-NoVII-13Jul44.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map VII from 'Breakout and Pursuit': VII Corps gains on the Carentan-P\u00e9riers isthmus and advance toward Saint-L\u00f4, 8-13 July 1944, illustrating terrain, positions, and limited advances by 83d and 4th Infantry Divisions.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Carentan-P%C3%A9riers+isthmus%2C+Normandy%2C+France&query_place_id=ChIJnYpYkKxB34cR1zI2P5q3i7Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=13&lat=49.2559&lon=-1.2888"
+            }
+        },
+        {
+            "PlaceName": "Carentan",
+            "GPS_Coordinate": {
+                "lat": 49.3067,
+                "lon": -1.2428
+            },
+            "BoundingBox": {
+                "North": 50.2061,
+                "South": 48.4073,
+                "East": 0.1332,
+                "West": -2.6188
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-V.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V: VII Corps Drive to the Southwest, 25-30 June 1944, illustrating redeployment to Carentan sector and offensive toward Coutances-St. L\u00f4 highway.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Carentan/@49.3067,-1.2428,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.3067&lon=-1.2428&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Sainteny",
+            "GPS_Coordinate": "49.0333, -1.4167",
+            "BoundingBox": {
+                "North": 49.9313,
+                "South": 48.1353,
+                "East": -0.0477,
+                "West": -2.7857
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP17.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map XVII: VII Corps Drive to Coutances, 3-8 July 1944, showing operations in the Carentan sector including Sainteny.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sainteny,+France/@49.0333,-1.4167,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=49.0333&lon=-1.4167"
+            }
+        },
+        {
+            "PlaceName": "P\u00e9riers",
+            "GPS_Coordinate": "49.1328, -1.3161",
+            "BoundingBox": {
+                "North": 50.0329,
+                "South": 48.2327,
+                "East": 0.0599,
+                "West": -2.6921
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-MapVII1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map VII-1: Advance of VII Corps toward St. L\u00f4\u2013P\u00e9riers ridge, 10\u201313 June 1944, depicting redeployment to Carentan sector and positions near P\u00e9riers.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/P%C3%A9riers/@49.1328,-1.3161,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.1328/-1.3161"
+            }
+        },
+        {
+            "PlaceName": "Taute River",
+            "GPS_Coordinate": "49.2800, -1.2700",
+            "BoundingBox": {
+                "North": 50.1792,
+                "South": 48.3808,
+                "East": 0.1065,
+                "West": -2.6465
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-V-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V-1: Advance Toward Carentan, 8-12 June 1944, depicting positions and movements in the Carentan sector including the Taute River.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-V-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V-2: VII Corps Drive Toward St. L\u00f4, 13-17 June 1944, showing the offensive south along the Coutances-St. L\u00f4 highway area with Taute River features.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Taute+River%2C+Carentan%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/49.28/-1.27"
+            }
+        },
+        {
+            "PlaceName": "Coutances",
+            "GPS_Coordinate": "48.9492,-1.4453",
+            "BoundingBox": {
+                "North": 49.848,
+                "South": 48.0504,
+                "East": -0.0753,
+                "West": -2.8153
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map IV-1 depicting VIII Corps zone of action and objectives during the advance southward along the Cotentin west coast toward high ground near Coutances, 22-24 July 1944.",
+                    "External_Map_Capture_Date": "2024-09-18T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Coutances,+France/@48.9492,-1.4453,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/@48.9492,-1.4453,14z"
+            }
+        },
+        {
+            "PlaceName": "Caumont",
+            "GPS_Coordinate": "49.0328, -0.9400",
+            "BoundingBox": {
+                "North": 49.9316,
+                "South": 48.134,
+                "East": 0.43,
+                "West": -2.31
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP22.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map 22. The Drive Toward St. Lo: VII Corps, 26 June-10 July 1944. Depicts the U.S. VII Corps advance in the Normandy breakout, including the army line extending to Caumont.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Caumont-l%27%C3%89vent%C3%A9/@49.0328,-0.94,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=14/49.0328/-0.94/Caumont-l%27%C3%89vent%C3%A9"
+            }
+        },
+        {
+            "PlaceName": "Lessay-P\u00e9riers highway",
+            "GPS_Coordinate": "49.1736, -1.6783",
+            "BoundingBox": {
+                "North": 50.0732,
+                "South": 48.274,
+                "East": -0.3053,
+                "West": -3.0513
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAPVII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map VII depicting the VII Corps drive to La Chapelle, 8-10 July 1944, illustrating positions in the Carentan-P\u00e9riers isthmus including the Lessay-P\u00e9riers highway area.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Lessay-P%C3%A9riers+highway%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.1736&lon=-1.6783&zoom=13"
+            }
+        },
+        {
+            "PlaceName": "P\u00e9riers-St. L\u00f4 road",
+            "GPS_Coordinate": "49.0742,-1.2065",
+            "BoundingBox": {
+                "North": "49.9735",
+                "South": "48.1749",
+                "East": "0.1641",
+                "West": "-2.5771"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-VII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map VII: The Carentan\u2013P\u00e9riers Isthmus, 8 July 1944, depicting VII Corps situation including positions along the P\u00e9riers-St. L\u00f4 road.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/dir/P%C3%A9riers,+50490+Manche,+France/Saint-L%C3%B4,+50000+Manche,+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=P%C3%A9riers%2CFrance%3BSaint-L%C3%B4%2CFrance#map=13/49.0742/-1.2065"
+            }
+        }
+    ],
+    "2": [
+        {
+            "PlaceName": "Carentan-P\u00e9riers isthmus",
+            "GPS_Coordinate": "49.2559, -1.2888",
+            "BoundingBox": {
+                "North": 50.1609,
+                "South": 48.3509,
+                "East": 0.0882,
+                "West": -2.6668
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-NoVII-13Jul44.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map VII from 'Breakout and Pursuit': VII Corps gains on the Carentan-P\u00e9riers isthmus and advance toward Saint-L\u00f4, 8-13 July 1944, illustrating terrain, positions, and limited advances by 83d and 4th Infantry Divisions.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Carentan-P%C3%A9riers+isthmus%2C+Normandy%2C+France&query_place_id=ChIJnYpYkKxB34cR1zI2P5q3i7Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=13&lat=49.2559&lon=-1.2888"
+            }
+        },
+        {
+            "PlaceName": "Sainteny",
+            "GPS_Coordinate": "49.0333, -1.4167",
+            "BoundingBox": {
+                "North": 49.9313,
+                "South": 48.1353,
+                "East": -0.0477,
+                "West": -2.7857
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP17.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map XVII: VII Corps Drive to Coutances, 3-8 July 1944, showing operations in the Carentan sector including Sainteny.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sainteny,+France/@49.0333,-1.4167,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=49.0333&lon=-1.4167"
+            }
+        },
+        {
+            "PlaceName": "P\u00e9riers",
+            "GPS_Coordinate": "49.1328, -1.3161",
+            "BoundingBox": {
+                "North": 50.0329,
+                "South": 48.2327,
+                "East": 0.0599,
+                "West": -2.6921
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-MapVII1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map VII-1: Advance of VII Corps toward St. L\u00f4\u2013P\u00e9riers ridge, 10\u201313 June 1944, depicting redeployment to Carentan sector and positions near P\u00e9riers.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/P%C3%A9riers/@49.1328,-1.3161,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.1328/-1.3161"
+            }
+        },
+        {
+            "PlaceName": "Prairies Mar\u00e9cageuses de Gorges",
+            "GPS_Coordinate": "48.9464, -1.5403",
+            "BoundingBox": {
+                "North": 49.8466,
+                "South": 48.0462,
+                "East": -0.1693,
+                "West": -2.9113
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map III showing the VIII Corps drive along the west coast of the Cotentin Peninsula toward la Haye-du-Puits and surrounding terrain features including marshy areas.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=48.9464,-1.5403",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.9464/-1.5403"
+            }
+        },
+        {
+            "PlaceName": "S\u00e8ves River",
+            "GPS_Coordinate": "49.2300,-1.2600",
+            "BoundingBox": {
+                "North": 50.1294,
+                "South": 48.3306,
+                "East": 0.1165,
+                "West": -2.6365
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP7.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-4.html",
+                    "External_Map_Description": "Map VII: German Dispositions West of St. L\u00f4, 10 July 1944, illustrating defensive lines including the Ay and S\u00e8ves Rivers as proposed main line of resistance.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=S%C3%A8ves+River%2C+Normandie%2C+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-1.2600&lat=49.2300&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Holerotte River",
+            "GPS_Coordinate": "49.0800, -1.3400",
+            "BoundingBox": {
+                "North": 49.98,
+                "South": 48.18,
+                "East": -0.0,
+                "West": -2.72
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-VII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map VII: The Carentan-P\u00e9riers Isthmus, 8-15 July 1944, depicting operations of the 4th Infantry Division including terrain features like the Holerotte River in the western isthmus.",
+                    "External_Map_Capture_Date": "2024-10-05T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Holerotte+River%2C+Normandy%2C+France",
+                "openstreetbrowser_map_Link": "https://map.openstreetbrowser.org/#map=13/49.0800/-1.3400"
+            }
+        }
+    ],
+    "3": [
+        {
+            "PlaceName": "Taute River",
+            "GPS_Coordinate": "49.2800, -1.2700",
+            "BoundingBox": {
+                "North": 50.1792,
+                "South": 48.3808,
+                "East": 0.1065,
+                "West": -2.6465
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-V-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V-1: Advance Toward Carentan, 8-12 June 1944, depicting positions and movements in the Carentan sector including the Taute River.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-V-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V-2: VII Corps Drive Toward St. L\u00f4, 13-17 June 1944, showing the offensive south along the Coutances-St. L\u00f4 highway area with Taute River features.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Taute+River%2C+Carentan%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/49.28/-1.27"
+            }
+        },
+        {
+            "PlaceName": "Sainteny",
+            "GPS_Coordinate": "49.0333, -1.4167",
+            "BoundingBox": {
+                "North": 49.9313,
+                "South": 48.1353,
+                "East": -0.0477,
+                "West": -2.7857
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP17.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map XVII: VII Corps Drive to Coutances, 3-8 July 1944, showing operations in the Carentan sector including Sainteny.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sainteny,+France/@49.0333,-1.4167,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=49.0333&lon=-1.4167"
+            }
+        },
+        {
+            "PlaceName": "Tribehou causeway",
+            "GPS_Coordinate": "49.0333,-1.3167",
+            "BoundingBox": {
+                "North": 49.9331,
+                "South": 48.1335,
+                "East": 0.0543,
+                "West": -2.6877
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-7VII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map VII: The P\u00e9riers-St. L\u00f4 breakthrough, 7-14 July 1944. Depicts operations of the 83d Division in the Carentan-P\u00e9riers isthmus, including advance to Sainteny, crossing of the Tribehou causeway, and positions along the Taute River.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Tribehou+causeway%2C+Manche%2C+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#gps=49.0333/-1.3167/15"
+            }
+        },
+        {
+            "PlaceName": "Carentan-P\u00e9riers isthmus",
+            "GPS_Coordinate": "49.2559, -1.2888",
+            "BoundingBox": {
+                "North": 50.1609,
+                "South": 48.3509,
+                "East": 0.0882,
+                "West": -2.6668
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-NoVII-13Jul44.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map VII from 'Breakout and Pursuit': VII Corps gains on the Carentan-P\u00e9riers isthmus and advance toward Saint-L\u00f4, 8-13 July 1944, illustrating terrain, positions, and limited advances by 83d and 4th Infantry Divisions.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Carentan-P%C3%A9riers+isthmus%2C+Normandy%2C+France&query_place_id=ChIJnYpYkKxB34cR1zI2P5q3i7Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=13&lat=49.2559&lon=-1.2888"
+            }
+        },
+        {
+            "PlaceName": "P\u00e9riers",
+            "GPS_Coordinate": "49.1328, -1.3161",
+            "BoundingBox": {
+                "North": 50.0329,
+                "South": 48.2327,
+                "East": 0.0599,
+                "West": -2.6921
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-MapVII1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map VII-1: Advance of VII Corps toward St. L\u00f4\u2013P\u00e9riers ridge, 10\u201313 June 1944, depicting redeployment to Carentan sector and positions near P\u00e9riers.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/P%C3%A9riers/@49.1328,-1.3161,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.1328/-1.3161"
+            }
+        }
+    ],
+    "4": [
+        {
+            "PlaceName": "Carentan-P\u00e9riers isthmus",
+            "GPS_Coordinate": "49.2559, -1.2888",
+            "BoundingBox": {
+                "North": 50.1609,
+                "South": 48.3509,
+                "East": 0.0882,
+                "West": -2.6668
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-NoVII-13Jul44.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map VII from 'Breakout and Pursuit': VII Corps gains on the Carentan-P\u00e9riers isthmus and advance toward Saint-L\u00f4, 8-13 July 1944, illustrating terrain, positions, and limited advances by 83d and 4th Infantry Divisions.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Carentan-P%C3%A9riers+isthmus%2C+Normandy%2C+France&query_place_id=ChIJnYpYkKxB34cR1zI2P5q3i7Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=13&lat=49.2559&lon=-1.2888"
+            }
+        },
+        {
+            "PlaceName": "Carentan",
+            "GPS_Coordinate": {
+                "lat": 49.3067,
+                "lon": -1.2428
+            },
+            "BoundingBox": {
+                "North": 50.2061,
+                "South": 48.4073,
+                "East": 0.1332,
+                "West": -2.6188
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-V.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V: VII Corps Drive to the Southwest, 25-30 June 1944, illustrating redeployment to Carentan sector and offensive toward Coutances-St. L\u00f4 highway.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Carentan/@49.3067,-1.2428,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.3067&lon=-1.2428&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Taute River",
+            "GPS_Coordinate": "49.2800, -1.2700",
+            "BoundingBox": {
+                "North": 50.1792,
+                "South": 48.3808,
+                "East": 0.1065,
+                "West": -2.6465
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-V-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V-1: Advance Toward Carentan, 8-12 June 1944, depicting positions and movements in the Carentan sector including the Taute River.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-V-2.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-5.html",
+                    "External_Map_Description": "Map V-2: VII Corps Drive Toward St. L\u00f4, 13-17 June 1944, showing the offensive south along the Coutances-St. L\u00f4 highway area with Taute River features.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Taute+River%2C+Carentan%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/49.28/-1.27"
+            }
+        }
+    ]
+}

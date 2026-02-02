@@ -1,0 +1,1421 @@
+{
+    "1": [
+        {
+            "PlaceName": "Argentan",
+            "GPS_Coordinate": "48.7422,0.0156",
+            "BoundingBox": {
+                "North": 49.6415,
+                "South": 47.8429,
+                "East": 1.3586,
+                "West": -1.3274
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-VII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map VII. Operation GOODWOOD, 18-20 July 1944, showing armored advance relevant to the sub-event context toward Falaise.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-X.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map X. Pursuit to Argentan Area, 7-13 August 1944, depicting the region including Argentan in the breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Argentan,+France/@48.7422,0.0156,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.7422/0.0156"
+            }
+        },
+        {
+            "PlaceName": "Seine River",
+            "GPS_Coordinate": "49.4404,1.0819",
+            "BoundingBox": {
+                "North": 50.3384,
+                "South": 48.5424,
+                "East": 2.4589,
+                "West": -0.2951
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map 1. The Lodgment Area as of 26 June 1944, depicting the geographic boundaries including the Seine River as the eastern limit.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/91/Normandybeachheadmap.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:NORMANDYBEACHHEADMAP.jpg",
+                    "External_Map_Description": "Normandy beachhead map showing the Allied lodgment area expansion towards the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Seine+River%2C+Normandy%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0819&lat=49.4404&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Dreux",
+            "GPS_Coordinate": "48.7358, 1.3714",
+            "BoundingBox": {
+                "North": 49.6341,
+                "South": 47.8375,
+                "East": 2.7294,
+                "West": 0.0134
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map XXVI: Panzer Group Eberbach, 15-19 August 1944, depicting the front lines and movements during the period relevant to the sub-event involving withdrawal east of Flers and engagements with LXVIII Corps.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dreux,+France/@48.7358,1.3714,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!map=14/48.7358/1.3714/Dreux"
+            }
+        },
+        {
+            "PlaceName": "Falaise",
+            "GPS_Coordinate": "48.8931,-0.1992",
+            "BoundingBox": {
+                "North": 49.7914,
+                "South": 47.9948,
+                "East": 1.1638,
+                "West": -1.5622
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map 26: British Intentions, 10 July 1944, showing operations south of Caen towards Falaise area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Falaise,+14114+Falaise,+France/@48.8930571,-0.1991671,14z/data=!3m1!4b1!4m6!3m5!1s0x480f5b0d4b3e4c1d:0x4b4e4e4e4e4e4e4e!8m2!3d48.8930571!4d-0.1991671",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.8931/-0.1992/Falaise,France"
+            }
+        },
+        {
+            "Event_Doc": "chapter16a-event.json",
+            "Source_Doc": "chapter16a-content.md",
+            "Sub-event_summary": "Situation on evening of 30 July, uncertainty about Avranches, evidence of German disorganization, and orders to push through to S\u00e9lune River.",
+            "PlaceName": "Mayenne",
+            "GPS_Coordinate": "48.3961, -0.6039",
+            "BoundingBox": {
+                "North": 49.2941,
+                "South": 47.4981,
+                "East": 0.7481,
+                "West": -1.9559
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP8.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-16.html",
+                    "External_Map_Description": "Map VIII. Third Army Maneuver, 27-30 July 1944, showing positions including the Mayenne area on evening of 30 July.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mayenne,+53100+Mayenne,+France/@48.3961,-0.6039,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=14/48.3961/-0.6039/Mayenne"
+            }
+        }
+    ],
+    "2": [
+        {
+            "PlaceName": "Alen\u00e7on",
+            "GPS_Coordinate": "48.4304, 0.0914",
+            "BoundingBox": {
+                "North": 49.3284,
+                "South": 47.5324,
+                "East": 1.4334,
+                "West": -1.2506
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map XXV: The Canadian Attack, 10-13 August 1944, showing operations relevant to German shifts towards Falaise defense area near Alen\u00e7on.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Closing_of_the_Falaise_Pocket.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_Pocket",
+                    "External_Map_Description": "Map showing the closing of the Falaise Pocket 12-16 August 1944, with Alen\u00e7on in the vicinity of Argentan encirclement.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Alen%C3%A7on,+France/@48.4304,0.0914,13z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/48.4304/0.0914"
+            }
+        },
+        {
+            "PlaceName": "Mortagne",
+            "GPS_Coordinate": "48.7328, 0.4883",
+            "BoundingBox": {
+                "North": 49.6311,
+                "South": 47.8345,
+                "East": 1.8513,
+                "West": -0.8747
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XXII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map XXII: The XII Corps Drive Eastward, 13-16 August 1944, depicting operations near Mortagne-au-Perche where the 79th Infantry Division cleared German vehicles.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mortagne-au-Perche,+France/@48.7328,0.4883,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.7328/0.4883"
+            }
+        },
+        {
+            "PlaceName": "Le Mans",
+            "GPS_Coordinate": "47.9936, 0.2036",
+            "BoundingBox": {
+                "North": 48.8933,
+                "South": 47.0939,
+                "East": 1.5472,
+                "West": -1.14
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Le+Mans,+France/@47.9936,0.2036,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/47.9936/0.2036"
+            }
+        },
+        {
+            "PlaceName": "F\u00f4ret d'Ecouves",
+            "GPS_Coordinate": "48.5833,-0.1667",
+            "BoundingBox": {
+                "North": 49.4816,
+                "South": 47.685,
+                "East": 1.1933,
+                "West": -1.5267
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/BO-25VIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map VIII: The XV Corps Area of Action, 12-14 August 1944. Depicts the advance including clearing of F\u00f4ret d'Ecouves by French forces, Carrouges, Ecouch\u00e9, and movements toward Argentan-Falaise road.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/F%C3%B4ret+d%27%C3%89couves/@48.5833,-0.1667,13z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=13/48.5833/-0.1667"
+            }
+        },
+        {
+            "PlaceName": "Argentan",
+            "GPS_Coordinate": "48.7422,0.0156",
+            "BoundingBox": {
+                "North": 49.6415,
+                "South": 47.8429,
+                "East": 1.3586,
+                "West": -1.3274
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-VII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map VII. Operation GOODWOOD, 18-20 July 1944, showing armored advance relevant to the sub-event context toward Falaise.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-X.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map X. Pursuit to Argentan Area, 7-13 August 1944, depicting the region including Argentan in the breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Argentan,+France/@48.7422,0.0156,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.7422/0.0156"
+            }
+        },
+        {
+            "PlaceName": "le Bourg-St.-L\u00e9onard-Exmes",
+            "GPS_Coordinate": "48.6838, 0.0564",
+            "BoundingBox": {
+                "North": 49.5838,
+                "South": 47.7838,
+                "East": 1.4164,
+                "West": -1.3036
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-M26.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map showing Third Army pursuit operations on 14 August 1944, including advances by XV Corps near Exmes and Mortagne-au-Perche areas.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Le+Bourg-Saint-L%C3%A9onard,+61220+Orne,+France/@48.6838,0.0564,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/48.6838/0.0564"
+            }
+        }
+    ],
+    "3": [
+        {
+            "PlaceName": "Dreux",
+            "GPS_Coordinate": "48.7358, 1.3714",
+            "BoundingBox": {
+                "North": 49.6341,
+                "South": 47.8375,
+                "East": 2.7294,
+                "West": 0.0134
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map XXVI: Panzer Group Eberbach, 15-19 August 1944, depicting the front lines and movements during the period relevant to the sub-event involving withdrawal east of Flers and engagements with LXVIII Corps.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dreux,+France/@48.7358,1.3714,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!map=14/48.7358/1.3714/Dreux"
+            }
+        },
+        {
+            "PlaceName": "Alen\u00e7on",
+            "GPS_Coordinate": "48.4304, 0.0914",
+            "BoundingBox": {
+                "North": 49.3284,
+                "South": 47.5324,
+                "East": 1.4334,
+                "West": -1.2506
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map XXV: The Canadian Attack, 10-13 August 1944, showing operations relevant to German shifts towards Falaise defense area near Alen\u00e7on.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Closing_of_the_Falaise_Pocket.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_Pocket",
+                    "External_Map_Description": "Map showing the closing of the Falaise Pocket 12-16 August 1944, with Alen\u00e7on in the vicinity of Argentan encirclement.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Alen%C3%A7on,+France/@48.4304,0.0914,13z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/48.4304/0.0914"
+            }
+        }
+    ],
+    "4": [
+        {
+            "PlaceName": "Ecouch\u00e9-Exmes",
+            "GPS_Coordinate": "48.6869, 0.0765",
+            "BoundingBox": {
+                "North": 49.5861,
+                "South": 47.7877,
+                "East": 1.438,
+                "West": -1.285
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "WWII U.S. Army map depicting operations in the Argentan-Falaise area, including positions near Ecouch\u00e9-Exmes line held by 2d French Armored and 90th Divisions around 13-15 August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Falaise_Argentan_Pocket.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_Pocket",
+                    "External_Map_Description": "Map of the Falaise-Argentan Pocket showing Allied advances and German positions, relevant to the Ecouch\u00e9-Exmes line interdiction of roads to Argentan in mid-August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Ecouch%C3%A9-Exmes%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.6869&lon=0.0765&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Argentan-Falaise",
+            "GPS_Coordinate": "48.8158,-0.0932",
+            "BoundingBox": {
+                "North": 49.7154,
+                "South": 47.9162,
+                "East": 1.2712,
+                "West": -1.4576
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-XXV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map XXV-1: XV Corps Advance Toward Argentan-Falaise Highway, 12-13 August 1944",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/44/Falaise_Pocket.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_pocket",
+                    "External_Map_Description": "Map of the Falaise Pocket, illustrating the Argentan-Falaise gap closure in August 1944",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/dir/Argentan,+France/Falaise,+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-0.0932&lat=48.8158&zoom=11"
+            }
+        },
+        {
+            "PlaceName": "Evron",
+            "GPS_Coordinate": "48.083056,-0.216111",
+            "BoundingBox": {
+                "North": 48.9831,
+                "South": 47.1831,
+                "East": 1.1279,
+                "West": -1.5601
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP25-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map XXV: XV Corps Drive to the Seine, 8-23 August 1944, depicting the advance including the 80th Infantry Division's position protecting the left rear at Evron.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Evron,+53150+Mayenne,+France/@48.083056,-0.216111,14z/data=!3m1!4b1!4m6!3m5!1s0x480e5b9f4e4b5c1d:0x4b0a5e0e4e4b5c1d!8m2!3d48.083056!4d-0.216111!16zL20vMDZ0a3I?",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=14/48.083056/-0.216111/Evron"
+            }
+        },
+        {
+            "PlaceName": "Argentan",
+            "GPS_Coordinate": "48.7422,0.0156",
+            "BoundingBox": {
+                "North": 49.6415,
+                "South": 47.8429,
+                "East": 1.3586,
+                "West": -1.3274
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-VII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map VII. Operation GOODWOOD, 18-20 July 1944, showing armored advance relevant to the sub-event context toward Falaise.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-X.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map X. Pursuit to Argentan Area, 7-13 August 1944, depicting the region including Argentan in the breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Argentan,+France/@48.7422,0.0156,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.7422/0.0156"
+            }
+        },
+        {
+            "PlaceName": "Argentan-Laigle",
+            "GPS_Coordinate": "48.7583, 0.3224",
+            "BoundingBox": {
+                "North": 49.6583,
+                "South": 47.8583,
+                "East": 1.6814,
+                "West": -1.0366
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-26-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map 26-1 depicting operations in the Argentan area, including the Ecouch\u00e9-Exmes line and Argentan-Laigle highway during the breakout and pursuit in August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/92/Falaise_pocket_map.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_Pocket",
+                    "External_Map_Description": "Map of the Falaise Pocket showing the Argentan region and surrounding operations in August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Argentan-Laigle+highway%2C+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=11/48.7583/0.3224/lat=48.7583/lon=0.3224/z=11"
+            }
+        },
+        {
+            "PlaceName": "Paris",
+            "GPS_Coordinate": "48.8567, 2.3528",
+            "BoundingBox": {
+                "North": 49.7562,
+                "South": 47.9572,
+                "East": 3.7218,
+                "West": 0.9838
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Paris,+France/@48.8567,2.3528,12z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/48.8567/2.3528"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        }
+    ],
+    "5": [
+        {
+            "PlaceName": "Argentan-Falaise",
+            "GPS_Coordinate": "48.8158,-0.0932",
+            "BoundingBox": {
+                "North": 49.7154,
+                "South": 47.9162,
+                "East": 1.2712,
+                "West": -1.4576
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-XXV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map XXV-1: XV Corps Advance Toward Argentan-Falaise Highway, 12-13 August 1944",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/44/Falaise_Pocket.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_pocket",
+                    "External_Map_Description": "Map of the Falaise Pocket, illustrating the Argentan-Falaise gap closure in August 1944",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/dir/Argentan,+France/Falaise,+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-0.0932&lat=48.8158&zoom=11"
+            }
+        },
+        {
+            "PlaceName": "Ecouch\u00e9-Exmes",
+            "GPS_Coordinate": "48.6869, 0.0765",
+            "BoundingBox": {
+                "North": 49.5861,
+                "South": 47.7877,
+                "East": 1.438,
+                "West": -1.285
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "WWII U.S. Army map depicting operations in the Argentan-Falaise area, including positions near Ecouch\u00e9-Exmes line held by 2d French Armored and 90th Divisions around 13-15 August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Falaise_Argentan_Pocket.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_Pocket",
+                    "External_Map_Description": "Map of the Falaise-Argentan Pocket showing Allied advances and German positions, relevant to the Ecouch\u00e9-Exmes line interdiction of roads to Argentan in mid-August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Ecouch%C3%A9-Exmes%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.6869&lon=0.0765&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Gac\u00e9",
+            "GPS_Coordinate": "48.7486, 0.4069",
+            "BoundingBox": {
+                "North": 49.6486,
+                "South": 47.8486,
+                "East": 1.7689,
+                "West": -0.9551
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Gac%C3%A9,+France/@48.748611,0.406944,14z/data=!3m1!4b1!4m6!3m5!1s0x480f5b4b4b4b4b4b:0x4b4b4b4b4b4b4b4b!8m2!3d48.748611!4d0.406944!16zL20vMDV3c3Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.7486/0.4069"
+            }
+        },
+        {
+            "PlaceName": "Argentan",
+            "GPS_Coordinate": "48.7422,0.0156",
+            "BoundingBox": {
+                "North": 49.6415,
+                "South": 47.8429,
+                "East": 1.3586,
+                "West": -1.3274
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-VII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map VII. Operation GOODWOOD, 18-20 July 1944, showing armored advance relevant to the sub-event context toward Falaise.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-X.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map X. Pursuit to Argentan Area, 7-13 August 1944, depicting the region including Argentan in the breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Argentan,+France/@48.7422,0.0156,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.7422/0.0156"
+            }
+        },
+        {
+            "PlaceName": "Lisieux",
+            "GPS_Coordinate": "49.1469, 0.2281",
+            "BoundingBox": {
+                "North": 50.0478,
+                "South": 48.246,
+                "East": 1.6011,
+                "West": -1.1449
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-XXVIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-10.html",
+                    "External_Map_Description": "Map XXVIII: GOODWOOD Offensive, 18-20 July 1944, depicting the area around Caen and vicinity including Lisieux where German forces like the 12th SS Panzer Division were diverted.",
+                    "External_Map_Capture_Date": "2024-11-20T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Lisieux,+France/@49.1469,0.2281,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.1469&lon=0.2281&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Bernay",
+            "GPS_Coordinate": {
+                "lat": 49.085,
+                "lon": 0.6033
+            },
+            "BoundingBox": {
+                "North": 49.9859,
+                "South": 48.1841,
+                "East": 1.9723,
+                "West": -0.7657
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XXVI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map XXVI: Counterattacks Against the South Flank of the XII Corps, 16-17 August 1944, depicting operations near le Bourg-St.-L\u00e9onard in the context of German panzer attacks during the pursuit phase.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Bernay,+Eure,+France/@49.0858789,0.6025783,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.de/#!map=14/49.0850/0.6033"
+            }
+        },
+        {
+            "Event_Doc": "chapter1a-event.json",
+            "Source_Doc": "chapter1a-content.md",
+            "Sub-event_summary": "Definition and strategic importance of the lodgment area as a prerequisite for the main offensive into Germany, including its geographic boundaries, advantages, and key ports.",
+            "PlaceName": "Rouen",
+            "GPS_Coordinate": {
+                "lat": 49.4432,
+                "lon": 1.0998
+            },
+            "BoundingBox": {
+                "North": 50.3442,
+                "South": 48.5422,
+                "East": 2.4828,
+                "West": -0.2832
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP1-25X36.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "MAP I: Lodgment Area, 25 July 1944, showing the expanded beachhead area in Normandy including boundaries near Rouen on the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Rouen,+France/@49.4432321,1.0999719,13z/data=!3m1!4b1!4m6!3m5!1s0x47e00d7b7e7b7e7b:0x40b82c3688ac34a2!8m2!3d49.4432321!4d1.0999719!16zL20vMDV2c2s",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/49.4432/1.0998/Rouen"
+            }
+        },
+        {
+            "PlaceName": "Chambois",
+            "GPS_Coordinate": "48.8831, 0.1667",
+            "BoundingBox": {
+                "North": 49.7834,
+                "South": 47.9828,
+                "East": 1.547,
+                "West": -1.2136
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP25-V.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map 25-V from the official U.S. Army history 'Breakout and Pursuit', depicting the Battle of the Falaise Pocket in mid-August 1944, including positions near Chambois during the period of German counterattacks and escape attempts.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Battle_of_Normandy_1944-08-16to21.svg/1280px-Battle_of_Normandy_1944-08-16to21.svg.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_Pocket",
+                    "External_Map_Description": "Map of the Battle of Normandy from 16 to 21 August 1944, showing the Falaise Pocket closure, German counterattacks, and key points like Chambois where forces met amid slackening contact and probes.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Chambois,+61120+Orne,+France/@48.8831,0.1667,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.8831/0.1667"
+            }
+        },
+        {
+            "PlaceName": "For\u00eat de Gouffern",
+            "GPS_Coordinate": "48.8333, 0.1667",
+            "BoundingBox": {
+                "North": 49.7313,
+                "South": 47.9353,
+                "East": 1.5257,
+                "West": -1.1923
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAPVIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map VIII: Falaise-Argentan Area, 12-18 August 1944, depicting German counterattacks including positions near For\u00eat de Gouffern and actions involving 90th Infantry Division at Le Bourg-St.-L\u00e9onard.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=F%C3%B4ret+de+Gouffern",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/48.8333/0.1667"
+            }
+        },
+        {
+            "PlaceName": "le Bourg-St.-L\u00e9onard",
+            "GPS_Coordinate": "48.68361, 0.31667",
+            "BoundingBox": {
+                "North": 49.58221,
+                "South": 47.78501,
+                "East": 1.67747,
+                "West": -1.04413
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP-VII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-VII.htm",
+                    "External_Map_Description": "Map VII: Attack of Combat Command A, 3d Armored Division, and 90th Infantry Division, 16-17 August 1944, depicting the German counterattack at le Bourg-St.-L\u00e9onard",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Le+Bourg-Saint-L%C3%A9onard,+France/@48.68361,0.31667,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=15/48.68361/0.31667"
+            }
+        },
+        {
+            "Event_Doc": "chapter25d-event.json",
+            "Source_Doc": "chapter25d-content.md",
+            "sub_event_index": 5,
+            "place_index": 11,
+            "Sub-event_summary": "On 11 August, Montgomery outlined encircling Germans west of Caen-Falaise-Argentan-Alen\u00e7on-le Mans line by narrowing the supply gap; anticipating German reactions, he ordered Canadians to capture Falaise quickly then Argentan, British to advance toward Falaise, and XV Corps to Alen\u00e7on at the boundary, potentially destroying forces between Seine and Loire or pursuing to Seine if evaded.",
+            "PlaceName": "Orne",
+            "GPS_Coordinate": "48.6667,0.1667",
+            "BoundingBox": {
+                "North": 49.5657,
+                "South": 47.7677,
+                "East": 1.5287,
+                "West": -1.1953
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-25.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map 25 from U.S. Army in World War II: Breakout and Pursuit, Chapter 25, depicting operations related to the Falaise-Argentan pocket and pursuit, relevant to Montgomery's 11 August encirclement plan west of Caen-Falaise-Argentan-Alen\u00e7on-le Mans line.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Orne,+France/@48.6667,0.1667,9z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=0.1667&lat=48.6667&zoom=9"
+            }
+        },
+        {
+            "PlaceName": "Dives River",
+            "GPS_Coordinate": "49.0520, -0.0750",
+            "BoundingBox": {
+                "North": 49.9529,
+                "South": 48.1511,
+                "East": 1.297,
+                "West": -1.447
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "U.S. Army Center of Military History map from Breakout and Pursuit Chapter 26 depicting operations and German withdrawal to the Dives River line near M\u00e9zidon and St. Pierre-sur-Dives in August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Dives+River+near+M%C3%A9zidon-Canon,+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.0520&lon=-0.0750&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Falaise",
+            "GPS_Coordinate": "48.8931,-0.1992",
+            "BoundingBox": {
+                "North": 49.7914,
+                "South": 47.9948,
+                "East": 1.1638,
+                "West": -1.5622
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map 26: British Intentions, 10 July 1944, showing operations south of Caen towards Falaise area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Falaise,+14114+Falaise,+France/@48.8930571,-0.1991671,14z/data=!3m1!4b1!4m6!3m5!1s0x480f5b0d4b3e4c1d:0x4b4e4e4e4e4e4e4e!8m2!3d48.8930571!4d-0.1991671",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.8931/-0.1992/Falaise,France"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        }
+    ],
+    "6": [
+        {
+            "PlaceName": "Argentan-Falaise",
+            "GPS_Coordinate": "48.8158,-0.0932",
+            "BoundingBox": {
+                "North": 49.7154,
+                "South": 47.9162,
+                "East": 1.2712,
+                "West": -1.4576
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-XXV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map XXV-1: XV Corps Advance Toward Argentan-Falaise Highway, 12-13 August 1944",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/44/Falaise_Pocket.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_pocket",
+                    "External_Map_Description": "Map of the Falaise Pocket, illustrating the Argentan-Falaise gap closure in August 1944",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/dir/Argentan,+France/Falaise,+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-0.0932&lat=48.8158&zoom=11"
+            }
+        }
+    ],
+    "7": [
+        {
+            "sub_event_index": 2,
+            "place_index": 7,
+            "Event_Doc": "chapter3a-event.json",
+            "Source_Doc": "chapter3a-content.md",
+            "Sub-event_summary": "Efforts to initiate southward attack from Cotentin, delays due to logistics and Cherbourg priority, and receipt of Montgomery's directive for wheeling maneuver toward Caumont-Vire-Mortain-Fougeres line.",
+            "PlaceName": "Mortain",
+            "GPS_Coordinate": "48.6494, -0.9369",
+            "BoundingBox": {
+                "North": 49.5487,
+                "South": 47.7501,
+                "East": 0.4241,
+                "West": -2.2979
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP8.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-3.html",
+                    "External_Map_Description": "Map illustrating Montgomery's directive of 25 July directing a wheeling maneuver toward the Caumont-Vire-Mortain-Foug\u00e8res line.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mortain,+France/@48.64944,-0.93694,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!zoom=14&lat=48.64944&lon=-0.93694"
+            }
+        },
+        {
+            "PlaceName": "Argentan",
+            "GPS_Coordinate": "48.7422,0.0156",
+            "BoundingBox": {
+                "North": 49.6415,
+                "South": 47.8429,
+                "East": 1.3586,
+                "West": -1.3274
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-VII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map VII. Operation GOODWOOD, 18-20 July 1944, showing armored advance relevant to the sub-event context toward Falaise.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-X.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map X. Pursuit to Argentan Area, 7-13 August 1944, depicting the region including Argentan in the breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Argentan,+France/@48.7422,0.0156,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.7422/0.0156"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Ecouch\u00e9-Exmes",
+            "GPS_Coordinate": "48.6869, 0.0765",
+            "BoundingBox": {
+                "North": 49.5861,
+                "South": 47.7877,
+                "East": 1.438,
+                "West": -1.285
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "WWII U.S. Army map depicting operations in the Argentan-Falaise area, including positions near Ecouch\u00e9-Exmes line held by 2d French Armored and 90th Divisions around 13-15 August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Falaise_Argentan_Pocket.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_Pocket",
+                    "External_Map_Description": "Map of the Falaise-Argentan Pocket showing Allied advances and German positions, relevant to the Ecouch\u00e9-Exmes line interdiction of roads to Argentan in mid-August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Ecouch%C3%A9-Exmes%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.6869&lon=0.0765&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Alen\u00e7on",
+            "GPS_Coordinate": "48.4304, 0.0914",
+            "BoundingBox": {
+                "North": 49.3284,
+                "South": 47.5324,
+                "East": 1.4334,
+                "West": -1.2506
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map XXV: The Canadian Attack, 10-13 August 1944, showing operations relevant to German shifts towards Falaise defense area near Alen\u00e7on.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Closing_of_the_Falaise_Pocket.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_Pocket",
+                    "External_Map_Description": "Map showing the closing of the Falaise Pocket 12-16 August 1944, with Alen\u00e7on in the vicinity of Argentan encirclement.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Alen%C3%A7on,+France/@48.4304,0.0914,13z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/48.4304/0.0914"
+            }
+        }
+    ],
+    "8": [
+        {
+            "PlaceName": "Falaise",
+            "GPS_Coordinate": "48.8931,-0.1992",
+            "BoundingBox": {
+                "North": 49.7914,
+                "South": 47.9948,
+                "East": 1.1638,
+                "West": -1.5622
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-7.html",
+                    "External_Map_Description": "Map 26: British Intentions, 10 July 1944, showing operations south of Caen towards Falaise area.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Falaise,+14114+Falaise,+France/@48.8930571,-0.1991671,14z/data=!3m1!4b1!4m6!3m5!1s0x480f5b0d4b3e4c1d:0x4b4e4e4e4e4e4e4e!8m2!3d48.8930571!4d-0.1991671",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.8931/-0.1992/Falaise,France"
+            }
+        },
+        {
+            "PlaceName": "Argentan",
+            "GPS_Coordinate": "48.7422,0.0156",
+            "BoundingBox": {
+                "North": 49.6415,
+                "South": 47.8429,
+                "East": 1.3586,
+                "West": -1.3274
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-VII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map VII. Operation GOODWOOD, 18-20 July 1944, showing armored advance relevant to the sub-event context toward Falaise.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-X.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map X. Pursuit to Argentan Area, 7-13 August 1944, depicting the region including Argentan in the breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Argentan,+France/@48.7422,0.0156,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.7422/0.0156"
+            }
+        },
+        {
+            "PlaceName": "Trun",
+            "GPS_Coordinate": "48.8336, 0.2144",
+            "BoundingBox": {
+                "North": 49.7329,
+                "South": 47.9343,
+                "East": 1.5741,
+                "West": -1.1453
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-16.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map No. 16\u2014The Falaise-Argentan Pocket, 12-18 August 1944, showing Trun as a key convergence point in the pocket closure.",
+                    "External_Map_Capture_Date": "2024-10-05T10:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Trun,+France/@48.833611,0.214444,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=0.214444&lat=48.833611&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Chambois",
+            "GPS_Coordinate": "48.8831, 0.1667",
+            "BoundingBox": {
+                "North": 49.7834,
+                "South": 47.9828,
+                "East": 1.547,
+                "West": -1.2136
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP25-V.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map 25-V from the official U.S. Army history 'Breakout and Pursuit', depicting the Battle of the Falaise Pocket in mid-August 1944, including positions near Chambois during the period of German counterattacks and escape attempts.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Battle_of_Normandy_1944-08-16to21.svg/1280px-Battle_of_Normandy_1944-08-16to21.svg.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_Pocket",
+                    "External_Map_Description": "Map of the Battle of Normandy from 16 to 21 August 1944, showing the Falaise Pocket closure, German counterattacks, and key points like Chambois where forces met amid slackening contact and probes.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Chambois,+61120+Orne,+France/@48.8831,0.1667,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.8831/0.1667"
+            }
+        }
+    ],
+    "9": [
+        {
+            "PlaceName": "Le Bourg-St.-Leonard",
+            "GPS_Coordinate": "48.6667, 0.1667",
+            "BoundingBox": {
+                "North": 49.5659,
+                "South": 47.7675,
+                "East": 1.5282,
+                "West": -1.1948
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BoP-map-VI-5.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map VI-5: Canadian Attack, 14-17 August 1944, illustrating Le Bourg-St.-Leonard and withdrawal terrain from Argentan-Falaise pocket.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/1/15/Battle_of_the_Falaise_Pocket-map.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_Pocket",
+                    "External_Map_Description": "Map of the Battle of the Falaise Pocket showing Argentan-Falaise area including vicinity of Le Bourg-St.-Leonard.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Le+Bourg-Saint-L%C3%A9onard,+61160+France/@48.6667,0.1667,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=14/48.6667/0.1667"
+            }
+        },
+        {
+            "PlaceName": "Argentan-Falaise",
+            "GPS_Coordinate": "48.8158,-0.0932",
+            "BoundingBox": {
+                "North": 49.7154,
+                "South": 47.9162,
+                "East": 1.2712,
+                "West": -1.4576
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-XXV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map XXV-1: XV Corps Advance Toward Argentan-Falaise Highway, 12-13 August 1944",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/44/Falaise_Pocket.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_pocket",
+                    "External_Map_Description": "Map of the Falaise Pocket, illustrating the Argentan-Falaise gap closure in August 1944",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/dir/Argentan,+France/Falaise,+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-0.0932&lat=48.8158&zoom=11"
+            }
+        }
+    ],
+    "10": [
+        {
+            "PlaceName": "Ecouch\u00e9-Exmes",
+            "GPS_Coordinate": "48.6869, 0.0765",
+            "BoundingBox": {
+                "North": 49.5861,
+                "South": 47.7877,
+                "East": 1.438,
+                "West": -1.285
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "WWII U.S. Army map depicting operations in the Argentan-Falaise area, including positions near Ecouch\u00e9-Exmes line held by 2d French Armored and 90th Divisions around 13-15 August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Falaise_Argentan_Pocket.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_Pocket",
+                    "External_Map_Description": "Map of the Falaise-Argentan Pocket showing Allied advances and German positions, relevant to the Ecouch\u00e9-Exmes line interdiction of roads to Argentan in mid-August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Ecouch%C3%A9-Exmes%2C+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=48.6869&lon=0.0765&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Chambois",
+            "GPS_Coordinate": "48.8831, 0.1667",
+            "BoundingBox": {
+                "North": 49.7834,
+                "South": 47.9828,
+                "East": 1.547,
+                "West": -1.2136
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP25-V.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map 25-V from the official U.S. Army history 'Breakout and Pursuit', depicting the Battle of the Falaise Pocket in mid-August 1944, including positions near Chambois during the period of German counterattacks and escape attempts.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Battle_of_Normandy_1944-08-16to21.svg/1280px-Battle_of_Normandy_1944-08-16to21.svg.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_Pocket",
+                    "External_Map_Description": "Map of the Battle of Normandy from 16 to 21 August 1944, showing the Falaise Pocket closure, German counterattacks, and key points like Chambois where forces met amid slackening contact and probes.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Chambois,+61120+Orne,+France/@48.8831,0.1667,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.8831/0.1667"
+            }
+        },
+        {
+            "PlaceName": "Trun",
+            "GPS_Coordinate": "48.8336, 0.2144",
+            "BoundingBox": {
+                "North": 49.7329,
+                "South": 47.9343,
+                "East": 1.5741,
+                "West": -1.1453
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-16.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "Map No. 16\u2014The Falaise-Argentan Pocket, 12-18 August 1944, showing Trun as a key convergence point in the pocket closure.",
+                    "External_Map_Capture_Date": "2024-10-05T10:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Trun,+France/@48.833611,0.214444,15z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=0.214444&lat=48.833611&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Argentan",
+            "GPS_Coordinate": "48.7422,0.0156",
+            "BoundingBox": {
+                "North": 49.6415,
+                "South": 47.8429,
+                "East": 1.3586,
+                "West": -1.3274
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-VII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map VII. Operation GOODWOOD, 18-20 July 1944, showing armored advance relevant to the sub-event context toward Falaise.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-X.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/maps.html",
+                    "External_Map_Description": "Map X. Pursuit to Argentan Area, 7-13 August 1944, depicting the region including Argentan in the breakout operations.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Argentan,+France/@48.7422,0.0156,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.7422/0.0156"
+            }
+        },
+        {
+            "PlaceName": "Alen\u00e7on",
+            "GPS_Coordinate": "48.4304, 0.0914",
+            "BoundingBox": {
+                "North": 49.3284,
+                "South": 47.5324,
+                "East": 1.4334,
+                "West": -1.2506
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25-1.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map XXV: The Canadian Attack, 10-13 August 1944, showing operations relevant to German shifts towards Falaise defense area near Alen\u00e7on.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Closing_of_the_Falaise_Pocket.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_Pocket",
+                    "External_Map_Description": "Map showing the closing of the Falaise Pocket 12-16 August 1944, with Alen\u00e7on in the vicinity of Argentan encirclement.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Alen%C3%A7on,+France/@48.4304,0.0914,13z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/48.4304/0.0914"
+            }
+        },
+        {
+            "PlaceName": "Argentan-Falaise",
+            "GPS_Coordinate": "48.8158,-0.0932",
+            "BoundingBox": {
+                "North": 49.7154,
+                "South": 47.9162,
+                "East": 1.2712,
+                "West": -1.4576
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-XXV-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-25.html",
+                    "External_Map_Description": "Map XXV-1: XV Corps Advance Toward Argentan-Falaise Highway, 12-13 August 1944",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/44/Falaise_Pocket.svg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Falaise_pocket",
+                    "External_Map_Description": "Map of the Falaise Pocket, illustrating the Argentan-Falaise gap closure in August 1944",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0 Unported"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/dir/Argentan,+France/Falaise,+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=-0.0932&lat=48.8158&zoom=11"
+            }
+        },
+        {
+            "PlaceName": "Dives River",
+            "GPS_Coordinate": "49.0520, -0.0750",
+            "BoundingBox": {
+                "North": 49.9529,
+                "South": 48.1511,
+                "East": 1.297,
+                "West": -1.447
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP26-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-26.html",
+                    "External_Map_Description": "U.S. Army Center of Military History map from Breakout and Pursuit Chapter 26 depicting operations and German withdrawal to the Dives River line near M\u00e9zidon and St. Pierre-sur-Dives in August 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Dives+River+near+M%C3%A9zidon-Canon,+France",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.0520&lon=-0.0750&zoom=10"
+            }
+        }
+    ]
+}

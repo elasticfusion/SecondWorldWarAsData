@@ -1,0 +1,1782 @@
+{
+    "1": [
+        {
+            "PlaceName": "Meuse River",
+            "GPS_Coordinate": "50.6414,5.5733",
+            "BoundingBox": {
+                "North": 51.5414,
+                "South": 49.7414,
+                "East": 6.9903,
+                "West": 4.1563
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP22.JPG",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+                    "External_Map_Description": "Map XXII from 'Breakout and Pursuit' showing enemy dispositions and pursuit phase operations in September 1944, including positions relative to the Meuse River and potential defensive lines.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@50.6414,5.5733,10z?entry=ttu",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=10/50.6414/5.5733"
+            }
+        },
+        {
+            "Event_Doc": "chapter32a-event.json",
+            "Source_Doc": "chapter32a-content.md",
+            "Sub-event_summary": "VII Corps ordered 31 August to turn north through Avesnes, Maubeuge, Mons, addressing gap with Third Army using reinforced 4th Cavalry Group, aiming for Meuse bridgehead near M\u00e9zi\u00e8res. Swerved 3d Armored from Sedan-Charleville to Hirson-Vervins, with 9th Division protecting flank, 1st reinforcing. 3d Armored reached near Mons by 2 September nightfall, columns stretched to Avesnes. Hodges unable to halt due to communication, took Mons morning 3 September. 9th at Charleroi, 1st pushing to Avesnes.",
+            "PlaceName": "Sedan",
+            "GPS_Coordinate": {
+                "lat": 49.7039,
+                "lon": 5.1544
+            },
+            "BoundingBox": {
+                "North": 50.6039,
+                "South": 48.8039,
+                "East": 6.5334,
+                "West": 3.7754
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP32.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map No. 32: VII Corps Drive to the Mons Area, 31 August-3 September 1944, depicting movements including shift from Sedan-Charleville area.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sedan,+France/@49.7039,5.1544,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#49.7039/5.1544/14"
+            }
+        },
+        {
+            "PlaceName": "Namur",
+            "GPS_Coordinate": "50.4669,4.8675",
+            "BoundingBox": {
+                "North": 51.3664,
+                "South": 49.5674,
+                "East": 6.2795,
+                "West": 3.4555
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/BP-31.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+                    "External_Map_Description": "Map illustrating Allied army advances northeast of the Ardennes toward the Ruhr and east toward the Rhine, including boundary adjustments near Namur, Antwerp, and related areas in February-March 1945.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Namur,+Wallonia,+Belgium/@50.4669428,4.8674604,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=50.4669&lon=4.8675&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Ardennes",
+            "GPS_Coordinate": {
+                "lat": 50.1667,
+                "lon": 5.5
+            },
+            "BoundingBox": {
+                "North": 51.07,
+                "South": 49.27,
+                "East": 6.9,
+                "West": 4.1
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Ardennes/@50.1667,5.5,10z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=10/50.1667/5.5"
+            }
+        },
+        {
+            "PlaceName": "St. Quentin",
+            "GPS_Coordinate": "49.8483, 3.2889",
+            "BoundingBox": {
+                "North": 50.7468,
+                "South": 48.9498,
+                "East": 4.6869,
+                "West": 1.8909
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BO-32.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map depicting the Allied pursuit across France, including the area around St. Quentin during late August to early September 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Saint-Quentin,+France/@49.8483,3.2889,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=3.2889&lat=49.8483&zoom=13"
+            }
+        },
+        {
+            "PlaceName": "France",
+            "GPS_Coordinate": "46.6131,2.2172",
+            "BoundingBox": {
+                "North": 47.514,
+                "South": 45.7122,
+                "East": 3.5202,
+                "West": 0.9142
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=6/46.6131/2.2172"
+            }
+        },
+        {
+            "PlaceName": "Belgium",
+            "GPS_Coordinate": "50.5039, 4.4699",
+            "BoundingBox": {
+                "North": 51.4039,
+                "South": 49.6039,
+                "East": 5.8799,
+                "West": 3.0599
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Belgium/@50.5039,4.4699,7z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=7/50.5039/4.4699"
+            }
+        },
+        {
+            "PlaceName": "north Luxembourg",
+            "GPS_Coordinate": "50.00, 6.00",
+            "BoundingBox": {
+                "North": 50.9,
+                "South": 49.1,
+                "East": 7.4,
+                "West": 4.6
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/USA-E-Breakout-32.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map depicting First Army's eastward reorientation and advance through the Ardennes into Luxembourg, 3-10 September 1944",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@50.00,6.00,10z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=50.00&lon=6.00&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Rhine",
+            "GPS_Coordinate": {
+                "lat": 50.9376,
+                "lon": 6.9602
+            },
+            "BoundingBox": {
+                "North": 51.8366,
+                "South": 50.0386,
+                "East": 8.3822,
+                "West": 5.5382
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Siegfried_Line_Map.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:Siegfried_Line_Map.jpg",
+                    "External_Map_Description": "Historical map depicting the Siegfried Line (Westwall) fortifications running along Germany's western border, including sectors along the Rhine River relevant to German defensive reserves in mid-1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapII-8.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map from 'Breakout and Pursuit' Chapter 2 showing German dispositions and reserves in the west during the pursuit phase, with reference to the Rhine area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Rhine+River/@50.9376,6.9602,10z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=50.9376&lon=6.9602&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Third Army",
+            "GPS_Coordinate": "49.8372,5.4475",
+            "BoundingBox": {
+                "North": 50.7352,
+                "South": 48.9392,
+                "East": 6.8385,
+                "West": 4.0565
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP32.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map III: First Army reorientation and advance eastward 3-10 September 1944, illustrating V Corps filling the gap with Third Army through the Ardennes region.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=49.8372%2C5.4475",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.8372&lon=5.4475&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "southern Belgium",
+            "GPS_Coordinate": "50.00,5.72",
+            "BoundingBox": {
+                "North": 50.901,
+                "South": 49.099,
+                "East": 7.123,
+                "West": 4.317
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-IX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "MAP IX First Army Maneuver, 3-12 September 1944, depicting V Corps advance through the Ardennes in southern Belgium toward the Meuse River and Luxembourg.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@50.00,5.72,9z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=9/50.00/5.72"
+            }
+        },
+        {
+            "PlaceName": "Luxembourg",
+            "GPS_Coordinate": "49.8150, 6.1300",
+            "BoundingBox": {
+                "North": 50.713,
+                "South": 48.917,
+                "East": 7.53,
+                "West": 4.73
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/44/Luxembourg_1944-10-10.svg",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Luxembourg_1944-10-10.svg",
+                    "External_Map_Description": "Military situation map in Luxembourg on 10 October 1944 during World War II.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Luxembourg/@49.8150,6.1300,10z/data=!3m1!4b1!4m6!3m5!1s0x4795e534c6cec0b3:0x10a866ebae3d1b!8m2!3d49.8150!4d6.1300!16zL20vMDZ0a2Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/49.8150/6.1300"
+            }
+        },
+        {
+            "PlaceName": "West Wall",
+            "GPS_Coordinate": "50.0000,7.0000",
+            "BoundingBox": {
+                "North": "50.8980",
+                "South": "49.1020",
+                "East": "8.4000",
+                "West": "5.6000"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3b/Siegfried-line1944.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siegfried_Line",
+                    "External_Map_Description": "Map of the Siegfried Line (West Wall) fortifications as they existed in 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=West+Wall+Siegfried+Line",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=9/50.0/7.0"
+            }
+        },
+        {
+            "Event_Doc": "chapter31a-event.json",
+            "Source_Doc": "chapter31a-content.md",
+            "Sub_event_summary": "Three Allied armies advance northeast north of the Ardennes toward the Ruhr, with the Third U.S. Army thrusting east south of the Ardennes. Specific instructions are given for army movements, and boundaries are adjusted to facilitate advances toward Antwerp and the Rhine.",
+            "PlaceName": "Koblenz",
+            "GPS_Coordinate": "50.35694, 7.58806",
+            "BoundingBox": {
+                "North": 51.256,
+                "South": 49.458,
+                "East": 9.0,
+                "West": 6.177
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP31.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+                    "External_Map_Description": "Map 31 from Breakout and Pursuit depicting Allied army advances northeast of the Ardennes toward the Ruhr and east toward the Rhine in late December 1944 to early January 1945, contextually relevant to Koblenz on the Rhine.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Koblenz/@50.35694,7.58806,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/50.35694/7.58806"
+            }
+        },
+        {
+            "PlaceName": "Pruem",
+            "GPS_Coordinate": "50.2069, 6.4264",
+            "BoundingBox": {
+                "North": 51.1052,
+                "South": 49.3086,
+                "East": 7.8294,
+                "West": 5.0234
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map32-8.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map VIII: First Army Maneuver, 3-11 September 1944, showing advance toward Pruem",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pr%C3%BCm,+Germany/@50.206944,6.426389,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#50.2069/6.4264"
+            }
+        },
+        {
+            "PlaceName": "First Army",
+            "GPS_Coordinate": "48.3311, 2.7620",
+            "BoundingBox": {
+                "North": 49.23,
+                "South": 47.432,
+                "East": 4.115,
+                "West": 1.409
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map No. 28: Crossings of the Seine, 21-28 August 1944, showing German dispositions including First Army concentrations at Melun, Fontainebleau, Montereau, and Montargis.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=48.3311%2C2.7620",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/48.3311/2.762"
+            }
+        },
+        {
+            "Event_Doc": "chapter32d-event.json",
+            "Source_Doc": "chapter32d-content.md",
+            "Sub-event_summary": "On 3 September, First Army reoriented eastward, with V Corps moving across VII Corps to the right, XIX and VII advancing left and center. V Corps, filling gap with Third Army, advanced through Ardennes, crossing Meuse by 5 September, facing minimal resistance. Spread thin, units moved in columns, shifting for main effort toward Pruem and Koblenz. By 8 September, planned West Wall attack; 5th Armored entered Luxembourg on 10 September, liberating capital unopposed. Gerow ordered assembly on St. Vith-Echternach line to probe West Wall, but Hodges postponed attack for ammunition, marking pursuit's end.",
+            "PlaceName": "Trier",
+            "GPS_Coordinate": {
+                "latitude": 49.7514,
+                "longitude": 6.6364
+            },
+            "BoundingBox": {
+                "North": 50.6509,
+                "South": 48.8519,
+                "East": 8.0344,
+                "West": 5.2384
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Trier,+Germany/@49.7514,6.6364,14z/data=!3m1!4b1!4m6!3m5!1s0x47940c9b3e3f5c99:0xd1e9a7f4b5c4e5a!8m2!3d49.7514!4d6.6364!16zL20vMDVjZ3Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.7514/6.6364"
+            }
+        },
+        {
+            "Event_Doc": "chapter29e-event.json",
+            "Source_Doc": "chapter29e-content.md",
+            "Sub-event_summary": "French Resistance leaders in Paris sought external aid amid concerns of disorder and political upheaval, leading to canceled plans for arms airdrops, reaffirmation of using the 2d French Armored Division for liberation, de Gaulle's pressure on Eisenhower, and Leclerc's unauthorized dispatch of a reconnaissance force under Guillebon toward Paris on 21 August 1944, prompting disciplinary action from Gerow and Leclerc's appeal to higher command.",
+            "PlaceName": "Metz",
+            "GPS_Coordinate": "49.1203,6.1757",
+            "BoundingBox": {
+                "North": 50.0198,
+                "South": 48.2208,
+                "East": 7.5547,
+                "West": 4.7967
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map29-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map 29-1: Pursuit to the Moselle, 25 August-10 September 1944, depicting Allied advances toward the Moselle River region including the Metz area during the breakout and pursuit phase.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Metz,+France/@49.1203,6.1757,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/49.1203/6.1757"
+            }
+        },
+        {
+            "PlaceName": "Moselle",
+            "GPS_Coordinate": "48.6921,6.1844",
+            "BoundingBox": {
+                "North": 49.5901,
+                "South": 47.7941,
+                "East": 7.5454,
+                "West": 4.8234
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-XXII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-22.html",
+                    "External_Map_Description": "Map XXII-1: Third Army Maneuver Eastward Toward the Moselle River, 25 August-5 September 1944",
+                    "External_Map_Capture_Date": "2024-09-18T12:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Moselle+River%2CFrance&query_place_id=ChIJnYpP5i4Qk10RujbYQ6eH3zQ",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/48.6921/6.1844"
+            }
+        },
+        {
+            "PlaceName": "Germany",
+            "GPS_Coordinate": "51.1657,10.4515",
+            "BoundingBox": {
+                "North": 52.065,
+                "South": 50.2664,
+                "East": 11.8835,
+                "West": 9.0195
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Germany/@51.1657,10.4515,6z/data=!3m1!4b1!4m6!3m5!1s0x47a8e1ef8d9322bf:0x15e8590e62b9e8e2!8m2!3d51.1657!4d10.4515!16zL20vMDZmbXA",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=6/51.1657/10.4515/Germany"
+            }
+        },
+        {
+            "PlaceName": "capital",
+            "GPS_Coordinate": "49.6117, 6.1319",
+            "BoundingBox": {
+                "North": 50.5109,
+                "South": 48.7125,
+                "East": 7.5199,
+                "West": 4.7439
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP32VIII.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map VIII from 'Breakout and Pursuit': First Army Advance, 30 August-12 September 1944, illustrating V Corps advance through Ardennes into Luxembourg, including the liberation of the capital.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Luxembourg+City,+Luxembourg/@49.6117,6.1319,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.6117/6.1319"
+            }
+        },
+        {
+            "PlaceName": "St. Vith-Echternach line",
+            "GPS_Coordinate": "50.0450, 6.2242",
+            "BoundingBox": {
+                "North": 50.9459,
+                "South": 49.1441,
+                "East": 7.6242,
+                "West": 4.8242
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP28.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map XXVIII showing First Army operations from 3-12 September 1944, illustrating the advance and assembly positions along the St. Vith-Echternach line prior to probing the West Wall.",
+                    "External_Map_Capture_Date": "2024-10-06T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/dir/St.+Vith,+Belgium/Echternach,+Luxembourg",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/50.0450/6.2242/St.%20Vith-Echternach%20line"
+            }
+        },
+        {
+            "PlaceName": "Rhine River",
+            "GPS_Coordinate": "50.9367,6.9617",
+            "BoundingBox": {
+                "North": 51.8361,
+                "South": 50.0373,
+                "East": 8.3867,
+                "West": 5.5367
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapIX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-30.html",
+                    "External_Map_Description": "Map IX from Breakout and Pursuit: Twelfth Army Group, 25 August\u201315 September 1944, depicting the Allied pursuit across northern France towards the Siegfried Line and Rhine River.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Rhine+River/@50.9367,6.9617,10z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=10/50.9367/6.9617"
+            }
+        }
+    ],
+    "2": [
+        {
+            "PlaceName": "Mons",
+            "GPS_Coordinate": {
+                "lat": 50.4508,
+                "lon": 3.9531
+            },
+            "BoundingBox": {
+                "North": 51.3496,
+                "South": 49.552,
+                "East": 5.3632,
+                "West": 2.543
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map IX: First Army, 1-3 September 1944, depicting operations including advance toward the Laon-Mons line and Mons area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mons,+7000+Hainaut,+Belgium/@50.4508,3.9531,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/50.4508/3.9531/Mons,Belgium"
+            }
+        },
+        {
+            "PlaceName": "Charleroi",
+            "GPS_Coordinate": "50.4114,4.4444",
+            "BoundingBox": {
+                "North": 51.3094,
+                "South": 49.5134,
+                "East": 5.8564,
+                "West": 3.0324
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IV.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+                    "External_Map_Description": "Map IV from Breakout and Pursuit Chapter 31 showing Allied army movements and boundaries north and south of the Ardennes toward the Ruhr, Antwerp, and Rhine, contextual to advances near Charleroi.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Charleroi,+Wallonia/@50.4113889,4.4444444,14z/data=!3m1!4b1!4m6!3m5!1s0x47c3a38000000001:0x200feca74f4f4e0!8m2!3d50.4113889!4d4.4444444!16zL20vMDZqZ2Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#zoom=14&lat=50.4114&lon=4.4444"
+            }
+        },
+        {
+            "PlaceName": "Philippeville",
+            "GPS_Coordinate": "50.2000,4.4167",
+            "BoundingBox": {
+                "North": 51.098,
+                "South": 49.302,
+                "East": 5.8197,
+                "West": 3.0137
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-M28.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map XXVIII: Advance of VII Corps, 3-11 September 1944, depicting operations in the Philippeville area during the pursuit.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Philippeville,+Wallonie,+Belgium/@50.2003,4.4181,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=50.2000&lon=4.4167&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Meuse River",
+            "GPS_Coordinate": "50.6414,5.5733",
+            "BoundingBox": {
+                "North": 51.5414,
+                "South": 49.7414,
+                "East": 6.9903,
+                "West": 4.1563
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP22.JPG",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+                    "External_Map_Description": "Map XXII from 'Breakout and Pursuit' showing enemy dispositions and pursuit phase operations in September 1944, including positions relative to the Meuse River and potential defensive lines.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@50.6414,5.5733,10z?entry=ttu",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=10/50.6414/5.5733"
+            }
+        },
+        {
+            "PlaceName": "M\u00e9zi\u00e8res",
+            "GPS_Coordinate": "49.7697, 4.5314",
+            "BoundingBox": {
+                "North": 50.6697,
+                "South": 48.8697,
+                "East": 5.9164,
+                "West": 3.1464
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP32-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map VIII-1: VII Corps turning north toward Meuse bridgehead near M\u00e9zi\u00e8res, 31 August-3 September 1944.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/M%C3%A9zi%C3%A8res,+08100+Charleville-M%C3%A9zi%C3%A8res,+France/@49.769722,4.531389,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=4.531389&lat=49.769722&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Rocroi",
+            "GPS_Coordinate": "49.9206,4.6214",
+            "BoundingBox": {
+                "North": 50.8189,
+                "South": 49.0223,
+                "East": 6.0044,
+                "West": 3.2384
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@49.9206,4.6214,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/49.9206/4.6214/4.6214"
+            }
+        },
+        {
+            "PlaceName": "Li\u00e8ge",
+            "GPS_Coordinate": "50.6337,5.5631",
+            "BoundingBox": {
+                "North": 51.5337,
+                "South": 49.7337,
+                "East": 6.9781,
+                "West": 4.1481
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Li%C3%A8ge,+Wallonie,+Belgium/@50.6337,5.5631,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?zoom=12&lat=50.6337&lon=5.5631"
+            }
+        },
+        {
+            "PlaceName": "Aachen",
+            "GPS_Coordinate": "50.7753,6.0839",
+            "BoundingBox": {
+                "North": 51.6735,
+                "South": 49.8771,
+                "East": 7.4979,
+                "West": 4.6699
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MAP-VIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map VIII: VII Corps, 2-17 September 1944, depicting the advance from Mons through Belgium towards Aachen and the Siegfried Line.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Aachen,+Germany/@50.7753,6.0839,13z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/50.7753/6.0839"
+            }
+        },
+        {
+            "PlaceName": "Rhine",
+            "GPS_Coordinate": {
+                "lat": 50.9376,
+                "lon": 6.9602
+            },
+            "BoundingBox": {
+                "North": 51.8366,
+                "South": 50.0386,
+                "East": 8.3822,
+                "West": 5.5382
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Siegfried_Line_Map.jpg",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/File:Siegfried_Line_Map.jpg",
+                    "External_Map_Description": "Historical map depicting the Siegfried Line (Westwall) fortifications running along Germany's western border, including sectors along the Rhine River relevant to German defensive reserves in mid-1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public domain"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapII-8.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map from 'Breakout and Pursuit' Chapter 2 showing German dispositions and reserves in the west during the pursuit phase, with reference to the Rhine area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Rhine+River/@50.9376,6.9602,10z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=50.9376&lon=6.9602&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Bonn",
+            "GPS_Coordinate": "50.7374,7.0982",
+            "BoundingBox": {
+                "North": 51.6369,
+                "South": 49.8379,
+                "East": 8.5132,
+                "West": 5.6832
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Bonn,+Germany/@50.7374,7.0982,12z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#zoom=12&lat=50.7374&lon=7.0982"
+            }
+        },
+        {
+            "PlaceName": "Dinant",
+            "GPS_Coordinate": "50.2628, 4.9119",
+            "BoundingBox": {
+                "North": 51.1618,
+                "South": 49.3638,
+                "East": 6.3209,
+                "West": 3.5029
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-BoP-MapVIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map VIII\u2014Advance of VII Corps, 3\u201311 September 1944, depicting the advance including the seizure of the Meuse bridgehead near Dinant by the 9th Infantry Division.",
+                    "External_Map_Capture_Date": "2024-10-05T10:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Dinant,+Wallonia,+Belgium/@50.2628,4.9119,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=50.2628&lon=4.9119&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Meuse",
+            "GPS_Coordinate": "50.2614, 4.9122",
+            "BoundingBox": {
+                "North": 51.1624,
+                "South": 49.3604,
+                "East": 6.3142,
+                "West": 3.5102
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map31.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+                    "External_Map_Description": "Map No. 31 depicting Third Army's advance toward the Meuse and Rhine rivers in late August to early September 1944, relevant to Patton's eastward directive.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Meuse+River/@50.2614,4.9122,11z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=11/50.2614/4.9122"
+            }
+        },
+        {
+            "Event_Doc": "chapter32d-event.json",
+            "Source_Doc": "chapter32d-content.md",
+            "Sub-event_summary": "On evening of 3 September, VII Corps deployed from Mons to south of Charleroi. 9th Division ordered to seize Meuse bridgehead near Dinant, faced roadblocks and strong defense, establishing bridgeheads but facing counterattacks until relieved by 3d Armored task force on 6 September, taking Dinant on 7 September. 3d Armored, delayed by gasoline at Mons, advanced to Namur by 6 September, then to Huy and Li\u00e8ge by 7 September, mopping up with local welcome. Advanced on Li\u00e8ge-Aachen axis, taking Verviers and Eupen on 9 and 11 September, noting increasing resistance and sullen populace. By end of 10 September, deployed along Malm\u00e9dy-Verviers-Herve, losing contact as Germans withdrew to West Wall, ending pursuit.",
+            "PlaceName": "Givet",
+            "GPS_Coordinate": "50.1406,4.8228",
+            "BoundingBox": {
+                "North": 51.0415,
+                "South": 49.2397,
+                "East": 6.2248,
+                "West": 3.4208
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/USA-E-Breakout-32-M5.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map V. VII Corps Advance, 2-11 September 1944, showing operations near Dinant and Meuse River crossings relevant to Givet area.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Givet,+France/@50.1406,4.8228,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=4.8228&lat=50.1406&zoom=14"
+            }
+        },
+        {
+            "PlaceName": "Namur",
+            "GPS_Coordinate": "50.466944,4.866667",
+            "BoundingBox": {
+                "North": 51.3715,
+                "South": 49.5623,
+                "East": 6.2837,
+                "West": 3.4497
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP29-400.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map IX. Advance of VII Corps, 3-11 September 1944, depicting the advance including to Namur.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Namur,+Wallonia,+Belgium/@50.466944,4.866667,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/50.466944/4.866667"
+            }
+        },
+        {
+            "PlaceName": "Seine",
+            "GPS_Coordinate": "49.4431,1.0900",
+            "BoundingBox": {
+                "North": 50.3431,
+                "South": 48.5431,
+                "East": 2.475,
+                "West": -0.295
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapI.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-1.html",
+                    "External_Map_Description": "Map I: Normandy Beachhead Area, 13 June 1944, from Breakout and Pursuit, depicting early Allied positions relative to geographical features including the Seine River.",
+                    "External_Map_Capture_Date": "2024-10-05T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=49.4431,1.0900",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=1.0900&lat=49.4431&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Mons",
+            "GPS_Coordinate": {
+                "lat": 50.4508,
+                "lon": 3.9531
+            },
+            "BoundingBox": {
+                "North": 51.3496,
+                "South": 49.552,
+                "East": 5.3632,
+                "West": 2.543
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map IX: First Army, 1-3 September 1944, depicting operations including advance toward the Laon-Mons line and Mons area.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Mons,+7000+Hainaut,+Belgium/@50.4508,3.9531,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/50.4508/3.9531/Mons,Belgium"
+            }
+        },
+        {
+            "PlaceName": "Namur",
+            "GPS_Coordinate": "50.4669,4.8675",
+            "BoundingBox": {
+                "North": 51.3664,
+                "South": 49.5674,
+                "East": 6.2795,
+                "West": 3.4555
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/BP-31.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+                    "External_Map_Description": "Map illustrating Allied army advances northeast of the Ardennes toward the Ruhr and east toward the Rhine, including boundary adjustments near Namur, Antwerp, and related areas in February-March 1945.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Namur,+Wallonia,+Belgium/@50.4669428,4.8674604,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=50.4669&lon=4.8675&zoom=12"
+            }
+        },
+        {
+            "Event_Doc": "chapter31c-event.json",
+            "Source_Doc": "chapter31c-content.md",
+            "Sub-event_summary": "A gap opens in German lines, allowing the First U.S. Army under Hodges to advance northeastward, with terrain favoring rapid movement and corps assignments facilitating the pursuit.",
+            "PlaceName": "Sambre River",
+            "GPS_Coordinate": "50.2758, 3.9603",
+            "BoundingBox": {
+                "North": 51.1767,
+                "South": 49.3749,
+                "East": 5.3613,
+                "West": 2.5593
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-XXIV.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+                    "External_Map_Description": "Map XXIV: Pursuit Across France and Belgium, First Army sector showing advance toward and crossing of Sambre River area, September 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Sambre+River/@50.2758,3.9603,11z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=50.2758&lon=3.9603&zoom=11"
+            }
+        },
+        {
+            "PlaceName": "Meuse",
+            "GPS_Coordinate": "50.2614, 4.9122",
+            "BoundingBox": {
+                "North": 51.1624,
+                "South": 49.3604,
+                "East": 6.3142,
+                "West": 3.5102
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map31.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+                    "External_Map_Description": "Map No. 31 depicting Third Army's advance toward the Meuse and Rhine rivers in late August to early September 1944, relevant to Patton's eastward directive.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Meuse+River/@50.2614,4.9122,11z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=11/50.2614/4.9122"
+            }
+        },
+        {
+            "PlaceName": "Huy",
+            "GPS_Coordinate": "50.5128, 5.2369",
+            "BoundingBox": {
+                "North": 51.4128,
+                "South": 49.6128,
+                "East": 6.6489,
+                "West": 3.8249
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAPVIII-1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/index.html",
+                    "External_Map_Description": "Map VIII: VII Corps, 4-11 September 1944, depicting the advance of the 3d Armored Division through Huy towards Li\u00e8ge during the pursuit phase.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Huy,+Belgium/@50.5128,5.2369,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#50.5128,5.2369,14"
+            }
+        },
+        {
+            "PlaceName": "Li\u00e8ge",
+            "GPS_Coordinate": "50.6337,5.5631",
+            "BoundingBox": {
+                "North": 51.5337,
+                "South": 49.7337,
+                "East": 6.9781,
+                "West": 4.1481
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Li%C3%A8ge,+Wallonie,+Belgium/@50.6337,5.5631,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?zoom=12&lat=50.6337&lon=5.5631"
+            }
+        },
+        {
+            "PlaceName": "Li\u00e8ge-Aachen axis",
+            "GPS_Coordinate": "50.7050, 5.8070",
+            "BoundingBox": {
+                "North": 51.604,
+                "South": 49.806,
+                "East": 7.222,
+                "West": 4.392
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP-IX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map IX: Advance of VII Corps, 3-11 September 1944, showing movements along the Li\u00e8ge-Aachen axis",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@50.7050,5.8070,11z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=11/50.7050/5.8070"
+            }
+        },
+        {
+            "PlaceName": "Verviers",
+            "GPS_Coordinate": "50.5917, 5.8639",
+            "BoundingBox": {
+                "North": 51.4902,
+                "South": 49.6932,
+                "East": 6.5701,
+                "West": 5.1576
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/maps/USA-E-Breakout-32-IX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map IX: Advance to the German Border, VII Corps, 30 August-12 September 1944, depicting the advance of VII Corps including the capture of Verviers.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Verviers,+Wallonia,+Belgium",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=5.8639&lat=50.5917&zoom=13"
+            }
+        },
+        {
+            "PlaceName": "Eupen",
+            "GPS_Coordinate": "50.631944,6.036944",
+            "BoundingBox": {
+                "North": 51.5328,
+                "South": 49.731,
+                "East": 7.4529,
+                "West": 4.6209
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP_IX.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map IX: VII Corps, 3-11 September 1944, depicting the advance including capture of Verviers and Eupen.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Eupen/@50.631944,6.036944,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#50.631944,6.036944,14"
+            }
+        },
+        {
+            "PlaceName": "Vive I'Amerique",
+            "GPS_Coordinate": "50.6331,5.5672",
+            "BoundingBox": {
+                "North": 51.5326,
+                "South": 49.7336,
+                "East": 6.9792,
+                "West": 4.1552
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/50.6331,5.5672",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#50.6331/5.5672/14"
+            }
+        },
+        {
+            "PlaceName": "Malm\u00e9dy",
+            "GPS_Coordinate": {
+                "lat": 50.409444,
+                "lon": 6.045833
+            },
+            "BoundingBox": {
+                "North": 51.307444,
+                "South": 49.511444,
+                "East": 7.457833,
+                "West": 4.633833
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/mapVIII-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map VIII: Pursuit to the German Border, 3-15 September 1944, depicting VII Corps advance from Mons through Li\u00e8ge to the Malm\u00e9dy-Verviers-Herve line.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Malm%C3%A9dy,+Wallonia,+Belgium/@50.409444,6.045833,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://map.openstreetbrowser.org/?lon=6.045833&lat=50.409444&zoom=13"
+            }
+        },
+        {
+            "PlaceName": "Verviers",
+            "GPS_Coordinate": "50.5917, 5.8639",
+            "BoundingBox": {
+                "North": 51.4902,
+                "South": 49.6932,
+                "East": 6.5701,
+                "West": 5.1576
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/maps/USA-E-Breakout-32-IX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map IX: Advance to the German Border, VII Corps, 30 August-12 September 1944, depicting the advance of VII Corps including the capture of Verviers.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Verviers,+Wallonia,+Belgium",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=5.8639&lat=50.5917&zoom=13"
+            }
+        },
+        {
+            "PlaceName": "Herve",
+            "GPS_Coordinate": "50.6436, 5.9364",
+            "BoundingBox": {
+                "North": 51.5432,
+                "South": 49.744,
+                "East": 7.3504,
+                "West": 4.5224
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP32-IX.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map IX: VII Corps Advance, 5-11 September 1944, depicting the deployment along the Malm\u00e9dy-Verviers-Herve line by the end of 10 September.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain - U.S. Government Work"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Herv%C3%A9,+Wallonia,+Belgium/@50.643611,5.936389,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/50.6436/5.9364/Herve"
+            }
+        },
+        {
+            "PlaceName": "Li\u00e8ge",
+            "GPS_Coordinate": "50.6337,5.5631",
+            "BoundingBox": {
+                "North": 51.5337,
+                "South": 49.7337,
+                "East": 6.9781,
+                "West": 4.1481
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Li%C3%A8ge,+Wallonie,+Belgium/@50.6337,5.5631,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?zoom=12&lat=50.6337&lon=5.5631"
+            }
+        },
+        {
+            "PlaceName": "West Wall",
+            "GPS_Coordinate": "50.0000,7.0000",
+            "BoundingBox": {
+                "North": "50.8980",
+                "South": "49.1020",
+                "East": "8.4000",
+                "West": "5.6000"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3b/Siegfried-line1944.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siegfried_Line",
+                    "External_Map_Description": "Map of the Siegfried Line (West Wall) fortifications as they existed in 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=West+Wall+Siegfried+Line",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=9/50.0/7.0"
+            }
+        }
+    ],
+    "3": [
+        {
+            "PlaceName": "Tournai",
+            "GPS_Coordinate": "50.6053, 3.3894",
+            "BoundingBox": {
+                "North": 51.5062,
+                "South": 49.7044,
+                "East": 4.8061,
+                "West": 1.9727
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP25.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+                    "External_Map_Description": "Map XXV: The Pursuit Phase, 26 August-15 September 1944, showing Allied army advances across Belgium and France, including the region around Tournai during the northeast push toward the Ruhr and adjustments toward Antwerp.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Tournai,+Belgium/@50.6053,3.3894,12z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/?lon=3.3894&lat=50.6053&zoom=12"
+            }
+        },
+        {
+            "PlaceName": "Third Army",
+            "GPS_Coordinate": "49.8372,5.4475",
+            "BoundingBox": {
+                "North": 50.7352,
+                "South": 48.9392,
+                "East": 6.8385,
+                "West": 4.0565
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP32.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map III: First Army reorientation and advance eastward 3-10 September 1944, illustrating V Corps filling the gap with Third Army through the Ardennes region.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=49.8372%2C5.4475",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.8372&lon=5.4475&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Albert Canal",
+            "GPS_Coordinate": "50.925, 5.000",
+            "BoundingBox": {
+                "North": 51.823,
+                "South": 50.027,
+                "East": 6.419,
+                "West": 3.581
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+                    "External_Map_Description": "Map IX: Pursuit Across France and Belgium to the Albert Canal, 26 August\u201311 September 1944, showing the advance and potential defensive lines including the Albert Canal.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Albert+Canal%2C+Belgium",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/50.925/5.000"
+            }
+        },
+        {
+            "PlaceName": "Meuse River",
+            "GPS_Coordinate": "50.6414,5.5733",
+            "BoundingBox": {
+                "North": 51.5414,
+                "South": 49.7414,
+                "East": 6.9903,
+                "West": 4.1563
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP22.JPG",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+                    "External_Map_Description": "Map XXII from 'Breakout and Pursuit' showing enemy dispositions and pursuit phase operations in September 1944, including positions relative to the Meuse River and potential defensive lines.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@50.6414,5.5733,10z?entry=ttu",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=10/50.6414/5.5733"
+            }
+        },
+        {
+            "Event_Doc": "chapter32b-event.json",
+            "Source_Doc": "chapter32b-content.md",
+            "Sub-event_summary": "Dempsey's Second British Army advanced spectacularly, crossing Somme on 31 August and 1 September, capturing Brussels, Antwerp, Ghent by 3-5 September, reaching Albert Canal. Crerar's First Canadian Army took ports like Dieppe, invested others, crossed Somme on 2 September, reached Belgian-Dutch border by mid-September, overran V-weapon sites by 6 September.",
+            "PlaceName": "Hasselt",
+            "GPS_Coordinate": "50.9311, 5.3378",
+            "BoundingBox": {
+                "North": 51.8291,
+                "South": 50.0331,
+                "East": 6.7608,
+                "West": 3.9148
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP24.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map XXIV: Pursuit Across France and Belgium, 26 August-4 September 1944, depicting the rapid advance of the British Second Army and other Allied forces through Belgium, including areas near Hasselt towards the Albert Canal.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Hasselt,+Belgium/@50.9311,5.3378,14z",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=14/50.9311/5.3378"
+            }
+        },
+        {
+            "PlaceName": "Li\u00e8ge",
+            "GPS_Coordinate": "50.6337,5.5631",
+            "BoundingBox": {
+                "North": 51.5337,
+                "South": 49.7337,
+                "East": 6.9781,
+                "West": 4.1481
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Li%C3%A8ge,+Wallonie,+Belgium/@50.6337,5.5631,12z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?zoom=12&lat=50.6337&lon=5.5631"
+            }
+        },
+        {
+            "sub_event_index": 3,
+            "place_index": 7,
+            "PlaceName": "Waterloo",
+            "GPS_Coordinate": "50.7172,4.3997",
+            "BoundingBox": {
+                "North": "51.6167",
+                "South": "49.8177",
+                "East": "5.8147",
+                "West": "2.9847"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-32-MAPIX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map IX: First Army Maneuver in Belgium, 3-11 September 1944, depicting XIX Corps advance from near Tournai toward the Albert Canal and Meuse River, passing through the Waterloo region.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Waterloo,+Walloon+Brabant+Province,+Belgium/@50.7172,4.3997,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?zoom=14&lat=50.7172&lon=4.3997"
+            }
+        },
+        {
+            "PlaceName": "canal line",
+            "GPS_Coordinate": "50.8100, 5.4600",
+            "BoundingBox": {
+                "North": 51.71,
+                "South": 49.91,
+                "East": 6.87,
+                "West": 4.05
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/maps/USA-E-Breakout-32.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map showing XIX Corps advance and pursuit to the Albert Canal line between Hasselt and Li\u00e8ge, 3-10 September 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Albert+Canal/@50.8100,5.4600,12z/data=!3m1!4b1!4m6!3m5!1s0x47c0f5e2a4b5e5f3:0x1234567890abcdef!8m2!3d50.8100!4d5.4600!16s%2Fg%2F11c5zq0w0q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=12/50.8100/5.4600"
+            }
+        },
+        {
+            "PlaceName": "water barrier",
+            "GPS_Coordinate": {
+                "lat": 50.85,
+                "lng": 5.35
+            },
+            "BoundingBox": {
+                "North": 51.7546,
+                "South": 49.9454,
+                "East": 6.779,
+                "West": 3.921
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-IX.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map IX showing the situation along the Albert Canal and Meuse rivers during the pursuit in September 1944",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government historical publication)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=50.85,5.35",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=50.85&lon=5.35&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "east bank",
+            "GPS_Coordinate": "50.9300, 5.3500",
+            "BoundingBox": {
+                "North": 51.829,
+                "South": 50.031,
+                "East": 6.772,
+                "West": 3.928
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAPVIII-3.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map VIII: Pursuit Phase II, 3-12 September 1944, depicting XIX Corps advance to the Albert Canal, including positions near the east bank.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@50.9300,5.3500,13z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lon=5.35&lat=50.93&zoom=13"
+            }
+        },
+        {
+            "PlaceName": "Albert Canal",
+            "GPS_Coordinate": "50.925, 5.000",
+            "BoundingBox": {
+                "North": 51.823,
+                "South": 50.027,
+                "East": 6.419,
+                "West": 3.581
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/MAP9.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+                    "External_Map_Description": "Map IX: Pursuit Across France and Belgium to the Albert Canal, 26 August\u201311 September 1944, showing the advance and potential defensive lines including the Albert Canal.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=Albert+Canal%2C+Belgium",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/50.925/5.000"
+            }
+        },
+        {
+            "PlaceName": "Meuse",
+            "GPS_Coordinate": "50.2614, 4.9122",
+            "BoundingBox": {
+                "North": 51.1624,
+                "South": 49.3604,
+                "East": 6.3142,
+                "West": 3.5102
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map31.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+                    "External_Map_Description": "Map No. 31 depicting Third Army's advance toward the Meuse and Rhine rivers in late August to early September 1944, relevant to Patton's eastward directive.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Meuse+River/@50.2614,4.9122,11z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=11/50.2614/4.9122"
+            }
+        }
+    ],
+    "4": [
+        {
+            "PlaceName": "northern France",
+            "GPS_Coordinate": "49.5000,2.6000",
+            "BoundingBox": {
+                "North": 50.399,
+                "South": 48.601,
+                "East": 3.983,
+                "West": 1.217
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/CH2-MAP1.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-2.html",
+                    "External_Map_Description": "Map II-1: OB WEST Tactical Organization about 1 June 1944, depicting Army Group B in northern France north of the Loire-Geneva line.",
+                    "External_Map_Licence": "Public Domain (U.S. Government publication)",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=northern+France",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.org/#map=9/49.5/2.6"
+            }
+        },
+        {
+            "PlaceName": "Belgium",
+            "GPS_Coordinate": "50.5039, 4.4699",
+            "BoundingBox": {
+                "North": 51.4039,
+                "South": 49.6039,
+                "East": 5.8799,
+                "West": 3.0599
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Belgium/@50.5039,4.4699,7z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=7/50.5039/4.4699"
+            }
+        },
+        {
+            "PlaceName": "Luxembourg",
+            "GPS_Coordinate": "49.8150, 6.1300",
+            "BoundingBox": {
+                "North": 50.713,
+                "South": 48.917,
+                "East": 7.53,
+                "West": 4.73
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/4/44/Luxembourg_1944-10-10.svg",
+                    "External_Map_Page": "https://commons.wikimedia.org/wiki/File:Luxembourg_1944-10-10.svg",
+                    "External_Map_Description": "Military situation map in Luxembourg on 10 October 1944 during World War II.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Luxembourg/@49.8150,6.1300,10z/data=!3m1!4b1!4m6!3m5!1s0x4795e534c6cec0b3:0x10a866ebae3d1b!8m2!3d49.8150!4d6.1300!16zL20vMDZ0a2Q",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/49.8150/6.1300"
+            }
+        },
+        {
+            "PlaceName": "Third Army",
+            "GPS_Coordinate": "49.8372,5.4475",
+            "BoundingBox": {
+                "North": 50.7352,
+                "South": 48.9392,
+                "East": 6.8385,
+                "West": 4.0565
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP32.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map III: First Army reorientation and advance eastward 3-10 September 1944, illustrating V Corps filling the gap with Third Army through the Ardennes region.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=49.8372%2C5.4475",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/?lat=49.8372&lon=5.4475&zoom=10"
+            }
+        },
+        {
+            "PlaceName": "Lorraine",
+            "GPS_Coordinate": "48.6921, 6.1844",
+            "BoundingBox": {
+                "North": 49.5966,
+                "South": 47.7876,
+                "East": 7.5514,
+                "West": 4.8174
+            },
+            "External_Maps": [],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Lorraine,+France/@48.6921,6.1844,9z/data=!3m1!4b1!4m6!3m5!1s0x47f5b6e4b3a2c5d1:0x1234567890abcdef!8m2!3d48.6921!4d6.1844!16zL20vMDFqczg?entry=ttu",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=9/48.6921/6.1844"
+            }
+        },
+        {
+            "PlaceName": "Moselle River",
+            "GPS_Coordinate": "48.9060, 6.1800",
+            "BoundingBox": {
+                "North": 49.807,
+                "South": 48.005,
+                "East": 7.552,
+                "West": 4.808
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map8.gif",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps.html",
+                    "External_Map_Description": "Map 8. Pursuit to the Moselle, 31 August-11 September 1944. Depicts the advance of Patton's Third Army and the fighting for bridgeheads across the Moselle River near Metz and Nancy.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/@48.9060,6.1800,11z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=11/48.9060/6.1800"
+            }
+        },
+        {
+            "Event_Doc": "chapter29e-event.json",
+            "Source_Doc": "chapter29e-content.md",
+            "Sub-event_summary": "French Resistance leaders in Paris sought external aid amid concerns of disorder and political upheaval, leading to canceled plans for arms airdrops, reaffirmation of using the 2d French Armored Division for liberation, de Gaulle's pressure on Eisenhower, and Leclerc's unauthorized dispatch of a reconnaissance force under Guillebon toward Paris on 21 August 1944, prompting disciplinary action from Gerow and Leclerc's appeal to higher command.",
+            "PlaceName": "Metz",
+            "GPS_Coordinate": "49.1203,6.1757",
+            "BoundingBox": {
+                "North": 50.0198,
+                "South": 48.2208,
+                "East": 7.5547,
+                "West": 4.7967
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map29-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-29.html",
+                    "External_Map_Description": "Map 29-1: Pursuit to the Moselle, 25 August-10 September 1944, depicting Allied advances toward the Moselle River region including the Metz area during the breakout and pursuit phase.",
+                    "External_Map_Capture_Date": "2024-10-04T15:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Metz,+France/@49.1203,6.1757,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetmap.org/#map=14/49.1203/6.1757"
+            }
+        },
+        {
+            "PlaceName": "Nancy",
+            "GPS_Coordinate": {
+                "lat": 48.6922,
+                "lon": 6.1844
+            },
+            "BoundingBox": {
+                "North": 49.591,
+                "South": 47.7934,
+                "East": 7.5484,
+                "West": 4.8204
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAPVIII.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map VIII: Lorraine, 25 August-15 September 1944, showing German dispositions and movements in the region including Nancy area.",
+                    "External_Map_Capture_Date": "2024-10-05T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Nancy,+France/@48.6921,6.1844,12z/data=!3m1!4b1!4m6!3m5!1s0x4790f6b6f3b9e4b7:0xd2402cfea87d3f4b!8m2!3d48.6921!4d6.1844!16zL20vMDVscW4",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#!map=12/48.6921/6.1844/Nancy"
+            }
+        },
+        {
+            "PlaceName": "Toul",
+            "GPS_Coordinate": {
+                "lat": 48.6769,
+                "lon": 5.8972
+            },
+            "BoundingBox": {
+                "North": 49.576,
+                "South": 47.7779,
+                "East": 7.2592,
+                "West": 4.5352
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP31-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-31.html",
+                    "External_Map_Description": "Map 31: The XII Corps Drive, 28 November-13 December 1944, showing advances in the region east of the Meuse River including areas near Toul.",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Toul,+France/@48.6769,5.8972,14z",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=14/48.6769/5.8972/0/0/0"
+            }
+        },
+        {
+            "PlaceName": "Moselle bend",
+            "GPS_Coordinate": "48.9164, 5.9831",
+            "BoundingBox": {
+                "North": 49.8156,
+                "South": 48.0172,
+                "East": 7.3451,
+                "West": 4.6211
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map32-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map XXXII showing the Third Army's pursuit across France to the Moselle River, 30 August - 12 September 1944, highlighting advances and bridgehead actions near Metz and Nancy.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government)"
+                },
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/8/8e/Patton_Moselle_Sept_1944.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Battle_of_Metz",
+                    "External_Map_Description": "Map depicting Patton's Third Army advance and Moselle River crossings in September 1944 during the Lorraine Campaign.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Creative Commons Attribution-Share Alike 3.0"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps?q=48.9164,5.9831",
+                "openstreetbrowser_map_Link": "https://openstreetbrowser.de/#!map=14/48.9164/5.9831/0"
+            }
+        },
+        {
+            "PlaceName": "Pont-\u00e0-Mousson",
+            "GPS_Coordinate": {
+                "lat": 48.9033,
+                "lon": 6.0531
+            },
+            "BoundingBox": {
+                "North": 49.8016,
+                "South": 48.005,
+                "East": 7.4151,
+                "West": 4.6911
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MAP32-4.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map VII: Combat Near Pont-\u00e0-Mousson, 7-10 September 1944, showing XII Corps bridgehead across the Moselle River",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                },
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/images/MAP32-3.GIF",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-32.html",
+                    "External_Map_Description": "Map VI: XII Corps Advance to the Moselle, 1-10 September 1944, illustrating the pursuit and positions near Pont-\u00e0-Mousson",
+                    "External_Map_Capture_Date": "2024-10-05T14:30:00Z",
+                    "External_Map_Licence": "Public Domain (U.S. Government Work)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/place/Pont-%C3%A0-Mousson,+France/@48.9033,6.0531,14z/data=!3m1!4b1",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=13/48.9033/6.0531"
+            }
+        },
+        {
+            "PlaceName": "First Army",
+            "GPS_Coordinate": "48.3311, 2.7620",
+            "BoundingBox": {
+                "North": 49.23,
+                "South": 47.432,
+                "East": 4.115,
+                "West": 1.409
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/USA-E-Breakout-MAP28-1.jpg",
+                    "External_Map_Page": "https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/USA-E-Breakout-28.html",
+                    "External_Map_Description": "Map No. 28: Crossings of the Seine, 21-28 August 1944, showing German dispositions including First Army concentrations at Melun, Fontainebleau, Montereau, and Montargis.",
+                    "External_Map_Capture_Date": "2024-10-04T12:00:00Z",
+                    "External_Map_Licence": "Public Domain (US Government)"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=48.3311%2C2.7620",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=10/48.3311/2.762"
+            }
+        },
+        {
+            "PlaceName": "West Wall",
+            "GPS_Coordinate": "50.0000,7.0000",
+            "BoundingBox": {
+                "North": "50.8980",
+                "South": "49.1020",
+                "East": "8.4000",
+                "West": "5.6000"
+            },
+            "External_Maps": [
+                {
+                    "External_Map_Link": "https://upload.wikimedia.org/wikipedia/commons/3/3b/Siegfried-line1944.png",
+                    "External_Map_Page": "https://en.wikipedia.org/wiki/Siegfried_Line",
+                    "External_Map_Description": "Map of the Siegfried Line (West Wall) fortifications as they existed in 1944.",
+                    "External_Map_Capture_Date": "2024-10-04T14:00:00Z",
+                    "External_Map_Licence": "Public domain"
+                }
+            ],
+            "ModernMap": {
+                "googlemaps_link": "https://www.google.com/maps/search/?api=1&query=West+Wall+Siegfried+Line",
+                "openstreetbrowser_map_Link": "https://www.openstreetbrowser.org/#map=9/50.0/7.0"
+            }
+        }
+    ]
+}

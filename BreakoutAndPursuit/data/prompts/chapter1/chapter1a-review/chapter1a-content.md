@@ -28,7 +28,7 @@
 
 <a id="page5"></a>
 
-> [![Typical Cotentin Terrain, looking westward from UTAH Beach](:/542f7dd7d316466a8097eb45585921bd)](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p5.jpg)  
+> [![Typical Cotentin Terrain, looking westward from UTAH Beach](:/8d692fd5da364010822c47f5c378afc1)](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p5.jpg)  
 > *Typical Cotentin Terrain, looking westward from UTAH Beach.*
 > 
 > the expense of service units. The disruption of the planned equilibrium of combat and service troops was not serious, for the lines of communication were short and required only a small administrative establishment; but if the Allies suddenly surged forward and overran a large area, the disproportionately small number of service troops might prove unequal to the task of maintaining adequate logistical support. Despite this unpleasant possibility, the Allies had little choice. Their basic need was space--room for maneuver, space for the build-up, and more depth in the beachhead for security.<sup>[5](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/fn1.html#fn5")</sup>
@@ -55,5 +55,5 @@
 
 <a id="page7"></a>
 
-> [![General Eisenhower with American field commanders (left to right) Generals Bradley, Gerow, and Collins](:/f1def44dfec946c999edb13c3673c031)](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p7.jpg)  
+> [![General Eisenhower with American field commanders (left to right) Generals Bradley, Gerow, and Collins](:/fa02bac8c38a4949a0e9648ffc36cd8a)](https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/img/USA-E-Breakout-p7.jpg)  
 > GENERAL EISENHOWER *with American field commanders (left to right) Generals Bradley, Gerow, and Collins.*
