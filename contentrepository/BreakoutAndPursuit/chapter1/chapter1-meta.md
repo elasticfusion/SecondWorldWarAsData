@@ -1,0 +1,9 @@
+
+United States Army in World War II
+European Theater of Operations
+Breakout and Pursuit
+Martin Blumenson
+
+Chapter I - The Allies
+
+License: Public Domain[']
