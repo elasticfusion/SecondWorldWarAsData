@@ -1,0 +1,11 @@
+United States Army in World War II
+European Theater of Operations
+Breakout and Pursuit
+Martin Blumenson
+
+Chapter VIII - The Battle for St. Lô
+
+
+License: Public Domain
+
+

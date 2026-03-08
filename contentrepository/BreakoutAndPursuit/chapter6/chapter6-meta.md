@@ -1,0 +1,10 @@
+United States Army in World War II
+European Theater of Operations
+Breakout and Pursuit
+Martin Blumenson
+
+Chapter VI - The Attempt to Exploit
+
+License: Public Domain
+
+
