@@ -1,0 +1,450 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Military Equipment Schema",
+  "description": "Schema for tracking military equipment mentions in WWII historical texts",
+  "type": "object",
+  "required": ["EquipmentID", "common_name", "technical_identifier", "category", "mentions"],
+  "properties": {
+    "EquipmentID": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "description": "26-character ULID uniquely identifying this equipment"
+    },
+    "common_name": {
+      "type": "string",
+      "description": "Common name (e.g., 'Sherman', 'Tiger', 'Spitfire')",
+      "examples": ["Sherman", "Tiger", "Spitfire", "M1 Garand"]
+    },
+    "technical_identifier": {
+      "type": "string",
+      "description": "Official technical designation (e.g., 'M4', 'Panzerkampfwagen VI', 'Supermarine Spitfire')",
+      "examples": ["M4", "Panzerkampfwagen VI", "Supermarine Spitfire Mk V"]
+    },
+    "description": {
+      "type": "string",
+      "description": "General description of the equipment and its role"
+    },
+    "alternate_names": {
+      "type": "array",
+      "description": "Other names or designations for this equipment",
+      "items": {
+        "type": "string"
+      },
+      "examples": [["M4 Medium Tank", "Medium Tank M4"]]
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "armor",
+        "aircraft",
+        "naval",
+        "artillery",
+        "infantry_weapons",
+        "communications",
+        "vehicles",
+        "uniforms",
+        "other"
+      ],
+      "description": "Primary equipment category"
+    },
+    "subcategory": {
+      "type": "string",
+      "description": "More specific classification (e.g., 'medium_tank', 'fighter', 'destroyer')",
+      "examples": ["medium_tank", "fighter", "destroyer", "rifle", "radio"]
+    },
+    "variants": {
+      "type": "array",
+      "description": "Sub-variants of this equipment (not separate records)",
+      "items": {
+        "type": "object",
+        "required": ["variant_name"],
+        "properties": {
+          "variant_name": {
+            "type": "string",
+            "description": "Variant designation (e.g., 'M4A1', 'M4A3E8')",
+            "examples": ["M4A1", "M4A3E8", "Sherman Firefly"]
+          },
+          "differences": {
+            "type": "string",
+            "description": "Key differences from base model",
+            "examples": ["Cast hull instead of welded", "76mm gun upgrade", "HVSS suspension"]
+          },
+          "alternate_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Alternate names specific to this variant"
+          }
+        }
+      }
+    },
+    "specifications": {
+      "type": "object",
+      "description": "Technical specifications (flexible schema)",
+      "properties": {
+        "weight": {
+          "type": "string",
+          "examples": ["30 tons", "5.4 kg"]
+        },
+        "armament": {
+          "type": "string",
+          "examples": ["75mm M3 gun", "8x .303 Browning machine guns"]
+        },
+        "armor": {
+          "type": "string",
+          "examples": ["51mm frontal", "25-50mm"]
+        },
+        "speed": {
+          "type": "string",
+          "examples": ["25 mph", "370 mph"]
+        },
+        "range": {
+          "type": "string",
+          "examples": ["120 miles", "470 miles"]
+        },
+        "crew": {
+          "type": "integer",
+          "examples": [5, 1]
+        }
+      },
+      "additionalProperties": true
+    },
+    "mentions": {
+      "type": "array",
+      "description": "Mentions of this equipment in source texts",
+      "items": {
+        "type": "object",
+        "required": ["MentionID", "EventID", "Sub_eventID"],
+        "properties": {
+          "MentionID": {
+            "type": "string",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "description": "26-character ULID for this mention"
+          },
+          "EventID": {
+            "type": "string",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "description": "Links to Event.EventID in chapter event file (e.g., output/BreakoutAndPursuit/chapter1a-event.json)"
+          },
+          "Sub_eventID": {
+            "type": "string",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "description": "Links to Sub-eventID in Event.Sub-events[] array"
+          },
+          "using_unit": {
+            "type": "object",
+            "description": "Military unit using this equipment",
+            "properties": {
+              "PeopleGroupID": {
+                "type": "string",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+              },
+              "name": {
+                "type": "string",
+                "examples": ["2nd Armored Division", "RAF Fighter Command"]
+              }
+            }
+          },
+          "using_person": {
+            "type": "object",
+            "description": "Individual using this equipment",
+            "properties": {
+              "PersonID": {
+                "type": "string",
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "supporting_units": {
+            "type": "array",
+            "description": "Units providing support with their equipment",
+            "items": {
+              "type": "object",
+              "required": ["support_type"],
+              "properties": {
+                "support_type": {
+                  "type": "string",
+                  "enum": [
+                    "armor",
+                    "naval",
+                    "aircraft",
+                    "artillery",
+                    "communications",
+                    "infantry",
+                    "logistics"
+                  ]
+                },
+                "PeopleGroupID": {
+                  "type": "string",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+                },
+                "unit_name": {
+                  "type": "string"
+                },
+                "EquipmentID": {
+                  "type": "string",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "description": "Equipment used by supporting unit"
+                },
+                "equipment_name": {
+                  "type": "string",
+                  "description": "Name of supporting equipment"
+                }
+              }
+            }
+          },
+          "performance_notes": {
+            "type": "object",
+            "description": "Performance observations in this mention",
+            "properties": {
+              "successes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Successful uses or positive performance",
+                "examples": [["Effective against enemy armor", "Reliable in desert conditions"]]
+              },
+              "failures": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Failures or negative performance",
+                "examples": [["Gun jammed in cold weather", "Armor penetrated by 88mm"]]
+              },
+              "field_modifications": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Field modifications made by troops",
+                "examples": [["Added sandbags for extra armor", "Welded hedgerow cutters"]]
+              },
+              "maintenance_issues": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Maintenance problems encountered",
+                "examples": [["Frequent track breakage", "Engine overheating"]]
+              }
+            }
+          },
+          "media": {
+            "type": "object",
+            "description": "Media associated with this mention (future expansion)",
+            "properties": {
+              "photos": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "MediaID": {
+                      "type": "string",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                      "description": "26-character ULID for this media item"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL to photo"
+                    },
+                    "caption": {
+                      "type": "string",
+                      "description": "Photo caption"
+                    },
+                    "source": {
+                      "type": "string",
+                      "description": "Photo source/credit"
+                    },
+                    "date_taken": {
+                      "type": "string",
+                      "description": "Date photo was taken"
+                    }
+                  }
+                },
+                "description": "Historical photos of equipment"
+              },
+              "videos": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "MediaID": {
+                      "type": "string",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                      "description": "26-character ULID for this media item"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL to video"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Video title"
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "Video description"
+                    },
+                    "source": {
+                      "type": "string",
+                      "description": "Video source"
+                    },
+                    "duration": {
+                      "type": "integer",
+                      "description": "Duration in seconds"
+                    }
+                  }
+                },
+                "description": "Historical footage or moving pictures"
+              },
+              "audio": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "MediaID": {
+                      "type": "string",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                      "description": "26-character ULID for this media item"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL to audio"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Audio title"
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "Audio description (e.g., 'Engine sound', 'Combat recording')"
+                    },
+                    "source": {
+                      "type": "string",
+                      "description": "Audio source"
+                    },
+                    "duration": {
+                      "type": "integer",
+                      "description": "Duration in seconds"
+                    }
+                  }
+                },
+                "description": "Audio recordings or descriptions"
+              },
+              "documents": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "MediaID": {
+                      "type": "string",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                      "description": "26-character ULID for this media item"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL to document"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Document title"
+                    },
+                    "document_type": {
+                      "type": "string",
+                      "enum": ["technical_manual", "field_report", "after_action_report", "maintenance_log", "other"],
+                      "description": "Type of document"
+                    },
+                    "source": {
+                      "type": "string",
+                      "description": "Document source"
+                    }
+                  }
+                },
+                "description": "Technical manuals, field reports, etc."
+              }
+            }
+          }
+        }
+      }
+    },
+    "external_data": {
+      "type": "object",
+      "description": "External supplemental data with source tracking",
+      "properties": {
+        "grokipedia_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Link to Grokipedia article"
+        },
+        "wikipedia_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Link to Wikipedia article"
+        },
+        "additional_sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["source_type", "url"],
+            "properties": {
+              "source_type": {
+                "type": "string",
+                "enum": ["museum", "archive", "technical_manual", "historical_society", "other"],
+                "description": "Type of external source"
+              },
+              "source_name": {
+                "type": "string",
+                "description": "Name of the source"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "data_points": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["field", "value"],
+                  "properties": {
+                    "field": {
+                      "type": "string",
+                      "description": "Field name (e.g., 'production_numbers', 'combat_losses')"
+                    },
+                    "value": {
+                      "type": "string",
+                      "description": "Data value"
+                    },
+                    "verified": {
+                      "type": "boolean",
+                      "description": "Whether this data point has been verified"
+                    },
+                    "notes": {
+                      "type": "string",
+                      "description": "Additional notes about this data point"
+                    }
+                  }
+                },
+                "description": "Specific data points from this source"
+              }
+            }
+          }
+        }
+      }
+    },
+    "extracted_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this record was extracted"
+    }
+  }
+}

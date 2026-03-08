@@ -1,0 +1,230 @@
+{
+  "People": [
+    {
+      "PersonID": "01H8XYZI1AB123CD456EF789GH",
+      "name": "Adolf Hitler",
+      "source_language": "English",
+      "biographical_profile": {
+        "birth_date": "1889-04-20",
+        "birth_place": "Braunau am Inn, Austria-Hungary",
+        "death_date": "1945-04-30",
+        "death_place": "Berlin, Germany",
+        "nationality": "German",
+        "role_type": "political_leader",
+        "ranks": [],
+        "units_served": [],
+        "education": [],
+        "military_awards": [],
+        "family": {},
+        "aliases": [],
+        "biography_sources": [],
+        "biographical_details": "Chancellor and Führer of Nazi Germany from 1933 to 1945"
+      },
+      "event_mentions": [
+        {
+          "MentionID": "01H8XYZJ2MN456PQ789RS012TU",
+          "Event_Name": "The Invasion of Poland",
+          "EventID": "01H8XYZABC123DEF456GHJ789",
+          "Sub-event_Name": "German forces cross the Polish border at dawn",
+          "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+          "date": "1939-09-01",
+          "DateMentionID": "01H8XYZ3AB123CD456EF789GH",
+          "position_at_event": "Führer and Chancellor of Germany",
+          "life_event": "Ordered the invasion of Poland, beginning World War II in Europe",
+          "original_text": "Hitler gave the order to invade Poland at dawn"
+        }
+      ]
+    },
+    {
+      "PersonID": "01H8XYZK3VW789XY012ZA345BC",
+      "name": "Heinz Guderian",
+      "source_language": "English",
+      "biographical_profile": {
+        "birth_date": "1888-06-17",
+        "birth_place": "Kulm, German Empire",
+        "death_date": "1954-05-14",
+        "death_place": "Schwangau, West Germany",
+        "nationality": "German",
+        "role_type": "military_leader",
+        "ranks": [
+          {
+            "rank": "General",
+            "date": "1938-02-01",
+            "branch": "Wehrmacht"
+          },
+          {
+            "rank": "Colonel General",
+            "date": "1940-07-19",
+            "branch": "Wehrmacht"
+          }
+        ],
+        "units_served": [
+          {
+            "unit": "XIX Army Corps",
+            "from": "1938",
+            "to": "1940"
+          },
+          {
+            "unit": "2nd Panzer Army",
+            "from": "1941",
+            "to": "1943"
+          }
+        ],
+        "education": [
+          {
+            "institution": "Kriegsakademie",
+            "degree": "Military Staff",
+            "year": "1918"
+          }
+        ],
+        "military_awards": [
+          {
+            "award": "Iron Cross",
+            "class": "First Class",
+            "date_awarded": "1914-09-22"
+          },
+          {
+            "award": "Iron Cross",
+            "class": "Knight's Cross",
+            "date_awarded": "1939-10-27"
+          }
+        ],
+        "family": {
+          "spouse": "Margarete Goerne",
+          "children": ["Heinz Günther Guderian", "Kurt Guderian"]
+        },
+        "aliases": ["Heinz Wilhelm Guderian", "Fast Heinz"],
+        "biography_sources": [
+          {
+            "source": "Cross-Channel Attack",
+            "page": 123,
+            "confidence": 0.95,
+            "fields_sourced": ["birth_date", "ranks", "units_served", "biographical_details"]
+          }
+        ],
+        "biographical_details": "German general and tank warfare pioneer"
+      },
+      "event_mentions": [
+        {
+          "MentionID": "01H8XYZL4DE123FG456HI789JK",
+          "Event_Name": "The Invasion of Poland",
+          "EventID": "01H8XYZABC123DEF456GHJ789",
+          "Sub-event_Name": "German forces cross the Polish border at dawn",
+          "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+          "date": "1939-09-01",
+          "DateMentionID": "01H8XYZ3AB123CD456EF789GH",
+          "position_at_event": "Commander of XIX Army Corps",
+          "life_event": "Led armored units in the invasion of Poland",
+          "original_text": "General Guderian's panzer corps spearheaded the attack"
+        }
+      ]
+    },
+    {
+      "PersonID": "01H8XYZM5LM789NO012PQ345RS",
+      "name": "Władysław Sikorski",
+      "source_language": "English",
+      "biographical_profile": {
+        "birth_date": "1881-05-20",
+        "birth_place": "Tuszów Narodowy, Austria-Hungary",
+        "death_date": "1943-07-04",
+        "death_place": "Gibraltar",
+        "nationality": "Polish",
+        "role_type": "military_leader",
+        "ranks": [
+          {
+            "rank": "General",
+            "date": "1920",
+            "branch": "Polish Army"
+          }
+        ],
+        "units_served": [],
+        "education": [],
+        "military_awards": [
+          {
+            "award": "Virtuti Militari",
+            "class": "Commander's Cross",
+            "date_awarded": "1920-08-15"
+          }
+        ],
+        "family": {},
+        "aliases": [],
+        "biography_sources": [],
+        "biographical_details": "Polish military and political leader, Prime Minister of Polish government-in-exile"
+      },
+      "event_mentions": [
+        {
+          "MentionID": "01H8XYZN6AB456CD789EF012GH",
+          "Event_Name": "The Invasion of Poland",
+          "EventID": "01H8XYZABC123DEF456GHJ789",
+          "Sub-event_Name": "German forces cross the Polish border at dawn",
+          "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+          "date": "1939-09-01",
+          "DateMentionID": "01H8XYZ3AB123CD456EF789GH",
+          "position_at_event": "Former Prime Minister, recalled to military service",
+          "life_event": "Mobilized to help coordinate Polish defense efforts",
+          "original_text": "General Sikorski was called upon to assist in the defense"
+        },
+        {
+          "MentionID": "01H8XYZO7MN789PQ012RS345TU",
+          "Event_Name": "The Invasion of Poland",
+          "EventID": "01H8XYZABC123DEF456GHJ789",
+          "Sub-event_Name": "Formation of Polish government-in-exile",
+          "Sub-eventID": "01H8XYZ2VW789XYZ012ABC345",
+          "date": "1939-09-30",
+          "DateMentionID": "01H8XYZ4MN789PQ012RS345TU",
+          "position_at_event": "Prime Minister of Polish government-in-exile",
+          "life_event": "Appointed Prime Minister and Commander-in-Chief of Polish Armed Forces in exile",
+          "original_text": "Sikorski formed the government-in-exile in Paris"
+        }
+      ]
+    },
+    {
+      "PersonID": "01H8XYZP8VW456XY789ZA012BC",
+      "name": "Audie Murphy",
+      "source_language": "English",
+      "biographical_profile": {
+        "birth_date": "1925-06-20",
+        "birth_place": "Kingston, Texas, USA",
+        "death_date": "1971-05-28",
+        "death_place": "Catawba, Virginia, USA",
+        "nationality": "American",
+        "role_type": "military_personnel",
+        "ranks": [
+          {
+            "rank": "Second Lieutenant",
+            "date": "1944-10-14",
+            "branch": "US Army"
+          },
+          {
+            "rank": "First Lieutenant",
+            "date": "1945-02-16",
+            "branch": "US Army"
+          }
+        ],
+        "units_served": [
+          {
+            "unit": "Company B, 1st Battalion, 15th Infantry Regiment, 3rd Infantry Division",
+            "from": "1942",
+            "to": "1945"
+          }
+        ],
+        "education": [],
+        "military_awards": [
+          {
+            "award": "Medal of Honor",
+            "date_awarded": "1945-06-02"
+          },
+          {
+            "award": "Distinguished Service Cross",
+            "date_awarded": "1944-10-15"
+          }
+        ],
+        "family": {},
+        "aliases": [],
+        "biography_sources": [],
+        "biographical_details": "Most decorated American combat soldier of World War II"
+      },
+      "event_mentions": []
+    }
+  ]
+}

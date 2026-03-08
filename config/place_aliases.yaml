@@ -1,0 +1,646 @@
+# Place Aliases and Hierarchies
+# Manages alternative names and political subdivisions for places
+# Supports temporal changes in administrative boundaries
+# Format: YAML for easy human editing
+
+version: "1.0.0"
+last_updated: "2026-02-23"
+
+# Normalization rules - strings to remove when comparing place names
+normalization_rules:
+  - " peninsula"
+  - " region"
+  - " of operations"
+  - " theater"
+
+# Geography types considered "large regions" - merge by name only, ignore distance
+large_region_types:
+  - region
+  - military_theater
+  - continent
+  - country
+
+# Distance threshold for merging specific places (km)
+merge_distance_km: 50
+
+# Geographical Relationships (non-political)
+# Tracks geographical containment that doesn't imply political hierarchy
+geographical_relationships:
+  - geographical_region: "British Isles"
+    PlaceID: "01BRITISHISLES0000000000"
+    geography_type: "archipelago"
+    contains:
+      - place: "United Kingdom"
+        PlaceID: "01UKGBR000000000000000000"
+        relationship: "geographical_part"
+        notes: "UK is geographically within British Isles, but not a political subdivision"
+      - place: "Ireland"
+        PlaceID: "01IRELAND0000000000000000"
+        relationship: "geographical_part"
+        notes: "Ireland (country) is geographically within British Isles"
+      - place: "Isle of Man"
+        PlaceID: "01ISLEOFMAN00000000000000"
+        relationship: "geographical_part"
+      - place: "Channel Islands"
+        PlaceID: "01CHANNELISLANDS000000"
+        relationship: "geographical_part"
+    notes: "British Isles is a geographical term, not a political entity"
+
+  - geographical_region: "Scandinavia"
+    PlaceID: "01SCANDINAVIA000000000"
+    geography_type: "region"
+    contains:
+      - place: "Norway"
+        PlaceID: "01NORWAY00000000000000000"
+        relationship: "geographical_part"
+      - place: "Sweden"
+        PlaceID: "01SWEDEN00000000000000000"
+        relationship: "geographical_part"
+      - place: "Denmark"
+        PlaceID: "01DENMARK0000000000000000"
+        relationship: "geographical_part"
+    notes: "Geographical/cultural region, not political union"
+
+  - geographical_region: "Balkans"
+    PlaceID: "01BALKANS0000000000000000"
+    geography_type: "region"
+    contains:
+      - place: "Yugoslavia"
+        PlaceID: "01YUGOSLAVIA00000000000"
+        relationship: "geographical_part"
+        valid_period: "1918-1992"
+      - place: "Greece"
+        PlaceID: "01GREECE00000000000000000"
+        relationship: "geographical_part"
+      - place: "Bulgaria"
+        PlaceID: "01BULGARIA000000000000000"
+        relationship: "geographical_part"
+      - place: "Albania"
+        PlaceID: "01ALBANIA0000000000000000"
+        relationship: "geographical_part"
+      - place: "Romania"
+        PlaceID: "01ROMANIA0000000000000000"
+        relationship: "geographical_part"
+        notes: "Partially in Balkans"
+    notes: "Geographical region with no political unity"
+
+# Alias Groups - Places that refer to the same entity
+aliases:
+  # Countries
+  - canonical: "United Kingdom"
+    aliases:
+      - "UK"
+      - "Great Britain"
+      - "Britain"
+      - "England" # Often used colloquially for UK
+    PlaceID: "01UKGBR000000000000000000"
+    
+  - canonical: "United States"
+    aliases:
+      - "USA"
+      - "US"
+      - "America"
+      - "United States of America"
+    PlaceID: "01USA0000000000000000000"
+    
+  - canonical: "Soviet Union"
+    aliases:
+      - "USSR"
+      - "Russia" # Often used interchangeably in WWII context
+      - "Soviet Russia"
+    PlaceID: "01USSR000000000000000000"
+    valid_period: "1922-1991"
+    notes: "Dissolved in 1991; became Russian Federation and other states"
+    
+  - canonical: "Germany"
+    aliases:
+      - "Nazi Germany"
+      - "Third Reich"
+      - "German Reich"
+      - "Deutschland"
+    PlaceID: "01GERMANY00000000000000"
+    
+  # Cities with multiple names
+  - canonical: "Gdańsk"
+    aliases:
+      - "Danzig"
+    PlaceID: "01GDANSK0000000000000000"
+    historical_context: "Called Danzig when under German control (1939-1945)"
+    
+  - canonical: "Kaliningrad"
+    aliases:
+      - "Königsberg"
+    PlaceID: "01KALININGRAD000000000"
+    historical_context: "Königsberg until 1946"
+    name_changes:
+      - name: "Königsberg"
+        period: "pre-1946"
+        country: "Germany"
+      - name: "Kaliningrad"
+        period: "1946-present"
+        country: "Soviet Union/Russia"
+    
+  - canonical: "Wrocław"
+    aliases:
+      - "Breslau"
+    PlaceID: "01WROCLAW000000000000000"
+    name_changes:
+      - name: "Breslau"
+        period: "pre-1945"
+        country: "Germany"
+      - name: "Wrocław"
+        period: "1945-present"
+        country: "Poland"
+    
+  - canonical: "Saint Petersburg"
+    aliases:
+      - "Leningrad"
+      - "Petrograd"
+    PlaceID: "01STPETERSBURG00000000"
+    historical_context: "Leningrad during WWII (1924-1991)"
+    name_changes:
+      - name: "Saint Petersburg"
+        period: "1703-1914"
+      - name: "Petrograd"
+        period: "1914-1924"
+      - name: "Leningrad"
+        period: "1924-1991"
+      - name: "Saint Petersburg"
+        period: "1991-present"
+
+# Temporal Administrative Boundaries
+# Tracks how political boundaries changed during and after WWII
+temporal_boundaries:
+  # Poland - Major boundary shifts
+  - place: "Poland"
+    PlaceID: "01POLAND00000000000000000"
+    boundary_changes:
+      - period: "1918-1939"
+        description: "Second Polish Republic"
+        eastern_border: "Included western Ukraine and Belarus"
+        western_border: "Excluded Gdańsk (Free City)"
+        
+      - period: "1939-1945"
+        description: "Occupied and partitioned"
+        status: "Under German and Soviet occupation"
+        
+      - period: "1945-present"
+        description: "Post-WWII borders"
+        eastern_border: "Lost territory to Soviet Union"
+        western_border: "Gained German territory (Silesia, Pomerania)"
+        notes: "Borders shifted ~200km westward"
+  
+  # Germany - Divided and reunified
+  - place: "Germany"
+    PlaceID: "01GERMANY00000000000000"
+    boundary_changes:
+      - period: "1871-1945"
+        description: "German Empire / Weimar / Third Reich"
+        included: ["East Prussia", "Silesia", "Pomerania"]
+        
+      - period: "1945-1949"
+        description: "Allied occupation zones"
+        status: "Divided into four zones"
+        
+      - period: "1949-1990"
+        description: "Divided Germany"
+        subdivisions:
+          - name: "West Germany"
+            official_name: "Federal Republic of Germany"
+            PlaceID: "01WESTGERMANY0000000000"
+          - name: "East Germany"
+            official_name: "German Democratic Republic"
+            PlaceID: "01EASTGERMANY0000000000"
+        
+      - period: "1990-present"
+        description: "Reunified Germany"
+        lost_territories: ["East Prussia", "Silesia", "Pomerania"]
+  
+  # Czechoslovakia - Split
+  - place: "Czechoslovakia"
+    PlaceID: "01CZECHOSLOVAKIA000000"
+    boundary_changes:
+      - period: "1918-1938"
+        description: "First Czechoslovak Republic"
+        
+      - period: "1938-1939"
+        description: "Munich Agreement"
+        lost: "Sudetenland to Germany"
+        
+      - period: "1939-1945"
+        description: "German occupation"
+        status: "Protectorate of Bohemia and Moravia"
+        
+      - period: "1945-1992"
+        description: "Restored Czechoslovakia"
+        
+      - period: "1993-present"
+        description: "Dissolved"
+        became:
+          - name: "Czech Republic"
+            PlaceID: "01CZECHREPUBLIC00000000"
+          - name: "Slovakia"
+            PlaceID: "01SLOVAKIA000000000000000"
+  
+  # Yugoslavia - Complex dissolution
+  - place: "Yugoslavia"
+    PlaceID: "01YUGOSLAVIA00000000000"
+    boundary_changes:
+      - period: "1918-1941"
+        description: "Kingdom of Yugoslavia"
+        
+      - period: "1941-1945"
+        description: "Axis occupation and partition"
+        
+      - period: "1945-1992"
+        description: "Socialist Federal Republic"
+        
+      - period: "1992-present"
+        description: "Dissolved into multiple states"
+        became:
+          - name: "Slovenia"
+            PlaceID: "01SLOVENIA000000000000000"
+            independence: "1991"
+          - name: "Croatia"
+            PlaceID: "01CROATIA0000000000000000"
+            independence: "1991"
+          - name: "Bosnia and Herzegovina"
+            PlaceID: "01BOSNIA000000000000000000"
+            independence: "1992"
+          - name: "Serbia"
+            PlaceID: "01SERBIA00000000000000000"
+          - name: "Montenegro"
+            PlaceID: "01MONTENEGRO00000000000"
+            independence: "2006"
+          - name: "North Macedonia"
+            PlaceID: "01MACEDONIA00000000000000"
+            independence: "1991"
+  
+  # East Prussia - Divided
+  - place: "East Prussia"
+    PlaceID: "01EASTPRUSSIA000000000"
+    boundary_changes:
+      - period: "pre-1945"
+        description: "German province"
+        country: "Germany"
+        
+      - period: "1945-present"
+        description: "Divided between Poland and Soviet Union"
+        became:
+          - name: "Kaliningrad Oblast"
+            PlaceID: "01KALININGRAD000000000"
+            country: "Soviet Union/Russia"
+          - name: "Warmian-Masurian Voivodeship"
+            PlaceID: "01WARMIANMASURIAN00000"
+            country: "Poland"
+
+# Hierarchical Relationships - Political subdivisions
+# Format: parent > child > grandchild
+# Includes temporal validity periods
+hierarchies:
+  # United Kingdom (stable boundaries)
+  - path: "Europe > United Kingdom"
+    PlaceID: "01UKGBR000000000000000000"
+    valid_period: "1801-present"
+    
+  - path: "Europe > United Kingdom > England"
+    PlaceID: "01ENGLAND0000000000000000"
+    parent_id: "01UKGBR000000000000000000"
+    
+  - path: "Europe > United Kingdom > England > London"
+    PlaceID: "01LONDON00000000000000000"
+    parent_id: "01ENGLAND0000000000000000"
+    
+  # Poland (boundary changes)
+  - path: "Europe > Poland"
+    PlaceID: "01POLAND00000000000000000"
+    valid_period: "1918-present"
+    notes: "Boundaries changed significantly in 1945"
+    
+  - path: "Europe > Poland > Masovian Voivodeship > Warsaw"
+    PlaceID: "01WARSAW00000000000000000"
+    parent_id: "01POLAND00000000000000000"
+    valid_period: "1918-present"
+    notes: "Always part of Poland despite boundary shifts"
+    
+  - path: "Europe > Poland > Pomeranian Voivodeship > Gdańsk"
+    PlaceID: "01GDANSK0000000000000000"
+    parent_id: "01POLAND00000000000000000"
+    valid_period: "1945-present"
+    historical_hierarchy:
+      - path: "Europe > Free City of Danzig"
+        period: "1920-1939"
+      - path: "Europe > Germany > Danzig"
+        period: "1939-1945"
+  
+  # Germany (divided 1949-1990)
+  - path: "Europe > Germany"
+    PlaceID: "01GERMANY00000000000000"
+    valid_period: "1871-1945, 1990-present"
+    
+  - path: "Europe > West Germany"
+    PlaceID: "01WESTGERMANY0000000000"
+    valid_period: "1949-1990"
+    became: "01GERMANY00000000000000"
+    
+  - path: "Europe > East Germany"
+    PlaceID: "01EASTGERMANY0000000000"
+    valid_period: "1949-1990"
+    became: "01GERMANY00000000000000"
+    
+  - path: "Europe > Germany > Berlin"
+    PlaceID: "01BERLIN00000000000000000"
+    parent_id: "01GERMANY00000000000000"
+    valid_period: "1871-1945, 1990-present"
+    notes: "Divided 1945-1990 (West Berlin / East Berlin)"
+  
+  # Soviet Union (dissolved 1991)
+  - path: "Europe > Soviet Union"
+    PlaceID: "01USSR000000000000000000"
+    valid_period: "1922-1991"
+    
+  - path: "Europe > Soviet Union > Russia"
+    PlaceID: "01RUSSIA00000000000000000"
+    parent_id: "01USSR000000000000000000"
+    valid_period: "1922-1991"
+    
+  - path: "Europe > Russia"
+    PlaceID: "01RUSSIA00000000000000000"
+    valid_period: "1991-present"
+    notes: "Successor state to Soviet Union"
+    
+  - path: "Europe > Soviet Union > Russia > Leningrad"
+    PlaceID: "01STPETERSBURG00000000"
+    parent_id: "01RUSSIA00000000000000000"
+    valid_period: "1924-1991"
+    
+  - path: "Europe > Russia > Saint Petersburg"
+    PlaceID: "01STPETERSBURG00000000"
+    parent_id: "01RUSSIA00000000000000000"
+    valid_period: "1991-present"
+
+# Geographic Features (generally stable)
+geographic_features:
+  - canonical: "English Channel"
+    aliases:
+      - "The Channel"
+      - "La Manche"
+    PlaceID: "01ENGLISHCHANNEL0000000"
+    type: "sea"
+    notes: "Natural feature - boundaries stable"
+    
+  - canonical: "Rhine River"
+    aliases:
+      - "Rhine"
+      - "Rhein"
+    PlaceID: "01RHINERIVER000000000"
+    type: "river"
+    notes: "Natural feature - course stable, but political control changed"
+    boundary_significance: "Formed border between France and Germany at various times"
+
+# Merge Rules - For deduplication
+merge_rules:
+  # Never merge these (different places despite similar names)
+  never_merge:
+    - ["Georgia (country)", "Georgia (US state)"]
+    - ["Paris (France)", "Paris (Texas)"]
+    - ["West Germany", "East Germany"]  # Different states 1949-1990
+    
+  # Always merge these (same place, different names)
+  always_merge:
+    - ["USSR", "Soviet Union"]
+    - ["UK", "United Kingdom"]
+    - ["USA", "United States"]
+    - ["Leningrad", "Saint Petersburg"]  # Same city, different periods
+    - ["Danzig", "Gdańsk"]  # Same city, different periods
+    
+  # Conditional merges (depends on time period)
+  conditional_merge:
+    - places: ["Königsberg", "Kaliningrad"]
+      rule: "Same location, different names pre/post 1946"
+      merge_as: "Kaliningrad"
+      preserve_historical: "Königsberg"
+      
+    - places: ["Breslau", "Wrocław"]
+      rule: "Same location, different names pre/post 1945"
+      merge_as: "Wrocław"
+      preserve_historical: "Breslau"
+
+# Query Helpers - For temporal queries
+query_helpers:
+  # Get place name for specific date
+  get_name_for_date:
+    example: "get_name('01STPETERSBURG00000000', '1944-01-01') → 'Leningrad'"
+    
+  # Get hierarchy for specific date
+  get_hierarchy_for_date:
+    example: "get_hierarchy('01GDANSK0000000000000000', '1939-09-01') → 'Europe > Germany > Danzig'"
+    
+  # Get country for specific date
+  get_country_for_date:
+    example: "get_country('01GDANSK0000000000000000', '1939-09-01') → 'Germany'"
+    example2: "get_country('01GDANSK0000000000000000', '1946-01-01') → 'Poland'"
+
+# Notes
+notes: |
+  This file manages place aliases and hierarchical relationships with temporal awareness.
+  
+  Temporal Considerations:
+  1. Administrative boundaries changed significantly during and after WWII
+  2. Many cities changed names when sovereignty changed
+  3. Countries were divided (Germany) or dissolved (Yugoslavia, Czechoslovakia)
+  4. Use 'valid_period' to track when hierarchies were active
+  5. Use 'name_changes' to track temporal name variations
+  
+  Usage:
+  1. Add new aliases when places are mentioned with different names
+  2. Update hierarchies when new subdivisions are discovered
+  3. Use PlaceIDs to link to central place repository
+  4. Include valid_period for time-dependent relationships
+  5. Document boundary changes in temporal_boundaries section
+  
+  Conventions:
+  - Use modern canonical names as primary
+  - Include historical names in aliases with periods
+  - Maintain political boundaries as of WWII period
+  - Document post-war changes for context
+  - Use ISO 8601 date ranges (YYYY-MM-DD or YYYY)
+  # United Kingdom
+  - path: "Europe > United Kingdom"
+    PlaceID: "01UKGBR000000000000000000"
+    
+  - path: "Europe > United Kingdom > England"
+    PlaceID: "01ENGLAND0000000000000000"
+    parent_id: "01UKGBR000000000000000000"
+    
+  - path: "Europe > United Kingdom > England > London"
+    PlaceID: "01LONDON00000000000000000"
+    parent_id: "01ENGLAND0000000000000000"
+    
+  - path: "Europe > United Kingdom > Scotland"
+    PlaceID: "01SCOTLAND000000000000000"
+    parent_id: "01UKGBR000000000000000000"
+    
+  - path: "Europe > United Kingdom > Wales"
+    PlaceID: "01WALES000000000000000000"
+    parent_id: "01UKGBR000000000000000000"
+    
+  # France
+  - path: "Europe > France"
+    PlaceID: "01FRANCE00000000000000000"
+    
+  - path: "Europe > France > Normandy"
+    PlaceID: "01NORMANDY000000000000000"
+    parent_id: "01FRANCE00000000000000000"
+    
+  - path: "Europe > France > Normandy > Caen"
+    PlaceID: "01CAEN0000000000000000000"
+    parent_id: "01NORMANDY000000000000000"
+    
+  - path: "Europe > France > Île-de-France > Paris"
+    PlaceID: "01PARIS000000000000000000"
+    parent_id: "01FRANCE00000000000000000"
+    
+  # Germany
+  - path: "Europe > Germany"
+    PlaceID: "01GERMANY00000000000000"
+    
+  - path: "Europe > Germany > Berlin"
+    PlaceID: "01BERLIN00000000000000000"
+    parent_id: "01GERMANY00000000000000"
+    
+  - path: "Europe > Germany > Bavaria > Munich"
+    PlaceID: "01MUNICH00000000000000000"
+    parent_id: "01GERMANY00000000000000"
+    
+  # Poland
+  - path: "Europe > Poland"
+    PlaceID: "01POLAND00000000000000000"
+    
+  - path: "Europe > Poland > Masovian Voivodeship > Warsaw"
+    PlaceID: "01WARSAW00000000000000000"
+    parent_id: "01POLAND00000000000000000"
+    
+  - path: "Europe > Poland > Pomeranian Voivodeship > Gdańsk"
+    PlaceID: "01GDANSK0000000000000000"
+    parent_id: "01POLAND00000000000000000"
+    
+  # Soviet Union / Russia
+  - path: "Europe > Soviet Union"
+    PlaceID: "01USSR000000000000000000"
+    
+  - path: "Europe > Soviet Union > Russia"
+    PlaceID: "01RUSSIA00000000000000000"
+    parent_id: "01USSR000000000000000000"
+    
+  - path: "Europe > Soviet Union > Russia > Moscow"
+    PlaceID: "01MOSCOW00000000000000000"
+    parent_id: "01RUSSIA00000000000000000"
+    
+  - path: "Europe > Soviet Union > Russia > Leningrad"
+    PlaceID: "01STPETERSBURG00000000"
+    parent_id: "01RUSSIA00000000000000000"
+    
+  - path: "Europe > Soviet Union > Russia > Stalingrad"
+    PlaceID: "01STALINGRAD0000000000"
+    parent_id: "01RUSSIA00000000000000000"
+    
+  # United States
+  - path: "North America > United States"
+    PlaceID: "01USA0000000000000000000"
+    
+  - path: "North America > United States > Washington D.C."
+    PlaceID: "01WASHINGTONDC000000000"
+    parent_id: "01USA0000000000000000000"
+    
+  - path: "North America > United States > New York > New York City"
+    PlaceID: "01NYC00000000000000000000"
+    parent_id: "01USA0000000000000000000"
+    
+  # Pacific Theater
+  - path: "Asia > Japan"
+    PlaceID: "01JAPAN000000000000000000"
+    
+  - path: "Asia > Japan > Tokyo"
+    PlaceID: "01TOKYO000000000000000000"
+    parent_id: "01JAPAN000000000000000000"
+    
+  - path: "Oceania > Pacific Ocean"
+    PlaceID: "01PACIFICOCEAN00000000"
+    
+  - path: "Oceania > Pacific Ocean > Pearl Harbor"
+    PlaceID: "01PEARLHARBOR000000000"
+    parent_id: "01PACIFICOCEAN00000000"
+    
+  # Africa
+  - path: "Africa > Egypt"
+    PlaceID: "01EGYPT000000000000000000"
+    
+  - path: "Africa > Egypt > Cairo"
+    PlaceID: "01CAIRO000000000000000000"
+    parent_id: "01EGYPT000000000000000000"
+    
+  - path: "Africa > Libya"
+    PlaceID: "01LIBYA000000000000000000"
+    
+  - path: "Africa > Libya > Tobruk"
+    PlaceID: "01TOBRUK0000000000000000"
+    parent_id: "01LIBYA000000000000000000"
+
+# Geographic Features
+geographic_features:
+  - canonical: "English Channel"
+    aliases:
+      - "The Channel"
+      - "La Manche"
+    PlaceID: "01ENGLISHCHANNEL0000000"
+    type: "sea"
+    
+  - canonical: "Atlantic Ocean"
+    aliases:
+      - "Atlantic"
+    PlaceID: "01ATLANTICOCEAN00000000"
+    type: "ocean"
+    
+  - canonical: "Mediterranean Sea"
+    aliases:
+      - "Mediterranean"
+      - "The Med"
+    PlaceID: "01MEDITERRANEAN0000000"
+    type: "sea"
+    
+  - canonical: "Rhine River"
+    aliases:
+      - "Rhine"
+      - "Rhein"
+    PlaceID: "01RHINERIVER000000000"
+    type: "river"
+
+# Merge Rules - For deduplication
+merge_rules:
+  # Never merge these (false positives)
+  never_merge:
+    - ["Georgia (country)", "Georgia (US state)"]
+    - ["Paris (France)", "Paris (Texas)"]
+    
+  # Always merge these (confirmed duplicates)
+  always_merge:
+    - ["USSR", "Soviet Union"]
+    - ["UK", "United Kingdom"]
+    - ["USA", "United States"]
+
+# Notes
+notes: |
+  This file manages place aliases and hierarchical relationships.
+  
+  Usage:
+  1. Add new aliases when places are mentioned with different names
+  2. Update hierarchies when new subdivisions are discovered
+  3. Use PlaceIDs to link to central place repository
+  4. Historical context helps explain name changes
+  
+  Conventions:
+  - Use modern canonical names as primary
+  - Include historical names in aliases
+  - Maintain political boundaries as of WWII period
+  - Use ISO 3166 country codes where applicable

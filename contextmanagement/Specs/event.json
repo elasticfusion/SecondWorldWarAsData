@@ -1,0 +1,29 @@
+{
+  "Chapter": "Chapter 1: The Invasion of Poland",
+  "Event": {
+    "EventID": "01H8XYZABC123DEF456GHJ789",
+    "Sub-events": [
+      {
+        "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+        "Sub-event_summary": "German forces cross the Polish border at dawn",
+        "Sub-event_fulltext": {
+          "Paragraph_1": "On September 1, 1939, at 4:45 AM, German forces launched a massive invasion across the Polish border. The attack came without a formal declaration of war.",
+          "Paragraph_2": "Polish defenses were quickly overwhelmed by the superior German mechanized units and air support. The Luftwaffe achieved air superiority within hours.",
+          "Paragraph_3": "Despite fierce resistance from Polish troops, the German advance continued rapidly toward Warsaw."
+        },
+        "Endnote_References": [4, 5],
+        "Footnote_References": ["*", "†"]
+      },
+      {
+        "Sub-eventID": "01H8XYZ2VW789XYZ012ABC345",
+        "Sub-event_summary": "Soviet forces enter Poland from the east",
+        "Sub-event_fulltext": {
+          "Paragraph_4": "On September 17, 1939, Soviet forces invaded Poland from the east, implementing the secret protocols of the Molotov-Ribbentrop Pact.",
+          "Paragraph_5": "Polish forces, already engaged with German troops in the west, were unable to mount an effective defense against this second invasion."
+        },
+        "Endnote_References": [6, 7, 8],
+        "Footnote_References": ["‡"]
+      }
+    ]
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "DEPRECATED": "This schema is deprecated. Use weather_v2_central.json instead.",
+  "migration_notes": "Version 2.0 uses central repository pattern with API integration.",
+  "see": "contextmanagement/Specs/weather_v2_central.json",
+  
+  "Event_Name": "The Invasion of Poland",
+  "EventID": "01H8XYZABC123DEF456GHJ789",
+  "Sub-event_Name": "German forces cross the Polish border at dawn",
+  "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+  "Weather_Mentions": [
+    {
+      "WeatherMentionID": "01H8XYZC5AB123CD456EF789GH",
+      "place_name": "Warsaw",
+      "PlaceMentionID": "01H8XYZ8AB123CD456EF789GH",
+      "date": "1939-09-01",
+      "DateMentionID": "01H8XYZ3AB123CD456EF789GH",
+      "weather_description": "Clear skies with light fog in early morning hours",
+      "temperature": 15,
+      "temperature_unit": "celsius",
+      "measurement_system": "metric",
+      "notable_impact": "Early morning fog provided limited concealment for initial German advance",
+      "api_source": "https://api.weather.historical/v1/data?location=Warsaw&date=1939-09-01",
+      "image_references": [
+        {
+          "ImageID": "01H8XYZD6MN789PQ012RS345TU",
+          "description": "Photograph showing foggy conditions at dawn"
+        }
+      ],
+      "original_text": "The morning fog lifted by 0600 hours"
+    },
+    {
+      "WeatherMentionID": "01H8XYZE7VW456XY789ZA012BC",
+      "place_name": "Gdańsk",
+      "PlaceMentionID": "01H8XYZ9MN456PQ789RS012TU",
+      "date": "1939-09-01",
+      "DateMentionID": "01H8XYZ3AB123CD456EF789GH",
+      "weather_description": "Overcast with intermittent rain",
+      "temperature": 58,
+      "temperature_unit": "fahrenheit",
+      "measurement_system": "imperial",
+      "notable_impact": "Rain hampered visibility for naval operations in the harbor",
+      "api_source": "https://api.weather.historical/v1/data?location=Gdansk&date=1939-09-01",
+      "image_references": [],
+      "original_text": "Rain fell throughout the morning, reducing visibility"
+    },
+    {
+      "WeatherMentionID": "01H8XYZF8DE123FG456HI789JK",
+      "place_name": "Poznań",
+      "PlaceMentionID": "01H8XYZB4DE123FG456HI789JK",
+      "date": "1939-09-17",
+      "DateMentionID": "01H8XYZ4MN789PQ012RS345TU",
+      "weather_description": "Sunny with moderate winds from the east",
+      "temperature": 18,
+      "temperature_unit": "celsius",
+      "measurement_system": "metric",
+      "notable_impact": null,
+      "api_source": "https://api.weather.historical/v1/data?location=Poznan&date=1939-09-17",
+      "image_references": [
+        {
+          "ImageID": "01H8XYZG9LM789NO012PQ345RS",
+          "description": "Weather map showing high pressure system"
+        },
+        {
+          "ImageID": "01H8XYZH0AB456CD789EF012GH",
+          "description": "Aerial photograph showing clear conditions"
+        }
+      ],
+      "original_text": "The weather was favorable for air operations"
+    }
+  ]
+}

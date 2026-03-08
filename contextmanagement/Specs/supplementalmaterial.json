@@ -1,0 +1,192 @@
+{
+  "Event_Name": "The Invasion of Poland",
+  "EventID": "01H8XYZABC123DEF456GHJ789",
+  "Sub-event_Name": "German forces cross the Polish border at dawn",
+  "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+  "Supplemental_Material": [
+    {
+      "SupplementalID": "01H8XZ0JSAB123CD456EF789GH",
+      "reference_type": "endnote",
+      "reference_number": 4,
+      "verbatim_reference": "Shirer, William L. The Rise and Fall of the Third Reich: A History of Nazi Germany. New York: Simon & Schuster, 1960, pp. 597-598.",
+      "date_range": {
+        "start": "1939-09-01",
+        "end": null
+      },
+      "resource_type": "offline",
+      "author": "Shirer, William L.",
+      "title": "The Rise and Fall of the Third Reich: A History of Nazi Germany",
+      "publisher": "Simon & Schuster",
+      "publication_location": "New York",
+      "publication_year": 1960,
+      "pages": "597-598",
+      "url": null,
+      "local_copy": null,
+      "url_capture_date": null,
+      "license": "Copyright - Simon & Schuster",
+      "repository_name": "New York Public Library",
+      "repository_location": {
+        "address": "476 Fifth Avenue",
+        "city": "New York",
+        "state": "NY",
+        "country": "United States",
+        "postal_code": "10018"
+      },
+      "catalog_reference": "D757 .S5 1960",
+      "conversion_notes": "Available for purchase or library loan; digital editions available"
+    },
+    {
+      "SupplementalID": "01H8XZ0KTMN456PQ789RS012TU",
+      "reference_type": "endnote",
+      "reference_number": 5,
+      "verbatim_reference": "German Federal Archives, 'Invasion of Poland - Military Orders,' Document R 43 II/1270, September 1, 1939.",
+      "date_range": {
+        "start": "1939-09-01",
+        "end": null
+      },
+      "resource_type": "online",
+      "author": "German Federal Archives",
+      "title": "Invasion of Poland - Military Orders",
+      "document_type": "Primary source document",
+      "document_reference": "R 43 II/1270",
+      "publication_year": 1939,
+      "url": "https://www.bundesarchiv.de/cocoon/barch/0/r/r43ii/1270/index.html",
+      "local_copy": "/cache/documents/bundesarchiv-r43ii-1270.pdf",
+      "url_capture_date": "2024-01-15",
+      "license": "Public Domain - Historical government document"
+    },
+    {
+      "SupplementalID": "01H8XZ0LUVW789XY012ZA345BC",
+      "reference_type": "footnote",
+      "reference_symbol": "*",
+      "verbatim_reference": "The exact time of 4:45 AM is disputed by some historians who place it at 4:40 AM. See Zaloga, Steven J. Poland 1939: The Birth of Blitzkrieg. Oxford: Osprey Publishing, 2002, p. 42.",
+      "date_range": {
+        "start": "1939-09-01",
+        "end": null
+      },
+      "resource_type": "offline",
+      "author": "Zaloga, Steven J.",
+      "title": "Poland 1939: The Birth of Blitzkrieg",
+      "publisher": "Osprey Publishing",
+      "publication_location": "Oxford",
+      "publication_year": 2002,
+      "pages": "42",
+      "isbn": "978-1841763552",
+      "url": null,
+      "local_copy": null,
+      "url_capture_date": null,
+      "license": "Copyright - Osprey Publishing",
+      "repository_name": "Library of Congress",
+      "repository_location": {
+        "address": "101 Independence Ave SE",
+        "city": "Washington",
+        "state": "DC",
+        "country": "United States",
+        "postal_code": "20540"
+      },
+      "catalog_reference": "D765.2.P6 Z35 2002",
+      "conversion_notes": "Available for purchase; library copies available"
+    },
+    {
+      "SupplementalID": "01H8XZ0MVDE123FG456HI789JK",
+      "reference_type": "footnote",
+      "reference_symbol": "†",
+      "verbatim_reference": "Polish Institute of National Remembrance, 'Defensive Operations September 1-3, 1939,' accessed January 20, 2024, https://ipn.gov.pl/en/digital-resources/articles/4567",
+      "date_range": {
+        "start": "1939-09-01",
+        "end": "1939-09-03"
+      },
+      "resource_type": "online",
+      "author": "Polish Institute of National Remembrance",
+      "title": "Defensive Operations September 1-3, 1939",
+      "document_type": "Historical analysis",
+      "url": "https://ipn.gov.pl/en/digital-resources/articles/4567",
+      "local_copy": "/cache/documents/ipn-defensive-operations-1939.html",
+      "url_capture_date": "2024-01-20",
+      "license": "CC BY-NC-ND 4.0 - Polish Institute of National Remembrance"
+    },
+    {
+      "SupplementalID": "01H8XZ0NWLM789NO012PQ345RS",
+      "reference_type": "bibliography",
+      "reference_number": null,
+      "verbatim_reference": "Davies, Norman. God's Playground: A History of Poland, Volume II: 1795 to the Present. Oxford: Oxford University Press, 2005.",
+      "date_range": {
+        "start": "1795",
+        "end": "2005"
+      },
+      "resource_type": "offline",
+      "author": "Davies, Norman",
+      "title": "God's Playground: A History of Poland, Volume II: 1795 to the Present",
+      "publisher": "Oxford University Press",
+      "publication_location": "Oxford",
+      "publication_year": 2005,
+      "isbn": "978-0199253395",
+      "url": null,
+      "local_copy": null,
+      "url_capture_date": null,
+      "license": "Copyright - Oxford University Press",
+      "repository_name": "British Library",
+      "repository_location": {
+        "address": "96 Euston Road",
+        "city": "London",
+        "state": null,
+        "country": "United Kingdom",
+        "postal_code": "NW1 2DB"
+      },
+      "catalog_reference": "YC.2006.a.4567",
+      "conversion_notes": "Available for purchase; library copies available worldwide"
+    },
+    {
+      "SupplementalID": "01H8XZ0OXAB456CD789EF012GH",
+      "reference_type": "bibliography",
+      "reference_number": null,
+      "verbatim_reference": "United States Holocaust Memorial Museum. 'Invasion of Poland, Fall 1939.' Holocaust Encyclopedia. https://encyclopedia.ushmm.org/content/en/article/invasion-of-poland-fall-1939",
+      "date_range": {
+        "start": "1939-09-01",
+        "end": "1939-10-06"
+      },
+      "resource_type": "online",
+      "author": "United States Holocaust Memorial Museum",
+      "title": "Invasion of Poland, Fall 1939",
+      "document_type": "Encyclopedia article",
+      "url": "https://encyclopedia.ushmm.org/content/en/article/invasion-of-poland-fall-1939",
+      "local_copy": "/cache/documents/ushmm-invasion-poland-1939.html",
+      "url_capture_date": "2024-01-22",
+      "license": "Public Domain - US Government Work"
+    },
+    {
+      "SupplementalID": "01H8XZ0PYMN789PQ012RS345TU",
+      "reference_type": "endnote",
+      "reference_number": 6,
+      "verbatim_reference": "Guderian, Heinz. Panzer Leader. Translated by Constantine Fitzgibbon. New York: Da Capo Press, 1996, pp. 71-75.",
+      "date_range": {
+        "start": "1939-09-01",
+        "end": "1939-09-27"
+      },
+      "resource_type": "offline",
+      "author": "Guderian, Heinz",
+      "translator": "Fitzgibbon, Constantine",
+      "title": "Panzer Leader",
+      "publisher": "Da Capo Press",
+      "publication_location": "New York",
+      "publication_year": 1996,
+      "original_publication_year": 1952,
+      "pages": "71-75",
+      "isbn": "978-0306806605",
+      "url": null,
+      "local_copy": null,
+      "url_capture_date": null,
+      "license": "Copyright - Da Capo Press",
+      "repository_name": "Stanford University Libraries",
+      "repository_location": {
+        "address": "557 Escondido Mall",
+        "city": "Stanford",
+        "state": "CA",
+        "country": "United States",
+        "postal_code": "94305"
+      },
+      "catalog_reference": "D757.G813 1996",
+      "conversion_notes": "Memoir by German general; available for purchase or library loan"
+    }
+  ]
+}

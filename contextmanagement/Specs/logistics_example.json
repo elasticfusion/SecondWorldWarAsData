@@ -1,0 +1,132 @@
+{
+  "LogisticsID": "01KJXYZ123ABC456DEF789GHI0",
+  "logistics_type": "supply_shortage",
+  "category": "ammunition",
+  "description": "Critical shortage of 105mm artillery shells affecting VII Corps operations in Normandy. Artillery units limited to 10 rounds per gun per day, forcing commanders to ration fire support during the Saint-Lô offensive. The shortage resulted from a combination of higher-than-expected consumption rates and delayed resupply due to storm damage to Cherbourg port facilities.",
+  "severity": "critical",
+  "quantity": {
+    "required": 50000,
+    "available": 12000,
+    "unit": "rounds",
+    "shortage": 38000
+  },
+  "temporal": {
+    "date_start": "1944-07-15",
+    "date_end": "1944-07-20",
+    "date_type": "range",
+    "DateID_start": "01KJ67F5XCTPXR2S4K02RQKXSB",
+    "DateID_end": "01KJ67F5XCTPXR2S4K02RQKXSC",
+    "DateMentionID": "01KJ67F5XY6K73Y1Z0E1RBSCSH"
+  },
+  "delivery_method": "sea_transport",
+  "status": "resolved",
+  "impacted_organizations": [
+    {
+      "PeopleGroupID": "01KJXABC123DEF456GHI789JKL",
+      "group_name": "VII Corps",
+      "impact_description": "Reduced artillery support capability by 75%, limited offensive operations against German defensive positions"
+    },
+    {
+      "PeopleGroupID": "01KJXDEF456GHI789JKL012MNO",
+      "group_name": "1st Infantry Division",
+      "impact_description": "Delayed attack on Saint-Lô by 48 hours due to insufficient artillery preparation"
+    },
+    {
+      "PeopleGroupID": "01KJXGHI789JKL012MNO345PQR",
+      "group_name": "9th Infantry Division",
+      "impact_description": "Forced to rely on air support instead of artillery, reducing tactical flexibility"
+    }
+  ],
+  "impacted_people": [
+    {
+      "PersonID": "01KJXJKL012MNO345PQR678STU",
+      "name": "J. Lawton Collins",
+      "role": "VII Corps Commander",
+      "impact_description": "Forced to ration artillery ammunition and delay offensive operations until resupply arrived"
+    },
+    {
+      "PersonID": "01KJXMNO345PQR678STU901VWX",
+      "name": "Omar Bradley",
+      "role": "First Army Commander",
+      "impact_description": "Redirected ammunition supplies from V Corps to VII Corps, authorized emergency airlift"
+    },
+    {
+      "PersonID": "01KJXPQR678STU901VWX234YZA",
+      "name": "Clarence R. Huebner",
+      "role": "1st Infantry Division Commander",
+      "impact_description": "Postponed division attack on Saint-Lô until ammunition situation improved"
+    }
+  ],
+  "impacted_places": [
+    {
+      "PlaceID": "01KHYP2M4N6P8Q0R2S4T6V8W2B",
+      "place_name": "Saint-Lô",
+      "country": "FRA",
+      "impact_description": "Delayed offensive operations by 48 hours due to ammunition shortage, allowing Germans to reinforce defensive positions"
+    },
+    {
+      "PlaceID": "01KHYP3N5M7Q1S3U5W7Y9A0C2E",
+      "place_name": "Cherbourg",
+      "country": "FRA",
+      "impact_description": "Port capacity insufficient to handle ammunition resupply requirements due to storm damage to dock facilities"
+    },
+    {
+      "PlaceID": "01KHYP4P6N8R2T4V6X8Z0B2D4F",
+      "place_name": "Utah Beach",
+      "country": "FRA",
+      "impact_description": "Used as emergency landing site for ammunition barges when Cherbourg port was unavailable"
+    }
+  ],
+  "impacted_equipment": [
+    {
+      "EquipmentID": "01KJXSTU901VWX234YZA567BCD",
+      "common_name": "M101 105mm Howitzer",
+      "impact_description": "Limited to 10 rounds per gun per day, reducing fire support effectiveness by 80% compared to normal operations"
+    },
+    {
+      "EquipmentID": "01KJXVWX234YZA567BCD890EFG",
+      "common_name": "M1 155mm Gun",
+      "impact_description": "Completely out of ammunition for 3 days (July 16-18), unable to provide counter-battery fire"
+    },
+    {
+      "EquipmentID": "01KJXYZA567BCD890EFG123HIJ",
+      "common_name": "M7 Priest",
+      "impact_description": "Self-propelled artillery limited to defensive fire missions only due to ammunition rationing"
+    }
+  ],
+  "weather_impact": {
+    "WeatherID": "01KJXBCD890EFG123HIJ456KLM",
+    "impact_description": "Severe storm in English Channel on July 13-14 delayed supply convoy by 3 days, preventing scheduled ammunition resupply. Storm also damaged Cherbourg port facilities, reducing unloading capacity by 40%.",
+    "severity": "high"
+  },
+  "event_mentions": [
+    {
+      "EventMentionID": "01KJXEFG123HIJ456KLM789NOP",
+      "EventID": "01KJ3C8D3RP3MD210G7R6CHH3Z",
+      "Sub_eventID": "01KJ3C8D3RFQMD33B8CZ8GW8XK",
+      "paragraph_numbers": [15, 16, 17],
+      "context": "Artillery ammunition shortage forced VII Corps to limit fire support during Saint-Lô offensive. Collins reported critical shortage to Bradley on July 15, requesting emergency resupply. Division commanders were ordered to ration ammunition to 10 rounds per gun per day."
+    },
+    {
+      "EventMentionID": "01KJXHIJ456KLM789NOP012QRS",
+      "EventID": "01KJ3C8D3RP3MD210G7R6CHH3Z",
+      "Sub_eventID": "01KJ3C8D3RFQMD33B8CZ8GW8XL",
+      "paragraph_numbers": [22, 23],
+      "context": "Emergency airlift of ammunition authorized by Bradley on July 17 to resolve VII Corps shortage. C-47 transport aircraft diverted from supply missions to England to deliver 30,000 rounds directly to forward airstrips."
+    },
+    {
+      "EventMentionID": "01KJXKLM789NOP012QRS345TUV",
+      "EventID": "01KJ3C8D3RP3MD210G7R6CHH3Z",
+      "Sub_eventID": "01KJ3C8D3RFQMD33B8CZ8GW8XM",
+      "paragraph_numbers": [28],
+      "context": "Additional 20,000 rounds diverted from V Corps reserves on July 18. Huebner reported 1st Infantry Division ready to resume offensive operations on July 20 after ammunition situation improved."
+    }
+  ],
+  "resolution": {
+    "resolved": true,
+    "resolution_date": "1944-07-20",
+    "resolution_description": "Emergency airlift of 30,000 rounds via C-47 transport aircraft from England delivered July 17-19. Additional 20,000 rounds diverted from V Corps reserves. Cherbourg port repairs completed, allowing normal resupply operations to resume. Total of 50,000 rounds delivered, restoring VII Corps to full operational capability.",
+    "resolution_method": "air_delivery"
+  },
+  "extracted_date": "2026-03-05T14:30:00Z"
+}

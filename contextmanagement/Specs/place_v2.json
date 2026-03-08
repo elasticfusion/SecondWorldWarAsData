@@ -1,0 +1,396 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://secondworldwarasdata.org/schemas/place/v2.0.0",
+  "title": "WWII Place Extraction Schema",
+  "description": "Schema for geographic entity extraction from WWII historical documents",
+  "version": "2.0.0",
+  "type": "object",
+  "required": [
+    "Event_Name",
+    "EventID",
+    "Sub_event_Name",
+    "Sub_eventID",
+    "Place_Mentions"
+  ],
+  "properties": {
+    "Event_Name": {
+      "type": "string",
+      "description": "Name of the parent event (typically chapter title)",
+      "minLength": 1
+    },
+    "EventID": {
+      "type": "string",
+      "description": "26-character ULID of the parent event",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "Sub_event_Name": {
+      "type": "string",
+      "description": "Name/summary of the sub-event",
+      "minLength": 1
+    },
+    "Sub_eventID": {
+      "type": "string",
+      "description": "26-character ULID of the sub-event",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "Place_Mentions": {
+      "type": "array",
+      "description": "Array of place mentions extracted from the sub-event text",
+      "items": {
+        "oneOf": [
+          { "$ref": "#/definitions/SinglePlace" },
+          { "$ref": "#/definitions/RoutePlace" }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "SinglePlace": {
+      "type": "object",
+      "description": "A single geographic location mention",
+      "required": [
+        "PlaceMentionID",
+        "current_name",
+        "source_language",
+        "latitude",
+        "longitude",
+        "geography_type",
+        "original_text"
+      ],
+      "properties": {
+        "PlaceMentionID": {
+          "type": "string",
+          "description": "26-character ULID uniquely identifying this place mention",
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+        },
+        "current_name": {
+          "type": "string",
+          "description": "Current/modern name of the place",
+          "minLength": 1
+        },
+        "historical_name": {
+          "type": ["string", "null"],
+          "description": "Historical name if different from current (e.g., 'Danzig' for Gdańsk)",
+          "minLength": 1
+        },
+        "source_language": {
+          "type": "string",
+          "description": "Language of the source document",
+          "enum": ["English", "German", "French", "Russian", "Italian", "Japanese", "Other"],
+          "default": "English"
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Latitude coordinate in decimal degrees (WGS84)",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Longitude coordinate in decimal degrees (WGS84)",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "coordinate_precision": {
+          "type": "string",
+          "description": "Precision level of coordinates",
+          "enum": ["exact", "approximate", "center_point", "estimated"],
+          "default": "approximate"
+        },
+        "bounding_box_100km": {
+          "type": "object",
+          "description": "Approximate 100km bounding box around the coordinates",
+          "required": ["north", "south", "east", "west"],
+          "properties": {
+            "north": {
+              "type": "number",
+              "description": "Northern boundary latitude",
+              "minimum": -90,
+              "maximum": 90
+            },
+            "south": {
+              "type": "number",
+              "description": "Southern boundary latitude",
+              "minimum": -90,
+              "maximum": 90
+            },
+            "east": {
+              "type": "number",
+              "description": "Eastern boundary longitude",
+              "minimum": -180,
+              "maximum": 180
+            },
+            "west": {
+              "type": "number",
+              "description": "Western boundary longitude",
+              "minimum": -180,
+              "maximum": 180
+            }
+          }
+        },
+        "geography_type": {
+          "type": "string",
+          "description": "Type of geographic entity",
+          "enum": [
+            "city",
+            "town",
+            "village",
+            "country",
+            "region",
+            "province",
+            "state",
+            "sea",
+            "ocean",
+            "river",
+            "lake",
+            "mountain",
+            "island",
+            "peninsula",
+            "continent",
+            "military_base",
+            "battlefield",
+            "fortification",
+            "bridge",
+            "port",
+            "airfield",
+            "other"
+          ]
+        },
+        "date_context": {
+          "type": ["string", "null"],
+          "description": "Date context if place mention is time-specific (ISO 8601 format)",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$|^\\d{4}-\\d{2}$|^\\d{4}$"
+        },
+        "original_text": {
+          "type": "string",
+          "description": "Exact text from the source document",
+          "minLength": 1
+        },
+        "confidence": {
+          "type": "number",
+          "description": "Confidence score for coordinate accuracy (0.0-1.0)",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.8
+        },
+        "map_urls": {
+          "type": "object",
+          "description": "Modern map service URLs for this location",
+          "properties": {
+            "google_maps": {
+              "type": "string",
+              "description": "Google Maps URL (format: https://www.google.com/maps?q=LAT,LON)",
+              "pattern": "^https://www\\.google\\.com/maps\\?q=-?\\d+\\.\\d+,-?\\d+\\.\\d+$"
+            },
+            "openstreetmap": {
+              "type": "string",
+              "description": "OpenStreetMap URL (format: https://www.openstreetmap.org/?mlat=LAT&mlon=LON&zoom=12)",
+              "pattern": "^https://www\\.openstreetmap\\.org/\\?mlat=-?\\d+\\.\\d+&mlon=-?\\d+\\.\\d+&zoom=\\d+$"
+            }
+          }
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes about the place mention"
+        }
+      },
+      "additionalProperties": false
+    },
+    "RoutePlace": {
+      "type": "object",
+      "description": "A route or path connecting multiple locations",
+      "required": [
+        "PlaceMentionID",
+        "source_language",
+        "route",
+        "original_text"
+      ],
+      "properties": {
+        "PlaceMentionID": {
+          "type": "string",
+          "description": "26-character ULID uniquely identifying this route mention",
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+        },
+        "source_language": {
+          "type": "string",
+          "description": "Language of the source document",
+          "enum": ["English", "German", "French", "Russian", "Italian", "Japanese", "Other"],
+          "default": "English"
+        },
+        "route": {
+          "type": "array",
+          "description": "Ordered sequence of stops along the route",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": [
+              "sequence",
+              "current_name",
+              "latitude",
+              "longitude",
+              "geography_type"
+            ],
+            "properties": {
+              "sequence": {
+                "type": "integer",
+                "description": "Order in the route (1-indexed)",
+                "minimum": 1
+              },
+              "current_name": {
+                "type": "string",
+                "description": "Current/modern name of the stop",
+                "minLength": 1
+              },
+              "historical_name": {
+                "type": ["string", "null"],
+                "description": "Historical name if different"
+              },
+              "latitude": {
+                "type": "number",
+                "description": "Latitude coordinate",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "description": "Longitude coordinate",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "bounding_box_100km": {
+                "type": "object",
+                "description": "Bounding box for this stop",
+                "required": ["north", "south", "east", "west"],
+                "properties": {
+                  "north": { "type": "number", "minimum": -90, "maximum": 90 },
+                  "south": { "type": "number", "minimum": -90, "maximum": 90 },
+                  "east": { "type": "number", "minimum": -180, "maximum": 180 },
+                  "west": { "type": "number", "minimum": -180, "maximum": 180 }
+                }
+              },
+              "geography_type": {
+                "type": "string",
+                "description": "Type of this stop",
+                "enum": [
+                  "city", "town", "village", "country", "region", "province",
+                  "state", "sea", "ocean", "river", "lake", "mountain", "island",
+                  "peninsula", "continent", "military_base", "battlefield",
+                  "fortification", "bridge", "port", "airfield", "other"
+                ]
+              },
+              "map_urls": {
+                "type": "object",
+                "description": "Modern map service URLs for this stop",
+                "properties": {
+                  "google_maps": {
+                    "type": "string",
+                    "description": "Google Maps URL",
+                    "pattern": "^https://www\\.google\\.com/maps\\?q=-?\\d+\\.\\d+,-?\\d+\\.\\d+$"
+                  },
+                  "openstreetmap": {
+                    "type": "string",
+                    "description": "OpenStreetMap URL",
+                    "pattern": "^https://www\\.openstreetmap\\.org/\\?mlat=-?\\d+\\.\\d+&mlon=-?\\d+\\.\\d+&zoom=\\d+$"
+                  }
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "date_context": {
+          "type": ["string", "null"],
+          "description": "Date context for the route",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$|^\\d{4}-\\d{2}$|^\\d{4}$"
+        },
+        "original_text": {
+          "type": "string",
+          "description": "Exact text describing the route",
+          "minLength": 1
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes about the route"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    {
+      "Event_Name": "The Invasion of Poland",
+      "EventID": "01H8XYZABC123DEF456GHJ789",
+      "Sub_event_Name": "German forces cross the Polish border at dawn",
+      "Sub_eventID": "01H8XYZ1MN456PQR789STU012",
+      "Place_Mentions": [
+        {
+          "PlaceMentionID": "01H8XYZ8AB123CD456EF789GH",
+          "current_name": "Warsaw",
+          "historical_name": "Warszawa",
+          "source_language": "English",
+          "latitude": 52.2297,
+          "longitude": 21.0122,
+          "coordinate_precision": "exact",
+          "bounding_box_100km": {
+            "north": 53.1297,
+            "south": 51.3297,
+            "east": 22.4122,
+            "west": 19.6122
+          },
+          "geography_type": "city",
+          "date_context": "1939-09-01",
+          "original_text": "Warsaw",
+          "confidence": 1.0,
+          "map_urls": {
+            "google_maps": "https://www.google.com/maps?q=52.2297,21.0122",
+            "openstreetmap": "https://www.openstreetmap.org/?mlat=52.2297&mlon=21.0122&zoom=12"
+          }
+        },
+        {
+          "PlaceMentionID": "01H8XYZB4DE123FG456HI789JK",
+          "source_language": "English",
+          "route": [
+            {
+              "sequence": 1,
+              "current_name": "Berlin",
+              "historical_name": null,
+              "latitude": 52.5200,
+              "longitude": 13.4050,
+              "bounding_box_100km": {
+                "north": 53.4200,
+                "south": 51.6200,
+                "east": 14.8050,
+                "west": 12.0050
+              },
+              "geography_type": "city",
+              "map_urls": {
+                "google_maps": "https://www.google.com/maps?q=52.5200,13.4050",
+                "openstreetmap": "https://www.openstreetmap.org/?mlat=52.5200&mlon=13.4050&zoom=12"
+              }
+            },
+            {
+              "sequence": 2,
+              "current_name": "Warsaw",
+              "historical_name": "Warszawa",
+              "latitude": 52.2297,
+              "longitude": 21.0122,
+              "bounding_box_100km": {
+                "north": 53.1297,
+                "south": 51.3297,
+                "east": 22.4122,
+                "west": 19.6122
+              },
+              "geography_type": "city",
+              "map_urls": {
+                "google_maps": "https://www.google.com/maps?q=52.2297,21.0122",
+                "openstreetmap": "https://www.openstreetmap.org/?mlat=52.2297&mlon=21.0122&zoom=12"
+              }
+            }
+          ],
+          "date_context": "1939-09-01",
+          "original_text": "from Berlin to Warsaw"
+        }
+      ]
+    }
+  ]
+}

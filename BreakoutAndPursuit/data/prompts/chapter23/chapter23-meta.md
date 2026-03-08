@@ -1,8 +1,0 @@
-United States Army in World War II
-European Theater of Operations
-Breakout and Pursuit
-Martin Blumenson
-
-Chapter XXIII - Opportunities and Intentions
-
-License: Public Domain

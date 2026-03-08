@@ -1,0 +1,43 @@
+#!/bin/bash
+# Quick test of combined map search (Grok whitelist + OpenSERP)
+
+echo "=================================="
+echo "Combined Map Search - Quick Test"
+echo "=================================="
+echo ""
+echo "Strategy:"
+echo "  1. Grok searches whitelisted sites (West Point, LOC, NARA, etc.)"
+echo "  2. OpenSERP searches broader web (Google/Bing/DuckDuckGo)"
+echo "  3. Duplicate detection prevents re-imports"
+echo ""
+echo "This will search 5 places."
+echo ""
+echo "Output:"
+echo "  - Images: filestore/external_maps/"
+echo "  - JSON: output/external_maps/"
+echo ""
+read -p "Press Enter to start..."
+
+# Run the combined search
+python3 -m src.extraction.combined_map_search --max-places 5
+
+echo ""
+echo "=================================="
+echo "Test Complete"
+echo "=================================="
+echo ""
+echo "Review results:"
+echo "  ls -lh filestore/external_maps/"
+echo "  ls -lh output/external_maps/"
+echo ""
+echo "Check logs to see:"
+echo "  - Phase 1: Grok whitelist results"
+echo "  - Phase 2: OpenSERP results"
+echo "  - Duplicate detection in action"
+echo ""
+echo "To process all places:"
+echo "  python3 -m src.extraction.combined_map_search --max-places 220"
+echo ""
+echo "To skip OpenSERP (Grok only):"
+echo "  python3 -m src.extraction.combined_map_search --skip-openserp"
+echo ""

@@ -1,0 +1,33 @@
+
+- Equipment:
+  - the schema should note equipment used as mentioned in the text.
+  - it should include both it's common name, like 'Sherman' and it's technical identifier 'M4'
+  	- Often, there will be sub-variants like sherman m4a1
+    - allow for an explanation of the differences between variants
+    - there can be, multiple ma,es for the same equipment and might vary by sub-variant
+  - sub-variants should not have their own record
+  - unit - link to output/people_groups name and ULID, that the text mentions using the equipment
+  - person - link to person using equipment in output/people by name and ULID
+  - event / sub-event - link to event or sub-event in output/events by name and ULID
+  - date - link to  output/dates ULID and date
+  - supporting unit - should note supporting units - people_groups ULID and new equipment record for their equipment for example:
+		- Armor
+        - Naval
+		- Aircraft
+		- Artillery
+		- Communications
+		- Infantry Weapons
+		- Ships
+		- Uniforms
+		- Vehicles
+    - Note:
+      - successes
+      - failures
+	  - field modifications
+	  - maintenance issues
+	- external_supplemental_data:
+      - eventually we will want to include external supplemental data on each unit.
+      - the JSON schema should account for  tracking the source of the each data point
+		#organizational_reference:
+		#	- Add a link to https://grokipedia.com/ if it exists
+		#  	- If not add a link to Wikipedia if it exists

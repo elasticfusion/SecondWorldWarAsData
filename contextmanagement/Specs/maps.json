@@ -1,0 +1,14 @@
+{
+  "note": "This file contained example data and has been replaced by a proper JSON schema",
+  "replaced_by": "maps_v1_schema.json",
+  "replaced_date": "2026-02-24",
+  "reason": "Schema files should contain JSON Schema definitions, not example data. See maps.md for examples.",
+  "migration_notes": [
+    "Third-party maps removed - scope limited to source material only",
+    "Added source_book, source_author, page_number, figure_number fields",
+    "Removed url, url_capture_date, license fields (not applicable to source material)",
+    "Removed map_type distinction (all maps are from source material)",
+    "See maps_v1_schema.json for current schema",
+    "See maps.md for example records"
+  ]
+}

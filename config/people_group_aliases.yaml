@@ -1,0 +1,244 @@
+aliases:
+- canonical: United States
+  aliases:
+  - Americans
+  - U.S.
+  - USA
+  - United States of America
+- canonical: United Kingdom
+  aliases:
+  - British
+  - Britain
+  - Great Britain
+  - UK
+  - British forces
+  - British Empire
+  - Air Staff
+  - Imperial General Staff
+  - Joint Planning Staff
+  - Royal Air Force
+- canonical: Germany
+  aliases:
+  - Germans
+  - Nazi Germany
+  - Third Reich
+  - Reich
+  - German forces
+- canonical: Soviet Union
+  aliases:
+  - USSR
+  - Russia
+  - Russians
+  - Soviets
+  - Soviet forces
+  - Red Army
+- canonical: Japan
+  aliases:
+  - Japanese
+  - Japanese Empire
+  - Imperial Japan
+  - Japanese forces
+- canonical: France
+  aliases:
+  - French
+  - French Republic
+  - French nation
+  note: Parent entity - use for general French references or when period unclear
+  subdivisions:
+  - French Third Republic
+  - Vichy France
+  - Free France
+  - Provisional Government of the French Republic
+- canonical: Free France
+  aliases:
+  - Free French
+  - Fighting France
+  - France Libre
+  - French Committee of National Liberation
+  - Provisional Government of the French Republic
+  - Chouans
+  note: De Gaulle's government-in-exile, 1940-1944
+- canonical: Vichy France
+  aliases:
+  - Vichy
+  - French State
+  - État français
+  - Vichy government
+  - Vichy regime
+  note: Collaborationist government, 1940-1944
+- canonical: Italy
+  aliases:
+  - Italians
+  - Italian forces
+- canonical: Canada
+  aliases:
+  - Canadians
+  - Canadian forces
+- canonical: Poland
+  aliases:
+  - Poles
+  - Polish
+  - Polish forces
+- canonical: Allied Powers
+  aliases:
+  - Allies
+  - Allied forces
+  - Western Allies
+  - United Nations
+  - Combined Chiefs of Staff
+  - Combined Planning Staff
+- canonical: Axis Powers
+  aliases:
+  - Axis
+  - Axis forces
+- canonical: Wehrmacht
+  aliases:
+  - German Armed Forces
+  - German military
+- canonical: Luftwaffe
+  aliases:
+  - German Air Force
+- canonical: Kriegsmarine
+  aliases:
+  - German Navy
+  - German submarine fleet
+- canonical: 1st Armored Division
+  aliases: []
+  note: Specific US Army armored division
+- canonical: 34th Division
+  aliases: []
+  note: Specific US Army infantry division
+- canonical: COSSAC
+  aliases: []
+  note: Specific Allied planning organization (precursor to SHAEF)
+- canonical: China
+  aliases: []
+  note: Independent Allied nation not listed in canonical groups
+- canonical: Turkey
+  aliases: []
+  note: Neutral country not listed in canonical groups
+- canonical: V Corps
+  aliases: []
+  note: Specific US Army corps (e.g., Normandy)
+hierarchies:
+- parent: Allied Powers
+  children:
+  - United States
+  - United Kingdom
+  - Soviet Union
+  - France
+  - Canada
+  - Poland
+  note: France represented by Free France after 1940
+- parent: Axis Powers
+  children:
+  - Germany
+  - Italy
+  - Japan
+  note: Vichy France collaborated but was not formally Axis
+- parent: France
+  temporal_subdivisions:
+  - name: French Third Republic
+    period: 1939-1940
+    note: Pre-armistice government
+  - name: Vichy France
+    period: 1940-1944
+    note: Collaborationist government in southern France
+  - name: Free France
+    period: 1940-1944
+    note: Government-in-exile, legitimate continuation
+  - name: Provisional Government of the French Republic
+    period: 1944-1946
+    note: Post-liberation government
+  note: All are France, but different governments/periods
+- parent: Wehrmacht
+  children:
+  - Heer
+  - Luftwaffe
+  - Kriegsmarine
+  - German Army
+- parent: United States
+  military_branches:
+  - U.S. Army
+  - U.S. Navy
+  - U.S. Army Air Forces
+  - U.S. Marine Corps
+- parent: United Kingdom
+  military_branches:
+  - British Army
+  - Royal Navy
+  - Royal Air Force
+merge_rules:
+- canonical: United States
+  merge_if_found:
+  - Americans
+  - American forces
+- canonical: Allied Powers
+  merge_if_found:
+  - Allies
+  - Western Allies
+- canonical: Axis Powers
+  merge_if_found:
+  - Axis
+exclusions:
+- group1: United States
+  group2: U.S. Third Army
+  reason: Country vs specific military unit
+- group1: Germany
+  group2: Wehrmacht
+  reason: Country vs armed forces organization
+- group1: Allied Powers
+  group2: United States
+  reason: Alliance vs member country
+- group1: Free France
+  group2: Vichy France
+  reason: Opposing governments - both are subdivisions of France
+- group1: France
+  group2: Free France
+  reason: Parent vs temporal subdivision - keep separate for clarity
+- group1: France
+  group2: Vichy France
+  reason: Parent vs temporal subdivision - keep separate for clarity
+relationships:
+- type: temporal_subdivision
+  parent: France
+  children:
+  - French Third Republic
+  - Vichy France
+  - Free France
+  - Provisional Government of the French Republic
+  note: All represent France at different times/contexts
+- type: temporal_subdivision
+  parent: China
+  children:
+  - Republic of China
+  - Communist China
+  note: Competing governments during WWII
+- type: temporal_subdivision
+  parent: Italy
+  children:
+  - Kingdom of Italy
+  - Italian Social Republic
+  - Italian Co-Belligerent Forces
+  note: Italy split after 1943 armistice
+temporal_context:
+- group: France
+  valid_dates:
+    start: '1939-09-01'
+    end: '1940-06-22'
+  note: Third Republic, before armistice
+- group: Vichy France
+  valid_dates:
+    start: '1940-07-10'
+    end: '1944-08-20'
+  note: Collaborationist government under Pétain
+- group: Free France
+  valid_dates:
+    start: '1940-06-18'
+    end: '1944-06-03'
+  note: De Gaulle's government-in-exile
+- group: Provisional Government of the French Republic
+  valid_dates:
+    start: '1944-06-03'
+    end: '1946-10-27'
+  note: Post-liberation government

@@ -1,0 +1,81 @@
+blacklist:
+- amazon.com
+- bing.com/maps
+- clickbait
+- ebay.com
+- etsy.com
+- facebook.com
+- google.com/maps
+- instagram.com
+- maps.google.com
+- pinterest.com
+- reddit.com
+- shopify.com
+- tiktok.com
+- twitter.com
+- vimeo.com
+- vividmaps.com
+- www.abebooks.com
+- www.ebay.ca
+- www.ebay.co.uk
+- youtube.com
+- curtiswrightmaps.com
+# Blacklisted: https://curtiswrightmaps.com/terms-and-conditions/ (license rejected)
+- www.alexandria-louisiana.com
+# Blacklisted: https://www.alexandria-louisiana.com/terms-of-use.htm (license rejected)
+- photorientalist.org
+# Blacklisted: https://photorientalist.org/exhibitions/alexandria-1882-the-british-bombardment/article/ (license rejected)
+- www.britannica.com
+# Blacklisted: https://www.britannica.com/place/Anjou (license rejected)
+- www.ideararemaps.com
+# Blacklisted: https://www.ideararemaps.com/en/terms-and-conditions (license rejected)
+- sanderusmaps.com
+# Blacklisted: https://sanderusmaps.com/legal-information/terms-conditions (license rejected)
+- premierrelics.com
+# Blacklisted: https://premierrelics.com/new-products-96/march-1944-aaf-us-army-air-force-life-raft-current-map-south-atlantic-ocean-limited-print-edition (license rejected)
+- www.geographicus.com
+# Blacklisted: https://www.geographicus.com/P/termsconditions (license rejected)
+- omniatlas.com
+# Blacklisted: https://omniatlas.com/maps/australasia/19400710/ (license rejected)
+- brilliantmaps.com
+# Blacklisted: https://brilliantmaps.com/fair-use-attribution-copyright/ (license rejected)
+- www.emersonkent.com
+# Blacklisted: https://www.emersonkent.com/map_archive/pacific_feb_1945.htm (license rejected)
+- thecitizensoldier.org
+# Blacklisted: https://thecitizensoldier.org/avranches-france-maps-1944/ (license rejected)
+- www.uswarmemorials.org
+# Blacklisted: https://www.uswarmemorials.org/html/copyright_info.php (license rejected)
+- www.map-france.com
+# Blacklisted: https://www.map-france.com/terms.html (license rejected)
+- en-bw.topographic-map.com
+# Blacklisted: https://en-bw.topographic-map.com/place-h735gp/Bain-de-Bretagne/ (license rejected)
+- encyclopedia.ushmm.org
+# Blacklisted: https://www.ushmm.org/copyright-and-legal-information/terms-of-use (license rejected)
+- wwii-netherlands-escape-lines.com
+# Blacklisted: https://wwii-netherlands-escape-lines.com/netherlands-map-1940-45/belgium-1940-map/ (license rejected)
+- www.ww2talk.com
+# Blacklisted: https://www.ww2talk.com/index.php?help/terms (license rejected)
+- www.onwar.com
+# Blacklisted: https://www.onwar.com/wwii/maps/wfront/14wfront.html (license rejected)
+- www.icollector.com
+# Blacklisted: https://www.icollector.com/WWII-MAP-OF-CASABLANCA_i45948329 (license rejected)
+- www.normandy1944.info
+# Blacklisted: https://www.normandy1944.info/contact/terms-and-privacy (license rejected)
+- www.asiabookroom.com
+# Blacklisted: https://www.asiabookroom.com/terms.php (license rejected)
+- www.forgottenairfields.com
+# Blacklisted: https://www.forgottenairfields.com/terms (license rejected)
+- ibiblio.org
+source_material_paths:
+- ibiblio.org/hyperwar/USA/USA-E-Breakout/
+- ibiblio.org/hyperwar/USA/USA-E-XChannel/
+whitelist:
+- alaskool.org
+- www.ww2alaska.com
+# false negative
+- www.normandywarguide.com
+# false negative
+- wikipedia.org
+- grokipedia.com
+- dhc.westpoint.edu/atlases/
+

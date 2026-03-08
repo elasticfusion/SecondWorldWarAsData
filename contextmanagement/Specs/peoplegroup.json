@@ -1,0 +1,175 @@
+{
+  "People_Groups": [
+    {
+      "GroupID": "01H8XYZQ9AB123CD456EF789GH",
+      "group_name": "Nazi Germany",
+      "group_type": "country",
+      "country_of_origin": "Germany",
+      "alliance_membership": ["Axis Powers"],
+      "source_language": "English",
+      "description": "German state under Nazi Party control from 1933 to 1945",
+      "event_mentions": [
+        {
+          "MentionID": "01H8XYZR0MN456PQ789RS012TU",
+          "Event_Name": "The Invasion of Poland",
+          "EventID": "01H8XYZABC123DEF456GHJ789",
+          "Sub-event_Name": "German forces cross the Polish border at dawn",
+          "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+          "date": "1939-09-01",
+          "DateMentionID": "01H8XYZ3AB123CD456EF789GH",
+          "context": "Aggressor nation initiating World War II in Europe",
+          "original_text": "German forces launched the invasion"
+        }
+      ]
+    },
+    {
+      "GroupID": "01H8XYZS1VW789XY012ZA345BC",
+      "group_name": "XIX Army Corps",
+      "group_type": "military_unit",
+      "military_hierarchy": "corps",
+      "country_of_origin": "Germany",
+      "alliance_membership": ["Axis Powers"],
+      "source_language": "English",
+      "description": "German armored corps commanded by Heinz Guderian",
+      "parent_organization": "Army Group North",
+      "event_mentions": [
+        {
+          "MentionID": "01H8XYZT2DE123FG456HI789JK",
+          "Event_Name": "The Invasion of Poland",
+          "EventID": "01H8XYZABC123DEF456GHJ789",
+          "Sub-event_Name": "German forces cross the Polish border at dawn",
+          "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+          "date": "1939-09-01",
+          "DateMentionID": "01H8XYZ3AB123CD456EF789GH",
+          "context": "Spearheaded the armored assault into Poland",
+          "original_text": "The XIX Corps led the advance"
+        }
+      ]
+    },
+    {
+      "GroupID": "01H8XYZU3LM789NO012PQ345RS",
+      "group_name": "Axis Powers",
+      "group_type": "alliance",
+      "country_of_origin": null,
+      "alliance_membership": null,
+      "source_language": "English",
+      "description": "Military alliance of Germany, Italy, Japan and other nations during World War II",
+      "member_countries": ["Germany", "Italy", "Japan"],
+      "event_mentions": [
+        {
+          "MentionID": "01H8XYZV4AB456CD789EF012GH",
+          "Event_Name": "The Invasion of Poland",
+          "EventID": "01H8XYZABC123DEF456GHJ789",
+          "Sub-event_Name": "German forces cross the Polish border at dawn",
+          "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+          "date": "1939-09-01",
+          "DateMentionID": "01H8XYZ3AB123CD456EF789GH",
+          "context": "Germany acting as primary Axis power in European theater",
+          "original_text": "The Axis powers began their expansion"
+        }
+      ]
+    },
+    {
+      "GroupID": "01H8XYZW5MN789PQ012RS345TU",
+      "group_name": "National Socialist German Workers' Party",
+      "group_type": "political_party",
+      "country_of_origin": "Germany",
+      "alliance_membership": ["Axis Powers"],
+      "source_language": "English",
+      "common_name": "Nazi Party",
+      "description": "Far-right political party that controlled Germany from 1933 to 1945",
+      "event_mentions": [
+        {
+          "MentionID": "01H8XYZX6VW456XY789ZA012BC",
+          "Event_Name": "The Invasion of Poland",
+          "EventID": "01H8XYZABC123DEF456GHJ789",
+          "Sub-event_Name": "German forces cross the Polish border at dawn",
+          "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+          "date": "1939-09-01",
+          "DateMentionID": "01H8XYZ3AB123CD456EF789GH",
+          "context": "Party leadership directed military operations",
+          "original_text": "Under Nazi direction, the Wehrmacht invaded"
+        }
+      ]
+    },
+    {
+      "GroupID": "01H8XYZY7DE123FG456HI789JK",
+      "group_name": "Wehrmacht",
+      "group_type": "government_organization",
+      "country_of_origin": "Germany",
+      "alliance_membership": ["Axis Powers"],
+      "source_language": "English",
+      "description": "Unified armed forces of Nazi Germany from 1935 to 1945",
+      "sub_organizations": ["Heer (Army)", "Kriegsmarine (Navy)", "Luftwaffe (Air Force)"],
+      "event_mentions": [
+        {
+          "MentionID": "01H8XYZZ8LM789NO012PQ345RS",
+          "Event_Name": "The Invasion of Poland",
+          "EventID": "01H8XYZABC123DEF456GHJ789",
+          "Sub-event_Name": "German forces cross the Polish border at dawn",
+          "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+          "date": "1939-09-01",
+          "DateMentionID": "01H8XYZ3AB123CD456EF789GH",
+          "context": "Primary military force conducting the invasion",
+          "original_text": "Wehrmacht forces crossed the border"
+        }
+      ]
+    },
+    {
+      "GroupID": "01H8XZ009AB456CD789EF012GH",
+      "group_name": "Polish Home Army",
+      "group_type": "anti_government_organization",
+      "country_of_origin": "Poland",
+      "alliance_membership": ["Allied Powers"],
+      "source_language": "English",
+      "description": "Polish resistance movement during World War II",
+      "event_mentions": []
+    },
+    {
+      "GroupID": "01H8XZ01AMN789PQ012RS345TU",
+      "group_name": "1st Panzer Division",
+      "group_type": "military_unit",
+      "military_hierarchy": "division",
+      "country_of_origin": "Germany",
+      "alliance_membership": ["Axis Powers"],
+      "source_language": "English",
+      "description": "German armored division",
+      "parent_organization": "XIX Army Corps",
+      "event_mentions": [
+        {
+          "MentionID": "01H8XZ02BVW456XY789ZA012BC",
+          "Event_Name": "The Invasion of Poland",
+          "EventID": "01H8XYZABC123DEF456GHJ789",
+          "Sub-event_Name": "German forces cross the Polish border at dawn",
+          "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+          "date": "1939-09-01",
+          "DateMentionID": "01H8XYZ3AB123CD456EF789GH",
+          "context": "Armored division in the vanguard of the invasion",
+          "original_text": "The 1st Panzer Division broke through Polish defenses"
+        }
+      ]
+    },
+    {
+      "GroupID": "01H8XZ03CDE123FG456HI789JK",
+      "group_name": "Catholic Church in Poland",
+      "group_type": "religious_organization",
+      "country_of_origin": "Poland",
+      "alliance_membership": null,
+      "source_language": "English",
+      "description": "Roman Catholic Church organization in Poland",
+      "event_mentions": [
+        {
+          "MentionID": "01H8XZ04DLM789NO012PQ345RS",
+          "Event_Name": "The Invasion of Poland",
+          "EventID": "01H8XYZABC123DEF456GHJ789",
+          "Sub-event_Name": "German forces cross the Polish border at dawn",
+          "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+          "date": "1939-09-01",
+          "DateMentionID": "01H8XYZ3AB123CD456EF789GH",
+          "context": "Religious institution affected by invasion",
+          "original_text": "Churches throughout Poland rang bells in alarm"
+        }
+      ]
+    }
+  ]
+}

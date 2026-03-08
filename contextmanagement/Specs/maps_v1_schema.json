@@ -1,0 +1,146 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://secondworldwarasdata.org/schemas/maps/v1.0.0",
+  "title": "WWII Source Material Maps Schema",
+  "description": "Maps and diagrams extracted from source material (books) only - no third-party sources",
+  "version": "1.0.0",
+  "status": "implemented",
+  "last_updated": "2026-02-24",
+  "implementation": "src/extraction/maps.py",
+  "quality_assurance": {
+    "pylint": "9.96/10",
+    "mypy": "0 errors",
+    "black": "formatted",
+    "radon_cc": "A-B (1-9)",
+    "radon_mi": "A (31.83)",
+    "lines_of_code": 543,
+    "last_qa_run": "2026-02-24"
+  },
+  "features": {
+    "storage_backends": ["filesystem", "s3"],
+    "image_download": true,
+    "s3_upload": true,
+    "configurable_backend": true,
+    "event_linking": true,
+    "sub_event_linking": true,
+    "extracts_from_event_files": true,
+    "place_linking": true,
+    "date_linking": true,
+    "automatic_entity_linking": true
+  },
+  "type": "object",
+  "required": [
+    "MapID",
+    "map_title",
+    "source_book",
+    "source_author",
+    "EventID",
+    "Sub_eventID",
+    "local_path",
+    "extracted_date"
+  ],
+  "properties": {
+    "MapID": {
+      "type": "string",
+      "description": "26-character ULID uniquely identifying this map",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "map_title": {
+      "type": "string",
+      "description": "Title of the map as it appears in the source material",
+      "minLength": 1
+    },
+    "source_book": {
+      "type": "string",
+      "description": "Title of the book containing this map",
+      "minLength": 1
+    },
+    "source_author": {
+      "type": "string",
+      "description": "Author of the source book",
+      "minLength": 1
+    },
+    "source_series": {
+      "type": ["string", "null"],
+      "description": "Series name if applicable (e.g., 'United States Army in World War II')"
+    },
+    "page_number": {
+      "type": ["integer", "null"],
+      "description": "Page number where map appears",
+      "minimum": 1
+    },
+    "figure_number": {
+      "type": ["string", "null"],
+      "description": "Figure/illustration number (e.g., 'Figure 12', 'Map III')"
+    },
+    "EventID": {
+      "type": "string",
+      "description": "Link to parent event",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "Event_Name": {
+      "type": "string",
+      "description": "Name of the parent event"
+    },
+    "Sub_eventID": {
+      "type": "string",
+      "description": "Link to sub-event where map was found",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "Sub_event_Name": {
+      "type": "string",
+      "description": "Name of the sub-event"
+    },
+    "place_name": {
+      "type": ["string", "null"],
+      "description": "Primary place depicted in the map"
+    },
+    "PlaceMentionID": {
+      "type": ["string", "null"],
+      "description": "Link to place mention if map is tied to specific location",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "date": {
+      "type": ["string", "null"],
+      "description": "Date depicted in the map (ISO format YYYY-MM-DD)",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "DateMentionID": {
+      "type": ["string", "null"],
+      "description": "Link to date mention if map is tied to specific date",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "local_path": {
+      "type": "string",
+      "description": "Path to map metadata JSON file relative to project root",
+      "pattern": "^output/maps/"
+    },
+    "local_image_path": {
+      "type": ["string", "null"],
+      "description": "Path to downloaded map image file (if download_images enabled)"
+    },
+    "source_url": {
+      "type": ["string", "null"],
+      "description": "Original URL of the map in source material"
+    },
+    "file_format": {
+      "type": "string",
+      "description": "Image file format",
+      "enum": ["jpg", "png", "tif", "pdf"]
+    },
+    "extracted_date": {
+      "type": "string",
+      "description": "Timestamp when map was extracted",
+      "format": "date-time"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Brief description of what the map depicts"
+    },
+    "map_type": {
+      "type": ["string", "null"],
+      "description": "Type of map (tactical, strategic, political, terrain)",
+      "enum": ["tactical", "strategic", "political", "terrain", "other", null]
+    }
+  }
+}
