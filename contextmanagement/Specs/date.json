@@ -1,0 +1,58 @@
+{
+  "Event_Name": "The Invasion of Poland",
+  "EventID": "01H8XYZABC123DEF456GHJ789",
+  "Sub-event_Name": "German forces cross the Polish border at dawn",
+  "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+  "Date_Mentions": [
+    {
+      "DateMentionID": "01H8XYZ3AB123CD456EF789GH",
+      "date_start": "1939-09-01",
+      "date_end": null,
+      "time_start": "04:45",
+      "time_end": null,
+      "time_precision": "exact",
+      "time_source": "German",
+      "original_text": "September 1, 1939, at 4:45 AM"
+    },
+    {
+      "DateMentionID": "01H8XYZ4MN789PQ012RS345TU",
+      "date_start": "1945-05-08",
+      "date_end": "1945-05-09",
+      "time_start": null,
+      "time_end": null,
+      "time_precision": null,
+      "time_source": "Allied",
+      "original_text": "May 8-9, 1945"
+    },
+    {
+      "DateMentionID": "01H8XYZ5VW456XY789ZA012BC",
+      "date_start": "1944-06-06",
+      "date_end": "1944-06-06",
+      "time_start": "06:30",
+      "time_end": "18:00",
+      "time_precision": "exact",
+      "time_source": "Zulu",
+      "original_text": "June 6, 1944, from 0630 to 1800 hours Zulu"
+    },
+    {
+      "DateMentionID": "01H8XYZ6DE123FG456HI789JK",
+      "date_start": "1939-09-01",
+      "date_end": "1939-09-27",
+      "time_start": null,
+      "time_end": null,
+      "time_precision": null,
+      "time_source": "Allied",
+      "original_text": "September 1-27, 1939"
+    },
+    {
+      "DateMentionID": "01H8XYZ7LM789NO012PQ345RS",
+      "date_start": "1941-06-01",
+      "date_end": "1941-12-31",
+      "time_start": null,
+      "time_end": null,
+      "time_precision": "approximate",
+      "time_source": "German",
+      "original_text": "June through December 1941"
+    }
+  ]
+}

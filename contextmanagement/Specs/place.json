@@ -1,0 +1,109 @@
+{
+  "Event_Name": "The Invasion of Poland",
+  "EventID": "01H8XYZABC123DEF456GHJ789",
+  "Sub-event_Name": "German forces cross the Polish border at dawn",
+  "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+  "Place_Mentions": [
+    {
+      "PlaceMentionID": "01H8XYZ8AB123CD456EF789GH",
+      "current_name": "Warsaw",
+      "historical_name": "Warszawa",
+      "source_language": "English",
+      "latitude": 52.2297,
+      "longitude": 21.0122,
+      "bounding_box_100km": {
+        "north": 53.1297,
+        "south": 51.3297,
+        "east": 22.4122,
+        "west": 19.6122
+      },
+      "geography_type": "city",
+      "date_context": "1939-09-01",
+      "original_text": "Warsaw"
+    },
+    {
+      "PlaceMentionID": "01H8XYZ9MN456PQ789RS012TU",
+      "current_name": "Gdańsk",
+      "historical_name": "Danzig",
+      "source_language": "English",
+      "latitude": 54.3520,
+      "longitude": 18.6466,
+      "bounding_box_100km": {
+        "north": 55.2520,
+        "south": 53.4520,
+        "east": 20.0466,
+        "west": 17.2466
+      },
+      "geography_type": "city",
+      "date_context": "1939-09-01",
+      "original_text": "Danzig"
+    },
+    {
+      "PlaceMentionID": "01H8XYZA3VW789XY012ZA345BC",
+      "current_name": "Poland",
+      "historical_name": "Poland",
+      "source_language": "English",
+      "latitude": 51.9194,
+      "longitude": 19.1451,
+      "bounding_box_100km": {
+        "north": 52.8194,
+        "south": 51.0194,
+        "east": 20.5451,
+        "west": 17.7451
+      },
+      "geography_type": "country",
+      "date_context": "1939-09-01",
+      "original_text": "Poland"
+    },
+    {
+      "PlaceMentionID": "01H8XYZB4DE123FG456HI789JK",
+      "source_language": "English",
+      "route": [
+        {
+          "sequence": 1,
+          "current_name": "Berlin",
+          "historical_name": "Berlin",
+          "latitude": 52.5200,
+          "longitude": 13.4050,
+          "bounding_box_100km": {
+            "north": 53.4200,
+            "south": 51.6200,
+            "east": 14.8050,
+            "west": 12.0050
+          },
+          "geography_type": "city"
+        },
+        {
+          "sequence": 2,
+          "current_name": "Poznań",
+          "historical_name": "Posen",
+          "latitude": 52.4064,
+          "longitude": 16.9252,
+          "bounding_box_100km": {
+            "north": 53.3064,
+            "south": 51.5064,
+            "east": 18.3252,
+            "west": 15.5252
+          },
+          "geography_type": "city"
+        },
+        {
+          "sequence": 3,
+          "current_name": "Warsaw",
+          "historical_name": "Warszawa",
+          "latitude": 52.2297,
+          "longitude": 21.0122,
+          "bounding_box_100km": {
+            "north": 53.1297,
+            "south": 51.3297,
+            "east": 22.4122,
+            "west": 19.6122
+          },
+          "geography_type": "city"
+        }
+      ],
+      "date_context": "1939-09-01",
+      "original_text": "from Berlin through Posen to Warsaw"
+    }
+  ]
+}

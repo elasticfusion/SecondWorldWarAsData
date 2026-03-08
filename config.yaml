@@ -1,0 +1,157 @@
+---
+# Project Configuration
+
+# Paths
+paths:
+  content_root: "contentrepository"
+  output_root: "output"
+  cache_root: "cache"
+  review_root: "review"
+  
+  # Cache subdirectories
+  api_cache: "cache/api"           # Grok API response cache
+  image_cache: "cache/images"      # Downloaded images
+  
+  # Output subdirectories
+  maps_images: "output/maps_images"  # Map images from source material
+  
+  # Central data files
+  people_data: "output/people.json"              # Centrally managed people
+  peoplegroup_data: "output/peoplegroups.json"   # Centrally managed groups
+  supplemental_data: "output/supplemental.json"  # All supplemental materials
+
+# API Configuration
+api:
+  grok:
+    base_url: "https://api.x.ai/v1/chat/completions"
+    model: "grok-beta"
+    max_retries: 3
+    timeout: 60
+
+# Processing
+processing:
+  validate_ulids: true
+  generate_jq_queries: true
+  generate_download_scripts: true
+
+# Weather Extraction
+weather:
+  enabled: true                    # Enable weather extraction
+  fetch_api_data: true            # Fetch from Open-Meteo API
+  api_provider: "open-meteo"       # API provider
+  cache_responses: true            # Cache API responses
+  only_precise_dates: true         # Skip approximate dates
+  timeout: 30                      # API timeout (seconds)
+
+# Equipment Extraction
+equipment:
+  enabled: true                    # Enable equipment extraction (experimental)
+  enable_enrichment: true          # Enrich with Wikipedia/Grokipedia data (slower, uses more API calls)
+  verify_media_with_vision: true   # Verify media relevance with Grok vision API (recommended)
+
+# Logistics Extraction
+logistics:
+  enabled: true                   # Enable logistics extraction (experimental)
+
+# Casualties Extraction
+casualties:
+  enabled: true                  # Enable casualties extraction (experimental)
+
+# Supplemental Material Extraction
+supplemental_material:
+  enabled: true                    # Enable supplemental material extraction (Phase 1: Core)
+  extract_citations: true          # Parse citations into structured format
+  enrich_with_searches: true      # Phase 2: Search integration
+  llm_search: true                 # Phase 2: Use LLM for search (first pass)
+  search_gutenberg: true          # Phase 2: Search Gutenberg.org for books/periodicals
+  search_archive_org: true        # Phase 2: Search Archive.org
+  use_openserp: true              # Phase 2: Use OpenSERP for web search
+  verify_archive_urls: true       # Phase 3: Verify archive URLs
+  extract_isbn: true              # Phase 3: Extract ISBN for books (post-1966)
+  determine_copyright: true       # Phase 3: Determine copyright status
+  max_materials_per_chapter: 1000   # Limit materials per chapter
+
+# Concurrency
+concurrency:
+  enabled: false                   # Enable concurrent processing (experimental)
+  max_event_files: 3              # Process N event files concurrently
+  max_extraction_group: 3         # Max parallel extractions per group
+
+# Maps Extraction
+maps:
+  enabled: true                    # Enable maps extraction
+  extract_during_phase1: true      # Extract during document parsing
+  download_images: true           # Download actual map image files
+  storage_backend: "filesystem"    # filesystem or s3
+  storage_path: "output/maps/"
+
+# External Maps Search
+external_maps:
+  enabled: true                    # Enable external maps search
+  max_places: 50                   # Maximum places to search (null for all)
+  openserp_url: "http://localhost:7001"  # OpenSERP service URL
+  search_limit: 50                 # Max results per search
+  verify_with_vision: true         # Use Grok vision API to verify maps
+  max_images_per_page: 5           # Max images to analyze per page
+  image_download_timeout: 30       # Timeout for downloading images (seconds)
+  page_download_timeout: 15        # Timeout for downloading HTML pages (seconds)
+  image_storage_path: "filestore/external_maps/"  # Where to store downloaded images
+  storage_path: "output/external_maps/"  # Where to store map metadata JSON
+  s3_bucket: ""                    # S3 bucket name (required if backend=s3)
+  s3_prefix: "maps/"               # S3 key prefix
+  s3_region: "us-east-1"           # AWS region
+  require_license: true            # Reject maps without license info
+  allowed_licenses:                # Permitted license types
+    - "Public Domain"
+    - "CC0"
+    - "CC-BY"
+    - "CC-BY-SA"
+    - "Unknown"                    # Allow AI to add maps with unclear licenses for later review
+  download_images: false           # Download map images if permitted
+  supported_formats:
+    - jpg
+    - jpeg
+    - png
+    - tif
+    - tiff
+    - pdf
+    - gif
+    - bmp
+  link_to_places: true             # Link maps to PlaceIDs
+  link_to_dates: true              # Link maps to DateIDs
+  download_timeout: 30             # Image download timeout (seconds)
+  classification_keywords:
+    tactical:
+      - attack
+      - assault
+      - advance
+      - retreat
+      - defense
+      - battle
+    strategic:
+      - campaign
+      - theater
+      - front
+      - invasion
+      - offensive
+      - deployment
+    logistical:
+      - supply
+      - logistics
+      - transport
+      - route
+      - port
+    political:
+      - border
+      - territory
+      - zone
+      - occupation
+      - political
+
+# Logging
+logging:
+  level: "INFO"
+  file: "logs/pipeline.log"
+  console: true
+  debug_message_preview_chars: 15000      # Characters to show in DEBUG logs for API messages
+  debug_response_preview_chars: 15000     # Characters to show in DEBUG logs for API responses

@@ -1,0 +1,208 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://secondworldwarasdata.org/schemas/date/v2.0.0",
+  "title": "WWII Date Central Repository Schema",
+  "description": "Central repository for temporal references with event mentions",
+  "version": "2.0.0",
+  "type": "object",
+  "required": [
+    "DateID",
+    "date_start",
+    "original_text",
+    "event_mentions"
+  ],
+  "properties": {
+    "DateID": {
+      "type": "string",
+      "description": "26-character ULID uniquely identifying this date/time reference",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "date_start": {
+      "type": "string",
+      "description": "Start date in ISO format (YYYY-MM-DD, YYYY-MM, or YYYY) or approximate (e.g., 'mid-1944-07', 'early-1944', 'late-1944-06', 'summer-1942')",
+      "pattern": "^(\\d{4}(-\\d{2}(-\\d{2})?)?)|(early|mid|late|spring|summer|fall|autumn|winter)-\\d{4}(-\\d{2})?$"
+    },
+    "date_end": {
+      "type": ["string", "null"],
+      "description": "End date if range (ISO format or approximate)",
+      "pattern": "^(\\d{4}(-\\d{2}(-\\d{2})?)?)|(early|mid|late|spring|summer|fall|autumn|winter)-\\d{4}(-\\d{2})?$"
+    },
+    "time_start": {
+      "type": ["string", "null"],
+      "description": "Start time in HH:MM format (24-hour)",
+      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+    },
+    "time_end": {
+      "type": ["string", "null"],
+      "description": "End time in HH:MM format (24-hour)",
+      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+    },
+    "time_precision": {
+      "type": ["string", "null"],
+      "description": "Precision of time information",
+      "enum": ["exact", "approximate", null]
+    },
+    "date_precision": {
+      "type": ["string", "null"],
+      "description": "Precision of date information",
+      "enum": ["exact", "approximate", "early", "mid", "late", "spring", "summer", "fall", "autumn", "winter", null]
+    },
+    "time_source": {
+      "type": ["string", "null"],
+      "description": "Time zone or source reference",
+      "examples": ["German", "Allied", "Zulu", "Local", "GMT", "CET"]
+    },
+    "original_text": {
+      "type": "string",
+      "description": "Exact text from source document",
+      "minLength": 1
+    },
+    "normalized_datetime": {
+      "type": ["string", "null"],
+      "description": "Normalized ISO 8601 datetime (YYYY-MM-DDTHH:MM:SSZ)",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "event_mentions": {
+      "type": "array",
+      "description": "Events where this date is mentioned",
+      "items": {
+        "type": "object",
+        "required": [
+          "MentionID",
+          "Event_Name",
+          "EventID",
+          "Sub_event_Name",
+          "Sub_eventID",
+          "book",
+          "author",
+          "original_text"
+        ],
+        "properties": {
+          "MentionID": {
+            "type": "string",
+            "description": "Unique ID for this mention",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+          },
+          "Event_Name": {
+            "type": "string",
+            "description": "Name of the event"
+          },
+          "EventID": {
+            "type": "string",
+            "description": "Event ULID",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+          },
+          "Sub_event_Name": {
+            "type": "string",
+            "description": "Sub-event summary"
+          },
+          "Sub_eventID": {
+            "type": "string",
+            "description": "Sub-event ULID",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+          },
+          "book": {
+            "type": "string",
+            "description": "Book title"
+          },
+          "author": {
+            "type": "string",
+            "description": "Book author"
+          },
+          "series": {
+            "type": "string",
+            "description": "Book series (optional)"
+          },
+          "context": {
+            "type": ["string", "null"],
+            "description": "Context of date in this event (e.g., 'start of operation', 'surrender date')"
+          },
+          "original_text": {
+            "type": "string",
+            "description": "Exact text from document"
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "DateID": "01H8XYZ3AB123CD456EF789GH",
+      "date_start": "1939-09-01",
+      "date_end": null,
+      "time_start": "04:45",
+      "time_end": null,
+      "time_precision": "exact",
+      "date_precision": "exact",
+      "time_source": "German",
+      "original_text": "September 1, 1939, at 4:45 AM",
+      "normalized_datetime": "1939-09-01T04:45:00Z",
+      "event_mentions": [
+        {
+          "MentionID": "01H8XYZM1N234OP567QR890ST",
+          "Event_Name": "The Invasion of Poland",
+          "EventID": "01H8XYZABC123DEF456GHJ789",
+          "Sub_event_Name": "German forces cross the Polish border at dawn",
+          "Sub_eventID": "01H8XYZ1MN456PQR789STU012",
+          "book": "The Rise and Fall of the Third Reich",
+          "author": "William L. Shirer",
+          "series": "",
+          "context": "start of invasion",
+          "original_text": "September 1, 1939, at 4:45 AM"
+        }
+      ]
+    },
+    {
+      "DateID": "01H8XYZ4MN789PQ012RS345TU",
+      "date_start": "mid-1944-07",
+      "date_end": null,
+      "time_start": null,
+      "time_end": null,
+      "time_precision": null,
+      "date_precision": "mid",
+      "time_source": null,
+      "original_text": "mid-July 1944",
+      "normalized_datetime": null,
+      "event_mentions": [
+        {
+          "MentionID": "01H8XYZN2O345PQ678RS901TU",
+          "Event_Name": "Operation Cobra",
+          "EventID": "01H8XYZCDE234FG567HI890JK",
+          "Sub_event_Name": "Allied breakout from Normandy",
+          "Sub_eventID": "01H8XYZ2NO567QR890ST123UV",
+          "book": "Breakout and Pursuit",
+          "author": "Martin Blumenson",
+          "series": "United States Army in World War II",
+          "context": "planning phase",
+          "original_text": "mid-July 1944"
+        }
+      ]
+    },
+    {
+      "DateID": "01H8XYZ5VW456XY789ZA012BC",
+      "date_start": "summer-1942",
+      "date_end": null,
+      "time_start": null,
+      "time_end": null,
+      "time_precision": null,
+      "date_precision": "summer",
+      "time_source": null,
+      "original_text": "summer of 1942",
+      "normalized_datetime": null,
+      "event_mentions": [
+        {
+          "MentionID": "01H8XYZP3Q456RS789TU012VW",
+          "Event_Name": "Battle of Stalingrad",
+          "EventID": "01H8XYZEF345GH678IJ901KL",
+          "Sub_event_Name": "German advance toward Stalingrad",
+          "Sub_eventID": "01H8XYZ3PQ678ST901UV234WX",
+          "book": "Stalingrad",
+          "author": "Antony Beevor",
+          "series": "",
+          "context": "initial offensive",
+          "original_text": "summer of 1942"
+        }
+      ]
+    }
+  ]
+}

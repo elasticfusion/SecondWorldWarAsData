@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://secondworldwarasdata.org/schemas/external_maps/v2.0.0",
+  "title": "WWII External Maps Schema",
+  "description": "Maps from third-party sources (archives, museums, external websites) - not from source material",
+  "version": "2.0.0",
+  "status": "planned",
+  "last_updated": "2026-02-24",
+  "implementation": "scripts/import_external_maps.py (planned)",
+  "type": "object",
+  "required": [
+    "MapID",
+    "map_title",
+    "external_source",
+    "external_source_url",
+    "license",
+    "EventID",
+    "Sub_eventID",
+    "local_path",
+    "extracted_date"
+  ],
+  "properties": {
+    "MapID": {
+      "type": "string",
+      "description": "26-character ULID uniquely identifying this map",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "map_title": {
+      "type": "string",
+      "description": "Title of the map from external source",
+      "minLength": 1
+    },
+    "external_source": {
+      "type": "string",
+      "description": "Name of external archive/museum/source",
+      "minLength": 1,
+      "examples": ["National Archives", "Imperial War Museum", "Library of Congress"]
+    },
+    "external_source_url": {
+      "type": "string",
+      "description": "URL to the map's page on the external source",
+      "format": "uri"
+    },
+    "archive_id": {
+      "type": ["string", "null"],
+      "description": "Archive's catalog/reference ID for this map",
+      "examples": ["NARA-531424", "IWM-205123456"]
+    },
+    "license": {
+      "type": "string",
+      "description": "License under which the map is available",
+      "enum": ["Public Domain", "CC0", "CC-BY", "CC-BY-SA", "CC-BY-NC", "CC-BY-ND", "Fair Use", "Unknown"]
+    },
+    "license_url": {
+      "type": ["string", "null"],
+      "description": "URL to license terms",
+      "format": "uri"
+    },
+    "date_created": {
+      "type": ["string", "null"],
+      "description": "Date the map was originally created (ISO format YYYY-MM-DD)",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "creator": {
+      "type": ["string", "null"],
+      "description": "Original creator/author of the map",
+      "examples": ["U.S. Army Signal Corps", "British Army", "German Wehrmacht"]
+    },
+    "EventID": {
+      "type": "string",
+      "description": "Link to parent event in our corpus",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "Event_Name": {
+      "type": ["string", "null"],
+      "description": "Name of the parent event"
+    },
+    "Sub_eventID": {
+      "type": "string",
+      "description": "Link to sub-event in our corpus",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "Sub_event_Name": {
+      "type": ["string", "null"],
+      "description": "Name of the sub-event"
+    },
+    "place_name": {
+      "type": ["string", "null"],
+      "description": "Primary place depicted in the map"
+    },
+    "PlaceMentionID": {
+      "type": ["string", "null"],
+      "description": "Link to place mention if map is tied to specific location",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "date": {
+      "type": ["string", "null"],
+      "description": "Date depicted in the map (ISO format YYYY-MM-DD)",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "DateMentionID": {
+      "type": ["string", "null"],
+      "description": "Link to date mention if map is tied to specific date",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "local_path": {
+      "type": "string",
+      "description": "Path to map metadata JSON file relative to project root",
+      "pattern": "^output/external_maps/"
+    },
+    "local_image_path": {
+      "type": ["string", "null"],
+      "description": "Path to downloaded map image file (if download_images enabled)"
+    },
+    "source_url": {
+      "type": ["string", "null"],
+      "description": "Direct URL to download the map image",
+      "format": "uri"
+    },
+    "file_format": {
+      "type": ["string", "null"],
+      "description": "Image file format",
+      "enum": ["jpg", "png", "tif", "pdf", null]
+    },
+    "extracted_date": {
+      "type": "string",
+      "description": "Timestamp when map was imported",
+      "format": "date-time"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Brief description of what the map depicts"
+    },
+    "map_type": {
+      "type": ["string", "null"],
+      "description": "Type of map (tactical, strategic, political, logistical)",
+      "enum": ["tactical", "strategic", "political", "logistical", null]
+    },
+    "storage_backend": {
+      "type": "string",
+      "description": "Storage backend used",
+      "enum": ["filesystem", "s3"]
+    }
+  }
+}

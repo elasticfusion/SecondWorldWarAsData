@@ -1,0 +1,3 @@
+[submodule "openserp"]
+	path = openserp
+	url = https://github.com/karust/openserp.git

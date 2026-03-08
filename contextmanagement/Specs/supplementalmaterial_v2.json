@@ -1,0 +1,390 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Supplemental Material Schema v2",
+  "description": "Enhanced schema for referenced materials with comprehensive citation tracking, search metadata, and copyright determination",
+  "type": "object",
+  "required": ["Event_Name", "EventID", "Sub-event_Name", "Sub-eventID", "Supplemental_Material"],
+  "properties": {
+    "Event_Name": {
+      "type": "string",
+      "description": "Name of the parent event"
+    },
+    "EventID": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "description": "ULID of the parent event"
+    },
+    "Sub-event_Name": {
+      "type": "string",
+      "description": "Name of the sub-event"
+    },
+    "Sub-eventID": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "description": "ULID of the sub-event"
+    },
+    "Supplemental_Material": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Material"
+      }
+    }
+  },
+  "definitions": {
+    "Material": {
+      "type": "object",
+      "required": ["MaterialID", "EventID", "Sub-eventID", "reference_type", "reference_number", "verbatim_reference", "citation", "availability"],
+      "properties": {
+        "MaterialID": {
+          "type": "string",
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+          "description": "Unique ULID for this material"
+        },
+        "EventID": {
+          "type": "string",
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+          "description": "Parent event ULID"
+        },
+        "Sub-eventID": {
+          "type": "string",
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+          "description": "Parent sub-event ULID"
+        },
+        "reference_type": {
+          "type": "string",
+          "enum": ["endnote", "footnote", "bibliography"],
+          "description": "Type of reference material"
+        },
+        "reference_number": {
+          "type": ["string", "integer", "null"],
+          "description": "Reference number or symbol (e.g., '5', '*', '†'). Null for unnumbered bibliography entries"
+        },
+        "verbatim_reference": {
+          "type": "string",
+          "description": "Exact citation text as it appears in source"
+        },
+        "citation": {
+          "$ref": "#/definitions/Citation"
+        },
+        "availability": {
+          "type": "string",
+          "enum": ["online", "offline", "archive", "unknown"],
+          "description": "Resource availability status"
+        },
+        "resource_urls": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "All URLs associated with this material"
+        },
+        "license": {
+          "type": "string",
+          "enum": ["public_domain", "cc0", "cc-by", "cc-by-sa", "cc-by-nc", "cc-by-nc-sa", "cc-by-nd", "cc-by-nc-nd", "copyright", "unknown"],
+          "description": "License type for the material"
+        },
+        "license_notes": {
+          "type": "string",
+          "description": "Additional license information or copyright holder"
+        },
+        "search_metadata": {
+          "$ref": "#/definitions/SearchMetadata"
+        },
+        "archive_info": {
+          "$ref": "#/definitions/ArchiveInfo"
+        },
+        "copyright_status": {
+          "$ref": "#/definitions/CopyrightStatus"
+        },
+        "local_copy": {
+          "type": ["string", "null"],
+          "description": "Path to locally cached copy"
+        },
+        "url_capture_date": {
+          "type": ["string", "null"],
+          "format": "date",
+          "description": "Date URL was captured/verified"
+        }
+      }
+    },
+    "Citation": {
+      "type": "object",
+      "required": ["title"],
+      "properties": {
+        "author": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of authors"
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the work"
+        },
+        "publisher": {
+          "type": ["string", "null"],
+          "description": "Publisher name"
+        },
+        "publication_date": {
+          "type": ["string", "null"],
+          "description": "Publication date (YYYY, YYYY-MM, or YYYY-MM-DD). 'UNKNOWN' if unavailable"
+        },
+        "first_edition_date": {
+          "type": ["string", "null"],
+          "description": "First edition publication date for books with long publication history"
+        },
+        "publication_location": {
+          "type": ["string", "null"],
+          "description": "City/location of publication"
+        },
+        "publication_country": {
+          "type": ["string", "null"],
+          "description": "Country of publication (ISO 3166-1 alpha-3)"
+        },
+        "isbn": {
+          "type": ["string", "null"],
+          "description": "ISBN (preferably first edition). Null for pre-1966 books"
+        },
+        "isbn_edition": {
+          "type": ["string", "null"],
+          "description": "Edition number if ISBN is not first edition"
+        },
+        "pages": {
+          "type": ["string", "null"],
+          "description": "Page numbers referenced"
+        },
+        "volume": {
+          "type": ["string", "null"],
+          "description": "Volume number for multi-volume works"
+        },
+        "edition": {
+          "type": ["string", "null"],
+          "description": "Edition information"
+        },
+        "translator": {
+          "type": ["string", "null"],
+          "description": "Translator name if applicable"
+        },
+        "periodical_name": {
+          "type": ["string", "null"],
+          "description": "Name of periodical or journal"
+        },
+        "document_type": {
+          "type": ["string", "null"],
+          "description": "Type of document (e.g., 'Primary source', 'Encyclopedia article', 'Journal article')"
+        }
+      }
+    },
+    "SearchMetadata": {
+      "type": "object",
+      "description": "Tracks search attempts and results",
+      "properties": {
+        "gutenberg_checked": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether Gutenberg.org was searched"
+        },
+        "gutenberg_url": {
+          "type": ["string", "null"],
+          "format": "uri",
+          "description": "URL if found on Gutenberg.org"
+        },
+        "archive_org_checked": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether Archive.org was searched"
+        },
+        "archive_org_url": {
+          "type": ["string", "null"],
+          "format": "uri",
+          "description": "URL if found on Archive.org"
+        },
+        "openserp_checked": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether OpenSERP search was performed"
+        },
+        "llm_search_checked": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether LLM search was performed"
+        },
+        "found_via": {
+          "type": ["string", "null"],
+          "enum": ["gutenberg", "archive_org", "openserp", "llm", "manual", null],
+          "description": "Method that successfully found the resource"
+        },
+        "search_date": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When searches were performed"
+        },
+        "search_notes": {
+          "type": ["string", "null"],
+          "description": "Additional notes about search attempts"
+        }
+      }
+    },
+    "ArchiveInfo": {
+      "type": "object",
+      "description": "Information for materials held in physical archives",
+      "properties": {
+        "archive_name": {
+          "type": ["string", "null"],
+          "description": "Name of the archive or repository"
+        },
+        "reference_number": {
+          "type": ["string", "null"],
+          "description": "Archive reference/catalog number"
+        },
+        "physical_address": {
+          "type": ["string", "null"],
+          "description": "Complete physical address of archive"
+        },
+        "archive_url": {
+          "type": ["string", "null"],
+          "format": "uri",
+          "description": "URL to archive's catalog entry or finding aid"
+        },
+        "verified": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether archive URL was verified to contain material listing"
+        },
+        "verification_date": {
+          "type": ["string", "null"],
+          "format": "date",
+          "description": "Date of verification"
+        },
+        "access_restrictions": {
+          "type": ["string", "null"],
+          "description": "Any access restrictions or requirements"
+        }
+      }
+    },
+    "CopyrightStatus": {
+      "type": "object",
+      "description": "Copyright determination for offline materials",
+      "properties": {
+        "status": {
+          "type": ["string", "null"],
+          "enum": ["public_domain", "copyrighted", "unknown", null],
+          "description": "Determined copyright status"
+        },
+        "author_death_date": {
+          "type": ["string", "null"],
+          "description": "Author's death date (YYYY or YYYY-MM-DD). 'UNKNOWN' if unavailable"
+        },
+        "determination_basis": {
+          "type": ["string", "null"],
+          "description": "Explanation of how copyright status was determined"
+        },
+        "copyright_expiry_date": {
+          "type": ["string", "null"],
+          "description": "Estimated copyright expiration date based on laws"
+        },
+        "jurisdiction": {
+          "type": ["string", "null"],
+          "description": "Legal jurisdiction for copyright determination (ISO 3166-1 alpha-3)"
+        }
+      }
+    }
+  },
+  "example": {
+    "Event_Name": "The Invasion of Poland",
+    "EventID": "01H8XYZABC123DEF456GHJ789",
+    "Sub-event_Name": "German forces cross the Polish border at dawn",
+    "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+    "Supplemental_Material": [
+      {
+        "MaterialID": "01H8XZ0JSAB123CD456EF789GH",
+        "EventID": "01H8XYZABC123DEF456GHJ789",
+        "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+        "reference_type": "endnote",
+        "reference_number": "4",
+        "verbatim_reference": "Shirer, William L. The Rise and Fall of the Third Reich: A History of Nazi Germany. New York: Simon & Schuster, 1960, pp. 597-598.",
+        "citation": {
+          "author": ["Shirer, William L."],
+          "title": "The Rise and Fall of the Third Reich: A History of Nazi Germany",
+          "publisher": "Simon & Schuster",
+          "publication_date": "1960",
+          "first_edition_date": "1960",
+          "publication_location": "New York",
+          "publication_country": "USA",
+          "isbn": null,
+          "pages": "597-598"
+        },
+        "availability": "offline",
+        "resource_urls": [],
+        "license": "copyright",
+        "license_notes": "Copyright - Simon & Schuster",
+        "search_metadata": {
+          "gutenberg_checked": true,
+          "gutenberg_url": null,
+          "archive_org_checked": true,
+          "archive_org_url": "https://archive.org/details/risefallofsecond00shir",
+          "openserp_checked": false,
+          "llm_search_checked": false,
+          "found_via": "archive_org",
+          "search_date": "2026-03-07T11:35:00Z"
+        },
+        "archive_info": {
+          "archive_name": "New York Public Library",
+          "reference_number": "D757 .S5 1960",
+          "physical_address": "476 Fifth Avenue, New York, NY 10018, United States",
+          "archive_url": null,
+          "verified": false
+        },
+        "copyright_status": {
+          "status": "copyrighted",
+          "author_death_date": "1993-12-28",
+          "determination_basis": "Published 1960, author died 1993. Copyright expires 70 years after death (2063) under US law",
+          "copyright_expiry_date": "2063",
+          "jurisdiction": "USA"
+        }
+      },
+      {
+        "MaterialID": "01H8XZ0KTMN456PQ789RS012TU",
+        "EventID": "01H8XYZABC123DEF456GHJ789",
+        "Sub-eventID": "01H8XYZ1MN456PQR789STU012",
+        "reference_type": "endnote",
+        "reference_number": "5",
+        "verbatim_reference": "German Federal Archives, 'Invasion of Poland - Military Orders,' Document R 43 II/1270, September 1, 1939.",
+        "citation": {
+          "author": ["German Federal Archives"],
+          "title": "Invasion of Poland - Military Orders",
+          "publication_date": "1939-09-01",
+          "document_type": "Primary source document"
+        },
+        "availability": "online",
+        "resource_urls": ["https://www.bundesarchiv.de/cocoon/barch/0/r/r43ii/1270/index.html"],
+        "license": "public_domain",
+        "license_notes": "Historical government document",
+        "search_metadata": {
+          "gutenberg_checked": false,
+          "archive_org_checked": false,
+          "openserp_checked": false,
+          "llm_search_checked": true,
+          "found_via": "llm",
+          "search_date": "2026-03-07T11:35:00Z"
+        },
+        "archive_info": {
+          "archive_name": "German Federal Archives",
+          "reference_number": "R 43 II/1270",
+          "archive_url": "https://www.bundesarchiv.de/cocoon/barch/0/r/r43ii/1270/index.html",
+          "verified": true,
+          "verification_date": "2026-03-07"
+        },
+        "copyright_status": {
+          "status": "public_domain",
+          "determination_basis": "Government document, public domain",
+          "jurisdiction": "DEU"
+        },
+        "local_copy": "/cache/documents/bundesarchiv-r43ii-1270.pdf",
+        "url_capture_date": "2026-03-07"
+      }
+    ]
+  }
+}

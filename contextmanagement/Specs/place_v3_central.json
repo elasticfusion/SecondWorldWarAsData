@@ -1,0 +1,326 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://secondworldwarasdata.org/schemas/place/v3.0.0",
+  "title": "WWII Place Central Repository Schema",
+  "description": "Central repository for geographic entities with event mentions and hierarchical relationships",
+  "version": "3.0.0",
+  "type": "object",
+  "required": [
+    "PlaceID",
+    "current_name",
+    "source_language",
+    "geography_type"
+  ],
+  "properties": {
+    "PlaceID": {
+      "type": "string",
+      "description": "26-character ULID uniquely identifying this place across all documents",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "current_name": {
+      "type": "string",
+      "description": "Current/modern canonical name of the place",
+      "minLength": 1
+    },
+    "historical_names": {
+      "type": "array",
+      "description": "Historical names used during WWII period",
+      "items": {
+        "type": "object",
+        "required": ["name", "language"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Historical name",
+            "minLength": 1
+          },
+          "language": {
+            "type": "string",
+            "description": "Language of the historical name",
+            "enum": ["English", "German", "French", "Russian", "Italian", "Japanese", "Polish", "Other"]
+          },
+          "date_range": {
+            "type": "string",
+            "description": "Period when this name was used (e.g., '1939-1945')"
+          }
+        }
+      }
+    },
+    "aliases": {
+      "type": "array",
+      "description": "Alternative names and abbreviations (managed via place_aliases.yaml)",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "source_language": {
+      "type": "string",
+      "description": "Primary language of source documents",
+      "enum": ["English", "German", "French", "Russian", "Italian", "Japanese", "Other"],
+      "default": "English"
+    },
+    "geography_type": {
+      "type": "string",
+      "description": "Type of geographic entity",
+      "enum": [
+        "city",
+        "town",
+        "village",
+        "country",
+        "region",
+        "province",
+        "state",
+        "sea",
+        "ocean",
+        "river",
+        "lake",
+        "mountain",
+        "island",
+        "peninsula",
+        "continent",
+        "military_base",
+        "battlefield",
+        "fortification",
+        "bridge",
+        "port",
+        "airfield",
+        "other"
+      ]
+    },
+    "coordinates": {
+      "type": "object",
+      "description": "Geographic coordinates (WGS84)",
+      "required": ["latitude", "longitude"],
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "description": "Latitude in decimal degrees",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Longitude in decimal degrees",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "precision": {
+          "type": "string",
+          "description": "Coordinate precision level",
+          "enum": ["exact", "approximate", "center_point", "estimated"],
+          "default": "approximate"
+        },
+        "confidence": {
+          "type": "number",
+          "description": "Confidence in coordinate accuracy (0.0-1.0)",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.8
+        }
+      }
+    },
+    "bounding_box_100km": {
+      "type": "object",
+      "description": "Approximate 100km bounding box",
+      "required": ["north", "south", "east", "west"],
+      "properties": {
+        "north": {"type": "number", "minimum": -90, "maximum": 90},
+        "south": {"type": "number", "minimum": -90, "maximum": 90},
+        "east": {"type": "number", "minimum": -180, "maximum": 180},
+        "west": {"type": "number", "minimum": -180, "maximum": 180}
+      }
+    },
+    "map_urls": {
+      "type": "object",
+      "description": "Modern map service URLs",
+      "properties": {
+        "google_maps": {
+          "type": "string",
+          "pattern": "^https://www\\.google\\.com/maps\\?q=-?\\d+\\.\\d+,-?\\d+\\.\\d+$"
+        },
+        "openstreetmap": {
+          "type": "string",
+          "pattern": "^https://www\\.openstreetmap\\.org/\\?mlat=-?\\d+\\.\\d+&mlon=-?\\d+\\.\\d+&zoom=\\d+$"
+        }
+      }
+    },
+    "hierarchy": {
+      "type": "object",
+      "description": "Political/geographic hierarchy (managed via place_aliases.yaml)",
+      "properties": {
+        "continent": {"type": "string"},
+        "country": {"type": "string"},
+        "region": {"type": "string"},
+        "province": {"type": "string"},
+        "parent_place_id": {
+          "type": "string",
+          "description": "PlaceID of parent place (e.g., London's parent is England)",
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+        }
+      }
+    },
+    "event_mentions": {
+      "type": "array",
+      "description": "All events where this place is mentioned",
+      "items": {
+        "type": "object",
+        "required": [
+          "MentionID",
+          "Event_Name",
+          "EventID",
+          "Sub_event_Name",
+          "Sub_eventID",
+          "original_text"
+        ],
+        "properties": {
+          "MentionID": {
+            "type": "string",
+            "description": "26-character ULID for this specific mention",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+          },
+          "Event_Name": {
+            "type": "string",
+            "description": "Name of the parent event (chapter)"
+          },
+          "EventID": {
+            "type": "string",
+            "description": "26-character ULID of parent event",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+          },
+          "Sub_event_Name": {
+            "type": "string",
+            "description": "Name of the sub-event"
+          },
+          "Sub_eventID": {
+            "type": "string",
+            "description": "26-character ULID of sub-event",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+          },
+          "book": {
+            "type": "string",
+            "description": "Source book title"
+          },
+          "author": {
+            "type": "string",
+            "description": "Book author"
+          },
+          "series": {
+            "type": "string",
+            "description": "Book series"
+          },
+          "date_context": {
+            "type": ["string", "null"],
+            "description": "Date context for this mention",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$|^\\d{4}-\\d{2}$|^\\d{4}$"
+          },
+          "DateMentionID": {
+            "type": ["string", "null"],
+            "description": "Link to date mention if applicable. TODO: Implement after date extraction refactor - should link to dates file to connect temporal and spatial data.",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+          },
+          "role_in_event": {
+            "type": ["string", "null"],
+            "description": "Role of place in event (e.g., 'battle location', 'departure point', 'destination')"
+          },
+          "original_text": {
+            "type": "string",
+            "description": "Exact text from source document",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "related_places": {
+      "type": "array",
+      "description": "Related places (nearby, contains, part of)",
+      "items": {
+        "type": "object",
+        "required": ["PlaceID", "relationship"],
+        "properties": {
+          "PlaceID": {
+            "type": "string",
+            "description": "PlaceID of related place",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+          },
+          "relationship": {
+            "type": "string",
+            "description": "Type of relationship",
+            "enum": ["contains", "part_of", "near", "connected_by_route", "same_as"]
+          },
+          "distance_km": {
+            "type": "number",
+            "description": "Distance in kilometers (for 'near' relationships)"
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes or context"
+    }
+  },
+  "examples": [
+    {
+      "PlaceID": "01H8XYZ8AB123CD456EF789GH",
+      "current_name": "Warsaw",
+      "historical_names": [
+        {
+          "name": "Warszawa",
+          "language": "Polish"
+        },
+        {
+          "name": "Warschau",
+          "language": "German",
+          "date_range": "1939-1945"
+        }
+      ],
+      "aliases": ["Warszawa"],
+      "source_language": "English",
+      "geography_type": "city",
+      "coordinates": {
+        "latitude": 52.2297,
+        "longitude": 21.0122,
+        "precision": "exact",
+        "confidence": 1.0
+      },
+      "bounding_box_100km": {
+        "north": 53.1297,
+        "south": 51.3297,
+        "east": 22.4122,
+        "west": 19.6122
+      },
+      "map_urls": {
+        "google_maps": "https://www.google.com/maps?q=52.2297,21.0122",
+        "openstreetmap": "https://www.openstreetmap.org/?mlat=52.2297&mlon=21.0122&zoom=12"
+      },
+      "hierarchy": {
+        "continent": "Europe",
+        "country": "Poland",
+        "region": "Masovian Voivodeship"
+      },
+      "event_mentions": [
+        {
+          "MentionID": "01H8XYZM1N456PQ789RS012TU",
+          "Event_Name": "The Invasion of Poland",
+          "EventID": "01H8XYZABC123DEF456GHJ789",
+          "Sub_event_Name": "German forces cross the Polish border at dawn",
+          "Sub_eventID": "01H8XYZ1MN456PQR789STU012",
+          "book": "Cross-Channel Attack",
+          "author": "Gordon A. Harrison",
+          "series": "United States Army in World War II",
+          "date_context": "1939-09-01",
+          "DateMentionID": "01H8XYZD1E234FG567HI890JK",
+          "role_in_event": "target city",
+          "original_text": "Warsaw"
+        }
+      ],
+      "related_places": [
+        {
+          "PlaceID": "01H8XYZA3VW789XY012ZA345BC",
+          "relationship": "part_of"
+        }
+      ]
+    }
+  ]
+}

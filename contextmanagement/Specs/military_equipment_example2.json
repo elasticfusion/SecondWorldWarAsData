@@ -1,0 +1,182 @@
+{
+  "EquipmentID": "01KJ3DQ64D7ESXAET2YZGYK8BT",
+  "common_name": "Tiger I",
+  "technical_identifier": "Panzerkampfwagen VI Tiger Ausf. E",
+  "description": "German heavy tank, feared for its 88mm gun and thick armor but plagued by mechanical issues",
+  "alternate_names": ["Tiger", "Panzerkampfwagen VI", "Sd.Kfz. 181"],
+  "category": "armor",
+  "subcategory": "heavy_tank",
+  "variants": [
+    {
+      "variant_name": "Tiger I Ausf. E",
+      "differences": "Initial production version with Maybach HL 230 engine",
+      "alternate_names": ["Tiger I Early"]
+    },
+    {
+      "variant_name": "Tiger I Late",
+      "differences": "Steel road wheels, Zimmerit coating, modified cupola",
+      "alternate_names": ["Tiger I Spät"]
+    }
+  ],
+  "specifications": {
+    "weight": "54 tons",
+    "armament": "88mm KwK 36 L/56 gun, 2x 7.92mm MG 34",
+    "armor": "100mm frontal, 80mm side",
+    "speed": "24 mph (road), 12 mph (cross-country)",
+    "range": "60 miles (cross-country)",
+    "crew": 5
+  },
+  "mentions": [
+    {
+      "MentionID": "01KJ3DQ64DHFHYHA5WGWFHMCXV",
+      "book": "Breakout and Pursuit",
+      "author": "Martin Blumenson",
+      "series": "United States Army in World War II",
+      "chapter": "Chapter 5: The Breakthrough",
+      "paragraph_numbers": [145, 146, 147],
+      "variant_mentioned": "Tiger I Ausf. E",
+      "context": "schwere Panzer-Abteilung 101 defensive operations near Caen",
+      "original_text": "The Tigers of sPzAbt 101 engaged Allied armor at long range, their 88mm guns proving devastatingly effective. However, mechanical breakdowns plagued the unit, with several tanks immobilized by transmission failures.",
+      "EventID": "01KJ3BVHM401GGBXE1RG92RA6E",
+      "Event_Name": "Defense of Caen",
+      "Sub_eventID": "01KJ3BVHM43ADNXZM7T3HPQEPB",
+      "Sub_event_Name": "Tank engagement near Villers-Bocage",
+      "date": "1944-06-13",
+      "DateID": "01KJ674B1A1R33MCCZ2BQPMTPF",
+      "DateMentionID": "01KJ674B2D2XP5SGTQ2XSMF840",
+      "using_unit": {
+        "PeopleGroupID": "01KJ3DQ64DAAABBBCCCDDDEEEF",
+        "name": "schwere Panzer-Abteilung 101"
+      },
+      "supporting_units": [
+        {
+          "support_type": "infantry",
+          "PeopleGroupID": "01KJ3DQ64DKKKLLLLMMMNNNOOOO",
+          "unit_name": "Panzergrenadier-Division",
+          "EquipmentID": "01KJ3DQ64DPPPQQQRRRSSSTTTT",
+          "equipment_name": "Sd.Kfz. 251"
+        }
+      ],
+      "performance_notes": {
+        "successes": [
+          "88mm gun effective at long range against Allied armor",
+          "Frontal armor impervious to most Allied anti-tank weapons"
+        ],
+        "failures": [
+          "Mechanical breakdowns frequent",
+          "Poor mobility in bocage terrain",
+          "Vulnerable to Allied air attacks"
+        ],
+        "field_modifications": [
+          "Additional track links welded to hull for extra protection",
+          "Zimmerit anti-magnetic paste applied"
+        ],
+        "maintenance_issues": [
+          "Final drive failures common",
+          "Engine overheating in summer conditions",
+          "High fuel consumption limited operational range"
+        ]
+      }
+    },
+    {
+      "MentionID": "01KJ3DQ64DUUUVVVWWWXXXYYYY",
+      "book": "Breakout and Pursuit",
+      "author": "Martin Blumenson",
+      "series": "United States Army in World War II",
+      "chapter": "Chapter 6: The Counterattack",
+      "paragraph_numbers": [203, 204],
+      "variant_mentioned": "Tiger I Late",
+      "context": "German counterattack against Allied bridgehead",
+      "original_text": "The Tigers attacked at dawn but two were quickly immobilized by mechanical failure. A third ran out of fuel and was abandoned by its crew.",
+      "EventID": "01KJ3BVHM401GGBXE1RG92RA6E",
+      "Event_Name": "Defense of Caen",
+      "Sub_eventID": "01KJ3BVHM4ZZZZAAAAABBBBBCC",
+      "Sub_event_Name": "Counterattack at Hill 112",
+      "date": "1944-06-14",
+      "DateID": "01KJ674C2B2S44NDDZ3CRQNUGQ",
+      "DateMentionID": "01KJ674C3E3YQ6THUR3YTNGF51",
+      "using_unit": {
+        "PeopleGroupID": "01KJ3DQ64DAAABBBCCCDDDEEEF",
+        "name": "schwere Panzer-Abteilung 101"
+      },
+      "performance_notes": {
+        "successes": [
+          "Destroyed multiple Sherman tanks in ambush positions"
+        ],
+        "failures": [
+          "Two Tigers immobilized by mechanical failure",
+          "One Tiger abandoned due to lack of fuel"
+        ],
+        "field_modifications": [],
+        "maintenance_issues": [
+          "Transmission failure on Tiger 231",
+          "Track damage from Allied artillery"
+        ]
+      }
+    },
+    {
+      "MentionID": "01KJ3DQ64DZZZAAABBBCCCDDD",
+      "book": "Breakout and Pursuit",
+      "author": "Martin Blumenson",
+      "series": "United States Army in World War II",
+      "chapter": "Chapter 7: Villers-Bocage",
+      "paragraph_numbers": [256, 257, 258],
+      "variant_mentioned": "Tiger I Ausf. E",
+      "context": "Michael Wittmann's famous ambush at Villers-Bocage",
+      "original_text": "Wittmann's Tiger emerged from cover and systematically destroyed 14 Allied tanks and 15 personnel carriers in a matter of minutes. The Tiger was eventually knocked out by concentrated anti-tank fire.",
+      "EventID": "01KJ3D5Q30AV0Z3FVR3R7A9F7N",
+      "Event_Name": "Battle of Villers-Bocage",
+      "Sub_eventID": "01KJ3D5Q31DWGYEM5KE2N4BE6B",
+      "Sub_event_Name": "Wittmann's ambush",
+      "date": "1944-06-13",
+      "DateID": "01KJ674D3C3T55OEEZ4DSROUHH",
+      "DateMentionID": "01KJ674D4F4ZR7UIVS4ZUOHG62",
+      "using_unit": {
+        "PeopleGroupID": "01KJ3DQ64DEEEFFFGGGHHHJJJK",
+        "name": "schwere Panzer-Abteilung 503"
+      },
+      "using_person": {
+        "PersonID": "01KJ3DQ64DFFFGGGHHHIIIJJJK",
+        "name": "Michael Wittmann"
+      },
+      "performance_notes": {
+        "successes": [
+          "Wittmann's Tiger destroyed 14 Allied tanks and 15 personnel carriers at Villers-Bocage"
+        ],
+        "failures": [
+          "Tiger eventually knocked out by Allied anti-tank fire"
+        ],
+        "field_modifications": [
+          "Additional armor plates welded to turret sides"
+        ],
+        "maintenance_issues": []
+      }
+    }
+  ],
+  "external_data": {
+    "grokipedia_url": "https://grokipedia.com/Tiger_I",
+    "wikipedia_url": "https://en.wikipedia.org/wiki/Tiger_I",
+    "additional_sources": [
+      {
+        "source_type": "museum",
+        "source_name": "The Tank Museum",
+        "url": "https://tankmuseum.org/tank-nuts/tank-collection/tiger-131/",
+        "data_points": [
+          {
+            "field": "production_numbers",
+            "value": "1,347 units",
+            "verified": true,
+            "notes": "Produced 1942-1944"
+          },
+          {
+            "field": "combat_losses",
+            "value": "Approximately 1,200 units",
+            "verified": false,
+            "notes": "Estimated from various sources"
+          }
+        ]
+      }
+    ]
+  },
+  "extracted_date": "2026-03-03T13:00:00Z"
+}

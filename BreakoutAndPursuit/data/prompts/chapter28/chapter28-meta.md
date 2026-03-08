@@ -1,9 +1,0 @@
-United States Army in World War II
-European Theater of Operations
-Breakout and Pursuit
-Martin Blumenson
-
-Chapter XXVIII - The Drive to the Seine
-
-License: Public Domain
-

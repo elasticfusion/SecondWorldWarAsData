@@ -1,0 +1,309 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://secondworldwarasdata.org/schemas/weather/v2.0.0",
+  "title": "WWII Weather Central Repository Schema",
+  "description": "Central repository for weather data with extracted mentions and API data",
+  "version": "2.0.0",
+  "status": "implemented",
+  "last_updated": "2026-02-24",
+  "implementation": "src/extraction/weather_central.py",
+  "quality_assurance": {
+    "pylint": "9.78/10",
+    "mypy": "0 errors",
+    "bandit": "0 issues",
+    "radon_cc": "A-C (1-19)",
+    "radon_mi": "A (33.78)",
+    "black": "formatted",
+    "last_qa_run": "2026-02-24"
+  },
+  "features": {
+    "coordinate_lookup": "PlaceID lookup with fuzzy match fallback",
+    "api_integration": "Open-Meteo Historical Archive (optional)",
+    "file_updates": "Existing files updated with coordinates and API data",
+    "deduplication": "By date+location key"
+  },
+  "type": "object",
+  "required": [
+    "WeatherID",
+    "date",
+    "location",
+    "source_type",
+    "event_mentions"
+  ],
+  "properties": {
+    "WeatherID": {
+      "type": "string",
+      "description": "26-character ULID uniquely identifying this weather record",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "date": {
+      "type": "string",
+      "description": "ISO date (YYYY-MM-DD) - exact dates only",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "DateID": {
+      "type": ["string", "null"],
+      "description": "Link to central dates repository",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "location": {
+      "type": "object",
+      "required": ["place_name", "latitude", "longitude"],
+      "properties": {
+        "place_name": {
+          "type": "string",
+          "description": "Place name",
+          "minLength": 1
+        },
+        "PlaceID": {
+          "type": ["string", "null"],
+          "description": "Link to central places repository",
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Latitude for API queries",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Longitude for API queries",
+          "minimum": -180,
+          "maximum": 180
+        }
+      }
+    },
+    "source_type": {
+      "type": "string",
+      "description": "Source of weather data",
+      "enum": ["extracted", "api", "hybrid"]
+    },
+    "extracted_data": {
+      "type": ["object", "null"],
+      "description": "Weather mentions extracted from documents",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Weather description from text"
+        },
+        "temperature": {
+          "type": ["number", "null"],
+          "description": "Temperature value"
+        },
+        "temperature_unit": {
+          "type": ["string", "null"],
+          "description": "Temperature unit",
+          "enum": ["celsius", "fahrenheit", null]
+        },
+        "measurement_system": {
+          "type": ["string", "null"],
+          "description": "Measurement system",
+          "enum": ["metric", "imperial", null]
+        },
+        "notable_impact": {
+          "type": ["string", "null"],
+          "description": "Impact on operations"
+        },
+        "original_text": {
+          "type": "string",
+          "description": "Exact text from document"
+        },
+        "book": {
+          "type": "string",
+          "description": "Source book title"
+        },
+        "author": {
+          "type": "string",
+          "description": "Source book author"
+        }
+      },
+      "required": ["description", "original_text", "book", "author"]
+    },
+    "api_data": {
+      "type": ["object", "null"],
+      "description": "Weather data retrieved from API",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "description": "API provider name",
+          "examples": ["open-meteo", "visual-crossing", "noaa"]
+        },
+        "retrieved_at": {
+          "type": "string",
+          "description": "ISO 8601 timestamp of API retrieval",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+        },
+        "temperature_max_c": {
+          "type": ["number", "null"],
+          "description": "Maximum temperature (Celsius)"
+        },
+        "temperature_min_c": {
+          "type": ["number", "null"],
+          "description": "Minimum temperature (Celsius)"
+        },
+        "precipitation_mm": {
+          "type": ["number", "null"],
+          "description": "Precipitation (millimeters)"
+        },
+        "windspeed_max_kmh": {
+          "type": ["number", "null"],
+          "description": "Maximum wind speed (km/h)"
+        },
+        "cloud_cover_percent": {
+          "type": ["number", "null"],
+          "description": "Cloud cover percentage",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "raw_response": {
+          "type": "object",
+          "description": "Full API response for reference"
+        }
+      },
+      "required": ["provider", "retrieved_at"]
+    },
+    "event_mentions": {
+      "type": "array",
+      "description": "Events where this weather is mentioned",
+      "items": {
+        "type": "object",
+        "required": [
+          "MentionID",
+          "Event_Name",
+          "EventID",
+          "Sub_event_Name",
+          "Sub_eventID",
+          "book",
+          "author"
+        ],
+        "properties": {
+          "MentionID": {
+            "type": "string",
+            "description": "Unique ID for this mention",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+          },
+          "Event_Name": {
+            "type": "string",
+            "description": "Name of the event"
+          },
+          "EventID": {
+            "type": "string",
+            "description": "Event ULID",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+          },
+          "Sub_event_Name": {
+            "type": "string",
+            "description": "Sub-event summary"
+          },
+          "Sub_eventID": {
+            "type": "string",
+            "description": "Sub-event ULID",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+          },
+          "book": {
+            "type": "string",
+            "description": "Book title"
+          },
+          "author": {
+            "type": "string",
+            "description": "Book author"
+          },
+          "series": {
+            "type": "string",
+            "description": "Book series"
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "WeatherID": "01H8XYZC5AB123CD456EF789GH",
+      "date": "1944-06-06",
+      "DateID": "01H8XYZ3AB123CD456EF789GH",
+      "location": {
+        "place_name": "Normandy",
+        "PlaceID": "01H8XYZ8AB123CD456EF789GH",
+        "latitude": 49.35,
+        "longitude": -0.50
+      },
+      "source_type": "hybrid",
+      "extracted_data": {
+        "description": "Clear skies with light fog in early morning hours",
+        "temperature": 15,
+        "temperature_unit": "celsius",
+        "measurement_system": "metric",
+        "notable_impact": "Early morning fog delayed H-Hour by 30 minutes",
+        "original_text": "The morning fog lifted by 0600 hours, allowing the assault to proceed",
+        "book": "Cross-Channel Attack",
+        "author": "Gordon A. Harrison"
+      },
+      "api_data": {
+        "provider": "open-meteo",
+        "retrieved_at": "2026-02-24T09:00:00Z",
+        "temperature_max_c": 16.2,
+        "temperature_min_c": 12.8,
+        "precipitation_mm": 0.0,
+        "windspeed_max_kmh": 15.3,
+        "cloud_cover_percent": 45,
+        "raw_response": {
+          "latitude": 49.35,
+          "longitude": -0.5,
+          "daily": {
+            "time": ["1944-06-06"],
+            "temperature_2m_max": [16.2],
+            "temperature_2m_min": [12.8]
+          }
+        }
+      },
+      "event_mentions": [
+        {
+          "MentionID": "01H8XYZM1N234OP567QR890ST",
+          "Event_Name": "D-Day Landings",
+          "EventID": "01H8XYZABC123DEF456GHJ789",
+          "Sub_event_Name": "Utah Beach assault begins at H-Hour",
+          "Sub_eventID": "01H8XYZ1MN456PQR789STU012",
+          "book": "Cross-Channel Attack",
+          "author": "Gordon A. Harrison",
+          "series": "United States Army in World War II"
+        }
+      ]
+    },
+    {
+      "WeatherID": "01H8XYZE7VW456XY789ZA012BC",
+      "date": "1944-06-25",
+      "DateID": "01H8XYZ4MN789PQ012RS345TU",
+      "location": {
+        "place_name": "Caen",
+        "PlaceID": "01H8XYZ9MN456PQ789RS012TU",
+        "latitude": 49.18,
+        "longitude": -0.37
+      },
+      "source_type": "extracted",
+      "extracted_data": {
+        "description": "Heavy rain throughout the day",
+        "temperature": null,
+        "temperature_unit": null,
+        "measurement_system": null,
+        "notable_impact": "Rain turned roads to mud, delaying armor advance",
+        "original_text": "Heavy rain fell all day, turning the roads into quagmires",
+        "book": "Breakout and Pursuit",
+        "author": "Martin Blumenson"
+      },
+      "api_data": null,
+      "event_mentions": [
+        {
+          "MentionID": "01H8XYZN2O345PQ678RS901TU",
+          "Event_Name": "Battle for Caen",
+          "EventID": "01H8XYZCDE234FG567HI890JK",
+          "Sub_event_Name": "British advance stalled by weather",
+          "Sub_eventID": "01H8XYZ2NO567QR890ST123UV",
+          "book": "Breakout and Pursuit",
+          "author": "Martin Blumenson",
+          "series": "United States Army in World War II"
+        }
+      ]
+    }
+  ]
+}
