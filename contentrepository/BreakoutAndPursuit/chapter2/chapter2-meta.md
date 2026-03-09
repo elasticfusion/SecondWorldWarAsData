@@ -1,9 +1,0 @@
-United States Army in World War II
-European Theater of Operations
-Breakout and Pursuit
-Martin Blumenson
-
-Chapter II - The Enemy
-
-
-License: Public Domain

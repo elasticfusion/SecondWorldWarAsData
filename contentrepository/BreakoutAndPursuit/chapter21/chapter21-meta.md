@@ -1,8 +1,0 @@
-United States Army in World War II
-European Theater of Operations
-Breakout and Pursuit
-Martin Blumenson
-
-Chapter XXI - St. Malo and the North Shore
-
-License: Public Domain
