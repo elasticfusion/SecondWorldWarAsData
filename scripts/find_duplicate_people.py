@@ -7,6 +7,7 @@ import json
 import logging
 import sys
 import unicodedata
+from functools import lru_cache
 from pathlib import Path
 from typing import List, Dict, Any, Set
 from difflib import SequenceMatcher
@@ -14,6 +15,7 @@ from difflib import SequenceMatcher
 logger = logging.getLogger(__name__)
 
 
+@lru_cache(maxsize=10000)
 def _normalize_unicode(text: str) -> str:
     """Normalize Unicode to ASCII for comparison (ö -> o, é -> e)."""
     return unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
@@ -35,6 +37,7 @@ def _normalize_german(text: str) -> str:
     return text
 
 
+@lru_cache(maxsize=10000)
 def _similarity_ratio(name1: str, name2: str) -> float:
     """Calculate similarity ratio between two names."""
     # Compare both original and ASCII-normalized versions
@@ -45,6 +48,7 @@ def _similarity_ratio(name1: str, name2: str) -> float:
     return max(original_ratio, normalized_ratio)
 
 
+@lru_cache(maxsize=5000)
 def _extract_last_name(name: str) -> str:
     """Extract likely last name from full name."""
     parts = name.split()
@@ -210,11 +214,15 @@ def find_potential_duplicates(people_dir_path: Path) -> List[Dict[str, Any]]:
                 if len(last_name1) > 3:  # Lowered from 5
                     reasons.append("Name substring match")
                     confidence += 0.5  # Increased from 0.4
-            
+
             # Check 5b: Single last name vs full name with same last name + shared bio
-            if (len(name1.split()) == 1 or len(name2.split()) == 1) and last_name1 == last_name2:
+            if (
+                len(name1.split()) == 1 or len(name2.split()) == 1
+            ) and last_name1 == last_name2:
                 # One is just a last name, other is full name
-                if _has_shared_biographical_data(person1, person2) or _has_shared_positions(person1, person2):
+                if _has_shared_biographical_data(
+                    person1, person2
+                ) or _has_shared_positions(person1, person2):
                     reasons.append("Single name match with shared context")
                     confidence += 0.6
 
@@ -223,11 +231,15 @@ def find_potential_duplicates(people_dir_path: Path) -> List[Dict[str, Any]]:
             norm2_ascii = _normalize_unicode(name2).lower()
             norm1_german = _normalize_german(name1).lower()
             norm2_german = _normalize_german(name2).lower()
-            
+
             if norm1_ascii == norm2_ascii:
                 reasons.append("ASCII/Unicode variant")
                 confidence += 0.6
-            elif norm1_german == norm2_german or norm1_german == norm2_ascii or norm1_ascii == norm2_german:
+            elif (
+                norm1_german == norm2_german
+                or norm1_german == norm2_ascii
+                or norm1_ascii == norm2_german
+            ):
                 reasons.append("German transliteration variant")
                 confidence += 0.6
 
@@ -317,7 +329,7 @@ if __name__ == "__main__":
     # Find project root (where output/ directory exists)
     script_dir = Path(__file__).parent
     project_root = script_dir.parent if script_dir.name == "scripts" else script_dir
-    
+
     people_dir = project_root / "output/people"
     output_file = project_root / "output/people/duplicate_report.json"
 
@@ -327,8 +339,11 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Check if directory has any JSON files
-    people_files = [f for f in people_dir.glob("*.json") 
-                    if f.name not in ["index.json", "duplicate_report.json"]]
+    people_files = [
+        f
+        for f in people_dir.glob("*.json")
+        if f.name not in ["index.json", "duplicate_report.json"]
+    ]
     if not people_files:
         logger.error("No people files found in: %s", people_dir)
         logger.info("Run phase2_extract.py first to extract people")

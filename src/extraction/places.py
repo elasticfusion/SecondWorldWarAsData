@@ -2,6 +2,7 @@
 
 import json
 import logging
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -102,6 +103,7 @@ def _fix_invalid_ulids(data: Dict[str, Any]) -> Dict[str, Any]:
     return data
 
 
+@lru_cache(maxsize=1000)
 def _calculate_bounding_box(lat: float, lon: float) -> Dict[str, float]:
     """Calculate 100km bounding box around coordinates."""
     return {

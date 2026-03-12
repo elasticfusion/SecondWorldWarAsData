@@ -57,6 +57,9 @@ def setup_logging(
     if console:
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setFormatter(formatter)
+        # Force UTF-8 encoding to prevent null byte artifacts
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
         logger.addHandler(console_handler)
 
     if log_file:

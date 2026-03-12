@@ -3,6 +3,7 @@
 import json
 import logging
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
@@ -12,6 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from src.grok_client import GrokClient
 from src.utils.file_lock import write_json_with_lock
+from src.utils.http_pool import get_session
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +146,8 @@ def _fetch_weather_from_api(
     }
 
     try:
-        response = requests.get(url, params=params, timeout=timeout)
+        session = get_session()
+        response = session.get(url, params=params, timeout=timeout)
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
@@ -152,6 +155,7 @@ def _fetch_weather_from_api(
         return None
 
 
+@lru_cache(maxsize=5000)
 def _normalize_weather_key(date: str, place_name: str) -> str:
     """Create normalized key for weather lookup."""
     return f"{date}_{place_name.replace(' ', '_')}"

@@ -1,0 +1,249 @@
+================================================================================
+BOTTLENECK ANALYSIS - Top Functions by Cumulative Time
+================================================================================
+
+Top 40 functions:
+
+Wed Mar 11 11:07:30 2026    /Users/dchristian/projects/SecondWorldWarAsData/logs/profile_stats.prof
+
+         866245 function calls (760435 primitive calls) in 1083.814 seconds
+
+   Ordered by: cumulative time
+   List reduced from 989 to 40 due to restriction <40>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       22    0.001    0.000 1083.420   49.246 /Users/dchristian/projects/SecondWorldWarAsData/src/grok_client.py:173(chat_completion)
+       22    0.000    0.000 1083.404   49.246 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/tenacity/__init__.py:323(wrapped_f)
+       22    0.036    0.002 1083.403   49.246 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/tenacity/__init__.py:460(__call__)
+       22    0.002    0.000 1083.353   49.243 /Users/dchristian/projects/SecondWorldWarAsData/src/grok_client.py:84(_call_api)
+       22    0.000    0.000 1083.346   49.243 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/requests/sessions.py:626(post)
+       22    0.000    0.000 1083.346   49.243 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/requests/sessions.py:500(request)
+       22    0.001    0.000 1083.314   49.242 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/requests/sessions.py:673(send)
+       22    0.001    0.000 1083.260   49.239 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/requests/adapters.py:590(send)
+       22    0.001    0.000 1083.239   49.238 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/urllib3/connectionpool.py:592(urlopen)
+       22    0.001    0.000 1083.235   49.238 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/urllib3/connectionpool.py:377(_make_request)
+       80    0.000    0.000 1081.515   13.519 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/socket.py:712(readinto)
+       22    0.002    0.000 1081.514   49.160 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/urllib3/connection.py:540(getresponse)
+       80    0.001    0.000 1081.514   13.519 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/ssl.py:1289(recv_into)
+       80    0.000    0.000 1081.514   13.519 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/ssl.py:1129(read)
+       80 1081.513   13.519 1081.513   13.519 {method 'read' of '_ssl._SSLSocket' objects}
+       22    0.000    0.000 1081.502   49.159 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py:1406(getresponse)
+       22    0.001    0.000 1081.500   49.159 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py:329(begin)
+      579    0.001    0.000 1081.478    1.868 {method 'readline' of '_io.BufferedReader' objects}
+       22    0.001    0.000 1081.477   49.158 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py:296(_read_status)
+       21    0.001    0.000  991.702   47.224 /Users/dchristian/projects/SecondWorldWarAsData/src/grok_client.py:447(extract_json)
+       20    0.001    0.000  915.122   45.756 /Users/dchristian/projects/SecondWorldWarAsData/src/grok_client.py:525(extract_structured)
+        1    0.002    0.002  477.511  477.511 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/places.py:249(extract_places)
+        1    0.001    0.001  437.900  437.900 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/dates.py:317(extract_dates)
+        1    0.001    0.001   91.774   91.774 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/people_groups.py:106(extract_people_groups)
+        1    0.000    0.000   76.629   76.629 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/events.py:194(extract_events)
+       22    0.000    0.000    1.711    0.078 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/urllib3/connectionpool.py:1085(_validate_conn)
+       22    0.001    0.000    1.711    0.078 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/urllib3/connection.py:724(connect)
+       22    0.000    0.000    1.046    0.048 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/urllib3/connection.py:901(_ssl_wrap_socket_and_match_hostname)
+       22    0.000    0.000    1.034    0.047 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/urllib3/util/ssl_.py:413(ssl_wrap_socket)
+       22    0.000    0.000    0.890    0.040 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/urllib3/util/ssl_.py:511(_ssl_wrap_socket_impl)
+       22    0.000    0.000    0.889    0.040 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/ssl.py:449(wrap_socket)
+       22    0.000    0.000    0.889    0.040 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/ssl.py:990(_create)
+       22    0.000    0.000    0.887    0.040 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/ssl.py:1365(do_handshake)
+       22    0.887    0.040    0.887    0.040 {method 'do_handshake' of '_ssl._SSLSocket' objects}
+       22    0.000    0.000    0.664    0.030 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/urllib3/connection.py:198(_new_conn)
+       22    0.000    0.000    0.664    0.030 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/urllib3/util/connection.py:27(create_connection)
+       22    0.446    0.020    0.446    0.020 {method 'connect' of '_socket.socket' objects}
+      106    0.001    0.000    0.225    0.002 /Users/dchristian/projects/SecondWorldWarAsData/src/utils/file_lock.py:12(write_json_with_lock)
+       22    0.000    0.000    0.217    0.010 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/socket.py:966(getaddrinfo)
+      131    0.046    0.000    0.217    0.002 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/__init__.py:120(dump)
+
+
+
+================================================================================
+BOTTLENECK ANALYSIS - Top Functions by Total Time (self)
+================================================================================
+
+Top 30 functions:
+
+Wed Mar 11 11:07:30 2026    /Users/dchristian/projects/SecondWorldWarAsData/logs/profile_stats.prof
+
+         866245 function calls (760435 primitive calls) in 1083.814 seconds
+
+   Ordered by: internal time
+   List reduced from 989 to 30 due to restriction <30>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       80 1081.513   13.519 1081.513   13.519 {method 'read' of '_ssl._SSLSocket' objects}
+       22    0.887    0.040    0.887    0.040 {method 'do_handshake' of '_ssl._SSLSocket' objects}
+       22    0.446    0.020    0.446    0.020 {method 'connect' of '_socket.socket' objects}
+       22    0.217    0.010    0.217    0.010 {built-in method _socket.getaddrinfo}
+       22    0.144    0.007    0.144    0.007 {method 'load_verify_locations' of '_ssl._SSLContext' objects}
+222487/118826    0.067    0.000    0.119    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/encoder.py:339(_iterencode_dict)
+      131    0.046    0.000    0.217    0.002 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/__init__.py:120(dump)
+       22    0.036    0.002 1083.403   49.246 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/tenacity/__init__.py:460(__call__)
+      332    0.030    0.000    0.035    0.000 {built-in method _io.open}
+   118826    0.029    0.000    0.149    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/encoder.py:426(_iterencode)
+      334    0.029    0.000    0.029    0.000 {method '__exit__' of '_io._IOBase' objects}
+98688/98620    0.028    0.000    0.080    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/encoder.py:280(_iterencode_list)
+      472    0.027    0.000    0.027    0.000 {method 'execute' of 'sqlite3.Connection' objects}
+   119051    0.022    0.000    0.022    0.000 {method 'write' of '_io.TextIOWrapper' objects}
+      177    0.019    0.000    0.020    0.000 {method 'read' of '_io.TextIOWrapper' objects}
+      221    0.017    0.000    0.017    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/decoder.py:351(raw_decode)
+86807/86719    0.013    0.000    0.015    0.000 {built-in method builtins.isinstance}
+    40058    0.011    0.000    0.011    0.000 {built-in method _json.encode_basestring_ascii}
+     1054    0.009    0.000    0.009    0.000 {built-in method __new__ of type object at 0x10181c908}
+       22    0.008    0.000    0.008    0.000 {built-in method _scproxy._get_proxy_settings}
+    10479    0.004    0.000    0.004    0.000 {method 'lower' of 'str' objects}
+      671    0.004    0.000    0.007    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/parse.py:499(_urlsplit)
+       22    0.003    0.000    0.005    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/ssl.py:1361(_real_close)
+      306    0.003    0.000    0.003    0.000 {built-in method posix.stat}
+    11155    0.003    0.000    0.003    0.000 {built-in method _json.encode_basestring}
+     1490    0.002    0.000    0.002    0.000 {method 'match' of 're.Pattern' objects}
+       22    0.002    0.000    0.006    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/email/feedparser.py:472(_parse_headers)
+       22    0.002    0.000 1083.353   49.243 /Users/dchristian/projects/SecondWorldWarAsData/src/grok_client.py:84(_call_api)
+   176/10    0.002    0.000    0.004    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/places.py:79(_fix_invalid_ulids)
+       22    0.002    0.000    0.002    0.000 {function socket.close at 0x101be80f0}
+
+
+
+================================================================================
+BOTTLENECK ANALYSIS - Grok API Calls
+================================================================================
+Wed Mar 11 11:07:30 2026    /Users/dchristian/projects/SecondWorldWarAsData/logs/profile_stats.prof
+
+         866245 function calls (760435 primitive calls) in 1083.814 seconds
+
+   Ordered by: internal time
+   List reduced from 989 to 6 due to restriction <'grok_client'>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       22    0.002    0.000 1083.353   49.243 /Users/dchristian/projects/SecondWorldWarAsData/src/grok_client.py:84(_call_api)
+       20    0.001    0.000  915.122   45.756 /Users/dchristian/projects/SecondWorldWarAsData/src/grok_client.py:525(extract_structured)
+       22    0.001    0.000 1083.420   49.246 /Users/dchristian/projects/SecondWorldWarAsData/src/grok_client.py:173(chat_completion)
+       21    0.001    0.000  991.702   47.224 /Users/dchristian/projects/SecondWorldWarAsData/src/grok_client.py:447(extract_json)
+       42    0.000    0.000    0.001    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/grok_client.py:77(_make_cache_key)
+       42    0.000    0.000    0.010    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/grok_client.py:69(_get_cache)
+
+
+
+================================================================================
+BOTTLENECK ANALYSIS - Extraction Functions
+================================================================================
+Wed Mar 11 11:07:30 2026    /Users/dchristian/projects/SecondWorldWarAsData/logs/profile_stats.prof
+
+         866245 function calls (760435 primitive calls) in 1083.814 seconds
+
+   Ordered by: internal time
+   List reduced from 989 to 31 due to restriction <'extraction'>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+   176/10    0.002    0.000    0.004    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/places.py:79(_fix_invalid_ulids)
+        1    0.002    0.002  477.511  477.511 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/places.py:249(extract_places)
+       83    0.001    0.000    0.212    0.003 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/places.py:433(_add_event_mention)
+   176/10    0.001    0.000    0.003    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/places.py:173(_fix_null_fields)
+    65/10    0.001    0.000    0.002    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/dates.py:72(_fix_invalid_ulids)
+        1    0.001    0.001  437.900  437.900 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/dates.py:317(extract_dates)
+       45    0.001    0.000    0.053    0.001 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/dates.py:271(_add_event_mention)
+        1    0.001    0.001   91.774   91.774 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/people_groups.py:106(extract_people_groups)
+       48    0.001    0.000    0.002    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/events.py:60(_is_footnote_paragraph)
+       45    0.001    0.000    0.002    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/dates.py:210(_find_or_create_date)
+     1979    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/places.py:84(<genexpr>)
+     1593    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/dates.py:80(<genexpr>)
+       83    0.000    0.000    0.001    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/places.py:142(_process_place_mention)
+       83    0.000    0.000    0.002    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/places.py:378(_find_or_create_place)
+       80    0.000    0.000    0.001    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/places.py:106(_calculate_bounding_box)
+       15    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/people_groups.py:53(_merge_group)
+       83    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/places.py:125(_is_valid_place_mention)
+       10    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/dates.py:99(_filter_invalid_dates)
+     62/1    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/events.py:18(_fix_invalid_ulids)
+       10    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/places.py:193(create_place_prompt)
+        1    0.000    0.000   76.629   76.629 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/events.py:194(extract_events)
+      146    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/people_groups.py:34(<genexpr>)
+       12    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/dates.py:179(_normalize_date_key)
+       10    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/dates.py:126(create_date_prompt)
+        1    0.000    0.000    0.002    0.002 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/events.py:100(create_event_prompt)
+        4    0.000    0.000    0.008    0.002 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/people_groups.py:39(_update_index)
+       19    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/people_groups.py:23(_normalize_name)
+        1    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/people.py:599(extract_people)
+        4    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/people_groups.py:29(_name_to_filename)
+        2    0.000    0.000    0.013    0.006 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/events.py:90(validate_event_json)
+        1    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/places.py:117(_generate_map_urls)
+
+
+
+================================================================================
+BOTTLENECK ANALYSIS - JSON Operations
+================================================================================
+Wed Mar 11 11:07:30 2026    /Users/dchristian/projects/SecondWorldWarAsData/logs/profile_stats.prof
+
+         866245 function calls (760435 primitive calls) in 1083.814 seconds
+
+   Ordered by: internal time
+   List reduced from 989 to 67 due to restriction <'json'>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+222487/118826    0.067    0.000    0.119    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/encoder.py:339(_iterencode_dict)
+      131    0.046    0.000    0.217    0.002 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/__init__.py:120(dump)
+   118826    0.029    0.000    0.149    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/encoder.py:426(_iterencode)
+98688/98620    0.028    0.000    0.080    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/encoder.py:280(_iterencode_list)
+      221    0.017    0.000    0.017    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/decoder.py:351(raw_decode)
+    40058    0.011    0.000    0.011    0.000 {built-in method _json.encode_basestring_ascii}
+    11155    0.003    0.000    0.003    0.000 {built-in method _json.encode_basestring}
+      155    0.002    0.000    0.002    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/encoder.py:207(iterencode)
+      106    0.001    0.000    0.225    0.002 /Users/dchristian/projects/SecondWorldWarAsData/src/utils/file_lock.py:12(write_json_with_lock)
+   620/29    0.001    0.000    0.012    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/validators.py:396(descend)
+      578    0.001    0.000    0.003    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/validators.py:339(evolve)
+      221    0.001    0.000    0.018    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/decoder.py:340(decode)
+      177    0.001    0.000    0.036    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/__init__.py:278(load)
+       21    0.001    0.000  991.702   47.224 /Users/dchristian/projects/SecondWorldWarAsData/src/grok_client.py:447(extract_json)
+      588    0.001    0.000    0.001    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/encoder.py:226(floatstr)
+      221    0.001    0.000    0.019    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/__init__.py:304(loads)
+      582    0.000    0.000    0.001    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/validators.py:282(__attrs_post_init__)
+      336    0.000    0.000    0.001    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_keywords.py:282(type)
+      619    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_types.py:94(is_type)
+   232/29    0.000    0.000    0.011    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_keywords.py:290(properties)
+       22    0.000    0.000    0.003    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/requests/models.py:947(json)
+      582    0.000    0.000    0.001    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/validators.py:1335(validator_for)
+      131    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/encoder.py:265(_make_iterencode)
+      582    0.000    0.000    0.001    0.000 <attrs generated methods jsonschema.validators.create.<locals>.Validator>:26(__init__)
+      608    0.000    0.000    0.001    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/validators.py:452(is_type)
+      352    0.000    0.000    0.001    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_utils.py:12(normalize)
+   182/14    0.000    0.000    0.011    0.001 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_keywords.py:274(ref)
+      154    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/encoder.py:105(__init__)
+      672    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_keywords.py:285(<genexpr>)
+      428    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/referencing/jsonschema.py:47(_dollar_id)
+      352    0.000    0.000    0.001    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_utils.py:19(__getitem__)
+      202    0.000    0.000    0.005    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/validators.py:459(_validate_reference)
+       24    0.000    0.000    0.001    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/__init__.py:185(dumps)
+      462    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_types.py:52(is_object)
+     22/2    0.000    0.000    0.011    0.005 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_keywords.py:332(allOf)
+       24    0.000    0.000    0.001    0.000 /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/encoder.py:185(encode)
+      336    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_utils.py:95(ensure_list)
+       20    0.000    0.000    0.001    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/referencing/jsonschema.py:604(resolve)
+       53    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/exceptions.py:165(_set)
+       56    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/referencing/jsonschema.py:287(maybe_in_subresource)
+      6/2    0.000    0.000    0.010    0.005 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_keywords.py:36(additionalProperties)
+       22    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_keywords.py:269(enum)
+       11    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/exceptions.py:55(__init__)
+      132    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_keywords.py:270(<genexpr>)
+       18    0.000    0.000    0.001    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_keywords.py:59(items)
+       22    0.000    0.000    0.001    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_keywords.py:337(anyOf)
+       15    0.000    0.000    0.012    0.001 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/validators.py:349(iter_errors)
+        2    0.000    0.000    0.013    0.006 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/validators.py:1265(validate)
+      118    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_utils.py:127(equal)
+       33    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_keywords.py:215(pattern)
+        6    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_utils.py:156(uniq)
+       95    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_types.py:56(is_string)
+        2    0.000    0.000    0.011    0.006 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/validators.py:306(check_schema)
+     20/4    0.000    0.000    0.010    0.002 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_keywords.py:278(dynamicRef)
+        2    0.000    0.000    0.013    0.006 /Users/dchristian/projects/SecondWorldWarAsData/src/extraction/events.py:90(validate_event_json)
+       62    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_types.py:26(is_array)
+       24    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_utils.py:69(find_additional_properties)
+       24    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_keywords.py:304(required)
+        4    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_format.py:415(is_regex)
+       11    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/exceptions.py:415(relevance)
+       20    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_utils.py:164(<genexpr>)
+       11    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/exceptions.py:184(_matches_type)
+        6    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_keywords.py:206(uniqueItems)
+        4    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_format.py:111(check)
+        4    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_keywords.py:223(format)
+       14    0.000    0.000    0.000    0.000 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/_utils.py:145(unbool)
+        2    0.000    0.000    0.001    0.001 /Users/dchristian/projects/SecondWorldWarAsData/.venv/lib/python3.14/site-packages/jsonschema/exceptions.py:440(best_match)
+
+

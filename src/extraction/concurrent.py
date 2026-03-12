@@ -45,14 +45,13 @@ def extract_group1_concurrent(
         # Weather
         futures["weather"] = executor.submit(
             extract_weather_central,
-            event_file=event_file,
-            grok_client=grok_client,
-            weather_dir=paths["output_root"] / "weather",
-            places_dir=paths["output_root"] / "places",
-            dates_dir=paths["output_root"] / "dates",
-            parsed_file=parsed_file,
-            fetch_api=False,
-            max_retries=3,
+            event_file,
+            paths["output_root"] / "weather",
+            grok_client,
+            paths["output_root"] / "places",
+            parsed_file,
+            False,
+            3,
         )
 
         # Wait for all to complete

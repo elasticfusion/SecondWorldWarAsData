@@ -8,6 +8,7 @@ import json
 import logging
 import sys
 import unicodedata
+from functools import lru_cache
 from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any, Dict, List, Set
@@ -26,16 +27,16 @@ def _load_excluded_clusters(groups_dir: Path) -> List[Set[str]]:
     excluded_file = groups_dir / "excluded_merges.md"
     if not excluded_file.exists():
         return []
-    
+
     excluded_clusters = []
     current_cluster = set()
     in_code_block = False
-    
+
     try:
         with open(excluded_file, "r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
-                
+
                 # Detect code block boundaries
                 if line.startswith("```"):
                     if in_code_block and current_cluster:
@@ -44,18 +45,20 @@ def _load_excluded_clusters(groups_dir: Path) -> List[Set[str]]:
                         current_cluster = set()
                     in_code_block = not in_code_block
                     continue
-                
+
                 # Inside code block - collect GroupIDs
                 if in_code_block and line and not line.startswith("#"):
                     current_cluster.add(line)
-        
+
         return excluded_clusters
     except Exception as e:
         logger.warning("Failed to load excluded clusters: %s", e)
         return []
 
 
-def _is_cluster_excluded(group_ids: Set[str], excluded_clusters: List[Set[str]]) -> bool:
+def _is_cluster_excluded(
+    group_ids: Set[str], excluded_clusters: List[Set[str]]
+) -> bool:
     """Check if a cluster of GroupIDs matches any excluded cluster."""
     for excluded in excluded_clusters:
         # If all GroupIDs in the cluster are in an excluded set, skip it
@@ -64,12 +67,15 @@ def _is_cluster_excluded(group_ids: Set[str], excluded_clusters: List[Set[str]])
     return False
 
 
+@lru_cache(maxsize=10000)
 def _normalize_unicode(text: str) -> str:
     """Normalize Unicode to ASCII for comparison."""
     return unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
 
 
-def _verify_duplicate_with_llm(group1: Dict, group2: Dict, grok_client: GrokClient) -> Dict[str, Any]:
+def _verify_duplicate_with_llm(
+    group1: Dict, group2: Dict, grok_client: GrokClient
+) -> Dict[str, Any]:
     """Use LLM to verify if groups are true duplicates or hierarchically related."""
     prompt = f"""Analyze these two military organizations and determine their relationship:
 
@@ -108,6 +114,7 @@ Respond with JSON:
         return {"relationship": "UNKNOWN", "confidence": 0.0, "reasoning": "LLM error"}
 
 
+@lru_cache(maxsize=10000)
 def _similarity_ratio(name1: str, name2: str) -> float:
     """Calculate similarity ratio between two names."""
     original_ratio = SequenceMatcher(None, name1.lower(), name2.lower()).ratio()
@@ -117,6 +124,7 @@ def _similarity_ratio(name1: str, name2: str) -> float:
     return max(original_ratio, normalized_ratio)
 
 
+@lru_cache(maxsize=5000)
 def _extract_core_name(name: str) -> str:
     """Extract core name without common prefixes/suffixes."""
     # Remove common military prefixes
@@ -169,21 +177,23 @@ def _has_shared_events(group1: Dict, group2: Dict) -> bool:
     return len(events1 & events2) >= 2
 
 
-def find_related_groups(groups_dir_path: Path, use_llm_verification: bool = True) -> List[Dict[str, Any]]:
+def find_related_groups(
+    groups_dir_path: Path, use_llm_verification: bool = True
+) -> List[Dict[str, Any]]:
     """
     Find related people groups based on various heuristics.
-    
+
     Args:
         groups_dir_path: Path to people_groups directory
         use_llm_verification: If True, use LLM to verify relationships (default: True)
-    
+
     Returns list of related group clusters.
     """
     # Load excluded clusters
     excluded_clusters = _load_excluded_clusters(groups_dir_path)
     if excluded_clusters:
         logger.info("Loaded %d excluded cluster(s)", len(excluded_clusters))
-    
+
     # Initialize Grok client if verification enabled
     grok_client = None
     if use_llm_verification:
@@ -191,9 +201,11 @@ def find_related_groups(groups_dir_path: Path, use_llm_verification: bool = True
             grok_client = GrokClient()
             logger.info("LLM verification enabled")
         except Exception as e:
-            logger.warning(f"Failed to initialize Grok client: {e}. Proceeding without LLM verification.")
+            logger.warning(
+                f"Failed to initialize Grok client: {e}. Proceeding without LLM verification."
+            )
             use_llm_verification = False
-    
+
     # Load all group files
     group_files = list(groups_dir_path.glob("*.json"))
     # Exclude system files and hidden files
@@ -223,7 +235,9 @@ def find_related_groups(groups_dir_path: Path, use_llm_verification: bool = True
 
         # Skip if group doesn't have a name
         if "group_name" not in group1:
-            logger.warning(f"Skipping {group1['_filename']}: missing 'group_name' field")
+            logger.warning(
+                f"Skipping {group1['_filename']}: missing 'group_name' field"
+            )
             continue
 
         name1 = group1["group_name"]
@@ -240,7 +254,9 @@ def find_related_groups(groups_dir_path: Path, use_llm_verification: bool = True
 
             # Skip if group doesn't have a name
             if "group_name" not in group2:
-                logger.warning(f"Skipping {group2['_filename']}: missing 'group_name' field")
+                logger.warning(
+                    f"Skipping {group2['_filename']}: missing 'group_name' field"
+                )
                 continue
 
             name2 = group2["group_name"]
@@ -258,24 +274,27 @@ def find_related_groups(groups_dir_path: Path, use_llm_verification: bool = True
                 similarity = _similarity_ratio(name1, name2)
                 if similarity < 0.90:
                     continue  # Skip this pair
-                reasons.append(f"⚠️ Different countries ({country1} vs {country2}) but very high name similarity")
+                reasons.append(
+                    f"⚠️ Different countries ({country1} vs {country2}) but very high name similarity"
+                )
 
             # Check 0.5: Different unit numbers/letters - skip
             # Examples: "1st Division" vs "2d Division", "Army Group B" vs "Army Group G"
             import re
+
             # Extract numbers and letters that differentiate units
             # Match: 1st, 2nd, 3rd, 4th OR 1d, 2d, 3d (common military abbreviations)
             # Also match Roman numerals: I, II, III, IV, V, VI, VII, VIII, IX, X, etc.
-            num1 = re.findall(r'\b(\d+)(?:st|nd|rd|th|d)?\b', name1.lower())
-            num2 = re.findall(r'\b(\d+)(?:st|nd|rd|th|d)?\b', name2.lower())
-            
+            num1 = re.findall(r"\b(\d+)(?:st|nd|rd|th|d)?\b", name1.lower())
+            num2 = re.findall(r"\b(\d+)(?:st|nd|rd|th|d)?\b", name2.lower())
+
             # Extract Roman numerals (I-LXXXVIII covers most WWII units)
-            roman1 = re.findall(r'\b([IVXLC]+)\s+(?:Corps|Army|Division|Panzer)', name1)
-            roman2 = re.findall(r'\b([IVXLC]+)\s+(?:Corps|Army|Division|Panzer)', name2)
-            
-            letter1 = re.findall(r'\b(?:group|army|corps)\s+([a-z])\b', name1.lower())
-            letter2 = re.findall(r'\b(?:group|army|corps)\s+([a-z])\b', name2.lower())
-            
+            roman1 = re.findall(r"\b([IVXLC]+)\s+(?:Corps|Army|Division|Panzer)", name1)
+            roman2 = re.findall(r"\b([IVXLC]+)\s+(?:Corps|Army|Division|Panzer)", name2)
+
+            letter1 = re.findall(r"\b(?:group|army|corps)\s+([a-z])\b", name1.lower())
+            letter2 = re.findall(r"\b(?:group|army|corps)\s+([a-z])\b", name2.lower())
+
             # If they have different unit numbers or letters, they're different units
             if num1 and num2 and num1 != num2:
                 # Different unit numbers (e.g., "1st" vs "2d" vs "3d")
@@ -344,7 +363,7 @@ def find_related_groups(groups_dir_path: Path, use_llm_verification: bool = True
                     relationship = llm_result.get("relationship", "UNKNOWN")
                     llm_confidence = llm_result.get("confidence", 0.0)
                     llm_reasoning = llm_result.get("reasoning", "")
-                    
+
                     # Only add to cluster if LLM confirms TRUE_DUPLICATE
                     if relationship != "TRUE_DUPLICATE":
                         logger.info(
@@ -352,11 +371,13 @@ def find_related_groups(groups_dir_path: Path, use_llm_verification: bool = True
                             f"(relationship={relationship}, reasoning={llm_reasoning})"
                         )
                         continue
-                    
+
                     # Add LLM reasoning to cluster
-                    reasons.append(f"LLM verified: {llm_reasoning} (confidence={llm_confidence:.2f})")
+                    reasons.append(
+                        f"LLM verified: {llm_reasoning} (confidence={llm_confidence:.2f})"
+                    )
                     confidence = max(confidence, llm_confidence)
-                
+
                 # Add to cluster
                 if not cluster:
                     cluster.append(
@@ -388,11 +409,11 @@ def find_related_groups(groups_dir_path: Path, use_llm_verification: bool = True
             if _is_cluster_excluded(cluster_group_ids, excluded_clusters):
                 logger.info(
                     "Skipping excluded cluster: %s",
-                    ", ".join(g["name"] for g in cluster)
+                    ", ".join(g["name"] for g in cluster),
                 )
                 # Don't add to processed - allow individual groups to match with others
                 continue
-            
+
             cluster_reasons = list(set(cluster_reasons))
             related.append(
                 {

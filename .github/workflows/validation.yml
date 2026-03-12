@@ -1,0 +1,118 @@
+name: Data Validation
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install jsonschema pytest
+      
+      - name: Validate People Data
+        if: hashFiles('output/people/*.json') != ''
+        run: |
+          python scripts/validation_report.py validate output/people \
+            --schema people \
+            --format html \
+            --output reports/people_validation.html \
+            --save-history
+        continue-on-error: true
+      
+      - name: Validate Equipment Data
+        if: hashFiles('output/equipment/*.json') != ''
+        run: |
+          python scripts/validation_report.py validate output/equipment \
+            --schema equipment \
+            --format html \
+            --output reports/equipment_validation.html \
+            --save-history
+        continue-on-error: true
+      
+      - name: Validate Events Data
+        if: hashFiles('output/events/*.json') != ''
+        run: |
+          python scripts/validation_report.py validate output/events \
+            --schema event \
+            --format html \
+            --output reports/events_validation.html \
+            --save-history
+        continue-on-error: true
+      
+      - name: Generate Trends Report
+        if: hashFiles('validation_history.json') != ''
+        run: |
+          python scripts/validation_report.py trends \
+            --output reports/trends.html
+        continue-on-error: true
+      
+      - name: Generate Validation Dashboard
+        run: |
+          mkdir -p reports
+          python scripts/generate_dashboard.py
+          mv validation_dashboard.html reports/
+        continue-on-error: true
+      
+      - name: Upload Validation Reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: validation-reports
+          path: reports/*.html
+          retention-days: 30
+      
+      - name: Upload Validation History
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: validation-history
+          path: validation_history.json
+          retention-days: 90
+      
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let comment = '## 📊 Validation Report\n\n';
+            
+            try {
+              const history = JSON.parse(fs.readFileSync('validation_history.json', 'utf8'));
+              const latest = history[history.length - 1];
+              
+              comment += `**Schema:** ${latest.schema}\n`;
+              comment += `**Total Files:** ${latest.total}\n`;
+              comment += `**Valid:** ✅ ${latest.valid}\n`;
+              comment += `**Invalid:** ❌ ${latest.invalid}\n`;
+              comment += `**Success Rate:** ${(latest.valid / latest.total * 100).toFixed(1)}%\n\n`;
+              comment += `[View detailed reports in artifacts](${context.payload.pull_request.html_url}/checks)`;
+            } catch (e) {
+              comment += 'No validation data available.';
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

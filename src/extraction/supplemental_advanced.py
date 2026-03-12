@@ -18,6 +18,10 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+# Compiled regex patterns for performance
+_ISBN_PATTERN = re.compile(r"^\d{10}$|^\d{13}$")
+_DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
 
 def extract_isbn(citation: Dict[str, Any], grok_client: Any) -> Optional[str]:
     """Extract ISBN for books using LLM."""
@@ -66,7 +70,7 @@ Do not include hyphens or spaces."""
         # Validate ISBN format
         if isbn == "NOT_FOUND":
             return None
-        if re.match(r"^\d{10}$|^\d{13}$", isbn):
+        if _ISBN_PATTERN.match(isbn):
             logger.debug("Found ISBN: %s", isbn)
             return isbn
 
@@ -98,7 +102,7 @@ If only year is known, use YYYY-01-01."""
             return "UNKNOWN"
 
         # Validate date format
-        if re.match(r"^\d{4}-\d{2}-\d{2}$", death_date):
+        if _DATE_PATTERN.match(death_date):
             logger.debug("Found death date for %s: %s", author, death_date)
             return death_date
 
