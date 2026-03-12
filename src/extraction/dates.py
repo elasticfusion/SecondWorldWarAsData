@@ -2,6 +2,7 @@
 
 import json
 import logging
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
@@ -175,6 +176,7 @@ If no dates found, return empty Date_Mentions array."""
     return prompt
 
 
+@lru_cache(maxsize=5000)
 def _normalize_date_key(date_start: str, time_start: Optional[str] = None) -> str:
     """Create normalized key for date lookup (sortable format)."""
     # Convert approximate dates to sortable format

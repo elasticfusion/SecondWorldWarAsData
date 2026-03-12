@@ -4,9 +4,8 @@ Phase 2: Event and Entity Extraction with Grok API
 """
 
 import argparse
-import logging
-from pathlib import Path
 import sys
+from pathlib import Path
 
 from src.utils.config import load_config, get_paths
 from src.utils.logger import setup_logging
@@ -20,12 +19,15 @@ from src.extraction.external_maps import import_maps
 
 # Import from scripts directory
 sys.path.insert(0, str(Path(__file__).parent / "scripts"))
+# pylint: disable=wrong-import-order,wrong-import-position
 from find_duplicate_people import generate_duplicate_report
 from find_related_groups import generate_related_groups_report
 
 
 def main():
     """Main entry point for Phase 2."""
+    # TODO: Refactor - Complexity F (57), 294 statements (see PHASE2_REFACTORING.md)
+    # Extract: configuration, stage functions, analysis functions, orchestrator pattern
     parser = argparse.ArgumentParser(
         description="Extract events from parsed WWII documents"
     )
@@ -143,10 +145,36 @@ def main():
 
     logger.info(f"Found {len(parsed_files)} parsed file(s)")
 
-    # Check concurrency config
-    concurrency_enabled = config.get("concurrency", {}).get("enabled", False)
-    max_workers = config.get("concurrency", {}).get("max_event_files", 3)
+    # Parallel chapter processing (batch+parallel mode)
+    logger.info("\n" + "=" * 60)
+    logger.info("Processing all chapters in parallel...")
+    logger.info("=" * 60)
 
+    from src.extraction.batch_parallel import process_chapters_parallel
+    import asyncio
+
+    max_parallel = config.get("concurrency", {}).get("max_parallel_chapters", 3)
+
+    results = asyncio.run(
+        process_chapters_parallel(
+            parsed_files=parsed_files,
+            grok_client=grok_client,
+            output_root=paths["output_root"],
+            config=config,
+            max_parallel=max_parallel,
+        )
+    )
+
+    processed = results["processed"]
+    failed = results["failed"]
+
+    logger.info(f"\n{'='*60}")
+    logger.info(f"Parallel processing complete!")
+    logger.info(f"Processed: {processed}, Failed: {failed}")
+    logger.info(f"{'='*60}")
+
+    # Legacy concurrent path - disabled
+    concurrency_enabled = False
     if concurrency_enabled:
         logger.info(f"Concurrent processing enabled (max {max_workers} files)")
         from src.extraction.concurrent import process_files_concurrent
@@ -162,8 +190,6 @@ def main():
             # Extract events if needed
             if not event_file.exists():
                 logger.info(f"Extracting events: {parsed_file.name}")
-                from src.extraction.events import extract_events
-
                 output_file = extract_events(
                     parsed_file=parsed_file,
                     grok_client=grok_client,
@@ -195,10 +221,6 @@ def main():
             # Check if already processed
             stem = parsed_file.stem.replace("-parsed", "")
             event_file = parsed_file.parent / f"{stem}-event.json"
-            dates_file = parsed_file.parent / f"{stem}-dates.json"
-
-            # Skip only if event and dates exist (places are in central repo)
-            all_done = event_file.exists() and dates_file.exists()
 
             try:
                 # Extract events
@@ -213,69 +235,55 @@ def main():
                         processed += 1
                 else:
                     output_file = event_file
-                    if not all_done:
-                        logger.info(f"  Using existing: {output_file.name}")
+                    logger.info(f"  Using existing: {output_file.name}")
 
                 if output_file:
-                    # Extract dates from the event file (always run - central repo)
-                    logger.info(f"  Extracting dates to central repository...")
+                    # Use batch+parallel extraction
+                    logger.info(f"  Extracting entities (batch+parallel)...")
                     try:
-                        central_dates_dir = paths["output_root"] / "dates"
-                        dates_output = extract_dates(
-                            event_file=output_file,
-                            grok_client=grok_client,
-                            dates_dir=central_dates_dir,
-                            parsed_file=parsed_file,
-                        )
-                        if dates_output:
-                            logger.info(f"  Updated central dates repository")
-                    except Exception as e:
-                        logger.error(f"  Error extracting dates: {e}")
+                        from src.extraction.batch_parallel import extract_all_async
+                        import asyncio
 
-                    # Extract places from the event file (always run - central repo)
-                    logger.info(f"  Extracting places to central repository...")
-                    try:
-                        # Use central places directory
-                        central_places_dir = paths["output_root"] / "places"
-                        places_output = extract_places(
-                            event_file=output_file,
-                            grok_client=grok_client,
-                            places_dir=central_places_dir,
-                            parsed_file=parsed_file,
+                        results = asyncio.run(
+                            extract_all_async(
+                                event_file=output_file,
+                                parsed_file=parsed_file,
+                                grok_client=grok_client,
+                                output_root=paths["output_root"],
+                                config=config,
+                            )
                         )
-                        if places_output:
-                            logger.info(f"  Updated central places repository")
-                    except Exception as e:
-                        logger.error(f"  Error extracting places: {e}")
 
-                    # Extract people (always run - handles merging internally)
-                    logger.info(f"  Extracting people...")
-                    try:
-                        people_dir = extract_people(
-                            event_file=output_file,
-                            grok_client=grok_client,
-                            output_dir=output_root,
+                        if results["dates"]:
+                            logger.info(f"  ✓ Dates: {results['dates']} updated")
+                        if results["places"]:
+                            logger.info(f"  ✓ Places: {results['places']} updated")
+                        if results["groups"]:
+                            logger.info(f"  ✓ Groups updated")
+
+                        processed += 1
+
+                    except Exception as e:
+                        logger.error(f"  Batch extraction failed: {e}")
+                        # Fallback to sequential
+                        logger.info(f"  Falling back to sequential extraction...")
+
+                        extract_dates(
+                            output_file,
+                            grok_client,
+                            paths["output_root"] / "dates",
+                            parsed_file,
                         )
-                        if people_dir:
-                            logger.info(f"  Updated people directory")
-                    except Exception as e:
-                        import traceback
-
-                        logger.error(f"  Error extracting people: {e}")
-                        logger.error(traceback.format_exc())
-
-                    # Extract people groups (skip if already processed)
-                    logger.info(f"  Extracting people groups...")
-                    try:
-                        groups_dir = extract_people_groups(
-                            event_file=output_file,
-                            grok_client=grok_client,
-                            output_dir=output_root,
+                        extract_places(
+                            output_file,
+                            grok_client,
+                            paths["output_root"] / "places",
+                            parsed_file,
                         )
-                        if groups_dir:
-                            logger.info(f"  Updated people groups directory")
-                    except Exception as e:
-                        logger.error(f"  Error extracting people groups: {e}")
+                        extract_people(output_file, grok_client, paths["output_root"])
+                        extract_people_groups(
+                            output_file, grok_client, paths["output_root"]
+                        )
 
                     # Extract weather (if enabled)
                     if config.get("weather", {}).get("enabled", False):
@@ -354,9 +362,6 @@ def main():
                                 logger.info(f"  Updated logistics repository")
                         except Exception as e:
                             logger.error(f"  Error extracting logistics: {e}")
-
-                    if all_done:
-                        processed += 1
 
             except Exception as e:
                 logger.error(f"  Error processing {parsed_file.name}: {e}")
@@ -554,9 +559,9 @@ def main():
         logger.warning("No people directory found")
 
     # Generate related groups report
-    logger.info("\n" + "=" * 60)
+    logger.info("\n%s", "=" * 60)
     logger.info("Analyzing people groups for relationships...")
-    logger.info("=" * 60)
+    logger.info("%s", "=" * 60)
 
     groups_dir = output_root / "people_groups"
 
@@ -566,13 +571,13 @@ def main():
             generate_related_groups_report(groups_dir, related_report)
             logger.info(f"  ✓ Saved: {related_report.name}")
         except Exception as e:
-            logger.error(f"  ✗ Related groups analysis failed: {e}")
+            logger.error("  ✗ Related groups analysis failed: %s", e)
     else:
         logger.warning("No people groups directory found")
 
-    logger.info("\n" + "=" * 60)
+    logger.info("\n%s", "=" * 60)
     logger.info("All processing complete!")
-    logger.info("=" * 60)
+    logger.info("%s", "=" * 60)
 
 
 if __name__ == "__main__":

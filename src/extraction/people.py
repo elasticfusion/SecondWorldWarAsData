@@ -3,6 +3,7 @@
 import json
 import logging
 import re
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
@@ -12,6 +13,10 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from src.grok_client import GrokClient
 
 logger = logging.getLogger(__name__)
+
+# Compiled regex patterns for performance
+_SPECIAL_CHARS_PATTERN = re.compile(r"[^\w\s-]")
+_WHITESPACE_PATTERN = re.compile(r"\s+")
 
 
 # Rank abbreviation normalization
@@ -38,11 +43,13 @@ RANK_ABBREVIATIONS = {
 }
 
 
+@lru_cache(maxsize=1000)
 def _normalize_rank(rank: str) -> str:
     """Normalize rank abbreviations to full names."""
     return RANK_ABBREVIATIONS.get(rank, rank)
 
 
+@lru_cache(maxsize=500)
 def _normalize_branch(branch: str) -> str:
     """Normalize branch names."""
     branch_map = {
@@ -58,6 +65,7 @@ def _normalize_branch(branch: str) -> str:
     return branch_map.get(branch, branch)
 
 
+@lru_cache(maxsize=1000)
 def _normalize_unit(unit: str) -> str:
     """Normalize unit names."""
     unit_map = {
@@ -435,6 +443,7 @@ If no people found, return empty People array."""
     return prompt
 
 
+@lru_cache(maxsize=5000)
 def _normalize_name(name: str) -> str:
     """Normalize person name for matching."""
     return name.strip().lower()
@@ -443,9 +452,9 @@ def _normalize_name(name: str) -> str:
 def _name_to_filename(name: str, person_id: str) -> str:
     """Convert person name to safe filename."""
     # Remove special characters, keep alphanumeric and spaces
-    safe_name = re.sub(r"[^\w\s-]", "", name)
+    safe_name = _SPECIAL_CHARS_PATTERN.sub("", name)
     # Replace spaces with underscores
-    safe_name = re.sub(r"\s+", "_", safe_name)
+    safe_name = _WHITESPACE_PATTERN.sub("_", safe_name)
     # Limit length and add ULID suffix for uniqueness
     safe_name = safe_name[:50]
     return f"{safe_name}_{person_id[:12]}.json"

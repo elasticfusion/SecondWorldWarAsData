@@ -17,6 +17,8 @@ from tenacity import (
     wait_exponential,
 )
 
+from src.utils.http_pool import get_session
+
 load_dotenv()
 logger = logging.getLogger(__name__)
 
@@ -113,9 +115,11 @@ class GrokClient:
                 preview += "..."
             logger.debug(f"    {preview}")
 
-        with requests.Session() as session:
-            session.timeout = self.timeout
-            response = session.post(self.base_url, headers=headers, json=payload)
+        with get_session() as session:
+            # Note: timeout set in get_session(), not on session object
+            response = session.post(
+                self.base_url, headers=headers, json=payload, timeout=self.timeout
+            )
 
             logger.debug(f"API Response: {response.status_code}")
 
@@ -155,11 +159,18 @@ class GrokClient:
                     f"Response: {len(content)} chars, finish_reason: {finish_reason}"
                 )
 
-                # Warn if truncated
+                # Warn if truncated or suspiciously short
                 if finish_reason == "length":
                     logger.error(f"API response truncated due to max_tokens limit!")
                 elif finish_reason != "stop":
                     logger.warning(f"Unexpected finish_reason: {finish_reason}")
+
+                # Warn if response is suspiciously short
+                if len(content) < 200:
+                    logger.warning(
+                        f"API returned very short response: {len(content)} chars"
+                    )
+                    logger.warning(f"Content: {content}")
 
                 preview = content[: self.debug_resp_chars]
                 if len(content) > self.debug_resp_chars:
@@ -323,6 +334,12 @@ class GrokClient:
             content = content[:-3]
         content = content.strip()
 
+        # Sanitize control characters
+        import re
+
+        content = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", content)
+        content = re.sub(r'\\(?!["\\/bfnrtu])', r"\\\\", content)
+
         try:
             result = json.loads(content)
         except json.JSONDecodeError as e:
@@ -377,7 +394,8 @@ class GrokClient:
             headers = {
                 "User-Agent": "Mozilla/5.0 (compatible; WWII-Data-Extractor/1.0)"
             }
-            img_response = requests.get(
+            session = get_session()
+            img_response = session.get(
                 image_url, timeout=image_timeout, headers=headers, allow_redirects=True
             )
             img_response.raise_for_status()
@@ -428,6 +446,12 @@ class GrokClient:
             content = content[:-3]
         content = content.strip()
 
+        # Sanitize control characters
+        import re
+
+        content = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", content)
+        content = re.sub(r'\\(?!["\\/bfnrtu])', r"\\\\", content)
+
         try:
             result = json.loads(content)
         except json.JSONDecodeError as e:
@@ -477,15 +501,43 @@ class GrokClient:
 
         response = response.strip()
 
+        # Pre-process: sanitize BEFORE first parse attempt
+        import re
+
+        # Remove control characters (0x00-0x1f except whitespace)
+        response = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", response)
+        # Fix invalid escape sequences (valid JSON escapes: " \ / b f n r t u)
+        response = re.sub(r'\\(?!["\\/bfnrtu])', r"\\\\", response)
+
         try:
             return json.loads(response)
         except json.JSONDecodeError as e:
-            # Check if response appears truncated (unterminated string/array/object)
             error_msg = str(e)
+
+            # Check if response is suspiciously short (likely API error, not truncation)
+            if len(response) < 500:
+                logger.error(
+                    "API returned short/invalid response (%d chars)", len(response)
+                )
+                logger.debug("Response: %s", response)
+                raise GrokAPIError(
+                    f"API returned invalid response: {error_msg}. "
+                    f"Response: {response[:200]}"
+                ) from e
+
+            # Check if response appears truncated (unterminated string/array/object)
             if "Unterminated string" in error_msg or "Expecting" in error_msg:
-                logger.warning(f"Response appears truncated at {len(response)} chars")
-                logger.warning(f"JSON error: {error_msg}")
-                logger.debug(f"Last 200 chars: ...{response[-200:]}")
+                logger.error(
+                    "Response truncated at %d chars - API hit token limit",
+                    len(response),
+                )
+                logger.error("JSON error: %s", error_msg)
+                logger.debug("Last 200 chars: ...%s", response[-200:])
+                raise GrokAPIError(
+                    f"API response truncated (likely hit max_tokens limit). "
+                    f"Response length: {len(response)} chars. "
+                    f"Consider splitting this chapter into smaller sections."
+                ) from e
 
             # Try to fix common issues
             repaired = response
@@ -494,18 +546,29 @@ class GrokClient:
             if "Invalid" in error_msg and "escape" in error_msg:
                 logger.debug("Attempting to fix invalid escape sequences...")
                 # Find and fix common invalid escapes in strings
-                import re
-
                 # More aggressive fix: replace ANY backslash not followed by valid escape
                 # Valid JSON escapes: " \ / b f n r t u
                 repaired = re.sub(r'\\(?!["\\/bfnrtu])', r"\\\\", repaired)
+
+                # Also fix single backslashes at end of strings
+                repaired = re.sub(r'\\(?=["}\]])', r"\\\\", repaired)
 
                 try:
                     result = json.loads(repaired)
                     logger.info("✓ JSON repaired successfully (invalid escapes fixed)")
                     return result
                 except json.JSONDecodeError as e2:
-                    logger.debug(f"Escape fix didn't work: {e2}")
+                    logger.debug("Escape fix didn't work: %s", e2)
+
+                    # Try more aggressive: remove all problematic backslashes
+                    try:
+                        # Replace backslash followed by anything except valid escapes
+                        ultra_clean = re.sub(r'\\([^"\\/bfnrtu])', r"\1", response)
+                        result = json.loads(ultra_clean)
+                        logger.info("✓ JSON repaired (removed invalid backslashes)")
+                        return result
+                    except json.JSONDecodeError as e3:
+                        logger.debug("Ultra clean didn't work: %s", e3)
 
             # Fix 2: Try removing escaped brackets (sometimes Grok over-escapes)
             try:
@@ -517,7 +580,7 @@ class GrokClient:
                     f"Response length: {len(response)} chars\n"
                     f"First 500 chars: {response[:500]}\n"
                     f"Last 500 chars: {response[-500:]}"
-                )
+                ) from e
 
     def extract_structured(
         self,
@@ -550,11 +613,11 @@ class GrokClient:
         cache_key = self._make_cache_key(f"{prompt}:{schema.__name__}", 0.1)
 
         if use_cache and cache_key in cache:
-            logger.info(f"Cache hit for {schema.__name__}")
+            logger.info("Cache hit for %s", schema.__name__)
             cached_data = cache[cache_key]
             return schema.model_validate(cached_data)
 
-        logger.info(f"Calling Grok API for {schema.__name__}")
+        logger.info("Calling Grok API for %s", schema.__name__)
 
         # Use regular JSON extraction with higher token limit
         json_response = self.extract_json(

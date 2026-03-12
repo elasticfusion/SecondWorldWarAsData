@@ -26,14 +26,14 @@ def write_json_with_lock(filepath: Path, data: Dict[str, Any]) -> None:
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
     elif system == "Windows":
-        import msvcrt
+        import msvcrt  # type: ignore[import]
 
         with open(filepath, "w", encoding="utf-8") as f:
-            msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
+            msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)  # type: ignore[attr-defined]
             try:
                 json.dump(data, f, indent=2)
             finally:
-                msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+                msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)  # type: ignore[attr-defined]
     else:
         # Fallback: no locking
         logger.warning("File locking not supported on %s, writing without lock", system)
@@ -58,14 +58,14 @@ def read_json_with_lock(filepath: Path) -> Dict[str, Any]:
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
     elif system == "Windows":
-        import msvcrt
+        import msvcrt  # type: ignore[import]
 
         with open(filepath, encoding="utf-8") as f:
-            msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
+            msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)  # type: ignore[attr-defined]
             try:
                 return json.load(f)
             finally:
-                msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+                msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)  # type: ignore[attr-defined]
     else:
         # Fallback: no locking
         with open(filepath, encoding="utf-8") as f:

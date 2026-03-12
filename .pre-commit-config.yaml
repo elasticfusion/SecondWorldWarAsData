@@ -1,0 +1,36 @@
+# Pre-commit hooks for code quality
+# Install: pip install pre-commit
+# Setup: pre-commit install
+
+repos:
+  - repo: local
+    hooks:
+      # Regenerate type stubs if schemas changed
+      - id: generate-types
+        name: Generate type stubs from schemas
+        entry: bash -c 'cd /Users/dchristian/projects/SecondWorldWarAsData && source .venv/bin/activate && python scripts/generate_type_stubs.py && git add src/types.py'
+        language: system
+        files: ^src/json_schemas\.py$
+        pass_filenames: false
+
+      # Run unit tests
+      - id: pytest
+        name: Run unit tests
+        entry: bash -c 'cd /Users/dchristian/projects/SecondWorldWarAsData && source .venv/bin/activate && python -m pytest tests/test_json_validator.py tests/test_schemas.py -q'
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      # Python code formatting
+      - id: black
+        name: Black code formatter
+        entry: bash -c 'cd /Users/dchristian/projects/SecondWorldWarAsData && source .venv/bin/activate && python -m black "$@"' --
+        language: system
+        types: [python]
+
+      # Python linting (only on changed files)
+      - id: pylint
+        name: Pylint
+        entry: bash -c 'cd /Users/dchristian/projects/SecondWorldWarAsData && source .venv/bin/activate && python -m pylint --disable=C0301,C0103,R0913,R0914,R0915,W0511,R0917,W0718,W0212,W1203,C0415 "$@"' --
+        language: system
+        types: [python]

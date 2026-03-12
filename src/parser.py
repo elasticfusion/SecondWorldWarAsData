@@ -16,6 +16,14 @@ from src.models import (
     Paragraph,
 )
 
+# Compiled regex patterns for performance
+_BLOCKQUOTE_PATTERN = re.compile(r"^>\s*")
+_PAGE_MARKER_PATTERN = re.compile(r'<a id="page\d+"></a>')
+_FOOTNOTE_PATTERN = re.compile(r"\*\\--\d+--\*")
+_SEPARATOR_PATTERN = re.compile(r"\n\* \* \*\n")
+_HEADING_PATTERN = re.compile(r"^#{1,6}\s+\*.*\*$")
+_CHAPTER_NUM_PATTERN = re.compile(r"chapter(\d+)")
+
 
 def parse_metadata(meta_file: Path) -> Metadata:
     """Parse metadata from -meta.yaml file (or fallback to .md)."""
@@ -172,15 +180,15 @@ def split_into_paragraphs(text: str) -> List[str]:
 
     for line in lines:
         # Remove blockquote marker
-        line = re.sub(r"^>\s*", "", line)
+        line = _BLOCKQUOTE_PATTERN.sub("", line)
         cleaned_lines.append(line)
 
     text = "\n".join(cleaned_lines)
 
     # Remove page markers but keep surrounding content
-    text = re.sub(r'<a id="page\d+"></a>', "", text)
-    text = re.sub(r"\*\\--\d+--\*", "", text)
-    text = re.sub(r"\n\* \* \*\n", "\n\n", text)
+    text = _PAGE_MARKER_PATTERN.sub("", text)
+    text = _FOOTNOTE_PATTERN.sub("", text)
+    text = _SEPARATOR_PATTERN.sub("\n\n", text)
 
     # Split by double newlines
     blocks = text.split("\n\n")
@@ -192,7 +200,7 @@ def split_into_paragraphs(text: str) -> List[str]:
             continue
 
         # Skip standalone headings
-        if re.match(r"^#{1,6}\s+\*.*\*$", block):
+        if _HEADING_PATTERN.match(block):
             continue
 
         # Keep everything else including images with captions
@@ -208,7 +216,7 @@ def parse_content_file(
     content = file_path.read_text(encoding="utf-8")
 
     # Extract chapter number from filename
-    match = re.search(r"chapter(\d+)", file_path.name)
+    match = _CHAPTER_NUM_PATTERN.search(file_path.name)
     chapter_num = int(match.group(1)) if match else 0
 
     # Create document

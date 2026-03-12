@@ -9,6 +9,7 @@ with central index for lookups.
 import json
 import logging
 import re
+from functools import lru_cache
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -19,6 +20,7 @@ from src.grok_client import GrokClient
 logger = logging.getLogger(__name__)
 
 
+@lru_cache(maxsize=5000)
 def _normalize_name(name: str) -> str:
     """Normalize group name for index lookup."""
     return name.lower().strip()
@@ -48,97 +50,85 @@ def _update_index(index_file: Path, name: str, filename: str):
         json.dump(index, f, indent=2, ensure_ascii=False)
 
 
-def _merge_group(existing: Dict, new_group: Dict) -> Dict:
-    """
-    Merge new group data into existing group.
+def _merge_list_by_id(existing: list, new_items: list, id_key: str) -> list:
+    """Merge lists, deduplicating by ID key."""
+    existing_ids = {item.get(id_key) for item in existing if item.get(id_key)}
+    for item in new_items:
+        if item.get(id_key) and item[id_key] not in existing_ids:
+            existing.append(item)
+    return existing
 
-    - Combines event mentions (deduplicates by MentionID)
-    - Updates description if more detailed
-    - Merges member lists
-    - Merges members (deduplicates by PersonID)
-    """
+
+def _merge_string_sets(existing: list, new_items: list) -> list:
+    """Merge string lists as sorted sets."""
+    return sorted(set(existing) | set(new_items))
+
+
+def _merge_group(existing: Dict, new_group: Dict) -> Dict:
+    """Merge new group data into existing group."""
     merged = existing.copy()
 
     # Merge event mentions
-    existing_mentions = merged.get("event_mentions", [])
-    new_mentions = new_group.get("event_mentions", [])
+    merged["event_mentions"] = _merge_list_by_id(
+        merged.get("event_mentions", []),
+        new_group.get("event_mentions", []),
+        "MentionID",
+    )
 
-    mention_ids = {m["MentionID"] for m in existing_mentions}
-    for mention in new_mentions:
-        if mention["MentionID"] not in mention_ids:
-            existing_mentions.append(mention)
-
-    merged["event_mentions"] = existing_mentions
-
-    # Update description if new one is longer/more detailed
+    # Update description if new one is longer
     if len(new_group.get("description", "")) > len(existing.get("description", "")):
         merged["description"] = new_group["description"]
 
-    # Merge member lists (for alliances, sub-organizations)
+    # Merge member countries and sub-organizations
     if "member_countries" in new_group:
-        existing_members = set(merged.get("member_countries", []))
-        new_members = set(new_group.get("member_countries", []))
-        merged["member_countries"] = sorted(existing_members | new_members)
+        merged["member_countries"] = _merge_string_sets(
+            merged.get("member_countries", []), new_group["member_countries"]
+        )
 
     if "sub_organizations" in new_group:
-        existing_subs = set(merged.get("sub_organizations", []))
-        new_subs = set(new_group.get("sub_organizations", []))
-        merged["sub_organizations"] = sorted(existing_subs | new_subs)
+        merged["sub_organizations"] = _merge_string_sets(
+            merged.get("sub_organizations", []), new_group["sub_organizations"]
+        )
 
-    # Merge members (people associated with group)
+    # Merge members (people)
     if "members" in new_group:
-        existing_people = merged.get("members", [])
-        new_people = new_group.get("members", [])
-
-        # Deduplicate by PersonID
-        person_ids = {p.get("PersonID") for p in existing_people if p.get("PersonID")}
-        for person in new_people:
-            if person.get("PersonID") and person["PersonID"] not in person_ids:
-                existing_people.append(person)
-
-        merged["members"] = existing_people
+        merged["members"] = _merge_list_by_id(
+            merged.get("members", []), new_group["members"], "PersonID"
+        )
 
     return merged
 
 
-def extract_people_groups(
-    event_file: Path, grok_client: GrokClient, output_dir: Path
-) -> Optional[Path]:
-    """
-    Extract people groups from event file.
-
-    Creates/updates individual group files in output_dir/people_groups/
-    Returns the people_groups directory path.
-    """
-    # Create people_groups directory
-    groups_dir = output_dir / "people_groups"
-    groups_dir.mkdir(parents=True, exist_ok=True)
-
-    # Check if this event file has already been processed
+def _is_already_processed(groups_dir: Path, event_file: Path) -> bool:
+    """Check if event file was already processed."""
     processed_registry = groups_dir / ".processed_events.json"
-    event_file_str = str(event_file.resolve())
+    if not processed_registry.exists():
+        return False
+    with open(processed_registry, "r", encoding="utf-8") as f:
+        processed = json.load(f)
+    return str(event_file.resolve()) in processed
 
+
+def _mark_as_processed(
+    groups_dir: Path, event_file: Path, groups_count: int, extracted_date: str
+):
+    """Mark event file as processed."""
+    processed_registry = groups_dir / ".processed_events.json"
+    processed = {}
     if processed_registry.exists():
         with open(processed_registry, "r", encoding="utf-8") as f:
             processed = json.load(f)
-        if event_file_str in processed:
-            logger.info(
-                f"Event already processed for people groups extraction: {event_file.name}"
-            )
-            return groups_dir
+    processed[str(event_file.resolve())] = {
+        "processed_at": extracted_date,
+        "groups_extracted": groups_count,
+    }
+    with open(processed_registry, "w", encoding="utf-8") as f:
+        json.dump(processed, f, indent=2)
 
-    index_file = groups_dir / "index.json"
 
-    # Load event data
-    with open(event_file, "r", encoding="utf-8") as f:
-        event_data = json.load(f)
-
-    book = event_data.get("book", "Unknown")
-    author = event_data.get("author", "Unknown")
-    series = event_data.get("series", "Unknown")
-
-    # Build prompt
-    prompt = f"""Extract all people groups mentioned in these events.
+def _build_extraction_prompt(event_data: dict) -> str:
+    """Build prompt for people groups extraction."""
+    return f"""Extract all people groups mentioned in these events.
 
 For each group, provide:
 - group_name: Official name
@@ -204,8 +194,79 @@ Return ONLY valid JSON matching this structure:
   ]
 }}"""
 
-    # Call API
+
+def _parse_groups_response(response: str) -> list:
+    """Parse API response and extract groups list."""
+    response_clean = response.strip()
+    if response_clean.startswith("```"):
+        match = re.search(r"```(?:json)?\s*(\{.*\})\s*```", response_clean, re.DOTALL)
+        if match:
+            response_clean = match.group(1)
+    data = json.loads(response_clean)
+    return data.get("People_Groups", [])
+
+
+def _save_group(
+    groups_dir: Path, index_file: Path, group: dict, book: str, author: str, series: str
+):
+    """Save or merge a group file."""
+    group_name = group.get("group_name", "Unknown")
+    group_id = group.get("GroupID", str(new_ulid()))
+
+    # Add book metadata to event mentions
+    for mention in group.get("event_mentions", []):
+        mention["book"] = book
+        mention["author"] = author
+        mention["series"] = series
+
+    # Check if group already exists
+    normalized = _normalize_name(group_name)
+    existing_filename = None
+    if index_file.exists():
+        with open(index_file, "r", encoding="utf-8") as f:
+            index = json.load(f)
+            existing_filename = index.get(normalized)
+
+    if existing_filename and (groups_dir / existing_filename).exists():
+        # Merge with existing
+        with open(groups_dir / existing_filename, "r", encoding="utf-8") as f:
+            existing_group = json.load(f)
+        merged = _merge_group(existing_group, group)
+        with open(groups_dir / existing_filename, "w", encoding="utf-8") as f:
+            json.dump(merged, f, indent=2, ensure_ascii=False)
+        logger.info("    Updated: %s", group_name)
+    else:
+        # Create new file
+        filename = _name_to_filename(group_name, group_id)
+        filepath = groups_dir / filename
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(group, f, indent=2, ensure_ascii=False)
+        _update_index(index_file, group_name, filename)
+        logger.info("    Created: %s", group_name)
+
+
+def extract_people_groups(
+    event_file: Path, grok_client: GrokClient, output_dir: Path
+) -> Optional[Path]:
+    """Extract people groups from event file."""
+    groups_dir = output_dir / "people_groups"
+    groups_dir.mkdir(parents=True, exist_ok=True)
+
+    if _is_already_processed(groups_dir, event_file):
+        logger.info(
+            "Event already processed for people groups extraction: %s", event_file.name
+        )
+        return groups_dir
+
+    with open(event_file, "r", encoding="utf-8") as f:
+        event_data = json.load(f)
+
+    book = event_data.get("book", "Unknown")
+    author = event_data.get("author", "Unknown")
+    series = event_data.get("series", "Unknown")
+
     logger.info("  Extracting people groups from %s...", event_file.name)
+    prompt = _build_extraction_prompt(event_data)
     response = grok_client.chat_completion(
         prompt, temperature=0.3, cache_type="people_groups"
     )
@@ -214,84 +275,22 @@ Return ONLY valid JSON matching this structure:
         logger.error("  Failed to get response from Grok API")
         return None
 
-    # Parse response
     try:
-        # Try to extract JSON if wrapped in markdown code blocks
-        response_clean = response.strip()
-        if response_clean.startswith("```"):
-            # Extract JSON from code block
-            match = re.search(
-                r"```(?:json)?\s*(\{.*\})\s*```", response_clean, re.DOTALL
-            )
-            if match:
-                response_clean = match.group(1)
-
-        data = json.loads(response_clean)
-        groups = data.get("People_Groups", [])
-    except json.JSONDecodeError as e:
+        groups = _parse_groups_response(response)
+    except json.JSONDecodeError:
         logger.warning("  No valid JSON in response (likely no groups in this section)")
-        logger.debug(f"  Response content: {response[:500]}")
-        return groups_dir  # Return successfully with no groups
+        logger.debug("  Response content: %s", response[:500])
+        return groups_dir
 
     if not groups:
         logger.info("  No people groups found")
         return groups_dir
 
-    # Process each group
+    index_file = groups_dir / "index.json"
     for group in groups:
-        group_name = group.get("group_name", "Unknown")
-        group_id = group.get("GroupID", str(new_ulid()))
+        _save_group(groups_dir, index_file, group, book, author, series)
 
-        # Add book metadata to event mentions
-        for mention in group.get("event_mentions", []):
-            mention["book"] = book
-            mention["author"] = author
-            mention["series"] = series
-
-        # Check if group already exists in index
-        normalized = _normalize_name(group_name)
-        existing_filename = None
-
-        if index_file.exists():
-            with open(index_file, "r", encoding="utf-8") as f:
-                index = json.load(f)
-                existing_filename = index.get(normalized)
-
-        if existing_filename and (groups_dir / existing_filename).exists():
-            # Merge with existing
-            with open(groups_dir / existing_filename, "r", encoding="utf-8") as f:
-                existing_group = json.load(f)
-
-            merged = _merge_group(existing_group, group)
-
-            with open(groups_dir / existing_filename, "w", encoding="utf-8") as f:
-                json.dump(merged, f, indent=2, ensure_ascii=False)
-
-            logger.info("    Updated: %s", group_name)
-        else:
-            # Create new file
-            filename = _name_to_filename(group_name, group_id)
-            filepath = groups_dir / filename
-
-            with open(filepath, "w", encoding="utf-8") as f:
-                json.dump(group, f, indent=2, ensure_ascii=False)
-
-            _update_index(index_file, group_name, filename)
-            logger.info("    Created: %s", group_name)
-
-    # Mark this event file as processed
-    if processed_registry.exists():
-        with open(processed_registry, "r", encoding="utf-8") as f:
-            processed = json.load(f)
-    else:
-        processed = {}
-
-    processed[event_file_str] = {
-        "processed_at": event_data.get("extracted_date", ""),
-        "groups_extracted": len(groups),
-    }
-
-    with open(processed_registry, "w", encoding="utf-8") as f:
-        json.dump(processed, f, indent=2)
-
+    _mark_as_processed(
+        groups_dir, event_file, len(groups), event_data.get("extracted_date", "")
+    )
     return groups_dir

@@ -11,6 +11,7 @@ import ulid
 from pydantic import BaseModel, Field, field_validator
 
 from src.grok_client import GrokClient
+from src.utils.http_pool import get_session
 
 logger = logging.getLogger(__name__)
 
@@ -153,6 +154,7 @@ class EquipmentExtraction(BaseModel):
     @classmethod
     def validate_specifications(cls, v):  # pylint: disable=unused-argument
         """Convert string specifications to None."""
+        _ = cls  # Used by decorator
         if isinstance(v, str):
             return None
         return v
@@ -161,6 +163,7 @@ class EquipmentExtraction(BaseModel):
     @classmethod
     def validate_variants(cls, v):  # pylint: disable=unused-argument
         """Convert string variants to empty list."""
+        _ = cls  # Used by decorator
         if isinstance(v, str):
             return []
         if isinstance(v, list):
@@ -181,7 +184,7 @@ def _load_json_files(
         if json_file.name in skip_files:
             continue
         try:
-            with open(json_file) as f:
+            with open(json_file, encoding="utf-8") as f:
                 data = json.load(f)
                 results.append((json_file, data))
         except (json.JSONDecodeError, KeyError) as e:
@@ -396,6 +399,8 @@ def _enrich_and_add_media(
     sub_event_id: Optional[str] = None,
     dates_index: Optional[Dict[str, Dict[str, str]]] = None,
 ) -> None:
+    # TODO: Refactor - Complexity 13 (see EQUIPMENT_REFACTORING.md)
+    # Extract: _verify_media_quality(), _add_media_to_equipment()
     """Enrich equipment data and add media files.
 
     Args:
@@ -555,6 +560,8 @@ def _download_media_file(
     grok_client: GrokClient,
     verify_with_vision: bool = True,
 ) -> Optional[str]:
+    # TODO: Refactor - Complexity 20 (see EQUIPMENT_REFACTORING.md)
+    # Extract: _handle_download_retry(), _validate_response(), _handle_download_error()
     """Download media file to local storage with vision verification.
 
     Args:
@@ -584,7 +591,8 @@ def _download_media_file(
         headers = {
             "User-Agent": "Mozilla/5.0 (compatible; WWII-Research-Bot/1.0; +https://github.com/yourusername/project)"
         }
-        response = requests.get(url, timeout=30, headers=headers, allow_redirects=True)
+        session = get_session()
+        response = session.get(url, timeout=30, headers=headers, allow_redirects=True)
         response.raise_for_status()
 
         # Determine file extension from content-type or URL
@@ -722,7 +730,8 @@ def _extract_image_urls_from_page(
             "Upgrade-Insecure-Requests": "1",
         }
 
-        response = requests.get(
+        session = get_session()
+        response = session.get(
             page_url, timeout=30, headers=headers, allow_redirects=True
         )
         response.raise_for_status()
@@ -774,6 +783,8 @@ def _extract_media_with_openserp(
     common_name: str,
     technical_identifier: Optional[str],
     category: str,
+    # TODO: Refactor - Complexity 12 (see EQUIPMENT_REFACTORING.md)
+    # Extract: _filter_image_urls(), _process_serp_results()
     grok_client: GrokClient,
     year: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
@@ -1014,7 +1025,7 @@ def _fuzzy_match_equipment(
     # Also check alternate names in files
     for existing_name, eq_file in equipment_index.items():
         try:
-            with open(eq_file) as f:
+            with open(eq_file, encoding="utf-8") as f:
                 eq_data = json.load(f)
                 for alt_name in eq_data.get("alternate_names", []):
                     ratio = SequenceMatcher(None, name_lower, alt_name.lower()).ratio()
@@ -1039,6 +1050,8 @@ def merge_or_create_equipment(
     grok_client: Optional[GrokClient] = None,
     enable_enrichment: bool = False,
     verify_media_with_vision: bool = True,
+    # TODO: Refactor - Complexity 16 (see EQUIPMENT_REFACTORING.md)
+    # Extract: _find_matching_equipment(), _merge_equipment_data(), _persist_equipment()
     dates_index: Optional[Dict[str, Dict[str, str]]] = None,
 ) -> Path:
     """Merge mention into existing equipment or create new file.
@@ -1071,7 +1084,7 @@ def merge_or_create_equipment(
         logger.debug("Merging mention into existing equipment: %s", matched_name)
 
         # Load existing
-        with open(eq_file) as f:
+        with open(eq_file, encoding="utf-8") as f:
             existing = json.load(f)
 
         # Check if mention already exists (by MentionID)
@@ -1395,7 +1408,7 @@ def _process_equipment_item(
 def _load_event_data(event_file: Path) -> Optional[Dict[str, Any]]:
     """Load and validate event data from file."""
     try:
-        with open(event_file) as f:
+        with open(event_file, encoding="utf-8") as f:
             event_data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError) as e:
         logger.error("Failed to load event file {event_file}: %s", e)
@@ -1450,7 +1463,7 @@ def _load_processed_registry(output_dir: Path) -> Dict[str, bool]:
     """Load processed events registry."""
     processed_registry = output_dir / ".processed_events.json"
     if processed_registry.exists():
-        with open(processed_registry) as f:
+        with open(processed_registry, encoding="utf-8") as f:
             return json.load(f)
     return {}
 
@@ -1541,7 +1554,7 @@ def _link_date_to_mention(
     # Add human-readable date
     date_file = output_root / "dates" / f"{dates_index[date_key]['DateID']}.json"
     if date_file.exists():
-        with open(date_file) as f:
+        with open(date_file, encoding="utf-8") as f:
             date_data = json.load(f)
             if date_data.get("date"):
                 mention["date"] = date_data["date"]

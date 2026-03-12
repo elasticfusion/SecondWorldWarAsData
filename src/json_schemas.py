@@ -1,7 +1,11 @@
 """JSON schemas for validation."""
 
+SCHEMA_VERSION = "1.0.0"
+
 # Event schema
 EVENT_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "version": SCHEMA_VERSION,
     "type": "object",
     "required": ["Chapter", "Event"],
     "properties": {
@@ -39,6 +43,8 @@ EVENT_SCHEMA = {
 
 # Date schema
 DATE_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "version": SCHEMA_VERSION,
     "type": "object",
     "required": [
         "Event_Name",
@@ -81,6 +87,8 @@ DATE_SCHEMA = {
 
 # Place schema
 PLACE_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "version": SCHEMA_VERSION,
     "type": "object",
     "required": [
         "Event_Name",
@@ -152,6 +160,8 @@ PLACE_SCHEMA = {
 
 # Supplemental Material schema
 SUPPLEMENTAL_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "version": SCHEMA_VERSION,
     "type": "object",
     "required": [
         "Event_Name",
@@ -238,5 +248,101 @@ SUPPLEMENTAL_SCHEMA = {
                 },
             },
         },
+    },
+}
+
+# People schema
+PEOPLE_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "version": SCHEMA_VERSION,
+    "type": "object",
+    "required": ["people"],
+    "properties": {
+        "people": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["PersonID", "name"],
+                "properties": {
+                    "PersonID": {
+                        "type": "string",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                    },
+                    "name": {"type": "string"},
+                    "birth_date": {"type": ["string", "null"]},
+                    "death_date": {"type": ["string", "null"]},
+                },
+            },
+        },
+    },
+}
+
+# People Groups schema
+PEOPLE_GROUPS_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "version": SCHEMA_VERSION,
+    "type": "object",
+    "required": ["groups"],
+    "properties": {
+        "groups": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["GroupID", "name"],
+                "properties": {
+                    "GroupID": {
+                        "type": "string",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                    },
+                    "name": {"type": "string"},
+                },
+            },
+        },
+    },
+}
+
+# Equipment schema
+EQUIPMENT_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "version": SCHEMA_VERSION,
+    "type": "object",
+    "required": ["equipment"],
+    "properties": {
+        "equipment": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["EquipmentID", "name"],
+                "properties": {
+                    "EquipmentID": {
+                        "type": "string",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                    },
+                    "name": {"type": "string"},
+                },
+            },
+        },
+    },
+}
+
+# Map schema
+MAP_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "version": SCHEMA_VERSION,
+    "type": "object",
+    "required": ["MapID"],
+    "properties": {
+        "MapID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+    },
+}
+
+# Casualties schema
+CASUALTIES_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "version": SCHEMA_VERSION,
+    "type": "object",
+    "required": ["casualties"],
+    "properties": {
+        "casualties": {"type": "array"},
     },
 }
