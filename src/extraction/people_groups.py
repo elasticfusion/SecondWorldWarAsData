@@ -16,14 +16,15 @@ from typing import Dict, Optional
 from ulid import new as new_ulid
 
 from src.grok_client import GrokClient
+from src.utils.text_utils import normalize_name
 
 logger = logging.getLogger(__name__)
 
 
 @lru_cache(maxsize=5000)
 def _normalize_name(name: str) -> str:
-    """Normalize group name for index lookup."""
-    return name.lower().strip()
+    """Normalize group name for index lookup (deprecated - use text_utils.normalize_name)."""
+    return normalize_name(name)
 
 
 def _name_to_filename(name: str, group_id: str) -> str:

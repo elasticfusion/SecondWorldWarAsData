@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from src.grok_client import GrokClient
 from src.utils.json_validator import _fix_invalid_ulids
+from src.utils.text_utils import normalize_name
 
 logger = logging.getLogger(__name__)
 
@@ -435,9 +436,10 @@ If no people found, return empty People array."""
 
 
 @lru_cache(maxsize=5000)
+@lru_cache(maxsize=1000)
 def _normalize_name(name: str) -> str:
-    """Normalize person name for matching."""
-    return name.strip().lower()
+    """Normalize person name for matching (deprecated - use text_utils.normalize_name)."""
+    return normalize_name(name)
 
 
 def _name_to_filename(name: str, person_id: str) -> str:
