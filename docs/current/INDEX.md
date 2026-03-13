@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated:** 2026-03-08
+**Last Updated:** 2026-03-13
 
 ---
 
@@ -10,6 +10,25 @@
 - **[core/DEVELOPMENT.md](core/DEVELOPMENT.md)** - Setup and development workflow
 - **[core/PIPELINE.md](core/PIPELINE.md)** - Complete pipeline documentation
 - **[pipeline/RETRY_WRAPPERS.md](pipeline/RETRY_WRAPPERS.md)** - Automatic retry for Phase 2 & 3
+
+---
+
+## Quality Assurance (NEW - 2026-03-13)
+
+Recent code quality improvements and reports.
+
+- **[qa-reports/QA_REPORT_2026-03-13.md](qa-reports/QA_REPORT_2026-03-13.md)** - ✅ Complete QA report (all targets met)
+- **[qa-reports/CODE_QUALITY_IMPROVEMENTS_2026-03-13.md](qa-reports/CODE_QUALITY_IMPROVEMENTS_2026-03-13.md)** - 40 functions refactored (66% complexity reduction)
+- **[qa-reports/REFACTORING_SUMMARY_2026-03-13.md](qa-reports/REFACTORING_SUMMARY_2026-03-13.md)** - Detailed refactoring metrics
+- **[qa-reports/CENTRALIZATION_RECOMMENDATIONS.md](qa-reports/CENTRALIZATION_RECOMMENDATIONS.md)** - Code consolidation (125+ lines removed)
+- **[qa-reports/RADON_COMPLEXITY_2026-03-13.md](qa-reports/RADON_COMPLEXITY_2026-03-13.md)** - Complexity analysis
+
+**Key Achievements:**
+- ✅ All C and D grade functions eliminated (100%)
+- ✅ Average complexity reduced by 66%
+- ✅ ULID validation centralized (5 files)
+- ✅ 125+ lines of duplicate code removed
+- ✅ Pylint: 9.35/10, Mypy: 0 errors, Bandit: 0 issues
 
 ---
 

@@ -1,7 +1,7 @@
 # Quality Assurance Tools
 
-**Version**: 1.0.0  
-**Last Updated**: 2026-02-24
+**Version**: 1.1.0  
+**Last Updated**: 2026-03-13
 
 ## Overview
 
@@ -13,7 +13,21 @@ Comprehensive quality assurance checklist organized by programming language. Run
 
 ### Required Tools
 
-#### 1. **Pylint** - Code Quality & Style
+#### 1. **Black** - Code Formatting
+```bash
+python3 -m black <file_or_module>
+```
+
+**Purpose**: Automatic code formatting  
+**Target**: All files formatted  
+**Config**: Use `pyproject.toml` for line length
+
+**Check without modifying**:
+```bash
+python3 -m black --check <file_or_module>
+```
+
+#### 2. **Pylint** - Code Quality & Style
 ```bash
 python3 -m pylint <file_or_module>
 ```
@@ -35,7 +49,7 @@ python3 -m pylint <file_or_module>
 python3 -m pylint src/extraction/weather_central.py --disable=C0301,C0103,R0913
 ```
 
-#### 2. **Mypy** - Type Checking
+#### 3. **Mypy** - Type Checking
 ```bash
 python3 -m mypy <file_or_module> --ignore-missing-imports
 ```
@@ -45,20 +59,6 @@ python3 -m mypy <file_or_module> --ignore-missing-imports
 **Flags**:
 - `--ignore-missing-imports` - Skip third-party type stubs
 - `--strict` - Enable all optional checks (optional)
-
-#### 3. **Black** - Code Formatting
-```bash
-python3 -m black <file_or_module>
-```
-
-**Purpose**: Automatic code formatting  
-**Target**: All files formatted  
-**Config**: Use `pyproject.toml` for line length
-
-**Check without modifying**:
-```bash
-python3 -m black --check <file_or_module>
-```
 
 #### 4. **Bandit** - Security Analysis
 ```bash
@@ -93,7 +93,7 @@ python3 -m vulture src/extraction/ --min-confidence 80
 - Test fixtures
 - Create a whitelist file to suppress known false positives
 
-#### 6. **Radon** - Complexity Analysis
+#### 7. **Radon** - Complexity Analysis
 ```bash
 # Cyclomatic complexity
 python3 -m radon cc <file_or_module> -s
@@ -114,7 +114,7 @@ python3 -m radon mi <file_or_module> -s
 - **D**: 21-30 (high complexity)
 - **F**: 31+ (very high complexity)
 
-#### 7. **pytest** - Unit Testing
+#### 8. **pytest** - Unit Testing
 ```bash
 python3 -m pytest tests/ -v --cov=src --cov-report=term-missing
 ```
@@ -128,7 +128,7 @@ python3 -m pytest tests/ -v --cov=src --cov-report=term-missing
 
 ### Optional Tools
 
-#### 7. **isort** - Import Sorting
+#### 9. **isort** - Import Sorting
 ```bash
 python3 -m isort <file_or_module>
 ```
@@ -136,7 +136,7 @@ python3 -m isort <file_or_module>
 **Purpose**: Sort and organize imports  
 **Config**: Compatible with Black
 
-#### 8. **flake8** - Alternative Linter
+#### 10. **flake8** - Alternative Linter
 ```bash
 python3 -m flake8 <file_or_module>
 ```
@@ -144,7 +144,7 @@ python3 -m flake8 <file_or_module>
 **Purpose**: Style guide enforcement (alternative to pylint)  
 **Note**: Less comprehensive than pylint
 
-#### 9. **pydocstyle** - Docstring Checker
+#### 11. **pydocstyle** - Docstring Checker
 ```bash
 python3 -m pydocstyle <file_or_module>
 ```
@@ -183,7 +183,10 @@ python3 -m radon mi src/extraction/weather_central.py -s
 # 8. Syntax check
 python3 -m py_compile src/extraction/weather_central.py
 
-# 8. Run tests (if available)
+# 9. Docstring validation (optional)
+python3 -m pydocstyle src/extraction/weather_central.py
+
+# 10. Run tests (if available)
 python3 -m pytest tests/ -v --cov=src
 ```
 
@@ -379,7 +382,7 @@ Add these tools to your CI/CD pipeline:
 
 #### Python
 ```bash
-pip install pylint mypy black bandit radon pytest pytest-cov isort flake8 pydocstyle
+pip install pylint mypy black bandit vulture radon pytest pytest-cov isort flake8 pydocstyle
 ```
 
 #### JavaScript/TypeScript
@@ -426,4 +429,5 @@ cargo install cargo-audit cargo-tarpaulin
 
 ## Version History
 
+- **1.1.0** (2026-03-13): Moved Black to top of Python tools, added Vulture for dead code detection
 - **1.0.0** (2026-02-24): Initial specification with Python, JavaScript/TypeScript, Go, Rust

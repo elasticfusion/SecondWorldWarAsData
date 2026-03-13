@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from src.grok_client import GrokClient
 from src.utils.file_lock import write_json_with_lock
+from src.utils.json_validator import _fix_invalid_ulids
 
 logger = logging.getLogger(__name__)
 
@@ -76,33 +77,6 @@ For large regions (oceans, continents, fronts), use the geographic center point.
 Return structured data matching the schema."""
 
 
-def _fix_invalid_ulids(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Replace invalid ULIDs with valid ones."""
-    for key, value in data.items():
-        if key.endswith("ID") and isinstance(value, str):
-            # Check if ULID is valid (exactly 26 chars, valid charset)
-            if len(value) != 26 or not all(
-                c in "0123456789ABCDEFGHJKMNPQRSTVWXYZ" for c in value
-            ):
-                new_ulid = str(ulid.new())
-                data[key] = new_ulid
-                logger.debug(
-                    "Fixed invalid ULID in %s: '%s' (%d chars) -> '%s' (26 chars)",
-                    key,
-                    value,
-                    len(value),
-                    new_ulid,
-                )
-        elif isinstance(value, dict):
-            data[key] = _fix_invalid_ulids(value)
-        elif isinstance(value, list):
-            data[key] = [
-                _fix_invalid_ulids(item) if isinstance(item, dict) else item
-                for item in value
-            ]
-    return data
-
-
 @lru_cache(maxsize=1000)
 def _calculate_bounding_box(lat: float, lon: float) -> Dict[str, float]:
     """Calculate 100km bounding box around coordinates."""
@@ -139,6 +113,13 @@ def _is_valid_place_mention(mention: Dict[str, Any]) -> bool:
     return True
 
 
+def _add_geo_data(mention: Dict[str, Any], lat: float, lon: float) -> None:
+    """Add bounding box and map URLs to a place mention."""
+    mention["bounding_box_100km"] = _calculate_bounding_box(lat, lon)
+    if "map_urls" not in mention:
+        mention["map_urls"] = _generate_map_urls(lat, lon)
+
+
 def _process_place_mention(mention: Dict[str, Any]) -> Dict[str, Any]:
     """Process a single place mention: fix nulls and add bounding boxes."""
     if mention.get("geography_type") is None:
@@ -147,37 +128,30 @@ def _process_place_mention(mention: Dict[str, Any]) -> Dict[str, Any]:
 
     # Add bounding box and map URLs for regular places
     if mention.get("latitude") and mention.get("longitude"):
-        lat = mention["latitude"]
-        lon = mention["longitude"]
-        mention["bounding_box_100km"] = _calculate_bounding_box(lat, lon)
-
-        # Add map URLs if not present
-        if "map_urls" not in mention:
-            mention["map_urls"] = _generate_map_urls(lat, lon)
+        _add_geo_data(mention, mention["latitude"], mention["longitude"])
 
     # Process route stops
     if "route" in mention and isinstance(mention["route"], list):
         for stop in mention["route"]:
             if stop.get("latitude") and stop.get("longitude"):
-                lat = stop["latitude"]
-                lon = stop["longitude"]
-                stop["bounding_box_100km"] = _calculate_bounding_box(lat, lon)
-
-                # Add map URLs if not present
-                if "map_urls" not in stop:
-                    stop["map_urls"] = _generate_map_urls(lat, lon)
+                _add_geo_data(stop, stop["latitude"], stop["longitude"])
 
     return mention
 
 
-def _fix_null_fields(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Fix null values in required fields and add bounding boxes."""
+def _process_place_mentions(data: Dict[str, Any]) -> None:
+    """Process and filter place mentions in-place."""
     if "Place_Mentions" in data and isinstance(data["Place_Mentions"], list):
         valid_mentions = []
         for mention in data["Place_Mentions"]:
             if isinstance(mention, dict) and _is_valid_place_mention(mention):
                 valid_mentions.append(_process_place_mention(mention))
         data["Place_Mentions"] = valid_mentions
+
+
+def _fix_null_fields(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Fix null values in required fields and add bounding boxes."""
+    _process_place_mentions(data)
 
     for key, value in data.items():
         if isinstance(value, dict):
@@ -246,6 +220,72 @@ If no places found, return empty Place_Mentions array."""
     return prompt
 
 
+def _load_places_index(places_dir: Path) -> dict:
+    """Load existing places index."""
+    index_file = places_dir / "index.json"
+
+    if index_file.exists():
+        with open(index_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    return {}
+
+
+def _load_book_metadata(parsed_file: Optional[Path]) -> tuple[str, str, str]:
+    """Load book metadata from parsed file. Returns (book, author, series)."""
+    if not parsed_file or not parsed_file.exists():
+        return "", "", ""
+
+    with open(parsed_file, "r", encoding="utf-8") as f:
+        parsed_data = json.load(f)
+        return (
+            parsed_data.get("book", ""),
+            parsed_data.get("author", ""),
+            parsed_data.get("series", ""),
+        )
+
+
+def _extract_place_for_sub_event(
+    sub_event: Dict[str, Any],
+    event_id: str,
+    event_name: str,
+    grok_client: GrokClient,
+    max_retries: int,
+) -> Optional[Dict[str, Any]]:
+    """Extract places for a single sub-event with retry logic."""
+    sub_event_id = sub_event.get("Sub-eventID", "")
+    logger.info("  Processing sub-event %s", sub_event_id)
+
+    prompt = create_place_prompt(sub_event, event_id, event_name)
+
+    for attempt in range(max_retries):
+        try:
+            place_output = grok_client.extract_structured(
+                prompt=prompt,
+                schema=PlaceOutput,
+                system_prompt=SYSTEM_PROMPT,
+                use_cache=(attempt == 0),
+                cache_type="places",
+            )
+
+            place_dict: Dict[str, Any] = place_output.model_dump(by_alias=True)
+            place_dict = _fix_null_fields(place_dict)  # type: ignore
+            place_dict = _fix_invalid_ulids(place_dict)  # type: ignore
+
+            return place_dict
+
+        except Exception as e:
+            if attempt < max_retries - 1:
+                logger.warning("    Attempt %d failed: %s. Retrying...", attempt + 1, e)
+            else:
+                logger.error(
+                    "    All %d attempts failed for %s", max_retries, sub_event_id
+                )
+                raise
+
+    return None
+
+
 def extract_places(
     event_file: Path,
     grok_client: GrokClient,
@@ -267,28 +307,13 @@ def extract_places(
         Path to places directory, or None if failed
     """
     places_dir.mkdir(parents=True, exist_ok=True)
-    index_file = places_dir / "index.json"
-
-    # Load existing index
-    if index_file.exists():
-        with open(index_file, "r", encoding="utf-8") as f:
-            index = json.load(f)
-    else:
-        index = {}
+    index = _load_places_index(places_dir)
 
     with open(event_file, "r", encoding="utf-8") as f:
         event_data = json.load(f)
 
-    # Get book metadata from parsed file if provided
-    book = ""
-    author = ""
-    series = ""
-    if parsed_file and parsed_file.exists():
-        with open(parsed_file, "r", encoding="utf-8") as f:
-            parsed_data = json.load(f)
-            book = parsed_data.get("book", "")
-            author = parsed_data.get("author", "")
-            series = parsed_data.get("series", "")  # Optional
+    # Get book metadata
+    book, author, series = _load_book_metadata(parsed_file)
 
     # Validate required metadata (series is optional)
     if not book or not author:
@@ -307,68 +332,45 @@ def extract_places(
     for sub_event in sub_events:
         sub_event_id = sub_event.get("Sub-eventID", "")
         sub_event_name = sub_event.get("Sub-event_summary", "")
-        logger.info("  Processing sub-event %s", sub_event_id)
 
-        prompt = create_place_prompt(sub_event, event_id, event_name)
+        place_dict = _extract_place_for_sub_event(
+            sub_event, event_id, event_name, grok_client, max_retries
+        )
 
-        # Retry logic for truncated responses
-        for attempt in range(max_retries):
-            try:
-                # Use structured outputs - guaranteed schema compliance
-                place_output = grok_client.extract_structured(
-                    prompt=prompt,
-                    schema=PlaceOutput,
-                    system_prompt=SYSTEM_PROMPT,
-                    use_cache=(attempt == 0),
-                    cache_type="places",
-                )
+        if not place_dict:
+            continue
 
-                # Convert to dict
-                place_dict: Dict[str, Any] = place_output.model_dump(by_alias=True)
-                place_dict = _fix_null_fields(place_dict)  # type: ignore
-                place_dict = _fix_invalid_ulids(place_dict)  # type: ignore
+        # Process each place mention
+        for mention in place_dict.get("Place_Mentions", []):
+            place_name = mention.get("current_name")
+            if not place_name:
+                continue
 
-                # Process each place mention
-                for mention in place_dict.get("Place_Mentions", []):
-                    place_name = mention.get("current_name")
-                    if not place_name:
-                        continue
+            # Find or create place file
+            place_file = _find_or_create_place(place_name, mention, places_dir, index)
 
-                    # Find or create place file
-                    place_file = _find_or_create_place(
-                        place_name, mention, places_dir, index
-                    )
+            # Add event mention to place file
+            _add_event_mention(
+                place_file,
+                mention,
+                event_name,
+                event_id,
+                sub_event_name,
+                sub_event_id,
+                book,
+                author,
+                series,
+            )
 
-                    # Add event mention to place file
-                    _add_event_mention(
-                        place_file,
-                        mention,
-                        event_name,
-                        event_id,
-                        sub_event_name,
-                        sub_event_id,
-                        book,
-                        author,
-                        series,
-                    )
+            places_updated += 1
 
-                    places_updated += 1
-
-                logger.info(
-                    "  ✓ Processed %d place mentions",
-                    len(place_dict.get("Place_Mentions", [])),
-                )
-                break  # Success, exit retry loop
-
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                if attempt < max_retries - 1:
-                    logger.warning(f"  ⚠ Attempt {attempt + 1} failed: {e}")
-                    logger.info(f"  Retrying ({attempt + 2}/{max_retries})...")
-                else:
-                    logger.error(f"  ✗ All {max_retries} attempts failed: {e}")
-                    continue
+        logger.info(
+            "  ✓ Processed %d place mentions",
+            len(place_dict.get("Place_Mentions", [])),
+        )
 
     # Save updated index
+    index_file = places_dir / "index.json"
     write_json_with_lock(index_file, index)
 
     logger.info(f"  Updated {places_updated} place(s) in central repository")

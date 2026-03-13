@@ -310,34 +310,9 @@ def _extract_map_images(
     return parser.images
 
 
-def _verify_map_relevance(
-    map_url: str,
-    map_title: str,
-    map_description: str,
-    place_name: str,
-    date: Optional[str],
-    event_context: str,
-    grok_client: GrokClient,
-    page_timeout: int = 10,
-    image_timeout: int = 30,
-) -> tuple[bool, bool]:
-    """Download page, extract map images, and verify with Grok using vision.
-
-    Args:
-        map_url: URL of the page to check
-        map_title: Title of the page
-        map_description: Description/snippet from search results
-        place_name: Place being searched for
-        date: Date context
-        event_context: Event context
-        grok_client: Grok API client
-        page_timeout: Timeout for page download
-        image_timeout: Timeout for image download
-
-    Returns: (is_relevant, is_government_map) - True if relevant, and True if government document
-    """
+def _download_page(map_url: str, page_timeout: int) -> Optional[str]:
+    """Download page content. Returns HTML or None if failed."""
     try:
-        # Download the actual page content
         headers = {"User-Agent": USER_AGENT}
         response = requests.get(
             map_url, timeout=page_timeout, headers=headers, allow_redirects=True
@@ -345,38 +320,30 @@ def _verify_map_relevance(
 
         if response.status_code != 200:
             logger.info(f"   ⚠ URL returned {response.status_code}")
-            return False, False
+            return None
 
-        # Check if page title/description mentions maps
-        page_text = f"{map_title} {map_description}".lower()
-        page_has_map_keyword = (
-            "map" in page_text or "carte" in page_text or "karte" in page_text
-        )
+        return response.text
+    except Exception as e:
+        logger.warning(f"   ⚠ Page download failed: {e}")
+        return None
 
-        # Extract map images from HTML
-        html_content = response.text
-        map_images = _extract_map_images(
-            html_content, map_url, page_has_map_keyword=page_has_map_keyword
-        )
 
-        if not map_images:
-            logger.info(f"   ⚠ No map images found in HTML")
-            return False, False
+def _check_page_for_maps(map_title: str, map_description: str) -> bool:
+    """Check if page title/description mentions maps."""
+    page_text = f"{map_title} {map_description}".lower()
+    return "map" in page_text or "carte" in page_text or "karte" in page_text
 
-        logger.info(f"   Found {len(map_images)} potential map image(s)")
 
-        # Check each image with Grok vision
-        for img in map_images[
-            :3
-        ]:  # Limit to first 3 images to avoid excessive API calls
-            img_url = img["url"]
-            alt_text = img.get("alt", "")
-            caption = img.get("caption", "")
-
-            logger.info(f"   🔍 Analyzing image: {alt_text[:50] or img_url[-50:]}")
-
-            # Ask Grok to analyze the image with context
-            prompt = f"""Analyze this image VERY STRICTLY to determine if it's a WWII-era military/tactical map of {place_name}.
+def _build_verification_prompt(
+    place_name: str,
+    date: Optional[str],
+    event_context: str,
+    map_title: str,
+    alt_text: str,
+    caption: str,
+) -> str:
+    """Build prompt for Grok vision verification."""
+    return f"""Analyze this image VERY STRICTLY to determine if it's a WWII-era military/tactical map of {place_name}.
 
 Context:
 - Place: {place_name}
@@ -413,26 +380,110 @@ Respond with ONLY a JSON object:
 {{"is_relevant": true or false, "is_government_map": true or false, "reason": "Brief explanation of what you see and why accepted/rejected"}}
 """
 
-            result = grok_client.extract_json_with_image(
-                prompt=prompt,
-                image_url=img_url,
-                cache_type="external_maps_verification",
-                image_timeout=image_timeout,
+
+def _verify_single_image(
+    img: dict,
+    place_name: str,
+    date: Optional[str],
+    event_context: str,
+    map_title: str,
+    grok_client: GrokClient,
+    image_timeout: int,
+) -> Optional[tuple[bool, bool]]:
+    """Verify a single image with Grok vision. Returns (is_relevant, is_government) or None."""
+    img_url = img["url"]
+    alt_text = img.get("alt", "")
+    caption = img.get("caption", "")
+
+    logger.info(f"   🔍 Analyzing image: {alt_text[:50] or img_url[-50:]}")
+
+    prompt = _build_verification_prompt(
+        place_name, date, event_context, map_title, alt_text, caption
+    )
+
+    result = grok_client.extract_json_with_image(
+        prompt=prompt,
+        image_url=img_url,
+        cache_type="external_maps_verification",
+        image_timeout=image_timeout,
+    )
+
+    if isinstance(result, dict):
+        is_relevant = result.get("is_relevant", False)
+        is_government = result.get("is_government_map", False)
+        reason = result.get("reason", "No reason provided")
+
+        if is_relevant:
+            if is_government:
+                logger.info(f"   ✓ Government map confirmed: {reason}")
+            else:
+                logger.info(f"   ✓ Grok confirmed: {reason}")
+            return True, is_government
+        else:
+            logger.info(f"   ⚠ Grok rejected: {reason}")
+
+    return None
+
+
+def _verify_map_relevance(
+    map_url: str,
+    map_title: str,
+    map_description: str,
+    place_name: str,
+    date: Optional[str],
+    event_context: str,
+    grok_client: GrokClient,
+    page_timeout: int = 10,
+    image_timeout: int = 30,
+) -> tuple[bool, bool]:
+    """Download page, extract map images, and verify with Grok using vision.
+
+    Args:
+        map_url: URL of the page to check
+        map_title: Title of the page
+        map_description: Description/snippet from search results
+        place_name: Place being searched for
+        date: Date context
+        event_context: Event context
+        grok_client: Grok API client
+        page_timeout: Timeout for page download
+        image_timeout: Timeout for image download
+
+    Returns: (is_relevant, is_government_map) - True if relevant, and True if government document
+    """
+    try:
+        # Download page
+        html_content = _download_page(map_url, page_timeout)
+        if not html_content:
+            return False, False
+
+        # Check for map keywords
+        page_has_map_keyword = _check_page_for_maps(map_title, map_description)
+
+        # Extract map images
+        map_images = _extract_map_images(
+            html_content, map_url, page_has_map_keyword=page_has_map_keyword
+        )
+
+        if not map_images:
+            logger.info(f"   ⚠ No map images found in HTML")
+            return False, False
+
+        logger.info(f"   Found {len(map_images)} potential map image(s)")
+
+        # Check each image (limit to first 3)
+        for img in map_images[:3]:
+            result = _verify_single_image(
+                img,
+                place_name,
+                date,
+                event_context,
+                map_title,
+                grok_client,
+                image_timeout,
             )
-
-            if isinstance(result, dict):
-                is_relevant = result.get("is_relevant", False)
-                is_government = result.get("is_government_map", False)
-                reason = result.get("reason", "No reason provided")
-
-                if is_relevant:
-                    if is_government:
-                        logger.info(f"   ✓ Government map confirmed: {reason}")
-                    else:
-                        logger.info(f"   ✓ Grok confirmed: {reason}")
-                    return True, is_government
-                else:
-                    logger.info(f"   ⚠ Grok rejected: {reason}")
+            if result:
+                return result
 
         logger.info(f"   ⚠ No relevant maps found in {len(map_images)} image(s)")
         return False, False

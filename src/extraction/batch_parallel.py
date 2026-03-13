@@ -19,7 +19,6 @@ async def process_chapter_async(
     config: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Process single chapter: events + entities in parallel."""
-
     # If event file doesn't exist, extract events first
     if not event_file.exists():
         from src.extraction.events import extract_events
@@ -39,6 +38,72 @@ async def process_chapter_async(
     )
 
 
+def _create_chapter_tasks(
+    batch: List[Path],
+    grok_client: GrokClient,
+    output_root: Path,
+    config: Dict[str, Any],
+) -> List[tuple]:
+    """Create async tasks for a batch of chapters."""
+    tasks = []
+    for pf in batch:
+        stem = pf.stem.replace("-parsed", "")
+        event_file = pf.parent / f"{stem}-event.json"
+
+        task = process_chapter_async(
+            parsed_file=pf,
+            event_file=event_file,
+            grok_client=grok_client,
+            output_root=output_root,
+            config=config,
+        )
+        tasks.append((pf.name, task))
+
+    return tasks
+
+
+def _get_cache_clear_command(name: str, error_msg: str) -> str:
+    """Generate cache clearing command based on error type."""
+    chapter_id = name.replace("-parsed.json", "")
+
+    if any(
+        keyword in error_msg.lower()
+        for keyword in ["invalid", "escape", "control character", "unterminated string"]
+    ):
+        return (
+            f'python3 -c "from pathlib import Path; from diskcache import Cache; '
+            f"c=Cache('cache/api/events'); "
+            f"[c.pop(k) for k in list(c) if '{chapter_id}' in str(c.get(k, ''))]\""
+        )
+
+    return "rm -rf cache/api/*"
+
+
+def _process_batch_results(
+    tasks: List[tuple], batch_results: list, results: Dict[str, Any]
+) -> None:
+    """Process results from a batch of chapters."""
+    for (name, _), result in zip(tasks, batch_results):
+        if isinstance(result, Exception):
+            error_msg = str(result)
+            logger.error("  ✗ %s: %s", name, result)
+
+            cache_cmd = _get_cache_clear_command(name, error_msg)
+            logger.error("  💡 Clear cache: %s", cache_cmd)
+
+            results["failed"] += 1
+        elif isinstance(result, dict):
+            logger.info(
+                "  ✓ %s: dates=%s, places=%s, groups=%s",
+                name,
+                result.get("dates"),
+                result.get("places"),
+                result.get("groups"),
+            )
+            results["processed"] += 1
+            results["chapters"].append(name)
+
+
 async def process_chapters_parallel(
     parsed_files: List[Path],
     grok_client: GrokClient,
@@ -47,7 +112,6 @@ async def process_chapters_parallel(
     max_parallel: int = 3,
 ) -> Dict[str, Any]:
     """Process multiple chapters in parallel."""
-
     results: Dict[str, Any] = {"processed": 0, "failed": 0, "chapters": []}
 
     # Process in batches to limit concurrency
@@ -56,19 +120,7 @@ async def process_chapters_parallel(
         logger.info(f"Processing batch {i//max_parallel + 1}: {len(batch)} chapters")
 
         # Create tasks for this batch
-        tasks = []
-        for pf in batch:
-            stem = pf.stem.replace("-parsed", "")
-            event_file = pf.parent / f"{stem}-event.json"
-
-            task = process_chapter_async(
-                parsed_file=pf,
-                event_file=event_file,
-                grok_client=grok_client,
-                output_root=output_root,
-                config=config,
-            )
-            tasks.append((pf.name, task))
+        tasks = _create_chapter_tasks(batch, grok_client, output_root, config)
 
         # Run batch in parallel
         batch_results = await asyncio.gather(
@@ -76,33 +128,7 @@ async def process_chapters_parallel(
         )
 
         # Process results
-        for (name, _), result in zip(tasks, batch_results):
-            if isinstance(result, Exception):
-                error_msg = str(result)
-                logger.error("  ✗ %s: %s", name, result)
-                
-                # Provide specific cache clearing command based on error
-                if "Invalid" in error_msg and "escape" in error_msg:
-                    # Extract cache type from context (events extraction)
-                    logger.error("  💡 Clear cache for this file: python3 -c \"from pathlib import Path; from diskcache import Cache; c=Cache('cache/api/events'); [c.pop(k) for k in list(c) if '%s' in str(c.get(k, ''))]\"", name.replace("-parsed.json", ""))
-                elif "control character" in error_msg.lower():
-                    logger.error("  💡 Clear cache for this file: python3 -c \"from pathlib import Path; from diskcache import Cache; c=Cache('cache/api/events'); [c.pop(k) for k in list(c) if '%s' in str(c.get(k, ''))]\"", name.replace("-parsed.json", ""))
-                elif "Unterminated string" in error_msg:
-                    logger.error("  💡 Clear cache for this file: python3 -c \"from pathlib import Path; from diskcache import Cache; c=Cache('cache/api/events'); [c.pop(k) for k in list(c) if '%s' in str(c.get(k, ''))]\"", name.replace("-parsed.json", ""))
-                else:
-                    logger.error("  💡 Clear all caches: rm -rf cache/api/*")
-                
-                results["failed"] += 1
-            elif isinstance(result, dict):
-                logger.info(
-                    "  ✓ %s: dates=%s, places=%s, groups=%s",
-                    name,
-                    result.get("dates"),
-                    result.get("places"),
-                    result.get("groups"),
-                )
-                results["processed"] += 1
-                results["chapters"].append(name)
+        _process_batch_results(tasks, batch_results, results)
 
     return results
 
@@ -199,7 +225,6 @@ async def extract_all_async(
     config: Dict[str, Any],  # pylint: disable=unused-argument
 ) -> Dict[str, Any]:
     """Extract all entities in parallel with batched API calls."""
-
     with open(event_file, "r") as f:
         event_data = json.load(f)
 

@@ -27,11 +27,9 @@ class URLExtractor:
     def fetch_url(self, url: str) -> str:
         """Fetch HTML content from URL."""
         logger.info(f"Fetching: {url}")
-        with requests.Session() as session:
-            session.timeout = self.timeout
-            response = session.get(url, allow_redirects=True)
-            response.raise_for_status()
-            return response.text
+        response = requests.get(url, allow_redirects=True, timeout=self.timeout)
+        response.raise_for_status()
+        return response.text
 
     def html_to_markdown(self, html: str) -> str:
         """Convert HTML to markdown."""

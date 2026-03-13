@@ -391,6 +391,60 @@ Respond with ONLY a JSON object:
     return False, "Verification failed"
 
 
+def _extract_year_from_date(
+    sub_event_id: Optional[str], dates_index: Optional[Dict[str, Dict[str, str]]]
+) -> Optional[str]:
+    """Extract year from date index."""
+    if not sub_event_id or not dates_index or sub_event_id not in dates_index:
+        return None
+
+    date_info = dates_index[sub_event_id]
+    date_str = date_info.get("date_start", "")
+
+    if date_str and len(date_str) >= 4:
+        return date_str[:4]  # Extract year (YYYY)
+
+    return None
+
+
+def _merge_enriched_data(
+    equipment_data: Dict[str, Any], enriched: Dict[str, Any]
+) -> None:
+    """Merge enriched data into equipment data (don't overwrite existing)."""
+    for key in ["description", "specifications", "alternate_names", "variants"]:
+        if key in enriched and enriched[key]:
+            # Only use enriched data if field is missing or empty
+            if key not in equipment_data or not equipment_data[key]:
+                equipment_data[key] = enriched[key]
+                logger.debug("  Enriched %s: %s", key, type(enriched[key]).__name__)
+
+
+def _add_downloaded_media(
+    equipment_data: Dict[str, Any],
+    media_list: list,
+    common_name: str,
+    grok_client: GrokClient,
+    verify_media_with_vision: bool,
+) -> None:
+    """Download and add media to equipment data."""
+    if not media_list:
+        return
+
+    media_dir = Path("filestore/equipment")
+    downloaded_media = _download_and_store_media(
+        media_list,
+        common_name,
+        equipment_data["category"],
+        media_dir,
+        grok_client,
+        verify_with_vision=verify_media_with_vision,
+    )
+
+    if downloaded_media:
+        equipment_data["media"] = downloaded_media
+        logger.info("  Added %s verified media items", len(downloaded_media))
+
+
 def _enrich_and_add_media(
     equipment_data: Dict[str, Any],
     common_name: str,
@@ -399,8 +453,6 @@ def _enrich_and_add_media(
     sub_event_id: Optional[str] = None,
     dates_index: Optional[Dict[str, Dict[str, str]]] = None,
 ) -> None:
-    # TODO: Refactor - Complexity 13 (see EQUIPMENT_REFACTORING.md)
-    # Extract: _verify_media_quality(), _add_media_to_equipment()
     """Enrich equipment data and add media files.
 
     Args:
@@ -412,13 +464,9 @@ def _enrich_and_add_media(
         dates_index: Index of dates by Sub-eventID
     """
     # Get year from date if available
-    year = None
-    if sub_event_id and dates_index and sub_event_id in dates_index:
-        date_info = dates_index[sub_event_id]
-        date_str = date_info.get("date_start", "")
-        if date_str and len(date_str) >= 4:
-            year = date_str[:4]  # Extract year (YYYY)
+    year = _extract_year_from_date(sub_event_id, dates_index)
 
+    # Enrich equipment data
     logger.info("Enriching equipment data for: %s", common_name)
     enriched = _enrich_equipment_data(
         common_name,
@@ -426,15 +474,9 @@ def _enrich_and_add_media(
         equipment_data["category"],
         grok_client,
     )
-    # Merge enriched data (don't overwrite existing non-empty data)
-    for key in ["description", "specifications", "alternate_names", "variants"]:
-        if key in enriched and enriched[key]:
-            # Only use enriched data if field is missing or empty
-            if key not in equipment_data or not equipment_data[key]:
-                equipment_data[key] = enriched[key]
-                logger.debug("  Enriched %s: %s", key, type(enriched[key]).__name__)
+    _merge_enriched_data(equipment_data, enriched)
 
-    # Extract media (photos, videos, documents)
+    # Extract and download media
     media_list = _extract_media(
         common_name,
         equipment_data.get("technical_identifier"),
@@ -443,20 +485,9 @@ def _enrich_and_add_media(
         use_openserp=True,
         year=year,
     )
-    if media_list:
-        # Download media files to filestore/equipment
-        media_dir = Path("filestore/equipment")
-        downloaded_media = _download_and_store_media(
-            media_list,
-            common_name,
-            equipment_data["category"],
-            media_dir,
-            grok_client,
-            verify_with_vision=verify_media_with_vision,
-        )
-        if downloaded_media:
-            equipment_data["media"] = downloaded_media
-            logger.info("  Added %s verified media items", len(downloaded_media))
+    _add_downloaded_media(
+        equipment_data, media_list, common_name, grok_client, verify_media_with_vision
+    )
 
 
 def _download_and_store_media(
@@ -552,6 +583,74 @@ def _compute_image_hash(image_path: Path) -> Optional[str]:
         return None
 
 
+def _determine_file_extension(response, url: str) -> str:
+    """Determine file extension from content-type or URL."""
+    content_type = response.headers.get("content-type", "")
+
+    if "jpeg" in content_type or "jpg" in content_type:
+        return ".jpg"
+    elif "png" in content_type:
+        return ".png"
+    elif "gif" in content_type:
+        return ".gif"
+    elif "webp" in content_type:
+        return ".webp"
+    elif "pdf" in content_type:
+        return ".pdf"
+    elif "mp4" in content_type or "video" in content_type:
+        return ".mp4"
+    else:
+        # Fallback to URL extension
+        from urllib.parse import urlparse
+
+        parsed = urlparse(url)
+        return Path(parsed.path).suffix or ".jpg"
+
+
+def _verify_and_save_media(
+    response,
+    filepath: Path,
+    equipment_dir: Path,
+    media_item: Dict[str, Any],
+    equipment_name: str,
+    equipment_category: str,
+    grok_client: GrokClient,
+    verify_with_vision: bool,
+) -> bool:
+    """Verify media with vision API and save if relevant."""
+    # Verify with vision API if enabled
+    if verify_with_vision and media_item.get("media_type") == "photo":
+        is_relevant, reason = _verify_media_with_vision(
+            response.content,
+            equipment_name,
+            equipment_category,
+            media_item.get("title", ""),
+            grok_client,
+        )
+        if not is_relevant:
+            logger.info("  ⚠️  Rejected: %s", reason)
+            return False
+        logger.info("  ✅ Verified: %s", reason)
+
+    # Create directory and save file
+    equipment_dir.mkdir(parents=True, exist_ok=True)
+    with open(filepath, "wb") as f:
+        f.write(response.content)
+
+    logger.debug("Downloaded media: %s", filepath.name)
+    return True
+
+
+def _cleanup_empty_directory(equipment_dir: Path) -> None:
+    """Clean up empty directory if download failed."""
+    if equipment_dir.exists() and not any(equipment_dir.iterdir()):
+        try:
+            equipment_dir.rmdir()
+            logger.debug("Cleaned up empty directory: %s", equipment_dir.name)
+        except Exception:
+            pass  # Ignore cleanup errors
+
+
 def _download_media_file(
     media_item: Dict[str, Any],
     equipment_name: str,
@@ -560,8 +659,6 @@ def _download_media_file(
     grok_client: GrokClient,
     verify_with_vision: bool = True,
 ) -> Optional[str]:
-    # TODO: Refactor - Complexity 20 (see EQUIPMENT_REFACTORING.md)
-    # Extract: _handle_download_retry(), _validate_response(), _handle_download_error()
     """Download media file to local storage with vision verification.
 
     Args:
@@ -576,7 +673,6 @@ def _download_media_file(
         Relative path to downloaded file or None
     """
     import requests
-    from urllib.parse import urlparse
 
     url = media_item.get("url")
     if not url:
@@ -595,26 +691,8 @@ def _download_media_file(
         response = session.get(url, timeout=30, headers=headers, allow_redirects=True)
         response.raise_for_status()
 
-        # Determine file extension from content-type or URL
-        content_type = response.headers.get("content-type", "")
-        if "jpeg" in content_type or "jpg" in content_type:
-            ext = ".jpg"
-        elif "png" in content_type:
-            ext = ".png"
-        elif "gif" in content_type:
-            ext = ".gif"
-        elif "webp" in content_type:
-            ext = ".webp"
-        elif "pdf" in content_type:
-            ext = ".pdf"
-        elif "mp4" in content_type or "video" in content_type:
-            ext = ".mp4"
-        else:
-            # Fallback to URL extension
-            parsed = urlparse(url)
-            ext = Path(parsed.path).suffix or ".jpg"
-
-        # Generate filename
+        # Determine file extension and generate filename
+        ext = _determine_file_extension(response, url)
         filename = f"{media_id}{ext}"
         filepath = equipment_dir / filename
 
@@ -623,26 +701,19 @@ def _download_media_file(
             logger.debug("Media already downloaded: %s", filename)
             return str(filepath.relative_to(media_dir.parent))
 
-        # Verify with vision API if enabled
-        if verify_with_vision and media_item.get("media_type") == "photo":
-            is_relevant, reason = _verify_media_with_vision(
-                response.content,
-                equipment_name,
-                equipment_category,
-                media_item.get("title", ""),
-                grok_client,
-            )
-            if not is_relevant:
-                logger.info("  ⚠️  Rejected: %s", reason)
-                return None
-            logger.info("  ✅ Verified: %s", reason)
+        # Verify and save
+        if not _verify_and_save_media(
+            response,
+            filepath,
+            equipment_dir,
+            media_item,
+            equipment_name,
+            equipment_category,
+            grok_client,
+            verify_with_vision,
+        ):
+            return None
 
-        # Create directory and save file
-        equipment_dir.mkdir(parents=True, exist_ok=True)
-        with open(filepath, "wb") as f:
-            f.write(response.content)
-
-        logger.debug("Downloaded media: %s", filename)
         return str(filepath.relative_to(media_dir.parent))
 
     except requests.RequestException as e:
@@ -652,13 +723,7 @@ def _download_media_file(
         logger.debug("Media download error: %s", e)
         return None
     finally:
-        # Clean up empty directory if download failed
-        if equipment_dir.exists() and not any(equipment_dir.iterdir()):
-            try:
-                equipment_dir.rmdir()
-                logger.debug("Cleaned up empty directory: %s", equipment_dir.name)
-            except Exception:
-                pass  # Ignore cleanup errors
+        _cleanup_empty_directory(equipment_dir)
 
 
 def _extract_media(
@@ -779,12 +844,77 @@ If no images found, return empty array: []
     return []
 
 
+def _build_search_query(
+    common_name: str, technical_identifier: Optional[str], year: Optional[str]
+) -> str:
+    """Build search query for OpenSERP."""
+    identifier = technical_identifier or common_name
+    year_str = year if year else "1939-1945"
+    return f"{identifier} {common_name} WWII {year_str} photo wikipedia commons"
+
+
+def _run_openserp_search(search_query: str) -> list:
+    """Run OpenSERP search and return results."""
+    import subprocess
+
+    try:
+        result = subprocess.run(  # nosec B603 B404
+            ["./tools/search_media", search_query],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+
+        if result.returncode != 0:
+            logger.debug("OpenSERP search failed: %s", result.stderr)
+            return []
+
+        return json.loads(result.stdout)
+
+    except FileNotFoundError:
+        logger.debug("OpenSERP tool not found, skipping")
+        return []
+    except subprocess.TimeoutExpired:
+        logger.warning("OpenSERP search timed out")
+        return []
+    except json.JSONDecodeError as e:
+        logger.debug("Failed to parse OpenSERP response: %s", e)
+        return []
+
+
+def _extract_images_from_pages(
+    page_results: list, common_name: str, grok_client: GrokClient
+) -> list:
+    """Extract image URLs from wiki pages."""
+    media_list = []
+
+    for page in page_results[:3]:  # Limit to first 3 pages
+        if not isinstance(page, dict) or "url" not in page:
+            continue
+
+        page_url = page["url"]
+        image_urls = _extract_image_urls_from_page(page_url, common_name, grok_client)
+
+        for img_url in image_urls[:2]:  # Max 2 images per page
+            media_list.append(
+                {
+                    "media_type": "photo",
+                    "url": img_url,
+                    "title": page.get("title", ""),
+                    "source": page.get("source", "unknown"),
+                    "license": "See source",
+                    "description": f"From {page_url}",
+                }
+            )
+
+    return media_list
+
+
 def _extract_media_with_openserp(
     common_name: str,
     technical_identifier: Optional[str],
     category: str,
-    # TODO: Refactor - Complexity 12 (see EQUIPMENT_REFACTORING.md)
-    # Extract: _filter_image_urls(), _process_serp_results()
     grok_client: GrokClient,
     year: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
@@ -800,70 +930,22 @@ def _extract_media_with_openserp(
     Returns:
         List of media items with direct image URLs
     """
-    import subprocess
-
-    identifier = technical_identifier or common_name
-    # Include year if available, otherwise use WWII date range
-    year_str = year if year else "1939-1945"
-    search_query = f"{identifier} {common_name} WWII {year_str} photo wikipedia commons"
+    search_query = _build_search_query(common_name, technical_identifier, year)
 
     try:
-        # Call Go search tool (trusted local binary)
-        result = subprocess.run(  # nosec B603 B404
-            ["./tools/search_media", search_query],
-            capture_output=True,
-            text=True,
-            timeout=30,
-            check=False,
-        )
-
-        if result.returncode != 0:
-            logger.debug("OpenSERP search failed: %s", result.stderr)
+        page_results = _run_openserp_search(search_query)
+        if not page_results:
             return []
 
-        # Parse JSON output - these are wiki pages, not direct image URLs
-        page_results = json.loads(result.stdout)
         logger.debug(
             "Found %s wiki pages via OpenSERP for %s", len(page_results), common_name
         )
 
-        # Extract actual image URLs from the wiki pages
-        media_list = []
-        for page in page_results[
-            :3
-        ]:  # Limit to first 3 pages to avoid too many API calls
-            if not isinstance(page, dict) or "url" not in page:
-                continue
-
-            page_url = page["url"]
-            image_urls = _extract_image_urls_from_page(
-                page_url, common_name, grok_client
-            )
-
-            for img_url in image_urls[:2]:  # Max 2 images per page
-                media_list.append(
-                    {
-                        "media_type": "photo",
-                        "url": img_url,
-                        "title": page.get("title", ""),
-                        "source": page.get("source", "unknown"),
-                        "license": "See source",
-                        "description": f"From {page_url}",
-                    }
-                )
-
+        media_list = _extract_images_from_pages(page_results, common_name, grok_client)
         logger.debug("Extracted %s image URLs from wiki pages", len(media_list))
+
         return media_list
 
-    except FileNotFoundError:
-        logger.debug("OpenSERP tool not found, skipping")
-        return []
-    except subprocess.TimeoutExpired:
-        logger.warning("OpenSERP search timed out for %s", common_name)
-        return []
-    except json.JSONDecodeError as e:
-        logger.debug("Failed to parse OpenSERP response: %s", e)
-        return []
     except Exception as e:
         logger.debug("OpenSERP search error: %s", e)
         return []
@@ -1042,6 +1124,114 @@ def _fuzzy_match_equipment(
     return None
 
 
+def _find_matching_equipment(
+    common_name: str, equipment_index: Dict[str, Path]
+) -> Optional[str]:
+    """Find matching equipment by exact or fuzzy match."""
+    if common_name in equipment_index:
+        return common_name
+    return _fuzzy_match_equipment(common_name, equipment_index)
+
+
+def _merge_equipment_fields(existing: dict, equipment_data: dict) -> None:
+    """Merge equipment fields from new data into existing."""
+    for key in [
+        "description",
+        "alternate_names",
+        "subcategory",
+        "variants",
+        "specifications",
+    ]:
+        if key not in equipment_data or not equipment_data[key]:
+            continue
+
+        if key == "alternate_names" and key in existing:
+            # Merge alternate names
+            existing[key] = list(set(existing[key] + equipment_data[key]))
+        elif key == "variants" and key in existing:
+            # Merge variants by variant_name
+            existing_variants = {
+                v["variant_name"]: v for v in existing.get("variants", [])
+            }
+            for new_variant in equipment_data.get("variants", []):
+                existing_variants[new_variant["variant_name"]] = new_variant
+            existing["variants"] = list(existing_variants.values())
+        else:
+            existing[key] = equipment_data[key]
+
+
+def _merge_into_existing(
+    eq_file: Path, new_mention: dict, equipment_data: dict, matched_name: str
+) -> Path:
+    """Merge mention into existing equipment file."""
+    logger.debug("Merging mention into existing equipment: %s", matched_name)
+
+    # Load existing
+    with open(eq_file, encoding="utf-8") as f:
+        existing = json.load(f)
+
+    # Check if mention already exists
+    existing_mention_ids = {m["MentionID"] for m in existing.get("mentions", [])}
+    if new_mention["MentionID"] in existing_mention_ids:
+        logger.debug("Mention %s already exists, skipping", new_mention["MentionID"])
+        return eq_file
+
+    # Append mention
+    existing["mentions"].append(new_mention)
+
+    # Update optional fields
+    _merge_equipment_fields(existing, equipment_data)
+
+    # Save
+    with open(eq_file, "w") as f:
+        json.dump(existing, f, indent=2)
+
+    return eq_file
+
+
+def _create_new_equipment(
+    equipment_data: dict,
+    new_mention: dict,
+    equipment_dir: Path,
+    equipment_index: Dict[str, Path],
+    grok_client: Optional[GrokClient],
+    enable_enrichment: bool,
+    verify_media_with_vision: bool,
+    dates_index: Optional[Dict[str, Dict[str, str]]],
+) -> Path:
+    """Create new equipment file."""
+    common_name = equipment_data["common_name"]
+    logger.debug("Creating new equipment file: %s", common_name)
+
+    # Enrich with external data if enabled
+    if enable_enrichment and grok_client:
+        sub_event_id = new_mention.get("Sub_eventID")
+        _enrich_and_add_media(
+            equipment_data,
+            common_name,
+            grok_client,
+            verify_media_with_vision,
+            sub_event_id,
+            dates_index,
+        )
+
+    equipment_id = str(ulid.new())
+    equipment_data["EquipmentID"] = equipment_id
+    equipment_data["mentions"] = [new_mention]
+    equipment_data["extracted_date"] = datetime.now(timezone.utc).isoformat()
+
+    safe_name = common_name.replace(" ", "_").replace("/", "_")
+    eq_file = equipment_dir / f"{safe_name}_{equipment_id[:8]}.json"
+
+    with open(eq_file, "w") as f:
+        json.dump(equipment_data, f, indent=2)
+
+    # Update index
+    equipment_index[common_name] = eq_file
+
+    return eq_file
+
+
 def merge_or_create_equipment(
     equipment_data: dict,
     new_mention: dict,
@@ -1050,8 +1240,6 @@ def merge_or_create_equipment(
     grok_client: Optional[GrokClient] = None,
     enable_enrichment: bool = False,
     verify_media_with_vision: bool = True,
-    # TODO: Refactor - Complexity 16 (see EQUIPMENT_REFACTORING.md)
-    # Extract: _find_matching_equipment(), _merge_equipment_data(), _persist_equipment()
     dates_index: Optional[Dict[str, Dict[str, str]]] = None,
 ) -> Path:
     """Merge mention into existing equipment or create new file.
@@ -1065,98 +1253,29 @@ def merge_or_create_equipment(
         enable_enrichment: Whether to enrich new equipment with external data
         verify_media_with_vision: Verify media relevance with Grok vision API
         dates_index: Index of dates by Sub-eventID for temporal filtering
-        equipment_index: Index of existing equipment
 
     Returns:
         Path to equipment file
     """
     common_name = equipment_data["common_name"]
 
-    # Check for exact match first, then fuzzy match
-    matched_name = None
-    if common_name in equipment_index:
-        matched_name = common_name
-    else:
-        matched_name = _fuzzy_match_equipment(common_name, equipment_index)
+    # Find matching equipment
+    matched_name = _find_matching_equipment(common_name, equipment_index)
 
     if matched_name:
         eq_file = equipment_index[matched_name]
-        logger.debug("Merging mention into existing equipment: %s", matched_name)
-
-        # Load existing
-        with open(eq_file, encoding="utf-8") as f:
-            existing = json.load(f)
-
-        # Check if mention already exists (by MentionID)
-        existing_mention_ids = {m["MentionID"] for m in existing.get("mentions", [])}
-        if new_mention["MentionID"] in existing_mention_ids:
-            logger.debug(
-                "Mention %s already exists, skipping", new_mention["MentionID"]
-            )
-            return eq_file
-
-        # Append mention
-        existing["mentions"].append(new_mention)
-
-        # Update optional fields if new data provided
-        for key in [
-            "description",
-            "alternate_names",
-            "subcategory",
-            "variants",
-            "specifications",
-        ]:
-            if key in equipment_data and equipment_data[key]:
-                if key == "alternate_names" and key in existing:
-                    # Merge alternate names
-                    existing[key] = list(set(existing[key] + equipment_data[key]))
-                elif key == "variants" and key in existing:
-                    # Merge variants by variant_name
-                    existing_variants = {
-                        v["variant_name"]: v for v in existing.get("variants", [])
-                    }
-                    for new_variant in equipment_data.get("variants", []):
-                        existing_variants[new_variant["variant_name"]] = new_variant
-                    existing["variants"] = list(existing_variants.values())
-                else:
-                    existing[key] = equipment_data[key]
-
-        # Save
-        with open(eq_file, "w") as f:
-            json.dump(existing, f, indent=2)
-
-        return eq_file
+        return _merge_into_existing(eq_file, new_mention, equipment_data, matched_name)
     else:
-        # Create new
-        logger.debug("Creating new equipment file: %s", common_name)
-
-        # Enrich with external data if enabled
-        if enable_enrichment and grok_client:
-            sub_event_id = new_mention.get("Sub_eventID")
-            _enrich_and_add_media(
-                equipment_data,
-                common_name,
-                grok_client,
-                verify_media_with_vision,
-                sub_event_id,
-                dates_index,
-            )
-
-        equipment_id = str(ulid.new())
-        equipment_data["EquipmentID"] = equipment_id
-        equipment_data["mentions"] = [new_mention]
-        equipment_data["extracted_date"] = datetime.now(timezone.utc).isoformat()
-
-        safe_name = common_name.replace(" ", "_").replace("/", "_")
-        eq_file = equipment_dir / f"{safe_name}_{equipment_id[:8]}.json"
-
-        with open(eq_file, "w") as f:
-            json.dump(equipment_data, f, indent=2)
-
-        # Update index
-        equipment_index[common_name] = eq_file
-
-        return eq_file
+        return _create_new_equipment(
+            equipment_data,
+            new_mention,
+            equipment_dir,
+            equipment_index,
+            grok_client,
+            enable_enrichment,
+            verify_media_with_vision,
+            dates_index,
+        )
 
 
 def _validate_event_data(event_data: Dict[str, Any], event_file: Path) -> bool:

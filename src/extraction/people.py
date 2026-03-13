@@ -5,12 +5,13 @@ import logging
 import re
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 import ulid
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from src.grok_client import GrokClient
+from src.utils.json_validator import _fix_invalid_ulids
 
 logger = logging.getLogger(__name__)
 
@@ -200,6 +201,8 @@ def _deduplicate_ranks(ranks: list[Dict[str, Any]]) -> list[Dict[str, Any]]:
 
 
 class MilitaryAward(BaseModel):
+    """Military award or decoration received by a person."""
+
     award: str
     class_: Optional[str] = Field(default=None, alias="class")
     date_awarded: Optional[str] = None
@@ -208,12 +211,16 @@ class MilitaryAward(BaseModel):
 
 
 class MilitaryRank(BaseModel):
+    """Military rank held by a person."""
+
     rank: str
     date: Optional[str] = None
     branch: Optional[str] = None
 
 
 class UnitServed(BaseModel):
+    """Military unit in which a person served."""
+
     unit: str
     from_: Optional[str] = Field(default=None, alias="from")
     to: Optional[str] = None
@@ -222,17 +229,23 @@ class UnitServed(BaseModel):
 
 
 class Education(BaseModel):
+    """Educational institution attended by a person."""
+
     institution: str
     degree: Optional[str] = None
     year: Optional[str] = None
 
 
 class Family(BaseModel):
+    """Family information for a person."""
+
     spouse: Optional[str] = None
     children: list[str] = Field(default_factory=list)
 
 
 class BiographySource(BaseModel):
+    """Source of biographical information."""
+
     source: str
     page: Optional[str] = None  # Can be single page or range (e.g., "16" or "16-17")
     confidence: Optional[float] = None
@@ -251,6 +264,8 @@ class BiographySource(BaseModel):
 
 
 class BiographicalProfile(BaseModel):
+    """Biographical profile information for a person."""
+
     birth_date: Optional[str] = None
     birth_place: Optional[str] = None
     death_date: Optional[str] = None
@@ -271,6 +286,8 @@ class BiographicalProfile(BaseModel):
 
 
 class PersonEventMention(BaseModel):
+    """Event mention linking a person to a specific event."""
+
     MentionID: str = Field(description="26-character ULID")
     Event_Name: str
     EventID: str = Field(description="26-character ULID")
@@ -289,6 +306,8 @@ class PersonEventMention(BaseModel):
 
 
 class Person(BaseModel):
+    """Person entity with biographical information and event mentions."""
+
     PersonID: str = Field(description="26-character ULID")
     name: str
     source_language: str = "English"
@@ -297,42 +316,14 @@ class Person(BaseModel):
 
 
 class PeopleOutput(BaseModel):
+    """Output container for extracted people entities."""
+
     People: list[Person]
 
 
 SYSTEM_PROMPT = """You are an expert historian analyzing World War II documents.
 Extract all people mentions with biographical details and event context.
 Return structured data matching the schema."""
-
-
-def _is_valid_ulid(value: str) -> bool:
-    """Check if string is a valid ULID."""
-    return len(value) == 26 and all(
-        c in "0123456789ABCDEFGHJKMNPQRSTVWXYZ" for c in value
-    )
-
-
-def _fix_invalid_ulids(
-    data: Union[Dict[str, Any], list],
-) -> Union[Dict[str, Any], list]:
-    """Replace invalid ULIDs with valid ones."""
-    if isinstance(data, dict):
-        for key, value in data.items():
-            if (
-                key.endswith("ID")
-                and isinstance(value, str)
-                and not _is_valid_ulid(value)
-            ):
-                new_ulid = str(ulid.new())
-                data[key] = new_ulid
-                logger.debug(
-                    "  Fixed invalid ULID in %s: '%s' -> '%s'", key, value, new_ulid
-                )
-            elif isinstance(value, (dict, list)):
-                data[key] = _fix_invalid_ulids(value)
-    elif isinstance(data, list):
-        return [_fix_invalid_ulids(item) for item in data]
-    return data
 
 
 def create_people_prompt(
@@ -596,6 +587,172 @@ def _merge_person(
     return existing
 
 
+def _check_if_processed(event_file: Path, people_dir: Path) -> bool:
+    """Check if event file has already been processed. Returns True if processed."""
+    processed_registry = people_dir / ".processed_events.json"
+    event_file_str = str(event_file.resolve())
+
+    if processed_registry.exists():
+        with open(processed_registry, "r", encoding="utf-8") as f:
+            processed = json.load(f)
+        if event_file_str in processed:
+            logger.info(
+                f"Event already processed for people extraction: {event_file.name}"
+            )
+            return True
+
+    return False
+
+
+def _load_book_metadata(event_file: Path) -> tuple[str, str, str]:
+    """Load book metadata from parsed file. Returns (book, author, series)."""
+    parsed_file = event_file.parent / event_file.name.replace(
+        "-event.json", "-parsed.json"
+    )
+
+    if not parsed_file.exists():
+        return "", "", ""
+
+    with open(parsed_file, "r", encoding="utf-8") as f:
+        parsed_data = json.load(f)
+        if not parsed_data:
+            return "", "", ""
+
+        return (
+            parsed_data.get("book", ""),
+            parsed_data.get("author", ""),
+            parsed_data.get("series", ""),
+        )
+
+
+def _load_people_index(index_file: Path) -> dict:
+    """Load people index from file."""
+    if index_file.exists():
+        with open(index_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+def _save_people_index(index_file: Path, index: dict) -> None:
+    """Save people index atomically."""
+    temp_file = index_file.with_suffix(".tmp")
+    with open(temp_file, "w", encoding="utf-8") as f:
+        json.dump(index, f, indent=2, ensure_ascii=False)
+    temp_file.replace(index_file)
+
+
+def _process_person(
+    person: dict,
+    people_dir: Path,
+    index: dict,
+) -> tuple[bool, bool]:
+    """Process a single person. Returns (is_new, is_updated)."""
+    name = person["name"]
+    person_id = person["PersonID"]
+    name_key = _normalize_name(name)
+
+    # Check in-memory index for existing person
+    existing_filename = index.get(name_key)
+
+    if existing_filename:
+        # Update existing person
+        person_file = people_dir / existing_filename
+        if person_file.exists():
+            existing_person = _load_person_file(person_file)
+            merged = _merge_person(existing_person, person)
+            Person(**merged)  # Validate
+            _save_person_file(person_file, merged)
+            logger.debug("  Updated: %s", name)
+            return False, True
+        else:
+            # Index points to missing file, create new
+            filename = _name_to_filename(name, person_id)
+            person_file = people_dir / filename
+            _save_person_file(person_file, person)
+            index[name_key] = filename
+            logger.debug("  Created: %s", name)
+            return True, False
+    else:
+        # New person
+        filename = _name_to_filename(name, person_id)
+        person_file = people_dir / filename
+        _save_person_file(person_file, person)
+        index[name_key] = filename
+        logger.debug("  Created: %s", name)
+        return True, False
+
+
+def _extract_people_for_sub_event(
+    sub_event: dict,
+    event_id: str,
+    event_name: str,
+    book: str,
+    author: str,
+    series: str,
+    grok_client: GrokClient,
+    max_retries: int,
+) -> Optional[list]:
+    """Extract people for a single sub-event with retry logic."""
+    sub_event_id = sub_event.get("Sub-eventID", "")
+    logger.info("  Processing sub-event %s", sub_event_id)
+
+    prompt = create_people_prompt(sub_event, event_id, event_name, book, author, series)
+
+    for attempt in range(max_retries):
+        try:
+            people_output = grok_client.extract_structured(
+                prompt=prompt,
+                schema=PeopleOutput,
+                system_prompt=SYSTEM_PROMPT,
+                use_cache=(attempt == 0),
+                cache_type="people",
+            )
+
+            people_dict: Dict[str, Any] = people_output.model_dump(by_alias=True)
+            people_dict = _fix_invalid_ulids(people_dict)  # type: ignore
+
+            extracted_people = people_dict.get("People", [])
+            logger.info("  ✓ Processed %d people", len(extracted_people))
+            return extracted_people
+
+        except (ValueError, KeyError, json.JSONDecodeError, TypeError) as e:
+            if attempt < max_retries - 1:
+                logger.warning(f"  ⚠ Attempt {attempt + 1} failed: {e}")
+                logger.info(f"  Retrying ({attempt + 2}/{max_retries})...")
+            else:
+                logger.error(f"  ✗ All {max_retries} attempts failed: {e}")
+                return None
+
+    return None
+
+
+def _mark_event_processed(
+    event_file: Path,
+    people_dir: Path,
+    event_data: dict,
+    new_people_count: int,
+    updated_people_count: int,
+) -> None:
+    """Mark event file as processed in registry."""
+    processed_registry = people_dir / ".processed_events.json"
+    event_file_str = str(event_file.resolve())
+
+    if processed_registry.exists():
+        with open(processed_registry, "r", encoding="utf-8") as f:
+            processed = json.load(f)
+    else:
+        processed = {}
+
+    processed[event_file_str] = {
+        "processed_at": event_data.get("extracted_date", ""),
+        "new_people": new_people_count,
+        "updated_people": updated_people_count,
+    }
+
+    with open(processed_registry, "w", encoding="utf-8") as f:
+        json.dump(processed, f, indent=2)
+
+
 def extract_people(
     event_file: Path,
     grok_client: GrokClient,
@@ -617,38 +774,15 @@ def extract_people(
     people_dir = output_dir / "people"
     people_dir.mkdir(parents=True, exist_ok=True)
 
-    # Check if this event file has already been processed
-    processed_registry = people_dir / ".processed_events.json"
-    event_file_str = str(event_file.resolve())
-
-    if processed_registry.exists():
-        with open(processed_registry, "r", encoding="utf-8") as f:
-            processed = json.load(f)
-        if event_file_str in processed:
-            logger.info(
-                f"Event already processed for people extraction: {event_file.name}"
-            )
-            return people_dir
-
-    index_file = people_dir / "index.json"
+    # Check if already processed
+    if _check_if_processed(event_file, people_dir):
+        return people_dir
 
     with open(event_file, "r", encoding="utf-8") as f:
         event_data = json.load(f)
 
-    # Get book metadata from parsed file
-    parsed_file = event_file.parent / event_file.name.replace(
-        "-event.json", "-parsed.json"
-    )
-    book = ""
-    author = ""
-    series = ""
-    if parsed_file.exists():
-        with open(parsed_file, "r", encoding="utf-8") as f:
-            parsed_data = json.load(f)
-            if parsed_data:  # Check if parsed_data is not None
-                book = parsed_data.get("book", "")
-                author = parsed_data.get("author", "")
-                series = parsed_data.get("series", "")
+    # Get book metadata
+    book, author, series = _load_book_metadata(event_file)
 
     event_name = event_data.get("Chapter", "")
     event_obj = event_data.get("Event", {})
@@ -658,106 +792,40 @@ def extract_people(
     new_people_count = 0
     updated_people_count = 0
 
-    # Load index once at start
-    if index_file.exists():
-        with open(index_file, "r", encoding="utf-8") as f:
-            index = json.load(f)
-    else:
-        index = {}
+    # Load index
+    index_file = people_dir / "index.json"
+    index = _load_people_index(index_file)
 
     for sub_event in sub_events:
-        sub_event_id = sub_event.get("Sub-eventID", "")
-        logger.info("  Processing sub-event %s", sub_event_id)
-
-        prompt = create_people_prompt(
-            sub_event, event_id, event_name, book, author, series
+        extracted_people = _extract_people_for_sub_event(
+            sub_event,
+            event_id,
+            event_name,
+            book,
+            author,
+            series,
+            grok_client,
+            max_retries,
         )
 
-        # Retry logic for truncated responses
-        for attempt in range(max_retries):
-            try:
-                people_output = grok_client.extract_structured(
-                    prompt=prompt,
-                    schema=PeopleOutput,
-                    system_prompt=SYSTEM_PROMPT,
-                    use_cache=(attempt == 0),
-                    cache_type="people",
-                )
+        if not extracted_people:
+            continue
 
-                people_dict: Dict[str, Any] = people_output.model_dump(by_alias=True)
-                people_dict = _fix_invalid_ulids(people_dict)  # type: ignore
+        # Process each person
+        for person in extracted_people:
+            is_new, is_updated = _process_person(person, people_dir, index)
+            if is_new:
+                new_people_count += 1
+            if is_updated:
+                updated_people_count += 1
 
-                extracted_people = people_dict.get("People", [])
+    # Save index
+    _save_people_index(index_file, index)
 
-                # Save or update individual person files
-                for person in extracted_people:
-                    name = person["name"]
-                    person_id = person["PersonID"]
-                    name_key = _normalize_name(name)
-
-                    # Check in-memory index for existing person
-                    existing_filename = index.get(name_key)
-
-                    if existing_filename:
-                        # Update existing person
-                        person_file = people_dir / existing_filename
-                        if person_file.exists():
-                            existing_person = _load_person_file(person_file)
-                            merged = _merge_person(existing_person, person)
-                            # Validate merged data
-                            Person(**merged)
-                            _save_person_file(person_file, merged)
-                            updated_people_count += 1
-                            logger.debug("  Updated: %s", name)
-                        else:
-                            # Index points to missing file, create new
-                            filename = _name_to_filename(name, person_id)
-                            person_file = people_dir / filename
-                            _save_person_file(person_file, person)
-                            index[name_key] = filename
-                            new_people_count += 1
-                            logger.debug("  Created: %s", name)
-                    else:
-                        # New person
-                        filename = _name_to_filename(name, person_id)
-                        person_file = people_dir / filename
-                        _save_person_file(person_file, person)
-                        index[name_key] = filename
-                        new_people_count += 1
-                        logger.debug("  Created: %s", name)
-
-                logger.info("  ✓ Processed %d people", len(extracted_people))
-                break
-
-            except (ValueError, KeyError, json.JSONDecodeError, TypeError) as e:
-                if attempt < max_retries - 1:
-                    logger.warning(f"  ⚠ Attempt {attempt + 1} failed: {e}")
-                    logger.info(f"  Retrying ({attempt + 2}/{max_retries})...")
-                else:
-                    logger.error(f"  ✗ All {max_retries} attempts failed: {e}")
-                    continue
-
-    # Save index once at end (atomic write)
-    temp_file = index_file.with_suffix(".tmp")
-    with open(temp_file, "w", encoding="utf-8") as f:
-        json.dump(index, f, indent=2, ensure_ascii=False)
-    temp_file.replace(index_file)
-
-    # Mark this event file as processed
-    if processed_registry.exists():
-        with open(processed_registry, "r", encoding="utf-8") as f:
-            processed = json.load(f)
-    else:
-        processed = {}
-
-    processed[event_file_str] = {
-        "processed_at": event_data.get("extracted_date", ""),
-        "new_people": new_people_count,
-        "updated_people": updated_people_count,
-    }
-
-    with open(processed_registry, "w", encoding="utf-8") as f:
-        json.dump(processed, f, indent=2)
+    # Mark as processed
+    _mark_event_processed(
+        event_file, people_dir, event_data, new_people_count, updated_people_count
+    )
 
     logger.info(
         "People directory: %d new, %d updated", new_people_count, updated_people_count

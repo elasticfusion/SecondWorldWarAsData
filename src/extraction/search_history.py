@@ -14,6 +14,7 @@ class SearchHistory:
     """Track OpenSERP search history."""
 
     def __init__(self, history_file: Path = Path("cache/openserp_search_history.json")):
+        """Initialize search history tracker with optional file path."""
         self.history_file = history_file
         self.history_file.parent.mkdir(parents=True, exist_ok=True)
         self.searched_places: Set[str] = self._load()

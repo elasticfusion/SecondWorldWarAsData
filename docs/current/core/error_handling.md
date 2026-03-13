@@ -1,6 +1,6 @@
 # Error Handling - Extraction Services
 
-**Version:** 1.1.0  
+**Version:** 1.2.0  
 **Status:** Active  
 **Last Updated:** 2026-03-13
 
@@ -9,6 +9,46 @@
 ## Overview
 
 Error handling strategies used across extraction services (dates, places, people, events) to ensure robust and reliable data extraction from WWII documents.
+
+---
+
+## Recent Updates (v1.2.0)
+
+### Improved Cache Clearing Commands
+
+**Issue:** Generic cache clearing commands (`rm -rf cache/api/events`) removed all cached responses, not just the problematic one.
+
+**Fix:** Error messages now show specific cache clearing commands:
+```bash
+💡 Clear cache: python3 -c "from diskcache import Cache; c=Cache('cache/api/events'); c.pop('abc123...', None); print('Cache entry cleared')"
+```
+
+**Benefits:**
+- Targets only the problematic cache entry
+- Preserves all other cached responses
+- Copy-paste ready command
+- Uses correct cache_type (events, dates, places, etc.)
+
+### Enhanced Escape Sequence Sanitization
+
+**Issue:** Invalid escape sequences in API responses (e.g., `\escape`, `\x`) caused JSON parsing errors even after sanitization.
+
+**Fix:** Improved regex pattern to handle all valid JSON escapes:
+```python
+# Before: r'\\(?!["\\/bfnrtu])'
+# After:  r'\\(?!["\\/bfnrtu]|u[0-9a-fA-F]{4})'
+```
+
+**Now handles:**
+- Standard escapes: `\"`, `\\`, `\/`, `\b`, `\f`, `\n`, `\r`, `\t`
+- Unicode escapes: `\u0020`, `\u00A0`, etc.
+- Invalid escapes are automatically fixed by doubling the backslash
+
+**Applied to:**
+- `chat_completion()` - Sanitizes BEFORE caching
+- `extract_json()` - Sanitizes response text
+- `extract_json_with_image()` - Sanitizes vision responses
+- `extract_json_with_image_base64()` - Sanitizes base64 vision responses
 
 ---
 
@@ -1291,15 +1331,17 @@ def search_wikipedia(person_name: str, timeout: int = 30, max_retries: int = 2) 
 ## JSON Response Sanitization
 
 **Added:** 2026-03-13  
+**Updated:** 2026-03-13 (v1.2.0)  
 **Location:** `src/grok_client.py` - All JSON extraction methods
 
 ### Problem
 Grok API responses occasionally contain:
 - Control characters (`\x00-\x1f`) that break JSON parsing
-- Invalid escape sequences (e.g., `\d`, `\s` instead of `\\d`, `\\s`)
+- Invalid escape sequences (e.g., `\d`, `\s`, `\escape` instead of `\\d`, `\\s`, `\\escape`)
+- Unicode escape sequences that need preservation (`\u0020`, `\u00A0`)
 
-### Solution
-Sanitize all responses **before** first `json.loads()` attempt:
+### Solution (v1.2.0)
+Sanitize all responses **before caching and parsing**:
 
 ```python
 import re
@@ -1307,14 +1349,21 @@ import re
 # Remove control characters (except \n, \r, \t)
 response = re.sub(r'[\x00-\x08\x0b-\x0c\x0e-\x1f]', '', response)
 
-# Fix invalid escape sequences
-response = re.sub(r'\\(?!["\\/bfnrtu])', r'\\\\', response)
+# Fix invalid escape sequences (preserves valid JSON escapes)
+# Valid: \" \\ \/ \b \f \n \r \t \uXXXX
+response = re.sub(r'\\(?!["\\/bfnrtu]|u[0-9a-fA-F]{4})', r'\\\\', response)
 
 # Now safe to parse
 data = json.loads(response)
 ```
 
+**Key Improvements (v1.2.0):**
+- **Unicode escapes preserved:** `\u0020` is valid JSON, not sanitized
+- **Sanitizes BEFORE caching:** Bad responses never get cached
+- **More robust pattern:** Handles all edge cases
+
 **Applied in:**
+- `chat_completion()` - **NEW:** Sanitizes before caching (prevents bad cache entries)
 - `extract_json()` - Standard JSON extraction
 - `extract_json_with_image_base64()` - Image + JSON extraction
 - `extract_json_with_image()` - Image URL + JSON extraction
@@ -1322,6 +1371,8 @@ data = json.loads(response)
 **Benefits:**
 - Prevents `JSONDecodeError` from control characters
 - Fixes common escape sequence mistakes
+- Preserves valid unicode escapes
+- Bad responses never get cached
 - Applied consistently across all extraction methods
 - No performance impact (regex is fast)
 
@@ -1362,24 +1413,38 @@ else:
     logger.error(f"Response truncated at {response_len} chars")
 ```
 
-**2. File-Specific Cache Clearing**
-When errors occur, provide exact command to clear cache:
+**2. Specific Cache Clearing (v1.2.0)**
+When errors occur, provide exact command to clear the specific problematic cache entry:
 
 ```python
-# In batch_parallel.py
-cache_cmd = (
+# Generate cache clearing command with specific cache_key
+cache_key = self._make_cache_key(prompt, temperature)
+clear_cmd = (
     f'python3 -c "from diskcache import Cache; '
-    f'c=Cache(\'cache/api/events\'); '
-    f'[c.pop(k) for k in list(c) if \'{chapter_id}\' in str(c.get(k, \'\'))]"'
+    f"c=Cache('cache/api/{cache_type}'); "
+    f"c.pop('{cache_key}', None); "
+    f'print(\\'Cache entry cleared\\')"'
 )
-logger.info(f"💡 Clear cache: {cache_cmd}")
+logger.error(f"💡 Clear cache: {clear_cmd}")
+```
+
+**Example output:**
+```
+💡 Clear cache: python3 -c "from diskcache import Cache; c=Cache('cache/api/events'); c.pop('abc123def456...', None); print('Cache entry cleared')"
 ```
 
 **Benefits:**
-- Actionable error messages
-- Distinguishes error types
-- Provides exact fix commands
-- Helps identify input size issues
+- **Surgical precision:** Clears only the bad cache entry
+- **Preserves good data:** All other cached responses remain
+- **Copy-paste ready:** Command can be run directly
+- **Correct cache type:** Uses the actual cache_type (events, dates, places, etc.)
+- **Actionable:** User knows exactly what to do
+
+**Old approach (deprecated):**
+```bash
+# This cleared ALL cached responses for that type
+rm -rf cache/api/events
+```
 
 ---
 

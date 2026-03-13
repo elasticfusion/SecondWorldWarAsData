@@ -173,40 +173,34 @@ def save_validation_history(
     history_file.write_text(json.dumps(history, indent=2))
 
 
-def generate_trend_report(history_file: Path, schema_name: str) -> str:
-    """
-    Generate trend report from validation history.
-
-    Args:
-        history_file: Path to history JSON file
-        schema_name: Schema to filter by (or 'all')
-
-    Returns:
-        HTML report showing trends
-    """
+def _load_and_filter_history(history_file: Path, schema_name: str) -> list:
+    """Load and filter validation history by schema."""
     if not history_file.exists():
-        return "<html><body><h1>No validation history found</h1></body></html>"
+        return []
 
     history = json.loads(history_file.read_text())
 
-    # Filter by schema if specified
     if schema_name != "all":
         history = [h for h in history if h.get("schema") == schema_name]
 
-    if not history:
-        return (
-            f"<html><body><h1>No history for schema: {schema_name}</h1></body></html>"
-        )
+    return history
 
-    # Calculate trends
+
+def _calculate_avg_success_rate(history: list) -> float:
+    """Calculate average success rate from history."""
+    if not history:
+        return 0.0
+
     total_runs = len(history)
-    avg_success_rate = (
+    return (
         sum(h["valid"] / h["total"] * 100 if h["total"] > 0 else 0 for h in history)
         / total_runs
     )
-    recent = history[-10:]
 
-    html = f"""<!DOCTYPE html>
+
+def _generate_html_header(schema_name: str) -> str:
+    """Generate HTML header with styles."""
+    return f"""<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -230,8 +224,12 @@ def generate_trend_report(history_file: Path, schema_name: str) -> str:
 <body>
     <div class="container">
         <h1>Validation Trends</h1>
-        <p><strong>Schema:</strong> {schema_name}</p>
-        
+        <p><strong>Schema:</strong> {schema_name}</p>"""
+
+
+def _generate_summary_section(total_runs: int, avg_success_rate: float) -> str:
+    """Generate summary metrics section."""
+    return f"""
         <div class="summary">
             <div class="metric">
                 <div class="metric-value">{total_runs}</div>
@@ -255,15 +253,15 @@ def generate_trend_report(history_file: Path, schema_name: str) -> str:
                     <th>Success Rate</th>
                 </tr>
             </thead>
-            <tbody>
-"""
+            <tbody>"""
 
-    for entry in reversed(recent):
-        success_rate = (
-            entry["valid"] / entry["total"] * 100 if entry["total"] > 0 else 0
-        )
-        rate_class = "success" if success_rate >= 95 else "failure"
-        html += f"""
+
+def _generate_table_row(entry: dict) -> str:
+    """Generate HTML table row for validation entry."""
+    success_rate = entry["valid"] / entry["total"] * 100 if entry["total"] > 0 else 0
+    rate_class = "success" if success_rate >= 95 else "failure"
+
+    return f"""
                 <tr>
                     <td>{entry['timestamp'][:19]}</td>
                     <td>{entry['directory']}</td>
@@ -271,8 +269,43 @@ def generate_trend_report(history_file: Path, schema_name: str) -> str:
                     <td class="success">{entry['valid']}</td>
                     <td class="failure">{entry['invalid']}</td>
                     <td class="{rate_class}">{success_rate:.1f}%</td>
-                </tr>
-"""
+                </tr>"""
+
+
+def generate_trend_report(history_file: Path, schema_name: str) -> str:
+    """
+    Generate trend report from validation history.
+
+    Args:
+        history_file: Path to history JSON file
+        schema_name: Schema to filter by (or 'all')
+
+    Returns:
+        HTML report showing trends
+    """
+    # Load and filter history
+    history = _load_and_filter_history(history_file, schema_name)
+
+    if not history_file.exists():
+        return "<html><body><h1>No validation history found</h1></body></html>"
+
+    if not history:
+        return (
+            f"<html><body><h1>No history for schema: {schema_name}</h1></body></html>"
+        )
+
+    # Calculate metrics
+    total_runs = len(history)
+    avg_success_rate = _calculate_avg_success_rate(history)
+    recent = history[-10:]
+
+    # Build HTML
+    html = _generate_html_header(schema_name)
+    html += _generate_summary_section(total_runs, avg_success_rate)
+
+    # Add table rows
+    for entry in reversed(recent):
+        html += _generate_table_row(entry)
 
     html += """
             </tbody>

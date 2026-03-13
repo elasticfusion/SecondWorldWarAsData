@@ -3,11 +3,77 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from src.grok_client import GrokClient
 
 logger = logging.getLogger(__name__)
+
+
+def _create_pseudo_event(
+    material: Dict[str, Any], event_id: str, sub_event_id: str
+) -> dict:
+    """Create pseudo-event structure for extraction."""
+    material_id = material.get("MaterialID", "")
+    verbatim = material.get("verbatim_reference", "")
+
+    return {
+        "Event": {
+            "EventID": event_id,
+            "Event_Name": f"Supplemental Material {material_id[:8]}",
+            "Sub-events": [
+                {
+                    "Sub-eventID": sub_event_id,
+                    "Sub-event_summary": f"Supplemental information from {material.get('reference_type', 'note')} {material.get('reference_number', '')}",
+                    "Sub-event_fulltext": {"1": verbatim},
+                    "source_material_id": material_id,
+                }
+            ],
+        }
+    }
+
+
+def _extract_entity_type(
+    entity_type: str,
+    pseudo_event: dict,
+    grok_client: GrokClient,
+    output_root: Path,
+    config: Dict[str, Any],
+) -> Optional[Any]:
+    """Extract a single entity type from pseudo-event."""
+    config_key = entity_type
+    enabled = config.get(config_key, {}).get(
+        "enabled", entity_type in ["dates", "places", "people", "people_groups"]
+    )
+
+    if not enabled:
+        return None
+
+    try:
+        if entity_type == "dates":
+            from src.extraction.dates import extract_dates
+
+            return extract_dates(pseudo_event, grok_client, output_root / "dates")  # type: ignore[arg-type]
+        elif entity_type == "places":
+            from src.extraction.places import extract_places
+
+            return extract_places(pseudo_event, grok_client, output_root / "places")  # type: ignore[arg-type]
+        elif entity_type == "people":
+            from src.extraction.people import extract_people
+
+            return extract_people(pseudo_event, grok_client, output_root / "people")  # type: ignore[arg-type]
+        elif entity_type == "people_groups":
+            from src.extraction.people_groups import extract_people_groups
+
+            return extract_people_groups(pseudo_event, grok_client, output_root / "people_groups")  # type: ignore[arg-type]
+        elif entity_type == "equipment":
+            from src.extraction.equipment import extract_equipment_from_event  # type: ignore[attr-defined]
+
+            return extract_equipment_from_event(pseudo_event, grok_client, output_root / "equipment")  # type: ignore[arg-type,misc,call-arg]
+    except Exception as e:
+        logger.error("Failed to extract %s from supplemental: %s", entity_type, e)
+
+    return None
 
 
 def extract_from_supplemental_info(
@@ -35,86 +101,23 @@ def extract_from_supplemental_info(
 
     logger.info("Extracting entities from supplemental info: %s", material_id[:8])
 
-    # Create pseudo-event structure for extraction
-    pseudo_event = {
-        "Event": {
-            "EventID": event_id,
-            "Event_Name": f"Supplemental Material {material_id[:8]}",
-            "Sub-events": [
-                {
-                    "Sub-eventID": sub_event_id,
-                    "Sub-event_summary": f"Supplemental information from {material.get('reference_type', 'note')} {material.get('reference_number', '')}",
-                    "Sub-event_fulltext": {"1": verbatim},
-                    "source_material_id": material_id,
-                }
-            ],
-        }
-    }
+    # Create pseudo-event structure
+    pseudo_event = _create_pseudo_event(material, event_id, sub_event_id)
 
-    extracted_files = {}
+    extracted_files: Dict[str, List[Path]] = {}
 
-    # Extract dates
-    if config.get("dates", {}).get("enabled", True):
-        try:
-            from src.extraction.dates import extract_dates
+    # Extract all entity types
+    entity_types = ["dates", "places", "people", "people_groups", "equipment"]
 
-            dates_file = extract_dates(pseudo_event, grok_client, output_root / "dates")
-            if dates_file:
-                extracted_files.setdefault("dates", []).append(dates_file)
-        except Exception as e:
-            logger.error("Failed to extract dates from supplemental: %s", e)
-
-    # Extract places
-    if config.get("places", {}).get("enabled", True):
-        try:
-            from src.extraction.places import extract_places
-
-            places_file = extract_places(
-                pseudo_event, grok_client, output_root / "places"
-            )
-            if places_file:
-                extracted_files.setdefault("places", []).append(places_file)
-        except Exception as e:
-            logger.error("Failed to extract places from supplemental: %s", e)
-
-    # Extract people
-    if config.get("people", {}).get("enabled", True):
-        try:
-            from src.extraction.people import extract_people
-
-            people_files = extract_people(
-                pseudo_event, grok_client, output_root / "people"
-            )
-            if people_files:
-                extracted_files["people"] = people_files
-        except Exception as e:
-            logger.error("Failed to extract people from supplemental: %s", e)
-
-    # Extract people groups
-    if config.get("people_groups", {}).get("enabled", True):
-        try:
-            from src.extraction.people_groups import extract_people_groups
-
-            groups_files = extract_people_groups(
-                pseudo_event, grok_client, output_root / "people_groups"
-            )
-            if groups_files:
-                extracted_files["people_groups"] = groups_files
-        except Exception as e:
-            logger.error("Failed to extract people groups from supplemental: %s", e)
-
-    # Extract equipment
-    if config.get("equipment", {}).get("enabled", False):
-        try:
-            from src.extraction.equipment import extract_equipment
-
-            equipment_files = extract_equipment(
-                pseudo_event, grok_client, output_root / "equipment"
-            )
-            if equipment_files:
-                extracted_files["equipment"] = equipment_files
-        except Exception as e:
-            logger.error("Failed to extract equipment from supplemental: %s", e)
+    for entity_type in entity_types:
+        result = _extract_entity_type(
+            entity_type, pseudo_event, grok_client, output_root, config
+        )
+        if result:
+            if entity_type in ["people", "people_groups", "equipment"]:
+                extracted_files[entity_type] = result  # type: ignore[assignment]
+            else:
+                extracted_files.setdefault(entity_type, []).append(result)
 
     logger.info(
         "Extracted %d entity types from supplemental info", len(extracted_files)

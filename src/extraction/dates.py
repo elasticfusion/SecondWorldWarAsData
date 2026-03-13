@@ -4,10 +4,12 @@ import json
 import logging
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 import ulid
 from pydantic import BaseModel, ConfigDict, Field
+
+from src.utils.json_validator import _fix_invalid_ulids
 
 from src.grok_client import GrokClient
 from src.utils.file_lock import write_json_with_lock
@@ -67,33 +69,6 @@ CRITICAL RULES:
 6. Every mention MUST have both date_start and original_text populated.
 
 Return structured data matching the schema."""
-
-
-def _fix_invalid_ulids(
-    data: Union[Dict[str, Any], list],
-) -> Union[Dict[str, Any], list]:
-    """Replace invalid ULIDs with valid ones."""
-    if isinstance(data, dict):
-        for key, value in data.items():
-            if key.endswith("ID") and isinstance(value, str):
-                # Check if ULID is valid (exactly 26 chars, valid charset)
-                if len(value) != 26 or not all(
-                    c in "0123456789ABCDEFGHJKMNPQRSTVWXYZ" for c in value
-                ):
-                    new_ulid = str(ulid.new())
-                    data[key] = new_ulid
-                    logger.debug(
-                        "  Fixed invalid ULID in %s: '%s' (%d chars) -> '%s' (26 chars)",
-                        key,
-                        value,
-                        len(value),
-                        new_ulid,
-                    )
-            elif isinstance(value, (dict, list)):
-                data[key] = _fix_invalid_ulids(value)
-    elif isinstance(data, list):
-        return [_fix_invalid_ulids(item) for item in data]
-    return data
 
 
 def _filter_invalid_dates(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -314,6 +289,102 @@ def _add_event_mention(
     logger.info("    Added mention to %s", date_file.name)
 
 
+def _load_dates_index(dates_dir: Path) -> dict:
+    """Load dates index from file."""
+    index_file = dates_dir / "index.json"
+
+    if index_file.exists():
+        with open(index_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    return {}
+
+
+def _load_book_metadata_for_dates(parsed_file: Optional[Path]) -> tuple[str, str, str]:
+    """Load book metadata from parsed file. Returns (book, author, series)."""
+    if not parsed_file or not parsed_file.exists():
+        return "", "", ""
+
+    with open(parsed_file, "r", encoding="utf-8") as f:
+        parsed_data = json.load(f)
+        return (
+            parsed_data.get("book", ""),
+            parsed_data.get("author", ""),
+            parsed_data.get("series", ""),
+        )
+
+
+def _extract_dates_for_sub_event(
+    sub_event: dict,
+    event_id: str,
+    event_name: str,
+    grok_client: GrokClient,
+    dates_dir: Path,
+    index: dict,
+    book: str,
+    author: str,
+    series: str,
+    max_retries: int,
+) -> int:
+    """Extract dates for a single sub-event. Returns count of dates processed."""
+    sub_event_id = sub_event.get("Sub-eventID", "")
+    sub_event_name = sub_event.get("Sub-event_summary", "")
+    logger.info("  Processing sub-event %s", sub_event_id)
+
+    prompt = create_date_prompt(sub_event, event_id, event_name)
+
+    for attempt in range(max_retries):
+        try:
+            date_output = grok_client.extract_structured(
+                prompt=prompt,
+                schema=DateOutput,
+                system_prompt=SYSTEM_PROMPT,
+                use_cache=(attempt == 0),
+                cache_type="dates",
+            )
+
+            date_dict: Dict[str, Any] = date_output.model_dump(by_alias=True)
+            if not isinstance(date_dict, dict):
+                continue
+
+            fixed_dict = _fix_invalid_ulids(date_dict)
+            if not isinstance(fixed_dict, dict):
+                continue
+
+            date_dict = _filter_invalid_dates(fixed_dict)
+
+            # Process each date mention
+            count = 0
+            for mention in date_dict.get("Date_Mentions", []):
+                date_file = _find_or_create_date(mention, dates_dir, index)
+                _add_event_mention(
+                    date_file,
+                    mention,
+                    event_name,
+                    event_id,
+                    sub_event_name,
+                    sub_event_id,
+                    book,
+                    author,
+                    series,
+                )
+                count += 1
+
+            num_dates = len(date_dict.get("Date_Mentions", []))
+            logger.info("  ✓ Extracted %d dates", num_dates)
+            return count
+
+        except Exception as e:
+            if attempt < max_retries - 1:
+                logger.warning("  ⚠ Attempt %d failed: %s", attempt + 1, e)
+                logger.info("  Retrying (%d/%d)...", attempt + 2, max_retries)
+            else:
+                logger.error("  ✗ All %d attempts failed: %s", max_retries, e)
+                return 0
+
+    return 0
+
+
 def extract_dates(
     event_file: Path,
     grok_client: GrokClient,
@@ -335,28 +406,15 @@ def extract_dates(
         Path to dates directory, or None if failed
     """
     dates_dir.mkdir(parents=True, exist_ok=True)
-    index_file = dates_dir / "index.json"
 
-    # Load existing index
-    if index_file.exists():
-        with open(index_file, "r", encoding="utf-8") as f:
-            index = json.load(f)
-    else:
-        index = {}
+    # Load index
+    index = _load_dates_index(dates_dir)
 
     with open(event_file, "r", encoding="utf-8") as f:
         event_data = json.load(f)
 
-    # Get book metadata from parsed file if provided
-    book = ""
-    author = ""
-    series = ""
-    if parsed_file and parsed_file.exists():
-        with open(parsed_file, "r", encoding="utf-8") as f:
-            parsed_data = json.load(f)
-            book = parsed_data.get("book", "")
-            author = parsed_data.get("author", "")
-            series = parsed_data.get("series", "")
+    # Get book metadata
+    book, author, series = _load_book_metadata_for_dates(parsed_file)
 
     # Validate required metadata
     if not book or not author:
@@ -373,60 +431,22 @@ def extract_dates(
     dates_updated = 0
 
     for sub_event in sub_events:
-        sub_event_id = sub_event.get("Sub-eventID", "")
-        sub_event_name = sub_event.get("Sub-event_summary", "")
-        logger.info("  Processing sub-event %s", sub_event_id)
-
-        prompt = create_date_prompt(sub_event, event_id, event_name)
-
-        # Retry logic for truncated responses
-        for attempt in range(max_retries):
-            try:
-                date_output = grok_client.extract_structured(
-                    prompt=prompt,
-                    schema=DateOutput,
-                    system_prompt=SYSTEM_PROMPT,
-                    use_cache=(attempt == 0),
-                    cache_type="dates",
-                )
-
-                date_dict: Dict[str, Any] = date_output.model_dump(by_alias=True)
-                if not isinstance(date_dict, dict):
-                    continue
-                fixed_dict = _fix_invalid_ulids(date_dict)
-                if not isinstance(fixed_dict, dict):
-                    continue
-                date_dict = _filter_invalid_dates(fixed_dict)
-
-                # Process each date mention
-                for mention in date_dict.get("Date_Mentions", []):
-                    date_file = _find_or_create_date(mention, dates_dir, index)
-                    _add_event_mention(
-                        date_file,
-                        mention,
-                        event_name,
-                        event_id,
-                        sub_event_name,
-                        sub_event_id,
-                        book,
-                        author,
-                        series,
-                    )
-                    dates_updated += 1
-
-                num_dates = len(date_dict.get("Date_Mentions", []))
-                logger.info("  ✓ Extracted %d dates", num_dates)
-                break  # Success, exit retry loop
-
-            except Exception as e:
-                if attempt < max_retries - 1:
-                    logger.warning("  ⚠ Attempt %d failed: %s", attempt + 1, e)
-                    logger.info("  Retrying (%d/%d)...", attempt + 2, max_retries)
-                else:
-                    logger.error("  ✗ All %d attempts failed: %s", max_retries, e)
-                    continue
+        count = _extract_dates_for_sub_event(
+            sub_event,
+            event_id,
+            event_name,
+            grok_client,
+            dates_dir,
+            index,
+            book,
+            author,
+            series,
+            max_retries,
+        )
+        dates_updated += count
 
     # Save index
+    index_file = dates_dir / "index.json"
     write_json_with_lock(index_file, index)
 
     logger.info("Updated %d date mentions in central repository", dates_updated)
