@@ -103,6 +103,61 @@ def main():
                     book_output / f"chapter{doc.chapter_number}{section_suffix}-parsed.json"
                 )
 
+                # Check chapter size and split if needed (>400K chars to leave headroom)
+                total_chars = sum(len(p.text) for p in doc.paragraphs)
+                if total_chars > 400000:
+                    logger.warning(
+                        f"  Large chapter detected: {total_chars:,} chars "
+                        f"({len(doc.paragraphs)} paragraphs)"
+                    )
+                    logger.warning(f"  Splitting into smaller sections...")
+                    
+                    # Split by paragraph count to keep related content together
+                    # Aim for ~50 paragraphs per section
+                    chunk_size = 50
+                    for i in range(0, len(doc.paragraphs), chunk_size):
+                        chunk_paras = doc.paragraphs[i:i + chunk_size]
+                        chunk_suffix = chr(97 + i // chunk_size)  # a, b, c, etc.
+                        chunk_file = (
+                            book_output / 
+                            f"chapter{doc.chapter_number}{chunk_suffix}-parsed.json"
+                        )
+                        
+                        chunk_data = {
+                            "book": doc.book,
+                            "chapter_number": doc.chapter_number,
+                            "chapter_title": doc.chapter_title,
+                            "section_id": f"{doc.section_id or 'full'}-{chunk_suffix}",
+                            "author": doc.author,
+                            "series": doc.series,
+                            "license": doc.license,
+                            "source_file": str(doc.file_path),
+                            "paragraphs": [
+                                {
+                                    "absolute_number": p.absolute_number,
+                                    "text": p.text,
+                                    "page_number": p.page_number,
+                                    "section_id": p.section_id,
+                                    "source_file": p.source_file,
+                                }
+                                for p in chunk_paras
+                            ],
+                            "images": doc.images,  # Include all images in each chunk
+                            "maps": doc.maps,
+                            "footnotes": doc.footnotes,
+                        }
+                        
+                        with open(chunk_file, "w", encoding="utf-8") as f:
+                            json.dump(chunk_data, f, indent=2, ensure_ascii=False)
+                        
+                        logger.info(
+                            f"  Saved: {chunk_file.name} "
+                            f"({len(chunk_paras)} paragraphs, chunk {i//chunk_size + 1})"
+                        )
+                    
+                    # Skip creating the full file
+                    continue
+
                 # Convert to dict for JSON serialization
                 output_data = {
                     "book": doc.book,

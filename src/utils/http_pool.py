@@ -21,20 +21,25 @@ def get_session() -> requests.Session:
         _session = requests.Session()
 
         # Configure retry strategy
-        retry_strategy = Retry(
-            total=3,
-            backoff_factor=1,
-            status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=[
-                "HEAD",
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "OPTIONS",
-                "TRACE",
-            ],
-        )
+        # Use method_whitelist for older urllib3, allowed_methods for newer
+        retry_kwargs = {
+            "total": 3,
+            "backoff_factor": 1,
+            "status_forcelist": [429, 500, 502, 503, 504],
+        }
+        
+        # Try new parameter name first, fall back to old
+        try:
+            retry_strategy = Retry(
+                **retry_kwargs,
+                allowed_methods=["HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS", "TRACE"]
+            )
+        except TypeError:
+            # Older urllib3 uses method_whitelist
+            retry_strategy = Retry(
+                **retry_kwargs,
+                method_whitelist=["HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS", "TRACE"]
+            )
 
         # Configure adapter with connection pooling
         adapter = HTTPAdapter(

@@ -89,6 +89,16 @@ class GrokClient:
     )
     def _call_api(self, messages: list, temperature: float = 0.1) -> Dict[str, Any]:
         """Make API call with retry logic."""
+        # Validate input size (rough estimate: 1 token ≈ 4 chars)
+        total_chars = sum(len(str(msg.get("content", ""))) for msg in messages)
+        estimated_tokens = total_chars // 4
+        
+        if estimated_tokens > 100000:  # Leave headroom for response
+            logger.warning(
+                f"Large input: ~{estimated_tokens:,} tokens ({total_chars:,} chars). "
+                f"May hit context limit."
+            )
+        
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
@@ -520,6 +530,7 @@ class GrokClient:
                     "API returned short/invalid response (%d chars)", len(response)
                 )
                 logger.debug("Response: %s", response)
+                logger.error("💡 To clear cache and retry: rm -rf cache/api/events")
                 raise GrokAPIError(
                     f"API returned invalid response: {error_msg}. "
                     f"Response: {response[:200]}"
@@ -527,16 +538,25 @@ class GrokClient:
 
             # Check if response appears truncated (unterminated string/array/object)
             if "Unterminated string" in error_msg or "Expecting" in error_msg:
-                logger.error(
-                    "Response truncated at %d chars - API hit token limit",
-                    len(response),
-                )
+                # Distinguish between real token limit (>100K chars) and API errors (<10K chars)
+                if len(response) > 100000:
+                    logger.error(
+                        "Response truncated at %d chars - likely hit max_tokens limit",
+                        len(response),
+                    )
+                    logger.error("💡 Consider splitting this chapter into smaller sections")
+                else:
+                    logger.error(
+                        "Response truncated at %d chars - transient API error",
+                        len(response),
+                    )
+                    logger.error("💡 To clear cache and retry: rm -rf cache/api/events")
+                
                 logger.error("JSON error: %s", error_msg)
                 logger.debug("Last 200 chars: ...%s", response[-200:])
                 raise GrokAPIError(
-                    f"API response truncated (likely hit max_tokens limit). "
-                    f"Response length: {len(response)} chars. "
-                    f"Consider splitting this chapter into smaller sections."
+                    f"API response truncated at {len(response)} chars. "
+                    f"{'Likely transient API error - retry may succeed.' if len(response) < 100000 else 'Consider splitting chapter.'}"
                 ) from e
 
             # Try to fix common issues
@@ -575,6 +595,7 @@ class GrokClient:
                 cleaned = repaired.replace(r"\[", "[").replace(r"\]", "]")
                 return json.loads(cleaned)
             except json.JSONDecodeError:
+                logger.error("💡 To clear cache: rm -rf cache/api/events cache/api/dates cache/api/places")
                 raise GrokAPIError(
                     f"Failed to parse JSON response: {e}\n"
                     f"Response length: {len(response)} chars\n"
