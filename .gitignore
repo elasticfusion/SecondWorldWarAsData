@@ -88,3 +88,4 @@ review/
 *.tmp
 *.bak
 *.orig
+filestore/equipment/

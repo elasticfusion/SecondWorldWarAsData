@@ -78,7 +78,20 @@ async def process_chapters_parallel(
         # Process results
         for (name, _), result in zip(tasks, batch_results):
             if isinstance(result, Exception):
+                error_msg = str(result)
                 logger.error("  ✗ %s: %s", name, result)
+                
+                # Provide specific cache clearing command based on error
+                if "Invalid" in error_msg and "escape" in error_msg:
+                    # Extract cache type from context (events extraction)
+                    logger.error("  💡 Clear cache for this file: python3 -c \"from pathlib import Path; from diskcache import Cache; c=Cache('cache/api/events'); [c.pop(k) for k in list(c) if '%s' in str(c.get(k, ''))]\"", name.replace("-parsed.json", ""))
+                elif "control character" in error_msg.lower():
+                    logger.error("  💡 Clear cache for this file: python3 -c \"from pathlib import Path; from diskcache import Cache; c=Cache('cache/api/events'); [c.pop(k) for k in list(c) if '%s' in str(c.get(k, ''))]\"", name.replace("-parsed.json", ""))
+                elif "Unterminated string" in error_msg:
+                    logger.error("  💡 Clear cache for this file: python3 -c \"from pathlib import Path; from diskcache import Cache; c=Cache('cache/api/events'); [c.pop(k) for k in list(c) if '%s' in str(c.get(k, ''))]\"", name.replace("-parsed.json", ""))
+                else:
+                    logger.error("  💡 Clear all caches: rm -rf cache/api/*")
+                
                 results["failed"] += 1
             elif isinstance(result, dict):
                 logger.info(

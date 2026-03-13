@@ -319,6 +319,15 @@ pip install -r requirements.txt
 - AWS credentials (for S3 storage backend)
 - boto3 (included in requirements.txt)
 
+### AWS Linux (Headless) Installation
+
+For headless AWS Linux instances, install Chrome for Selenium:
+
+```bash
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
+sudo dnf install ./google-chrome-stable_current_x86_64.rpm -y
+```
+
 ## Output Format
 
 All data is structured JSON with ULIDs for cross-referencing:
