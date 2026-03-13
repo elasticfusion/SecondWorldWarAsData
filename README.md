@@ -134,6 +134,7 @@ SecondWorldWarAsData/
 
 ### Getting Started
 - **[Pipeline Overview](docs/current/core/PIPELINE.md)** - Complete pipeline workflow
+- **[Workflow Diagrams](docs/current/core/WORKFLOW_DIAGRAMS.md)** - Visual workflow diagrams
 - **[Configuration](docs/current/core/CONFIGURATION.md)** - Config options
 - **[Development Guide](docs/current/core/DEVELOPMENT.md)** - Setup and development
 
