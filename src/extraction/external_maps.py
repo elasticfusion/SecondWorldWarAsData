@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-External Maps Extraction
+"""External Maps Extraction.
 
 Import external maps from YAML file and link to events/places/dates.
 """
@@ -50,6 +49,37 @@ def load_yaml(yaml_path: Path) -> List[Dict[str, Any]]:
         return []
 
 
+def _extract_place_name_from_file(place_file: Path) -> str:
+    """Extract place name from filename."""
+    filename = place_file.stem  # Remove .json
+    return filename.rsplit("_", 1)[0].replace("_", " ").lower()
+
+
+def _matches_place_keywords(
+    place_keywords: List[str], place_name_file: str, place_name_data: str
+) -> bool:
+    """Check if any keyword matches place names."""
+    return any(
+        kw.lower() in place_name_file or kw.lower() in place_name_data
+        for kw in place_keywords
+    )
+
+
+def _get_first_event_mention(
+    event_mentions: list,
+) -> Optional[tuple[str, str, str, str]]:
+    """Get first valid event mention. Returns (EventID, Event_Name, Sub_eventID, Sub_event_Name)."""
+    for mention in event_mentions:
+        if mention.get("Event_Name") and mention.get("Sub_event_Name"):
+            return (
+                mention.get("EventID"),
+                mention.get("Event_Name"),
+                mention.get("Sub_eventID"),
+                mention.get("Sub_event_Name"),
+            )
+    return None
+
+
 def find_event_from_place(
     place_keywords: List[str], places_dir: Path
 ) -> Optional[tuple[str, str, str, str]]:
@@ -67,30 +97,21 @@ def find_event_from_place(
             with open(place_file, encoding="utf-8") as f:
                 place_data = json.load(f)
 
-            # Match against filename (format: PlaceName_ULID.json)
-            filename = place_file.stem  # Remove .json
-            place_name_from_file = filename.rsplit("_", 1)[0].replace("_", " ").lower()
-
-            # Also check place_name field if present
+            # Match against filename and data
+            place_name_from_file = _extract_place_name_from_file(place_file)
             place_name_from_data = (place_data.get("place_name") or "").lower()
 
-            # Match place keywords against either source
-            if not any(
-                kw.lower() in place_name_from_file or kw.lower() in place_name_from_data
-                for kw in place_keywords
+            # Match place keywords
+            if not _matches_place_keywords(
+                place_keywords, place_name_from_file, place_name_from_data
             ):
                 continue
 
             # Get first non-null event mention
             event_mentions = place_data.get("event_mentions", [])
-            for mention in event_mentions:
-                if mention.get("Event_Name") and mention.get("Sub_event_Name"):
-                    return (
-                        mention.get("EventID"),
-                        mention.get("Event_Name"),
-                        mention.get("Sub_eventID"),
-                        mention.get("Sub_event_Name"),
-                    )
+            result = _get_first_event_mention(event_mentions)
+            if result:
+                return result
 
         except (json.JSONDecodeError, KeyError) as e:
             logger.debug(f"  Skipping place file {place_file.name}: {e}")
@@ -394,7 +415,7 @@ def import_maps(
 
 
 def main():
-    """Main entry point."""
+    """Run external maps import process."""
     project_root = Path(__file__).parent.parent
     yaml_path = project_root / "external_maps.yaml"
 

@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import requests
 import ulid
@@ -14,6 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from src.grok_client import GrokClient
 from src.utils.file_lock import write_json_with_lock
 from src.utils.http_pool import get_session
+from src.utils.json_validator import _fix_invalid_ulids
 
 logger = logging.getLogger(__name__)
 
@@ -70,22 +71,26 @@ IMPORTANT: Cross-reference places and dates to link weather to existing entities
 If no weather mentions found, return empty Weather_Mentions array."""
 
 
-def _fix_invalid_ulids(
-    data: Union[Dict[str, Any], List[Any]],
-) -> Union[Dict[str, Any], List[Any]]:
-    """Replace invalid ULIDs with valid ones."""
-    if isinstance(data, dict):
-        for key, value in data.items():
-            if key.endswith("ID") and isinstance(value, str):
-                if len(value) != 26 or not all(
-                    c in "0123456789ABCDEFGHJKMNPQRSTVWXYZ" for c in value
-                ):
-                    data[key] = str(ulid.new())
-            elif isinstance(value, (dict, list)):
-                data[key] = _fix_invalid_ulids(value)
-    elif isinstance(data, list):
-        return [_fix_invalid_ulids(item) for item in data]
-    return data
+def _is_valid_weather_mention(mention: dict) -> tuple[bool, str]:
+    """Check if weather mention is valid. Returns (is_valid, reason)."""
+    if not isinstance(mention, dict):
+        return False, "not a dict"
+
+    if not mention.get("date"):
+        return False, f"null date: {mention.get('original_text', 'unknown')}"
+
+    # Check for exact date (YYYY-MM-DD format)
+    date_str = mention.get("date", "")
+    if not date_str or len(date_str) != 10 or date_str.count("-") != 2:
+        return False, f"approximate date: {date_str}"
+
+    if not mention.get("weather_description"):
+        return False, "null description"
+
+    if not mention.get("original_text"):
+        return False, "null original_text"
+
+    return True, ""
 
 
 def _filter_invalid_weather(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -95,34 +100,11 @@ def _filter_invalid_weather(data: Dict[str, Any]) -> Dict[str, Any]:
         valid_weather = []
 
         for mention in data["Weather_Mentions"]:
-            if not isinstance(mention, dict):
-                continue
-
-            # Check required fields
-            if not mention.get("date"):
-                logger.warning(
-                    "  Filtered weather mention with null date: %s",
-                    mention.get("original_text", "unknown"),
-                )
-                continue
-
-            # Check for exact date (YYYY-MM-DD format)
-            date_str = mention.get("date", "")
-            if not date_str or len(date_str) != 10 or date_str.count("-") != 2:
-                logger.warning(
-                    "  Filtered weather mention with approximate date: %s", date_str
-                )
-                continue
-
-            if not mention.get("weather_description"):
-                logger.warning("  Filtered weather mention with null description")
-                continue
-
-            if not mention.get("original_text"):
-                logger.warning("  Filtered weather mention with null original_text")
-                continue
-
-            valid_weather.append(mention)
+            is_valid, reason = _is_valid_weather_mention(mention)
+            if is_valid:
+                valid_weather.append(mention)
+            else:
+                logger.warning("  Filtered weather mention with %s", reason)
 
         filtered_count = original_count - len(valid_weather)
         if filtered_count > 0:
@@ -161,6 +143,55 @@ def _normalize_weather_key(date: str, place_name: str) -> str:
     return f"{date}_{place_name.replace(' ', '_')}"
 
 
+def _lookup_by_place_id(
+    place_id: str, places_dir: Path, places_index: dict
+) -> tuple[float, float, Optional[str], Optional[str]]:
+    """Look up coordinates by PlaceID. Returns (lat, lon, place_id, country)."""
+    for place_file_name in places_index.values():
+        place_file = places_dir / place_file_name
+        if place_file.exists():
+            with open(place_file, "r", encoding="utf-8") as f:
+                place_data = json.load(f)
+
+            if place_data.get("PlaceID") == place_id:
+                coords = place_data.get("coordinates", {})
+                latitude = coords.get("latitude", 0.0)
+                longitude = coords.get("longitude", 0.0)
+                country = place_data.get("country")
+                logger.info("    Found coordinates via PlaceID: %s", place_id[:8])
+                return latitude, longitude, place_id, country
+
+    return 0.0, 0.0, place_id, None
+
+
+def _lookup_by_name_fuzzy(
+    place_name: str, places_dir: Path, places_index: dict
+) -> tuple[float, float, Optional[str], Optional[str]]:
+    """Look up coordinates by fuzzy name match. Returns (lat, lon, place_id, country)."""
+    place_name_lower = place_name.lower()
+
+    for place_key, place_file_name in places_index.items():
+        if place_name_lower in place_key.lower():
+            place_file = places_dir / place_file_name
+            if place_file.exists():
+                with open(place_file, "r", encoding="utf-8") as f:
+                    place_data = json.load(f)
+
+                coords = place_data.get("coordinates", {})
+                latitude = coords.get("latitude", 0.0)
+                longitude = coords.get("longitude", 0.0)
+                if latitude != 0.0 and longitude != 0.0:
+                    found_place_id = place_data.get("PlaceID")
+                    logger.info(
+                        "    Found coordinates via fuzzy match: %s -> %s",
+                        place_name,
+                        place_key,
+                    )
+                    return latitude, longitude, found_place_id, None
+
+    return 0.0, 0.0, None, None
+
+
 def _lookup_coordinates(
     place_id: Optional[str], place_name: str, places_dir: Path
 ) -> tuple[float, float, Optional[str], Optional[str]]:
@@ -170,154 +201,110 @@ def _lookup_coordinates(
     Returns:
         (latitude, longitude, place_id, country) tuple
     """
-    latitude = 0.0
-    longitude = 0.0
-    found_place_id = place_id
-    country = None
-
     if not places_dir.exists():
-        return latitude, longitude, found_place_id, country
+        return 0.0, 0.0, place_id, None
 
     places_index_file = places_dir / "index.json"
     if not places_index_file.exists():
-        return latitude, longitude, found_place_id, country
+        return 0.0, 0.0, place_id, None
 
     with open(places_index_file, "r", encoding="utf-8") as f:
         places_index = json.load(f)
 
     # Option 1: Look up by PlaceID if provided
     if place_id:
-        for place_file_name in places_index.values():
-            place_file = places_dir / place_file_name
-            if place_file.exists():
-                with open(place_file, "r", encoding="utf-8") as f:
-                    place_data = json.load(f)
-
-                if place_data.get("PlaceID") == place_id:
-                    coords = place_data.get("coordinates", {})
-                    latitude = coords.get("latitude", 0.0)
-                    longitude = coords.get("longitude", 0.0)
-                    country = place_data.get("country")
-                    logger.info("    Found coordinates via PlaceID: %s", place_id[:8])
-                    return latitude, longitude, found_place_id, country
+        lat, lon, pid, country = _lookup_by_place_id(place_id, places_dir, places_index)
+        if lat != 0.0 and lon != 0.0:
+            return lat, lon, pid, country
 
     # Option 2: Fallback to fuzzy match by name
-    if latitude == 0.0 and longitude == 0.0:
-        place_name_lower = place_name.lower()
-        for place_key, place_file_name in places_index.items():
-            if place_name_lower in place_key.lower():
-                place_file = places_dir / place_file_name
-                if place_file.exists():
-                    with open(place_file, "r", encoding="utf-8") as f:
-                        place_data = json.load(f)
-
-                    coords = place_data.get("coordinates", {})
-                    latitude = coords.get("latitude", 0.0)
-                    longitude = coords.get("longitude", 0.0)
-                    if latitude != 0.0 and longitude != 0.0:
-                        found_place_id = place_data.get("PlaceID")
-                        logger.info(
-                            "    Found coordinates via fuzzy match: %s -> %s",
-                            place_name,
-                            place_key,
-                        )
-                        return latitude, longitude, found_place_id, country
-
-    return latitude, longitude, found_place_id, country
+    return _lookup_by_name_fuzzy(place_name, places_dir, places_index)
 
 
-def _find_or_create_weather(
+def _create_api_data_dict(api_response: dict) -> dict:
+    """Create API data dictionary from response."""
+    daily_data = api_response.get("daily", {})
+    return {
+        "provider": "open-meteo",
+        "retrieved_at": datetime.utcnow().isoformat() + "Z",
+        "temperature_max_c": daily_data.get("temperature_2m_max", [None])[0],
+        "temperature_min_c": daily_data.get("temperature_2m_min", [None])[0],
+        "precipitation_mm": daily_data.get("precipitation_sum", [None])[0],
+        "windspeed_max_kmh": daily_data.get("windspeed_10m_max", [None])[0],
+        "cloud_cover_percent": daily_data.get("cloud_cover_mean", [None])[0],
+        "raw_response": api_response,
+    }
+
+
+def _update_existing_weather(
+    weather_file: Path,
+    weather_data: dict,
     mention: Dict[str, Any],
-    weather_dir: Path,
-    index: Dict[str, str],
+    place_name: str,
     places_dir: Path,
-    fetch_api: bool = True,
-) -> Path:
-    """Find existing weather file or create new one, updating if needed."""
-    date = mention.get("date", "")
-    place_name = mention.get("place_name", "")
+    fetch_api: bool,
+    date: str,
+) -> bool:
+    """Update existing weather file if needed. Returns True if updated."""
+    needs_update = False
 
-    # Create lookup key
-    weather_key = _normalize_weather_key(date, place_name)
+    # Update coordinates if missing
+    if (
+        weather_data["location"]["latitude"] == 0.0
+        and weather_data["location"]["longitude"] == 0.0
+    ):
+        latitude, longitude, place_id, country = _lookup_coordinates(
+            mention.get("PlaceMentionID"), place_name, places_dir
+        )
+        if latitude != 0.0 and longitude != 0.0:
+            weather_data["location"]["latitude"] = latitude
+            weather_data["location"]["longitude"] = longitude
+            weather_data["location"]["PlaceID"] = place_id
+            weather_data["location"]["country"] = country
+            needs_update = True
+            logger.info("    Updated coordinates for %s", weather_file.name)
 
-    # Check if file exists
-    if weather_key in index:
-        weather_file = weather_dir / index[weather_key]
-
-        # Load existing file to check if update needed
-        with open(weather_file, "r", encoding="utf-8") as f:
-            weather_data = json.load(f)
-
-        needs_update = False
-
-        # Update coordinates if missing
-        if (
-            weather_data["location"]["latitude"] == 0.0
-            and weather_data["location"]["longitude"] == 0.0
-        ):
-            latitude, longitude, place_id, country = _lookup_coordinates(
-                mention.get("PlaceMentionID"), place_name, places_dir
-            )
-            if latitude != 0.0 and longitude != 0.0:
-                weather_data["location"]["latitude"] = latitude
-                weather_data["location"]["longitude"] = longitude
-                weather_data["location"]["PlaceID"] = place_id
-                weather_data["location"]["country"] = country
+    # Fetch API data if enabled and missing
+    if fetch_api and weather_data.get("api_data") is None:
+        lat = weather_data["location"]["latitude"]
+        lon = weather_data["location"]["longitude"]
+        if lat != 0.0 and lon != 0.0:
+            api_response = _fetch_weather_from_api(date, lat, lon)
+            if api_response:
+                weather_data["source_type"] = "hybrid"
+                weather_data["api_data"] = _create_api_data_dict(api_response)
                 needs_update = True
-                logger.info("    Updated coordinates for %s", weather_file.name)
+                logger.info("    Added API data to %s", weather_file.name)
 
-        # Fetch API data if enabled and missing
-        if fetch_api and weather_data.get("api_data") is None:
-            lat = weather_data["location"]["latitude"]
-            lon = weather_data["location"]["longitude"]
-            if lat != 0.0 and lon != 0.0:
-                api_response = _fetch_weather_from_api(date, lat, lon)
-                if api_response:
-                    daily_data = api_response.get("daily", {})
-                    weather_data["source_type"] = "hybrid"
-                    weather_data["api_data"] = {
-                        "provider": "open-meteo",
-                        "retrieved_at": datetime.utcnow().isoformat() + "Z",
-                        "temperature_max_c": daily_data.get(
-                            "temperature_2m_max", [None]
-                        )[0],
-                        "temperature_min_c": daily_data.get(
-                            "temperature_2m_min", [None]
-                        )[0],
-                        "precipitation_mm": daily_data.get("precipitation_sum", [None])[
-                            0
-                        ],
-                        "windspeed_max_kmh": daily_data.get(
-                            "windspeed_10m_max", [None]
-                        )[0],
-                        "cloud_cover_percent": daily_data.get(
-                            "cloud_cover_mean", [None]
-                        )[0],
-                        "raw_response": api_response,
-                    }
-                    needs_update = True
-                    logger.info("    Added API data to %s", weather_file.name)
+    # Save if updated
+    if needs_update:
+        write_json_with_lock(weather_file, weather_data)
 
-        # Save if updated
-        if needs_update:
-            write_json_with_lock(weather_file, weather_data)
+    return needs_update
 
-        return weather_file
 
-    # Create new weather file
+def _create_new_weather_file(
+    mention: Dict[str, Any],
+    date: str,
+    place_name: str,
+    weather_dir: Path,
+    places_dir: Path,
+    fetch_api: bool,
+) -> tuple[Path, str]:
+    """Create new weather file. Returns (weather_file, filename)."""
     weather_id = str(ulid.new())
     safe_date = date.replace("-", "")
     safe_place = place_name.replace(" ", "_").replace(",", "")
     filename = f"{safe_date}_{safe_place}_{weather_id[:8]}.json"
     weather_file = weather_dir / filename
 
-    # Look up coordinates from places repository
+    # Look up coordinates
     latitude, longitude, place_id, country = _lookup_coordinates(
         mention.get("PlaceMentionID"), place_name, places_dir
     )
 
     # Initialize weather data
-    weather_data = {
+    weather_data: Dict[str, Any] = {
         "WeatherID": weather_id,
         "date": date,
         "DateID": mention.get("DateMentionID"),
@@ -338,23 +325,50 @@ def _find_or_create_weather(
     if fetch_api and latitude != 0.0 and longitude != 0.0:
         api_response = _fetch_weather_from_api(date, latitude, longitude)
         if api_response:
-            daily_data = api_response.get("daily", {})
             weather_data["source_type"] = "hybrid"
-            weather_data["api_data"] = {
-                "provider": "open-meteo",
-                "retrieved_at": datetime.utcnow().isoformat() + "Z",
-                "temperature_max_c": daily_data.get("temperature_2m_max", [None])[0],
-                "temperature_min_c": daily_data.get("temperature_2m_min", [None])[0],
-                "precipitation_mm": daily_data.get("precipitation_sum", [None])[0],
-                "windspeed_max_kmh": daily_data.get("windspeed_10m_max", [None])[0],
-                "cloud_cover_percent": daily_data.get("cloud_cover_mean", [None])[0],
-                "raw_response": api_response,
-            }
+            weather_data["api_data"] = _create_api_data_dict(api_response)
 
     write_json_with_lock(weather_file, weather_data)
+    logger.info("    Created weather file: %s", filename)
+
+    return weather_file, filename
+
+
+def _find_or_create_weather(
+    mention: Dict[str, Any],
+    weather_dir: Path,
+    index: Dict[str, str],
+    places_dir: Path,
+    fetch_api: bool = True,
+) -> Path:
+    """Find existing weather file or create new one, updating if needed."""
+    date = mention.get("date", "")
+    place_name = mention.get("place_name", "")
+
+    # Create lookup key
+    weather_key = _normalize_weather_key(date, place_name)
+
+    # Check if file exists
+    if weather_key in index:
+        weather_file = weather_dir / index[weather_key]
+
+        # Load existing file
+        with open(weather_file, "r", encoding="utf-8") as f:
+            weather_data = json.load(f)
+
+        # Update if needed
+        _update_existing_weather(
+            weather_file, weather_data, mention, place_name, places_dir, fetch_api, date
+        )
+
+        return weather_file
+
+    # Create new weather file
+    weather_file, filename = _create_new_weather_file(
+        mention, date, place_name, weather_dir, places_dir, fetch_api
+    )
 
     index[weather_key] = filename
-    logger.info("    Created weather file: %s", filename)
     return weather_file
 
 
@@ -414,6 +428,40 @@ def _add_event_mention(
     logger.info("    Added mention to %s", weather_file.name)
 
 
+def _build_places_section(sub_event: Dict[str, Any]) -> str:
+    """Build places section for prompt."""
+    if "Places" not in sub_event or not sub_event["Places"]:
+        return ""
+
+    places_list = [
+        f"  - {p.get('place_name', 'Unknown')}: {p.get('PlaceMentionID', 'N/A')}"
+        for p in sub_event["Places"]
+        if isinstance(p, dict)
+    ]
+
+    if places_list:
+        return "\n\nAvailable Places (link to these):\n" + "\n".join(places_list)
+
+    return ""
+
+
+def _build_dates_section(sub_event: Dict[str, Any]) -> str:
+    """Build dates section for prompt."""
+    if "Dates" not in sub_event or not sub_event["Dates"]:
+        return ""
+
+    dates_list = [
+        f"  - {d.get('date_start', 'Unknown')}: {d.get('DateMentionID', 'N/A')}"
+        for d in sub_event["Dates"]
+        if isinstance(d, dict)
+    ]
+
+    if dates_list:
+        return "\n\nAvailable Dates (link to these):\n" + "\n".join(dates_list)
+
+    return ""
+
+
 def create_weather_prompt(
     sub_event: Dict[str, Any], event_id: str, event_name: str
 ) -> str:
@@ -424,31 +472,9 @@ def create_weather_prompt(
 
     text = "\n".join(fulltext.values())
 
-    # Extract available PlaceIDs and DateIDs from sub-event
-    places_section = ""
-    dates_section = ""
-
-    if "Places" in sub_event and sub_event["Places"]:
-        places_list = [
-            f"  - {p.get('place_name', 'Unknown')}: {p.get('PlaceMentionID', 'N/A')}"
-            for p in sub_event["Places"]
-            if isinstance(p, dict)
-        ]
-        if places_list:
-            places_section = "\n\nAvailable Places (link to these):\n" + "\n".join(
-                places_list
-            )
-
-    if "Dates" in sub_event and sub_event["Dates"]:
-        dates_list = [
-            f"  - {d.get('date_start', 'Unknown')}: {d.get('DateMentionID', 'N/A')}"
-            for d in sub_event["Dates"]
-            if isinstance(d, dict)
-        ]
-        if dates_list:
-            dates_section = "\n\nAvailable Dates (link to these):\n" + "\n".join(
-                dates_list
-            )
+    # Extract available PlaceIDs and DateIDs
+    places_section = _build_places_section(sub_event)
+    dates_section = _build_dates_section(sub_event)
 
     prompt = f"""Extract weather mentions from this WWII event text.
 
@@ -491,6 +517,106 @@ IMPORTANT:
     return prompt
 
 
+def _load_weather_index(weather_dir: Path) -> dict:
+    """Load weather index from file."""
+    index_file = weather_dir / "index.json"
+
+    if index_file.exists():
+        with open(index_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    return {}
+
+
+def _load_book_metadata_for_weather(
+    parsed_file: Optional[Path],
+) -> tuple[str, str, str]:
+    """Load book metadata from parsed file. Returns (book, author, series)."""
+    if not parsed_file or not parsed_file.exists():
+        return "", "", ""
+
+    with open(parsed_file, "r", encoding="utf-8") as f:
+        parsed_data = json.load(f)
+        if not isinstance(parsed_data, dict):
+            return "", "", ""
+
+        return (
+            parsed_data.get("book", ""),
+            parsed_data.get("author", ""),
+            parsed_data.get("series", ""),
+        )
+
+
+def _extract_weather_for_sub_event(
+    sub_event: dict,
+    event_id: str,
+    event_name: str,
+    grok_client: GrokClient,
+    weather_dir: Path,
+    index: dict,
+    places_dir: Path,
+    fetch_api: bool,
+    book: str,
+    author: str,
+    series: str,
+    max_retries: int,
+) -> int:
+    """Extract weather for a single sub-event. Returns count of weather mentions processed."""
+    sub_event_id = sub_event.get("Sub-eventID", "")
+    sub_event_name = sub_event.get("Sub-event_summary", "")
+    logger.info("  Processing sub-event %s", sub_event_id)
+
+    prompt = create_weather_prompt(sub_event, event_id, event_name)
+
+    for attempt in range(max_retries):
+        try:
+            weather_output = grok_client.extract_structured(
+                prompt=prompt,
+                schema=WeatherOutput,
+                system_prompt=SYSTEM_PROMPT,
+                use_cache=(attempt == 0),
+                cache_type="weather",
+            )
+
+            weather_dict: Dict[str, Any] = weather_output.model_dump(by_alias=True)
+            fixed_dict = _fix_invalid_ulids(weather_dict)
+            if isinstance(fixed_dict, dict):
+                weather_dict = fixed_dict
+            weather_dict = _filter_invalid_weather(weather_dict)
+
+            # Process each weather mention
+            count = 0
+            for mention in weather_dict.get("Weather_Mentions", []):
+                weather_file = _find_or_create_weather(
+                    mention, weather_dir, index, places_dir, fetch_api
+                )
+                _add_event_mention(
+                    weather_file,
+                    mention,
+                    event_name,
+                    event_id,
+                    sub_event_name,
+                    sub_event_id,
+                    book,
+                    author,
+                    series,
+                )
+                count += 1
+
+            logger.info("  ✓ Processed %d weather mention(s)", count)
+            return count
+
+        except (ValueError, KeyError, json.JSONDecodeError, TypeError) as e:
+            if attempt < max_retries - 1:
+                logger.warning(f"  ⚠ Attempt {attempt + 1} failed: {e}")
+                logger.info(f"  Retrying ({attempt + 2}/{max_retries})...")
+            else:
+                logger.error(f"  ✗ All {max_retries} attempts failed: {e}")
+                return 0
+
+    return 0
+
+
 def extract_weather_central(
     event_file: Path,
     weather_dir: Path,
@@ -516,19 +642,14 @@ def extract_weather_central(
         Path to weather directory, or None if failed
     """
     weather_dir.mkdir(parents=True, exist_ok=True)
-    index_file = weather_dir / "index.json"
 
-    # Load existing index
-    if index_file.exists():
-        with open(index_file, "r", encoding="utf-8") as f:
-            index = json.load(f)
-    else:
-        index = {}
+    # Load index
+    index = _load_weather_index(weather_dir)
 
     with open(event_file, "r", encoding="utf-8") as f:
         event_data = json.load(f)
 
-    # Validate event_data is a dict
+    # Validate event_data
     if not isinstance(event_data, dict):
         logger.error(
             "Invalid event data format in %s: expected dict, got %s",
@@ -538,16 +659,7 @@ def extract_weather_central(
         return None
 
     # Get book metadata
-    book = ""
-    author = ""
-    series = ""
-    if parsed_file and parsed_file.exists():
-        with open(parsed_file, "r", encoding="utf-8") as f:
-            parsed_data = json.load(f)
-            if isinstance(parsed_data, dict):
-                book = parsed_data.get("book", "")
-                author = parsed_data.get("author", "")
-                series = parsed_data.get("series", "")
+    book, author, series = _load_book_metadata_for_weather(parsed_file)
 
     if not book or not author:
         raise ValueError(
@@ -562,60 +674,24 @@ def extract_weather_central(
     weather_updated = 0
 
     for sub_event in sub_events:
-        sub_event_id = sub_event.get("Sub-eventID", "")
-        sub_event_name = sub_event.get("Sub-event_summary", "")
-        logger.info("  Processing sub-event %s", sub_event_id)
-
-        prompt = create_weather_prompt(sub_event, event_id, event_name)
-
-        # Retry logic
-        for attempt in range(max_retries):
-            try:
-                weather_output = grok_client.extract_structured(
-                    prompt=prompt,
-                    schema=WeatherOutput,
-                    system_prompt=SYSTEM_PROMPT,
-                    use_cache=(attempt == 0),
-                    cache_type="weather",
-                )
-
-                weather_dict: Dict[str, Any] = weather_output.model_dump(by_alias=True)
-                fixed_dict = _fix_invalid_ulids(weather_dict)
-                if isinstance(fixed_dict, dict):
-                    weather_dict = fixed_dict
-                weather_dict = _filter_invalid_weather(weather_dict)
-
-                # Process each weather mention
-                for mention in weather_dict.get("Weather_Mentions", []):
-                    weather_file = _find_or_create_weather(
-                        mention, weather_dir, index, places_dir, fetch_api
-                    )
-                    _add_event_mention(
-                        weather_file,
-                        mention,
-                        event_name,
-                        event_id,
-                        sub_event_name,
-                        sub_event_id,
-                        book,
-                        author,
-                        series,
-                    )
-                    weather_updated += 1
-
-                num_weather = len(weather_dict.get("Weather_Mentions", []))
-                logger.info("  ✓ Extracted %d weather mention(s)", num_weather)
-                break
-
-            except Exception as e:
-                if attempt < max_retries - 1:
-                    logger.warning("  ⚠ Attempt %d failed: %s", attempt + 1, e)
-                    logger.info("  Retrying (%d/%d)...", attempt + 2, max_retries)
-                else:
-                    logger.error("  ✗ All %d attempts failed: %s", max_retries, e)
-                    continue
+        count = _extract_weather_for_sub_event(
+            sub_event,
+            event_id,
+            event_name,
+            grok_client,
+            weather_dir,
+            index,
+            places_dir,
+            fetch_api,
+            book,
+            author,
+            series,
+            max_retries,
+        )
+        weather_updated += count
 
     # Save index
+    index_file = weather_dir / "index.json"
     write_json_with_lock(index_file, index)
 
     logger.info("Updated %d weather mentions in central repository", weather_updated)

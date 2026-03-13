@@ -44,10 +44,11 @@ class TestNameNormalization:
 
     def test_extract_last_name(self):
         """Test last name extraction."""
-        assert _extract_last_name("Dwight D. Eisenhower") == "Eisenhower"
-        assert _extract_last_name("George S. Patton") == "Patton"
-        assert _extract_last_name("Montgomery") == "Montgomery"
-        assert _extract_last_name("von Rundstedt") == "Rundstedt"
+        # _extract_last_name returns lowercase
+        assert _extract_last_name("Dwight D. Eisenhower") == "eisenhower"
+        assert _extract_last_name("George S. Patton") == "patton"
+        assert _extract_last_name("Montgomery") == "montgomery"
+        assert _extract_last_name("von Rundstedt") == "rundstedt"
 
 
 class TestDuplicateDetection:

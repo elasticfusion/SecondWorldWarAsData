@@ -2,7 +2,7 @@
 
 import re
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import yaml
 
@@ -25,51 +25,56 @@ _HEADING_PATTERN = re.compile(r"^#{1,6}\s+\*.*\*$")
 _CHAPTER_NUM_PATTERN = re.compile(r"chapter(\d+)")
 
 
-def parse_metadata(meta_file: Path) -> Metadata:
-    """Parse metadata from -meta.yaml file (or fallback to .md)."""
-    # Try YAML first
-    yaml_file = meta_file.with_suffix(".yaml")
-    if yaml_file.exists():
-        with open(yaml_file, "r", encoding="utf-8") as f:
-            data = yaml.safe_load(f)
+def _parse_yaml_metadata(yaml_file: Path) -> Metadata:
+    """Parse metadata from YAML file."""
+    with open(yaml_file, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
 
-        return Metadata(
-            series=data.get("series", ""),
-            book=data.get("book", ""),
-            author=data.get("author", ""),
-            chapter_title=data.get("chapter_title", ""),
-            license=data.get("license", "Public Domain"),
-            copyright_date=data.get("copyright_date", ""),
-            source_url=data.get("source_url", ""),
-        )
+    return Metadata(
+        series=data.get("series", ""),
+        book=data.get("book", ""),
+        author=data.get("author", ""),
+        chapter_title=data.get("chapter_title", ""),
+        license=data.get("license", "Public Domain"),
+        copyright_date=data.get("copyright_date", ""),
+        source_url=data.get("source_url", ""),
+    )
 
-    # Fallback to old .md parsing
-    content = meta_file.read_text(encoding="utf-8")
+
+def _parse_legacy_metadata(content: str) -> Metadata:
+    """Parse metadata from legacy .md format."""
     lines = [line.strip() for line in content.split("\n") if line.strip()]
-
     metadata = Metadata()
 
-    # Expected order: Series, Theater/Book, Title, Author, Chapter, License
     if len(lines) >= 1:
         metadata.series = lines[0]
     if len(lines) >= 2:
-        # Line 2 could be theater or book continuation
         metadata.book = lines[1] if len(lines) >= 3 else ""
     if len(lines) >= 3:
         metadata.book = lines[2]
     if len(lines) >= 4:
         metadata.author = lines[3]
     if len(lines) >= 5:
-        # Extract chapter title from "Chapter I - The Allies"
         chapter_line = lines[4]
-        if " - " in chapter_line:
-            metadata.chapter_title = chapter_line.split(" - ", 1)[1]
-        else:
-            metadata.chapter_title = chapter_line
+        metadata.chapter_title = (
+            chapter_line.split(" - ", 1)[1] if " - " in chapter_line else chapter_line
+        )
     if len(lines) >= 6:
         metadata.license = lines[5]
 
     return metadata
+
+
+def parse_metadata(meta_file: Path) -> Metadata:
+    """Parse metadata from -meta.yaml file (or fallback to .md)."""
+    # Try YAML first
+    yaml_file = meta_file.with_suffix(".yaml")
+    if yaml_file.exists():
+        return _parse_yaml_metadata(yaml_file)
+
+    # Fallback to old .md parsing
+    content = meta_file.read_text(encoding="utf-8")
+    return _parse_legacy_metadata(content)
 
 
 def extract_page_markers(text: str) -> List[Tuple[int, int, str]]:
@@ -209,53 +214,42 @@ def split_into_paragraphs(text: str) -> List[str]:
     return paragraphs
 
 
-def parse_content_file(
-    file_path: Path, section_id: str, start_paragraph_num: int, metadata: Metadata
-) -> MarkdownDocument:
-    """Parse a single content markdown file."""
-    content = file_path.read_text(encoding="utf-8")
-
-    # Extract chapter number from filename
-    match = _CHAPTER_NUM_PATTERN.search(file_path.name)
-    chapter_num = int(match.group(1)) if match else 0
-
-    # Create document
-    doc = MarkdownDocument(
-        book=metadata.book,
-        chapter_number=chapter_num,
-        chapter_title=metadata.chapter_title,
-        section_id=section_id,
-        author=metadata.author,
-        series=metadata.series,
-        license=metadata.license,
-        file_path=file_path,
-    )
-
-    # Extract page markers with their text positions
+def _build_page_map(content: str) -> Dict[int, int]:
+    """Build map of text position to page number."""
     page_markers_raw = extract_page_markers(content)
+    return {pos: page_num for pos, page_num, _ in page_markers_raw}
 
-    # Build a map of text position to page number
-    page_map: Dict[int, int] = {}
-    for pos, page_num, _ in page_markers_raw:
-        page_map[pos] = page_num
 
-    # Split into paragraphs
-    paragraphs_text = split_into_paragraphs(content)
+def _find_page_number(
+    para_text: str, content: str, page_map: Dict[int, int]
+) -> Optional[int]:
+    """Find page number for a paragraph based on its position."""
+    para_pos = content.find(para_text[:50])
 
-    # Assign page numbers based on where paragraph appears in original content
+    current_page = None
+    for pos in sorted(page_map.keys()):
+        if pos < para_pos:
+            current_page = page_map[pos]
+        else:
+            break
+
+    return current_page
+
+
+def _create_paragraphs(
+    paragraphs_text: List[str],
+    start_paragraph_num: int,
+    section_id: str,
+    file_path: Path,
+    content: str,
+    page_map: Dict[int, int],
+) -> List[Paragraph]:
+    """Create paragraph objects with page numbers."""
+    paragraphs = []
+
     for i, para_text in enumerate(paragraphs_text):
         para_num = start_paragraph_num + i
-
-        # Find this paragraph's position in original content
-        para_pos = content.find(para_text[:50])  # Use first 50 chars to find position
-
-        # Find the most recent page marker before this position
-        current_page = None
-        for pos in sorted(page_map.keys()):
-            if pos < para_pos:
-                current_page = page_map[pos]
-            else:
-                break
+        current_page = _find_page_number(para_text, content, page_map)
 
         para = Paragraph(
             absolute_number=para_num,
@@ -264,12 +258,15 @@ def parse_content_file(
             section_id=section_id,
             source_file=file_path.name,
         )
-        doc.paragraphs.append(para)
+        paragraphs.append(para)
 
-    # Extract images
+    return paragraphs
+
+
+def _add_images_to_doc(doc: MarkdownDocument, content: str) -> None:
+    """Extract and add images to document."""
     for img_type, resource_or_url, alt_text, external_url in extract_images(content):
         if img_type == "combined":
-            # Both resource_id and external URL
             img = Image(
                 type="combined",
                 resource_id=resource_or_url,
@@ -295,17 +292,56 @@ def parse_content_file(
             )
         doc.images.append(img)
 
-    # Extract maps
+
+def _add_maps_to_doc(doc: MarkdownDocument, content: str) -> None:
+    """Extract and add maps to document."""
     for map_id, url in extract_maps(content):
         map_obj = Map(
             url=url, description=f"Map {map_id}", map_id=map_id, paragraph_number=0
         )
         doc.maps.append(map_obj)
 
-    # Extract footnotes
+
+def _add_footnotes_to_doc(doc: MarkdownDocument, content: str) -> None:
+    """Extract and add footnotes to document."""
     for number, url in extract_footnotes(content):
         footnote = Footnote(number=number, url=url, paragraph_number=0)
         doc.footnotes.append(footnote)
+
+
+def parse_content_file(
+    file_path: Path, section_id: str, start_paragraph_num: int, metadata: Metadata
+) -> MarkdownDocument:
+    """Parse a single content markdown file."""
+    content = file_path.read_text(encoding="utf-8")
+
+    # Extract chapter number from filename
+    match = _CHAPTER_NUM_PATTERN.search(file_path.name)
+    chapter_num = int(match.group(1)) if match else 0
+
+    # Create document
+    doc = MarkdownDocument(
+        book=metadata.book,
+        chapter_number=chapter_num,
+        chapter_title=metadata.chapter_title,
+        section_id=section_id,
+        author=metadata.author,
+        series=metadata.series,
+        license=metadata.license,
+        file_path=file_path,
+    )
+
+    # Build page map and create paragraphs
+    page_map = _build_page_map(content)
+    paragraphs_text = split_into_paragraphs(content)
+    doc.paragraphs = _create_paragraphs(
+        paragraphs_text, start_paragraph_num, section_id, file_path, content, page_map
+    )
+
+    # Add images, maps, and footnotes
+    _add_images_to_doc(doc, content)
+    _add_maps_to_doc(doc, content)
+    _add_footnotes_to_doc(doc, content)
 
     return doc
 

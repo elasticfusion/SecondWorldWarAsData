@@ -87,35 +87,23 @@ class GrokClient:
         retry=retry_if_exception_type(requests.HTTPError),
         reraise=True,
     )
-    def _call_api(self, messages: list, temperature: float = 0.1) -> Dict[str, Any]:
-        """Make API call with retry logic."""
-        # Validate input size (rough estimate: 1 token ≈ 4 chars)
+    def _validate_input_size(self, messages: list) -> None:
+        """Validate input size and warn if approaching context limit."""
         total_chars = sum(len(str(msg.get("content", ""))) for msg in messages)
         estimated_tokens = total_chars // 4
-        
-        if estimated_tokens > 100000:  # Leave headroom for response
+
+        if estimated_tokens > 100000:
             logger.warning(
                 f"Large input: ~{estimated_tokens:,} tokens ({total_chars:,} chars). "
                 f"May hit context limit."
             )
-        
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
 
-        payload = {
-            "model": self.model,
-            "messages": messages,
-            "temperature": temperature,
-            "max_tokens": 131072,  # Grok API maximum
-            "stream": False,  # Explicitly disable streaming
-        }
-
-        # Log request details at DEBUG level
+    def _log_api_request(self, messages: list, temperature: float) -> None:
+        """Log API request details at DEBUG level."""
         logger.debug(f"API Request: POST {self.base_url}")
         logger.debug(f"Model: {self.model}, Temperature: {temperature}")
         logger.debug(f"Messages: {len(messages)} message(s)")
+
         for i, msg in enumerate(messages):
             role = msg.get("role", "unknown")
             content = msg.get("content", "")
@@ -125,67 +113,93 @@ class GrokClient:
                 preview += "..."
             logger.debug(f"    {preview}")
 
+    def _log_api_response(self, result: Dict[str, Any]) -> None:
+        """Log API response details."""
+        logger.debug(f"Full API response keys: {result.keys()}")
+
+        # Log token usage
+        usage = result.get("usage", {})
+        logger.info(
+            f"Response tokens - prompt: {usage.get('prompt_tokens', 0)}, "
+            f"completion: {usage.get('completion_tokens', 0)}, "
+            f"total: {usage.get('total_tokens', 0)}"
+        )
+
+        # Log response content
+        if "choices" in result and len(result["choices"]) > 0:
+            content = result["choices"][0].get("message", {}).get("content", "")
+            finish_reason = result["choices"][0].get("finish_reason", "unknown")
+            logger.info(
+                f"Response: {len(content)} chars, finish_reason: {finish_reason}"
+            )
+
+            # Warn about issues
+            if finish_reason == "length":
+                logger.error("API response truncated due to max_tokens limit!")
+            elif finish_reason != "stop":
+                logger.warning(f"Unexpected finish_reason: {finish_reason}")
+
+            if len(content) < 200:
+                logger.warning(
+                    f"API returned very short response: {len(content)} chars"
+                )
+                logger.warning(f"Content: {content}")
+
+            # Log preview
+            preview = content[: self.debug_resp_chars]
+            if len(content) > self.debug_resp_chars:
+                preview += "..."
+            logger.debug(f"  {preview}")
+
+    def _handle_api_errors(self, response) -> None:
+        """Handle API error responses."""
+        if response.status_code == 429:
+            retry_after = int(response.headers.get("Retry-After", 60))
+            logger.warning(f"Rate limit hit, waiting {retry_after}s")
+            import time
+
+            time.sleep(retry_after)
+            response.raise_for_status()
+
+        if response.status_code >= 500:
+            response.raise_for_status()
+
+        if response.status_code != 200:
+            raise GrokAPIError(f"API error {response.status_code}: {response.text}")
+
+    @retry(
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(multiplier=2, min=4, max=60),
+        retry=retry_if_exception_type(requests.HTTPError),
+        reraise=True,
+    )
+    def _call_api(self, messages: list, temperature: float = 0.1) -> Dict[str, Any]:
+        """Make API call with retry logic."""
+        self._validate_input_size(messages)
+        self._log_api_request(messages, temperature)
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": 131072,
+            "stream": False,
+        }
+
         with get_session() as session:
-            # Note: timeout set in get_session(), not on session object
             response = session.post(
                 self.base_url, headers=headers, json=payload, timeout=self.timeout
             )
-
             logger.debug(f"API Response: {response.status_code}")
 
-            # Handle rate limiting
-            if response.status_code == 429:
-                retry_after = int(response.headers.get("Retry-After", 60))
-                logger.warning(f"Rate limit hit, waiting {retry_after}s")
-                import time
-
-                time.sleep(retry_after)
-                response.raise_for_status()
-
-            if response.status_code >= 500:
-                # Retry on 5xx errors
-                response.raise_for_status()
-
-            if response.status_code != 200:
-                raise GrokAPIError(f"API error {response.status_code}: {response.text}")
-
+            self._handle_api_errors(response)
             result = response.json()
-
-            # Log full response structure at DEBUG
-            logger.debug(f"Full API response keys: {result.keys()}")
-
-            usage = result.get("usage", {})
-            logger.info(
-                f"Response tokens - prompt: {usage.get('prompt_tokens', 0)}, "
-                f"completion: {usage.get('completion_tokens', 0)}, "
-                f"total: {usage.get('total_tokens', 0)}"
-            )
-
-            # Log response content preview
-            if "choices" in result and len(result["choices"]) > 0:
-                content = result["choices"][0].get("message", {}).get("content", "")
-                finish_reason = result["choices"][0].get("finish_reason", "unknown")
-                logger.info(
-                    f"Response: {len(content)} chars, finish_reason: {finish_reason}"
-                )
-
-                # Warn if truncated or suspiciously short
-                if finish_reason == "length":
-                    logger.error(f"API response truncated due to max_tokens limit!")
-                elif finish_reason != "stop":
-                    logger.warning(f"Unexpected finish_reason: {finish_reason}")
-
-                # Warn if response is suspiciously short
-                if len(content) < 200:
-                    logger.warning(
-                        f"API returned very short response: {len(content)} chars"
-                    )
-                    logger.warning(f"Content: {content}")
-
-                preview = content[: self.debug_resp_chars]
-                if len(content) > self.debug_resp_chars:
-                    preview += "..."
-                logger.debug(f"  {preview}")
+            self._log_api_response(result)
 
             return result
 
@@ -259,11 +273,50 @@ class GrokClient:
         # Extract content
         content = response["choices"][0]["message"]["content"]
 
+        # Sanitize control characters and invalid escapes BEFORE caching
+        import re
+
+        # Remove control characters (0x00-0x1f except whitespace)
+        content = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", content)
+        # Fix invalid escape sequences - more aggressive approach
+        # Valid JSON escapes: \" \\ \/ \b \f \n \r \t \uXXXX
+        # Replace any backslash not followed by valid escape with double backslash
+        content = re.sub(r'\\(?!["\\/bfnrtu]|u[0-9a-fA-F]{4})', r"\\\\", content)
+
         # Cache result
         if use_cache:
             cache[cache_key] = content
 
         return content
+
+    def _detect_image_type(self, image_base64: str) -> str:
+        """Detect image MIME type from base64 header."""
+        if image_base64.startswith("/9j/"):
+            return "image/jpeg"
+        elif image_base64.startswith("iVBORw"):
+            return "image/png"
+        elif image_base64.startswith("R0lGOD"):
+            return "image/gif"
+        return "image/jpeg"  # default
+
+    def _build_vision_messages(
+        self, prompt: str, image_data_url: str, system_prompt: Optional[str] = None
+    ) -> list:
+        """Build messages for vision API call."""
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+
+        messages.append(
+            {
+                "role": "user",
+                "content": [  # type: ignore[dict-item]
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": image_data_url}},
+                ],
+            }
+        )
+        return messages
 
     def extract_json_with_image_base64(
         self,
@@ -298,64 +351,30 @@ class GrokClient:
         cache_key = self._make_cache_key(f"{prompt}:img_{image_hash}", temperature)
 
         if use_cache and cache_key in cache:
-            logger.info(f"Cache hit for image analysis")
+            logger.info("Cache hit for image analysis")
             return cache[cache_key]
 
-        # Detect image type from base64 header
-        if image_base64.startswith("/9j/"):
-            content_type = "image/jpeg"
-        elif image_base64.startswith("iVBORw"):
-            content_type = "image/png"
-        elif image_base64.startswith("R0lGOD"):
-            content_type = "image/gif"
-        else:
-            content_type = "image/jpeg"  # default
-
+        # Build image data URL
+        content_type = self._detect_image_type(image_base64)
         image_data_url = f"data:{content_type};base64,{image_base64}"
 
-        # Build messages with image
-        messages = []
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-
-        messages.append(
-            {
-                "role": "user",
-                "content": [  # type: ignore[dict-item]
-                    {"type": "text", "text": prompt},
-                    {"type": "image_url", "image_url": {"url": image_data_url}},
-                ],
-            }
-        )
-
-        # Call API
+        # Build and send messages
+        messages = self._build_vision_messages(prompt, image_data_url, system_prompt)
         response = self._call_api(messages, temperature)
 
-        # Extract content
+        # Extract and parse content
         content = response["choices"][0]["message"]["content"]
-
-        # Parse JSON
-        content = content.strip()
-        if content.startswith("```json"):
-            content = content[7:]
-        if content.startswith("```"):
-            content = content[3:]
-        if content.endswith("```"):
-            content = content[:-3]
-        content = content.strip()
-
-        # Sanitize control characters
-        import re
-
-        content = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", content)
-        content = re.sub(r'\\(?!["\\/bfnrtu])', r"\\\\", content)
+        content = self._strip_markdown_wrapper(content)
+        content = self._sanitize_json_response(content)
 
         try:
             result = json.loads(content)
         except json.JSONDecodeError as e:
+            clear_cmd = self._make_cache_clear_command(cache_type, prompt, temperature)
+            logger.error(f"💡 Clear cache: {clear_cmd}")
             raise GrokAPIError(
                 f"Failed to parse JSON response: {e}\nContent: {content[:500]}"
-            )
+            ) from e
 
         # Cache result
         if use_cache:
@@ -465,6 +484,15 @@ class GrokClient:
         try:
             result = json.loads(content)
         except json.JSONDecodeError as e:
+            # Generate cache clearing command
+            cache_key = self._make_cache_key(prompt, temperature)
+            clear_cmd = (
+                f'python3 -c "from diskcache import Cache; '
+                f"c=Cache('cache/api/{cache_type}'); "
+                f"c.pop('{cache_key}', None); "
+                f"print('Cache entry cleared')\""
+            )
+            logger.error(f"💡 Clear cache: {clear_cmd}")
             raise GrokAPIError(
                 f"Failed to parse JSON response: {e}\nContent: {content[:500]}"
             )
@@ -474,6 +502,116 @@ class GrokClient:
             cache[cache_key] = result
 
         return result
+
+    def _strip_markdown_wrapper(self, response: str) -> str:
+        """Remove markdown code block wrapper from response."""
+        response = response.strip()
+        if response.startswith("```json"):
+            response = response[7:]
+        if response.startswith("```"):
+            response = response[3:]
+        if response.endswith("```"):
+            response = response[:-3]
+        return response.strip()
+
+    def _sanitize_json_response(self, response: str) -> str:
+        """Sanitize JSON response by removing control chars and fixing escapes."""
+        import re
+
+        # Remove control characters (0x00-0x1f except whitespace)
+        response = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", response)
+        # Fix invalid escape sequences (valid JSON escapes: " \ / b f n r t u)
+        response = re.sub(r'\\(?!["\\/bfnrtu]|u[0-9a-fA-F]{4})', r"\\\\", response)
+        return response
+
+    def _make_cache_clear_command(
+        self, cache_type: str, prompt: str, temperature: float
+    ) -> str:
+        """Generate cache clearing command for specific entry."""
+        cache_key = self._make_cache_key(prompt, temperature)
+        return (
+            f'python3 -c "from diskcache import Cache; '
+            f"c=Cache('cache/api/{cache_type}'); "
+            f"c.pop('{cache_key}', None); "
+            f"print('Cache entry cleared')\""
+        )
+
+    def _handle_short_response_error(
+        self, response: str, error_msg: str, clear_cmd: str
+    ) -> None:
+        """Handle short/invalid response errors."""
+        logger.error("API returned short/invalid response (%d chars)", len(response))
+        logger.debug("Response: %s", response)
+        logger.error(f"💡 Clear cache: {clear_cmd}")
+        raise GrokAPIError(
+            f"API returned invalid response: {error_msg}. Response: {response[:200]}"
+        )
+
+    def _handle_truncation_error(
+        self, response: str, error_msg: str, clear_cmd: str
+    ) -> None:
+        """Handle truncated response errors."""
+        response_len = len(response)
+        if response_len > 100000:
+            logger.error(
+                "Response truncated at %d chars - likely hit max_tokens limit",
+                response_len,
+            )
+            logger.error("💡 Consider splitting this chapter into smaller sections")
+        else:
+            logger.error(
+                "Response truncated at %d chars - transient API error", response_len
+            )
+            logger.error(f"💡 Clear cache: {clear_cmd}")
+
+        logger.error("JSON error: %s", error_msg)
+        logger.debug("Last 200 chars: ...%s", response[-200:])
+        raise GrokAPIError(
+            f"API response truncated at {response_len} chars. "
+            f"{'Likely transient API error - retry may succeed.' if response_len < 100000 else 'Consider splitting chapter.'}"
+        )
+
+    def _try_repair_json(
+        self, response: str, error_msg: str
+    ) -> Optional[Dict[str, Any]]:
+        """Attempt to repair malformed JSON response."""
+        import re
+
+        if "Invalid" not in error_msg or "escape" not in error_msg:
+            return None
+
+        logger.debug("Attempting to fix invalid escape sequences...")
+
+        # Fix 1: Replace invalid escapes
+        repaired = re.sub(r'\\(?!["\\/bfnrtu]|u[0-9a-fA-F]{4})', r"\\\\", response)
+        repaired = re.sub(r'\\(?=["}\]])', r"\\\\", repaired)
+
+        try:
+            result = json.loads(repaired)
+            logger.info("✓ JSON repaired successfully (invalid escapes fixed)")
+            return result
+        except json.JSONDecodeError:
+            pass
+
+        # Fix 2: Remove invalid backslashes
+        try:
+            ultra_clean = re.sub(r'\\([^"\\/bfnrtu])', r"\1", response)
+            result = json.loads(ultra_clean)
+            logger.info("✓ JSON repaired (removed invalid backslashes)")
+            return result
+        except json.JSONDecodeError:
+            pass
+
+        # Fix 3: Remove escaped brackets
+        try:
+            cleaned = response.replace(r"\[", "[").replace(r"\]", "]")
+            result = json.loads(cleaned)
+            logger.info("✓ JSON repaired (removed escaped brackets)")
+            return result
+        except json.JSONDecodeError:
+            pass
+
+        return None
 
     def extract_json(
         self,
@@ -500,108 +638,38 @@ class GrokClient:
             prompt, system_prompt, temperature, use_cache, cache_type
         )
 
-        # Extract JSON from response (may be wrapped in markdown)
-        response = response.strip()
-        if response.startswith("```json"):
-            response = response[7:]
-        if response.startswith("```"):
-            response = response[3:]
-        if response.endswith("```"):
-            response = response[:-3]
+        # Clean and sanitize response
+        response = self._strip_markdown_wrapper(response)
+        response = self._sanitize_json_response(response)
 
-        response = response.strip()
-
-        # Pre-process: sanitize BEFORE first parse attempt
-        import re
-
-        # Remove control characters (0x00-0x1f except whitespace)
-        response = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", response)
-        # Fix invalid escape sequences (valid JSON escapes: " \ / b f n r t u)
-        response = re.sub(r'\\(?!["\\/bfnrtu])', r"\\\\", response)
-
+        # Try to parse
         try:
             return json.loads(response)
         except json.JSONDecodeError as e:
             error_msg = str(e)
+            clear_cmd = self._make_cache_clear_command(cache_type, prompt, temperature)
 
-            # Check if response is suspiciously short (likely API error, not truncation)
+            # Handle short responses
             if len(response) < 500:
-                logger.error(
-                    "API returned short/invalid response (%d chars)", len(response)
-                )
-                logger.debug("Response: %s", response)
-                logger.error("💡 To clear cache and retry: rm -rf cache/api/events")
-                raise GrokAPIError(
-                    f"API returned invalid response: {error_msg}. "
-                    f"Response: {response[:200]}"
-                ) from e
+                self._handle_short_response_error(response, error_msg, clear_cmd)
 
-            # Check if response appears truncated (unterminated string/array/object)
+            # Handle truncated responses
             if "Unterminated string" in error_msg or "Expecting" in error_msg:
-                # Distinguish between real token limit (>100K chars) and API errors (<10K chars)
-                if len(response) > 100000:
-                    logger.error(
-                        "Response truncated at %d chars - likely hit max_tokens limit",
-                        len(response),
-                    )
-                    logger.error("💡 Consider splitting this chapter into smaller sections")
-                else:
-                    logger.error(
-                        "Response truncated at %d chars - transient API error",
-                        len(response),
-                    )
-                    logger.error("💡 To clear cache and retry: rm -rf cache/api/events")
-                
-                logger.error("JSON error: %s", error_msg)
-                logger.debug("Last 200 chars: ...%s", response[-200:])
-                raise GrokAPIError(
-                    f"API response truncated at {len(response)} chars. "
-                    f"{'Likely transient API error - retry may succeed.' if len(response) < 100000 else 'Consider splitting chapter.'}"
-                ) from e
+                self._handle_truncation_error(response, error_msg, clear_cmd)
 
-            # Try to fix common issues
-            repaired = response
+            # Try to repair JSON
+            repaired = self._try_repair_json(response, error_msg)
+            if repaired is not None:
+                return repaired
 
-            # Fix 1: Invalid escape sequences
-            if "Invalid" in error_msg and "escape" in error_msg:
-                logger.debug("Attempting to fix invalid escape sequences...")
-                # Find and fix common invalid escapes in strings
-                # More aggressive fix: replace ANY backslash not followed by valid escape
-                # Valid JSON escapes: " \ / b f n r t u
-                repaired = re.sub(r'\\(?!["\\/bfnrtu])', r"\\\\", repaired)
-
-                # Also fix single backslashes at end of strings
-                repaired = re.sub(r'\\(?=["}\]])', r"\\\\", repaired)
-
-                try:
-                    result = json.loads(repaired)
-                    logger.info("✓ JSON repaired successfully (invalid escapes fixed)")
-                    return result
-                except json.JSONDecodeError as e2:
-                    logger.debug("Escape fix didn't work: %s", e2)
-
-                    # Try more aggressive: remove all problematic backslashes
-                    try:
-                        # Replace backslash followed by anything except valid escapes
-                        ultra_clean = re.sub(r'\\([^"\\/bfnrtu])', r"\1", response)
-                        result = json.loads(ultra_clean)
-                        logger.info("✓ JSON repaired (removed invalid backslashes)")
-                        return result
-                    except json.JSONDecodeError as e3:
-                        logger.debug("Ultra clean didn't work: %s", e3)
-
-            # Fix 2: Try removing escaped brackets (sometimes Grok over-escapes)
-            try:
-                cleaned = repaired.replace(r"\[", "[").replace(r"\]", "]")
-                return json.loads(cleaned)
-            except json.JSONDecodeError:
-                logger.error("💡 To clear cache: rm -rf cache/api/events cache/api/dates cache/api/places")
-                raise GrokAPIError(
-                    f"Failed to parse JSON response: {e}\n"
-                    f"Response length: {len(response)} chars\n"
-                    f"First 500 chars: {response[:500]}\n"
-                    f"Last 500 chars: {response[-500:]}"
-                ) from e
+            # All repair attempts failed
+            logger.error(f"💡 Clear cache: {clear_cmd}")
+            raise GrokAPIError(
+                f"Failed to parse JSON response: {e}\n"
+                f"Response length: {len(response)} chars\n"
+                f"First 500 chars: {response[:500]}\n"
+                f"Last 500 chars: {response[-500:]}"
+            ) from e
 
     def extract_structured(
         self,

@@ -588,6 +588,28 @@ def _resolve_entities_in_materials(
             material["mentioned_organizations"] = mentioned_orgs
 
 
+def _enrich_materials(materials: list, grok_client: Any, enrich: bool) -> None:
+    """Enrich materials with searches and copyright if enabled."""
+    if enrich and grok_client:
+        for material in materials:
+            _enrich_material(material, grok_client)
+
+
+def _filter_by_reference_type(materials: list, ref_type: str) -> list:
+    """Filter materials by reference type."""
+    return [m for m in materials if m.get("reference_type") == ref_type]
+
+
+def _create_event_metadata(sub_event_data: dict) -> dict:
+    """Create event metadata dictionary."""
+    return {
+        "Event_Name": sub_event_data.get("Event_Name"),
+        "EventID": sub_event_data.get("EventID"),
+        "Sub-event_Name": sub_event_data.get("Sub-event_Name"),
+        "Sub-eventID": sub_event_data.get("Sub-eventID"),
+    }
+
+
 def _separate_by_type(
     all_supplemental: List[Dict[str, Any]],
     people_index: Dict[str, str],
@@ -606,23 +628,14 @@ def _separate_by_type(
         _resolve_entities_in_materials(materials, people_index, groups_index)
 
         # Enrich with searches and copyright
-        if enrich and grok_client:
-            for material in materials:
-                _enrich_material(material, grok_client)
+        _enrich_materials(materials, grok_client, enrich)
 
-        endnote_materials = [
-            m for m in materials if m.get("reference_type") == "endnote"
-        ]
-        footnote_materials = [
-            m for m in materials if m.get("reference_type") == "footnote"
-        ]
+        # Filter by type
+        endnote_materials = _filter_by_reference_type(materials, "endnote")
+        footnote_materials = _filter_by_reference_type(materials, "footnote")
 
-        event_metadata = {
-            "Event_Name": sub_event_data.get("Event_Name"),
-            "EventID": sub_event_data.get("EventID"),
-            "Sub-event_Name": sub_event_data.get("Sub-event_Name"),
-            "Sub-eventID": sub_event_data.get("Sub-eventID"),
-        }
+        # Create event metadata
+        event_metadata = _create_event_metadata(sub_event_data)
 
         if endnote_materials:
             endnotes.append(

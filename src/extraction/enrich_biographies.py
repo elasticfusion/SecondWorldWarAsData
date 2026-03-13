@@ -54,39 +54,74 @@ def search_grokipedia(
     return None
 
 
+def _build_wikipedia_request(person_name: str) -> tuple[str, dict, dict]:
+    """Build Wikipedia API request parameters. Returns (url, params, headers)."""
+    api_url = "https://en.wikipedia.org/w/api.php"
+    params = {
+        "action": "query",
+        "format": "json",
+        "titles": person_name,
+        "prop": "extracts",
+        "exintro": "True",
+        "explaintext": "True",
+    }
+    headers = {
+        "User-Agent": "WWII-Data-Extraction-Bot/1.0 (Historical research project; contact via GitHub)",
+        "Accept": "application/json",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+    return api_url, params, headers
+
+
+def _extract_page_content(response_data: dict) -> Optional[str]:
+    """Extract page content from Wikipedia API response."""
+    pages = response_data.get("query", {}).get("pages", {})
+
+    for page_id, page_data in pages.items():
+        if page_id != "-1":  # Page exists
+            return page_data.get("extract", "")
+
+    return None
+
+
+def _handle_wikipedia_error(
+    e: Exception, person_name: str, attempt: int, max_retries: int
+) -> bool:
+    """Handle Wikipedia API errors. Returns True if should retry."""
+    if isinstance(e, requests.Timeout):
+        if attempt < max_retries - 1:
+            logger.debug(
+                f"Wikipedia timeout for {person_name}, retrying ({attempt + 2}/{max_retries})..."
+            )
+            return True
+        logger.debug(f"Wikipedia timeout for {person_name}: {e}")
+        return False
+
+    if isinstance(e, requests.HTTPError) and e.response.status_code == 403:
+        logger.warning(
+            f"Wikipedia API blocked request for {person_name} (403 Forbidden). "
+            f"Wikipedia may be rate limiting or blocking automated requests."
+        )
+        return False
+
+    logger.debug(f"Wikipedia search failed for {person_name}: {e}")
+    return False
+
+
 def search_wikipedia(
     person_name: str, timeout: int = 30, max_retries: int = 2
 ) -> Optional[str]:
     """Search Wikipedia for person biographical data."""
+    api_url, params, headers = _build_wikipedia_request(person_name)
+
     for attempt in range(max_retries):
         try:
-            # Use Wikipedia API
-            api_url = "https://en.wikipedia.org/w/api.php"
-            params = {
-                "action": "query",
-                "format": "json",
-                "titles": person_name,
-                "prop": "extracts",
-                "exintro": "True",
-                "explaintext": "True",
-            }
-            headers = {
-                "User-Agent": "WWII-Data-Extraction-Bot/1.0 (Historical research project; contact via GitHub)",
-                "Accept": "application/json",
-                "Accept-Language": "en-US,en;q=0.9",
-            }
-
             response = requests.get(
                 api_url, params=params, headers=headers, timeout=timeout
             )
 
             if response.status_code == 200:
-                data = response.json()
-                pages = data.get("query", {}).get("pages", {})
-
-                for page_id, page_data in pages.items():
-                    if page_id != "-1":  # Page exists
-                        return page_data.get("extract", "")
+                return _extract_page_content(response.json())
 
             if response.status_code == 403:
                 logger.warning(
@@ -94,30 +129,14 @@ def search_wikipedia(
                     f"Wikipedia may be rate limiting or blocking automated requests. "
                     f"Consider using a different approach or contacting Wikipedia."
                 )
-                return None  # Don't retry 403s
+                return None
 
             logger.debug(f"Wikipedia returned {response.status_code} for {person_name}")
             return None
 
-        except requests.Timeout as e:
-            if attempt < max_retries - 1:
-                logger.debug(
-                    f"Wikipedia timeout for {person_name}, retrying ({attempt + 2}/{max_retries})..."
-                )
-            else:
-                logger.debug(f"Wikipedia timeout for {person_name}: {e}")
-        except requests.HTTPError as e:
-            if e.response.status_code == 403:
-                logger.warning(
-                    f"Wikipedia API blocked request for {person_name} (403 Forbidden). "
-                    f"Wikipedia may be rate limiting or blocking automated requests."
-                )
-                return None  # Don't retry 403s
-            logger.debug(f"Wikipedia HTTP error for {person_name}: {e}")
-            return None
         except Exception as e:
-            logger.debug(f"Wikipedia search failed for {person_name}: {e}")
-            return None
+            if not _handle_wikipedia_error(e, person_name, attempt, max_retries):
+                return None
 
     return None
 
@@ -130,7 +149,6 @@ def extract_biographical_data(
     max_retries: int = 2,
 ) -> Optional[Dict[str, Any]]:
     """Extract structured biographical data from source text using Grok."""
-
     prompt = f"""Extract biographical data for {person_name} from this text.
 
 Source: {source_name}

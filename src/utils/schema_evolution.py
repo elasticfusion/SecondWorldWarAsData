@@ -15,7 +15,7 @@ def register_migration(
     schema_name: str, from_version: str, to_version: str
 ) -> Callable:
     """
-    Decorator to register a migration function.
+    Register a migration function for schema evolution.
 
     Args:
         schema_name: Name of schema (e.g., 'people')

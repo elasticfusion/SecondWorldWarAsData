@@ -58,7 +58,6 @@ def search_maps_with_grok(
     whitelisted_sites: List[str],
 ) -> List[Dict[str, Any]]:
     """Search for maps using Grok with whitelisted sites."""
-
     year = date.split("-")[0] if date else "1939-1945"
     sites = " OR ".join([f"site:{site}" for site in whitelisted_sites])
 
@@ -270,7 +269,6 @@ def create_map_json(
     local_image_path: str,
 ) -> Dict[str, Any]:
     """Create map JSON record."""
-
     return {
         "MapID": map_id,
         "map_title": map_data["title"],

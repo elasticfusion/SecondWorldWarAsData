@@ -25,133 +25,98 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 logger = logging.getLogger(__name__)
 
 
-def _check_license_terms(
-    url: str, grok_client: GrokClient, page_timeout: int = 10
-) -> tuple[bool, str]:
-    """Check if website allows non-commercial use of images.
+def _is_trusted_domain(domain: str) -> bool:
+    """Check if domain is trusted (.gov or .edu)."""
+    return domain.endswith(".gov") or domain.endswith(".edu")
 
-    Args:
-        url: URL to check
-        grok_client: Grok API client
-        page_timeout: Timeout for page download
 
-    Returns: (allowed, license_url) - True if non-commercial use allowed, and URL of license page
-    """
-    try:
-        domain = urlparse(url).netloc
+def _find_license_link(
+    html: str, base_url: str, page_timeout: int, headers: dict
+) -> tuple[str, str]:
+    """Find and fetch license page from HTML links. Returns (license_text, license_url)."""
+    import re
 
-        # Skip license check for .gov and .edu domains (public/educational)
-        if domain.endswith(".gov") or domain.endswith(".edu"):
-            logger.info(f"   ✅ Trusted domain ({domain}) - skipping license check")
-            return True, url
+    license_link_patterns = [
+        r'href=["\']([^"\']*(?:copyright|license|terms)[^"\']*)["\']',
+    ]
 
-        base_url = f"{urlparse(url).scheme}://{domain}"
-
-        # Common license/terms pages
-        license_paths = [
-            "/terms",
-            "/terms-of-use",
-            "/license",
-            "/copyright",
-            "/about/terms",
-            "/legal",
-            "/terms-and-conditions",
-        ]
-
-        headers = {"User-Agent": USER_AGENT}
-        license_text = ""
-        license_url = url  # Default to map page URL
-
-        # First, check main page for license links
-        try:
-            response = requests.get(
-                url, timeout=page_timeout, headers=headers, allow_redirects=True
-            )
-            if response.status_code == 200:
-                html = response.text
-                import re
-
-                # Look for links to copyright/license pages
-                license_link_patterns = [
-                    r'href=["\']([^"\']*(?:copyright|license|terms)[^"\']*)["\']',
-                ]
-                for pattern in license_link_patterns:
-                    matches = re.findall(pattern, html, re.IGNORECASE)
-                    if matches:
-                        # Try first match
-                        link = matches[0]
-                        if not link.startswith("http"):
-                            link = f"{base_url}/{link.lstrip('/')}"
-                        try:
-                            lic_response = requests.get(
-                                link,
-                                timeout=page_timeout,
-                                headers=headers,
-                                allow_redirects=True,
-                            )
-                            if lic_response.status_code == 200:
-                                license_text = lic_response.text[:10000]
-                                license_url = link  # Track the license page URL
-                                logger.info(
-                                    f"   📄 Found license page via link: {link}"
-                                )
-                                break
-                        except Exception:  # nosec B112
-                            continue  # Skip invalid links
-        except Exception:  # nosec B110
-            pass  # License extraction is optional
-
-        # Try common paths if no link found
-        if not license_text:
-            for path in license_paths:
-                try:
-                    response = requests.get(
-                        f"{base_url}{path}",
-                        timeout=page_timeout,
-                        headers=headers,
-                        allow_redirects=True,
-                    )
-                    if response.status_code == 200:
-                        license_text = response.text[:10000]  # First 10KB
-                        license_url = f"{base_url}{path}"  # Track the license page URL
-                        logger.info(f"   📄 Found license page: {path}")
-                        break
-                except Exception:  # nosec B112
-                    continue  # Try next path
-
-        # If no dedicated license page, check main page footer
-        if not license_text:
+    for pattern in license_link_patterns:
+        matches = re.findall(pattern, html, re.IGNORECASE)
+        if matches:
+            link = matches[0]
+            if not link.startswith("http"):
+                link = f"{base_url}/{link.lstrip('/')}"
             try:
                 response = requests.get(
-                    url, timeout=page_timeout, headers=headers, allow_redirects=True
+                    link, timeout=page_timeout, headers=headers, allow_redirects=True
                 )
                 if response.status_code == 200:
-                    # Extract potential license info from page
-                    html = response.text
-                    import re
+                    logger.info(f"   📄 Found license page via link: {link}")
+                    return response.text[:10000], link
+            except Exception:  # nosec B112
+                continue
 
-                    # Look for copyright/license sections
-                    patterns = [
-                        r"(?i)<footer.*?>(.*?)</footer>",
-                        r"(?i)copyright.*?(?=<|$).{0,500}",
-                        r"(?i)license.*?(?=<|$).{0,500}",
-                        r"(?i)terms.*?(?=<|$).{0,500}",
-                    ]
-                    for pattern in patterns:
-                        matches = re.findall(pattern, html, re.DOTALL)
-                        if matches:
-                            license_text += " ".join(matches[:3])
-                            if len(license_text) > 2000:
-                                break
-            except Exception:  # nosec B110
-                pass  # Footer extraction is optional
+    return "", ""
 
-        if not license_text or len(license_text) < 50:
-            logger.info(f"   ✅ No license found for {domain} - assuming public domain")
-            return True, url
 
-        # Ask Grok to analyze license terms
-        prompt = f"""Analyze this website's terms/license to determine if non-commercial use of images is allowed.
+def _try_common_license_paths(
+    base_url: str, page_timeout: int, headers: dict
+) -> tuple[str, str]:
+    """Try common license page paths. Returns (license_text, license_url)."""
+    license_paths = [
+        "/terms",
+        "/terms-of-use",
+        "/license",
+        "/copyright",
+        "/about/terms",
+        "/legal",
+        "/terms-and-conditions",
+    ]
+
+    for path in license_paths:
+        try:
+            response = requests.get(
+                f"{base_url}{path}",
+                timeout=page_timeout,
+                headers=headers,
+                allow_redirects=True,
+            )
+            if response.status_code == 200:
+                logger.info(f"   📄 Found license page: {path}")
+                return response.text[:10000], f"{base_url}{path}"
+        except Exception:  # nosec B112
+            continue
+
+    return "", ""
+
+
+def _extract_footer_license(html: str) -> str:
+    """Extract license info from page footer/copyright sections."""
+    import re
+
+    patterns = [
+        r"(?i)<footer.*?>(.*?)</footer>",
+        r"(?i)copyright.*?(?=<|$).{0,500}",
+        r"(?i)license.*?(?=<|$).{0,500}",
+        r"(?i)terms.*?(?=<|$).{0,500}",
+    ]
+
+    license_text = ""
+    for pattern in patterns:
+        matches = re.findall(pattern, html, re.DOTALL)
+        if matches:
+            license_text += " ".join(matches[:3])
+            if len(license_text) > 2000:
+                break
+
+    return license_text
+
+
+def _analyze_license_with_grok(
+    domain: str, url: str, license_text: str, grok_client: GrokClient
+) -> tuple[bool, str]:
+    """Analyze license terms with Grok. Returns (allowed, license_url)."""
+    prompt = f"""Analyze this website's terms/license to determine if non-commercial use of images is allowed.
 
 Domain: {domain}
 URL: {url}
@@ -169,27 +134,88 @@ Respond with ONLY a JSON object:
 {{"allowed": true or false, "reason": "Brief explanation of license terms", "license_type": "CC-BY, Public Domain, All Rights Reserved, etc."}}
 """
 
-        result = grok_client.extract_json(
-            prompt=prompt, cache_type="license_check", temperature=0.0
-        )
+    result = grok_client.extract_json(
+        prompt=prompt, cache_type="license_check", temperature=0.0
+    )
 
-        if isinstance(result, dict):
-            allowed = result.get("allowed", False)
-            reason = result.get("reason", "Unknown")
-            license_type = result.get("license_type", "Unknown")
+    if isinstance(result, dict):
+        allowed = result.get("allowed", False)
+        reason = result.get("reason", "Unknown")
+        license_type = result.get("license_type", "Unknown")
 
-            logger.info(f"   📋 License: {license_type} - {reason}")
+        logger.info(f"   📋 License: {license_type} - {reason}")
 
-            if not allowed:
-                # Add to blacklist with license page URL
-                _add_to_blacklist(domain, license_url)
-                logger.warning(
-                    f"   🚫 Added {domain} to blacklist (license prohibits use)"
+        if not allowed:
+            _add_to_blacklist(domain, url)
+            logger.warning(f"   🚫 Added {domain} to blacklist (license prohibits use)")
+
+        return allowed, url
+
+    return False, url
+
+
+def _check_license_terms(
+    url: str, grok_client: GrokClient, page_timeout: int = 10
+) -> tuple[bool, str]:
+    """Check if website allows non-commercial use of images.
+
+    Args:
+        url: URL to check
+        grok_client: Grok API client
+        page_timeout: Timeout for page download
+
+    Returns: (allowed, license_url) - True if non-commercial use allowed, and URL of license page
+    """
+    try:
+        domain = urlparse(url).netloc
+
+        # Skip license check for .gov and .edu domains
+        if _is_trusted_domain(domain):
+            logger.info(f"   ✅ Trusted domain ({domain}) - skipping license check")
+            return True, url
+
+        base_url = f"{urlparse(url).scheme}://{domain}"
+        headers = {"User-Agent": USER_AGENT}
+        license_text = ""
+        license_url = url
+
+        # Try to find license page via links
+        try:
+            response = requests.get(
+                url, timeout=page_timeout, headers=headers, allow_redirects=True
+            )
+            if response.status_code == 200:
+                license_text, license_url = _find_license_link(
+                    response.text, base_url, page_timeout, headers
                 )
+        except Exception:  # nosec B110
+            pass
 
-            return allowed, license_url
+        # Try common paths if no link found
+        if not license_text:
+            license_text, found_url = _try_common_license_paths(
+                base_url, page_timeout, headers
+            )
+            if found_url:
+                license_url = found_url
 
-        return False, url
+        # Check main page footer if no dedicated license page
+        if not license_text:
+            try:
+                response = requests.get(
+                    url, timeout=page_timeout, headers=headers, allow_redirects=True
+                )
+                if response.status_code == 200:
+                    license_text = _extract_footer_license(response.text)
+            except Exception:  # nosec B110
+                pass
+
+        if not license_text or len(license_text) < 50:
+            logger.info(f"   ✅ No license found for {domain} - assuming public domain")
+            return True, url
+
+        # Analyze with Grok
+        return _analyze_license_with_grok(domain, url, license_text, grok_client)
 
     except Exception as e:
         logger.warning(f"   ⚠️  License check failed: {e}")
@@ -295,6 +321,197 @@ def search_with_openserp(
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.warning(f"OpenSERP search error: {e}")
         return []
+
+
+def _get_event_context(place_data: dict) -> tuple[str, Optional[str]]:
+    """Extract event context and date from place data. Returns (event_context, date)."""
+    event_mentions = place_data.get("event_mentions", [])
+    event_context = "WWII operations"
+    date = None
+
+    if event_mentions:
+        first_mention = event_mentions[0]
+        event_name = first_mention.get("Event_Name", "")
+        sub_event_name = first_mention.get("Sub_event_Name", "")
+        if event_name and sub_event_name:
+            event_context = f"{event_name} - {sub_event_name}"
+
+    return event_context, date
+
+
+def _check_duplicate_map(url: str, output_dir: Path) -> bool:
+    """Check if map URL already exists in output. Returns True if duplicate."""
+    existing = list(output_dir.glob("*.json"))
+    for existing_file in existing:
+        with open(existing_file) as f:
+            existing_data = json.load(f)
+        if existing_data.get("external_source_url") == url:
+            return True
+    return False
+
+
+def _download_map_image(
+    url: str,
+    map_id: str,
+    image_storage_path: str,
+    page_timeout: int,
+    image_timeout: int,
+) -> tuple[bool, Optional[str]]:
+    """Download map image to storage. Returns (success, image_path)."""
+    try:
+        import requests
+        from src.extraction.search_external_maps import _extract_map_images
+
+        storage_dir = Path(image_storage_path)
+        storage_dir.mkdir(parents=True, exist_ok=True)
+
+        headers = {"User-Agent": USER_AGENT}
+        page_response = requests.get(
+            url, timeout=page_timeout, headers=headers, allow_redirects=True
+        )
+
+        if page_response.status_code != 200:
+            return False, None
+
+        map_images = _extract_map_images(
+            page_response.text, url, page_has_map_keyword=True
+        )
+        if not map_images:
+            return False, None
+
+        img_url = map_images[0]["url"]
+        img_response = requests.get(
+            img_url, timeout=image_timeout, headers=headers, allow_redirects=True
+        )
+        img_response.raise_for_status()
+
+        # Determine extension
+        content_type = img_response.headers.get("content-type", "image/jpeg")
+        ext = content_type.split("/")[-1].split(";")[0]
+        if ext not in ["jpg", "jpeg", "png", "gif"]:
+            ext = "jpg"
+
+        image_filename = f"{map_id}.{ext}"
+        image_file_path = storage_dir / image_filename
+        image_file_path.write_bytes(img_response.content)
+
+        logger.info(f"   💾 Saved image: {image_filename}")
+        return True, str(image_file_path)
+
+    except Exception as e:
+        logger.warning(f"   ⚠️  Failed to download image: {e}")
+        return False, None
+
+
+def _create_map_record(
+    map_id: str,
+    result: dict,
+    place_data: dict,
+    place_name: str,
+    date: Optional[str],
+    image_downloaded: bool,
+    image_path: Optional[str],
+) -> dict:
+    """Create map record dictionary."""
+    return {
+        "MapID": map_id,
+        "map_title": result["title"],
+        "external_source": result["engine"].title(),
+        "external_source_url": result["url"],
+        "description": result.get("description", ""),
+        "license": "Unknown",
+        "place_name": place_name,
+        "PlaceID": place_data.get("PlaceID"),
+        "date": date,
+        "found_via": f"OpenSERP {result['engine']} search",
+        "found_date": datetime.utcnow().strftime("%Y-%m-%d"),
+        "extracted_date": datetime.utcnow().isoformat() + "Z",
+        "image_downloaded": image_downloaded,
+        "image_path": image_path,
+    }
+
+
+def _process_search_result(
+    result: dict,
+    place_name: str,
+    place_data: dict,
+    date: Optional[str],
+    event_context: str,
+    grok_client: GrokClient,
+    page_timeout: int,
+    image_timeout: int,
+    image_storage_path: Optional[str],
+    output_dir: Path,
+    downloaded_urls: set,
+) -> tuple[bool, int]:
+    """Process a single search result. Returns (imported, skipped_count)."""
+    url = result["url"]
+    title = result["title"]
+    description = result.get("description", "")
+
+    # Skip if already downloaded
+    if url in downloaded_urls:
+        logger.info(f"   ⏭️  Already downloaded: {title[:60]}...")
+        return False, 1
+
+    logger.info(f"   🔍 Verifying: {title[:60]}...")
+
+    # Verify with Grok
+    is_relevant, is_government_map = _verify_map_relevance(
+        map_url=url,
+        map_title=title,
+        map_description=description,
+        place_name=place_name,
+        date=date,
+        event_context=event_context,
+        grok_client=grok_client,
+        page_timeout=page_timeout,
+        image_timeout=image_timeout,
+    )
+
+    if not is_relevant:
+        logger.info(f"   ⚠️  Rejected by verification")
+        return False, 0
+
+    # Check license (skip if government map)
+    if not is_government_map:
+        license_allowed, _ = _check_license_terms(
+            url=url, grok_client=grok_client, page_timeout=page_timeout
+        )
+        if not license_allowed:
+            logger.info(f"   ⚠️  Rejected by license check")
+            return False, 0
+    else:
+        logger.info(f"   ✓ Government map - skipping license check")
+
+    # Check for duplicates
+    if _check_duplicate_map(url, output_dir):
+        logger.info(f"   ⚠️  Already imported")
+        return False, 0
+
+    # Generate MapID
+    map_id = str(ulid.new())
+
+    # Download image if configured
+    image_downloaded = False
+    image_path = None
+    if image_storage_path:
+        image_downloaded, image_path = _download_map_image(
+            url, map_id, image_storage_path, page_timeout, image_timeout
+        )
+
+    # Create and save map record
+    map_record = _create_map_record(
+        map_id, result, place_data, place_name, date, image_downloaded, image_path
+    )
+
+    output_file = output_dir / f"{map_record['MapID']}.json"
+    with open(output_file, "w") as f:
+        json.dump(map_record, f, indent=2)
+
+    logger.info(f"   ✅ Imported: {title[:60]}")
+    downloaded_urls.add(url)
+    return True, 0
 
 
 def import_openserp_maps(
@@ -403,148 +620,24 @@ def import_openserp_maps(
 
             logger.info(f"   ✓ Found {len(results)} potential map(s) from OpenSERP")
 
-            # Verify and import each result
+            # Process each result
             for result in results:
-                url = result["url"]
-                title = result["title"]
-                description = result.get("description", "")
-
-                # Skip if already downloaded
-                if url in downloaded_urls:
-                    logger.info(f"   ⏭️  Already downloaded: {title[:60]}...")
-                    skipped_downloaded += 1
-                    continue
-
-                logger.info(f"   🔍 Verifying: {title[:60]}...")
-
-                # Verify with Grok first to check if it's a government map
-                is_relevant, is_government_map = _verify_map_relevance(
-                    map_url=url,
-                    map_title=title,
-                    map_description=description,
-                    place_name=place_name,
-                    date=date,
-                    event_context=event_context,
-                    grok_client=grok_client,
-                    page_timeout=page_timeout,
-                    image_timeout=image_timeout,
+                was_imported, skipped = _process_search_result(
+                    result,
+                    place_name,
+                    place_data,
+                    date,
+                    event_context,
+                    grok_client,
+                    page_timeout,
+                    image_timeout,
+                    image_storage_path,
+                    output_dir,
+                    downloaded_urls,
                 )
-
-                if not is_relevant:
-                    logger.info(f"   ⚠️  Rejected by verification")
-                    continue
-
-                # Check license terms (skip if government map)
-                if not is_government_map:
-                    license_allowed, license_url = _check_license_terms(
-                        url=url, grok_client=grok_client, page_timeout=page_timeout
-                    )
-
-                    if not license_allowed:
-                        logger.info(f"   ⚠️  Rejected by license check")
-                        continue
-                else:
-                    logger.info(f"   ✓ Government map - skipping license check")
-
-                # Check for duplicates
-                existing = list(output_dir.glob("*.json"))
-                is_duplicate = False
-                for existing_file in existing:
-                    with open(existing_file) as f:
-                        existing_data = json.load(f)
-                    if existing_data.get("external_source_url") == url:
-                        is_duplicate = True
-                        break
-
-                if is_duplicate:
-                    logger.info(f"   ⚠️  Already imported")
-                    continue
-
-                # Generate MapID
-                map_id = str(ulid.new())
-
-                # Download image if storage path configured
-                image_downloaded = False
-                image_path = None
-                if image_storage_path:
-                    try:
-                        import requests
-
-                        storage_dir = Path(image_storage_path)
-                        storage_dir.mkdir(parents=True, exist_ok=True)
-
-                        # Get first image from the page
-                        from src.extraction.search_external_maps import (
-                            _extract_map_images,
-                        )
-
-                        headers = {"User-Agent": USER_AGENT}
-                        page_response = requests.get(
-                            url,
-                            timeout=page_timeout,
-                            headers=headers,
-                            allow_redirects=True,
-                        )
-
-                        if page_response.status_code == 200:
-                            map_images = _extract_map_images(
-                                page_response.text, url, page_has_map_keyword=True
-                            )
-                            if map_images:
-                                img_url = map_images[0]["url"]
-                                img_response = requests.get(
-                                    img_url,
-                                    timeout=image_timeout,
-                                    headers=headers,
-                                    allow_redirects=True,
-                                )
-                                img_response.raise_for_status()
-
-                                # Determine extension from content-type
-                                content_type = img_response.headers.get(
-                                    "content-type", "image/jpeg"
-                                )
-                                ext = content_type.split("/")[-1].split(";")[0]
-                                if ext not in ["jpg", "jpeg", "png", "gif"]:
-                                    ext = "jpg"
-
-                                image_filename = f"{map_id}.{ext}"
-                                image_file_path = storage_dir / image_filename
-                                image_file_path.write_bytes(img_response.content)
-
-                                image_downloaded = True
-                                image_path = str(image_file_path)
-                                logger.info(f"   💾 Saved image: {image_filename}")
-                    except Exception as e:
-                        logger.warning(f"   ⚠️  Failed to download image: {e}")
-
-                # Import map
-                map_record = {
-                    "MapID": map_id,
-                    "map_title": title,
-                    "external_source": result["engine"].title(),
-                    "external_source_url": url,
-                    "description": result.get("description", ""),
-                    "license": "Unknown",
-                    "place_name": place_name,
-                    "PlaceID": place_data.get("PlaceID"),
-                    "date": date,
-                    "found_via": f"OpenSERP {result['engine']} search",
-                    "found_date": datetime.utcnow().strftime("%Y-%m-%d"),
-                    "extracted_date": datetime.utcnow().isoformat() + "Z",
-                    "image_downloaded": image_downloaded,
-                    "image_path": image_path,
-                }
-
-                output_file = output_dir / f"{map_record['MapID']}.json"
-                with open(output_file, "w") as f:
-                    json.dump(map_record, f, indent=2)
-
-                logger.info(f"   ✅ Imported: {title[:60]}")
-                imported += 1
-
-                # Add to downloaded URLs
-                downloaded_urls.add(url)
+                if was_imported:
+                    imported += 1
+                skipped_downloaded += skipped
 
         except Exception as e:
             logger.warning(f"Error processing {place_file.name}: {e}")

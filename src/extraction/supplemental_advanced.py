@@ -23,34 +23,58 @@ _ISBN_PATTERN = re.compile(r"^\d{10}$|^\d{13}$")
 _DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
-def extract_isbn(citation: Dict[str, Any], grok_client: Any) -> Optional[str]:
-    """Extract ISBN for books using LLM."""
-    # Check publication date - ISBNs started in 1966
-    pub_date = citation.get("publication_date", "")
+def _check_isbn_publication_year(pub_date: str) -> bool:
+    """Check if publication year is after 1966 (when ISBNs started). Returns True if valid."""
     if pub_date and pub_date != "UNKNOWN":
         try:
             year = int(pub_date.split("-")[0])
             if year < 1966:
                 logger.debug("Book published before 1966, no ISBN")
-                return None
+                return False
         except (ValueError, IndexError):
             pass
+    return True
 
-    # Build query for LLM
+
+def _get_author_from_citation(citation: Dict[str, Any]) -> str:
+    """Extract author string from citation."""
     authors = citation.get("author", [])
     if isinstance(authors, str):
-        author = authors
+        return authors
     elif isinstance(authors, list) and authors:
-        author = authors[0]
-    else:
-        author = ""
+        return authors[0]
+    return ""
 
+
+def _validate_isbn(isbn: str) -> Optional[str]:
+    """Validate and clean ISBN. Returns cleaned ISBN or None."""
+    if isbn == "NOT_FOUND":
+        return None
+
+    if _ISBN_PATTERN.match(isbn):
+        logger.debug("Found ISBN: %s", isbn)
+        return isbn
+
+    logger.debug("Invalid ISBN format: %s", isbn)
+    return None
+
+
+def extract_isbn(citation: Dict[str, Any], grok_client: Any) -> Optional[str]:
+    """Extract ISBN for books using LLM."""
+    # Check publication date
+    pub_date = citation.get("publication_date", "")
+    if not _check_isbn_publication_year(pub_date):
+        return None
+
+    # Get author and title
+    author = _get_author_from_citation(citation)
     title = citation.get("title", "")
-    publisher = citation.get("publisher", "")
 
     if not (author and title):
         logger.debug("Missing author or title for ISBN lookup")
         return None
+
+    publisher = citation.get("publisher", "")
 
     prompt = f"""Find the ISBN for this book (preferably first edition):
 Author: {author}
@@ -66,16 +90,7 @@ Do not include hyphens or spaces."""
             prompt=prompt, cache_type="supplemental_advanced", use_cache=True
         )
         isbn = response.strip().replace("-", "").replace(" ", "")
-
-        # Validate ISBN format
-        if isbn == "NOT_FOUND":
-            return None
-        if _ISBN_PATTERN.match(isbn):
-            logger.debug("Found ISBN: %s", isbn)
-            return isbn
-
-        logger.debug("Invalid ISBN format: %s", isbn)
-        return None
+        return _validate_isbn(isbn)
 
     except Exception as e:
         logger.debug("ISBN extraction error: %s", e)
@@ -114,13 +129,66 @@ If only year is known, use YYYY-01-01."""
         return "UNKNOWN"
 
 
+def _extract_pub_year(pub_date: str) -> Optional[int]:
+    """Extract publication year from date string."""
+    if pub_date and pub_date != "UNKNOWN":
+        try:
+            return int(pub_date.split("-")[0])
+        except (ValueError, IndexError):
+            pass
+    return None
+
+
+def _is_us_government_work(publisher: str) -> bool:
+    """Check if publisher is a US Government entity."""
+    publisher_lower = publisher.lower() if publisher else ""
+    return any(
+        term in publisher_lower
+        for term in ["u.s. government", "us government", "government printing"]
+    )
+
+
+def _check_death_plus_70(
+    author_death_date: Optional[str], current_year: int
+) -> tuple[str, str]:
+    """Check copyright based on author death + 70 years. Returns (status, basis)."""
+    if author_death_date and author_death_date != "UNKNOWN":
+        death_year = int(author_death_date.split("-")[0])
+        expiration_year = death_year + 70
+        if current_year >= expiration_year:
+            return (
+                "public_domain",
+                f"Author death + 70 years expired ({expiration_year})",
+            )
+        return "copyright", f"Under copyright until {expiration_year}"
+    return "copyright", "Author death date unknown"
+
+
+def _determine_usa_copyright(
+    pub_year: Optional[int], author_death_date: Optional[str], current_year: int
+) -> tuple[str, str]:
+    """Determine USA copyright status. Returns (status, basis)."""
+    if pub_year and pub_year < 1928:
+        return "public_domain", "Published before 1928"
+
+    if pub_year and 1928 <= pub_year <= 1977:
+        expiration_year = pub_year + 95
+        if current_year >= expiration_year:
+            return "public_domain", f"95 years expired ({expiration_year})"
+        return "copyright", f"Under copyright until {expiration_year}"
+
+    if pub_year and pub_year > 1977:
+        return _check_death_plus_70(author_death_date, current_year)
+
+    return "unknown", ""
+
+
 def determine_copyright_status(
     citation: Dict[str, Any],
     author_death_date: Optional[str],
     jurisdiction: str = "USA",
 ) -> Dict[str, Any]:
     """Determine copyright status based on publication date and author death date."""
-    pub_date = citation.get("publication_date", "")
     current_year = datetime.now().year
 
     status = {
@@ -130,76 +198,23 @@ def determine_copyright_status(
         "jurisdiction": jurisdiction,
     }
 
-    # Extract publication year
-    pub_year = None
-    if pub_date and pub_date != "UNKNOWN":
-        try:
-            pub_year = int(pub_date.split("-")[0])
-        except (ValueError, IndexError):
-            pass
+    pub_year = _extract_pub_year(citation.get("publication_date", ""))
 
     # US Government works
-    publisher = citation.get("publisher") or ""
-    publisher = publisher.lower()
-    if any(
-        term in publisher
-        for term in ["u.s. government", "us government", "government printing"]
-    ):
+    if _is_us_government_work(citation.get("publisher") or ""):
         status["status"] = "public_domain"
         status["determination_basis"] = "US Government work"
         return status
 
-    # USA copyright rules
+    # Jurisdiction-specific rules
     if jurisdiction == "USA":
-        if pub_year and pub_year < 1928:
-            status["status"] = "public_domain"
-            status["determination_basis"] = "Published before 1928"
-        elif pub_year and 1928 <= pub_year <= 1977:
-            expiration_year = pub_year + 95
-            if current_year >= expiration_year:
-                status["status"] = "public_domain"
-                status["determination_basis"] = f"95 years expired ({expiration_year})"
-            else:
-                status["status"] = "copyright"
-                status["determination_basis"] = (
-                    f"Under copyright until {expiration_year}"
-                )
-        elif pub_year and pub_year > 1977:
-            if author_death_date and author_death_date != "UNKNOWN":
-                death_year = int(author_death_date.split("-")[0])
-                expiration_year = death_year + 70
-                if current_year >= expiration_year:
-                    status["status"] = "public_domain"
-                    status["determination_basis"] = (
-                        f"Author death + 70 years expired ({expiration_year})"
-                    )
-                else:
-                    status["status"] = "copyright"
-                    status["determination_basis"] = (
-                        f"Under copyright until {expiration_year}"
-                    )
-            else:
-                status["status"] = "copyright"
-                status["determination_basis"] = "Post-1977, author death date unknown"
-
-    # EU/UK copyright rules (Life + 70)
+        status["status"], status["determination_basis"] = _determine_usa_copyright(
+            pub_year, author_death_date, current_year
+        )
     elif jurisdiction in ["EU", "GBR"]:
-        if author_death_date and author_death_date != "UNKNOWN":
-            death_year = int(author_death_date.split("-")[0])
-            expiration_year = death_year + 70
-            if current_year >= expiration_year:
-                status["status"] = "public_domain"
-                status["determination_basis"] = (
-                    f"Author death + 70 years expired ({expiration_year})"
-                )
-            else:
-                status["status"] = "copyright"
-                status["determination_basis"] = (
-                    f"Under copyright until {expiration_year}"
-                )
-        else:
-            status["status"] = "copyright"
-            status["determination_basis"] = "Author death date unknown"
+        status["status"], status["determination_basis"] = _check_death_plus_70(
+            author_death_date, current_year
+        )
 
     return status
 
@@ -213,20 +228,115 @@ def verify_archive_url(url: str, timeout: int = 10) -> Dict[str, Any]:
     }
 
     try:
-        with requests.Session() as session:
-            session.timeout = timeout
-            response = session.get(url, allow_redirects=True)
-            response.raise_for_status()
+        response = requests.get(url, allow_redirects=True, timeout=timeout)
+        response.raise_for_status()
 
-            result["verified"] = True
-            result["verification_notes"] = f"HTTP {response.status_code}"
-            logger.debug("Archive URL verified: %s", url)
+        result["verified"] = True
+        result["verification_notes"] = f"HTTP {response.status_code}"
+        logger.debug("Archive URL verified: %s", url)
 
     except requests.RequestException as e:
         result["verification_notes"] = f"HTTP error: {e}"
         logger.debug("Archive URL verification failed: %s", e)
 
     return result
+
+
+def _load_supplemental_data(supplemental_file: Path) -> Optional[Any]:
+    """Load supplemental data from file."""
+    try:
+        with open(supplemental_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, json.JSONDecodeError) as e:
+        logger.error("Error reading supplemental file: %s", e)
+        return None
+
+
+def _extract_materials_from_data(data: Any) -> list:
+    """Extract materials list from data (handles both list and dict formats)."""
+    if isinstance(data, list):
+        # Array of sub-event objects
+        all_materials = []
+        for sub_event in data:
+            all_materials.extend(sub_event.get("Supplemental_Material", []))
+        return all_materials
+    else:
+        # Single object with materials array
+        return data.get("materials", [])
+
+
+def _enrich_isbn(
+    material: dict, citation: dict, config: dict, grok_client: Any
+) -> bool:
+    """Enrich material with ISBN. Returns True if enriched."""
+    material_type = citation.get("type", "")
+
+    if (
+        material_type == "book"
+        and config.get("extract_isbn", False)
+        and not citation.get("isbn")
+    ):
+        isbn = extract_isbn(citation, grok_client)
+        if isbn:
+            citation["isbn"] = isbn
+            return True
+
+    return False
+
+
+def _enrich_copyright(
+    material: dict, citation: dict, config: dict, grok_client: Any
+) -> bool:
+    """Enrich material with copyright status. Returns True if enriched."""
+    if not config.get("determine_copyright", False):
+        return False
+
+    author = _get_author_from_citation(citation)
+
+    if author and not material.get("copyright_status"):
+        death_date = get_author_death_date(author, grok_client)
+        jurisdiction = citation.get("publication_country", "USA")
+
+        copyright_status = determine_copyright_status(
+            citation, death_date, jurisdiction
+        )
+        material["copyright_status"] = copyright_status
+        return True
+
+    return False
+
+
+def _enrich_archive_url(material: dict, config: dict) -> bool:
+    """Enrich material with archive URL verification. Returns True if enriched."""
+    if not config.get("verify_archive_urls", False):
+        return False
+
+    archive_info = material.get("archive_info", {})
+    archive_url = archive_info.get("archive_url")
+
+    if archive_url and not archive_info.get("verified"):
+        verification = verify_archive_url(archive_url)
+        archive_info.update(verification)
+        return True
+
+    return False
+
+
+def _save_enriched_data(
+    supplemental_file: Path, data: Any, enriched_count: int
+) -> bool:
+    """Save enriched data to file. Returns True if successful."""
+    if enriched_count == 0:
+        return True
+
+    try:
+        with open(supplemental_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        logger.info("Enriched %d materials with advanced features", enriched_count)
+        return True
+    except OSError as e:
+        logger.error("Error writing supplemental file: %s", e)
+        return False
 
 
 def enrich_with_advanced_features(
@@ -244,23 +354,11 @@ def enrich_with_advanced_features(
         return 0
 
     # Load materials
-    try:
-        with open(supplemental_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-    except (OSError, json.JSONDecodeError) as e:
-        logger.error("Error reading supplemental file: %s", e)
+    data = _load_supplemental_data(supplemental_file)
+    if data is None:
         return 0
 
-    # Handle both list (array of sub-events) and dict (single object) formats
-    if isinstance(data, list):
-        # Array of sub-event objects, each with Supplemental_Material array
-        all_materials = []
-        for sub_event in data:
-            all_materials.extend(sub_event.get("Supplemental_Material", []))
-        materials = all_materials
-    else:
-        # Single object with materials array
-        materials = data.get("materials", [])
+    materials = _extract_materials_from_data(data)
 
     enriched_count = 0
 
@@ -269,57 +367,19 @@ def enrich_with_advanced_features(
         if not citation or not isinstance(citation, dict):
             logger.debug("Skipping material with invalid citation")
             continue
-        material_type = citation.get("type", "")
 
-        # ISBN extraction for books
-        if (
-            material_type == "book"
-            and config.get("extract_isbn", False)
-            and not citation.get("isbn")
-        ):
-            isbn = extract_isbn(citation, grok_client)
-            if isbn:
-                citation["isbn"] = isbn
-                enriched_count += 1
+        # Enrich with various features
+        if _enrich_isbn(material, citation, config, grok_client):
+            enriched_count += 1
 
-        # Copyright determination
-        if config.get("determine_copyright", False):
-            authors = citation.get("author", [])
-            if isinstance(authors, str):
-                author = authors
-            elif isinstance(authors, list) and authors:
-                author = authors[0]
-            else:
-                author = ""
+        if _enrich_copyright(material, citation, config, grok_client):
+            enriched_count += 1
 
-            if author and not material.get("copyright_status"):
-                death_date = get_author_death_date(author, grok_client)
-                jurisdiction = citation.get("publication_country", "USA")
-
-                copyright_status = determine_copyright_status(
-                    citation, death_date, jurisdiction
-                )
-                material["copyright_status"] = copyright_status
-                enriched_count += 1
-
-        # Archive URL verification
-        if config.get("verify_archive_urls", False):
-            archive_info = material.get("archive_info", {})
-            archive_url = archive_info.get("archive_url")
-
-            if archive_url and not archive_info.get("verified"):
-                verification = verify_archive_url(archive_url)
-                archive_info.update(verification)
-                enriched_count += 1
+        if _enrich_archive_url(material, config):
+            enriched_count += 1
 
     # Write updated file
-    if enriched_count > 0:
-        try:
-            with open(supplemental_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
-            logger.info("Enriched %d materials with advanced features", enriched_count)
-        except OSError as e:
-            logger.error("Error writing supplemental file: %s", e)
-            return 0
+    if not _save_enriched_data(supplemental_file, data, enriched_count):
+        return 0
 
     return enriched_count

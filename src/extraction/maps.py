@@ -115,41 +115,53 @@ def _lookup_date_id(date_str: str, dates_dir: Path) -> Optional[str]:
     return None
 
 
+def _check_existing_download(output_path: Path) -> Optional[str]:
+    """Check if map is already downloaded with any extension."""
+    for ext in ["jpg", "jpeg", "png", "tif", "tiff", "pdf"]:
+        existing = output_path.with_suffix(f".{ext}")
+        if existing.exists():
+            logger.debug("    Already downloaded: %s", existing.name)
+            return str(existing.relative_to(existing.parents[2]))
+    return None
+
+
+def _determine_map_extension(response, url: str) -> str:
+    """Determine file extension from content-type or URL."""
+    content_type = response.headers.get("content-type", "")
+
+    if "jpeg" in content_type or "jpg" in content_type:
+        return "jpg"
+    elif "png" in content_type:
+        return "png"
+    elif "tiff" in content_type or "tif" in content_type:
+        return "tif"
+    elif "pdf" in content_type:
+        return "pdf"
+    else:
+        # Fallback to URL extension
+        ext = url.rsplit(".", maxsplit=1)[-1].lower()
+        return ext if ext in ["jpg", "jpeg", "png", "tif", "tiff", "pdf"] else "jpg"
+
+
 def _download_map_image(
     url: str, output_path: Path, timeout: int = 30
 ) -> Optional[str]:
     """Download map image from URL."""
     import requests
 
-    # Check if already downloaded (any extension)
-    for ext in ["jpg", "jpeg", "png", "tif", "tiff", "pdf"]:
-        existing = output_path.with_suffix(f".{ext}")
-        if existing.exists():
-            logger.debug("    Already downloaded: %s", existing.name)
-            return str(existing.relative_to(existing.parents[2]))
+    # Check if already downloaded
+    existing = _check_existing_download(output_path)
+    if existing:
+        return existing
 
     try:
         response = requests.get(url, timeout=timeout, allow_redirects=True)
         response.raise_for_status()
 
-        # Determine file extension from content-type or URL
-        content_type = response.headers.get("content-type", "")
-        if "jpeg" in content_type or "jpg" in content_type:
-            ext = "jpg"
-        elif "png" in content_type:
-            ext = "png"
-        elif "tiff" in content_type or "tif" in content_type:
-            ext = "tif"
-        elif "pdf" in content_type:
-            ext = "pdf"
-        else:
-            # Fallback to URL extension
-            ext = url.rsplit(".", maxsplit=1)[-1].lower()
-            if ext not in ["jpg", "jpeg", "png", "tif", "tiff", "pdf"]:
-                ext = "jpg"  # Default
-
-        # Save file
+        # Determine file extension and save
+        ext = _determine_map_extension(response, url)
         output_file = output_path.with_suffix(f".{ext}")
+
         with open(output_file, "wb") as f:
             f.write(response.content)
 
@@ -427,7 +439,7 @@ def _process_map(
 def _setup_storage_backend(
     maps_config: Dict[str, Any], output_dir: Path
 ) -> tuple[str, Optional[Path], Optional[Any], Optional[str], str]:
-    """Setup storage backend. Returns (backend, maps_dir, s3_client, s3_bucket, s3_prefix)."""
+    """Configure storage backend. Returns (backend, maps_dir, s3_client, s3_bucket, s3_prefix)."""
     storage_backend = maps_config.get("storage_backend", "filesystem")
 
     if storage_backend == "filesystem":
@@ -452,7 +464,7 @@ def _setup_storage_backend(
 def _setup_image_storage(
     maps_config: Dict[str, Any], storage_backend: str
 ) -> tuple[bool, Optional[Path], int]:
-    """Setup image download config. Returns (download_images, image_storage, timeout)."""
+    """Configure image download settings. Returns (download_images, image_storage, timeout)."""
     download_images = maps_config.get("download_images", False)
     timeout = maps_config.get("download_timeout", 30)
 
@@ -489,6 +501,130 @@ def _extract_maps_from_text(text: str) -> list[tuple[str, str]]:
     return maps
 
 
+def _load_processed_registry(maps_output_dir: Path) -> dict:
+    """Load processed events registry."""
+    processed_registry = maps_output_dir / ".processed_events.json"
+
+    if processed_registry.exists():
+        with open(processed_registry) as f:
+            return json.load(f)
+
+    return {}
+
+
+def _mark_event_processed(
+    event_key: str, processed: dict, maps_output_dir: Path
+) -> None:
+    """Mark event as processed in registry."""
+    processed[event_key] = True
+    processed_registry = maps_output_dir / ".processed_events.json"
+
+    with open(processed_registry, "w") as f:
+        json.dump(processed, f, indent=2)
+
+
+def _load_event_metadata(event_file: Path) -> tuple:
+    """Load event and parsed file metadata. Returns (event_data, book, author, series, chapter_title, event_id, event_name)."""
+    with open(event_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    event_data = data.get("Event")
+    if not event_data:
+        return None, None, None, None, None, None, None
+
+    # Load corresponding parsed file
+    parsed_file = event_file.parent / event_file.name.replace(
+        "-event.json", "-parsed.json"
+    )
+    if not parsed_file.exists():
+        return None, None, None, None, None, None, None
+
+    with open(parsed_file, "r", encoding="utf-8") as f:
+        parsed_data = json.load(f)
+
+    book = parsed_data.get("book", "Unknown")
+    author = parsed_data.get("author", "Unknown")
+    series = parsed_data.get("series", "")
+    chapter_title = parsed_data.get("chapter_title", "")
+    event_id = event_data.get("EventID")
+    event_name = event_data.get("Event_Name") or chapter_title
+
+    return event_data, book, author, series, chapter_title, event_id, event_name
+
+
+def _process_sub_event_maps(
+    sub_event: dict,
+    book: str,
+    author: str,
+    series: str,
+    event_id: str,
+    event_name: str,
+    places_dir: Path,
+    dates_dir: Path,
+    maps_dir: Optional[Path],
+    maps_index: Dict[str, str],
+    download_images: bool,
+    storage_backend: str,
+    classification_keywords: Dict[str, List[str]],
+    s3_client: Optional[Any],
+    s3_bucket: Optional[str],
+    s3_prefix: str,
+    image_storage: Optional[Path],
+    timeout: int,
+) -> tuple[int, int]:
+    """Process maps for a single sub-event. Returns (new_maps, downloaded)."""
+    sub_event_id = sub_event.get("Sub-eventID")
+    sub_event_summary = sub_event.get("Sub-event_summary", "")
+    sub_event_name = sub_event.get("Sub_event_Name") or (
+        sub_event_summary.split(".")[0] if sub_event_summary else None
+    )
+
+    # Find place and date
+    place_id, place_name = _find_place_for_event(sub_event_id or "", places_dir)
+    date_id, date_str = _find_date_for_event(sub_event_id or "", dates_dir)
+
+    # Extract maps from fulltext
+    fulltext = sub_event.get("Sub-event_fulltext", {})
+    all_text = " ".join(fulltext.values())
+    maps = _extract_maps_from_text(all_text)
+
+    if not maps:
+        return 0, 0
+
+    new_maps = 0
+    downloaded = 0
+
+    for map_id, url in maps:
+        new, down = _process_map(
+            {"map_id": map_id, "url": url, "description": f"Map {map_id}"},
+            book,
+            author,
+            series,
+            maps_dir,
+            maps_index,
+            download_images,
+            storage_backend,
+            classification_keywords,
+            s3_client,
+            s3_bucket,
+            s3_prefix,
+            image_storage,
+            timeout,
+            event_id,
+            event_name,
+            sub_event_id,
+            sub_event_name,
+            place_id,
+            place_name,
+            date_id,
+            date_str,
+        )
+        new_maps += new
+        downloaded += down
+
+    return new_maps, downloaded
+
+
 def _process_event_files(
     output_dir: Path,
     maps_dir: Optional[Path],
@@ -509,16 +645,10 @@ def _process_event_files(
     new_maps = 0
     downloaded = 0
 
-    # Load processed events registry (store in output/maps/)
+    # Load processed events registry
     maps_output_dir = output_dir / "maps"
     maps_output_dir.mkdir(parents=True, exist_ok=True)
-    processed_registry = maps_output_dir / ".processed_events.json"
-
-    if processed_registry.exists():
-        with open(processed_registry) as f:
-            processed = json.load(f)
-    else:
-        processed = {}
+    processed = _load_processed_registry(maps_output_dir)
 
     for event_file in output_dir.rglob("*-event.json"):
         # Check if already processed
@@ -529,94 +659,54 @@ def _process_event_files(
 
         logger.debug("Processing %s", event_file)
 
-        # Mark as processed immediately to survive interruptions
-        processed[event_key] = True
-        with open(processed_registry, "w") as f:
-            json.dump(processed, f, indent=2)
+        # Mark as processed immediately
+        _mark_event_processed(event_key, processed, maps_output_dir)
 
-        with open(event_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-
-        event_data = data.get("Event")
+        # Load event metadata
+        event_data, book, author, series, chapter_title, event_id, event_name = (
+            _load_event_metadata(event_file)
+        )
         if not event_data:
             continue
 
-        # Load corresponding parsed file for book/author info
-        parsed_file = event_file.parent / event_file.name.replace(
-            "-event.json", "-parsed.json"
-        )
-        if not parsed_file.exists():
-            continue
-
-        with open(parsed_file, "r", encoding="utf-8") as f:
-            parsed_data = json.load(f)
-
-        book = parsed_data.get("book", "Unknown")
-        author = parsed_data.get("author", "Unknown")
-        series = parsed_data.get("series", "")
-        chapter_title = parsed_data.get("chapter_title", "")
-
-        event_id = event_data.get("EventID")
-        event_name = event_data.get("Event_Name") or chapter_title
-
         # Process each sub-event
         for sub_event in event_data.get("Sub-events", []):
-            sub_event_id = sub_event.get("Sub-eventID")
-            sub_event_summary = sub_event.get("Sub-event_summary", "")
-            # Use first sentence of summary as name
-            sub_event_name = sub_event.get("Sub_event_Name") or (
-                sub_event_summary.split(".")[0] if sub_event_summary else None
+            new, down = _process_sub_event_maps(
+                sub_event,
+                book,
+                author,
+                series,
+                event_id,
+                event_name,
+                places_dir,
+                dates_dir,
+                maps_dir,
+                maps_index,
+                download_images,
+                storage_backend,
+                classification_keywords,
+                s3_client,
+                s3_bucket,
+                s3_prefix,
+                image_storage,
+                timeout,
             )
-
-            # Find place and date linked to this sub-event
-            place_id, place_name = _find_place_for_event(sub_event_id, places_dir)
-            date_id, date_str = _find_date_for_event(sub_event_id, dates_dir)
-
-            # Extract maps from fulltext
-            fulltext = sub_event.get("Sub-event_fulltext", {})
-            all_text = " ".join(fulltext.values())
-
-            maps = _extract_maps_from_text(all_text)
-            if not maps:
-                continue
-
-            for map_id, url in maps:
-                total_maps += 1
-                new, down = _process_map(
-                    {"map_id": map_id, "url": url, "description": f"Map {map_id}"},
-                    book,
-                    author,
-                    series,
-                    maps_dir,
-                    maps_index,
-                    download_images,
-                    storage_backend,
-                    classification_keywords,
-                    s3_client,
-                    s3_bucket,
-                    s3_prefix,
-                    image_storage,
-                    timeout,
-                    event_id,
-                    event_name,
-                    sub_event_id,
-                    sub_event_name,
-                    place_id,
-                    place_name,
-                    date_id,
-                    date_str,
+            total_maps += len(
+                _extract_maps_from_text(
+                    " ".join(sub_event.get("Sub-event_fulltext", {}).values())
                 )
-                new_maps += new
-                downloaded += down
+            )
+            new_maps += new
+            downloaded += down
 
     return total_maps, new_maps, downloaded
 
 
 def extract_maps(
-    parsed_dir: Path,  # pylint: disable=unused-argument
+    _parsed_dir: Path,
     output_dir: Path,
-    places_dir: Path,  # pylint: disable=unused-argument
-    dates_dir: Path,  # pylint: disable=unused-argument
+    places_dir: Path,
+    dates_dir: Path,
     config: Dict[str, Any],
 ) -> None:
     """Extract maps from Phase 1 parsed documents."""

@@ -189,61 +189,56 @@ def validate_and_write_json(
             raise
 
 
-def validate_json(
-    data: Dict[str, Any], schema: Dict[str, Any], context: str = ""
-) -> bool:
-    """
-    Validate JSON data against schema.
-
-    Args:
-        data: JSON data to validate
-        schema: JSON schema for validation
-        context: Optional context string for error messages (e.g., filename)
-
-    Returns:
-        True if valid, False otherwise
-    """
-    # Parse if string input
+def _parse_data_if_string(data: Any, context: str) -> Optional[Dict[str, Any]]:
+    """Parse data if it's a string, return None on failure."""
     if isinstance(data, str):
-        data = parse_json_safe(data)
-        if data is None:
+        parsed = parse_json_safe(data)
+        if parsed is None:
             logger.error(f"{context}: Failed to parse JSON string")
-            return False
+        return parsed
+    return data
 
-    # Fix invalid ULIDs before validation
-    data = _fix_invalid_ulids(data)
 
-    # Run custom validators if enabled
-    if _custom_validators_enabled:
-        try:
-            from src.utils.custom_validators import (
-                validate_data_with_custom_validators,
-            )
-
-            results = validate_data_with_custom_validators(data)
-            if results["errors"]:
-                for error in results["errors"]:
-                    logger.error(
-                        "%sCustom validation error: %s",
-                        context + ": " if context else "",
-                        error,
-                    )
-                return False
-            if results["warnings"]:
-                for warning in results["warnings"]:
-                    logger.warning(
-                        "%sCustom validation warning: %s",
-                        context + ": " if context else "",
-                        warning,
-                    )
-        except ImportError:
-            pass  # Custom validators not available
-
-    _run_hooks(_pre_validation_hooks, data)
+def _run_custom_validators(data: Dict[str, Any], context: str) -> bool:
+    """Run custom validators if enabled. Returns True if valid."""
+    if not _custom_validators_enabled:
+        return True
 
     try:
+        from src.utils.custom_validators import validate_data_with_custom_validators
+
+        results = validate_data_with_custom_validators(data)
+
+        # Log errors
+        if results["errors"]:
+            for error in results["errors"]:
+                logger.error(
+                    "%sCustom validation error: %s",
+                    context + ": " if context else "",
+                    error,
+                )
+            return False
+
+        # Log warnings
+        if results["warnings"]:
+            for warning in results["warnings"]:
+                logger.warning(
+                    "%sCustom validation warning: %s",
+                    context + ": " if context else "",
+                    warning,
+                )
+
+        return True
+    except ImportError:
+        return True  # Custom validators not available
+
+
+def _validate_against_schema(
+    data: Dict[str, Any], schema: Dict[str, Any], context: str
+) -> bool:
+    """Validate data against JSON schema."""
+    try:
         validate(instance=data, schema=schema)
-        _run_hooks(_post_validation_hooks, data, True)
         return True
     except ValidationError as e:
         path = (
@@ -251,8 +246,45 @@ def validate_json(
         )
         prefix = f"{context}: " if context else ""
         logger.error("%sValidation failed at %s: %s", prefix, path, e.message)
-        _run_hooks(_post_validation_hooks, data, False)
         return False
+
+
+def validate_json(
+    data: Any, schema: Dict[str, Any], context: str = ""
+) -> bool:
+    """
+    Validate JSON data against schema.
+
+    Args:
+        data: JSON data to validate (can be dict or string)
+        schema: JSON schema for validation
+        context: Optional context string for error messages (e.g., filename)
+
+    Returns:
+        True if valid, False otherwise
+    """
+    # Parse if string input
+    data = _parse_data_if_string(data, context)
+    if data is None:
+        return False
+
+    # Fix invalid ULIDs before validation
+    data = _fix_invalid_ulids(data)
+
+    # Run custom validators
+    if not _run_custom_validators(data, context):
+        return False
+
+    # Run pre-validation hooks
+    _run_hooks(_pre_validation_hooks, data)
+
+    # Validate against schema
+    is_valid = _validate_against_schema(data, schema, context)
+
+    # Run post-validation hooks
+    _run_hooks(_post_validation_hooks, data, is_valid)
+
+    return is_valid
 
 
 def get_validation_stats() -> Dict[str, Any]:
