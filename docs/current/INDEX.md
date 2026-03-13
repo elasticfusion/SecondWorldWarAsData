@@ -43,6 +43,7 @@ Essential architecture, configuration, and API documentation.
 - **[CONFIGURATION.md](core/CONFIGURATION.md)** - config.yaml reference guide
 - **[DEVELOPMENT.md](core/DEVELOPMENT.md)** - Setup and development workflow
 - **[PIPELINE.md](core/PIPELINE.md)** - Phase 1 & 2 pipeline overview
+- **[WORKFLOW_DIAGRAMS.md](core/WORKFLOW_DIAGRAMS.md)** - Visual workflow diagrams
 - **[error_handling.md](core/error_handling.md)** - Error handling patterns (25 patterns)
 - **[ULID_IMPLEMENTATION.md](core/ULID_IMPLEMENTATION.md)** - ULID identifier system
 
