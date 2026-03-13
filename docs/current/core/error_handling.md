@@ -1,8 +1,8 @@
 # Error Handling - Extraction Services
 
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Status:** Active  
-**Last Updated:** 2026-02-23
+**Last Updated:** 2026-03-13
 
 ---
 
@@ -63,11 +63,21 @@ from tenacity import (
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=2, max=10),
-    retry=retry_if_exception_type(httpx.HTTPStatusError),
+    retry=retry_if_exception_type(requests.exceptions.HTTPError),
     reraise=True,
 )
 def _call_api(self, messages: list, temperature: float = 0.1) -> Dict[str, Any]:
     """Make API call with retry logic."""
+    # Input size validation
+    total_chars = sum(len(str(msg.get("content", ""))) for msg in messages)
+    estimated_tokens = total_chars // 4
+    
+    if estimated_tokens > 100000:
+        logger.warning(
+            f"Large input: ~{estimated_tokens:,} tokens ({total_chars:,} chars). "
+            f"May hit context limit."
+        )
+    
     # API call implementation
 ```
 
@@ -76,6 +86,7 @@ def _call_api(self, messages: list, temperature: float = 0.1) -> Dict[str, Any]:
 - Exponential backoff: 2s, 4s, 8s (capped at 10s)
 - Only retries on HTTP status errors (5xx)
 - Re-raises exception after final attempt
+- **Input validation:** Warns when input >100K tokens (~400K chars)
 
 **Benefits:**
 - Handles API rate limits and temporary outages
@@ -1274,6 +1285,101 @@ def search_wikipedia(person_name: str, timeout: int = 30, max_retries: int = 2) 
 - Grok extraction: 2 retries with cache bypass
 - First attempt uses cache (fast)
 - Retries bypass cache (fresh data)
+
+---
+
+## JSON Response Sanitization
+
+**Added:** 2026-03-13  
+**Location:** `src/grok_client.py` - All JSON extraction methods
+
+### Problem
+Grok API responses occasionally contain:
+- Control characters (`\x00-\x1f`) that break JSON parsing
+- Invalid escape sequences (e.g., `\d`, `\s` instead of `\\d`, `\\s`)
+
+### Solution
+Sanitize all responses **before** first `json.loads()` attempt:
+
+```python
+import re
+
+# Remove control characters (except \n, \r, \t)
+response = re.sub(r'[\x00-\x08\x0b-\x0c\x0e-\x1f]', '', response)
+
+# Fix invalid escape sequences
+response = re.sub(r'\\(?!["\\/bfnrtu])', r'\\\\', response)
+
+# Now safe to parse
+data = json.loads(response)
+```
+
+**Applied in:**
+- `extract_json()` - Standard JSON extraction
+- `extract_json_with_image_base64()` - Image + JSON extraction
+- `extract_json_with_image()` - Image URL + JSON extraction
+
+**Benefits:**
+- Prevents `JSONDecodeError` from control characters
+- Fixes common escape sequence mistakes
+- Applied consistently across all extraction methods
+- No performance impact (regex is fast)
+
+---
+
+## Response Truncation Detection
+
+**Added:** 2026-03-13  
+**Location:** `src/grok_client.py`, `src/extraction/batch_parallel.py`
+
+### Problem
+Need to distinguish between:
+- **Transient API errors** (short/invalid responses) → retry
+- **Token limit issues** (very long responses) → split input
+- **Real truncation** (incomplete JSON) → investigate
+
+### Solution
+
+**1. Response Length Analysis**
+```python
+response_len = len(response)
+
+if response_len < 500:
+    # Short response = likely API error
+    logger.error(f"API returned short/invalid response ({response_len} chars)")
+    # Suggest cache clearing
+    
+elif response_len < 10000:
+    # Medium response = transient error
+    logger.error(f"Possible transient API error ({response_len} chars)")
+    
+elif response_len > 100000:
+    # Very long response = likely hit output token limit
+    logger.error(f"Response may have hit token limit ({response_len} chars)")
+    
+else:
+    # Normal truncation
+    logger.error(f"Response truncated at {response_len} chars")
+```
+
+**2. File-Specific Cache Clearing**
+When errors occur, provide exact command to clear cache:
+
+```python
+# In batch_parallel.py
+cache_cmd = (
+    f'python3 -c "from diskcache import Cache; '
+    f'c=Cache(\'cache/api/events\'); '
+    f'[c.pop(k) for k in list(c) if \'{chapter_id}\' in str(c.get(k, \'\'))]"'
+)
+logger.info(f"💡 Clear cache: {cache_cmd}")
+```
+
+**Benefits:**
+- Actionable error messages
+- Distinguishes error types
+- Provides exact fix commands
+- Helps identify input size issues
 
 ---
 

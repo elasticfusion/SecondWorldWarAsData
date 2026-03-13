@@ -1,352 +1,474 @@
-# WWII Historical Data Extraction Pipeline
+# WWII Data Extraction Pipeline
 
-Automated extraction and structuring of WWII historical data from US Army official histories using AI-powered analysis.
+Extract structured data from World War II historical documents using AI-powered entity extraction.
+
+**Status:** Production Ready  
+**Version:** 2.0  
+**Last Updated:** 2026-03-13
+
+---
 
 ## Quick Start
 
+### Prerequisites
+
 ```bash
-# 1. Parse markdown content
+# Python 3.13+
+python3 --version
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set API key
+export GROK_API_KEY="your-api-key"  # Linux/macOS (current session)
+# or
+echo 'export GROK_API_KEY="your-api-key"' >> ~/.bashrc  # Linux/macOS (permanent)
+source ~/.bashrc
+# or
+set GROK_API_KEY=your-api-key       # Windows CMD (current session)
+setx GROK_API_KEY "your-api-key"    # Windows CMD (permanent)
+# or
+$env:GROK_API_KEY="your-api-key"    # Windows PowerShell (current session)
+[System.Environment]::SetEnvironmentVariable('GROK_API_KEY','your-api-key','User')  # PowerShell (permanent)
+```
+
+**Chrome/Chromium Required** (for PDF conversion and web scraping):
+
+```bash
+# macOS
+brew install --cask google-chrome
+
+# Ubuntu/Debian (headless)
+wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+sudo apt-get update
+sudo apt-get install -y google-chrome-stable
+
+# RHEL/CentOS/Fedora (headless)
+sudo dnf install -y google-chrome-stable
+
+# Verify installation
+google-chrome --version
+```
+
+### Run Pipeline
+
+```bash
+# 1. Parse markdown to JSON
 python3 phase1_parse.py
 
-# 2. Extract entities and events (with automatic retry)
+# 2. Extract entities (with automatic retry)
 python3 phase2_retry.py
 
-# Or run phase2 directly (single pass)
-python3 phase2_extract.py
-
-# 3. Merge duplicate people
-python3 scripts/merge_duplicate_people.py
-
-# 4. Merge duplicate places
-python3 scripts/merge_duplicate_places.py
-
-# 5. Merge related groups
-python3 scripts/merge_related_groups.py
-```
-
-**Working with PDFs?** See [PDF_CONVERSION.md](docs/current/PDF_CONVERSION.md) for converting PDFs to markdown.
-
-## Data Standards
-
-**ISO Country Codes:** All nationality and country_of_origin fields use ISO 3166-1 alpha-3 codes (USA, GBR, DEU, etc.). See [ISO_COUNTRY_CODES.md](docs/current/ISO_COUNTRY_CODES.md).
-
-**JSON Repair:** Automatic repair of common API response errors. See [JSON_REPAIR.md](docs/current/JSON_REPAIR.md).
-
-## Optional: OpenSERP for Better Map Search
-
-**Recommended for external maps:** OpenSERP uses real search engines (Google, Bing, DuckDuckGo) instead of AI search, eliminating hallucinations.
-
-### Install OpenSERP
-
-```bash
-# Run setup script (installs Go if needed, clones and builds OpenSERP)
-./setup_openserp.sh
-
-# Or manually:
-brew install go  # macOS
-git clone https://github.com/karust/openserp.git
-cd openserp && go build -o openserp . && cd ..
-go build -o search_maps search_maps.go
-```
-
-### Start OpenSERP
-
-```bash
-cd openserp
-./openserp serve -p 7001 &
-cd ..
-```
-
-### Usage
-
-Phase 2 automatically detects and uses OpenSERP if available:
-
-```bash
-python3 phase2_extract.py
-# Will use OpenSERP if running, otherwise falls back to Grok search
-```
-
-**Benefits:**
-- ✅ Real search results (no hallucinations)
-- ✅ Finds maps from Wikipedia, military history sites, archives
-- ✅ Multi-engine search (Google + Bing + DuckDuckGo)
-- ✅ Free (no search API keys needed)
-
-**Without OpenSERP:** Falls back to Grok search (may produce some hallucinations, but verification catches most)
-
-## Optional: Biographical Enrichment
-
-Enrich people profiles with external data:
-
-```bash
-# Enable in config.yaml (optional)
-enrichment:
-  enabled: true
-
-# Run Phase 3 (with automatic retry)
+# 3. Enrich people data (optional)
 python3 phase3_retry.py
 
-# Or run directly (single pass)
-python3 phase3_enrich_data.py
-
-# Limit enrichment for testing
-python3 phase3_retry.py --max-items 5
+# 4. Import to MongoDB (optional)
+python3 import_to_mongodb.py
 ```
 
-**Features:**
-- Wikipedia/Grokipedia biographical data
-- Birth/death dates
-- Nationalities
-- Biographical summaries
+**That's it!** Your data is now in `output/`
 
-**Note:** Phase 3 is optional. The pipeline is fully functional without it.
+---
 
-## Optional: Equipment Extraction
+## What It Does
 
-Extract military equipment mentions from events with media integration:
+Extracts structured data from WWII historical documents:
 
-```bash
-# Enable in config.yaml
-equipment:
-  enabled: true
-  enable_enrichment: true          # Wikipedia/Grokipedia data
-  verify_media_with_vision: true   # Verify images with Grok vision API
+- **Events** - Battles, operations, actions
+- **Dates** - Temporal mentions with precision
+- **Places** - Geographic locations with GPS coordinates
+- **People** - Biographical profiles with enrichment
+- **Military Units** - Organizations and hierarchies
+- **Equipment** - Weapons, vehicles, specifications
+- **Weather** - Historical weather data
+- **Logistics** - Supply chain information
+- **Maps** - Source and external maps
+- **Citations** - Bibliography and references
 
-# Run Phase 2
-python3 phase2_extract.py
-```
-
-**Features:**
-- Equipment mentions linked to events
-- External data enrichment (Wikipedia)
-- Media extraction with vision verification
-- Image deduplication (perceptual hashing)
-- Temporal filtering (uses event dates)
-- Domain blacklist compliance
-
-**Output:** 
-- Equipment files: `output/equipment/{name}_{ulid}.json`
-- Media files: `filestore/equipment/{ulid}/{ulid}.{ext}`
-- Automatic duplicate image removal
-
-See `docs/current/features/equipment/EQUIPMENT_IMPLEMENTATION_SUMMARY.md` for details.
+---
 
 ## Project Structure
 
 ```
-SecondWorkldWarasData/
-├── phase1_parse.py              # Parse markdown → JSON
-├── phase2_extract.py            # Extract events, people, places
-├── scripts/                     # Utility scripts
-│   ├── find_duplicate_people.py
-│   ├── merge_duplicate_people.py
-│   ├── find_related_groups.py
-│   ├── suggest_group_aliases.py
-│   ├── consolidate_people_groups.py
-│   ├── complete_metadata_with_grok.py
-│   ├── generate_missing_metadata.py
-│   ├── standardize_metadata.py
-│   ├── extract_url.py
-│   ├── review_cache.py
-│   └── validate_places.py
-├── tests/                       # Test scripts
-├── src/
-│   ├── extraction/              # Extraction modules
-│   │   ├── events.py
-│   │   ├── dates.py
-│   │   ├── places.py
-│   │   ├── people.py
-│   │   ├── people_groups.py
-│   │   ├── weather_central.py
-│   │   ├── equipment.py
-│   │   └── maps.py
-│   ├── grok_client.py          # Grok API client
-│   └── models.py               # Data models
-├── contentrepository/          # Source markdown files
-├── output/                     # Extracted JSON data
-│   ├── {Book}/
-│   │   ├── chapter*-parsed.json
-│   │   ├── chapter*-event.json
-│   │   ├── chapter*-dates.json
-│   │   ├── chapter*-places.json
-│   ├── dates/                  # Central dates repository
-│   ├── places/                 # Central places repository
-│   ├── weather/                # Central weather repository
-│   ├── maps/                   # Maps from source material
-│   ├── equipment/              # Military equipment (optional)
-│   ├── people/                 # Individual person files
-│   └── people_groups/          # Organizations, units
-└── cache/
-    ├── api/                    # Grok API response cache
-    └── maps/                   # Downloaded map images
+SecondWorldWarAsData/
+├── README.md (this file)
+├── config.yaml                    # Configuration
+├── phase1_parse.py                # Parse markdown → JSON
+├── phase2_extract.py              # Extract entities
+├── phase2_retry.py                # Retry wrapper
+├── phase3_enrich_data.py          # Enrich with external data
+├── phase3_retry.py                # Retry wrapper
+├── import_to_mongodb.py           # Import to database
+├── contentrepository/             # Source documents (markdown)
+├── output/                        # Extracted data (JSON)
+│   ├── events/
+│   ├── dates/
+│   ├── places/
+│   ├── people/
+│   ├── people_groups/
+│   ├── equipment/
+│   └── ...
+├── cache/                         # API response cache
+├── logs/                          # Pipeline logs
+├── src/                           # Source code
+│   ├── extraction/                # Extraction modules
+│   ├── utils/                     # Utilities
+│   └── ...
+├── scripts/                       # Utility scripts
+├── tools/                         # Go tools (search)
+└── docs/                          # Documentation
+    └── current/                   # Current docs
+        ├── core/                  # Core documentation
+        ├── features/              # Feature docs
+        └── pipeline/              # Pipeline docs
 ```
 
-## Features
-
-### Phase 1: Parsing
-- Discovers books and chapters
-- Parses markdown with absolute paragraph numbering
-- Extracts inline entities (images, maps, footnotes)
-- Reads metadata from YAML files
-
-### Phase 2: Extraction
-- **Events**: Hierarchical event/sub-event structure
-- **Dates**: Temporal entities with context (central repository)
-- **Places**: Geographic entities with coordinates (central repository)
-- **Weather**: Weather conditions with API integration (central repository)
-- **Maps**: Maps and diagrams from source material
-- **People**: Biographical profiles with event mentions
-- **People Groups**: Organizations, military units, alliances
-
-### Advanced Features
-- **Central Repositories**: Deduplicated dates, places, weather across books
-- **Weather API**: Open-Meteo Historical Archive integration
-- **Map Storage**: Filesystem or S3 backend support
-- **Duplicate Detection**: Finds similar people/groups
-- **Alias Management**: Normalizes group names
-- **Cross-Book Tracking**: Links entities across multiple books
-- **Metadata Completion**: AI-powered metadata extraction
-- **Quality Assurance**: Pylint, mypy, bandit, radon
+---
 
 ## Documentation
 
-See `docs/current/` for detailed documentation:
-- `PIPELINE.md` - Complete pipeline documentation
-- `PEOPLE_MANAGEMENT.md` - People extraction and deduplication
-- `PEOPLE_GROUPS.md` - Group extraction and consolidation
-- `METADATA.md` - Metadata management
-- `MAPS.md` - Maps extraction from source material
-- `S3_STORAGE.md` - S3 storage configuration
+### Getting Started
+- **[Pipeline Overview](docs/current/core/PIPELINE.md)** - Complete pipeline workflow
+- **[Configuration](docs/current/core/CONFIGURATION.md)** - Config options
+- **[Development Guide](docs/current/core/DEVELOPMENT.md)** - Setup and development
 
-See `contextmanagement/Specs/` for technical specifications:
-- `dates.md` - Central dates repository
-- `places.md` - Central places repository
-- `weather.md` - Weather extraction with API integration
-- `maps.md` - Maps extraction specification
-- `quality_assurance.md` - QA tools and standards
+### Core Features
+- **[Events Extraction](docs/current/features/events/README.md)** - Hierarchical events
+- **[Dates Extraction](docs/current/features/dates/README.md)** - Temporal entities
+- **[Places Extraction](docs/current/features/places/README.md)** - Geographic entities
+- **[People Extraction](docs/current/features/people/README.md)** - Biographical profiles
+- **[People Groups](docs/current/features/people/groups.md)** - Military units
+
+### Optional Features
+- **[Weather Extraction](docs/current/features/weather/README.md)** - Historical weather
+- **[Logistics Extraction](docs/current/features/logistics/README.md)** - Supply chain
+- **[Equipment Extraction](docs/current/features/equipment/MILITARY_EQUIPMENT.md)** - Military equipment
+- **[Maps](docs/current/features/maps/README.md)** - Source maps
+- **[External Maps](docs/current/features/external-maps/README.md)** - Third-party maps
+- **[Supplemental Materials](docs/current/features/supplemental/SUPPLEMENTAL_COMPLETE.md)** - Bibliography
+
+### Performance
+- **[Batch Processing](docs/current/features/batch_processing/README.md)** - Parallel extraction
+- **[Concurrency](docs/current/features/concurrency/HYBRID_CONCURRENT_IMPLEMENTATION.md)** - Concurrent processing
+
+### Reference
+- **[API Reference](docs/current/core/API_REFERENCE.md)** - API documentation
+- **[Error Handling](docs/current/core/error_handling.md)** - Error handling guide
+- **[Scripts Reference](scripts/README.md)** - Utility scripts
+- **[Tools Reference](tools/README.md)** - Go tools
+
+### Complete Index
+- **[Documentation Index](docs/current/INDEX.md)** - Complete documentation index
+- **[Feature Index](docs/current/features/README.md)** - All features
+
+---
 
 ## Configuration
 
-Edit `config.yaml` to customize extraction:
+Edit `config.yaml` to enable/disable features:
 
 ```yaml
-# Weather extraction
+# Enable optional features
 weather:
   enabled: true
-  fetch_api_data: true          # Open-Meteo Historical Archive
-  only_precise_dates: true
 
-# Maps extraction
-maps:
+equipment:
+  enabled: true
+
+logistics:
+  enabled: true
+
+# Configure concurrency
+concurrency:
   enabled: false
-  download_images: false
-  storage_backend: "filesystem"  # or "s3"
-  s3_bucket: ""                  # Required for S3 backend
-  s3_region: "us-east-1"
-
-# External maps (third-party sources)
-external_maps:
-  enabled: true
-  use_openserp: true             # Use real search engines (recommended)
-  openserp_url: "http://localhost:7001"
-  max_places: 5                  # Limit for testing, set to null for all
+  max_event_files: 3
 ```
 
-### OpenSERP Configuration
+See [Configuration Guide](docs/current/core/CONFIGURATION.md) for all options.
 
-**Recommended:** OpenSERP eliminates AI hallucinations by using real search engines.
+---
 
-**Setup:**
-```bash
-./setup_openserp.sh              # One-command setup
-cd openserp && ./openserp serve -p 7001 &  # Start server
-```
+## Common Tasks
 
-**How it works:**
-1. OpenSERP searches Google/Bing/DuckDuckGo for maps
-2. Go tool filters for reputable sources
-3. Python downloads actual page content
-4. Grok verifies content matches expectations
-5. Only verified maps are imported
-
-**Without OpenSERP:** Falls back to Grok search (less reliable, may hallucinate)
-
-### S3 Storage (Optional)
-
-For S3 backend, configure AWS credentials:
+### Add New Content
 
 ```bash
-# Option 1: Environment variables
-export AWS_ACCESS_KEY_ID="your-key"
-export AWS_SECRET_ACCESS_KEY="your-secret"
+# 1. Convert PDF (if needed)
+python3 scripts/pdf_to_markdown.py book.pdf "BookName"
 
-# Option 2: AWS credentials file
-aws configure
+# 2. Generate metadata
+python3 scripts/generate_missing_metadata.py
+
+# 3. Complete with AI
+python3 scripts/complete_metadata_with_grok.py
+
+# 4. Run pipeline
+python3 phase1_parse.py
+python3 phase2_retry.py
 ```
 
-Then enable in config:
-```yaml
-maps:
-  enabled: true
-  storage_backend: "s3"
-  s3_bucket: "your-bucket-name"
-  s3_prefix: "maps/"
-```
+See [Adding Data Sources](docs/current/pipeline/ADDING_DATA_SOURCES.md)
 
-## Data Sources
-
-- **Breakout and Pursuit** (Martin Blumenson, 1961)
-- **Cross-Channel Attack** (Gordon A. Harrison, 1951)
-- Series: United States Army in World War II
-- License: Public Domain
-
-## Requirements
+### Find and Merge Duplicates
 
 ```bash
-pip install -r requirements.txt
+# Find duplicates
+python3 scripts/find_duplicate_people.py
+python3 scripts/find_duplicate_places.py
+python3 scripts/find_related_groups.py
+
+# Merge interactively
+python3 scripts/merge_duplicate_people.py
+python3 scripts/merge_duplicate_places.py
+python3 scripts/merge_related_groups.py
 ```
 
-**Core Dependencies:**
-- Python 3.13+
-- Grok API key (set in environment or config.yaml)
-- ~2GB disk space for cache
+See [People Deduplication](docs/current/features/people/deduplication.md)
 
-**Optional (Recommended for External Maps):**
-- Go 1.21+ (for OpenSERP integration)
-- OpenSERP (eliminates map search hallucinations)
-
-**Optional (S3 Storage):**
-- AWS credentials (for S3 storage backend)
-- boto3 (included in requirements.txt)
-
-### AWS Linux (Headless) Installation
-
-For headless AWS Linux instances, install Chrome for Selenium:
+### Validate Data
 
 ```bash
-wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
-sudo dnf install ./google-chrome-stable_current_x86_64.rpm -y
+# Validate all data
+python3 scripts/validate_data.py
+
+# Generate report
+python3 scripts/validation_report.py
+
+# Open dashboard
+open validation_dashboard.html
 ```
+
+### Clear Cache
+
+```bash
+# Clear all caches
+rm -rf cache/api/*
+
+# Clear specific cache
+rm -rf cache/api/events/*
+
+# File-specific (from error message)
+python3 -c "from diskcache import Cache; c=Cache('cache/api/events'); [c.pop(k) for k in list(c) if 'chapter8c' in str(c.get(k, ''))]"
+```
+
+---
 
 ## Output Format
 
-All data is structured JSON with ULIDs for cross-referencing:
+All data is JSON with ULIDs for cross-referencing:
 
 ```json
 {
-  "PersonID": "01...",
-  "name": "Dwight D. Eisenhower",
-  "event_mentions": [
+  "EventID": "01KHXNSE0W41DV7VV6PEMDJJ5H",
+  "Event_Name": "Operation Overlord",
+  "Sub-events": [
     {
-      "EventID": "01...",
-      "Sub-eventID": "01...",
-      "position_at_event": "Supreme Commander"
+      "Sub-eventID": "01KHXNSE0WX99GG0CB53CD2242",
+      "Sub-event_summary": "D-Day landings at Normandy",
+      "dates": ["01KHYP2M4N6P8Q0R2S4T6V8W0X"],
+      "places": ["01KHYP2N5P7Q9R1S3T5V7W9X1Z"],
+      "people": ["01KHYP2P6Q8R0S2T4V6W8X0Y2Z"]
     }
   ]
 }
 ```
 
+See [Schema Reference](docs/current/SCHEMA_REFERENCE.md)
+
+---
+
+## Performance
+
+**Typical Processing Times:**
+- Phase 1 (Parse): ~1 second per chapter
+- Phase 2 (Extract): ~30-60 seconds per chapter
+- Phase 3 (Enrich): ~5-10 seconds per person
+
+**Optimization:**
+- All API responses cached
+- Batch processing available (3-5x faster)
+- Concurrent processing (experimental)
+
+See [Performance Guide](docs/current/features/batch_processing/README.md)
+
+---
+
+## Troubleshooting
+
+### No events extracted
+
+```bash
+# Check logs
+tail -100 logs/pipeline*.log
+
+# Clear cache
+rm -rf cache/api/events/*
+
+# Retry
+python3 phase2_retry.py
+```
+
+### JSON parsing errors
+
+**Check error message for cache clearing command:**
+```
+💡 Clear cache: python3 -c "..."
+```
+
+**Run the provided command, then retry.**
+
+### API errors
+
+```bash
+# Check API key
+echo $GROK_API_KEY
+
+# Test API
+curl -H "Authorization: Bearer $GROK_API_KEY" https://api.x.ai/v1/chat/completions
+```
+
+See [Error Handling Guide](docs/current/core/error_handling.md)
+
+---
+
+## Architecture
+
+**Phase 1: Parse**
+- Markdown → JSON
+- Absolute paragraph numbering
+- Metadata extraction
+- Auto-splitting for large chapters
+
+**Phase 2: Extract**
+- Events → Dates, Places, People, Groups
+- Optional: Weather, Equipment, Logistics, Maps
+- Central repositories (dates, places, weather)
+- File-per-entity (people, groups, equipment)
+
+**Phase 3: Enrich**
+- Wikipedia/Grokipedia biographical data
+- Historical weather API
+- External map search
+- URL validation
+
+See [Architecture Guide](docs/current/core/CODE_ARCHITECTURE.md)
+
+---
+
+## API
+
+**Grok API:**
+- Model: `grok-beta`
+- Context: 131,072 tokens (~500K chars)
+- Temperature: 0.1 (deterministic)
+- Caching: All responses cached
+
+**Open-Meteo API (Weather):**
+- Free tier, no API key
+- Historical data 1940-present
+
+**OpenSERP (Maps/Media):**
+- Local service (port 7000)
+- See `openserp/` directory
+
+---
+
+## Testing
+
+```bash
+# Run tests
+pytest
+
+# With coverage
+pytest --cov=src --cov-report=html
+
+# Open coverage report
+open htmlcov/index.html
+```
+
+See [Testing Guide](docs/current/core/TESTING.md)
+
+---
+
+## Contributing
+
+1. Read [Development Guide](docs/current/core/DEVELOPMENT.md)
+2. Check [Documentation Standards](docs/current/features/DOCUMENTATION_STATUS.md)
+3. Run tests before committing
+4. Update documentation for new features
+
+---
+
+## Data Sources
+
+**Currently Supported:**
+- US Army in World War II series (Green Books)
+- Public domain historical documents
+- Markdown format
+
+**Adding New Sources:**
+- See [Adding Data Sources](docs/current/pipeline/ADDING_DATA_SOURCES.md)
+- See [PDF Conversion](docs/current/pipeline/PDF_CONVERSION.md)
+- See [Papers and Articles](docs/current/pipeline/PAPERS_AND_ARTICLES.md)
+
+---
+
 ## License
 
-Code: MIT  
-Historical Content: Public Domain (US Government works)
+Public Domain (US Government works)
+
+See individual source documents for specific licenses.
+
+---
+
+## Support
+
+**Documentation:**
+- [Complete Documentation Index](docs/current/INDEX.md)
+- [Feature Documentation](docs/current/features/README.md)
+- [Pipeline Documentation](docs/current/core/PIPELINE.md)
+
+**Issues:**
+- Check [Error Handling Guide](docs/current/core/error_handling.md)
+- Check [Troubleshooting](docs/current/core/PIPELINE.md#troubleshooting)
+- Review logs in `logs/`
+
+---
+
+## Project Status
+
+**Production Ready:**
+- ✅ Events, Dates, Places, People, Groups
+- ✅ Maps, Supplemental Materials
+- ✅ Deduplication, Validation
+- ✅ MongoDB Import
+
+**Experimental:**
+- ⚠️ Weather, Equipment, Logistics
+- ⚠️ Batch/Concurrent Processing
+
+**Comprehensive Documentation:**
+- ✅ 54 documentation files
+- ✅ All features documented
+- ✅ Complete API reference
+- ✅ Troubleshooting guides
+
+---
+
+## Quick Links
+
+- [Pipeline Overview](docs/current/core/PIPELINE.md)
+- [Configuration](docs/current/core/CONFIGURATION.md)
+- [Feature Index](docs/current/features/README.md)
+- [Scripts Reference](scripts/README.md)
+- [Error Handling](docs/current/core/error_handling.md)
+- [Complete Documentation](docs/current/INDEX.md)
+
+---
+
+**Get Started:** `python3 phase1_parse.py && python3 phase2_retry.py`

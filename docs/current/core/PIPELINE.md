@@ -24,6 +24,15 @@ python3 phase1_parse.py
 - Inline entity extraction (images, maps, footnotes, page markers)
 - Metadata from YAML files
 - Preserves source structure
+- **Auto-splitting:** Chapters >400K chars automatically split into ~50 paragraph chunks (e.g., `chapter20a`, `chapter20b`)
+
+**Large Chapter Handling:**
+When a chapter exceeds 400K characters (leaves 100K headroom for API responses):
+- Splits into chunks of ~50 paragraphs each
+- Names: `chapter20a-parsed.json`, `chapter20b-parsed.json`, etc.
+- Each chunk includes full metadata and all images/maps
+- Original oversized file is not created
+- Prevents Phase 2 token limit issues
 
 ## Phase 2: Extract
 

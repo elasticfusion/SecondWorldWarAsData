@@ -1,58 +1,89 @@
-# Scripts Archive
+# Archived Scripts
 
-**Date:** 2026-03-05
-
-This directory contains archived scripts that are no longer actively used but kept for reference.
+**Date:** 2026-03-13
 
 ---
 
-## Directory Structure
+## Overview
 
-### qa/
-QA and formatting scripts used during development. One-time use for specific features.
+This directory contains scripts that are no longer actively used but are preserved for historical reference.
 
-- `qa_concurrent.py` - QA checks for concurrent processing implementation
-- `qa_logistics.py` - QA checks for logistics extraction
-- `check_black.py` - Black formatter verification
+---
+
+## Categories
+
+### QA Scripts (qa/)
+One-time quality assurance scripts used during development.
+
+- `qa_concurrent.py` - QA for concurrent processing changes
+- `qa_logistics.py` - QA for logistics extraction
+- `check_black.py` - Black code formatter check
 - `format_files.py` - Format specific files
 
-### testing/
-Test scripts used during development and debugging.
-
-- `test_grok_api.py` - Test Grok API connection
-- `test_place_extraction.py` - Test place extraction
-- `test_grok_search.sh` - Test Grok search functionality
-- `test_blacklist_comments.sh` - Test domain blacklist
-- `qa_check_tests.sh` - Run QA checks
-- `run_tests.sh` - Run test suite
-
-### migration/
-One-time migration scripts for schema changes and data updates.
-
-- `migrate_people_schema.py` - Migrate people to new schema (completed)
-- `migrate_place_schema.py` - Migrate places to new schema (completed)
-- `verify_requests_migration.py` - Verify httpx→requests migration (completed)
-- `fix_place_map_urls.py` - Fix place map URLs (completed)
-- `deduplicate_ranks.py` - Deduplicate military ranks (completed)
-
-### obsolete/
-Scripts replaced by newer implementations or no longer needed.
-
-- `merge_duplicate_groups.py` - Replaced by `merge_related_groups.py` (config-driven → interactive)
-- `verify_phase2_setup.py` - Setup verification (no longer needed)
-- `cleanup_people.sh` - One-time cleanup (completed)
-- `enrich_equipment.py` - Enrichment now integrated in extraction
-- `verify_and_import.py` - Import verification (obsolete)
+**Status:** Completed, no longer needed
 
 ---
 
-## Notes
+### Migration Scripts (migration/)
+One-time schema migration scripts.
 
-These scripts are kept for:
-- Historical reference
-- Understanding past implementations
-- Potential future reuse of logic
+- `migrate_people_schema.py` - Migrated people schema (completed 2026-03-08)
+- `migrate_place_schema.py` - Migrated place schema (completed 2026-03-08)
+- `migrate_schema.py` - General schema migration tool (completed)
+- `verify_requests_migration.py` - Verified httpx→requests migration (completed 2026-03-08)
+- `deduplicate_ranks.py` - Deduplicated rank values (completed)
+- `fix_place_map_urls.py` - Fixed place map URLs (completed)
 
-They are not maintained and may not work with current codebase.
+**Status:** Migrations completed, kept for reference
 
-For active scripts, see the main `scripts/` directory.
+---
+
+### Testing Scripts (testing/)
+Development testing scripts.
+
+- `test_grok_api.py` - Test Grok API connection
+- `test_place_extraction.py` - Test place extraction manually
+- `verify_phase2_setup.py` - Verify Phase 2 setup
+
+**Status:** Replaced by formal test suite in `tests/`
+
+---
+
+### Obsolete Scripts
+Scripts replaced by better implementations.
+
+- `verify_and_import.py` - Import verification (replaced by import_to_mongodb.py)
+- `enrich_equipment.py` - Equipment enrichment (now integrated into extraction pipeline)
+
+**Status:** Functionality moved to main pipeline
+
+---
+
+## Why Archived?
+
+Scripts are archived when:
+1. **One-time use completed** - Migrations, QA checks
+2. **Replaced by better implementation** - Integrated into pipeline
+3. **No longer relevant** - Feature removed or changed
+4. **Development only** - Ad-hoc testing scripts
+
+---
+
+## Restoration
+
+If you need to restore an archived script:
+
+```bash
+# Copy back to scripts/
+cp scripts/archive/qa/qa_concurrent.py scripts/
+
+# Or reference directly
+python3 scripts/archive/migration/migrate_people_schema.py
+```
+
+---
+
+## Related Documentation
+
+- [Active Scripts](../README.md)
+- [Pipeline Documentation](../../docs/current/core/PIPELINE.md)
