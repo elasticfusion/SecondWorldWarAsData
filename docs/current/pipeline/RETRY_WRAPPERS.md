@@ -1,14 +1,14 @@
 # Automatic Retry Wrappers
 
 **Status:** Production Ready  
-**Version:** 1.0  
-**Date:** 2026-03-08
+**Version:** 1.1  
+**Date:** 2026-03-13
 
 ---
 
 ## Overview
 
-Automatic retry wrappers for Phase 2 and Phase 3 that handle transient errors (API timeouts, network issues, etc.) without manual intervention.
+Automatic retry wrappers for Phase 2 and Phase 3 that handle transient errors (API timeouts, network issues, JSON parsing errors, etc.) without manual intervention.
 
 ---
 
@@ -39,6 +39,7 @@ python3 phase2_extract.py
 - Stops early if all files processed successfully
 - Configurable maximum attempts (default: 3)
 - Passes through log level settings
+- **New:** Handles JSON parsing errors with automatic cache clearing suggestions
 
 **How It Works:**
 1. Run phase2_extract.py
@@ -51,8 +52,17 @@ python3 phase2_extract.py
 - ✅ Handles API timeouts automatically
 - ✅ Handles network errors automatically
 - ✅ Handles transient Grok API issues
+- ✅ Handles JSON parsing errors (control characters, invalid escapes)
+- ✅ Provides file-specific cache clearing commands on errors
+- ✅ Distinguishes transient errors from token limit issues
 - ✅ No manual re-running needed
 - ✅ Logs show progress across attempts
+
+**Recent Improvements (2026-03-13):**
+- JSON response sanitization (removes control characters, fixes escape sequences)
+- Input size validation (warns when >100K tokens)
+- Smart truncation detection (distinguishes API errors from token limits)
+- File-specific cache clearing commands in error messages
 
 ---
 
