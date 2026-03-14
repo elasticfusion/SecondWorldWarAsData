@@ -1406,8 +1406,26 @@ All errors logged with:
   added nuclear fallback (strip all invalid backslashes)
 - Performance: 140K chars in 15ms
 
+**2026-03-14**: Equipment extraction JSON parsing fix
+- Equipment extraction was calling `chat_completion()` (raw text) then manual
+  `json.loads()`, bypassing all sanitization in `extract_json()`
+- When API wrapped response in markdown code blocks (` ```json ... ``` `),
+  `json.loads` failed with `Expecting value: line 1 column 1 (char 0)`
+- **Fix**: Switched to `extract_json()` which handles markdown unwrapping,
+  escape sanitization, control characters, and JSON repair automatically
+- Cleared 109 cached raw responses that may have been markdown-wrapped
+- Affected 9 chapters with consistent `char 0` errors
+
+**2026-03-14**: urllib3 compatibility fix
+- `Retry(allowed_methods=...)` fails on older urllib3 versions where the
+  parameter was named `method_whitelist`
+- **Fix**: Try `allowed_methods` first, fall back to `method_whitelist` on TypeError
+- File: `src/utils/http_pool.py`
+
 **2026-03-14**: HyperWar HTML import script error handling
-- HTTP download errors caught per-chapter with `logger.error`, processing continues
+- HTTP download with retry (3 attempts, exponential backoff) and specific
+  exception types (`HTTPError`, `ConnectionError`, `Timeout`)
+- File I/O errors caught with `OSError`, increments failed count, continues
 - Tracks processed/failed counts, reports summary at end
 - Uses `setup_logging()` from `src.utils.logger` with file output to `logs/import_hyperwar.log`
 - Interactive prompts use `print()` for clean terminal output
