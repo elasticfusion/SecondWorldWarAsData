@@ -1,12 +1,14 @@
 > ### _General Marshall's Project_
-> >
+> 
 > The first look at the cross-Channel project discovered only a host of difficulties that seemed all but insuperable. So long as attention was focused on an attack in 1942 all plans were pervaded with the sense that to do anything at all would be to act in desperation, to accept abnormal military risks for the sake of avoiding ultimate disaster. If the view in London was more pessimistic than in Washington, that was in large part because the major risks of action in 1942 would have to be borne by the British.<sup>[36](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn36)</sup> In addition the British, whose mobilization was already far advanced, were inclined to see operations through the glass of current resources which, in general, could be increased in one category only by reduction in another. The United States, on the other hand, even while struggling desperately to build up the stocks needed for defense in the Pacific, was still continuously aware of its huge potential resources. Although it was recognized that in 1942 American military power would only begin to make itself felt, plans even for that year reflected the Americans' basic optimism and recommended risks far greater than the British considered accepting.
 > 
 > _\--13--_
 > 
 * * *
 > 
-> [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-2.jpg)](<img/USA-E-XChannel-2.jpg>)
+> 
+> 
+>  [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-2.jpg)](<img/USA-E-XChannel-2.jpg>)
 >  GENERAL MARSHALL, _Chief of Staff, United States Army_
 > 
 > _\--14--_
@@ -14,11 +16,17 @@
 * * *
 > 
 > It was in looking further ahead, however, that the American optimistic view made its chief contribution to strategy. Until mid-March, plans for 1942 had been considered without specific reference to long-range objectives. Except for the determination to attack in Europe, there were no specific long-range objectives. The general principles agreed to at ARCADIA did not form a concerted plan of action.
-> >
+> 
+> 
+> 
 > In March 1942, the Operations Division of the War Department (OPD) began work on an outline plan for a full-scale invasion of the European continent in 1943. It was to be projected as the basis for the deployment of forces and as a guide for strategy. The need for such a guide had become increasingly urgent as, despite the shelving of GYMNAST, President Roosevelt continued to press for immediate action.<sup>[37](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn37)</sup> On 25 March, the President called the Joint Chiefs of Staff and Secretary of War Henry L. Stimson to the White House to ask advice on future offensive operations. Specifically he wanted to know whether U.S. troops might profitably be used in Syria, Libya, and northwest Africa, as well as in northwest Europe. On 2 April, General Marshall gave the President the War Department's answer embodying OPD's outline plan for a cross-Channel attack in 1943.<sup>[38](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn38)</sup>
-> >
+> 
+> 
+> 
 > The War Department and General Marshall were convinced that the main U. S.-British ground offensive should be undertaken against northwest Europe. They rejected the Mediterranean areas suggested by Roosevelt because commitment of U. S. troops there would be strategically defensive. Although the conquest of North Africa would break Axis control of the Mediterranean and prevent an Axis move through West Africa, the victory would not in itself be decisive and could not be exploited for further decisive action against Germany.
-> >
+> 
+> 
+> 
 > The body of General Marshall's memorandum therefore, was concerned with exploring the concept of a cross-Channel invasion of France. The operation was conceived in three phases: a preparatory phase, the cross-Channel movement and seizure of bridgeheads between Le Havre and Boulogne, and, finally, consolidation and expansion of the bridgehead. Logistics set the earliest possible date for the beginning of phase two at 1 April 1943, except under emergency conditions.<sup>[39](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn39)</sup> The preparatory phase would begin at once with the organization, arming, and overseas movement of the necessary forces. During the summer of 1942 small task forces would raid along the entire accessible enemy coast line. General Marshall attached great value to these preparatory raiding operations which he defined as the "establishment of a preliminary
 > 
 > _\--15--_
@@ -26,11 +34,17 @@
 * * *
 > 
 > active front." He thought they might serve to draw German troops from the east and so "be of some help to Russia." They might also be useful for deception either in persuading the Germans that no all-out offensive would be attempted or else in keeping them on tenterhooks for fear that any one of the raids might develop into a full-scale invasion. Thinking of national morale, a consideration always important to both the President and the Prime Minister, he noted that raiding together with air operations would be "of immediate satisfaction to the public." But, he added, "what is most important" is that the raids would "make experienced veterans of the air and ground units, and . . . offset the tendency toward deterioration in morale which threatens the latter due to prolonged inactivity. "<sup>[40](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn40)</sup>
-> >
+> 
+> 
+> 
 > The main attack in the spring of 1943 was planned to employ 48 divisions supported by 5,800 combat aircraft. Landings would take place between Etretat north of Le Havre and Cap Gris Nez with the object of seizing the lower valley of the Somme and the high ground forming the watersheds of the Seine-Somme river system. Two main assaults were planned, on either side of the mouth of the Somme. The bridgeheads would be expanded to the southwest in order to seize Le Havre and the line of the Seine River. Although U.S. planners made use of some detailed data on terrain and estimates of the enemy, they did not attempt to examine tactical problems even to the extent that British planners had studied them in working on SLEDGEHAMMER. The main purpose of the Marshall Memorandum was to pin down a strategic idea sufficiently so that production, training, and troop allocations and movement could be "coordinated to a single end." There was time for planning, but none for delaying the basic decision. For example, it was pointed out that under current production schedules only 10 percent of the tank landing craft required to carry U.S. troops in the assault would be available. Only a decision now could insure the required resources in time.
-> >
+> 
+> 
+> 
 > The Marshall Memorandum shifted emphasis from 1942 to 1943 while retaining for 1942 some activity which might satisfy political requirements. In the event that an operation should be required in 1942 to save the Russians or take advantage of sudden German deterioration, preparations were to be made to permit a cross-Channel assault on greatly reduced scale in the fall of the year. The maximum U.S. forces which could be on hand for such an assault were three and a half divisions, and the operation would be justified only by prospects of marked deterioration of the German army in the west.
-> >
+> 
+> 
+> 
 > In the second week in April General Marshall and Mr. Harry Hopkins, special emissary of President Roosevelt, went to London to seek a firm decision from the British Chiefs of Staff on the form, location, and timing of the British-American main effort. As it turned out, that decision was quickly reached with general agreement on the project outlined in the Marshall Memorandum.<sup>[41](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn41)</sup> Discussion then shifted to what could be done in 1942. General Marshall reported that by
 > 
 > _\--16--_
@@ -38,9 +52,13 @@
 * * *
 > 
 > the end of August U.S. reinforcement of the Pacific, Iceland, and Northern Ireland garrisons should be complete and the United States could concentrate on pouring troops and supplies into England for offensive action. He thought two and a half infantry divisions, one armored division, and 900 U.S. aircraft could be in the United Kingdom by 15 September.<sup>[42](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn42)</sup>
-> >
+> 
+> 
+> 
 > General Brooke, Chief of the Imperial General Staff, said his planners counted on landing seven infantry and two armored divisions if forced to attack the Continent in 1942, but he frankly did not like the prospect. Such a small force could not hold against German counterattacks and its loss would seriously weaken England's defenses. Also, he was worried about India and the Middle East, where the Japanese and Germans might join forces and capture the oil fields in Iran and Iraq on which, he thought, "the whole of our effort in both theaters depended."<sup>[43](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn43)</sup>
-> >
+> 
+> 
+> 
 > Brooke and Air Marshal Portal, Chief of Air Staff, also raised objections to the September date.<sup>[44](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn44)</sup> Brooke believed that the Operation would have to take place in August at the latest in order to capture a port before the third week in September, when bad weather was likely to prevail over the Channel. Portal thought that during the summer the German Air Force might win a complete victory over the Russians and so by autumn become a formidable enemy for the RAF. General Marshall agreed that an earlier target date would be advisable but felt he could not urge it since U.S. troops would not then be available. He clearly indicated that his main interest in a 1942 operation was to provide battle experience for the Americans in preparation for 1943. He was also concerned that, if something were attempted in 1942, it be an operation across the Channel in order to avoid dispersion of forces. He did not want the main project-operations on the Continent-reduced to the position of a "residuary legatee" for whom nothing was left.<sup>[45](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn45)</sup> Against this view, Brooke continued to stress the danger in the Middle East. He then reversed the American concept that SLEDGEHAMMER was a device to save the Russians. Operations in 1942, he said, depended on what success the Germans had against the Russians. "If they [the Germans] were successful," he believed, "we could clearly act less boldly. If, however, the Russians held the Germans or had an even greater measure of success, our object should be to detach air forces from the Russian front."<sup>[46](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn46)</sup> In short, he rejected
 > 
 > _\--17--_
@@ -48,11 +66,17 @@
 * * *
 > 
 > the emergency operation and accepted only the operation of opportunity.<sup>[47](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn47)</sup> The opinion was in notable contrast to the U.S. Army view that a 1942 operation would be justified by the need for helping Russia in the war so that "an opportunity would be presented to us of defeating Germany next spring."<sup>[48](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn48)</sup> The point, however, was not argued, and the whole problem of a 1942 operation was returned to the planners for further study.
-> >
+> 
+> 
+> 
 > General Marshall's scheme for invasion in 1943, on the other hand, was received with enthusiasm, qualified only by a note of caution from British planners. The planners observed again the two deficiencies which had already crippled plans for a return to the Continent: the lack of landing craft (particularly craft capable of landing on the flat-gradient French beaches) and the lack of long-range fighter aircraft. They did not imply, however, that these deficiencies could not be made up during the coming year.<sup>[49](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn49)</sup>
-> >
+> 
+> 
+> 
 > For the rest, the British Chiefs of Staff and the Prime Minister found nothing in the plan to quarrel with. The U.S. commitment to deliver one million troops to the United Kingdom during the next year altered, in the opinion of Lord Mountbatten, "the whole picture of combined operations against the Continent. The plans, which we had been at present evolving, all fell short in one way or another for lack of essential resources. This would be all changed when the great flow of American forces began, and we should be enabled to plan that real return to the Continent, without which we could not hope to bring the war to a successful conclusion."<sup>[50](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn50)</sup>
-> >
+> 
+> 
+> 
 > The meeting at which Mountbatten so expressed himself was the concluding session of the conference with General Marshall. The tone of optimism was echoed by all those present and the whole meeting was informed with an extraordinary enthusiasm. Mr. Hopkins said that although American public opinion would have preferred an offensive against Japan, "the American nation was eager to join in the fight alongside the British." Mr. Anthony Eden, British Foreign Secretary, replied in kind. "The plan," he considered, "had much more than a purely military significance. It was, in fact, the great picture of two English-speaking countries setting out for the redemption of Europe." Forgotten for the moment was the opinion expressed a month before that the Allies in 1942 were on the verge of defeat.<sup>[51](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn51)</sup> Instead of anticipating the need for a "sacrifice" operation in order to save a chance to strike in 1943, the conferees looked forward to sharing in a victory not far off. Churchill closed the meeting by summing up the complete unanimity of opinion and adding a prediction that now "the two
 > 
 > _\--18--_
@@ -60,22 +84,34 @@
 * * *
 > 
 > nations would march ahead together in a noble brotherhood of arms."
-> >
+> 
+> 
+> 
 > The morrow brought soberer second thoughts, but the strategic decision, destined to last less than two months, at least laid some groundwork for the future. One immediate outcome was the establishment of machinery to concentrate U.S. troops in England. The build-up operation, called BOLERO,<sup>[52](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn52)</sup> was to provide a force of about one million men specifically equipped to carry out an air offensive in 1942, a major invasion of the Continent in 1943, and if agreed on, a continental operation in conjunction with the British in 1942. Special planning staffs, BOLERO Combined Committees, were set up in Washington and London to function under the direction of the Combined Planning Staff. The committees were not responsible for tactical planning but were to proceed on the assumption that the invasion would conform to the outlines drawn in General Marshall's memorandum.<sup>[53](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn53)</sup>
-> >
+> 
+> 
+> 
 > The establishment of BOLERO planning formalized and intensified the process of preparing United Kingdom bases for American troops, but the process had begun long before. As a result of the ABC-1 decisions of early 1941 the War Department had drawn up deployment plans to be put into effect if and when America came into the war. One of the provisions was the MAGNET plan to move U.S. troops into Iceland in order to relieve British garrisons there and to send troops to Northern Ireland to establish and defend air and naval bases for the use of U. S. forces. In January 1942 the first contingent of troops under the MAGNET plan was shipped to Northern Ireland, although, as a result of the emergency reinforcement of the Southwest Pacific area, the shipment had to be cut from a planned 17,300 to 4,000. Three more shipments arrived in Ireland before the end of May, bringing U.S. ground strength there to more than 32,000, including the 34th Division, the 1st Armored Division, and V Corps headquarters.<sup>[54](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn54)</sup>
-> >
+> 
+> 
+> 
 > At the same time the U.S. Air Force was beginning to set up house in the British Isles. On 26 January 1942, General Arnold submitted to General Marshall a plan to base 4,648 American planes in the United Kingdom, including 54 groups of heavy bombers, 10 groups of medium bombers, and 10 groups of pursuit planes.<sup>[55](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn55)</sup> The build-up was begun at once. Brig. Gen. Ira C. Eaker, with a portion of his staff, was ordered to England in January and by the end of February
 > 
 > _\--19--_
 > 
 * * *
 > 
-> [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-3.jpg)](<img/USA-E-XChannel-3.jpg>)
+> 
+> 
+>  [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-3.jpg)](<img/USA-E-XChannel-3.jpg>)
 >  U.S. SOLDIERS IN IRELAND
-> >
+> 
+> 
+> 
 > he had established the VIII Bomber Command. In June his command was subordinated to the newly arrived Eighth Air Force under Brig. Gen. Carl Spaatz.<sup>[56](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn56)</sup>
-> >
+> 
+> 
+> 
 > The air build-up schedule in the mean-time was altered in a series of conferences in London in April between General Arnold and Air Chief Marshal Portal. The new basic plan, approved in June, drastically reduced the heavy bomber commitment: instead of 54 groups there would be 17. The force would include 10 groups of medium bombers and 6 of light, 12 groups of pursuit planes, and 8
 > 
 > _\--20--_
@@ -83,6 +119,10 @@
 * * *
 > 
 > groups of transports, a total of 3,262 aircraft.<sup>[57](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn57)</sup>
-> >
+> 
+> 
+> 
 > On 4 July American air crews in six bombers borrowed from the RAF participated in a daylight attack on German airfields in the Netherlands. It was not until 17 August, however, that the Eighth Air Force carried out its first bombing in its own aircraft. By that time the whole European strategy had been profoundly altered and the build-up of air and ground forces in the United Kingdom abruptly ceased to be a first-priority task.<sup>[58](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn58)</sup>
-> >
+> 
+> 
+> 

@@ -1,10 +1,16 @@
 > ![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/img/USA-E-XChannel.jpg)
 > 
+> 
+> 
+> 
+> 
 > ## Appendix G:
 > Divisions Available to Germany on 6 June 1944
 > (Based on German Situation Maps)
-> >
-> Theater | Inf type | Pz type | Misc
+> 
+> 
+> 
+>  Theater | Inf type | Pz type | Misc
 > ---|---|---|---
 > Denmark | 2 | 1+
 > 2 Brig | 3
@@ -44,7 +50,9 @@
 > 
 * * *
 > 
-> [Table of Contents](<index.html>) ** [Previous Chapter](<USA-E-XChannel-F.html>) (Appendix F) * [Next Chapter](<USA-E-XChannel-H.html>) (Appendix H)
+> 
+> 
+>  [Table of Contents](<index.html>) ** [Previous Chapter](<USA-E-XChannel-F.html>) (Appendix F) * [Next Chapter](<USA-E-XChannel-H.html>) (Appendix H)
 > 
 * * *
 > 

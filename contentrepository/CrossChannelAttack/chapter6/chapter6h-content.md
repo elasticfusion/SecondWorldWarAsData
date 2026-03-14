@@ -1,9 +1,13 @@
 > ### _Development of the Lodgment_
-> >
+> 
 > After VII and V Corps secured foot-holds on either side of the Vire, they were to join up in the ground between the Vire and Taute Rivers. Originally both Carentan and Isigny were listed as D-Day objectives for VII and V Corps respectively.<sup>[106](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn106)</sup> Detailed planning showed this project to be unduly optimistic. Carentan was eliminated, and instead the 101st Airborne Division was ordered simply to seize crossings of the river and canal north and northeast of the city and be prepared to take it "as soon as the tactical situation permits."<sup>[107](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn107)</sup> Plans for the capture of Isigny were ambiguous. Although the city was clearly excluded from the D-Day objectives listed in the 1st Division Field Order of 16 April and from subordinate unit orders issued later, the 29th Division on 29 May published a change to its field order which redrew the D-Day phase line to include Isigny.<sup>[108](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn108)</sup> V Corps always viewed the capture of Isigny as belonging to the first phase of the operations but apparently issued no order that it should be taken on D Day. On 3 June, however, in a command conference on board the Force O headquarters ship, the V Corps commander, Maj. Gen. Leonard T. Gerow, told his subordinate commanders that the 115th Infantry should get to Isigny the first day if possible.<sup>[109](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn109)</sup>
-> >
+> 
+> 
+> 
 > Whether or not Isigny was taken, the principal concern of V Corps initially was to secure the tableland north of the Aure and be prepared to repel enemy counterattacks. It was believed that junction of the two First Army beachheads would actually not require either corps to make a lateral movement in force. Southward advance especially by V Corps, it was thought, would probably force the enemy to pull out of the intercorps zone.<sup>[110](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn110)</sup>
-> >
+> 
+> 
+> 
 > At the same time that the two corps were joining forces between Carentan and Isigny, VII Corps would clear the low rolling country of the south Cotentin as far west as the Douve.<sup>[111](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn111)</sup> The VII Corps line would then be pushed up against the high ground of the north Cotentin, in some places within ten miles of Cherbourg. This line, running just north and northwest of the arc St. Vaast-la Hougue-Valognes-St. Sauveur-le Vicomte, would be reached, it was hoped, by D plus 2. The 4th Division, joined by the 90th and later, if necessary, by the 9th, would then make the final push to the port. This final phase through rugged country and the fortified hills that completely fenced the landward approaches to Cherbourg was first expected to take about a week. But after the Germans had reinforced the Cotentin the
 > 
 > _\--187--_
@@ -11,9 +15,15 @@
 * * *
 > 
 > date on which the port was expected to fall was set back to D plus 15.<sup>[112](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn112)</sup>
-> >
-> While VII Corps took Cherbourg, V Corps, assisted after D plus 6 by XIX Corps, would push deep into the Bocage country to establish a line roughly including the Lessay-Periérs-St. Lô road, the principal lateral communication south of the Carentan-Caen highway. VII Corps would then regroup to attack south and First U.S. Army would advance with three corps abreast to the line Avranches-Domfront, at the base of the Brittany peninsula.  [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/maps/USA-E-XChannel-IVm.jpg)](<maps/USA-E-XChannel-IV.jpg>)
+> 
+> 
+> 
+> While VII Corps took Cherbourg, V Corps, assisted after D plus 6 by XIX Corps, would push deep into the Bocage country to establish a line roughly including the Lessay-Periérs-St. Lô road, the principal lateral communication south of the Carentan-Caen highway. VII Corps would then regroup to attack south and First U.S. Army would advance with three corps abreast to the line Avranches-Domfront, at the base of the Brittany peninsula.
+> 
+>  [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/maps/USA-E-XChannel-IVm.jpg)](<maps/USA-E-XChannel-IV.jpg>)
 >  _(Map IV)_ The date set for the completion of this advance was D plus 20. At that point it was expected that the Third U.S. Army would become operational and First U.S. Army Group would take command over it and First Army. The new army group would then clear the Brittany peninsula, using First Army and such forces from Third Army as necessary. Thereafter both armies would face east, Third Army on the right. The Allied forces together would push to the Seine, securing the final lodgment area by about D plus 90 and completing the initial phase of Operation OVERLORD .
-> >
+> 
+> 
+> 
 > The final stages of the operation were conceived and stated in these broad terms. The outlined scheme of maneuver and the timetables were not designed as tactical plans; they were frames of reference for future planning, set forth primarily so that the men of the beginning should have some idea of the shape of the end, so that their thinking might be large and their preparation adequate.
-> >
+> 

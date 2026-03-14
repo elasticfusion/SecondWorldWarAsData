@@ -1,12 +1,20 @@
 > ![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/img/USA-E-XChannel.jpg)
 > 
+> 
+> 
+> 
+> 
 > ## Chapter I:
 > The Roots of Strategy
-> >
+> 
 > OVERLORD, the cross-Channel attack which hit the German occupied coast of Normandy on 6 June 1944, was one of the last and by far the biggest of the series of amphibious operations by which the United States and the British Empire came to grips with the German-Italian-Japanese Axis in the course of World War II. But it was more than just another attack. It was the supreme effort of the Western Allies in Europe-the consummation of the grand design to defeat Germany by striking directly at the heart of Hitler's Reich. One of the last attacks, it was the fruition of some of the first strategic ideas.
-> >
+> 
+> 
+> 
 > The principles that eventually shaped OVERLORD were developed early but their application was discontinuous, interrupted by diffuse experimentation and improvisation. Neither ideas nor planning can be traced along a single line from a clear beginning to the ultimate action. OVERLORD was an Allied project. British and American planners worked together, but they also worked separately, particularly in the early years of the war. Sometimes their efforts paralleled each other; sometimes they were at cross-purposes. Within both the American and the British military establishments, furthermore, divergent opinions struggled for acceptance. The whole story of planning and preparing the cross-Channel attack is thus many stories which can be told only in terms of the planners and directors concerned, and the pragmatic organizations within which they worked.
-> >
+> 
+> 
+> 
 > At least a year and a half before the United States was drawn into the war, the groundwork for possible Anglo-American military collaboration against the Axis was being laid. The Navy Department took the lead in the summer of 1940 in establishing a permanent observer in London (Rear Adm. Robert L. Ghormley) whose job was specifically to discuss arrangements for naval cooperation in case the United States came into the war, and generally to provide a channel for the interchange of naval information between the two countries.<sup>[1](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn1)</sup> Army observers also traveled to London during 1940 on special missions, but the War Department did not set up a permanent liaison body until the spring of 1941. At that time Maj. Gen. James E. Chaney, a veteran of twenty-four years' experience in the Air Corps, was sent to London as a Special Army Observer directly responsible to Gen. George C. Marshall, the U.S. Army Chief of Staff. General Chaney's headquarters became known as SPOBS (Special Observers). Admiral Ghormley's group at the same time was reconstituted and he was designated Special Naval Observer, reporting directly
 > 
 > _\--1--_
@@ -14,20 +22,30 @@
 * * *
 > 
 > to Admiral Harold R. Stark, the U.S. Chief of Naval Operations.<sup>[2](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn2)</sup>
-> >
+> 
+> 
+> 
 > The establishment of Chaney's and Ghormley's groups stemmed from agreements with the British in early 1941 to exchange military missions in order to insure continuous coordination of ideas and techniques. The British, as a result of these agreements, set up in Washington the Joint Staff Mission, representing the British Chiefs of Staff. Heads of the Joint Staff Mission were coordinate representatives of each of the three service chiefs. Jointly the mission was responsible to the British Chiefs of Staff Committee as a whole. Originally the United States intended to establish a similar joint mission. But in the first place the United States had at that time no system of joint direction comparable to the British Chiefs of Staff. In the second place it was considered that a formally constituted military mission might lead to political commitments which, in view of U.S. neutrality, the government could not accept.<sup>[3](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn3)</sup>
-> >
+> 
+> 
+> 
 > The coordination provided by the interchange of information through U.S. observers and the British mission was supplemented during 1941 by two formal Anglo-American military conferences. The first was held in Washington between January and March; the second took place in August on shipboard in the Atlantic. At both conferences principles of combined strategy in Europe were discussed and tentative agreements reached on the policy that would govern combined conduct of the war when and if the United States became Great Britain's ally. The agreement known as ABC-1, which was arrived at in the course of the first of these meetings, was especially important. Although its decisions were not binding on either nation and were not officially recognized by President Roosevelt, they were nevertheless accepted by the War and Navy Departments as a basis for planning in the event of U.S. participation in the war.<sup>[4](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn4)</sup>
-> >
+> 
+> 
+> 
 > The observer and military mission period came to an abrupt end in December 1941 after the Japanese attacked Pearl Harbor and Germany declared war on the United States. In January 1942 Anglo-American alliance became a fact and the British Chiefs of Staff came to Washington to reaffirm earlier informal agreements on combined strategy and to plan the combined conduct of the war. Their most important achievement was the establishment of permanent machinery for collaboration: the Combined Chiefs of Staff. _([Chart 1](<#chart1>))_ The Combined Chiefs of Staff were defined as consisting of the British Chiefs of Staff or their representatives in Washington (the Joint Staff Mission) and the United States opposite numbers.<sup>[5](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn5)</sup> Their duties as finally approved were to formulate and execute, under the direction of the heads of the United Nations, policies and plans concerning the strategic conduct of the war, the broad program of war requirements, the allocation of munitions, and the requirements for transportation.<sup>[6](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn6)</sup>
 > 
 > _\--2--_
 > 
 * * *
 > 
-> [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/charts/USA-E-XChannel-1i.jpg)](<charts/USA-E-XChannel-1.jpg>)
+> 
+> 
+>  [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/charts/USA-E-XChannel-1i.jpg)](<charts/USA-E-XChannel-1.jpg>)
 >  CHART 1. SIMPLIFIED COMMAND AND PLANNING ORGANIZATION FOR EUROPEAN OPERATIONS AS OF MAY 1942
-> >
+> 
+> 
+> 
 > The curious definition of the Combined Chiefs was compelled by the fact that there was no organization of United States Chiefs of Staff at that time equivalent to the British Chiefs of Staff Committee. It was primarily to provide "opposite numbers" to the British for membership in the combined organization that the U.S. Joint Chiefs of Staff came into being.<sup>[7](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn7)</sup> Initially they consisted of Gen. George C. Marshall, Chief of Staff of the Army, Lt. Gen. Henry H. Arnold, Commanding General of the Army Air Forces and Deputy Chief of Staff for Air, Admiral Harold R. Stark, Chief of Naval Operations, and Admiral Ernest J. King, Commander in Chief of the U.S. Fleet. In March 1942, the offices held by Stark and King were combined under King.<sup>[8](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn8)</sup> Stark was sent to London as Commander of U.S. Naval Forces in Europe. The three Joint Chiefs then corresponded to
 > 
 > _\--3--_
@@ -35,7 +53,9 @@
 * * *
 > 
 > the British organization, which in 1942 included Gen. Sir Alan Brooke, Chief of the Imperial General Staff, Admiral Sir Dudley Pound, First Sea Lord, and Air Chief Marshal Sir Charles Portal, Chief of the Air Staff. The British Chiefs, however, met with the Americans only at periodic military-political conferences. In the interim they were represented on the permanent combined body in Washington by the Joint Staff Mission, the original members of which were Lt. Gen. Sir Colville Wemyss, Admiral Sir Charles Little, and Air Marshal A. T. Harris.<sup>[9](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn9)</sup> In addition to the three service members of the mission, Field Marshal Sir John Dill<sup>[10](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn10)</sup> sat as a member of the Combined Chiefs of Staff representing the Prime Minister, Winston S. Churchill, in his capacity as Minister of Defence. In July 1942, the Joint Chiefs of Staff also acquired a fourth member in Admiral William D. Leahy, appointed Chief of Staff to President Roosevelt in his capacity as Commander in Chief of the Army and Navy.<sup>[11](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn11)</sup>
-> >
+> 
+> 
+> 
 > The mechanics of joint and combined direction of the Allied war effort developed very slowly although most of the machinery was established in early 1942. Just as the Joint Chiefs of Staff themselves were formed to parallel the existing British organization, so they established their principal subordinate agency, the Joint Planning Staff, along the lines developed
 > 
 > _\--4--_
@@ -43,9 +63,13 @@
 * * *
 > 
 > by the British. The U.S. Joint Planning Staff together with the British Joint Planners constituted the Combined Staff Planners, responsible to the Combined Chiefs of Staff.<sup>[12](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn12)</sup> In theory, plans and studies of U.S. policy and strategy were to come up through joint committees to be coordinated by the Joint Planners and then submitted for approval to the Joint Chiefs. If approved, they became the official U.S. view to be placed before the Combined Chiefs for acceptance as Allied policy. British studies would develop along parallel lines. In case of important discrepancies between American and British views, the problem might be referred by the Combined Chiefs to their planning staff for adjustment. The Combined Planners, being more of a coordinating than a working body, seldom initiated planning papers.
-> >
+> 
+> 
+> 
 > By 1943 the practice of joint and combined planning closely approximated the theory. But in early 1942 most actual planning on the U.S. side was done in the War and Navy Departments and coordination between the services was effected largely outside the formally established joint channels.<sup>[13](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn13)</sup> As far as the European war was concerned, the War Department and particularly the Operations Division took the initiative in planning and General Marshall assumed personal responsibility for establishing and defending the U.S. view.
-> >
+> 
+> 
+> 
 > On the British side, the joint system had been worked out and was fully operative in 1942. The British Joint Planners directly responsible to the British Chiefs of Staff were throughout the war the chief planning body concerned with developing British strategy. Much of the operational planning, however, was done by various field commands. Especially important was the Combined Operations Headquarters, which was headed after September 1941 by Commodore Lord Louis Mountbatten.<sup>[14](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn14)</sup> At the time that Mountbatten became chief, Combined Operations was charged with responsibility for planning and executing raids against the Continent. It was also primarily concerned with all the technical problems of amphibious operations, and in particular with the development of landing craft.<sup>[15](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn15)</sup> In January 1942 Gen. Sir Bernard Paget, commander of the British Home Forces (the highest army field command in England), was brought into the planning picture by a directive from the Chiefs of Staff to study a cross-Channel attack plan written by the British Joint Planners.<sup>[16](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn16)</sup> Paget was asked to study this
 > 
 > _\--5--_
@@ -53,18 +77,26 @@
 * * *
 > 
 > plan in consultation with the designate Naval and Air Force Commanders-in-Chief (Admiral Sir Bertram H. Ramsay and Air Marshal Sholto Douglas respectively). Beginning their association informally these three became in the course of the first six months of 1942 the nucleus of a formal planning body, the Combined Commanders. Later Mountbatten was officially added to their number and the Commanding General of U.S. Forces in the European Theater was informally included among them. The Combined Commanders held their first meeting in May 1942 and thereafter until early 1943 acted as the chief British planning agency concerned with the development of plans for a cross-Channel attack.<sup>[17](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn17)</sup>
-> >
+> 
+> 
+> 
 > To sum up, the informal military rapprochement between the United States and Great Britain which began in 1940 culminated in January 1942 with the formation of the Combined Chiefs of Staff. The Combined Chiefs were a coordinating agency at a very high level. The detailed work, not only of drawing up tactical plans but of outlining strategy, studying requirements, and testing principles against resources, was done very largely by separate U.S. and British bodies. At the strategy level, the most important in 1942 were the Joint Planning Staff and the Joint Planners for the Americans and the British respectively. On the other hand, the agencies most directly concerned with drawing up plans for European operations in 1942 were, in the United States, the Operations Division of the War Department, and, in England, the Combined Commanders. Finally, over and above all these formally constituted planning and directing bodies stood President Franklin D. Roosevelt and Prime Minister Winston S. Churchill, the ultimately responsible persons for all military decisions, who exerted a direct and vital influence on planning that cut athwart all the formal channels of cooperation.
-> >
+> 
+> 
+> 
 > In the period before the United States entered the war, the planning of offensive operations against Germany was naturally desultory and inconclusive. In view of British weakness and aloneness on the edge of Hitler's Europe, and in view of America's jealously preserved isolation, the interesting thing is that planning took place at all. The notion of a British attack across the Channel could have had little reality and no urgency during the days when the German armies were in the flood tide of their initial victories on the Continent. Yet the British Joint Planners before the end of 1941 had drawn up an invasion plan. They called it ROUNDUP, a name suitably reflecting the concept of an operation in the final phase of the war against only token resistance. ROUNDUP was a plan for an operation with very small resources and bore little relation to the attack against Normandy in 1944. Nevertheless it was a beginning and some of its ideas persisted far into the OVERLORD planning period.
-> >
+> 
+> 
+> 
 > ROUNDUP was planned to exploit German deterioration. As a condition for the
 > 
 > _\--6--_
 > 
 * * *
 > 
-> [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-1.jpg)](<img/USA-E-XChannel-1.jpg>)
+> 
+> 
+>  [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-1.jpg)](<img/USA-E-XChannel-1.jpg>)
 >  PRESIDENT ROOSEVELT AND PRIME MINISTER CHURCHILL
 > 
 > _\--7--_
@@ -72,7 +104,9 @@
 * * *
 > 
 > invasion, it was assumed that the Germans had abandoned hope for victory, and were withdrawing their occupation forces to concentrate on the defense of the Reich. The purpose of ROUNDUP was to disrupt that orderly withdrawal. British forces would assault west and east of Le Havre on beaches from Deauville to Dieppe. ([Map I](<maps/USA-E-XChannel-I.jpg>)) The object would be initially to dominate an area between Calais and the Seine 75 to 100 miles deep. The invasion forces would then push north, take Antwerp and proceed into Germany across the Meuse River north of Liege. Total forces to be used were 6 1/3 infantry divisions, 6 armored divisions, 6 army tank brigades, and supporting troops. Preliminary bombardment to soften the coast defenses would require three naval vessels, including one capita ship. The diffuse, small-scale landings and the tiny dimensions of the total force at once underlined the basic condition of enemy weakness set for the operations, and reflected the military poverty of the British at the time.<sup>[18](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn18)</sup>
-> >
+> 
+> 
+> 
 > The 1941 ROUNDUP was not taken very seriously and was never introduced officially into combined discussions. The immediate concern of both Americans and British was necessarily with basic strategic principles in the light of which long- range planning and production could be undertaken. The first Allied discussions of strategy took place when the war was still confined to Europe. It was clear, however, that Japan might at any time enter the conflict. In that event, if the United States was drawn into war with all three Axis members Allied military resources would be scattered and Allied strategy immensely complicated. A decision was urgently required as to where U.S. and British forces should first be concentrated. That decision was taken at the conference in early 1941 when the U.S. War and Navy Departments agreed with the British to defeat Germany first while remaining on the strategic defensive in the Pacific.<sup>[19](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn19)</sup> For Great Britain geography made the choice obligatory. American concurrence was dictated by reasons less obvious but scarcely less compelling. Germany was considered the dominant Axis member whose defeat would greatly weaken the war-making power of Japan. Only against Germany could the offensive power of both the United States and Great Britain be concentrated without uncovering the British Isles. Finally, the United States, desperately short of shipping, could not at first afford long lines of communication. "Time and space factors," wrote General Marshall in reviewing the early years of the war, "dictated our strategy to a considerable degree. To land and maintain American forces in Australia required more than twice the ship tonnage for similar American forces in Europe or North Africa."<sup>[20](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn20)</sup> The decision to take the offensive first against Germany was reaffirmed at the ARCADIA Conference in Washington on 31 December 1941 after the United States entered the war. It was reaffirmed without question despite the Japanese attack on Pearl Harbor.
 > 
 > _\--8--_
@@ -80,15 +114,31 @@
 * * *
 > 
 > In the very broadest sense, the groundwork for OVERLORD was thus laid. The early combined discussions tried further to explore ways and means of getting at Germany. But offensive plans necessarily remained vague so long as the needs for defense of the United Kingdom and, after Pearl Harbor, of American bases in the Pacific absorbed not only all resources on hand but the bulk of those immediately in prospect.
-> >
+> 
+> 
+> 
 > The conclusion was that direct offensive action against Germany was unlikely at least until 1943. At the ARCADIA Conference, the following agreement was reached:
-> >
+> 
+> >>
+> 
+> 
+> 
+> 
+> >>
 > >> "In 1942, the methods of wearing down Germany's resistance will be . . . ever increasing air bombardment by British and American forces . . . assistance to Russia's offensive by all available means . . . [and operations] the main object [of which] will be gaining possession of the whole North African coast.... It does not seem likely that in 1942 any large scale land offensive against Germany, except on the Russian front, will be possible . . . [but] in 1943, the way may be clear for a return to the continent across the Mediterranean, from Turkey into the Balkans, or by landings in Western Europe. Such operations will be the prelude to the final assault on Germany itself.[2l](<#fn21>)"
-> >
+> 
+> 
+> 
+> 
+> 
 > The program thus outlined was to a remarkable degree carried out. But it was not carried out without prolonged and searching re-examination of each step of the prelude. In the course of that re-examination the American and British Chiefs of Staff discovered an important difference of opinion in their approach to the problem of defeating Germany. The difference was adumbrated in an exchange of views in the fall of 1941 called forth by a Review of Strategy submitted by the British Chiefs of Staff for American consideration. In reply, American joint planners criticized the indirection of the British approach to offensive action. They noted "only minor attention" in the Review to possible land operations and expressed the opinion that although naval and air power "may prevent wars from being lost, and by weakening enemy strength, may greatly contribute to victory, . . . dependence cannot be placed on winning important wars by naval and air forces alone. It should be recognized as an almost invariable rule," they added, "that wars cannot be finally won without the use of land armies."<sup>[22](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn22)</sup>
-> >
+> 
+> 
+> 
 > That point, of course, had not escaped the British. The first British ROUNDUP plan was in itself a recognition of the need for ground action on the Continent and specifically admitted that "operations on the Continent will in some form be inevitable."<sup>[23](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn23)</sup> Further, in reply to American objections to their Review, the British Chiefs of Staff explained that the indirect offensive methods which they had listed, including blockade, bombing, and the encouragement of subversive activities in German-occupied countries, did not preclude an eventual large-scale landing on the Continent when the time was ripe.<sup>[24](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn24)</sup>
-> >
+> 
+> 
+> 
 > If there was, at this time, any real disagreement, it was over a question of emphasis. Neither operations, nor plans, nor
 > 
 > _\--9--_
@@ -96,11 +146,17 @@
 * * *
 > 
 > even strategic principles were immediately at issue. The ARCADIA formula, cited above, outlined a program to which both British and American military leaders could subscribe without reservation, and it did not contradict anything in either the British Review or the American reply to it. The American protest was nevertheless significant for the future. It foreshadowed an American impatience to get on with direct offensive action as well as a belief, held quite generally in the U.S. War Department, that the war could most efficiently be won by husbanding resources for an all-out attack deliberately planned for a fixed future date. American impatience was opposed by a British note of caution; American faith in an offensive of fixed date was in contrast to British willingness to proceed one step at a time molding a course of action to the turns of military fortune. This opposition was by no means clear in 1941. It is sketched here in order to provide a vantage point for the understanding of Anglo-American strategy, and as a guide through a necessarily condensed and selective account of the debate on how to fight the war against Germany.
-> >
+> 
+> 
+> 
 > The complex bases for American and British strategic views will appear in the course of the narrative. At the risk of oversimplification, however, it may be useful here to generalize that the prime difference between those views derived from the fact that the British, close to the scene of the war, tended to focus on the difficulties of assault, and the tactical and logistical problems involved, while the Americans, some 3,000 miles away, found it easier to start with the large view of the strategic problem. British planners were deeply and continuously conscious that to attack northwest Europe armies had to get across an ugly piece of water called the Channel, that this crossing took boats and special equipment, that when the troops landed they had to storm fortifications and fight a German Army that had all Europe by the throat. Americans were aware of these problems only at second hand and at a distance. They worked from maps. Each perspective, it should be noted, had a distinct contribution to make. If the British saw the tactical problems more clearly, the Americans were enabled to give freer rein to their imagination and to arrive at bolder offensive concepts.
-> >
+> 
+> 
+> 
 > These views need not necessarily have been opposed. They were opposed largely because the strategic problem as it developed in early combined discussion was not one of developing and carrying out the ideally best plan for defeating Germany. It was rather a problem of tailoring an ideal strategy to the changing political and military shape of a war in which the enemy at first had the initiative. The difference of opinion as to how the tailoring should be done was called forth primarily by the cry for immediate action.
-> >
+> 
+> 
+> 
 > That cry was taken up by many voices for a number of different reasons. In the first place, it was recognized that the sooner the Allies could wrest the initiative from the Axis the sooner they could stop dissipating resources to plug holes in the defense and start concentrating them for the defeat of the enemy. The combined Chiefs of Staff discussed at the ARCADIA Conference one plan for immediate action, called GYMNAST, which looked as though it might have a chance of success even when carried out by the relatively tiny forces then available to the United
 > 
 > _\--10--_
@@ -108,9 +164,13 @@
 * * *
 > 
 > States and Great Britain.<sup>[25](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn25)</sup> GYMNAST, a plan for the invasion of North Africa, was a highly speculative operation. For success it gambled on the non-resistance of the colonial French, and even if successful it was doubtful whether it would materially contribute to the offensive against Germany except in strategically tightening the ring around her. What it clearly would do, however, would be to put U.S. ground troops in action against the Germans. This consideration was particularly important to President Roosevelt, who thought that immediate action would stiffen American morale and have the reverse effect on the Germans.<sup>[26](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn26)</sup> Strongly championed by both the President and the Prime Minister, GYMNAST was accepted by the Combined Chiefs of Staff in January 1942. But the more pressing need to send immediate reinforcements to the Southwest Pacific to check Japanese expansion toward Australia forced postponement and at last in March drew from the Combined Planners a declaration that the project had become academic.<sup>[27](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn27)</sup>
-> >
+> 
+> 
+> 
 > In the meantime, both U.S. and British planners were independently investigating the possibility of being forced into action in 1942 in order to assist the Soviet Union. When Hitler attacked the USSR in June 1941, many observers felt that the Russians would fall before the German blitz as quickly as had most of the rest of Europe. Then the Red Army tightened and held in front of Moscow and, when the snows came, struck back. Despite this success, however, neither American nor British military leaders were sanguine about the ability of the Russians to withstand a new German offensive in 1942. U.S. planners wrote: "Although Russia's strength was greatly underestimated by military authorities, including the Germans, a true test of Russia's capacity to resist the enemy will come this summer."<sup>[28](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn28)</sup> The outcome of that test, they believed, was the key to the European and possibly to the world situation. Defeat of the USSR would enable the Germans to dominate the whole of Europe, complete the blockade of England, and probably force England to capitulate. If so, then it followed that every possible effort should be made by the Western Powers to insure that Russia was not defeated.
-> >
+> 
+> 
+> 
 > At the end of February 1942, Brig. Gen. Dwight D. Eisenhower, Assistant Chief of Staff, War Plans Division, wrote: "The task of keeping Russia in the war in involves . . . immediate and definite action. It is not sufficient to urge upon the Russians the indirect advantages that will accrue to them from Allied operations in distant parts of the world . . . _Russia's problem is to sustain herself during the coming summer,_ and she must not be permitted to reach such a precarious position that she will accept a negotiated peace, no matter how unfavorable to herself, in preference to continuation of the fight." The two ways of assisting Russia, General
 > 
 > _\--11--_
@@ -118,9 +178,13 @@
 * * *
 > 
 > Eisenhower noted, were Lend-Lease aid and early operations in the west to draw off from the Russian front large portions of the German Army and Air Force. He was dubious whether a sizable ground attack from England could be mounted soon, but at least, he thought, air operations could be initiated.<sup>[29](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn29)</sup>
-> >
+> 
+> 
+> 
 > The U.S. Joint Planning Staff, studying the whole question of U.S. troop deployment, went much further. They believed that a considerable land attack could be launched across the English Channel in 1942. Although it would have to be done at first largely by British forces, American participation would build up rapidly, and the prospect of such reinforcement should enable the British to mount the attack on a slimmer margin than would otherwise be possible. On this basis, the planners outlined what they thought would be a possible operation to take place in the summer of 1942 with a D Day between 15 July and 1 August. The operation was to open with a fifteen-day air attack, the strategic purpose of which would be to divert the German Air Force from the east. The immediate tactical objectives were to establish control of the air over the Channel and at least a hundred kilometers inland between Dunkerque and Abbeville, and to inflict the maximum damage on German military installations and lines of communication. During the air offensive, commandos were to raid the coasts of the Netherlands, Belgium, and Normandy. In phase two, beginning about D plus 30, major land forces were to cross the Channel with the mission of securing the high ground north of the Seine and Oise Rivers, and of destroying enemy ground and air forces in the general area Calais-Arras-St. Quentin-Soissons-Paris-Deauville. The plan did not go into operational detail. The critical problem of landing craft received little attention beyond a listing of the barge requirements and a notation that both Americans and British would have to construct special craft.<sup>[30](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn30)</sup>
-> >
+> 
+> 
+> 
 > The British Joint Planners had come to the same conclusion as the U.S. War Department-that the approaching summer campaign of 1942 in Russia was likely to be critical and might require support by diversions in the west if Russia was to be kept in the war. On the other hand, the British were much more pessimistic about what could be done. The maximum feasible operation, they thought, would be a limited-objective attack-something like a large-scale raid-the main purpose of which would be to tempt the German Air Force into a battle of destruction with the Royal Air Force under conditions favorable to the latter.<sup>[31](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn31)</sup> For that concept, Prime Minister Churchill coined the code name SLEDGEHAMMER, and the Combined Commanders were directed to study and report on it. They found at once that the name was far more aggressive than the plan could be. They faced a tactical paradox. They were asked to strike where RAF fighters could engage the Luftwaffe on favorable terms. There was only one such area, since effective fighter cover from British bases extended at that time only over the beaches between Dunkerque and the Somme. This area, called
 > 
 > _\--12--_
@@ -128,6 +192,10 @@
 * * *
 > 
 > the Pas-de-Calais,<sup>[32](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn32)</sup> had the strongest German defenses of any portion of the French coast. It also had flat beaches unsuitable for British landing craft. The beaches furthermore had too few exits to pass the required number of vehicles inland to maintain the forces landed. Finally the ports in the area were too small to supply a force large enough to hold a bridgehead against the probable scale of German counterattack. In short, the one area where the RAF could supply fighter support and achieve the main purpose of defeating the Luftwaffe was precisely the one area which, from every other point of view, was unsuitable for assault.<sup>[33](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn33)</sup>
-> >
+> 
+> 
+> 
 > The problem seemed insoluble and the planners first concluded that no cross-Channel operation was possible in 1942 unless the Germans showed signs of collapse. This conclusion, however, was modified by a second report submitted by the Combined Commanders early in April. Assuming then that they might disregard requirements for the security of the British Isles and that "the maintenance problem"<sup>[34](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn34)</sup> could be "successfully overcome," they calculated that an invasion of the Pas-de-Calais could be carried out. But, they added, if the Germans countered in force, the beachhead probably could not be held and, if lost, it was doubtful whether the bulk of the men and equipment could be evacuated. The British Chiefs of Staff did not wholly endorse this analysis, but they did tacitly accept the conclusion that establishment of a permanent bridgehead on the Continent would probably be impossible in 1942.<sup>[35](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-1.html#fn35)</sup>
-> >
+> 
+> 
+> 

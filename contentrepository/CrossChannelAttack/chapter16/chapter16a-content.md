@@ -1,10 +1,16 @@
 > ![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/img/USA-E-XChannel.jpg)
 > 
+> 
+> 
+> 
+> 
 > ## Appendix E:
 > Chronology of Main Planning Papers
 >  From 1 January 1944
-> >
-> _Date_ |  | _Hq_ | _Paper_
+> 
+> 
+> 
+>  _Date_ |  | _Hq_ | _Paper_
 > ---|---|---|---
 > 31 Jan |  | FUSA | Planning Directive for OVERLORD
 > 1 Feb |  | Joint Commanders | NEPTUNE, Initial Joint Plan
@@ -38,7 +44,9 @@
 > 
 * * *
 > 
-> _Date_ |  | _Hq_ | _Paper_
+> 
+> 
+>  _Date_ |  | _Hq_ | _Paper_
 > ---|---|---|---
 > 18 May |  | V Corps | Letter of Instruction, Amending NEPTUNE Plan
 > 18 May |  | 101st Abn Div | Field Order No. 1
@@ -51,16 +59,32 @@
 > 
 * * *
 > 
-> [Table of Contents](<index.html>) ** [Previous Chapter](<USA-E-XChannel-D.html>) (Appendix D) * [Next Chapter](<USA-E-XChannel-F.html>) (Appendix F)
-> >
+> 
+> 
+>  [Table of Contents](<index.html>) ** [Previous Chapter](<USA-E-XChannel-D.html>) (Appendix D) * [Next Chapter](<USA-E-XChannel-F.html>) (Appendix F)
+> 
+> 
+> 
 > * * *
-> >
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
 > ### Footnotes
-> >
+> 
 > [[1](<#cn1>)] Superseded by Operation NEPTUNE\--Naval Orders (ON) . All copies ordered destroyed.
-> >
+> 
+> 
+> 
 > [[2](<#cn2>)] Changes of 4,10, and 22 May and addenda of 29-31 May.
-> >
+> 
+> 
+> 
 > [[3](<#cn3>)] Changes of 30 May and 1 June.
 > 
 * * *

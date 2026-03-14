@@ -1,9 +1,13 @@
 > ### _Organization and Tactics of the Assault Forces_
-> >
+> 
 > Each of the five assault divisions was to be put ashore by a naval task force organized not only for the transport of the troops but for their protection in the crossing and their support by naval gun-fire before and after the landings. In the U.S. zone Force U would land the 4th Division on UTAH Beach, and Force O, the 1st Division on OMAHA. These, together with Force B carrying the 29th Division, the follow-up for OMAHA Beach, were all under the Western Naval Task Force, commanded by Admiral Kirk. The three British assault divisions, similarly organized, came under the Eastern Naval Task Force commanded by Rear Adm. Philip Vian.
-> >
+> 
+> 
+> 
 > The assaulting infantry were to be carried in transports specially modified for the purpose. The transports would proceed to lowering positions, eleven miles offshore in the U.S. zone and seven miles offshore in the British zone. There the troops would be unloaded into LCVP's or LCA's, each of which carried about thirty men. The small craft were to go in abreast in waves to touch down at regular intervals along the whole length of the beaches to be assaulted.<sup>[116](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn116)</sup>
-> >
+> 
+> 
+> 
 > The basic tactical problem of the assault was to smash through the hard shell of enemy shore defenses. Partial solution could be found in the normal techniques for attack against a fortified position. But amphibious attack introduced a significant and complicating difference. The assaulting infantry would have no room to maneuver. They could not fall back; they could not, except to a very limited degree, outflank enemy strong points. As the Dieppe commanders pointed out, even though "an assault
 > 
 > _\--190--_
@@ -11,13 +15,21 @@
 * * *
 > 
 > may take place on a flank of the main objective, it is in itself a frontal attack. Thus, once the assault is discovered, there is little room for subtlety. The main necessity is to batter a way through in the shortest possible time."<sup>[117](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn117)</sup> The essential lack of "subtlety" in the first phase might be mitigated by flexibility in the organization of the assault forces. To achieve that, the Dieppe commanders suggested using a minimum assault force on the widest practicable front while holding out a large floating reserve in readiness to exploit soft spots. The reserve, it was suggested, might well constitute half the total force. Instead of staking everything on a power drive, in short, it might be possible to "feel your way in."<sup>[118](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn118)</sup> General Morgan and some of his staff were attracted by this concept, as has been pointed out, but their efforts to apply it were frustrated chiefly by the shortage of landing craft.
-> >
+> 
+> 
+> 
 > In the end, little reliance was placed on probing for weakness and exploiting it through decisive commitment of reserves. The assault was considered as a frontal attack which was unlikely even to have the advantage of tactical surprise. The use of smoke to cover the final run-in to the shore was seriously considered in July 1943,<sup>[119](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn119)</sup> but later experimentation led to its rejection. Trials at the Assault Training Center and in various Allied exercises showed that smoke tended to confuse assault troops as much as the defenders.<sup>[120](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn120)</sup>
-> >
+> 
+> 
+> 
 > The final conclusions were that smoking of the hostile shore could not be sufficiently controlled, that it offered too many opportunities for fatal mistakes, and that by interfering with observed fire it would handicap Allied fire superiority.<sup>[121](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn121)</sup>
-> >
+> 
+> 
+> 
 > An amphibious assault without cover of darkness or smoke, and without the flexibility of a large floating reserve, depended for success on developing a weight behind the initial attack that would not only crumble enemy defenses but would carry the assaulting troops far enough inland so that follow-up troops could be put ashore behind them to consolidate and then exploit the beachhead. The double requirement that the assaulting troops be able to knock out enemy fortifications and push rapidly inland required a careful balancing of striking power and mobility. The first proposal was to organize special assault divisions with one or two Ranger-type battalions, small and lightly equipped for the special task of reducing fortifications. The "Ranger" battalions would land first, followed by normal battalions. The assault division would go in on a broad front and move fast. It would be strong enough, when reinforced by cannon companies and antitank weapons, to hold a beachhead maintenance line. Its task then would be finished and exploitation would be undertaken by normal infantry divisions of the follow-up.<sup>[122](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn122)</sup>
-> >
+> 
+> 
+> 
 > The notion of a specially organized assault division was retained, but planners wished to minimize the structural changes and so facilitate the reconstruction of assault
 > 
 > _\--191--_
@@ -25,11 +37,17 @@
 * * *
 > 
 > units for normal infantry tasks once they were through the enemy's fortifications. The assault divisions were formed therefore simply by reducing the overhead of a normal infantry division both in men and vehicles and increasing the normal infantry fire power. While the basic divisional structure remained unchanged, the rifle companies were organized in assault teams with special equipment to deal with fortified positions. The platoons of the assault companies were split into two assault sections apiece, each with twenty-nine men and one officer, the size being determined by the capacity of the LCVP. The two assault platoons in each company included rifle teams, a wire-cutting team, a bazooka team, a flame-throwing team, a BAR team, a 60-mm. mortar team, and a demolition team. The third platoon was similarly organized except that it had an 81-mm. instead of a 60-mm. mortar and a heavy machine gun instead of a BAR. After the assault, each platoon was to be reorganized into a normal rifle platoon with two rifle squads and a weapons squad.
-> >
+> 
+> 
+> 
 > The infantry assault troops were to be stripped to the barest combat essentials, but their fist was to be mailed. A tank battalion attached to each of the assault regiments would lead the attack. A portion of the tanks were to be carried in on LCT's to touch down approximately with the first infantry wave. Another portion were modified for amphibious operation and were to be launched about five or six thousand yards off shore and swim in ahead of the assault waves.<sup>[123](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn123)</sup>
-> >
+> 
+> 
+> 
 > The use of tanks in the assault was a subject of prolonged discussion and experimentation. In the end, the decision was to use them not as an armored force but as close-support artillery. Armor's characteristics of shock and mobility were to be disregarded, and no plans were to be made to use the tanks in exploitation from the beaches. Tanks were not the ideal assault artillery but they seemed the best available. Only armored guns had a chance of survival on the beaches. Tests indicated, moreover, that the tank 75-mm. or 76.2-mm. gun could be used effectively in neutralizing or destroying concrete pillboxes by firing into the embrasures. Tank fire so directed would enable the infantry to cut their way through the wire entanglements of the fortification, approach the pillbox with flame throwers and demolition, and destroy it. It was expected that the majority of the tanks would fire from hull down in the water and would not leave the beach at all during the assault phase.<sup>[124](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn124)</sup>
-> >
+> 
+> 
+> 
 > Following closely the beaching of the first tank companies, the leading infantry wave would touch down, clear the beaches, and cover the landing of engineer demolition teams. The task of the engineers--to cut and mark gaps through the belts of shore obstacles before these were covered by the rising tide--was one of the most critical in the operation, and its successful accomplishment demanded meticulous adherence to the time schedule. The engineers were to work with
 > 
 > _\--192--_
@@ -37,6 +55,8 @@
 * * *
 > 
 > special naval demolition units and would have the assistance of tankdozers landed at this time.
-> >
+> 
+> 
+> 
 > The succeeding assault waves would consist mostly of infantry and additional engineers to clear the beaches and mine fields inland. The first artillery units would come in about an hour and a half after the first landings. The heavy debarkation of vehicles across the beaches would start about three hours after H Hour. By that time the assaulting infantry was expected to have the beach exits cleared and to have fought their way well inland.<sup>[125](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn125)</sup>
-> >
+> 

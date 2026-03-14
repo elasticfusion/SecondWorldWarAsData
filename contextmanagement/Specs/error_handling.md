@@ -1,8 +1,8 @@
 # Error Handling - Extraction Services
 
-**Version:** 1.0.0  
+**Version:** 2.0.0  
 **Status:** Active  
-**Last Updated:** 2026-02-23
+**Last Updated:** 2026-03-14
 
 ---
 
@@ -63,7 +63,7 @@ from tenacity import (
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=2, max=10),
-    retry=retry_if_exception_type(httpx.HTTPStatusError),
+    retry=retry_if_exception_type(requests.exceptions.HTTPError),
     reraise=True,
 )
 def _call_api(self, messages: list, temperature: float = 0.1) -> Dict[str, Any]:
@@ -113,7 +113,7 @@ except Exception as e:
 
 ---
 
-### 4. Optional Feature Degradation
+### 4. Validation Error Recovery
 
 **Used in:** Phase 2 metadata completion
 
@@ -139,36 +139,6 @@ except Exception as e:
 
 ### 5. Cache-First Strategy
 
-**Used in:** All extraction services
-
-**Pattern:**
-```python
-# First attempt: use cache
-result = grok_client.extract_structured(
-    prompt=prompt,
-    schema=Schema,
-    use_cache=True,  # First attempt
-    cache_type="places"
-)
-
-# Retry: bypass cache
-result = grok_client.extract_structured(
-    prompt=prompt,
-    schema=Schema,
-    use_cache=False,  # Retry without cache
-    cache_type="places"
-)
-```
-
-**Benefits:**
-- Fast responses for repeated queries
-- Bypasses potentially corrupted cache on retry
-- Reduces API costs
-
----
-
-### 4. Validation Error Recovery
-
 **Used in:** Events extraction
 
 **Pattern:**
@@ -193,7 +163,7 @@ except ValidationError as e:
 
 ---
 
-### 5. ULID Validation and Fixing
+### 6. ULID Validation and Fixing
 
 **Used in:** All extraction services
 
@@ -220,7 +190,7 @@ def _fix_invalid_ulids(data: Union[Dict[str, Any], list]) -> Union[Dict[str, Any
 
 ---
 
-### 6. Null Field Handling
+### 7. Null Field Handling
 
 **Used in:** Places and Dates extraction
 
@@ -272,7 +242,7 @@ def _filter_invalid_dates(data: Dict[str, Any]) -> Dict[str, Any]:
 
 ---
 
-### 7. Graceful Degradation
+### 8. Graceful Degradation
 
 **Used in:** All extraction services
 
@@ -298,7 +268,7 @@ return output_dir if items_extracted > 0 else None
 
 ---
 
-### 8. Metadata Validation
+### 9. Metadata Validation
 
 **Used in:** Dates and Places extraction
 
@@ -319,7 +289,7 @@ if not book or not author:
 
 ---
 
-### 9. Duplicate Detection
+### 10. Duplicate Detection
 
 **Used in:** All central repository services
 
@@ -339,60 +309,46 @@ if existing:
 
 ---
 
-### 10. JSON Parsing Error Recovery
+### 11. JSON Parsing Error Recovery
 
-**Used in:** All extraction services via `json_validator.parse_json_safe()` and `GrokClient._parse_json_response()`
+**Used in:** All extraction services via `GrokClient._sanitize_json_response()`, `GrokClient._try_repair_json()`, and `json_validator.parse_json_safe()`
 
-**Pattern:**
+**Primary sanitization** (character-level walker in `_sanitize_json_response()`):
+```python
+def _sanitize_json_response(self, response: str) -> str:
+    """Character-by-character walker that tracks in_string state.
+    Only processes escapes inside JSON string values."""
+    # Inside strings: strips invalid backslashes, fixes bad \uXXXX,
+    #   escapes literal tab/newline/CR
+    # Outside strings: preserves structural whitespace unchanged
+    # Performance: 140K chars in 15ms
+```
+
+**Fallback repair** (in `_try_repair_json()`):
+```python
+# 1. Try json.loads() directly
+# 2. Try after _sanitize_json_response()
+# 3. Nuclear fallback: strip ALL non-standard backslashes
+# 4. Fix unterminated strings, missing delimiters
+```
+
+**Additional utilities** (in `json_validator.py`):
 ```python
 def sanitize_json_string(json_str: str) -> str:
-    """Sanitize malformed JSON string before parsing."""
-    # Remove null bytes and control characters (fixes ^@ artifacts)
-    json_str = re.sub(r'[\x00-\x1f]', '', json_str)
-    
-    # Fix unterminated strings at end of input
+    """Fix structural JSON issues."""
+    json_str = re.sub(r'[\x00-\x1f]', '', json_str)  # Control chars
     if json_str.count('"') % 2 != 0:
-        json_str += '"'
-    
-    # Fix missing closing braces/brackets
-    open_braces = json_str.count('{') - json_str.count('}')
-    open_brackets = json_str.count('[') - json_str.count(']')
-    json_str += '}' * open_braces + ']' * open_brackets
-    
-    return json_str.strip()
+        json_str += '"'  # Unterminated string
+    # Complete missing braces/brackets
+    ...
 
-def parse_json_safe(json_str: str, max_retries: int = 3) -> Optional[Dict[str, Any]]:
-    """Safely parse JSON with automatic error recovery."""
-    for attempt in range(max_retries):
-        try:
-            return json.loads(json_str)
-        except json.JSONDecodeError as e:
-            logger.warning(f"JSON parse error (attempt {attempt + 1}): {e}")
-            
-            if attempt < max_retries - 1:
-                json_str = sanitize_json_string(json_str)
-            else:
-                logger.error(f"Failed to parse JSON after {max_retries} attempts")
-                return None
-    
-    return None
+def parse_json_safe(json_str: str, max_retries: int = 3) -> Optional[Dict]:
+    """Multi-attempt parse with progressive sanitization."""
+    ...
 
 def sanitize_json_response(response: str) -> str:
-    """Sanitize JSON response from LLM before parsing."""
-    # Remove null bytes and control characters
-    response = re.sub(r'[\x00-\x1f]', '', response)
-    
-    # Extract JSON from markdown code blocks if present
-    if '```json' in response:
-        match = re.search(r'```json\s*\n(.*?)\n```', response, re.DOTALL)
-        if match:
-            response = match.group(1)
-    elif '```' in response:
-        match = re.search(r'```\s*\n(.*?)\n```', response, re.DOTALL)
-        if match:
-            response = match.group(1)
-    
-    return response.strip()
+    """Extract JSON from markdown code blocks."""
+    ...
 ```
 
 **Common Issues Fixed:**
@@ -464,7 +420,7 @@ if data:
 
 ---
 
-### 13. Prompt Engineering for Data Quality
+### 12. Prompt Engineering for Data Quality
 
 **Used in:** Dates extraction
 
@@ -493,7 +449,7 @@ Return structured data matching the schema."""
 
 ---
 
-### 14. Timestamp-Based Skip Logic
+### 13. Timestamp-Based Skip Logic
 
 **Used in:** Phase 2 people and people groups extraction
 
@@ -524,7 +480,7 @@ if people_needs_update:
 
 ---
 
-### 15. API Key Validation
+### 14. API Key Validation
 
 **Used in:** GrokClient initialization and Phase 2
 
@@ -546,6 +502,594 @@ if not os.getenv("GROK_API_KEY"):
 - Fails fast before making API calls
 - Clear error message for missing configuration
 - Prevents wasted processing time
+
+---
+
+### 15. Fuzzy Matching for Deduplication
+
+**Used in:** Equipment extraction
+
+**Pattern:**
+```python
+def _fuzzy_match_equipment(
+    name: str, equipment_index: Dict[str, Path], threshold: float = 0.80
+) -> Optional[str]:
+    """Find best fuzzy match for equipment name."""
+    if not equipment_index:
+        return None
+    
+    best_match = None
+    best_ratio = 0.0
+    name_lower = name.lower()
+    
+    # Check common names
+    for existing_name in equipment_index.keys():
+        ratio = SequenceMatcher(None, name_lower, existing_name.lower()).ratio()
+        if ratio > best_ratio:
+            best_ratio = ratio
+            best_match = existing_name
+    
+    # Also check alternate names in files
+    for existing_name, eq_file in equipment_index.items():
+        try:
+            with open(eq_file) as f:
+                eq_data = json.load(f)
+                for alt_name in eq_data.get("alternate_names", []):
+                    ratio = SequenceMatcher(None, name_lower, alt_name.lower()).ratio()
+                    if ratio > best_ratio:
+                        best_ratio = ratio
+                        best_match = existing_name
+        except Exception:
+            continue
+    
+    if best_ratio >= threshold:
+        logger.debug("Fuzzy matched '%s' to '%s' (%.2f)", name, best_match, best_ratio)
+        return best_match
+    
+    return None
+
+# Usage in merge logic
+matched_name = None
+if common_name in equipment_index:
+    matched_name = common_name  # Exact match
+else:
+    matched_name = _fuzzy_match_equipment(common_name, equipment_index)  # Fuzzy match
+```
+
+**Benefits:**
+- Prevents duplicate files for similar names ("Sherman" vs "Sherman Tank")
+- Checks both common names and alternate names
+- Configurable similarity threshold (default 80%)
+- Logs matches with similarity ratio for debugging
+- Uses built-in `difflib.SequenceMatcher` (no dependencies)
+
+**Configuration:**
+```python
+threshold: float = 0.80  # 80% similarity required
+```
+
+---
+
+### 16. Entity Linking with Graceful Fallback
+
+**Used in:** Equipment extraction (people, groups, supporting units)
+
+**Pattern:**
+```python
+def _link_entity(
+    entity_name: Optional[str], entity_index: Dict[str, str], entity_type: str
+) -> Optional[Dict[str, str]]:
+    """Link entity by name to ID."""
+    if not entity_name:
+        return None
+    
+    entity_id = entity_index.get(entity_name)
+    if entity_id:
+        id_key = "PersonID" if entity_type == "person" else "PeopleGroupID"
+        logger.debug("Linked %s '%s' to %s", entity_type, entity_name, entity_id)
+        return {id_key: entity_id, "name": entity_name}
+    
+    logger.debug("%s not found: %s", entity_type.capitalize(), entity_name)
+    return None
+
+# Usage
+using_unit = _link_entity(eq.using_unit_name, people_groups_index, "unit")
+using_person = _link_entity(eq.using_person_name, people_index, "person")
+
+# Add to mention only if found
+if using_unit:
+    mention["using_unit"] = using_unit
+if using_person:
+    mention["using_person"] = using_person
+```
+
+**Benefits:**
+- Missing entities don't fail extraction
+- Logs both successes and failures for debugging
+- Returns None instead of raising exceptions
+- Allows partial data (equipment without linked entities)
+- Generic function works for any entity type
+
+**Use Cases:**
+- Person mentioned but not yet extracted
+- Unit name variation not in index
+- Cross-book references (entity in different book)
+
+---
+
+### 17. External Data Enrichment with Optional Degradation
+
+**Used in:** Equipment extraction (Wikipedia/Grokipedia)
+
+**Pattern:**
+```python
+def _enrich_equipment_data(
+    common_name: str,
+    technical_identifier: Optional[str],
+    category: str,
+    grok_client: GrokClient,
+) -> Dict[str, Any]:
+    """Enrich equipment data with external sources."""
+    identifier = technical_identifier or common_name
+    
+    prompt = f"""Look up information about this WWII military equipment: {identifier}
+Category: {category}
+
+Provide: description, specifications, alternate names, variants
+Return as JSON."""
+
+    try:
+        response = grok_client.chat_completion(
+            prompt,
+            temperature=0.1,
+            use_cache=True,
+            cache_type="equipment_enrichment",
+        )
+        enriched = json.loads(response)
+        logger.debug("Enriched data for %s", common_name)
+        return enriched
+    except Exception as e:
+        logger.warning("Failed to enrich equipment data for %s: %s", common_name, e)
+        return {}  # Empty dict, not None
+
+# Usage in creation
+if enable_enrichment and grok_client:
+    logger.info("Enriching equipment data for: %s", common_name)
+    enriched = _enrich_equipment_data(common_name, technical_id, category, grok_client)
+    
+    # Merge enriched data (don't overwrite existing)
+    for key in ["description", "specifications", "alternate_names", "variants"]:
+        if key in enriched and enriched[key]:
+            if key not in equipment_data or not equipment_data[key]:
+                equipment_data[key] = enriched[key]
+                logger.debug("  Enriched %s", key)
+```
+
+**Benefits:**
+- Enrichment failure doesn't prevent equipment creation
+- Falls back to extracted data only
+- Separate cache type prevents pollution
+- Configurable via config flag
+- Only enriches missing/empty fields
+- Logs enrichment attempts and results
+
+**Configuration:**
+```yaml
+equipment:
+  enabled: true
+  enable_enrichment: false  # Optional, disabled by default
+```
+
+**Use Cases:**
+- Add specifications from Wikipedia
+- Fill in alternate names
+- Add variant information
+- Enhance descriptions
+
+---
+
+### 18. Helper Function Extraction for Complexity Reduction
+
+**Used in:** Equipment extraction refactoring
+
+**Pattern:**
+```python
+# Before: Complex monolithic function (F rating - 54 complexity)
+def extract_equipment_from_event(...):
+    # 200+ lines of code
+    # Load data, validate, extract, link entities, build mentions, merge, save
+    # Complexity: F (54)
+
+# After: Extracted helper functions (C rating - 11 complexity)
+def _load_processed_registry(output_dir: Path) -> Dict[str, bool]: ...
+def _save_processed_registry(output_dir: Path, processed: Dict[str, bool]): ...
+def _validate_event_data(event_data: Dict[str, Any], event_file: Path) -> bool: ...
+def _load_event_data(event_file: Path) -> Optional[Dict[str, Any]]: ...
+def _extract_equipment_with_llm(...) -> Optional[List[Dict[str, Any]]]: ...
+def _link_entity(...) -> Optional[Dict[str, str]]: ...
+def _link_supporting_units(...) -> List[Dict[str, Any]]: ...
+def _build_performance_notes(eq: EquipmentExtraction) -> Optional[Dict]: ...
+def _add_metadata_to_mention(mention: Dict, event_data: Dict): ...
+def _add_event_names_to_mention(mention: Dict, event_data: Dict): ...
+def _link_date_to_mention(mention: Dict, dates_index: Dict, output_root: Path): ...
+def _build_mention(...) -> Dict[str, Any]: ...
+def _build_equipment_data(eq: EquipmentExtraction) -> Dict[str, Any]: ...
+def _process_equipment_item(...) -> Optional[Path]: ...
+def _finalize_extraction(...): ...
+
+def extract_equipment_from_event(...):
+    # 30 lines of code
+    # High-level orchestration only
+    # Complexity: C (11) - 80% reduction
+```
+
+**Benefits:**
+- Reduces cyclomatic complexity from F (54) to C (11)
+- Each function has single responsibility
+- Easier to test individual components
+- Easier to understand and maintain
+- Reusable helper functions
+- Better error isolation
+
+**Guidelines:**
+- Extract functions with >10 lines of logic
+- Name functions with clear verb_noun pattern
+- Keep main function as orchestration only
+- Use type hints for all parameters
+- Document each helper function
+
+---
+
+### 19. Subprocess Integration with Graceful Fallback
+
+**Used in:** Equipment media extraction, External maps (OpenSERP)
+
+**Pattern:**
+```python
+import subprocess
+
+try:
+    # Call external tool
+    result = subprocess.run(
+        ["./search_media", search_query],
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,  # Don't raise on non-zero exit
+    )
+
+    if result.returncode != 0:
+        logger.debug("Tool failed: %s", result.stderr)
+        return []
+
+    # Parse output
+    data = json.loads(result.stdout)
+    logger.debug("Found %s items", len(data))
+    return data if isinstance(data, list) else []
+
+except FileNotFoundError:
+    logger.debug("Tool not found, skipping")
+    return []
+except subprocess.TimeoutExpired:
+    logger.warning("Tool timed out")
+    return []
+except json.JSONDecodeError as e:
+    logger.debug("Failed to parse tool response: %s", e)
+    return []
+except Exception as e:
+    logger.debug("Tool error: %s", e)
+    return []
+```
+
+**Benefits:**
+- External tool failure doesn't stop extraction
+- Specific exceptions for different failure modes
+- Timeout prevents hanging
+- Returns empty list for easy iteration
+- Logs at appropriate levels (DEBUG for expected, WARNING for timeouts)
+
+**Configuration:**
+```python
+timeout: int = 30  # seconds
+check: bool = False  # Don't raise on non-zero exit
+```
+
+**Use Cases:**
+- OpenSERP integration for maps/media search
+- External validation tools
+- Image processing tools
+- Data enrichment services
+
+---
+
+### 20. HTTP File Download with Content-Type Detection
+
+**Used in:** Equipment media download, Maps image download
+
+**Pattern:**
+```python
+import requests
+from pathlib import Path
+
+def _download_file(url: str, output_dir: Path) -> Optional[str]:
+    """Download file with content-type detection."""
+    try:
+        response = requests.get(url, timeout=30, allow_redirects=True)
+        response.raise_for_status()
+
+        # Determine extension from content-type
+        content_type = response.headers.get("content-type", "")
+        if "jpeg" in content_type or "jpg" in content_type:
+            ext = ".jpg"
+        elif "png" in content_type:
+            ext = ".png"
+        else:
+            # Fallback to URL extension
+            ext = Path(url).suffix or ".jpg"
+
+        # Generate unique filename
+        file_id = str(ulid.new())
+        filepath = output_dir / file_id / f"{file_id}{ext}"
+        
+        # Check if already downloaded
+        if filepath.exists():
+            logger.debug("Already downloaded: %s", filepath.name)
+            return str(filepath.relative_to(output_dir.parent))
+
+        # Save file
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        with open(filepath, "wb") as f:
+            f.write(response.content)
+
+        logger.debug("Downloaded: %s", filepath.name)
+        return str(filepath.relative_to(output_dir.parent))
+
+    except requests.exceptions.HTTPError as e:
+        logger.warning("Failed to download %s: %s", url, e)
+        return None
+    except Exception as e:
+        logger.debug("Download error: %s", e)
+        return None
+```
+
+**Benefits:**
+- Content-type detection prevents extension mismatches
+- Already-downloaded check prevents duplicates
+- HTTP errors logged as WARNING (expected failures)
+- General errors logged as DEBUG (unexpected)
+- Returns None on failure (easy to check)
+- Continues processing other files on failure
+
+**Configuration:**
+```python
+timeout: int = 30  # seconds
+allow_redirects: bool = True
+```
+
+**Use Cases:**
+- Equipment media files (photos, videos, documents)
+- Map images from external sources
+- Any HTTP file download with unknown content-type
+
+---
+
+### 21. Type Checking for Mixed Data Structures
+
+**Used in:** Supplemental material search and advanced features
+
+**Pattern:**
+```python
+# Handle both dict and string formats in data arrays
+for sub_event_data in data:
+    # Type guard - skip non-dict entries
+    if isinstance(sub_event_data, str):
+        logger.debug("Skipping string entry in supplemental data")
+        continue
+    if not isinstance(sub_event_data, dict):
+        logger.debug("Skipping non-dict entry in supplemental data")
+        continue
+    
+    # Safe to access dict methods now
+    materials = sub_event_data.get("Supplemental_Material", [])
+    
+    for material in materials:
+        citation = material.get("citation", {})
+        
+        # Validate citation is dict before accessing
+        if not citation or not isinstance(citation, dict):
+            logger.debug("Skipping material with invalid citation")
+            continue
+        
+        # Safe to access citation methods
+        material_type = citation.get("type", "")
+```
+
+**Benefits:**
+- Prevents `'str' object has no attribute 'get'` errors
+- Prevents `'NoneType' object has no attribute 'lower'` errors
+- Handles malformed API responses gracefully
+- Logs skipped entries for debugging
+- Continues processing valid entries
+- No data loss from mixed-type arrays
+
+**Common Causes:**
+- LLM returns mixed array types (strings and dicts)
+- Null values in nested objects
+- Schema evolution (old vs new formats)
+- Partial API responses
+
+**Use Cases:**
+- Supplemental material extraction
+- Any service processing LLM-generated arrays
+- Services with nested object structures
+- Cross-version data compatibility
+
+---
+
+### 22. Method Name Validation for API Clients
+
+**Used in:** Supplemental advanced features (ISBN, death dates)
+
+**Pattern:**
+```python
+# WRONG: Using non-existent method
+try:
+    response = grok_client.chat(prompt, cache_key=f"isbn_{author}_{title}")
+except AttributeError as e:
+    logger.error("GrokClient method error: %s", e)
+    # Fails with: 'GrokClient' object has no attribute 'chat'
+
+# CORRECT: Using actual method with proper parameters
+try:
+    response = grok_client.chat_completion(
+        prompt=prompt,
+        cache_type="supplemental_advanced",
+        use_cache=True
+    )
+    isbn = response.strip().replace("-", "").replace(" ", "")
+except Exception as e:
+    logger.debug("ISBN extraction error: %s", e)
+    return None
+```
+
+**Benefits:**
+- Prevents AttributeError crashes
+- Uses correct API client interface
+- Proper cache type isolation
+- Consistent with other extraction services
+- Better error messages
+
+**Common Mistakes:**
+- Using old method names after refactoring
+- Copying code from different API client
+- Missing parameter updates
+- Wrong cache parameter names
+
+**Prevention:**
+- Check API client interface before calling
+- Use IDE autocomplete for method names
+- Add type hints to catch errors early
+- Test with actual API client instance
+
+---
+
+### 23. Schema Validation with Sanitization
+
+**Used in:** Supplemental material extraction
+
+**Pattern:**
+```python
+def sanitize_supplemental_data(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Sanitize supplemental data to ensure schema compliance."""
+    # Ensure required string fields are not None
+    if data.get("Sub-event_Name") is None:
+        data["Sub-event_Name"] = ""
+    
+    # Sanitize materials
+    for material in data.get("Supplemental_Material", []):
+        if material.get("reference_type") is None:
+            material["reference_type"] = "bibliography"
+        
+        # Validate reference_type is one of allowed values
+        ref_type = material.get("reference_type", "")
+        if ref_type not in ["endnote", "footnote", "bibliography"]:
+            logger.warning(
+                "Invalid reference_type '%s', defaulting to 'bibliography'", 
+                ref_type
+            )
+            material["reference_type"] = "bibliography"
+        
+        if material.get("verbatim_reference") is None:
+            material["verbatim_reference"] = ""
+    
+    return data
+
+# Usage before validation
+data = sanitize_supplemental_data(data)
+validate_supplemental_json(data)  # Now passes schema validation
+```
+
+**Benefits:**
+- Prevents schema validation errors
+- Handles LLM returning invalid enum values
+- Provides default values for required fields
+- Logs invalid values for debugging
+- Allows extraction to continue
+- No data loss (invalid values replaced, not removed)
+
+**Common Invalid Values:**
+- `reference_type: "map"` (should be endnote/footnote/bibliography)
+- `reference_type: "image"` (should be endnote/footnote/bibliography)
+- `reference_type: null` (should have default)
+- Empty strings in required fields
+
+**Schema Enforcement:**
+```json
+{
+  "reference_type": {
+    "type": "string",
+    "enum": ["endnote", "footnote", "bibliography"]
+  }
+}
+```
+
+**Use Cases:**
+- Any extraction with enum fields
+- Services with strict schema requirements
+- LLM-generated data with validation
+- Data migration between schema versions
+
+---
+
+### 24. File I/O Error Handling
+
+**Used in:** Supplemental material processing, External maps, URL validation
+
+**Pattern:**
+```python
+try:
+    with open(file_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+except (OSError, IOError) as e:
+    logger.error("Error reading file %s: %s", file_path, e)
+    return None  # or appropriate default
+
+# Also used for write operations
+try:
+    with open(output_file, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+except (OSError, IOError) as e:
+    logger.error("Error writing file %s: %s", output_file, e)
+    raise  # Re-raise if write failure is critical
+```
+
+**Benefits:**
+- Handles file permission errors
+- Handles disk full errors
+- Handles file not found errors
+- Handles I/O errors (corrupted filesystem, network drives)
+- OSError is parent class of many file-related errors
+- IOError is alias for OSError (Python 3 compatibility)
+
+**Common OSError Subtypes:**
+- `FileNotFoundError` - File doesn't exist
+- `PermissionError` - No read/write permission
+- `IsADirectoryError` - Expected file, got directory
+- `NotADirectoryError` - Expected directory, got file
+- `FileExistsError` - File already exists (when creating)
+
+**Use Cases:**
+- Reading supplemental material files
+- Writing output JSON files
+- External maps YAML loading
+- URL validation file operations
+- Any file I/O operation
+
+**Configuration:**
+```python
+encoding: str = "utf-8"  # Always specify encoding
+ensure_ascii: bool = False  # Allow Unicode in JSON output
+```
 
 ---
 
@@ -632,15 +1176,16 @@ Errors that are automatically recovered include context in the message:
 
 **Configuration:**
 ```python
-self.timeout = 360.0  # 6 minutes
+self.timeout = 600.0  # 10 minutes
 ```
 
-**Used in:** API calls via httpx
+**Used in:** API calls via `requests` (with `urllib3` connection pooling)
 
 **Pattern:**
 ```python
-with httpx.Client(timeout=self.timeout) as client:
-    response = client.post(url, json=payload, headers=headers)
+with get_session() as session:
+    session.timeout = self.timeout
+    response = session.post(url, json=payload, headers=headers)
 ```
 
 **Benefits:**
@@ -690,7 +1235,7 @@ logger.error(f"Error: {e}")
 ```python
 except json.JSONDecodeError as e:
     logger.error(f"Invalid JSON: {e}")
-except httpx.HTTPStatusError as e:
+except requests.exceptions.HTTPError as e:
     logger.error(f"API error: {e}")
 ```
 
@@ -745,303 +1290,6 @@ mentions.append(new_mention)
 
 ---
 
-### 16. Fuzzy Matching for Deduplication
-
-**Used in:** Equipment extraction
-
-**Pattern:**
-```python
-def _fuzzy_match_equipment(
-    name: str, equipment_index: Dict[str, Path], threshold: float = 0.80
-) -> Optional[str]:
-    """Find best fuzzy match for equipment name."""
-    if not equipment_index:
-        return None
-    
-    best_match = None
-    best_ratio = 0.0
-    name_lower = name.lower()
-    
-    # Check common names
-    for existing_name in equipment_index.keys():
-        ratio = SequenceMatcher(None, name_lower, existing_name.lower()).ratio()
-        if ratio > best_ratio:
-            best_ratio = ratio
-            best_match = existing_name
-    
-    # Also check alternate names in files
-    for existing_name, eq_file in equipment_index.items():
-        try:
-            with open(eq_file) as f:
-                eq_data = json.load(f)
-                for alt_name in eq_data.get("alternate_names", []):
-                    ratio = SequenceMatcher(None, name_lower, alt_name.lower()).ratio()
-                    if ratio > best_ratio:
-                        best_ratio = ratio
-                        best_match = existing_name
-        except Exception:
-            continue
-    
-    if best_ratio >= threshold:
-        logger.debug("Fuzzy matched '%s' to '%s' (%.2f)", name, best_match, best_ratio)
-        return best_match
-    
-    return None
-
-# Usage in merge logic
-matched_name = None
-if common_name in equipment_index:
-    matched_name = common_name  # Exact match
-else:
-    matched_name = _fuzzy_match_equipment(common_name, equipment_index)  # Fuzzy match
-```
-
-**Benefits:**
-- Prevents duplicate files for similar names ("Sherman" vs "Sherman Tank")
-- Checks both common names and alternate names
-- Configurable similarity threshold (default 80%)
-- Logs matches with similarity ratio for debugging
-- Uses built-in `difflib.SequenceMatcher` (no dependencies)
-
-**Configuration:**
-```python
-threshold: float = 0.80  # 80% similarity required
-```
-
----
-
-### 17. Entity Linking with Graceful Fallback
-
-**Used in:** Equipment extraction (people, groups, supporting units)
-
-**Pattern:**
-```python
-def _link_entity(
-    entity_name: Optional[str], entity_index: Dict[str, str], entity_type: str
-) -> Optional[Dict[str, str]]:
-    """Link entity by name to ID."""
-    if not entity_name:
-        return None
-    
-    entity_id = entity_index.get(entity_name)
-    if entity_id:
-        id_key = "PersonID" if entity_type == "person" else "PeopleGroupID"
-        logger.debug("Linked %s '%s' to %s", entity_type, entity_name, entity_id)
-        return {id_key: entity_id, "name": entity_name}
-    
-    logger.debug("%s not found: %s", entity_type.capitalize(), entity_name)
-    return None
-
-# Usage
-using_unit = _link_entity(eq.using_unit_name, people_groups_index, "unit")
-using_person = _link_entity(eq.using_person_name, people_index, "person")
-
-# Add to mention only if found
-if using_unit:
-    mention["using_unit"] = using_unit
-if using_person:
-    mention["using_person"] = using_person
-```
-
-**Benefits:**
-- Missing entities don't fail extraction
-- Logs both successes and failures for debugging
-- Returns None instead of raising exceptions
-- Allows partial data (equipment without linked entities)
-- Generic function works for any entity type
-
-**Use Cases:**
-- Person mentioned but not yet extracted
-- Unit name variation not in index
-- Cross-book references (entity in different book)
-
----
-
-### 18. External Data Enrichment with Optional Degradation
-
-**Used in:** Equipment extraction (Wikipedia/Grokipedia)
-
-**Pattern:**
-```python
-def _enrich_equipment_data(
-    common_name: str,
-    technical_identifier: Optional[str],
-    category: str,
-    grok_client: GrokClient,
-) -> Dict[str, Any]:
-    """Enrich equipment data with external sources."""
-    identifier = technical_identifier or common_name
-    
-    prompt = f"""Look up information about this WWII military equipment: {identifier}
-Category: {category}
-
-Provide: description, specifications, alternate names, variants
-Return as JSON."""
-
-    try:
-        response = grok_client.chat_completion(
-            prompt,
-            temperature=0.1,
-            use_cache=True,
-            cache_type="equipment_enrichment",
-        )
-        enriched = json.loads(response)
-        logger.debug("Enriched data for %s", common_name)
-        return enriched
-    except Exception as e:
-        logger.warning("Failed to enrich equipment data for %s: %s", common_name, e)
-        return {}  # Empty dict, not None
-
-# Usage in creation
-if enable_enrichment and grok_client:
-    logger.info("Enriching equipment data for: %s", common_name)
-    enriched = _enrich_equipment_data(common_name, technical_id, category, grok_client)
-    
-    # Merge enriched data (don't overwrite existing)
-    for key in ["description", "specifications", "alternate_names", "variants"]:
-        if key in enriched and enriched[key]:
-            if key not in equipment_data or not equipment_data[key]:
-                equipment_data[key] = enriched[key]
-                logger.debug("  Enriched %s", key)
-```
-
-**Benefits:**
-- Enrichment failure doesn't prevent equipment creation
-- Falls back to extracted data only
-- Separate cache type prevents pollution
-- Configurable via config flag
-- Only enriches missing/empty fields
-- Logs enrichment attempts and results
-
-**Configuration:**
-```yaml
-equipment:
-  enabled: true
-  enable_enrichment: false  # Optional, disabled by default
-```
-
-**Use Cases:**
-- Add specifications from Wikipedia
-- Fill in alternate names
-- Add variant information
-- Enhance descriptions
-
----
-
-### 19. Helper Function Extraction for Complexity Reduction
-
-**Used in:** Equipment extraction refactoring
-
-**Pattern:**
-```python
-# Before: Complex monolithic function (F rating - 54 complexity)
-def extract_equipment_from_event(...):
-    # 200+ lines of code
-    # Load data, validate, extract, link entities, build mentions, merge, save
-    # Complexity: F (54)
-
-# After: Extracted helper functions (C rating - 11 complexity)
-def _load_processed_registry(output_dir: Path) -> Dict[str, bool]: ...
-def _save_processed_registry(output_dir: Path, processed: Dict[str, bool]): ...
-def _validate_event_data(event_data: Dict[str, Any], event_file: Path) -> bool: ...
-def _load_event_data(event_file: Path) -> Optional[Dict[str, Any]]: ...
-def _extract_equipment_with_llm(...) -> Optional[List[Dict[str, Any]]]: ...
-def _link_entity(...) -> Optional[Dict[str, str]]: ...
-def _link_supporting_units(...) -> List[Dict[str, Any]]: ...
-def _build_performance_notes(eq: EquipmentExtraction) -> Optional[Dict]: ...
-def _add_metadata_to_mention(mention: Dict, event_data: Dict): ...
-def _add_event_names_to_mention(mention: Dict, event_data: Dict): ...
-def _link_date_to_mention(mention: Dict, dates_index: Dict, output_root: Path): ...
-def _build_mention(...) -> Dict[str, Any]: ...
-def _build_equipment_data(eq: EquipmentExtraction) -> Dict[str, Any]: ...
-def _process_equipment_item(...) -> Optional[Path]: ...
-def _finalize_extraction(...): ...
-
-def extract_equipment_from_event(...):
-    # 30 lines of code
-    # High-level orchestration only
-    # Complexity: C (11) - 80% reduction
-```
-
-**Benefits:**
-- Reduces cyclomatic complexity from F (54) to C (11)
-- Each function has single responsibility
-- Easier to test individual components
-- Easier to understand and maintain
-- Reusable helper functions
-- Better error isolation
-
-**Guidelines:**
-- Extract functions with >10 lines of logic
-- Name functions with clear verb_noun pattern
-- Keep main function as orchestration only
-- Use type hints for all parameters
-- Document each helper function
-
----
-
-### 20. Subprocess Integration with Graceful Fallback
-
-**Used in:** Equipment media extraction, External maps (OpenSERP)
-
-**Pattern:**
-```python
-import subprocess
-
-try:
-    # Call external tool
-    result = subprocess.run(
-        ["./search_media", search_query],
-        capture_output=True,
-        text=True,
-        timeout=30,
-        check=False,  # Don't raise on non-zero exit
-    )
-
-    if result.returncode != 0:
-        logger.debug("Tool failed: %s", result.stderr)
-        return []
-
-    # Parse output
-    data = json.loads(result.stdout)
-    logger.debug("Found %s items", len(data))
-    return data if isinstance(data, list) else []
-
-except FileNotFoundError:
-    logger.debug("Tool not found, skipping")
-    return []
-except subprocess.TimeoutExpired:
-    logger.warning("Tool timed out")
-    return []
-except json.JSONDecodeError as e:
-    logger.debug("Failed to parse tool response: %s", e)
-    return []
-except Exception as e:
-    logger.debug("Tool error: %s", e)
-    return []
-```
-
-**Benefits:**
-- External tool failure doesn't stop extraction
-- Specific exceptions for different failure modes
-- Timeout prevents hanging
-- Returns empty list for easy iteration
-- Logs at appropriate levels (DEBUG for expected, WARNING for timeouts)
-
-**Configuration:**
-```python
-timeout: int = 30  # seconds
-check: bool = False  # Don't raise on non-zero exit
-```
-
-**Use Cases:**
-- OpenSERP integration for maps/media search
-- External validation tools
-- Image processing tools
-- Data enrichment services
-
----
-
 ## Applying to New Services
 
 When creating new extraction services, implement:
@@ -1049,317 +1297,27 @@ When creating new extraction services, implement:
 1. **Retry logic** - 3 attempts with cache bypass
 2. **API-level retry** - Tenacity decorator on API calls
 3. **Try-except blocks** - Wrap each extraction type
-4. **Optional feature degradation** - Non-critical features fail gracefully
-5. **Validation recovery** - Fix common errors (ULIDs, nulls)
-6. **Null field handling** - Filter or fix invalid data
-7. **Graceful degradation** - Continue on partial failures
-8. **Metadata validation** - Fail fast on missing critical data
-9. **Duplicate detection** - Check before adding mentions
-10. **Comprehensive logging** - Log at appropriate levels
-11. **Timeout handling** - Set reasonable timeouts
-12. **Cache isolation** - Separate cache per service
-13. **Prompt engineering** - Prevent invalid responses at source
-14. **Idempotent operations** - Safe to re-run
-15. **Timestamp-based skipping** - Avoid redundant processing
-16. **API key validation** - Check before processing
-17. **Fuzzy matching** - Prevent duplicate files (when applicable)
-18. **Entity linking with fallback** - Missing entities don't fail
-19. **External enrichment** - Optional, with graceful degradation
-20. **Helper function extraction** - Keep complexity below C rating
-21. **Subprocess integration** - External tools with graceful fallback
-22. **HTTP file download** - Content-type detection, duplicate prevention
-
----
-
-### 21. HTTP File Download with Content-Type Detection
-
-**Used in:** Equipment media download, Maps image download
-
-**Pattern:**
-```python
-import httpx
-from pathlib import Path
-
-def _download_file(url: str, output_dir: Path) -> Optional[str]:
-    """Download file with content-type detection."""
-    try:
-        with httpx.Client(timeout=30, follow_redirects=True) as client:
-            response = client.get(url)
-            response.raise_for_status()
-
-            # Determine extension from content-type
-            content_type = response.headers.get("content-type", "")
-            if "jpeg" in content_type or "jpg" in content_type:
-                ext = ".jpg"
-            elif "png" in content_type:
-                ext = ".png"
-            else:
-                # Fallback to URL extension
-                ext = Path(url).suffix or ".jpg"
-
-            # Generate unique filename
-            file_id = str(ulid.new())
-            filepath = output_dir / file_id / f"{file_id}{ext}"
-            
-            # Check if already downloaded
-            if filepath.exists():
-                logger.debug("Already downloaded: %s", filepath.name)
-                return str(filepath.relative_to(output_dir.parent))
-
-            # Save file
-            filepath.parent.mkdir(parents=True, exist_ok=True)
-            with open(filepath, "wb") as f:
-                f.write(response.content)
-
-            logger.debug("Downloaded: %s", filepath.name)
-            return str(filepath.relative_to(output_dir.parent))
-
-    except httpx.HTTPError as e:
-        logger.warning("Failed to download %s: %s", url, e)
-        return None
-    except Exception as e:
-        logger.debug("Download error: %s", e)
-        return None
-```
-
-**Benefits:**
-- Content-type detection prevents extension mismatches
-- Already-downloaded check prevents duplicates
-- HTTP errors logged as WARNING (expected failures)
-- General errors logged as DEBUG (unexpected)
-- Returns None on failure (easy to check)
-- Continues processing other files on failure
-
-**Configuration:**
-```python
-timeout: int = 30  # seconds
-follow_redirects: bool = True
-```
-
-**Use Cases:**
-- Equipment media files (photos, videos, documents)
-- Map images from external sources
-- Any HTTP file download with unknown content-type
-
----
-
-### 22. Type Checking for Mixed Data Structures
-
-**Used in:** Supplemental material search and advanced features
-
-**Pattern:**
-```python
-# Handle both dict and string formats in data arrays
-for sub_event_data in data:
-    # Type guard - skip non-dict entries
-    if isinstance(sub_event_data, str):
-        logger.debug("Skipping string entry in supplemental data")
-        continue
-    if not isinstance(sub_event_data, dict):
-        logger.debug("Skipping non-dict entry in supplemental data")
-        continue
-    
-    # Safe to access dict methods now
-    materials = sub_event_data.get("Supplemental_Material", [])
-    
-    for material in materials:
-        citation = material.get("citation", {})
-        
-        # Validate citation is dict before accessing
-        if not citation or not isinstance(citation, dict):
-            logger.debug("Skipping material with invalid citation")
-            continue
-        
-        # Safe to access citation methods
-        material_type = citation.get("type", "")
-```
-
-**Benefits:**
-- Prevents `'str' object has no attribute 'get'` errors
-- Prevents `'NoneType' object has no attribute 'lower'` errors
-- Handles malformed API responses gracefully
-- Logs skipped entries for debugging
-- Continues processing valid entries
-- No data loss from mixed-type arrays
-
-**Common Causes:**
-- LLM returns mixed array types (strings and dicts)
-- Null values in nested objects
-- Schema evolution (old vs new formats)
-- Partial API responses
-
-**Use Cases:**
-- Supplemental material extraction
-- Any service processing LLM-generated arrays
-- Services with nested object structures
-- Cross-version data compatibility
-
----
-
-### 23. Method Name Validation for API Clients
-
-**Used in:** Supplemental advanced features (ISBN, death dates)
-
-**Pattern:**
-```python
-# WRONG: Using non-existent method
-try:
-    response = grok_client.chat(prompt, cache_key=f"isbn_{author}_{title}")
-except AttributeError as e:
-    logger.error("GrokClient method error: %s", e)
-    # Fails with: 'GrokClient' object has no attribute 'chat'
-
-# CORRECT: Using actual method with proper parameters
-try:
-    response = grok_client.chat_completion(
-        prompt=prompt,
-        cache_type="supplemental_advanced",
-        use_cache=True
-    )
-    isbn = response.strip().replace("-", "").replace(" ", "")
-except Exception as e:
-    logger.debug("ISBN extraction error: %s", e)
-    return None
-```
-
-**Benefits:**
-- Prevents AttributeError crashes
-- Uses correct API client interface
-- Proper cache type isolation
-- Consistent with other extraction services
-- Better error messages
-
-**Common Mistakes:**
-- Using old method names after refactoring
-- Copying code from different API client
-- Missing parameter updates
-- Wrong cache parameter names
-
-**Prevention:**
-- Check API client interface before calling
-- Use IDE autocomplete for method names
-- Add type hints to catch errors early
-- Test with actual API client instance
-
----
-
-### 24. Schema Validation with Sanitization
-
-**Used in:** Supplemental material extraction
-
-**Pattern:**
-```python
-def sanitize_supplemental_data(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Sanitize supplemental data to ensure schema compliance."""
-    # Ensure required string fields are not None
-    if data.get("Sub-event_Name") is None:
-        data["Sub-event_Name"] = ""
-    
-    # Sanitize materials
-    for material in data.get("Supplemental_Material", []):
-        if material.get("reference_type") is None:
-            material["reference_type"] = "bibliography"
-        
-        # Validate reference_type is one of allowed values
-        ref_type = material.get("reference_type", "")
-        if ref_type not in ["endnote", "footnote", "bibliography"]:
-            logger.warning(
-                "Invalid reference_type '%s', defaulting to 'bibliography'", 
-                ref_type
-            )
-            material["reference_type"] = "bibliography"
-        
-        if material.get("verbatim_reference") is None:
-            material["verbatim_reference"] = ""
-    
-    return data
-
-# Usage before validation
-data = sanitize_supplemental_data(data)
-validate_supplemental_json(data)  # Now passes schema validation
-```
-
-**Benefits:**
-- Prevents schema validation errors
-- Handles LLM returning invalid enum values
-- Provides default values for required fields
-- Logs invalid values for debugging
-- Allows extraction to continue
-- No data loss (invalid values replaced, not removed)
-
-**Common Invalid Values:**
-- `reference_type: "map"` (should be endnote/footnote/bibliography)
-- `reference_type: "image"` (should be endnote/footnote/bibliography)
-- `reference_type: null` (should have default)
-- Empty strings in required fields
-
-**Schema Enforcement:**
-```json
-{
-  "reference_type": {
-    "type": "string",
-    "enum": ["endnote", "footnote", "bibliography"]
-  }
-}
-```
-
-**Use Cases:**
-- Any extraction with enum fields
-- Services with strict schema requirements
-- LLM-generated data with validation
-- Data migration between schema versions
-
----
-
-### 25. File I/O Error Handling
-
-**Used in:** Supplemental material processing, External maps, URL validation
-
-**Pattern:**
-```python
-try:
-    with open(file_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-except (OSError, IOError) as e:
-    logger.error("Error reading file %s: %s", file_path, e)
-    return None  # or appropriate default
-
-# Also used for write operations
-try:
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-except (OSError, IOError) as e:
-    logger.error("Error writing file %s: %s", output_file, e)
-    raise  # Re-raise if write failure is critical
-```
-
-**Benefits:**
-- Handles file permission errors
-- Handles disk full errors
-- Handles file not found errors
-- Handles I/O errors (corrupted filesystem, network drives)
-- OSError is parent class of many file-related errors
-- IOError is alias for OSError (Python 3 compatibility)
-
-**Common OSError Subtypes:**
-- `FileNotFoundError` - File doesn't exist
-- `PermissionError` - No read/write permission
-- `IsADirectoryError` - Expected file, got directory
-- `NotADirectoryError` - Expected directory, got file
-- `FileExistsError` - File already exists (when creating)
-
-**Use Cases:**
-- Reading supplemental material files
-- Writing output JSON files
-- External maps YAML loading
-- URL validation file operations
-- Any file I/O operation
-
-**Configuration:**
-```python
-encoding: str = "utf-8"  # Always specify encoding
-ensure_ascii: bool = False  # Allow Unicode in JSON output
-```
+4. **Validation recovery** - Fix common errors (ULIDs, nulls)
+5. **Cache-first strategy** - Use cache, bypass on retry
+6. **ULID validation** - Fix invalid ULIDs automatically
+7. **Null field handling** - Filter or fix invalid data
+8. **Graceful degradation** - Continue on partial failures
+9. **Metadata validation** - Fail fast on missing critical data
+10. **Duplicate detection** - Check before adding mentions
+11. **JSON parsing recovery** - Sanitize and repair malformed JSON
+12. **Prompt engineering** - Prevent invalid responses at source
+13. **Timestamp-based skipping** - Avoid redundant processing
+14. **API key validation** - Check before processing
+15. **Fuzzy matching** - Prevent duplicate files (when applicable)
+16. **Entity linking with fallback** - Missing entities don't fail
+17. **External enrichment** - Optional, with graceful degradation
+18. **Helper function extraction** - Keep complexity below C rating
+19. **Subprocess integration** - External tools with graceful fallback
+20. **HTTP file download** - Content-type detection, duplicate prevention
+21. **Type checking** - Handle mixed data structures from LLM
+22. **Method name validation** - Use correct API client interface
+23. **Schema validation** - Sanitize before validating
+24. **File I/O handling** - Catch OSError for all file operations
 
 ---
 
@@ -1381,7 +1339,7 @@ wait=wait_exponential(multiplier=1, min=2, max=10)
 ### Timeout Settings
 
 ```python
-timeout: float = 360.0  # 6 minutes
+timeout: float = 600.0  # 10 minutes
 ```
 
 ### Cache Settings
@@ -1436,6 +1394,16 @@ All errors logged with:
 
 ## Recent Improvements
 
+**2026-03-14**: HyperWar paragraph separation fix
+- `html2text` collapsed multiple `<p>` and `<center>` tags inside `<blockquote>`
+  elements into single long lines, merging paragraphs
+- **Fix**: Pre-process HTML to insert `<br><br>` between block-level children
+  of each `<blockquote>` before passing to `html2text`
+- Also normalized whitespace-only blockquote lines (`>   `) to standard `> `
+  in `format_as_blockquote()` to match existing content format
+- Affected all imported CrossChannelAttack chapters — requires re-import
+- File: `scripts/import_hyperwar_html.py`
+
 **2026-03-14**: Unified logging (replaces separate api_prompts.log)
 - API call tracking (`[API] CALL`, `[API] CACHE HIT`) now flows through standard
   `logging` module into `pipeline_*.log` instead of separate `api_prompts.log`
@@ -1486,6 +1454,8 @@ All errors logged with:
 - Server politeness: 0.5s delay between chapter downloads
 
 **2026-03-11**: JSON parsing robustness improvements
+- **Note**: The regex-based escape sanitization described below was superseded
+  by the character-level walker on 2026-03-14 (see above)
 - **Control Character Sanitization**: Added to all 3 JSON extraction methods
   - `extract_json()` - Already had sanitization
   - `extract_json_with_image_base64()` - Added sanitization
@@ -1548,7 +1518,7 @@ All errors logged with:
 - Fallback to URL extension
 - Already-downloaded check prevents duplicates
 - ULID-based subdirectories for organization
-- Graceful error handling (httpx.HTTPError, Exception)
+- Graceful error handling (requests.exceptions.HTTPError, Exception)
 - Used in equipment media and maps downloads
 
 **2026-03-04**: Equipment extraction patterns and media integration
