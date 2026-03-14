@@ -241,36 +241,14 @@ class GrokClient:
         # Check cache
         cache_key = self._make_cache_key(prompt, temperature)
 
-        # Log to file
-        from datetime import datetime
-        from pathlib import Path
-
-        prompt_log = Path("logs") / "api_prompts.log"
-        prompt_log.parent.mkdir(parents=True, exist_ok=True)
-
         if use_cache and cache_key in cache:
-            with open(prompt_log, "a", encoding="utf-8") as f:
-                f.write(f"\n{'='*80}\n")
-                f.write(f"Timestamp: {datetime.now().isoformat()}\n")
-                f.write(f"Cache Type: {cache_type}\n")
-                f.write(f"Cache Key: {cache_key}\n")
-                f.write("Status: CACHE HIT\n")
-                f.write("=" * 80 + "\n\n")
+            logger.debug("[API] CACHE HIT | type=%s key=%s", cache_type, cache_key[:16])
             return cache[cache_key]
 
         # Log API call
-        with open(prompt_log, "a", encoding="utf-8") as f:
-            f.write("\n" + "=" * 80 + "\n")
-            f.write(f"Timestamp: {datetime.now().isoformat()}\n")
-            f.write(f"Cache Type: {cache_type}\n")
-            f.write(f"Cache Key: {cache_key}\n")
-            f.write(f"Temperature: {temperature}\n")
-            f.write("Status: API CALL\n")
-            if system_prompt:
-                f.write(f"System Prompt: {system_prompt}\n")
-            f.write("=" * 80 + "\n")
-            f.write(prompt)
-            f.write(f"\n{'='*80}\n\n")
+        logger.debug("[API] CALL | type=%s key=%s temp=%.1f", cache_type, cache_key[:16], temperature)
+        if hasattr(logger, 'trace'):
+            logger.trace("[API] Prompt (%s): %s", cache_type, prompt[:500])  # type: ignore[attr-defined]
 
         # Build messages
         messages = []
