@@ -1352,31 +1352,18 @@ Example:
 
     for attempt in range(max_retries):
         try:
-            response = grok_client.chat_completion(
+            equipment_list = grok_client.extract_json(
                 prompt,
                 temperature=0.1,
                 use_cache=(attempt == 0),
                 cache_type="equipment",
             )
 
-            equipment_list = json.loads(response)
             if isinstance(equipment_list, dict) and "equipment" in equipment_list:
                 equipment_list = equipment_list["equipment"]
 
             return equipment_list
 
-        except json.JSONDecodeError as e:
-            if attempt < max_retries - 1:
-                logger.warning(
-                    "  ⚠ Attempt %s failed (invalid JSON): %s", attempt + 1, e
-                )
-                logger.info("  Retrying (%s/%s)...", attempt + 2, max_retries)
-            else:
-                logger.error("  ✗ All %s attempts failed: %s", max_retries, e)
-                logger.debug(
-                    "Response text: %s",
-                    response[:500] if "response" in locals() else "N/A",
-                )
         except Exception as e:
             if attempt < max_retries - 1:
                 logger.warning("  ⚠ Attempt %s failed: %s", attempt + 1, e)

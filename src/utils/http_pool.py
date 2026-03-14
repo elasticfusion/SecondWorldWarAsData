@@ -21,20 +21,22 @@ def get_session() -> requests.Session:
         _session = requests.Session()
 
         # Configure retry strategy
-        retry_strategy = Retry(
+        retry_kwargs = dict(
             total=3,
             backoff_factor=1,
             status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=[
-                "HEAD",
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "OPTIONS",
-                "TRACE",
-            ],
         )
+        # allowed_methods was called method_whitelist in older urllib3
+        try:
+            retry_strategy = Retry(
+                allowed_methods=["HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS", "TRACE"],
+                **retry_kwargs,
+            )
+        except TypeError:
+            retry_strategy = Retry(
+                method_whitelist=["HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS", "TRACE"],
+                **retry_kwargs,
+            )
 
         # Configure adapter with connection pooling
         adapter = HTTPAdapter(
