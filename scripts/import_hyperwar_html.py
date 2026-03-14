@@ -153,6 +153,14 @@ def convert_html_to_markdown(soup: BeautifulSoup, source_url: str) -> str:
             full_src = urljoin(source_url, src)
             img.replace_with(f"![{alt}]({full_src})")
 
+    # Ensure paragraph breaks inside blockquotes survive html2text conversion.
+    # HyperWar HTML uses <blockquote> with <p>/<center> children that html2text
+    # merges into single lines. Insert explicit break markers between them.
+    for bq in body.find_all("blockquote"):
+        for p in bq.find_all(["p", "center"]):
+            p.insert_before(soup.new_tag("br"))
+            p.insert_before(soup.new_tag("br"))
+
     # Use html2text for conversion
     h = html2text.HTML2Text()
     h.body_width = 0  # No line wrapping
@@ -236,25 +244,23 @@ def split_into_subchapters(markdown: str) -> list[tuple[str, str]]:
 def format_as_blockquote(content: str) -> str:
     """Format content with blockquote markers matching existing style.
 
-    Existing content uses '> ' prefix on content lines.
+    Existing content uses '> ' prefix on content lines and '> ' for blank lines.
     """
     lines = content.split("\n")
     result = []
     for line in lines:
         stripped = line.strip()
-        # Don't blockquote empty lines, page markers, or HTML anchors
-        if not stripped:
+        # Blank line or whitespace-only blockquote line → standard blank blockquote
+        if not stripped or stripped in (">", "> "):
             result.append("> ")
         elif stripped.startswith("*\\--") or stripped.startswith("<a id="):
             result.append(stripped)
         elif stripped.startswith("* * *"):
             result.append(stripped)
+        elif stripped.startswith("> "):
+            result.append(stripped)
         else:
-            # Already has blockquote?
-            if stripped.startswith("> "):
-                result.append(stripped)
-            else:
-                result.append(f"> {stripped}")
+            result.append(f"> {stripped}")
     return "\n".join(result)
 
 

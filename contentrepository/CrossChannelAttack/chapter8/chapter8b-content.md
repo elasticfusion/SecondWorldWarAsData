@@ -1,9 +1,13 @@
 > ### _OKW Policy in 1944_
-> >
+> 
 > German strategy for 1944 rested on the realization that decisive offensives could no longer be mounted in the east and that the growing strength of the Western Allies made almost certain a major invasion attempt before the end of the year. The prospective invasion of western Europe presented both the gravest danger to the Reich and the most hopeful opportunity for turning defeat into victory. If the Allies were not stopped at the landings, their attack would carry at once into the heart of Germany; if they were stopped and their beachheads annihilated, it was unlikely that a new attempt could be made for a long time to come, and as many as fifty German divisions might thereby be freed for the struggle against the Soviet Union.<sup>[1](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-7.html#fn1)</sup>
-> >
+> 
+> 
+> 
 > Recognizing the superiority of the Allied military potential, the Germans knew that their one chance for defeating the invasion was to defeat it quickly. It was therefore vital that the maximum German force be on the spot to fight the decisive battle as soon as the Allies attacked. To stake everything on a battle whose place and timing would be entirely of the enemy's choosing was to put an all but impossible burden on the defense, demanding of it a mobility it did not have and a sure knowledge of enemy intentions it had no means of acquiring. It was one thing to decide--as Hitler did with the issuance of his Directive No. 51--to prepare the west for the critical battle to come; it was another to find the means to carry out those preparations.
-> >
+> 
+> 
+> 
 > Regardless of how critical the defense of the west was declared, there could be no question of withdrawing forces from the hard-pressed eastern armies to reinforce it. The best that could be hoped for was to hold on to forces already in the various occupied territories outside of Russia and devote to the west the bulk of the new resources in men and equipment that became available in the months remaining before the Allies attacked. After Hitler's November order, OKW drew up a plan providing in detail for the shift of troops to meet a major Allied invasion of any one of the western theaters of operations. If the invasion hit France--the most likely possibility--OKW planned to move three infantry divisions from Norway and Denmark, one infantry division, a _Werfer_ regiment and a corps headquarters from Italy, and four mobile infantry or _Jaeger_ divisions and some minor units from the Balkans.<sup>[2](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-7.html#fn2)</sup> Although these
 > 
 > _\--231--_
@@ -11,9 +15,13 @@
 * * *
 > 
 > troop shifts would not amount to evacuation of any occupied area, they would mean a considerable concentration of force.
-> >
+> 
+> 
+> 
 > Such concentration was based on the assumption that the Allies would make one main attack. In January OKW began to wonder whether the assumption was justified. All signs still pointed to an attack across the Channel, probably at its narrowest point, but there were also indications that such an attack might be preceded or accompanied by other major thrusts. OKW noticed the "astonishing" emphasis in Allied quarters on preparations for a "second front" and reasoned that these might be designed to conceal another "main blow" that would not strike across the Channel. The "other place" selected might be Portugal or the Balkans, but the choice of the latter had particular plausibility.<sup>[3](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-7.html#fn3)</sup> It seemed unlikely that the large Allied forces in the Mediterranean would be committed in the slow and costly attempt to push all the way up the Italian peninsula.<sup>[4](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-7.html#fn4)</sup> The Balkan area offered greater strategic prizes and was conveniently at hand.
-> >
+> 
+> 
+> 
 > Whatever area was threatened OKW viewed the twin facts of accumulated Allied power in the Mediterranean and comparative stalemate in Italy as a kind of strategic unbalance which might be solved by another sudden major assault. German jitteriness on this score was not calmed by a report at about this time from agents in England that the ratio of Allied seagoing landing ships to landing craft for Channel use was ten times as great as the Doenitz staff had previously estimated.<sup>[5](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-7.html#fn5)</sup> This discovery seemed to confirm the guess that the Allies were planning an expedition outside the Channel. All these fears seemed to be further confirmed by the Allied landings at Anzio on 22 January. The Anzio beachhead, in the German view, had only a slim tactical connection with the main Italian front. General Jodl, Chief of the Armed Forces Operations Staff, considering it to be an independent, self-sustaining operation, argued that it might well be the first of a series of attacks on the periphery of the Continent with the purpose of forcing dispersion of German reserves in preparation for a thrust across the Channel.<sup>[6](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-7.html#fn6)</sup> This interpretation drew support from the fact (which the Germans found "surprising") that the Allies instead of at once pushing inland from the Anzio beaches paused for about a week to consolidate a beachhead, as though the object were not to gain tactical objectives but to attract German forces. Reasoning thus, Jodl told Hitler that they now had to reckon with a peripheral Allied strategy which would probably entail attacks on Portugal, on the west and south coasts of France, or in the Aegean, before the assault on the Kanalkueste. With regard to France, it was thought that the most likely Allied peripheral operations would be simultaneous landings on the Mediterranean and Biscay coasts to pinch off the Iberian Peninsula. This threat was taken seriously enough that during February two new infantry divisions then being formed were attached to _Nineteenth Army_ for defense
 > 
 > _\--232--_
@@ -21,9 +29,13 @@
 * * *
 > 
 > of the south coast and the _9th SS Panzer Division_ was released from _OB WEST_ and moved south into the Avignon area as army reserve. One new division went to _First Army_ for defense of the Biscay coast and Spanish border.<sup>[7](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-7.html#fn7)</sup>
-> >
+> 
+> 
+> 
 > The most important effect of the new appreciation, however, was to unsettle German plans for the defense. If the Allies were going to pursue a policy of many simultaneous or successive assaults, the Germans could not afford to weaken sectors not immediately under attack in order to concentrate on one main invasion. It would, in fact, be very difficult to discover which of many attacks constituted the major threat. Partly for this reason, and partly because the military situation both in the Mediterranean area and in Russia was shifting so rapidly during the early months of 1944 that any plans for the future were subject to almost daily changes, OKW in March canceled its comprehensive defense plans. Instead, theater commanders were advised that troop movements would be ordered in detail only at the time they were needed, presumably _after_ a given Allied attack had developed into a major action. In addition, a new plan was drawn providing for a shift of certain units from the Replacement Army in Germany to any OKW front under heavy attack. _OB WEST_ by this plan might get one corps headquarters, two reinforced panzer grenadier regiments, one reinforced infantry demonstration regiment, Kampfgruppen of three infantry regiments which were cadre for new divisions, a motorized artillery demonstration regiment, five _Landesschuetzen_ battalions, and one _Nebelwerfer_ demonstration battalion.<sup>[8](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-7.html#fn8)</sup> These miscellaneous, partly green units were hardly a substitute for the eight divisions (reinforced) which would have gone to _OB WEST_ under the old plan. Although OKW did not formally abandon the intention of drawing additional reinforcements from occupied areas not under attack, as a practical matter the possibility of such reinforcement had by March become negligible. With the high command admitting the possibility of not one but several landings, strategic uncertainty would evidently delay any possible concentration.<sup>[9](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-7.html#fn9)</sup>
-> >
+> 
+> 
+> 
 > By March 1944, the German western defense had thus been weakened by a growing confusion as to Allied intentions. This confusion, however, was a relatively small element in the difficulties that multiplied for the Germans after the end of 1943. Not threats but immediate dangers in both the south and east were the principal preoccupations of the German high command. For three months after Hitler issued his order that the west was no longer to be weakened in favor of the Eastern Front, the Germans succeeded generally in holding the manpower dikes despite ominous cracks, and rising tides of Soviet victories. Just before Christmas, 1943, the Russians launched an offensive on the Kiev front which in a few days drove nearly two hundred miles west; in January, Leningrad was relieved by successful attack against the German _Army Group North;_ at the end of the month,
 > 
 > _\--233--_
@@ -31,9 +43,13 @@
 * * *
 > 
 > much of the German _Eighth Army_ was encircled near Cherkassy; in February, the Russians attacked the German _Sixth Army_ in the Ukraine in a general offensive to clear the Dnepr bend. The temptation again to corral idle divisions from the west was very great. But only one infantry division was taken from Norway, and it was replaced by a unit which, though not completely formed, was roughly equivalent in combat strength. The west suffered only minor depredations. In February, three reinforced regiments being formed in Germany and earmarked for OKW reserve for the west went east. During the same month 3,000 Russian front soldiers who were suffering from frostbite were exchanged for a like number of troops in the west.<sup>[10](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-7.html#fn10)</sup> Signs of the mounting pressure of the Russian war, these borrowings still did not constitute important weakening of the west.
-> >
+> 
+> 
+> 
 > But at the end of January the Anzio landings had opened another small crack. The Germans reacted to the Anzio attack in force, not only because they believed it to be the first of a series of major Allied amphibious assaults, but because they saw the possibility of gaining political prestige by wiping out at least one Allied beachhead. In accordance with plans for meeting a large-scale landing in the southwest, the fully motorized _715th Division_ was ordered out of France. By 4 February, however, it was seen that this reinforcement was not enough to crush the Anzio beachhead and General Jodl asked Hitler for permission to move in the _9th SS Panzer Division,_ the only fully combat ready armored division in France. Hitler refused. With an eye on the large Allied reserve forces in North Africa, he feared an attack against the Mediterranean coast of France. He doubted, furthermore, whether the _9th SS Panzer Division,_ even if eventually returned to France, could make up its losses in Italy, particularly in equipment. _OB WEST_ thus survived that crisis. But the loss of the _715th Division,_ which because of its unusual mobility had been included with the reserve armored force, was serious enough.<sup>[11](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-7.html#fn11)</sup>
-> >
+> 
+> 
+> 
 > Much worse was to come. In March, the manpower dikes broke wide open as the Soviet Union launched a new offensive, and at the same time fears increased that Hungary was getting ready to pull out of the war. These circumstances forced temporary abandonment of the principles of Hitler's Directive No. 51. The bulk of the troops for the occupation of Hungary (carried out in the latter part of the month) were to be furnished by the Commander in Chief Southeast from the Balkans, and by the Replacement Army, but _OB WEST_ had to send the _Panzer Lehr Division,_ a corps headquarters, some aircraft, and a few minor units. The plan was to return all these units as soon as Hungary was firmly in German hands. In fact, the occupation took place rapidly and smoothly and the bulk of the Hungarian Army remained under arms and continued to fight for the Germans. The _Panzer Lehr Division_ thus was actually able to come back to France in May. But two divisions from the Replacement Army and two of the divisions contributed by the Commander in Chief Southeast were shuttled on to the Russian front and a third was saved only by a last-minute appeal to Hitler. The loss indirectly
 > 
 > _\--234--_
@@ -41,11 +57,17 @@
 * * *
 > 
 > affected the west in that it further reduced the reserves available to meet the invasion.
-> >
+> 
+> 
+> 
 > With the Russian armies again on the move and threatening to collapse the whole southern wing of the German defense, the danger of invasion in the west for a time dimmed by comparison. The Russians attacked on 4 March. On the 9th Uman fell; the Germans evacuated Kherson and Gayvoron on the 14th. Still the Russian armies suffered no check. Before the end of the month they crossed the Bug, Dnestr, and Pruth Rivers. In Galicia they temporarily encircled the German _First Panzer Army._ The crisis for the Germans was too desperate to permit consideration of long-range plans. Reinforcements were needed at once and they had to be taken wherever they could be found. On 10 March the _361st Division_ was ordered out of Denmark, and replaced with a division of much lower combat value. Two weeks later a similar exchange removed the _349th Division_ from France and brought as a substitute a new weak division, the _331st,_ from the Replacement Army. At about the same time four divisions under _OB WEST_ (the _326th,_ _346th,_ _348th_ and _19th Luftwaffe Field_) were ordered to give up all their assault guns, initially to strengthen Romanian forces and later to be distributed to various divisions along the whole Eastern Front. The big ax fell on 26 March when the whole _II SS Panzer Corps_ with the _9th_ and _10th SS Panzer Divisions_ received marching orders to leave France and go to the assistance of the _First Panzer Army._ <sup>[12](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-7.html#fn12)</sup>
-> >
+> 
+> 
+> 
 > The departure of the _II SS Panzer Corps_ left _OB WEST_ with only one fully mobile division (the _21st Panzer_). The OKW historian has suggested that, had the Allies invaded at that time, Rundstedt could have offered no effective resistance.<sup>[13](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-7.html#fn13)</sup> This may be an exaggeration, but it is true that the end of March 1944 marked one of the low points of preparedness in the west and that during the next six weeks, with the Russian front relatively stabilized, the west did much to recoup its losses. By the middle of May four panzer divisions were ready for combat (despite deficiencies of equipment) and four more were being built up. Toward the end of the month _Panzer Lehr Division_ returned from Hungary and the _1st SS Panzer Division_ from the Eastern Front was attached to _OB WEST_ for rebuilding. At the same time the _XLVII Panzer Corps_ under General der Panzertruppen Hans Freiherr von Funck, one of the oldest and most experienced armored commanders in the German Army, was brought from the east to serve under Rundstedt.
-> >
+> 
+> 
+> 
 > Actually the recuperative powers of the west under the severe and continuing strain of supplying transfusions to the east were remarkable. Between November 1943 and June 1944, the total of combat divisions under Rundstedt's command increased from forty-six to fifty-eight. The increase was accounted for in part by the transfer of fought-out units from Russia but in larger part by the formation of new units. In the fall of 1942 the German Army, already sore-pressed for manpower, adopted the policy of combining training with occupation duties. The old combined recruiting and training units were split, and the recruit henceforth after induction into a recruiting
 > 
 > _\--235--_
@@ -53,6 +75,10 @@
 * * *
 > 
 > unit near his home was sent to an affiliated training unit in the field. In 1943 about two-thirds of these training units were located in France, the Low Countries, Denmark, Poland, Lithuania, the Soviet Union, and northern Italy. The infantry and panzer units were organized into reserve divisions of which twenty-six (including four panzer) were formed during 1942 and 1943. Half of these were stationed in the _OB WEST_ sector. Though they remained under the commander of the Replacement Army and theoretically retained their primary function of training replacements, in reality they came to be regarded as low-grade field divisions. Their time was increasingly devoted to garrison duty and on occasion to fighting Resistance forces. In order to carry out these duties, they received administrative attachments from the regular field army. As their operational responsibilities expanded and they began to occupy a permanent place on _OB WEST's_ order of battle, it became impossible for them to give up personnel for filler replacements to regular units. In short they became themselves an integral part of the field army. In recognition of this fact, most of them were eventually redesignated as infantry or armored divisions. Six of _OB WEST's_ reserve divisions, including all three reserve panzer divisions, had thus been upgraded before the invasion. Five of the remaining seven were similarly converted in the summer of 1944; the other two were disbanded.<sup>[14](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-7.html#fn14)</sup>
-> >
+> 
+> 
+> 
 > Besides converting reserve divisions, the Commander in Chief West enlarged his army by rehabilitating German units from the east as already noted, and by activating new divisions out of miscellaneous personnel drawn in part from his own resources and in part from the Replacement Army. The effect of all this on the organization and character of the west army must be described in some detail, but in summary it may be said that the steady drain of the Eastern Front left to Rundstedt on the eve of his great battle two kinds of units: old divisions which had lost much of their best personnel and equipment, and new divisions, some of excellent combat value, some only partially equipped and partially trained. The majority of the new divisions were formed according to streamlined tables of organization designed generally to use the fewest possible men to produce the maximum fire power.
-> >
+> 
+> 
+> 

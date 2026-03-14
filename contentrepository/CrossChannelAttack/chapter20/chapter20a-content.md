@@ -1,10 +1,16 @@
 > ![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/img/USA-E-XChannel.jpg)
 > 
+> 
+> 
+> 
+> 
 > ## Appendix I:
 > Recipients of the Distinguished Service Cross
-> >
+> 
 > _All pertinent Army records have been scrutinized in the endeavor to include in the following list the name of every soldier that received the DSC for his part in the operations recounted in this volume. Inasmuch as no complete listing of DSC awards is maintained in any single Army file, it is possible that some names may inadvertently have been omitted. (P) indicates a posthumous award._
-> >
+> 
+> 
+> 
 > Alexander, S/Sgt. Paul E. (P)
 > Amerman, 2d Lt. Walter G.
 > Anderson, 2d Lt. William A.
@@ -308,7 +314,9 @@
 > 
 * * *
 > 
-> [Table of Contents](<index.html>) ** [Previous Chapter](<USA-E-XChannel-H.html>) (Appendix H) * [Next Chapter](<USA-E-XChannel-Biblio.html>) (Bibliography)
+> 
+> 
+>  [Table of Contents](<index.html>) ** [Previous Chapter](<USA-E-XChannel-H.html>) (Appendix H) * [Next Chapter](<USA-E-XChannel-Biblio.html>) (Bibliography)
 > 
 * * *
 > 

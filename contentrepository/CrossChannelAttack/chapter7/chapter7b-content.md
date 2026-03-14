@@ -1,18 +1,26 @@
 > ### _The French Resistance_
-> >
+> 
 > When the Germans conquered France in the spring of 1940, they sealed their victory with a symbolic flourish. It was as though by dictating the terms of humiliating armistice in the historic railway carriage at Compiegne they meant to prove not only that France was beaten but that she was helpless even to save her dignity in defeat. So it must have seemed in the railway car and so, too, throughout most of the country. But there were still a few Frenchmen who experienced the fact of defeat and witnessed the symbol of humiliation without accepting the finality of either. In 1940 they could not have seemed very dangerous to the conquerors or, for that matter, very potent to themselves. Their reaction was spontaneous and personal. Yet they were the seeds which, nourished by arms and Allied organizers through four years of occupation, grew into an underground army numbering about 200,000 men-an army that after the Allied landings in June 1944 impressed Allied leaders as having made a substantial contribution to the defeat of the enemy.<sup>[1](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn1)</sup>
-> >
+> 
+> 
+> 
 > During the first two years of the occupation, the Resistance movement developed separately in the occupied and unoccupied zones. When the Germans finally moved into southern France in November 1942, Resistance leaders were faced with the problem of bringing some sort of unity out of the anarchy of rival groups. At that time the northern zone had six independently organized groups; the south had three. Only one organization, the communist _Front National,_ which operated through the _Francs Tireurs et Partisans,_ extended control over both the northern and southern zones.<sup>[2](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn2)</sup> Between the other groups there was virtually no coordination. Their separateness was due not only to the fact that as clandestine organizations they lacked regularized communications; more importantly they were divided by differing shades of political opinion. The French Resistance cannot be viewed as a simple revolt against the enemy, although opposition to the Germans was, of course, always the prime motive. It must be seen also as a movement aimed, at least by its leaders, at eventual national independence. Whoever controlled the underground would evidently be in the strongest position to control the liberated nation.
-> >
+> 
+> 
+> 
 > The chief impetus toward national unification came from General Charles de Gaulle's headquarters in London. General de Gaulle began in 1940 the formation of a special staff, later known as the _Bureau Central de Renseignements et_
 > 
 > _\--198--_
 > 
 * * *
 > 
-> [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-24.jpg)](<img/USA-E-XChannel-24.jpg>)
+> 
+> 
+>  [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-24.jpg)](<img/USA-E-XChannel-24.jpg>)
 >  HITLER LEAVING RAILWAY CARRIAGE AT COMPIEGNE _where the Germans dictated the 1940 peace terms to the French nation._
-> >
+> 
+> 
+> 
 > _d'Action (Militaire)_ (BCRA), charged with the organization, direction, and supply of the Resistance. Contacts between de Gaulle and the native Resistance were established through agents supplied by the British. The BCRA worked for nearly two years (from the summer of 1941 to the spring of 1943) with Resistance leaders to amalgamate the Resistance groups. Their work culminated in the formation of a National Committee (_le Conseil National d e la Resistance_) which met for the first time in Paris on 27 May 1943. The committee under the presidency of Georges Bidault included representatives not only of the main Resistance groups but of the principal political parties as well. Politically the new National Committee recognized General de Gaulle and the London committee as trustees of the interests of the French nation and responsible eventually for founding a French government on democratic principles. De Gaulle's personal representative, Jean Moulin, was selected as political leader of the Resistance. Militarily the committee created an underground army (_l'Armee Secrete_) under the direct command of
 > 
 > _\--199--_
@@ -20,13 +28,21 @@
 * * *
 > 
 > General Delestrain (known to the underground as Général Vidal. The Army was elaborately organized on a regional basis and regional commanders selected. Primarily this organization was intended as a framework for the ultimate open cooperation of the French underground with the Allied armies.<sup>[3](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn3)</sup>
-> >
+> 
+> 
+> 
 > Much of the success of this first de Gaullist national organization was illusory, for it is evident that the Gestapo was aware of its progress and waited only for its completion before striking in June 1943 with wholesale arrests. De Gaulle's representative died under torture. General Delestrain was shot. The leadership of the underground army was decimated. The national organization was shattered, and Resistance groups throughout the country suffered heavy losses.<sup>[4](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn4)</sup>
-> >
+> 
+> 
+> 
 > In the widespread catastrophe, however, there were some encouraging facts. By tipping their hand in the summer of 1943, apparently in the expectation that Allied landings were imminent, the Germans revealed the fatal weaknesses of the highly centralized underground organization in time to permit the establishment of a new system of control before D Day. Furthermore, although the underground suffered severe personnel losses both among native resisters and among agents, a surprisingly small percentage of supplies was lost and, on the whole, the supply reception committees were able to continue operations in most parts of the country.<sup>[5](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn5)</sup>
-> >
+> 
+> 
+> 
 > Despite their losses, the Resistance groups displayed a remarkable resilience, and reorganization began at once. It is impossible in short space to describe the many ramifications of the new organization. In general it may be said that a nominal national unity was retained while sabotage and paramilitary action were controlled regionally. The Germans continued to make periodic arrests of Resistance leaders, but the new decentralization localized the damage to the movement.
-> >
+> 
+> 
+> 
 > Concurrently with the organization of the Resistance for eventual overt activity, both the BCRA and a purely British organization, the SOE (Special Operations Executive), were concerned with encouraging, directing, and supplying immediate and continuing sabotage. The SOE was formed in November 1940 and made the responsibility of the Minister of Economic Warfare-a responsibility that was added to the minister's duties as head of a department. The first mission of the SOE was to investigate the capabilities of the French Resistance, stimulate passive resistance in French industry working for the Germans, and study the possibilities of forming an underground army. As it began to work through agents in the field, the goal of encouraging passive resistance was gradually supplanted by the more ambitious aim of developing French Resistance into a strategic weapon that could be directed by Allied headquarters against military objectives in conformity with the master Allied plan.<sup>[6](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn6)</sup>
 > 
 > _\--200--_
@@ -34,11 +50,17 @@
 * * *
 > 
 > The SOE did not attempt to interfere directly in the indigenous organization of the Resistance. The British were content to deal with the groups as established and confine their efforts to setting up and maintaining communications between the Resistance and London. The main task at first was to supply the resisters with arms and sabotage equipment. Later the SOE undertook to direct and coordinate Resistance action in accord with the OVERLORD plan.
-> >
+> 
+> 
+> 
 > The first SOE agents parachuted into France in the spring of 1941. Among them was a French radio operator, Begué. Through Begué, contact was made with some of the Resistance groups and arrangements made for the first supply mission flown on the night of 7 July 1941. Containers packed with explosives, small arms, flashlights, and a radio were parachuted to ground organized by members of the Resistance. Location and markings of the grounds had been previously reported to London by Begué's radio. This was the first of many "shipments" of arms to the French underground which would forge out of the will to resist an effective weapon of war. But success was still far in the future. The year 1941 ended for the SOE in failure. Through treachery most of the British agents in the field were arrested, including Begué, and the slender communications link with London was snapped.<sup>[7](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn7)</sup>
-> >
+> 
+> 
+> 
 > The lesson drawn by the SOE from this experience was the impracticability of canalizing control through a central communications channel. Not only was the single communications channel much too vulnerable itself but it required the multiplication of contacts between agents and Resistance groups and thus increased unnecessarily the risk that treachery or indiscretion would compromise a widespread organization. Henceforward the aim of the SOE was to create independent groups with independent communications with London. During 1942, seventeen radio operators, as well as thirty-six other agents, were parachuted into France. As communications became relatively secure and continuous, supply missions were flown in increasing numbers. Additional personnel and materiel were also landed by small boats plying between Gibraltar and the southeast coast. Deliveries by sea were especially important during the winter when bad weather all but prevented air drops. The total amount of supplies sent during the year, however, was very small. In twelve months of operation, for instance, only a little over one ton of explosives was dropped to saboteurs.<sup>[8](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn8)</sup>
-> >
+> 
+> 
+> 
 > SOE efforts to supply the Resistance movements were always handicapped by insufficient air transport. In 1942 and through most of 1943 two squadrons (of approximately twenty aircraft each) were employed to carry out SOE missions. The SOE continually begged for more aircraft, but every plane assigned to it had to be diverted from the bomber offensive and the Resistance seemed like a nebulous kind of operation to feed at the expense of dropping bombs on German industry.<sup>[9](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn9)</sup>
 > 
 > _\--201--_
@@ -46,13 +68,21 @@
 * * *
 > 
 > Furthermore, throughout 1943 the SOE program to supply the Balkan guerrillas had a higher priority than its operations in western Europe. All this meant that, although from time to time additional planes were available for SOE operations in France, the supply never kept pace with the growing demands from the field.<sup>[10](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn10)</sup>
-> >
+> 
+> 
+> 
 > These demands forced repeated examination of what role the Resistance could be expected to play in the liberation of France and how much reliance could be placed on it. Planners tended to be cautious. First of all, it was difficult to get any accurate assessment of the actual or potential strength of the movement. Second, there was always a danger that the movement might be emasculated by arrests on the eve of invasion. Third, even though much had been done to organize the various patriot groups, it was certain that control of their activities would be difficult and incomplete. COSSAC, in drawing up the original OVERLORD plan, decided to regard Resistance activities as a bonus and to place no reliance on them to accomplish strategic objectives.<sup>[11](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn11)</sup>
-> >
+> 
+> 
+> 
 > In criticizing the plan, the British Chiefs of Staff asked whether a more definite strategic role might not be assigned to the Resistance. A committee representing Army and SOE discussed the question and concluded that COSSAC's appraisal was generally fair but "it erred on the side of caution and did not emphasize the wide strategic possibilities." What the committee was thinking of was a national uprising. It believed that the sabotage of Resistance groups could not be regarded as a strategic weapon unless "backed by a general strike or by a rising on a national scale." Such an uprising, the committee thought, would be desirable from a military standpoint but might be politically objectionable.<sup>[12](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn12)</sup>
-> >
+> 
+> 
+> 
 > Actually there seems little doubt that the concept of a national uprising, which cropped up in discussions of Resistance from time to time, was always unrealistic. A French officer working for the OSS (Office of Strategic Services) commented that the "favorite notion" of mass uprisings "posited the existence of universal courage, whereas courage only inspired a few men--as it has always inspired the few rather than the many. And the idea of mass uprisings implied battling against modern tanks with the stone-throwing catapults of Caesar's time."<sup>[13](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn13)</sup>
-> >
+> 
+> 
+> 
 > The decision apparently was that mass uprisings were at least sufficiently unlikely that no reliance could be placed on them. In February 1944 SHAEF's conclusion was still that Resistance activity must be regarded as a bonus.<sup>[14](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn14)</sup> In view of this conclusion, the project of supplying the Resistance might have languished, but as a matter of fact it received a strong forward impetus. In the beginning of 1943, the Germans put into effect a forced labor draft in France. To escape this draft thousands of young Frenchmen, particularly in central and southern France, broke into open rebellion. They formed maquis bands in hilly and wooded regions and began guerrilla warfare against the Germans and the collaborationist French Militia. SOE sent agents to contact these _maquisards_ and began dropping arms
 > 
 > _\--202--_
@@ -60,9 +90,13 @@
 * * *
 > 
 > and supplies to them.<sup>[15](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn15)</sup> The maquis developed into an important movement by the fall of 1943. The Prime Minister then became interested and in January ordered that an additional thirty-five British aircraft be made available for arming the maquis groups of southeastern France. With this new transport strength, supply drops in February were increased 173 percent.<sup>[16](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn16)</sup> Permanent assignments of aircraft for SOE use rose steadily thereafter. In January, 50 successful sorties were flown; in April, 331; in May, 531; and in June, 866.<sup>[17](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn17)</sup>
-> >
+> 
+> 
+> 
 > The increase in the tempo of supply deliveries reflected also the beginnings of American contributions of aircraft. In 1943 the OSS began operating through agents in France. The London headquarters of SO (Special Operations branch of OSS) collaborated with SOE and gradually amalgamated with the British agency. The amalgamation was completed by January 1944. That month U.S. planes flew their first successful supply mission into France. In late February, however, the chief of Special Operations, Col. Joseph P. Haskell, was still concerned over the small scale of the American contribution. He feared especially the political repercussions on American-French relations of allowing the British to continue carrying the main burden of supporting the Resistance.<sup>[18](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn18)</sup> The State Department two months later warned the Joint Chiefs of Staff that the impression was gaining ground among the French that, whereas the British were doing everything possible to arm the French patriots, the United States was holding back for political reasons.<sup>[19](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn19)</sup> Thus in May, twenty-five more U.S. aircraft were assigned to Special Operations over the protests of Air Marshal Sir Arthur W. Tedder who, doubting the value of the Resistance movement, considered the increase unjustified.<sup>[20](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn20)</sup>
-> >
+> 
+> 
+> 
 > Air Marshal Tedder's doubts were unquestionably shared by many in the Allied command,<sup>[21](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn21)</sup> and the effectiveness of the Resistance as revealed after D Day was very generally regarded with surprise. There had been signs of the capabilities of the Resistance to undermine the German military power in France, particularly in the monthly reports which SOE and later SOE/SO headquarters submitted to COSSAC and SHAEF from the fall of 1943 when Special Operations was placed under the general control of the OVERLORD command. But the signs were hard to read. Sabotage consisted of a number of more or less uncoordinated pinpricks chiefly against various war industries working for the Germans, railroads and canals, and telephone and telegraph
 > 
 > _\--203--_
@@ -70,9 +104,13 @@
 * * *
 > 
 > systems. It was difficult to add them up and see what they amounted to in terms of damaging the enemy's total defensive capabilities in France.
-> >
+> 
+> 
+> 
 > The most continuous and probably most effective sabotage was that directed against the French railroads. Attacks were made to derail German troop and supply trains, to cut tracks, blow bridges, and damage locomotives. Directed by SOE/ SO headquarters, railway sabotage was greatly accelerated in 1944 and tied in to a certain extent with the Allied air offensive against enemy transportation.<sup>[22](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn22)</sup> Damage done by saboteurs compared favorably with that inflicted from the air. In the first three months of 1944 the underground sabotaged 808 locomotives as compared to 387 damaged by air attack. However, in April and May, air attack was stepped up and accounted for the damaging of 1,437 locomotives compared to only 292 put out of action by saboteurs. Between June 1943 and May 1944 a total of 1,822 locomotives was damaged, 200 passenger cars destroyed, 1,500 cars damaged, 2,500 freight cars destroyed and 8,000 damaged.<sup>[23](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn23)</sup> Reliable statistics on other forms of railway sabotage are incomplete. A report by the Vichy police<sup>[24](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn24)</sup> records that during October and November 1943 more than 3,000 attempts were made by patriots to wreck some portion of the railway system. In November, 427 of these were successful major operations which included 132 derailments.
-> >
+> 
+> 
+> 
 > Despite the impressiveness of these figures, there remained some doubt as to the effect of the destruction on German military mobility. Since only a part of the capacity of the French railroads was being utilized directly by the German Army, much of the burden of the interruptions due to sabotage could be and undoubtedly was borne by French civilian traffic.<sup>[25](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn25)</sup> On the other hand, Rundstedt in October 1943 noted with alarm the "rapid increase" in rail sabotage which he attributed to the heavy supply of arms and explosives that the British had parachuted to Resistance groups. He reported that in September there were 534 acts of sabotage against railroads as compared to a monthly average of 130 during the first half of the year. Although he did not assess the effect of this sabotage on his general preparedness for invasion, he made it clear that it was cause for concern, which would become more serious at the time of the Allied assault.<sup>[26](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn26)</sup> A measure of its seriousness was the partial substitution of German uniformed railway workers for employees of the SNCF (_Société National des Chemins de Fer_). Between February and June 20,000 German
 > 
 > _\--204--_
@@ -80,11 +118,17 @@
 * * *
 > 
 > workers were brought in chiefly to check locomotive sabotage.<sup>[27](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn27)</sup>
-> >
+> 
+> 
+> 
 > As D Day approached, SOE/SO headquarters became more concerned with coordinating rail sabotage to relate directly to forthcoming military operations. It was not expected that Resistance groups could seriously interfere with the movement of local enemy reserves in the bridgehead area. The Germans had in effect quarantined the coastal strip to a depth of about thirty to forty miles inland and the Normandy Resistance groups, as a result, were weak and scattered. Work on the fortifications as done either by German labor, or by Frenchmen carefully checked for loyalty. Any strangers were immediately suspect and subject to arrest. Such organized groups as did exist were difficult to supply because of the heavy concentration of antiaircraft guns in the coastal zone. Outside the area, however, it was thought the Resistance might operate effectively to delay the movement of strategic reserves into the battle zone. The Resistance was therefore directed to prepare demolitions to be blown on order to cut the main trunk lines leading into the lodgment area.<sup>[28](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn28)</sup>
-> >
+> 
+> 
+> 
 > The plan for cutting the critical military railroads (_Plan Vert_) was supplemented by a plan to interfere with road traffic (_Plan Tortue_). Both were developed by the BCRA under the general direction of SOE/SO headquarters. Approved by SHAEF, these plans were circulated to agents in the field, and saboteurs began placing their demolitions. It soon became apparent that effective road sabotage would require a large amount of heavy equipment which could not be delivered in time. _Plan Tortue_ was therefore converted into a project for blocking enemy road movements through guerrilla action.<sup>[29](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn29)</sup> As such, it contributed to the Allied victories after D Day. During the preparation period, however, more emphasis was placed on the rail plan. In May SOE/SO headquarters reported that 571 rail targets were ready for demolition and 30 road cuts were prepared.<sup>[30](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn30)</sup> In addition to accomplishing the specific acts of active sabotage, Resistance leaders hoped to complete the disorganization of the French railroads by planned non-cooperation of the railroad trade union and management.<sup>[31](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn31)</sup> It was estimated that in those ways serious dislocation of rail traffic in France might be maintained for eight to ten days after the Allied landings.
-> >
+> 
+> 
+> 
 > Since the date of the invasion could not be given to the Resistance in advance, arrangements were made to order the execution of sabotage plans by code messages broadcast by the BBC. Organizers were instructed to listen to BBC broadcasts on the 1st, 2d, 15th, and 16th of each month. If the invasion was then imminent, they would hear a preparatory code message. They would then remain on the alert listening for a confirmatory message "B."
 > 
 > _\--205--_
@@ -92,11 +136,17 @@
 * * *
 > 
 > Forty-eight hours after message "B," code phrases would be broadcast directing that the various sabotage plans be put into effect. Since each of the plans had been drawn on a regional basis and each of the Resistance regions had separate code arrangements, it would have been possible to localize the sabotage activity in direct support of the landings. It was SHAEF's view, however, that it was preferable to obtain the maximum amount of chaos behind the enemy lines at the moment of landing, and therefore the signals actually used set all sabotage plans in motion at once.<sup>[32](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn32)</sup> This decision reflected again the reluctance of Allied headquarters to depend on Resistance activity as a precision weapon to be used against specific objectives related to the general plan.
-> >
+> 
+> 
+> 
 > As a matter of fact, the post-D-Day rail-cutting program of the Resistance was extraordinarily effective. During June a total of 486 rail cuts was reported. On D plus 1 twenty-six trunk lines were unusable, including the main lines between Avranches and St. Lô, between St. Lô and Cherbourg, and between St. Lô and Caen. All were sabotaged with multiple cuts. Road sabotage achieved at least one notable success in delaying the movement of the _2d SS Panzer Division_ from the south into the OVERLORD lodgment area.<sup>[33](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn33)</sup>
-> >
+> 
+> 
+> 
 > Plans for employing the Resistance in action against the enemy after the landing included not only sabotage but direct military action. It was hoped that the maquis and possibly other Resistance groups might be able to engage some enemy forces in the interior which would otherwise be employed against the U.S. and British armies. The exact military employment of the underground obviously could not be planned in advance since its strength in any given location could not even be estimated. However, the bonus of having friendly forces behind the enemy's lines was considered sufficiently likely and sufficiently valuable that extensive preparations were made to develop and control it. In March 1944, SHAEF issued a comprehensive directive to the newly designated Special Force Headquarters on the use of Resistance groups in support of OVERLORD.<sup>[34](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn34)</sup> In late May and early June headquarters and staff of the FFI (_Forces Fransaises de l'Interieur_) were established under command of Gen. Joseph Pierre Koenig. Koenig set up a tripartite staff (French, U.S., British) in London and made plans for employing the FFI as one component of the Allied armies under the Supreme Allied Commander.<sup>[35](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn35)</sup>
-> >
+> 
+> 
+> 
 > But although Koenig became a regularly constituted military commander his army remained nebulous. Because of the danger of compromising the security of Allied plans, it was impossible even to attempt to organize the FFI for specific military missions in advance of D Day. Therefore, in order to encourage Resistance groups to organize themselves for military action and to get orders to them, three-man teams (Jedburghs) consisting of one French and one U.S. or British officer and
 > 
 > _\--206--_
@@ -104,8 +154,14 @@
 * * *
 > 
 > a radio operator were formed to be parachuted in uniform behind enemy lines starting shortly before D Day. The sole assigned function of the Jedburghs was to provide communication links with the FFI command. On occasion, however, they were able to supply useful leadership for the groups to which they were attached. About a hundred Jedburgh teams were organized and eighty-seven of these were operational in France at one time or another.<sup>[36](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn36)</sup>
-> >
+> 
+> 
+> 
 > A major handicap of the Resistance for military action was its inadequate armament, and especially its lack of heavy weapons. Partly to remedy this, both the Americans and the British organized special, heavily armed units to be parachuted behind the lines after operations began. They were to be used either independently on tactical missions or more often to stiffen the local Resistance groups. The American units were called Operational Groups and consisted of four officers and thirty enlisted men, entirely U.S. personnel. Eleven of these groups were sent to France after D Day, five from England and six from North Africa. British equivalent units were much larger. These were the SAS (Special Air Service) troops whose operations were directed by Lt. Gen. F. A. M. Browning, Commander of Airborne Troops. Comprising almost 2,000 men, they included two SAS regiments of British personnel, two French parachute battalions, and a Belgian independent company. The SAS achieved notable success with the well-organized Resistance movement in Brittany, and in addition was able to carry out useful sabotage of railroads leading to the battle areas.<sup>[37](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html#fn37)</sup>
-> >
+> 
+> 
+> 
 > It is impossible to appraise the contribution of the Resistance toward softening the enemy in France before the invasion. Not only was there no systematic recording of the facts of their operations, but there was, in any case, no satisfactory yardstick by which to measure the effectiveness of an irregular force, whose role was strategic rather than tactical. Certainly the Resistance impaired the German military power both materially and morally. A fighter with a bee in his breeches is evidently not at his best. But just how much the bee contributes to his defeat is a question to which statistical method can hardly apply.
-> >
+> 
+> 
+> 

@@ -1,9 +1,13 @@
 > ### _Organization of the West_
-> >
+> 
 > German leaders in the fall of 1943 read their newspapers and pored over intelligence reports with special interest. Crisis in the east had been reached and passed; there would be no more massed German offensives, no decisive victories. Crisis in the west was approaching. In October, news of the military conference in Moscow convinced Hitler and his staff that the opening of the second front was imminent. The conclusion was modified later as press releases from the Tehran Conference were taken to indicate a postponement of the invasion for perhaps two or three months. The best guess then was that the Allies might attack any time after February 1944, but probably in the spring. Whatever the exact time schedule, most German leaders had little doubt that invasion was close at hand.<sup>[1](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn1)</sup>
-> >
+> 
+> 
+> 
 > While the Moscow Conference was going on, Generalfeldmarschall Gerd von Rundstedt, Commander in Chief in the West, was putting the final touches on a long, frank, pessimistic report on the state of his defenses. The burden of the report was that his army was not in any way prepared to resist the expected Allied attack. In three years of occupation little had actually been accomplished to make Fortress Europe a military reality.<sup>[2](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn2)</sup>
-> >
+> 
+> 
+> 
 > With the conquest of France in June 1940, Hitler believed that he had won the war.<sup>[3](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn3)</sup> He had no plans ready for the next step. He could not understand why any more victories should be necessary to convince Great Britain that it was hopeless to prolong the struggle. But Britain's stubbornness, though inexplicable, was clearly a fact. Hitler noted in July that the British Government was apparently
 > 
 > _\--128--_
@@ -11,11 +15,17 @@
 * * *
 > 
 > set on fighting to the finish,<sup>[4](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn4)</sup> and he therefore began serious consideration of plans to deliver the coup de grace.<sup>[5](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn5)</sup> The obvious and most convincing method was invasion.
-> >
+> 
+> 
+> 
 > The projected invasion was given the code name _SEELOEWE_ (SEA LION) and Army and Navy planners set to work in a race against time to solve the manifold and unfamiliar problems of a large- scale amphibious operation. The first big problem was that there were no landing craft, and very little shipping of any description. By gathering up all the barges from inland waterways at the cost of paralyzing large sections of industry, the Germans could reckon on barely enough shipping space to put an effective force ashore in England.<sup>[6](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn6)</sup> But towed barges at the mercy of the slightest wind-roughened seas were hardly ideal. The perils of improvisation, furthermore, would be heightened by the lack of naval protection. The only way to guard the convoys seemed to be to mass all submarines and light surface vessels on the North Sea flank and at the same time mount a diversionary expedition on the Atlantic side to draw the British Fleet away from the main crossing. The Navy was decidedly cool toward the project. Grossadmiral Erich Raeder, the Navy Commander in Chief, as early as July had uncovered so many risks that he strongly recommended against the operation except as a last resort.<sup>[7](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn7)</sup>
-> >
+> 
+> 
+> 
 > Hitler agreed. Quite apart from the dangers of _SEELOEWE,_ Hitler did not like the political implications of conquering England by invasion. He saw that the defeat of England would be followed by disintegration of the British Empire. The beneficiaries of such a collapse, he thought, would be Japan and the United States, not Germany.<sup>[8](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn8)</sup> He wanted not the destruction but the surrender of Great Britain. To force surrender, he believed it was necessary to deprive the British finally and completely of all hope in ultimate victory. They therefore must be confronted with a solid political front on the Continent embracing Spain, Italy, and a vanquished Russia.<sup>[9](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn9)</sup> Defeat of Russia was particularly important. Hitler thought that England drew hope chiefly from the continued independence of the Soviet Union and the United States. By knocking out Russia, the Germans would remove one source of hope and considerably dim the other; Russia's defeat would leave Japan strong in the Pacific and would probably prevent the United States from becoming an effective ally of Great Britain in Europe. "With Russia smashed," Hitler argued, "Britain's last hope would be shattered." On 31 July 1940 Hitler decided that Russia's destruction "must therefore be made a part of this struggle [against England]."<sup>[10](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn10)</sup> He set the spring of 1941 as the target date and ordered preparations made for a lightning blow to knock out Russia in not more than five months.<sup>[11](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn11)</sup>
-> >
+> 
+> 
+> 
 > The decision to attack Russia resulted immediately in a reorganization and expansion
 > 
 > _\--129--_
@@ -23,11 +33,17 @@
 * * *
 > 
 > of the Army. The goal set was to build up from 143 to 180 divisions.<sup>[12](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn12)</sup> As all three of the army groups that defeated France, _A,_ _B,_ and _C,_ were to be shifted to the Eastern Front by the spring of 1941, it became necessary to create a new headquarters to take over the occupation of France. This was _Army Group D,_ formed during September and October under command of Generalfeldmarschall Erwin von Witzleben. In order to relieve the Army High Command at once for exclusive attention to the east, a theater commander, _Oberbefehlshaber West_ (Commander in Chief West) was designated about the same time to take charge of all offensive or defensive operations that might be mounted in the west. Field Marshal Rundstedt, still in command of _Army Group A_ (the force earmarked for _SEELOEWE_), was concurrently appointed Commander in Chief West with full command over _Army Group A_ and tactical command over _Army Group D_ and _Armed Forces Commander Netherlands_ (_Wehrmachtbefehlshaber Niederlande_).<sup>[13](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn13)</sup>
-> >
+> 
+> 
+> 
 > While these command changes were being effected, the German commanders were rapidly becoming convinced that _SEELOEWE_ was not a sound operation of war. The Navy had set the period 20-26 September as the earliest date on which it could be ready.<sup>[14](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn14)</sup> But readiness even on this date hinged on the ability of Reichsmarschall Hermann Goering's Luftwaffe to knock out the British Royal Air Force. In the Battle of Britain Goering tried and failed as British fighter pilots demonstrated skill and courage that took heavy toll of the attackers. There followed a succession of postponements, which gained nothing; the Royal Air Force remained unconquered and the weather, the final insuperable obstacle, only became more stormy and unpredictable as the season advanced. With an improvised landing fleet, composed largely of river barges only a third of which were self-propelled, the Germans needed a relatively long period of almost flat calm.<sup>[15](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn15)</sup> Such periods were rare in October and could not be forecast. By the middle of October _SEELOEWE_ had been definitely called off. Preparations were to be continued for a landing in the spring but chiefly as a deception measure to keep up the pressure on the British.<sup>[16](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn16)</sup>
-> >
+> 
+> 
+> 
 > Rundstedt thus remained in France with his _Army Group A_ during the winter of 1940-41.<sup>[17](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn17)</sup> In April 1941 he was moved out, and command in the west passed to von Witzleben, commander of _Army Group D._ Witzleben was left with three armies, the _Seventh_ and _Fifteenth_ occupying the long coast line from the Spanish border to Antwerp, and the _First_ disposed in the interior with headquarters near Paris.
-> >
+> 
+> 
+> 
 > The threat of invasion or even of damaging raids by the English against the
 > 
 > _\--130--_
@@ -35,25 +51,41 @@
 * * *
 > 
 > Continent in 1941 was so slight as to be negligible. Nevertheless, Witzleben began taking certain steps to put his defense in order. In June, the former Inspector of Western Fortresses was appointed Inspector of Land Fortresses in the West and attached for tactical purposes to _OB WEST._ His headquarters was moved from Metz to Paris near that of Witzleben, and his first task was the inspection of the defenses of the Channel Islands.
-> >
+> 
+> 
+> 
 > The military reason for defending the Channel Islands was chiefly to protect coastal traffic. Hitler, however, attached to the islands a far greater political importance. He believed the British would be forced to retake them for the sake of prestige.<sup>[18](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn18)</sup> Conversely they were precious to him as the only British territory directly under his domination. In mid-summer 1941 the _319th Division,_ reinforced with machine gun, artillery, anti-tank, and antiaircraft units to the strength of about 40,000 men, was ordered to the islands. This garrison comprising some of the best troops and best equipment in the west was to remain on Channel guard duty, inactive and useless for the rest of the war.
-> >
+> 
+> 
+> 
 > Up to the end of 1941 the only German-built fortifications on the French mainland were seven heavy coastal batteries between Boulogne and Calais emplaced for the shelling of England during preparations for _SEELOEWE,_ a few other naval coastal batteries, and some U-boat pens. The coastal battery emplacements were built for the Navy by Organization Todt, the construction organization formed in 1938 to build the West Wall. After _SEELOEWE_ was called off, Hitler directed Organization Todt to construct bombproof U-boat pens along the Atlantic coast, especially at Brest, Lorient, and St. Nazaire. That project, to protect what Hitler came more and more to regard as his principal offensive weapon against the Western Powers, absorbed most of the labor and materials available for fortification of the west. When Witzleben in September 1941 proposed that the Army begin work on permanent defenses, the Army High Command (OKH)<sup>[19](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn19)</sup> had no construction battalions to give him and he had to make informal arrangements with the Navy to borrow such of their workers as were idle. Despite the difficulties, Witzleben at the end of 1941 ordered the armies, corps, and divisions under him to reconnoiter defense sites along the coast and begin construction.<sup>[20](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn20)</sup>
-> >
+> 
+> 
+> 
 > This was the first step toward fortifying the west against eventual Allied invasion, but without the necessary allotment of labor and materials it could not accomplish much. The actual building
 > 
 > _\--131--_
 > 
 * * *
 > 
-> [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-11.jpg)](<img/USA-E-XChannel-11.jpg>) [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-12.jpg)](<img/USA-E-XChannel-12.jpg>)
-> >
+> 
+> 
+>  [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-11.jpg)](<img/USA-E-XChannel-11.jpg>) [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-12.jpg)](<img/USA-E-XChannel-12.jpg>)
+> 
 > >> FIELD MARSHAL VON RUNDSTEDT AND GENERAL JODL. Von Rundstedt (left) was Commander in Chief West; General Jodl was chief of Armed Forces Operational Staff.
-> >
+> 
+> 
+> 
+> 
+> 
 > of the Atlantic Wall cannot be said to have begun before the spring of 1942. By then the first Russian winter counter-offensive, coupled with American entry into the war, had forced Hitler to reckon more seriously with prolongation of hostilities and the consequent possibility of major action in the west.
-> >
+> 
+> 
+> 
 > Early in March 1942 Field Marshal Rundstedt was appointed Commander in Chief West to replace Witzleben.<sup>[21](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn21)</sup>
-> >
+> 
+> 
+> 
 > Rundstedt was one of the senior officers and leading military personalities in Germany. He had been in charge of early planning for the Polish campaign of 1939 and had commanded an army group in that campaign. In 1940 in France he again commanded an army group. After the victory over France, he was placed in charge of planning and preparations for the invasion of England. On the abandonment of that project, Rundstedt participated in the first offensive against Russia as commander of _Army Group South_ until the end of 1941, when he was relieved because of ill health. In March 1942 he reported to Hitler that his health was restored and a
 > 
 > _\--132--_
@@ -61,31 +93,49 @@
 * * *
 > 
 > week later received the command in the west.
-> >
+> 
+> 
+> 
 > Two weeks after Rundstedt's appointment, Hitler issued his basic order for the defense of the west.<sup>[22](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn22)</sup> Sole responsibility for the defense of all German-occupied territory in the west including the Netherlands was given to the Commander in Chief West, and he, along with the commander in Denmark, was placed directly under the Armed Forces High Command (OKW). This extended a process begun earlier of splitting the theaters of operation between OKW and OKH, as though they were coequal commands. By the beginning of 1943 OKW had become directly responsible for all western theaters (France and the Low Countries, North Africa and Italy, the Balkans, and Scandinavia) while OKH devoted exclusive attention to the east. The division recognized, in the first place, that OKH had its hands full with the increasing difficulties of the war in Russia. It also, in part, reflected the fact that the defense of the west particularly called for coordination between the three services.<sup>[23](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn23)</sup>
-> >
+> 
+> 
+> 
 > Coordination was effected, however, in name only. OKW, headed by Generalfeldmarschall Wilhelm Keitel, was no true joint staff. Naval and air force members were relatively junior officers.<sup>[24](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn24)</sup> Reichsmarschall Hermann Goering and Admiral Raeder, furthermore, remained outside and above it in personal relationship with Hitler. Goering as Reichsmarschall outranked Keitel who, as chief of all the armed services, should have been his superior. In addition, Goering held a top Cabinet post as Minister of Aviation which further set him out of reach of OKW. Finally, the Army, wedded to the notion of Germany as a Continental power, had long opposed unification of the services on the basis of equal representation and authority.<sup>[25](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn25)</sup> The effect of the Army view together with the independence of Goering and Raeder was to reduce OKW to the position of a second Army staff. As long as it had no direct responsibility for any one theater of operations OKW retained a certain perspective and capacity to coordinate the German war effort, even though the bulk of its coordination had to pass through Hitler himself. With the splitting of the western and eastern theaters, OKW, for all practical purposes, lost
 > 
 > _\--13--_
 > 
 * * *
 > 
-> [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-13.jpg)](<img/USA-E-XChannel-13.jpg>)
-> >
+> 
+> 
+>  [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-13.jpg)](<img/USA-E-XChannel-13.jpg>)
+> 
 > >> GERMAN HIGH COMMAND. _Left to right: Admiral Raeder, Navy; Field Marshal Keitel, chief of OKW; Hitler; and Reich Marshal Goering, Air Force._
 > 
 > _\--134--_
 > 
 * * *
 > 
+> 
+> 
+> 
+> 
 > even that limited power to coordinate. Henceforth the only unity of command in Germany rested in the person of Hitler, who no longer had adequate machinery through which to exercise it.<sup>[26](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn26)</sup>
-> >
+> 
+> 
+> 
 > In the various theaters of operations after 1940 no effective machinery was ever established to exercise unified command.<sup>[27](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn27)</sup> In the west, during an actual enemy invasion, the army commanders in the battle areas were to have tactical control over the air force and naval units in their sectors. But the failure to give _OB WEST_ a supreme command meant that coordination of the defense rested largely on such informal cooperation and liaison as the local commanders might choose to establish. The divided command would gravely handicap German preparedness. In the meantime, the chief positive result of the new top-level command organization was to free the OKW operational staff (the _Wehrmachtfuehrungsstab, WFSt,_ under General der Artillerie Alfred Jodl) from responsibility for the war in Russia and so permit it to concentrate on the operational needs of the west, Italy, the Balkans, and Norway and Denmark.
-> >
+> 
+> 
+> 
 > Hitler's basic order sketched out the tactical doctrine that henceforth governed all planning for the defense of France. He decreed that the coast defenses should be so organized and troops so deployed that any invasion attempted could be smashed before the landing or immediately thereafter. The main defensive preparations were to be made in the places most suitable for large enemy landings. Beaches where only small surprise landings were possible were to be defended by strong points tied in, if possible, with the coastal batteries. The rest of the coast would be patrolled. All positions were to be designed for defense to the last man of the garrison. All should be equipped with weapons and supplies so that even if overrun by the enemy they would not be forced to surrender for lack of means to continue the fight.<sup>[28](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn28)</sup>
-> >
+> 
+> 
+> 
 > Five days after the issuance of this order, Hitler was profoundly shocked by the successful British raid on St. Nazaire. The spectacle of British ships, including a destroyer, sailing with impunity up the mouth of the Loire reputedly made him furious and focused his attention on the inadequacies of the French coastal defenses. The only immediate outcome, however, was the relief of Generalleutnant Karl Hilpert, _OB WEST_ Chief of Staff. Hilpert was replaced by Generalmajor Kurt Zeitzler, who was close to Hitler, and who afterward became Chief of the General Staff of OKH.<sup>[29](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn29)</sup>
-> >
+> 
+> 
+> 
 > Later more sober study of the St. Nazaire experience showed even to Hitler that the responsible commanders in France did not have the resources to deal
 > 
 > _\--135--_
@@ -93,9 +143,13 @@
 * * *
 > 
 > with determined enemy forays. While Allied strength was increasing, German strength had been gradually weakened to nourish the operations against Russia. Admiral Raeder told Hitler bluntly: "We have no means of repulsing an enemy attempt." Even better defenses at St. Nazaire, in the opinion of Raeder, would not have stopped a determined Allied attack; the only thing that could have helped would have been strong naval forces and adequate air reconnaissance. Then he ventured a prophecy: "In view of the shortages everywhere and the necessity of using numerous makeshift defense measures, experience will show that there will constantly be new shortcomings in our defenses and new demands made upon them."<sup>[30](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn30)</sup> Despite this accurate forecast of things to come, Hitler was not then, and never would be, convinced that defense could not be made invulnerable if enough concrete and resolution could be poured into it. His retort to the St. Nazaire raid was to direct that submarine bases be so well protected that successful raids on them thenceforth would be impossible.
-> >
+> 
+> 
+> 
 > In August 1942 he expanded his notions of a concrete coastal wall. In a conference with Field Marshal Keitel and other high-ranking Army officers he proposed that fortress construction in France should proceed with "fanatic energy [_Fanatismus_]" during the coming winter. The object must be to build many small strong points to house from thirty to seventy men each, armed with machine guns and "a few other weapons," chiefly antitank guns. A continuous belt of interlocking fire must be created emanating from concrete structures designed to be proof against Allied bombing and naval shellfire.<sup>[31](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn31)</sup> Behind this emphasis on fixed defenses lay the realization of a grave shortage of troops. Already in the summer of 1942 Hitler estimated that ten to twelve more divisions were needed to establish a solid defense along the _OB WEST_ coast line, but reserves to make up this deficit were not available.
-> >
+> 
+> 
+> 
 > As the summer came to an end, prospects of victory in Russia were again clouded by the north winds. In the meantime the large-scale raid by Canadian troops at Dieppe in the latter part of August, though considered an absolute failure by the Germans, nevertheless forcibly called attention to the increasing threat of full-scale invasion by the Western Powers. On 29 September, Hitler called in Goering, Reich Minister Albert Speer (Chief of Organization Todt), Rundstedt, Generalleutnant Guenther Blumentritt (who had relieved Zeitzler as Chief of Staff _OB WEST_ only a few days before), General der Pioniere Alfred Jacob (Chief Engineer of OKH), Generalleutnant Rudolf Schmetzer (Inspector of Land Fortresses for _OB WEST_), and certain other staff officers for a three-hour conference in the small Cabinet sitting room of the Reich Chancellery.<sup>[32](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn32)</sup> The Fuehrer began by expressing his confidence that Russia would be defeated in 1943 by a German push in the spring toward Mesopotamia in the south. He then
 > 
 > _\--136--_
@@ -103,11 +157,17 @@
 * * *
 > 
 > admitted grave concern over the possibility of the creation of a second front in the west. There was no question of capitulation, he said, " I must freely admit . . . that a major landing of the enemy in the west would bring us to a generally critical position." The gravest present threat was to Norway, he believed, but ultimately it was France that would be invaded because such an operation would require the least amount of shipping tonnage.
-> >
+> 
+> 
+> 
 > Hitler then went on to analyze the Dieppe experience. Even though the British field order for the raid, clearly specifying a withdrawal of forces after nine hours, was captured and studied by the Germans, apparently the German generals involved reported and Hitler believed that Dieppe was actually a major landing attempt that failed. On that premise he compared the introduction of large-scale amphibious operations at Dieppe to the introduction of the tank at Cambrai in World War I. In both cases, he pointed out, the British had failed through having planned only the meeting engagement, leaving the follow-up to the initiative of the field commanders who were too timid to exploit their advantage. After Cambrai both British and Germans drew the false lesson that the tank was technically a failure and so "they poured out the baby with the bath." He warned now against a false deduction on the German side that amphibious operations against the coast of France were proved impossible by Dieppe. This time, he said, the British cannot arrive at a similar conclusion, simply because they have no alternative but to try again.
-> >
+> 
+> 
+> 
 > The Germans must prepare the strongest possible defenses. The defenses must be prepared, furthermore, on the assumption that the Allies would enjoy air and naval supremacy. The crushing weight of Allied bombs and shells, he believed, could be withstood only by concrete. Not only that, but massive concrete works, he believed, had a psychological as well as a physical strength. Hitler pointed out that the very existence of the West Wall had deterred Daladier in 1938 from threatening military action during the Czechoslovakia crisis. The West Wall repeated along the coast would have the same deterrent effect on the Western Allies. Hitler asked for 1,000 concrete strong points for the new "Atlantic Wall" to be defended by 300,000 men. The goal was an impervious, permanent defense ring. Since the amount of time available to build it was uncertain, construction was to follow a strict priority. In Hitler's view, the most important job was to protect the U-boat bases. He listed for defense thereafter: harbors for coastal traffic, harbors suitable for enemy landings (a reflection of the Dieppe experience), the Channel Islands, and finally landing places on the open coast. Beaches deemed most likely to be used in a major invasion attempt were to be fortified first. But, as Hitler pointed out, since the Navy could not guarantee that any portion of the coast was safe, the whole would have to be walled up eventually.
-> >
+> 
+> 
+> 
 > It was an ambitious program. Hitler ordered that it be completed by 1 May 1943; Organization Todt thought it would be lucky to get 40 percent finished by that time. At such a rate the defense of the coast proper, having the lowest priority, became a very long-range program which would probably not be completed before the Allies struck. In any case it was fantastic
 > 
 > _\--137--_
@@ -115,30 +175,52 @@
 * * *
 > 
 > to suppose that even a first-class military power could be strong everywhere along the entire coast line from the Mediterranean to Norway. It followed that defense preparations would be concentrated in accordance with estimates of Allied intentions. But German intelligence services notably failed to supply reliable information about the Western Allies. The sparseness of accurate intelligence, the plethora of rumors, and the natural jitteriness of being on the strategic defensive led to constantly revised guesses that at one time or another pointed out grave threats to virtually every section of the coast. Division commanders, corps commanders, army commanders freely contributed predictions that their own sectors had been selected for the enemy landings. They were moved sometimes by logic, more often by desire to compete for the limited supplies of troops and materiel. They seldom had any sure knowledge of what was being brewed across the Channel. Hitler's intuition was no less erratic: at various times he picked the Gironde, Brittany, the Cotentin, the Pas-de-Calais, and Norway. In late 1943 a captured British agent indicated that the Allies intended to strike in the Netherlands.<sup>[33](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn33)</sup> He was not believed, and the Netherlands actually remained about the only sector in the west exempt from special attention as a threatened area.
-> >
+> 
+> 
+> 
 > Although the Germans could never be sure that any sector of the coast was safe, the necessity for concentrating their own forces led them to categorize roughly the degrees of danger. It was common consensus from the beginning that the sector of the _Fifteenth Army_ from the Seine to the Schelde was most gravely if not uniquely threatened. This estimate, however, was based on reasoning, not on intelligence. It was thought the Allies would strike here because it was close to Germany and the Ruhr, and because the short Channel crossing would simplify the problems of air support and sea reinforcement. Strategically Allied success in this sector would cut off the whole of the German forces to the south.
-> >
+> 
+> 
+> 
 > The conclusion that the _Kanalkueste_ <sup>[34](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn34)</sup> was the most likely place for a major landing, arrived at in the early days of planning the Atlantic Wall, was never seriously shaken by any later information. Even when other sectors appeared threatened, the threats were deemed diversionary. Rationalization had a persuasiveness that the meager reports of fact never had. Furthermore, once the concrete was poured, the original estimate became peculiarly difficult to alter. During 1942, for instance, four times as much concrete was allotted the left corps of _Fifteenth Army_ as to the _LXXXIV Corps_ in Normandy and Brittany.<sup>[35](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn35)</sup> By May 1943 the concentration of troops along the _Fifteenth Army_ coast was almost three times as heavy as in _Seventh Army_ -the army that would oppose the invasion.<sup>[36](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn36)</sup>
-> >
+> 
+> 
+> 
 > In the summer of that year a new importance was given to the Pas-de-Calais area. It was here that Hitler planned to install his _Vergeltungs_ (vengeance) weapons, the long-range rockets and pilotless
 > 
 > _\--138--_
 > 
 * * *
 > 
-> [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-14.jpg)](<img/USA-E-XChannel-14.jpg>)
-> >
+> 
+> 
+>  [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-14.jpg)](<img/USA-E-XChannel-14.jpg>)
+> 
+> 
+> 
 > >> ENEMY COAST ARTILLERY _in the Pas-de-Calais area. Heavy concrete casemate under construction (above), and (below) laborers at work on casemate._
-> >
-> [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-15.jpg)](<img/USA-E-XChannel-15.jpg>)
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+>  [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-15.jpg)](<img/USA-E-XChannel-15.jpg>)
 > 
 > _\--139--_
 > 
 * * *
 > 
 > aircraft from which he expected a complete reversal of the course of the war. He believed that the V-weapons would prove so dangerous to England that the Allies, whatever their previous plans might have been, would be forced to attack directly to overrun the launching sites. This estimate, of course, entailed the further conclusion that the bulk of the German defenses should be emplaced to defend the rocket sites. In June 1943 Hitler assigned construction priority to those portions of the Atlantic Wall defending rocket-launching areas.<sup>[37](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn37)</sup>
-> >
+> 
+> 
+> 
 > Although by far the strongest fortified portion of the French coast, even the _Kanalkueste_ never became anything like the impregnable fortress that German propaganda advertised. Hitler, having ordered the creation of a wall of concrete and fire which could stop any invasion at the water's edge, apparently believed that such a wall would be built and paid little further attention to it. He never saw any portion of the western fortifications. After leaving Paris in triumph in the summer of 1940 he did not set foot on French soil again until a week after the Allied invasion in June 1944.<sup>[38](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn38)</sup> Absorbed with the struggle against Russia, he scarcely heeded the stream of memoranda in which the Commander in Chief West pointed out and reiterated the entire inadequacy of German preparations for the defense of France.
-> >
+> 
+> 
+> 
 > In the spring of 1943 Rundstedt went to Berchtesgaden to present his case in person. But Hitler was still not interested in bad news from the west. He was looking forward to great victories in the east. He talked of how two thousand German tanks would annihilate at least ninety Russian divisions in the new spring offensive. Rundstedt, after abrupt dismissal, returned to France and embarked on a comprehensive survey of the state of his defenses. It was this survey which resulted in the detailed report of 25 October. This he forwarded to OKW with a special request that it be brought to the personal attention of Hitler.<sup>[39](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-4.html#fn39)</sup>
-> >
+> 
+> 
+> 

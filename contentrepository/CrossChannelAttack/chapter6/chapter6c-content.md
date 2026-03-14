@@ -1,5 +1,5 @@
 > ### _The Anvil--Overlord Debate_
-> >
+> 
 > It was clear to planners after the Quebec Conference that the OVERLORD plan, as written by COSSAC in July 1943, would have to be revised to strengthen the assault. Although COSSAC examined some of the implications both of adding to the weight of the attack and of broadening the front, the planners came to no conclusion. General Morgan could not have rewritten the plan in any case, since he still functioned under the May directive of the Combined Chiefs of Staff which
 > 
 > _\--164--_
@@ -7,11 +7,17 @@
 * * *
 > 
 > limited his resources in men and shipping. He could not secure additional resources primarily because he could not exercise the necessary command authority.
-> >
+> 
+> 
+> 
 > When COSSAC received the Supreme Commander and emerged from its planning staff chrysalis to become the Supreme Allied Headquarters, its formal written plan for the invasion was still the July outline plan. But informally the staff had long been thinking in terms of a larger assault. If landing craft were available, planners hoped to be able to attack with four divisions and have one more division in floating reserve. Still this was only a hope-not a plan. The process of producing a new plan to realize the hope for a strong assault began with the arrival in London of General Montgomery and General Eisenhower's chief of staff, Maj. Gen. Walter Bedell Smith.<sup>[14](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn14)</sup>
-> >
+> 
+> 
+> 
 > On 3 January 1944 Generals Montgomery and Smith were formally briefed on the COSSAC OVERLORD plan by Brig. Kenneth McLean, the chief COSSAC Army planner. After the presentation, General Montgomery criticized the narrow front of the assault and spoke of carrying out simultaneous assaults in Brittany, around Dieppe, and on the west coast of the Cotentin. He also criticized planning figures on the capacity of available landing craft. The meeting broke up without decision. In the days following General Montgomery's first sweeping protest against the narrow restrictions placed on the original plan, discussion settled down to suggestions that the planned invasion front be extended from twenty-five miles to about forty miles and that five division be used in the assault.<sup>[15](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn15)</sup> The extended front was to run from les Dunes de Varreville on the east coast of the Cotentin to Cabourg (east of the Orne River). Two armies should be employed: the First U.S. Army on the right and the Second British Army on the left with an inter-army boundary approximately at Bayeux.<sup>[16](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn16)</sup>
-> >
+> 
+> 
+> 
 > General Montgomery insisted that it was essential in order to avoid confusion of administration and supply that armies and corps go in on their own fronts and not through bridgeheads established by other units.<sup>[17](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn17)</sup> Other reasons for broadening the front were that it would be harder for the enemy to define and locate the limits of the attack and conversely easier
 > 
 > _\--165--_
@@ -19,11 +25,17 @@
 * * *
 > 
 > for the Allies to break out of the initial bridgehead. A wider frontage would give the Allies a larger number of vehicle exits from the beachhead and so facilitate the penetration inland and subsequent buildup. Finally a landing west of the Vire estuary would facilitate the early capture of Cherbourg, on which General Montgomery placed even greater stress than COSSAC, principally because he was suspicious of the value of the untried artificial ports.<sup>[18](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn18)</sup>
-> >
+> 
+> 
+> 
 > Details of tactical dispositions and objectives were not examined at this point. Even the question of whether to assault the beaches of the east Cotentin was apparently unsettled. What General Montgomery did achieve--and what was most important at that time to achieve--was to press, as a commander, for a decision that the assault be strengthened. He said in effect, "Give me five divisions or get someone else to command."<sup>[19](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn19)</sup> Of the COSSAC principal staff officers none agreed entirely with Montgomery's proposals. General Morgan, General McLean, and General Barker had always wanted the greater weight in the assault, but still questioned the soundness of expanding the front. Maj. Gen. Charles A. West, G-3, opposed any expansion, because he believed it would only spread thin the available forces.<sup>[20](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn20)</sup> The naval and air staffs had evident technical objections since the effectiveness of their support and preparation was directly proportionate to the concentration of the ground attack. Most of the COSSAC staff, whether or not they agreed with General Montgomery, felt immense relief that the matter was at last being brought to a head.<sup>[21](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn21)</sup> Planning was on solid ground again and now could move forward. Planners were ordered to go ahead with the revised plan to employ one airborne and five seaborne divisions in the assault on the assumption that the necessary additional resources in shipping and air transport would be forthcoming.
-> >
+> 
+> 
+> 
 > Montgomery and Smith then tackled the problem of getting the required landing craft. The most obvious source was the Mediterranean theater. But withdrawal from the Mediterranean would necessitate the cancellation of the ANVIL assault on southern France. One of General Eisenhower's last jobs as Commander in Chief of the Mediterranean theater had been the drafting of a plan for a two- or three-division ANVIL to coincide with OVERLORD and so constitute a concentric offensive against the enemy forces in France.<sup>[22](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn22)</sup> That plan, it will be remembered, was developed during December in compliance with the directive of the Combined Chiefs of Staff issued at Cairo after the meeting with the Russians.
-> >
+> 
+> 
+> 
 > On 5 January General Smith cabled General Eisenhower in Washington to report Montgomery's argument for a
 > 
 > _\--166--_
@@ -31,7 +43,9 @@
 * * *
 > 
 > stronger and broader OVERLORD assault.<sup>[23](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn23)</sup> "Additional lift," he said, "can only be obtained at the expense of ANVIL. Montgomery is insistent on the immediate recommendation to abandon ANVIL except as a threat previously agreed upon by the COSSAC and AFHQ staffs before the reinforcement in landing craft was decided upon at the Cairo Conference." Smith added that, although he had refused to make such a recommendation without General Eisenhower's "personal approval," he nevertheless agreed with it. He felt that ANVIL as a one-division threat would be just as effective as the contemplated three-division assault. In this General Morgan and the bulk of the planners in England concurred.<sup>[24](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn24)</sup> Morgan, like most of the planners, believed the ANVIL assault, as planned, was so remote from the OVERLORD area and from any military objectives vital to the Germans that the enemy would not find it worth while to divert more than two or three divisions from the main battle in the north in order to cope with it. The same diversion, he thought, could be achieved by a threat requiring amphibious lift for only one division. Eisenhower agreed that "OVERLORD must be more broadly based" but he did not think ANVIL as a threat would be as effective as the operation itself.<sup>[25](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn25)</sup> Pending the outcome of the debate thus initiated, planners proceeded with an examination of the additional resources needed for the "Montgomery plan" and the implications of finding them.<sup>[26](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn26)</sup> To get the landing craft they estimated it would be necessary to return half of the two-division ANVIL lift to the United Kingdom. In addition the OVERLORD target date would have to be postponed from 1 May to 1 June in order to secure an additional month's production, and the number of vehicles per assault division would need to be cut to 2,500.<sup>[27](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn27)</sup> The broadened assault front would also increase the fighter plane commitment by eight squadrons. To lift a complete airborne division instead of the two-thirds originally planned would necessitate finding 200 more transport aircraft.<sup>[28](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn28)</sup>
-> >
+> 
+> 
+> 
 > The bill for the principal types of landing craft--as always the critical commodity--included an additional 72 LCI (L) 's, 47 LST's, and 144 LCT's.<sup>[29](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn29)</sup> The bill was submitted to the Combined Chiefs of Staff by General Eisenhower a week after he arrived in London. He was anxious that it be met, if possible, without interfering with ANVIL and indicated his willingness to postpone OVERLORD until after 1 June even though that meant the loss
 > 
 > _\--167--_
@@ -39,11 +53,17 @@
 * * *
 > 
 > of a month of good campaigning weather. The postponement was seconded by the British Chiefs of Staff, and agreed to by the U. S. Joint Chiefs of Staff on 31 January. Besides insuring extra landing craft, the later date would increase the chances of favorable weather on the Russian front and thus make it possible for more closely coordinated action between the Allies.<sup>[30](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn30)</sup>
-> >
+> 
+> 
+> 
 > The ANVIL question was not to be resolved so easily. On the contrary the issue sharpened and the differences of opinion intensified. In early January 1944 when the British Chiefs of Staff first debated the cancellation of ANVIL, both Air Marshal Portal, Chief of Air Staff, and Admiral Sir Andrew B. Cunningham, First Sea Lord, recommended the mounting of a two-division ANVIL as a useful diversion to OVERLORD.<sup>[31](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn31)</sup> On 4 February, the Prime Minister bluntly stated that ANVIL and OVERLORD were not strategically interwoven because of the great distance (500 miles) of rugged country between them and the defensive power of modern weapons. He therefore doubted the value of a diversionary landing in southern France, regardless of the available resources. The Chiefs of Staff had then come to share his doubts.<sup>[32](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn32)</sup> Less than two weeks later a War Department representative in London could say, in reference to the ANVIL-OVERLORD debate, that he had met the "customary attitude on the part of British planners." He found them maintaining that OVERLORD was the only operation "that will pay us dividends," and that "ANVIL might be an operation in the Marshalls" for all the connection it had with OVERLORD.<sup>[33](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn33)</sup>
-> >
+> 
+> 
+> 
 > As the British thus developed increasing hostility to the southern France invasion, the U.S. Chiefs of Staff reaffirmed an uncompromising stand that ANVIL was required "to make effective use" of the French and U.S. divisions in the Mediterranean and to draw German divisions away from northern France.<sup>[34](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn34)</sup> The most a threat could do, they thought, would be to contain the enemy divisions already deployed in the ANVIL area. Furthermore, they recalled that they were committed to the southern France assault by agreement with Marshal Stalin at Tehran. In brief, the U.S. point of view (shared by General Eisenhower) was that ANVIL and OVERLORD were parts of a single operation, and that it was unsound to cancel one part for the ostensible purpose of strengthening the other.
-> >
+> 
+> 
+> 
 > "Judging from the discussion and differences of opinion at the present time," General Marshall wrote to Eisenhower in February, "the British and American Chiefs of Staff seemed to have completely reversed themselves and we have become Mediterraneanites and they heavily pro-
 > 
 > _\--168--_
@@ -51,9 +71,13 @@
 * * *
 > 
 > OVERLORD."<sup>[35](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn35)</sup> As Marshall was well aware, no reversal in opinion had in fact occurred. What _had_ happened was that Allied plans for the battle in Italy had once again bogged down before unexpectedly heavy enemy opposition. The British, in asking the cancellation of ANVIL, were thinking at least as much of the need for additional resources with which to prosecute the Italian campaign as they were of diverting landing craft to strengthen OVERLORD. On 22 January, U.S. VI Corps units had landed at Anzio. The landing behind the enemy lines facing the Fifth Army was designed to force the Germans to pull out and leave the road to Rome open. Instead of pulling out, the Germans held the Fifth Army attack at the Gustav Line and counterattacked the beachhead. The beachhead was successfully defended but it soon became apparent that no quick link-up with the main armies was going to be possible.<sup>[36](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn36)</sup> The British had concluded early in February that the Germans meant to fight it out in central Italy and they saw this development as altering the Allied strategic decisions made at Tehran. They thought General Alexander, commander of 15 Army Group, controlling the ground forces in Italy, would need a least some of the troops earmarked for ANVIL and that the amphibious lift for one division should be reserved for his use for possible new operations similar to the Anzio "end run." The British Chiefs of Staff declared: "Germany . . . is now apparently playing our game [of tying up German forces in the Mediterranean] and we must do all we can to pin down her forces and commit them still further.... We have no choice but to prosecute the Italian Campaign with vigor...."<sup>[37](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn37)</sup>
-> >
+> 
+> 
+> 
 > The U.S. Joint Chiefs had no quarrel with the determination to prosecute the Italian campaign. Again the issue was to what extent strategic decisions and planning should be suspended to await battle developments. General Marshall's view was that planning and preparations should proceed for ANVIL but that, if by April the Allies had still not been able to establish themselves north of Rome, then ANVIL should be abandoned. If, on the other hand, ANVIL were called off at once, then there would be no possibility of mounting it in the spring.<sup>[38](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn38)</sup>
-> >
+> 
+> 
+> 
 > Early in February it became apparent to the Combined Chiefs of Staff that their differences could not be resolved by exchange of cables. The U.S. Chiefs of Staff therefore delegated their authority to General Eisenhower to carry on discussions with the British and sent to London Maj. Gen. John E. Hull and Rear Adm. Charles M. Cooke, Jr., with planners from the War Department to act as advisers. Eisenhower found himself actually on a middle ground between the War Department and British staff views. He agreed with the War Department's estimate of the importance of the southern France diversion, but he was closer to the planning difficulties of OVERLORD and therefore more dubious as to the feasibility of ANVIL.<sup>[39](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn39)</sup>
 > 
 > _\--169--_
@@ -61,9 +85,13 @@
 * * *
 > 
 > During February the SHAEF staff struggled to devise an acceptable compromise. The possibility of compromise hinged, in the first instance, on finding enough landing craft for a five-division OVERLORD assault. Lift for four seaborne divisions and one airborne was promised by the War Department. The problem was to get additional lift not only for the fifth assault division but also for four armored brigades (or the equivalent), five regiments of self-propelled field artillery, shore groups, air force units, naval personnel, and two-thirds of a follow-up division which planners figured had to be carried in landing craft, tactically loaded, for immediate employment on landing. The rest of the follow-up (one and one-third divisions) would be carried in shipping and would therefore not be operationally available until D plus 2. Assault forces requiring simultaneous loading consisted of a total of 174,320 men and 20,018 vehicles. These figures included a large number of non-divisional troops equivalent in personnel and vehicular strength to between two and three divisions.<sup>[40](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn40)</sup>
-> >
+> 
+> 
+> 
 > As the result of conferences at Norfolk House (SHEAF headquarters) during the week of 13 February, a compromise shipping plan was worked out. SHAEF first proposed to reduce the current planning allocation by one LSI(H), 48 LST's, and 51 LCI(L)'s with a resulting loss of lift for 21,560 men and 2,520 vehicles. This loss would then be made up by overloading transports (APA's), carrying vehicles in the APA's, using AKA's (cargo ships) in the initial lift, and finding (presumably from new production) an additional 27 LCT's. This plan was subsequently revised to exchange the 6 AKA's with the Mediterranean theater for 20 LST's and 21 LCI (L)'s, on the grounds that the large cargo vessels could more easily be used in the calmer southern waters. The exchange would still leave an estimated two-division lift for ANVIL although it was doubtful whether Gen. Sir Henry Maitland Wilson (Commander-in- Chief Mediterranean) would accept the loss of tactical flexibility which use of the AKA's involved.<sup>[41](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn41)</sup> The SHAEF compromise still left a shortage of about fifteen LST's. General Eisenhower requested allocation of at least seven more LST's from U.S. production. The remainder of the deficit would have to be made up by increased loading of LST's on the third tide (morning of D plus 1) and increased serviceability.
-> >
+> 
+> 
+> 
 > The serviceability rate of landing craft--or, in other words, the percentage of craft on hand which at any given date would be operationally available--was always a planning figure to conjure with. So narrow were the planning margins that a difference of 5 percent in the estimates of serviceability might mean the difference between adequate and inadequate lift for the assault. The serviceability rate was contingent chiefly on repair facilities and the stock of spare parts--both of which were critically limited in the United Kingdom.<sup>[42](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn42)</sup> COSSAC in Outline OVERLORD
 > 
 > _\--170--_
@@ -71,9 +99,13 @@
 * * *
 > 
 > had planned on an average serviceability rate of 85 percent for all craft and 90 percent for ships.<sup>[43](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn43)</sup> These figures were substantially approved at the Quebec Conference. On advice of U.S. naval planners, however, the rate for U.S. craft was raised in January to 95 percent for LST's and 90 percent for LCT's. The British insisted on retention of the lower COSSAC figures. SHAEF accepted both estimates and distinguished in planning between U.S. and British craft, allowing the serviceability rate set by each country.<sup>[44](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn44)</sup>
-> >
+> 
+> 
+> 
 > The SHAEF shipping compromise was severely criticized by planners of 21 Army Group, mainly on the grounds that SHAEF considered the problem of providing lift only from a logistical and not from a tactical point of view. For example, they pointed out that SHAEF had not shown separately the Commando-Ranger lift for special assault missions against fortified positions. This separation was important, the army group planners argued, because there could be no question of loading to full capacity the LSI's carrying Commandos, and of course the excess capacity could not be used for lift of other assault troops. The SHAEF proposals, by pushing the loading of shipping toward the full theoretical capacity of the vessels, sacrificed flexibility, particularly in that they prevented the preloading in craft of adequate reserves. Army group thought it extremely important that reserve units for the assault waves be tactically loaded in craft so that their employment would not be affected by losses or time delays of the LCA (ship-to-shore) craft used in the initial assault. By increasing the personnel lift on the first tide of the assault without any corresponding vehicle increase, the SHAEF proposal either would land men who could not proceed with their task until their vehicles arrived, thus causing congestion on the beaches, or would compel half-loaded personnel ships to wait offshore, thus exposing both ships and men to unjustifiable risks.<sup>[45](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn45)</sup>
-> >
+> 
+> 
+> 
 > The validity of these objections was fully conceded by General Eisenhower, but he considered the sacrifices and risks worth accepting in order to permit the simultaneous diversionary attack on southern France. Although at first strongly opposed, General Montgomery at last agreed and the proposals were submitted to the British Chiefs of Staff.<sup>[46](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn46)</sup> The Chiefs of Staff disapproved the compromise on the grounds, first, that it skimped both ANVIL and OVERLORD and, second, that the slow progress of the Italian campaign made the possibility of providing the necessary build-up forces for ANVIL "So remote as to be negligible."<sup>[47](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn47)</sup> Employment, as planned, of ten divisions in southern France, General Brooke pointed out, would leave only twenty divisions to
 > 
 > _\--171--_
@@ -81,13 +113,21 @@
 * * *
 > 
 > fight the critical battle of Italy and to meet "other commitments which might arise in the Mediterranean."<sup>[48](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn48)</sup>
-> >
+> 
+> 
+> 
 > Eisenhower left the meeting at which this discussion took place, feeling that the chances of carrying out ANVIL were slim.<sup>[49](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn49)</sup> Nevertheless he continued to argue for a compromise that would save the southern France assault as long as there was any reasonable prospect that it might be feasible. On 22 February he reached agreement with the British that Italy must have overriding priority over all present and future operations in the Mediterranean, but, subject to that priority, alternative plans would be prepared for amphibious operations to assist OVERLORD, the first alternative being ANVIL on the approximate scale and date originally planned. The Commander in Chief Mediterranean was to release 20 LST's and 21 LCI(L) s to OVERLORD in exchange for 6 AKA's, the craft to sail for the United Kingdom in April. All these arrangements, finally, would be reviewed on 20 March. If at that time it was decided that ANVIL could not be mounted, the lift in the Mediterranean in excess of that needed for one division would be withdrawn for use in OVERLORD.<sup>[50](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn50)</sup> This compromise was agreed to by the Joint Chiefs of Staff, the President, and the Prime Minister.[5l](<#fn51>)
-> >
+> 
+> 
+> 
 > The decision held only about long enough to be written down. Eisenhower, more and more convinced that ANVIL would not take place, became equally convinced that it would be dangerous to allow planning for OVERLORD to continue unsettled because of the uncertainty of getting enough landing craft. On 26 February, he considered cabling General Marshall "his view that ANVIL was impossible" in order to force a decision to release ANVIL landing craft for OVERLORD.<sup>[52](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn52)</sup>
-> >
+> 
+> 
+> 
 > Two days later, Generals Wilson and Alexander in the Mediterranean cabled their concern over the difficulties at Anzio, stressed the general shortage of LST's in the theater, and specifically asked that certain proposed transfers of craft to the United Kingdom be held up.<sup>[53](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn53)</sup> The British Chiefs of Staff reacted to the appeal with a blanket recommendation that all LST's then in the Mediterranean be retained there and that 26 LST's (with 26 LCT's as deck loads) scheduled for shipment to the Mediterranean be diverted to the United Kingdom.<sup>[54](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn54)</sup> This proposal was rejected both by General Wilson and by the U.S. Chiefs of Staff.
-> >
+> 
+> 
+> 
 > The debate continued; the uncertainty continued; and the danger of stinting the OVERLORD allocation of landing craft became daily more threatening. General Eisenhower pressed for a decision. Landing craft for OVERLORD were so closely figured that the Supreme Commander
 > 
 > _\--172--_
@@ -95,8 +135,14 @@
 * * *
 > 
 > viewed with deep concern the loss of four or five LST's in the United Kingdom and Mediterranean during the first few days of March. He pointed out to General Marshall that SHAEF had not only established minimum landing craft requirements but "went short 15 LST's in the interest of keeping ANVIL alive." Now it had even less than its minimum requirements. "The uncertainty," he added, "is having a marked effect on everyone responsible for planning and executing operation OVERLORD."<sup>[55](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn55)</sup>
-> >
+> 
+> 
+> 
 > To the Joint Chiefs of Staff it became increasingly apparent during March that there would be no break in the battle for Italy that would permit an advance on Rome before the end of the month. ANVIL was dying. Still there seemed sound strategic reasons for trying to keep it alive. General Marshall did not agree with the British that involvement in Italy would necessarily serve the purpose of holding enemy divisions away from the OVERLORD battle. He quoted General Alexander's opinion that the Germans, using only six to eight divisions in the peninsula, could materially delay him. The enemy would still have some ten to fifteen divisions in Italy which he could shift to meet the Allied attack in northern France, "not to mention those [divisions] from Southern France and elsewhere."<sup>[56](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn56)</sup>
-> >
+> 
+> 
+> 
 > On 21 March General Eisenhower recommended the cancellation of ANVIL as an attack timed to coincide with OVERLORD.<sup>[57](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn57)</sup> This recommendation was accepted and the reallocation of landing craft from the Mediterranean was ordered. The Gordian knot, as far as OVERLORD planning was concerned, was cut. OVERLORD was at last assured landing craft in numbers at least adequate for the job to be done, although there would still be few to spare.<sup>[58](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-5.html#fn58)</sup>
-> >
+> 
+> 
+> 

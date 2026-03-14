@@ -1,9 +1,15 @@
 > ![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/img/USA-E-XChannel.jpg)
 > 
+> 
+> 
+> 
+> 
 > ## Appendix H:
 > Table of Equivalent Ranks
-> >
-> U.S. Army | German Army and Air Force | German Waffen-SS
+> 
+> 
+> 
+>  U.S. Army | German Army and Air Force | German Waffen-SS
 > ---|---|---
 > (None) | Reichsmarschall | (None)
 > General of the Army | Generalfeldmarschall | Reichsfuehrer-SS
@@ -35,7 +41,9 @@
 > 
 * * *
 > 
-> [Table of Contents](<index.html>) ** [Previous Chapter](<USA-E-XChannel-G.html>) (Appendix G) * [Next Chapter](<USA-E-XChannel-I.html>) (Appendix I)
+> 
+> 
+>  [Table of Contents](<index.html>) ** [Previous Chapter](<USA-E-XChannel-G.html>) (Appendix G) * [Next Chapter](<USA-E-XChannel-I.html>) (Appendix I)
 > 
 * * *
 > 

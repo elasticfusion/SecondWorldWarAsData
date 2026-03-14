@@ -1,11 +1,17 @@
 > ### _Securing the Beachheads_
-> >
+> 
 > Supreme in the air, the Allies began on D Day to build up a similarly crushing superiority on the ground. By the end of 6 June 1944 First Army had succeeded in landing most of eight and a third infantry regiments-only a little less than planned. For operations on 7 June five divisions were ashore and operational (although one, the 29th, lacked one of its regiments until later in the day). All of these divisions were seriously deficient in transport, tank support, artillery, and above all supplies. The worst situation was in the V Corps zone where, of 2,400 tons of supplies planned to be unloaded during D Day, only about 100 tons actually came in. Ammunition shortage was grave. Both beaches on D plus 1 were still under enemy artillery fire. On OMAHA pockets of enemy riflemen still held out at various points along the coast; beach obstacles, even after work by the engineers during low tide of the afternoon of D Day, were still only about a third cleared; beach exits had not been opened as scheduled nor vehicle parks established inland on the scale contemplated.
-> >
+> 
+> 
+> 
 > Nowhere in First Army zone had initial objectives been fully achieved. In the V Corps zone not only had the two assault regiments stopped far short of their objectives along the beachhead maintenance line, but they were so badly chewed up and disorganized by the hard fighting that they were scarcely capable of continuing the attack as planned. Units of VII Corps had been more successful in staking out a beachhead large enough to remove the beaches from direct enemy fire and to provide sufficient space for maneuver and build-up. The 4th Division had taken only light casualties and was in relatively good condition for subsequent attacks. Nevertheless the area was considerably smaller than desired and the initial efforts to push it out westward across the Merderet and southward toward a junction with V Corps were barred by the hard-fighting _91st Division._
-> >
+> 
+> 
+> 
 > The operations in the two days following the landings were a continuation of the assault phase as all units sought to reach their D-Day objectives.<sup>[1](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn1)</sup> The exhaustion of the 16th and 116th Infantry Regiments in the V Corps zone required some reshuffling of regimental and battalion missions, and, in the VII Corps zone, missions of the 4th Division had to be tempered to conform to the realities of enemy opposition.
-> >
+> 
+> 
+> 
 > In effect, the V Corps attack continued on 7 June with two divisions abreast although the regiments of the 29th Division
 > 
 > _\--336--_
@@ -13,13 +19,21 @@
 * * *
 > 
 > did not formally come under command of Maj. Gen. Charles H. Gerhardt, the division commander, until 1700. Gerhardt had landed on the evening of D Day and with General Cota planned and directed the operations of the 115th and 116th Infantry Regiments during D plus 1. ([Map XV](<maps/USA-E-XChannel-XV.jpg>)) The third regiment of the division, the 175th Infantry, began landing at 1230 on 7 June, two hours later than scheduled, and was ashore by 1630. The 29th Division operated generally west of a line through St. Laurent and Formigny; the 1st Division, with all three of its regiments in line, operated generally to the east.
-> >
+> 
+> 
+> 
 > The principal 1st Division attack on 7 June was the 18th Infantry's drive southward toward its D-Day objectives: the high ground north of Trévières and the Mandeville-Mosles area south of the Aure River. For this attack the 3d Battalion, 26th Infantry, was attached. The other tasks confronting the 1st Division were to make contact with the British and to clean out the Colleville area. To accomplish the first, two battalions (the 1st of the 26th Infantry and the 3d of the 16th Infantry) under control of the 16th attacked southeastward with the mission of taking the high ground west and southwest of Port-en-Bessin, including Mt. Cauvin. The clean-up job was assigned to the 1st and 2d Battalions of the 16th Infantry. The 2d Battalion, 26th Infantry, was held in division reserve.
-> >
+> 
+> 
+> 
 > Despite wide dispersion of the attacking battalions and scanty artillery and tank support, all units made good progress against slight and sporadic resistance. A marked degree of enemy disorganization had been observed beginning on the afternoon of D Day. Expected counter-attacks had not materialized and the enemy's morale seemed low. The 1st Division realized that it was through the coastal crust and at the moment had to deal only with remnants of the _352d Division._ It was thought, however, that an armored counterattack might be in the making.<sup>[2](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn2)</sup>
-> >
+> 
+> 
+> 
 > On the right, Huppain and the forward slopes of the ridge line 1,000 yards north of Mt. Cauvin were occupied. But the enemy, strongly opposing simultaneous British attacks from the east, continued to hold a narrow wedge between American and British beachheads through Port-en-Bessin and south along the valley of the Drôm River. In the center the 18th Infantry made two crossings of the Aure, the 2d Battalion occupying Mosles and the 3d, Mandeville. The 1st Battalion, effectively supported by five tanks of the 741st Tank Battalion, captured the high ground at Engranville after a fight with something less than a company of German infantry which lasted most of the afternoon.
-> >
+> 
+> 
+> 
 > The success of the 18th Infantry attack was somewhat qualified by the inability of the 3d Battalion, 26th Infantry, on the division's right to take Formigny. Although opposition by exhausted elements of the _916th Regiment_ was not heavy. the battalion was unable to get moving.<sup>[3](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn3)</sup>
 > 
 > _\--337--_
@@ -27,11 +41,17 @@
 * * *
 > 
 > It was not until the next morning that the enemy was driven out of Formigny by a company of 18th Infantry and some tanks attacking from the Engranville position.
-> >
+> 
+> 
+> 
 > On the German side the _352d Division_ at the end of D Day had been chiefly concerned with its open flank where the British were driving into the hole opened by the collapse of the left wing of the _716th Division._ Throughout 7 June there was little General Kraiss could do to repair the damage, for his last organic reserves had had to be committed in the center where the _916th Regiment_ was strained to the breaking point. At noon he requested and secured the attachment of the _30th Mobile Brigade._ The brigade, which came up from Coutances on bicycles, arrived only late in the afternoon, its young, inexperienced recruits tired in body and spirit from constant attacks by low-flying planes along the route. One battalion (the _513th_) was committed in the vicinity of Formigny to strengthen the _916th Regiment._
-> >
+> 
+> 
+> 
 > The brigade, less this battalion, assembled northwest of Bayeux and was attached to the _726th Regiment_ with orders to attack the flank of British forces advancing on Bayeux. (See [Map XIII](<maps/USA-E-XChannel-XIII.jpg>).) Action of German units in the Bayeux area during 7 June was so confused that no coherent story can be told in detail. The whole flank of the _352d Division_ from the Drôm River to the division boundary east of St. Léger was falling apart. The disintegration, furthermore, was so rapid that reports reaching division headquarters were late and scattered. As evidence of the confusion, it is worth contrasting the German command picture of the action with what actually happened.<sup>[4](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn4)</sup>
-> >
+> 
+> 
+> 
 > In the early afternoon following the commitment of the _30th Mobile Brigade,_ General Kraiss's headquarters believed that the _352d Division_ held a thin defensive arc north and northeast of Bayeux from about Vaux-sur-Aure to Sommervieu. From left to right the units engaged were the _30th Mobile Brigade_ (-), elements of the _2d Battalion, 916th Regiment,_ and elements of the _3d Battalion, 1352d Artillery Regiment._ Having expended their last rounds, these units had destroyed their guns and fought as infantry. South of this line there were only scratch forces, the most important of which were remnants of _Kampfgruppe Meyer_ (_2d Battalion, 915th Regiment_ and the _Fuesilier Battalion,_ _352d Division_), thought to be defending weakly northeast and north of Tilly-sur-Seulles. The Bayeux defense was believed to have held during the day, despite penetrations by British armor and a British thrust through Sommervieu which was reported to have split the _2d Battalion, 916th,_ from the artillery unit. At midnight, the _352d Division_ and _Seventh Army_ supposed that the main British advance had been checked short of Bayeux and that countermeasures were in process to avert the fall of the city. While the _352d Division_ commander, General Kraiss, seriously doubted that those measures would succeed in view of the depletion of his own forces and their exhaustion after constant pounding by Allied aircraft and
 > 
 > _\--338--_
@@ -39,13 +59,21 @@
 * * *
 > 
 > naval artillery, he still did not know the true extent of the collapse on his right.<sup>[5](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn5)</sup>
-> >
+> 
+> 
+> 
 > The collapse was, in fact, almost complete. In the morning of 7 June, before the arrival of the _30th Mobile Brigade_ on the Drôm River, two battalions of the British 56th Infantry Brigade (50th Division) entered Bayeux and by noon had cleared the city. The British then pushed out along the southwest road to occupy the high ground at Monunirel. The third battalion of the brigade in the meantime advanced about two miles southwest from Vaux-sur-Aure. On the coast, the 47th Royal Marine Commando captured Port-en-Bessin in a stiff fight beginning about 1600, 7 June, and not ending until the early morning hours of 8 June. East of Bayeux, if there were still German forces at nightfall on 7 June, they were no more than remnants with insufficient coherence even to form a resistance pocket within British lines. Two brigades of the 50th Division were south of the Bayeux-Caen highway. On their left and astride that highway was one brigade of the 3d Canadian Division.
-> >
+> 
+> 
+> 
 > The converging moves of the British 50th Division and the U.S. 1st Division on 7 June had squeezed the German _30th Mobile Brigade_ and elements of the _726th Regiment_ into a narrow corridor along the Drôm River north to its junction with the Aure. (See [Map XV](<maps/USA-E-XChannel-XV.jpg>).) On 8 June the Allied vise was tightened in an effort to destroy the enemy forces separating the British and American beachheads On the American side, the mission of attacking to effect a junction with the British was assigned to the 26th Infantry. The attack, however, never gathered momentum, partly because of the difficulty of assembling the widely dispersed battalions, and partly because of heavy enemy resistance.
-> >
+> 
+> 
+> 
 > The 2d Battalion, 26th Infantry, released from division reserve at 1745, 7 June, had moved during the night from the vicinity of Etreham to the crossroads between Mosles and Tour-en-Bessin which they occupied about dawn. There they awaited the rest of the regiment throughout 8 June. The 1st Battalion, meanwhile, bogged down on 8 June at the Aure River crossing at Etreham, where the enemy fought stubbornly to hold one side of the Drôm corridor. The 3d Battalion remained at Formigny during the morning until it could be relieved by a battalion of the 115th Infantry. In the early afternoon it began a march down the Bayeux highway. At 1800 it attacked through the 2d Battalion positions, and through Tour-en-Bessin to Ste. Anne which it reached shortly after midnight. During the night a violent and confused action took place at Ste. Anne as the Germans, now in process of withdrawing from the corridor, fought to keep the escape route open.
-> >
+> 
+> 
+> 
 > The 1st Division thus failed to trap the enemy. The British were similarly checked east of the Drôm. Elements of the 50th Division attacked and cleared Sully during 8 June but were unable to hold a bridgehead over the Drôm. Other elements of the division pressed in the northern end of the enemy corridor by clearing the château at Fosse Soucy. But, in the face of threatened enemy counterattacks, the British withdrew to high ground near Escures.
 > 
 > _\--339--_
@@ -53,13 +81,21 @@
 * * *
 > 
 > Thanks to these actions, the German _726th Regiment_ during the night of 8-9 June was able to extricate the bulk of its forces. This was perhaps the first German withdrawal from coastal positions accomplished on orders from division and corps. In direct disobedience of Hitler's command to hold every inch of ground to the last bullet, the decision reflected the seriousness of the German position. During the morning of 8 June the _352d Division_ was out of touch with the _726th Regiment._ At about 1500, however, contact was established with the regimental commander (possibly just west of Sully). He was ordered to resist stubbornly with all available forces until nightfall and then break out to the southwest and form a defensive line from Blay east to Haley and thence south to Agy. Shortly after General Kraiss had given this order, the corps commander, General Marcks, came into the _352d Division_ command post. Marcks was asked to approve the decision on the grounds that, if the troops in the Bayeux salient were sacrificed, the division would have nothing with which to repair the rip in its right flank and the way would be open for unopposed Allied marches to the south. "After a long pause, the Commanding General [Marcks] agreed...."<sup>[6](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn6)</sup>
-> >
+> 
+> 
+> 
 > While the U.S. 1st Division and the British converged on Bayeux the 29th Division on D plus 1 still found itself entangled in the enemy's coastal defenses and spent most of the day cleaning up the fragments of enemy units that were shattered but not destroyed by the initial shock of the landings. In some areas small arms fire from groups of enemy riflemen or isolated strong points was almost continuous; American troops gradually became used to moving under the constant crack of bullets.
-> >
+> 
+> 
+> 
 > D Day had left the units of the 115th and 116th Infantry Regiments and a large part of the two Ranger battalions in the sliver of coast between Vierville and St. Laurent, where they were still meeting scattered opposition. The 175th Infantry was still afloat. A precondition for the division's pursuit of D-Day objectives was to expand this toehold and clear room for maneuver. The 115th Infantry, after mopping up around St. Laurent, attacked generally southwest toward Louviéres and Montigny, while the 116th Infantry with Ranger units undertook to clear the bluffs and go to the relief of the three Ranger companies isolated on Pointe du Hoe.
-> >
+> 
+> 
+> 
 > The 115th Infantry made slow progress. Moving on a broad front, the regiment found communication difficult. Furthermore, since the regiment still had no transport, ammunition and heavy weapons had to be hand-carried. Near the end of the day Col. Eugene N. Slappey requested the immediate establishment of army supply points as an urgent prerequisite for further advance.<sup>[7](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn7)</sup>
-> >
+> 
+> 
+> 
 > Colonel Canham's 116th Infantry, on the other hand, advanced rapidly. The regiment moved in column down the coastal road with ten tanks rolling between files of infantry. Tank fire was employed to neutralize small enemy positions and the main body of the regiment pushed on past them. Before noon Canham was only 1,000 yards from Pointe du Hoe. The Rangers awaiting relief
 > 
 > _\--340--_
@@ -67,17 +103,29 @@
 * * *
 > 
 > there then numbered less than 100 effectives. Their position had seriously deteriorated during the night of 6-7 June as a result of a counterattack by the _914th Regiment_ which overran their outpost line and pinned the force to a strip of the headland only about 200 yards deep. While destroyer fire and the Rangers' two mortars kept the enemy at bay, the situation remained desperate until the afternoon when two LCVP's landed water, food, and ammunition and about thirty reinforcements. At the same time a series of attacks by the relieving force from the vicinity of St. Pierre-du-Mont, although frustrated by well-placed enemy artillery fire, at least eased the pressure.
-> >
+> 
+> 
+> 
 > By 1630 on 7 June the 175th Infantry (Col. Paul R. Goode) had come ashore and was placed in the line in the vicinity of Gruchy. Additional landings of artillery units swelled the 29th Division's artillery support to a total of twenty-nine guns belonging to five battalions. Although the achievements of the division on D plus 1 seemed slight measured in yards or vital objectives taken, in reality the crust of enemy defenses was broken and the division was set for a full-scale attack on the morrow.
-> >
+> 
+> 
+> 
 > The fighting in the VII Corps zone on D plus 1, like that in V Corps, aimed first at clearing the beachhead already staked out and second at pushing on toward D-Day objectives. ([Map XVI](<maps/USA-E-XChannel-XVI.jpg>))
-> >
+> 
+> 
+> 
 > The only substantial advances of 7 June were made on the north flank where the two regiments of the 4th Division pushed the enemy back two miles to his strongly fortified positions at Azeville and Crisbecq. The 12th Infantry, attacking on the left from the vicinity of Beuzeville-au-Plain, reached the forward slope of hills between Azeville and le Bisson where, faced with stiffened resistance, it halted for the night to reorganize. The 22d Infantry on the right advanced directly on Crisbecq. It moved rapidly to a point between Azeville and de Dodainville where it began getting fire from the forts.
-> >
+> 
+> 
+> 
 > Both the Crisbecq and Azeville fortifications were permanent coastal artillery positions thoroughly organized for defense from land attack. Crisbecq was a naval battery with 210-mm. guns.<sup>[8](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn8)</sup> Azeville contained the four French 105-mm. guns of the _2d Battery_ of the _1261st Artillery Regiment_ (army coastal artillery). At both positions massive concrete blockhouses with underground ammunition storage and interconnecting trenches constituted the core of the fortifications and were ringed with barbed wire and defended by automatic weapons. At Azeville the main positions were outposted with concrete sentry boxes.
-> >
+> 
+> 
+> 
 > Attacks were launched on both forts in battalion strength and were driven back. The task at Crisbecq was especially difficult because approach to the fort was canalized along a narrow hedged trail. Open fields lay on the west, and on the east were either swamplands or steep slopes. The battalion advancing along this trail was counterattacked on the left flank and fell back in considerable confusion to re-establish a line 300 yards south of Bas Village de Dodainville. The Germans, trying to press their advantage with renewed attacks after dark, were routed by naval fire.
-> >
+> 
+> 
+> 
 > In the meantime, along the beach, the
 > 
 > _\--341--_
@@ -85,18 +133,26 @@
 * * *
 > 
 > 3d Battalion of the 22d Infantry had been advancing northward with the mission of reducing the beach fortifications. Progress was slow and costly as troops came under small arms fire from the beach resistance points as well as artillery fire from inland batteries. About 2,000 yards were made during the day and two enemy resistance nests cleared. In the evening the battalion was brought inland as regimental reserve to guard against further counterattacks from the Azeville-Crisbecq positions. During the night the bulk of the battalion returned to the beach to receive the surrender of the enemy at Taret de Ravenoville who had been discouraged from continued resistance chiefly by naval shelling.
-> >
+> 
+> 
+> 
 > In the center of the VII Corps beachhead the day was occupied chiefly with eliminating the enemy forces south of Ste. Mére-Eglise who on D Day had prevented firm junction between the 8th Infantry on the south and the 82d Airborne Division. A patrol of the 82d Airborne Division got through to General Barton during the night and plans were then coordinated for the next day's operations. In the morning the 8th Infantry, on General Barton's order, attacked the Turqueville salient. Turqueville itself, held by the _795th Georgian Battalion,_ was hit by the 1st Battalion from the east. After a hard fight the Russian unit was talked into surrender by a Russian-speaking American captive. At the same time the 2d and 3d Battalions struck north from their positions near les Forges. The 1st and 2d Battalions were supported by two companies of the 70th Tank Battalion.<sup>[9](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn9)</sup> The 3d Battalion on the left, advancing astride the main highway, was stopped hard at the Fauville-Ecoqueneauville ridge by machine gun and artillery fire. These troops were shaken loose, however, by the 2d Battalion's capture of Ecoqueneauville, and both units continued the advance. When they reached Ste. Mére-Eglise they found a German counterattack in progress, although they apparently did not recognize it as such.
-> >
+> 
+> 
+> 
 > This counterattack, which lasted most of the day, actually represented General von Schlieben's supreme effort to drive in the Cotentin beachhead from the north. It will be recalled that the _1058th Regiment_ (less one battalion) had been ordered to attack St. Mére-Eglise on D Day. Lacking artillery, it had spent all day working through the hedgerows against spasmodic paratroop opposition and only reached Neuville by nightfall. At dawn on D plus 1 the attack was resumed. For it the _1058th_ now received attachments of the _456th_ and _457th Artillery Battalions,_ the _3d Battalion_ of the _243d Artillery Regiment_ (less one battery), the _Seventh Army_ _Sturm Battalion,_ and one company of the _709th Antitank Battalion_ with ten self-propelled 75-mm. guns.<sup>[10](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn10)</sup>
-> >
+> 
+> 
+> 
 > After preparatory fire the _Sturm Battalion_ began the attack astride the main highway, initially to make contact with elements of the _1058th Regiment_ which had been cut off in action during D Day. When contact was made, the attack was reorganized and the _Sturm Battalion_ struck down the west side of the highway, with the _1058th_ on the east. It is apparent that the _1058th Regiment,_ demoralized
 > 
 > _\--342--_
 > 
 * * *
 > 
-> [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-62.jpg)](<img/USA-E-XChannel-62.jpg>)
+> 
+> 
+>  [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-62.jpg)](<img/USA-E-XChannel-62.jpg>)
 >  TROOPS ON UTAH BEACH UNDER ARTILLERY FIRE
 > 
 > _\--343--_
@@ -104,11 +160,17 @@
 * * *
 > 
 > in the fighting of the day before, made little progress. The _Sturm Battalion,_ however, supported by the _709th Division_ assault guns, which the Americans mistook for tanks, carried the attack to the outskirts of Ste. Mére-Eglise.
-> >
+> 
+> 
+> 
 > To the American command the situation looked gravely threatening. Ste. Mére-Eglise, besides being important as a communications hub, was the core of the 82d Airborne Division's position, which elsewhere was still tenuous. General Ridgway, thinking that a German armored thrust was building up, called for assistance. A staff officer met Maj. Gen. J. Lawton Collins, VII Corps commander, at the 4th Division command post near Audouville-la-Hubert.<sup>[11](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn11)</sup> Collins ordered a task force of the 746th Tank Battalion, which had been in 4th Division reserve near Reuville, to proceed at once to Ste. Mére-Eglise. The task force, commanded by Lt. Col. C. G. Hupfer and consisting of Company B, the assault gun platoon, and three headquarters tanks, drove into Ste. Mére-Eglise in the early afternoon and turned north along the Montebourg highway. A few hundred yards out of town the leading tanks came under heavy enemy artillery fire and about the same time spotted the German assault guns in column along the road. A fire fight began which, because of the column formation on each side, was inconclusive. Colonel Hupfer in the meantime reconnoitered a trail east of the main highway leading north into Neuville. Some of the 746th Battalion tanks took this route, entered Neuville, destroyed two enemy assault guns, occupied the town, and took about sixty prisoners as well as releasing nineteen captured U.S. paratroopers.<sup>[12](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn12)</sup>
-> >
+> 
+> 
+> 
 > More significantly this armored slice northward cut the German forces attacking Ste. Mére-Eglise and began a panic on the German side. For the first time in the early beachhead battles the Americans were confronting the Germans with something like massed armor in a relatively small sector. When the 8th Infantry (-) arrived north of Ste. Mére-Eglise with two companies of the 70th Tank Battalion in support, about sixty American tanks were deployed in the area. While some of the tanks of the 746th Tank Battalion were moving on Neuville, Colonel MacNeely's 2d Battalion, 8th Infantry, joined Colonel Vandervoort's 2d Battalion, 505th Parachute Infantry, in an infantry-tank attack to clear the enemy in the vicinity of Sigeville. Vandervoort, with the commander of the 70th Tank Battalion, Lt. Col. John C. Welborn, directing tank operations from a jeep, advanced up the highway north of Ste. Mére-Eglise, while MacNeely swept in from the west.<sup>[13](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn13)</sup> In the envelopment 300 of the enemy were captured or killed.
-> >
+> 
+> 
+> 
 > The _1058th Regiment,_ thus splintered by two separate American attacks and demoralized by the presence of so many American tanks, broke and pulled out in disorder. The _Sturm Battalion_ west of the highway and out of contact with the main force also withdrew. The retreat was checked only late in the day by intervention of General Schlieben. The division
 > 
 > _\--344--_
@@ -116,16 +178,22 @@
 * * *
 > 
 > commander rallied his panicky troops and began putting them into a defensive line about 1,300 yards north of Neuville. Convinced after the failure of the Ste. Mere attack that he no longer had the strength needed for a successful counterattack to reduce the American bridgehead, Schlieben determined that his policy must be simply to contain it and prevent a breakthrough to Cherbourg. He concentrated therefore on building a strong defensive line. He brought into the line a battalion of the _919th Regiment_ as well as the _922d Regiment_ (_243d Division_), which had arrived during the morning of 7 June. All these elements were formed into Kampfgruppe under command of Oberst Helmuth Rohrbach, commander of the _729th Regiment._ Further to concentrate his strength, Schlieben ordered the withdrawal of the bulk of the troops from defenses along the east coast which were not under attack. In succeeding days this defense was to be still further reinforced until it constituted a strong barrier to the attempts of the 4th Division to push north.<sup>[14](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn14)</sup>
-> >
+> 
+> 
+> 
 > After the 8th Infantry had pushed north from les Forges, the 325th Glider Infantry began landing in the area in two serials as scheduled. Although somewhat scattered and hit by ground fire, the majority of the gliders came in where planned and rapid assembly was effected. The regiment originally intended as 82d Airborne Division reserve was actually split: one battalion was committed in the la Fi`re area to strengthen attacks to force a crossing there; and one battalion was attached to the 505th Parachute Infantry for operations to the north of Ste. Mére-Eglise.
-> >
+> 
+> 
+> 
 > While the 82d Airborne Division had thus consolidated its base, its principal D-Day assignment-the establishing of bridgeheads across the Merderet-came no nearer accomplishment. On the contrary, during the morning of 7 June it was touch and go whether a determined enemy counterattack might not break the division's hold on the east bank of the river. At about 0800 the attack of elements of the enemy _1057th Regiment_ began to form against the American la Fére position. Mortar and machine gun fire ranged in, chiefly on Company A, 505th Parachute Infantry, which was dug in to the right of the bridge. An hour or so later four Renault tanks led a German infantry advance across the bridge. The lead tank was disabled by either bazooka fire or a shell from a 57-mm. antitank gun that was supporting Company A. Although this checked the advance, the German infantry took advantage of the cover furnished by the knocked-out tank and some burned-out vehicles, which the American defenders had pulled onto the causeway during the night, to open a critical fire fight at close range. At the same time German mortar shells fell in increasing numbers among Company A's foxholes. The American platoon immediately to the right of the bridge was especially hard hit and eventually reduced to but fifteen men. These men, however, encouraged by the heroic leadership of Sgt. William D. Owens and by the presence in the thick of the fighting of division officers, including General Ridgway, held their line. The fight was halted at last by a German request for a half-hour's truce to remove the wounded. When the half hour expired, the enemy did not return to the attack. A count of Company A revealed that
 > 
 > _\--345--_
 > 
 * * *
 > 
-> [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-63.jpg)](<img/USA-E-XChannel-63.jpg>)
+> 
+> 
+>  [![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/icn/USA-E-XChannel-63.jpg)](<img/USA-E-XChannel-63.jpg>)
 >  PLANES AND GLIDERS CIRCLING LES FORGES _on the morning of 7 June. Dust is raised by gliders landing in fields at upper left. Wrecked gliders in foreground are some of those that landed on the evening of 6 June._
 > 
 > _\--346--_
@@ -133,9 +201,13 @@
 * * *
 > 
 > almost half of its combat effectives had fallen in the defense, either killed or seriously wounded.<sup>[15](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn15)</sup>
-> >
+> 
+> 
+> 
 > South of the 82d Division the 101st Division with small forces of the 3d Battalion, 506th Parachute Infantry, and the 501st Parachute Infantry still held precarious positions on the north bank of the Douve. Isolated and short of ammunition, these troops were unable to go on the offensive on 7 June. They nevertheless scored a notable success during the day when together they killed or captured the whole _1st Battalion_ of the _6th Parachute Regiment._ This battalion had advanced on regimental order to Ste. Marie-du-Mont on D Day and then had been cut off. Patrols sent out by von der Heydte on 7 June from St. Côme-du-Mont became involved in fighting a few hundred yards east of the town and could not get through. The isolated battalion in the meantime was already moving south. About the middle of the afternoon paratroopers at le Port and la Barquette observed the Germans (about 800 in all) advancing through the open fields and marshes north of the river and east of the Carentan highway. In independent actions the men under Captain Shettle and those under Colonel Johnson opened fire. Caught by surprise and bluffed by demonstrations designed to impress them with overwhelming American strength, the majority of the Germans surrendered. About 250 were taken by Captain Shettle's men at le Port, about 350 by Colonel Johnson at la Barquette.<sup>[16](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn16)</sup> More than half the remainder were killed in the fire fight preceding surrender. Only twenty-five men escaped to Carentan.<sup>[17](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn17)</sup>
-> >
+> 
+> 
+> 
 > During D Day no news of the actions along the Douve had reached the 101st Division headquarters. Since capture of the Douve bridges was one of the most important of the division's missions, on which depended the immediate security of VII Corps on the south and ultimate junction with V Corps, General Taylor decided on the afternoon of D Day to send the 506th Parachute Infantry (less the 3d Battalion) south on a reconnaissance in force. The reconnaissance, which in fact became an attack, led off on the morning of 7 June in column down the road from Culoville. Though harassed by scattered rifle fire, the 506th reached Vierville without undue delay, cleared the town, and then split, with the 1st Battalion heading down the highway to Beaumont and the 2d diverging cross country to the left toward Angoville-au-Plain. Halted just beyond Vierville by heavy small arms fire, the attacks broke loose only after a platoon of medium tanks had been brought up and attached to the 2d Battalion. The 1st Battalion fought its way down astride the highway to Beaumont where it was stopped by two enemy counterattacks.<sup>[18](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn18)</sup> The 2d Battalion medium tanks together with a platoon of light tanks were then sent to its support and they advanced another 1,000 yards to just east of St. Côme-du-Mont.
 > 
 > _\--347--_
@@ -143,9 +215,13 @@
 * * *
 > 
 > At the same time that the 506th Infantry was attacking south, the 2d Battalion of the 501st Infantry, which on D Day had fought an isolated and inconclusive action around les Droueries, continued its attempt to push westward into St. Côme-du-Mont, still held in some force by two battalions under von der Heydte's command. This attack, coordinated in early afternoon with Colonel Sink, commanding the 506th Infantry, and supported by six medium tanks of the 746th Tank Battalion and the guns of the 65th Armored Field Artillery Battalion, made substantial headway. But it was a typical Normandy battle-cleaning out dug-in enemy riflemen and machine gun positions from the hedgerows field by field. The battalion did not get far enough west to tie in with the 1st Battalion, 506th Infantry. The latter was therefore ordered to withdraw to Beaumont and all units held during the night, reorganizing for resumption of the attack the next day.
-> >
+> 
+> 
+> 
 > The small American gains of 7 June encouraged the Germans to feel that they had at least frustrated the Allied time schedule.<sup>[19](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn19)</sup> On the other hand, their own countermeasures planned for the day had also been checked, and, in general, it was clear that the invasion had succeeded in gaining a foothold. The build-up race was on.
-> >
+> 
+> 
+> 
 > On the Caen front the _21st Panzer Division_ had called off its counterattack on the evening of D Day short of its objectives. (See [Map XIII](<maps/USA-E-XChannel-XIII.jpg>).) Throughout 7 June the division remained on the defensive except for small unsuccessful attacks east of the Orne against the British airborne forces. The _12th SS Panzer Division_ began arriving in assembly areas between Caen and Bronay during the day and _Panzer Lehr Division_ formed to its left rear, north and northeast of Tilly-sur-Seulles. In the afternoon the reconnaissance battalion of the _12th SS Panzer Division_ was committed to reconnoiter the wide gap between the _21st Panzer_ and the _352d Divisions._ <sup>[20](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn20)</sup> But air attacks had so delayed the assembly of _I SS Panzer Corps_ and caused such heavy casualties that the corps postponed until the morning of 8 June the scheduled two-division counterattack to recapture Courseulles. Rundstedt on 7 June had decided to put his own armored staff, _Panzer Group West_ under General Geyr, in charge of the attack. Geyr was attached to _Seventh Army_ and ordered to take over the sector on both sides of the Orne River and west as far as Tilly-sur-Seulles, seal off the penetrations at Caen and in the _352d Division_ sector, and counterattack the Allies who had broken through southeast of Bayeux. But Geyr did not arrive to take over until the night of 8-9 June. In the meantime _I SS Panzer Corps_ had decided to make only a limited-objective attack with the _12th SS_ and _21st Panzer Divisions_ and a Kampfgruppe of _Panzer Lehr Division,_ pending the arrival of the tanks of the latter division. The attack of 8 June to gain a line of departure for the later planned three-division attack made little progress and before evening both
 > 
 > _\--348--_
@@ -153,9 +229,13 @@
 * * *
 > 
 > divisions had gone over to the defensive.<sup>[21](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn21)</sup> The _12th SS_ was holding positions astride the Caen-Bayeux road between Authie and Carpiquet. The _21st Panzer Division,_ also on the defensive, was split on either side of the Orne. _Panzer Lehr_ remained in assembly areas near Thury-Harcourt, southwest of Caen. As the attack failed to materialize on 8 June and Allied pressure continued to build up, the plan for a bold strike to the coast with two armored divisions abreast was abandoned. _Seventh Army,_ concerned over the loss of Bayeux, decided to maneuver to recapture it. _I SS Panzer Corps_ intended, therefore, to hold north and west of Caen while directing _Panzer Lehr_ and portions of the _12th SS Panzer Division_ on Bayeux. Thus, as General Geyr commented later, the fist was unclenched just as it was ready to strike.<sup>[22](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn22)</sup>
-> >
+> 
+> 
+> 
 > While _Seventh Army_ indulged fatal second thoughts concerning its critical right flank, Field Marshal Rommel began to focus attention on the threat to Cherbourg. Reports of large-scale Allied airborne and glider landings in the Coutances-Lessay area caused him on the morning of 7 June to order the immediate move of both the _17th SS Panzer Grenadier Division_ and the _77th Division_ to meet the threat. He believed that the Coutances landings were part of an Allied move to cut off Cherbourg and the whole Cotentin Peninsula and that it was therefore an "unconditional necessity" to counter with all available forces. The risk of weakening Brittany by the transfer of the _77th Division_ could be accepted, he thought, since it looked as though the Allies were fully committed in Normandy.<sup>[23](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn23)</sup>
-> >
+> 
+> 
+> 
 > Later in the morning _Seventh Army_ assigned the task of cleaning up the west coast of the Cotentin to the _II Parachute Corps_ then in Brittany. In addition to the _77th Division_ and the _17th SS Panzer Grenadier Division,_ already under orders to move, the corps was to command the _3d Parachute Division._ The latter received marching orders to move by motor to assembly areas near those planned for the _17th SS_ northeast of Avranches. The _77th Division,_ which received orders to move by foot at 1015, actually began moving out at 1500. By 2000, advance elements of the _17th SS Panzer Grenadier Division_ had crossed the Loire. But traffic thereafter was interrupted by Allied air attacks on the Loire bridges which lasted for an hour and a half and scored twenty-four hits on a railroad bridge that the division had been using. With requisitioned vehicles the _3d Parachute Division_ formed an advanced motorized group consisting of one battalion from each of the regiments, two engineer companies, two artillery batteries, and the antiaircraft and signal battalions. This group moved out, surprisingly, without opposition from the air. But _Seventh Army_ reported that movement of the remainder of the division was dependent on motor transport space from the two corps remaining in Brittany and requested an additional 2,000 tons from _OB WEST_ and other reserves. On the morning of 8 June after General der Fallschirmtruppen Eugen Meindl, commanding _II Parachute Corps,_ had personally
 > 
 > _\--349--_
@@ -163,13 +243,21 @@
 * * *
 > 
 > confirmed that the reports of airborne landings in the Coutances area were without foundation, the _II Parachute Corps_ with two divisions was diverted to St. Lô.<sup>[24](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn24)</sup>
-> >
+> 
+> 
+> 
 > Concern over the defense of Cherbourg again faded before the greater urgency of holding at Caen. This reaction was not due to ignorance of the true situation. On the contrary, on the evening of 6 June a copy of the VII Corps field order had been picked up by the _914th Regiment_ from a boat that drifted ashore in the mouth of the Vire River. The next evening a copy of the V Corps order was taken from the body of an American officer killed at Vierville-sur-Mer. The Germans thus had in their hands the entire scheme of maneuver and order of battle for American units in the first phase of the invasion.<sup>[25](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn25)</sup>
-> >
+> 
+> 
+> 
 > The fact that possession of these plans had no effect on the German conduct of operations throws considerable light on the tactical and strategic problems facing the enemy command. From the plans, _Seventh Army_ and _OB WEST_ learned that the major immediate objectives of Bradley's forces were Cherbourg and St. Lô. But this news, after the first day, was hardly a revelation. The plans were confined to outlines of the initial phase and did not reveal American intentions beyond the establishment of a lodgment including Cherbourg and St. Lô. Even if they had revealed the planned American push into Brittany, however, the Germans could not have profited materially from the knowledge. Rommel was not free to shift the weight of his defense to the American flank to block either the assault on Cherbourg or Bradley's planned move southward toward Brittany. The major operational threat, from his point of view, remained the possibility of a British breakout at Caen and a sweep to Paris. Without British plans, the Germans could not be sure that such a move had not been calculated. Even if it had not, a German collapse on that sector would undoubtedly be exploited to turn the flank of _Seventh Army._ In short, complete knowledge of American intentions could not have altered the logic of the battle dictated by terrain, the disposition of forces, and the location of the strategic objectives.<sup>[26](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn26)</sup>
-> >
+> 
+> 
+> 
 > One fact might have been deduced from the plans: that they envisaged such a large commitment of force as to rule out a second major landing attempt. General Dollmann drew this conclusion. Field Marshal Rundstedt was inclined to agree. But OKW and Hitler figured the evidence was inconclusive. Again the fact that British plans were missing left a large realm for speculation and, according to German intelligence estimates, a large uncommitted military force.
-> >
+> 
+> 
+> 
 > As of 1 June, the Germans had estimated that the Allies had combat forces in the United Kingdom equivalent to eighty-five divisions including eight airborne divisions.<sup>[27](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html#fn27)</sup> The Allied high command,
 > 
 > _\--350--_
@@ -177,6 +265,10 @@
 * * *
 > 
 > aware that the enemy was overestimating British and American strength, made every effort to sustain the illusion. In addition, the Allies made use of the high regard in which General Patton was held by the Germans to persuade them that an army group under his command still remained in England after 6 June. The existence of this large reserve force was easy for the Germans to believe since it fitted with their preconceptions that a second major landing would strike the _Kanalkueste._ The Allies fostered this belief by various ruses so successfully that not until July did OKW finally appreciate that no second landing would take place. In the meantime the Fifteenth Army remained tied to the _Kanalkueste._
-> >
+> 
+> 
+> 
 > Tactically, German knowledge of American plans might have made some difference by enabling the Germans to mass reserves and stage counterattacks at points along the planned axes of the American advance. Such a concentration of reserves was actually carried out by _Seventh Army_ in and around St. Lô, but even without knowledge of American intentions the Germans would probably still have chosen to defend St. Lô because of its importance as a road junction and the terrain configurations that made it defensively strong. For the rest, the Germans could never maneuver with enough freedom to exploit any tactical situation. Instead of being able to mass reserves in accordance with plan, General Dollmann picked up the reserve companies and battalions as they straggled in, delayed and decimated by air attacks, and put them in to plug gaps in his lines wherever the immediate danger seemed gravest. The policy of maintaining an intact defense, whether wise or not, meant that German tactical commanders in disposing their reserves were continually confronted with emergencies and never with tactical choices. Absorbed, therefore, in sealing off today's penetrations, they had no resources with which to face tomorrow's threat.
-> >
+> 
+> 
+> 

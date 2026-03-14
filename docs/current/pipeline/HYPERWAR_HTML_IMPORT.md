@@ -134,6 +134,10 @@ Other HyperWar books using the same HTML structure should work without modificat
 
 ## Troubleshooting
 
+### Paragraphs merged into single lines
+
+Early versions of the import produced content where multiple `<p>` tags inside `<blockquote>` elements were collapsed into one long line by `html2text`. This was fixed by inserting `<br><br>` between block-level children (`<p>`, `<center>`) of each `<blockquote>` before conversion. If you see merged paragraphs in existing content, re-import the affected book.
+
 ### No chapters found
 
 The index page format may differ. Check that the page has `<a href="...">` links pointing to chapter HTML files. The script filters out links to maps, images, charts, and glossary pages.

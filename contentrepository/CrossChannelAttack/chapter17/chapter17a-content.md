@@ -1,9 +1,15 @@
 > ![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/img/USA-E-XChannel.jpg)
 > 
+> 
+> 
+> 
+> 
 > ## Appendix F:
 > Comparative Fire Power of the U.S. and German 1944-Type Infantry Divisions
-> >
-> | U.S. | German 1944
+> 
+> 
+> 
+>  | U.S. | German 1944
 > ---|---|---
 > _Strength (officers and enlisted men)_ | _14,037_ | _12,769_
 > Rifles--carbines | 11,507 | 9,069
@@ -32,19 +38,39 @@
 > 
 * * *
 > 
-> [Table of Contents](<index.html>) ** [Previous Chapter](<USA-E-XChannel-E.html>) (Appendix E) * [Next Chapter](<USA-E-XChannel-G.html>) (Appendix G)
-> >
+> 
+> 
+>  [Table of Contents](<index.html>) ** [Previous Chapter](<USA-E-XChannel-E.html>) (Appendix E) * [Next Chapter](<USA-E-XChannel-G.html>) (Appendix G)
+> 
+> 
+> 
 > * * *
-> >
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
 > ### Footnotes
-> >
+> 
 > [[1](<#cn1>)] Also had 2,131 rifle grenade launchers
-> >
+> 
+> 
+> 
 > [[2](<#cn2>)] Either bazookas or antitank rifles.
-> >
+> 
+> 
+> 
 > [[3](<#cn3>)] Eighteen were found in the cannon companies of the infantry regiments.
-> >
+> 
+> 
+> 
 > [[4](<#cn4>)] Six were infantry howitzers, two in an infantry howitzer company assigned to each infantry regiment. Each howitzer company had, in addition, six 75-mm. howitzers.
+> 
+> 
 > 
 * * *
 > 
