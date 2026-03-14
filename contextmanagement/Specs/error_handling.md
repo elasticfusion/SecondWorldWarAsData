@@ -549,36 +549,82 @@ if not os.getenv("GROK_API_KEY"):
 
 ---
 
-## Error Logging Levels
+## Logging
 
-### TRACE
-- Detailed API request/response data
-- Cache hits/misses
-- Internal state changes
+### Unified Pipeline Log
 
-### DEBUG
-- API call parameters
-- Prompt previews
-- Response previews
-- Validation details
+All logging — pipeline progress, API calls, errors, and retries — flows through a single log file (`logs/pipeline_*.log`). API prompt logging that previously wrote to a separate `api_prompts.log` is now integrated into the standard logging system.
 
-### INFO
-- Successful extractions
-- Progress updates
-- Cache usage
-- Retry attempts
+API log entries use the `[API]` prefix for easy filtering:
 
-### WARNING
-- Recoverable errors
-- Retry attempts
-- Partial failures
-- Data quality issues
+```bash
+# All API activity
+grep "\[API\]" logs/pipeline_*.log
 
-### ERROR
-- Unrecoverable errors
-- Final retry failures
-- Schema validation failures
-- Missing required data
+# Just API calls (no cache hits)
+grep "\[API\] CALL" logs/pipeline_*.log
+
+# Cache hit rate
+grep -c "\[API\] CACHE HIT" logs/pipeline_*.log
+grep -c "\[API\] CALL" logs/pipeline_*.log
+```
+
+### Log Levels
+
+Set via `--log-level` flag or `config.yaml`:
+
+```bash
+python3 phase2_extract.py --log-level DEBUG
+```
+
+```yaml
+# config.yaml
+logging:
+  level: TRACE
+```
+
+| Level | Value | What it shows |
+|-------|-------|---------------|
+| **TRACE** | 5 | First 500 chars of each API prompt |
+| **DEBUG** | 10 | `[API] CALL` and `[API] CACHE HIT` entries with cache type and key |
+| **INFO** | 20 | Pipeline progress, successes, retry outcomes (default) |
+| **WARNING** | 30 | Recoverable errors, retry attempts, partial failures |
+| **ERROR** | 40 | Unrecoverable errors, final retry failures, missing data |
+
+### Example Output at Each Level
+
+**INFO** (default):
+```
+2026-03-14 17:46:10 - src.extraction.events - INFO - ✓ Successfully generated: chapter1a-event.json
+2026-03-14 17:46:11 - src.extraction.dates - INFO - ✓ Updated central dates repository
+```
+
+**DEBUG** (adds API call tracking):
+```
+2026-03-14 17:46:01 - src.grok_client - DEBUG - [API] CALL | type=events key=a1b2c3d4e5f6 temp=0.1
+2026-03-14 17:46:05 - src.grok_client - ERROR - Response truncated at 23144 chars — transient API error, cache cleared, will retry
+2026-03-14 17:46:05 - src.grok_client - DEBUG - [API] CALL | type=events key=a1b2c3d4e5f6 temp=0.1
+2026-03-14 17:46:10 - src.extraction.events - INFO - ✓ Successfully generated: chapter1a-event.json
+2026-03-14 17:46:10 - src.grok_client - DEBUG - [API] CACHE HIT | type=events key=f9e8d7c6b5a4
+```
+
+**TRACE** (adds prompt content):
+```
+2026-03-14 17:46:01 - src.grok_client - DEBUG - [API] CALL | type=events key=a1b2c3d4e5f6 temp=0.1
+2026-03-14 17:46:01 - src.grok_client - TRACE - [API] Prompt (events): Extract all military events from the following WWII chapter text...
+```
+
+### Handled vs Unhandled Errors
+
+Errors that are automatically recovered include context in the message:
+
+| Error message pattern | Meaning |
+|-----------------------|---------|
+| `— cache cleared, will retry` | Transient error, cache auto-cleared, retry loop will re-attempt |
+| `— manual split needed` | Chapter too large for API, requires manual intervention |
+| `✓ JSON repaired (...)` | Parse error auto-fixed, extraction succeeded |
+| `⚠ Attempt X failed: ...` | Retry in progress (WARNING level) |
+| `✗ All X attempts failed: ...` | Genuine failure, no more retries (ERROR level) |
 
 ---
 
@@ -1389,6 +1435,14 @@ All errors logged with:
 ---
 
 ## Recent Improvements
+
+**2026-03-14**: Unified logging (replaces separate api_prompts.log)
+- API call tracking (`[API] CALL`, `[API] CACHE HIT`) now flows through standard
+  `logging` module into `pipeline_*.log` instead of separate `api_prompts.log`
+- Visible at DEBUG level; prompt content at TRACE level (first 500 chars)
+- Enables single-file correlation of API calls, errors, retries, and pipeline progress
+- Handled errors now include recovery context: "cache cleared, will retry"
+- Redundant error log lines consolidated (e.g. truncation handler reduced from 4 lines to 1)
 
 **2026-03-14**: Character-level JSON sanitization (replaces regex approach)
 - **Root cause found**: Regex `\\(?!["\\/bfnrtu])` cannot distinguish between
