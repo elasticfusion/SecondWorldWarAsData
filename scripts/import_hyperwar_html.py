@@ -18,11 +18,18 @@ The script will:
 6. Create the directory structure under contentrepository/
 """
 
+import logging
 import re
 import sys
 import time
 from pathlib import Path
 from urllib.parse import urljoin
+
+# Add project root to path for imports
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from src.utils.logger import setup_logging
+
+logger = logging.getLogger(__name__)
 
 import html2text
 import requests
@@ -33,11 +40,22 @@ from bs4 import BeautifulSoup, NavigableString, Tag
 CONTENT_REPO = Path(__file__).resolve().parent.parent / "contentrepository"
 
 
-def fetch_page(url: str) -> BeautifulSoup:
-    """Download and parse an HTML page."""
-    resp = requests.get(url, timeout=30)
-    resp.raise_for_status()
-    return BeautifulSoup(resp.content, "html.parser")
+def fetch_page(url: str, max_retries: int = 3) -> BeautifulSoup:
+    """Download and parse an HTML page with retry."""
+    for attempt in range(max_retries):
+        try:
+            resp = requests.get(url, timeout=30)
+            resp.raise_for_status()
+            return BeautifulSoup(resp.content, "html.parser")
+        except requests.exceptions.HTTPError as e:
+            logger.warning("HTTP error fetching %s (attempt %d/%d): %s", url, attempt + 1, max_retries, e)
+        except requests.exceptions.ConnectionError as e:
+            logger.warning("Connection error fetching %s (attempt %d/%d): %s", url, attempt + 1, max_retries, e)
+        except requests.exceptions.Timeout:
+            logger.warning("Timeout fetching %s (attempt %d/%d)", url, attempt + 1, max_retries)
+        if attempt < max_retries - 1:
+            time.sleep(2 ** attempt)
+    raise requests.exceptions.RequestException(f"Failed to fetch {url} after {max_retries} attempts")
 
 
 def parse_index(index_url: str) -> list[dict]:
@@ -242,6 +260,7 @@ def format_as_blockquote(content: str) -> str:
 
 def prompt_metadata(chapters: list[dict], source_url: str) -> dict:
     """Prompt user for book metadata."""
+    # User-facing prompts stay as print() for clean interactive output
     print("\n" + "=" * 60)
     print("METADATA INPUT")
     print("=" * 60)
@@ -276,7 +295,7 @@ def prompt_metadata(chapters: list[dict], source_url: str) -> dict:
     if not dir_name:
         dir_name = default_dir
 
-    return {
+    metadata = {
         "series": series,
         "book": book,
         "author": author,
@@ -285,6 +304,8 @@ def prompt_metadata(chapters: list[dict], source_url: str) -> dict:
         "source_url": source_url,
         "dir_name": dir_name,
     }
+    logger.info("Metadata: %s by %s (%s)", book, author, dir_name)
+    return metadata
 
 
 def create_chapter_meta(meta: dict, chapter_num: int, chapter_title: str) -> str:
@@ -306,12 +327,14 @@ def create_chapter_meta(meta: dict, chapter_num: int, chapter_title: str) -> str
 
 def process_book(index_url: str) -> None:
     """Main processing pipeline."""
-    print(f"Fetching index: {index_url}")
+    logger.info("Fetching index: %s", index_url)
     chapters = parse_index(index_url)
 
     if not chapters:
-        print("ERROR: No chapters found on index page.")
+        logger.error("No chapters found on index page: %s", index_url)
         sys.exit(1)
+
+    logger.info("Found %d chapters/sections", len(chapters))
 
     # Get metadata from user
     meta = prompt_metadata(chapters, index_url)
@@ -320,24 +343,28 @@ def process_book(index_url: str) -> None:
     if book_dir.exists():
         resp = input(f"\n  Directory {book_dir} already exists. Overwrite? [y/N]: ")
         if resp.lower() != "y":
-            print("Aborted.")
+            logger.info("Aborted by user")
             sys.exit(0)
 
-    print(f"\nOutput directory: {book_dir}")
-    print(f"Processing {len(chapters)} chapters...\n")
+    logger.info("Output directory: %s", book_dir)
+    logger.info("Processing %d chapters...", len(chapters))
+
+    processed = 0
+    failed = 0
 
     for ch in chapters:
         chapter_num = ch["number"]
         chapter_title = ch["title"]
         chapter_url = ch["url"]
 
-        print(f"  Chapter {chapter_num}: {chapter_title}")
-        print(f"    Downloading {chapter_url}...")
+        logger.info("Chapter %d: %s", chapter_num, chapter_title)
+        logger.debug("Downloading %s", chapter_url)
 
         try:
             soup = fetch_page(chapter_url)
-        except Exception as e:
-            print(f"    ERROR downloading: {e}")
+        except requests.exceptions.RequestException as e:
+            logger.error("Failed to download chapter %d (%s): %s", chapter_num, chapter_url, e)
+            failed += 1
             continue
 
         # Convert to markdown
@@ -345,41 +372,43 @@ def process_book(index_url: str) -> None:
 
         # Split into sub-chapters
         subchapters = split_into_subchapters(markdown)
-        print(f"    Found {len(subchapters)} sub-chapter(s):")
+        sub_labels = []
         for i, (heading, _) in enumerate(subchapters):
             suffix = chr(ord("a") + i)
             label = heading if heading else "(intro)"
-            print(f"      {suffix}: {label}")
+            sub_labels.append(f"{suffix}: {label}")
+        logger.info("  Split into %d sub-chapter(s): %s", len(subchapters), ", ".join(sub_labels))
 
-        # Create chapter directory
+        # Create chapter directory and write files
         ch_dir = book_dir / f"chapter{chapter_num}"
-        ch_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            ch_dir.mkdir(parents=True, exist_ok=True)
 
-        # Write metadata
-        meta_content = create_chapter_meta(meta, chapter_num, chapter_title)
-        meta_file = ch_dir / f"chapter{chapter_num}-meta.yaml"
-        meta_file.write_text(meta_content)
+            # Write metadata
+            meta_content = create_chapter_meta(meta, chapter_num, chapter_title)
+            meta_file = ch_dir / f"chapter{chapter_num}-meta.yaml"
+            meta_file.write_text(meta_content, encoding="utf-8")
 
-        # Write sub-chapter content files
-        for i, (heading, content) in enumerate(subchapters):
-            suffix = chr(ord("a") + i)
-            formatted = format_as_blockquote(content)
-            content_file = ch_dir / f"chapter{chapter_num}{suffix}-content.md"
-            content_file.write_text(formatted + "\n")
+            # Write sub-chapter content files
+            for i, (heading, content) in enumerate(subchapters):
+                suffix = chr(ord("a") + i)
+                formatted = format_as_blockquote(content)
+                content_file = ch_dir / f"chapter{chapter_num}{suffix}-content.md"
+                content_file.write_text(formatted + "\n", encoding="utf-8")
+        except OSError as e:
+            logger.error("Failed to write chapter %d files to %s: %s", chapter_num, ch_dir, e)
+            failed += 1
+            continue
 
+        processed += 1
         # Be polite to the server
         time.sleep(0.5)
 
-    print(f"\n{'=' * 60}")
-    print(f"Import complete!")
-    print(f"  Book: {meta['book']}")
-    print(f"  Location: {book_dir}")
-    print(f"  Chapters: {len(chapters)}")
-    print(f"\nNext steps:")
-    print(f"  1. Review content in {book_dir}/")
-    print(f"  2. Run: python3 phase1_parse.py")
-    print(f"  3. Run: python3 phase2_retry.py")
-    print(f"{'=' * 60}")
+    logger.info("Import complete: %d processed, %d failed", processed, failed)
+    logger.info("Book: %s | Location: %s", meta["book"], book_dir)
+    if failed:
+        logger.warning("%d chapter(s) failed to download — review logs and retry", failed)
+    logger.info("Next: python3 phase1_parse.py && python3 phase2_retry.py")
 
 
 def main():
@@ -393,6 +422,7 @@ def main():
         )
         sys.exit(1)
 
+    setup_logging(level="INFO", log_file="logs/import_hyperwar.log")
     index_url = sys.argv[1]
     process_book(index_url)
 
