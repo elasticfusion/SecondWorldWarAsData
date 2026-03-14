@@ -410,9 +410,10 @@ def sanitize_json_response(response: str) -> str:
    - Success rate: ~85% of delimiter errors
 
 3. **Null Bytes and Control Characters**
-   - Error: Terminal artifacts (`^@`) in logs
-   - Cause: Control characters in LLM response
-   - Fix: Removes all control characters (0x00-0x1f)
+   - Error: Terminal artifacts (`^@`) in logs, or `Invalid control character at: line X column Y`
+   - Cause: Control characters in LLM response; literal tab/newline/CR inside JSON string values
+   - Fix: Removes non-whitespace control chars (0x00-0x08, 0x0b-0x0c, 0x0e-0x1f);
+     escapes tab/newline/CR inside strings (`\t` → `\\t`) while preserving structural whitespace
    - Success rate: 100% of control character issues
 
 4. **Markdown Code Blocks**
@@ -423,9 +424,10 @@ def sanitize_json_response(response: str) -> str:
 
 5. **Invalid Escape Sequences**
    - Error: `Invalid \escape: line X column Y`
-   - Cause: Grok API returns unescaped `\x`, `\t`, `\n`, `\r` in strings
-   - Fix: Automatically double-escapes: `\n` → `\\n`
-   - Success rate: ~95% of invalid escape errors
+   - Cause: Grok API returns unescaped backslashes in strings (e.g. `\units`, `\escape`, `\]`)
+   - Fix: Character-level walker strips invalid backslashes inside JSON string values only
+   - Also handles `\u` not followed by 4 hex digits (e.g. `\units`)
+   - Success rate: ~100% (replaces regex approach which missed edge cases)
 
 6. **Over-Escaped Brackets**
    - Error: Various parsing errors
@@ -1387,6 +1389,29 @@ All errors logged with:
 ---
 
 ## Recent Improvements
+
+**2026-03-14**: Character-level JSON sanitization (replaces regex approach)
+- **Root cause found**: Regex `\\(?!["\\/bfnrtu])` cannot distinguish between
+  backslashes inside vs outside JSON string values, and allows `\u` through
+  even when not followed by 4 hex digits (e.g. `\units` → invalid `\uXXXX`)
+- **New approach**: Character-by-character walker in `_sanitize_json_response()`
+  that tracks `in_string` state and only processes escapes inside JSON strings
+- Handles all three JSON parse error types in one pass:
+  1. Invalid `\escape` — strips the backslash (e.g. `\units` → `units`)
+  2. Invalid `\uXXXX` — strips `\` when `\u` not followed by 4 hex digits
+  3. Control characters — escapes literal tab/newline/CR inside string values
+     while preserving them as structural whitespace outside strings
+- Consolidated `extract_json_with_image()` inline sanitization to use shared method
+- Simplified `_try_repair_json()` — removed redundant unicode lookahead,
+  added nuclear fallback (strip all invalid backslashes)
+- Performance: 140K chars in 15ms
+
+**2026-03-14**: HyperWar HTML import script error handling
+- HTTP download errors caught per-chapter with `logger.error`, processing continues
+- Tracks processed/failed counts, reports summary at end
+- Uses `setup_logging()` from `src.utils.logger` with file output to `logs/import_hyperwar.log`
+- Interactive prompts use `print()` for clean terminal output
+- Server politeness: 0.5s delay between chapter downloads
 
 **2026-03-11**: JSON parsing robustness improvements
 - **Control Character Sanitization**: Added to all 3 JSON extraction methods

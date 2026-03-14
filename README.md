@@ -199,21 +199,20 @@ See [Configuration Guide](docs/current/core/CONFIGURATION.md) for all options.
 ### Add New Content
 
 ```bash
-# 1. Convert PDF (if needed)
+# From HyperWar HTML (ibiblio.org)
+python3 scripts/import_hyperwar_html.py https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/index.html
+
+# From PDF
 python3 scripts/pdf_to_markdown.py book.pdf "BookName"
 
-# 2. Generate metadata
+# Then generate metadata and run pipeline
 python3 scripts/generate_missing_metadata.py
-
-# 3. Complete with AI
 python3 scripts/complete_metadata_with_grok.py
-
-# 4. Run pipeline
 python3 phase1_parse.py
 python3 phase2_retry.py
 ```
 
-See [Adding Data Sources](docs/current/pipeline/ADDING_DATA_SOURCES.md)
+See [Adding Data Sources](docs/current/pipeline/ADDING_DATA_SOURCES.md) | [HyperWar HTML Import](docs/current/pipeline/HYPERWAR_HTML_IMPORT.md)
 
 ### Find and Merge Duplicates
 
@@ -414,6 +413,7 @@ See [Testing Guide](docs/current/core/TESTING.md)
 
 **Adding New Sources:**
 - See [Adding Data Sources](docs/current/pipeline/ADDING_DATA_SOURCES.md)
+- See [HyperWar HTML Import](docs/current/pipeline/HYPERWAR_HTML_IMPORT.md)
 - See [PDF Conversion](docs/current/pipeline/PDF_CONVERSION.md)
 - See [Papers and Articles](docs/current/pipeline/PAPERS_AND_ARTICLES.md)
 
