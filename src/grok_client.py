@@ -589,7 +589,7 @@ class GrokClient:
         self, response: str, error_msg: str, cache_type: str, prompt: str, temperature: float
     ) -> None:
         """Handle short/invalid response errors with auto-clear."""
-        logger.error("API returned short/invalid response (%d chars)", len(response))
+        logger.error("API returned short/invalid response (%d chars) — cache cleared, will retry", len(response))
         logger.debug("Response: %s", response)
         
         # Auto-clear corrupted cache entry
@@ -597,10 +597,7 @@ class GrokClient:
         cache_key = self._make_cache_key(prompt, temperature)
         if cache_key in cache:
             cache.pop(cache_key, None)
-            logger.warning("Corrupted cache entry cleared automatically")
         
-        clear_cmd = self._make_cache_clear_command(cache_type, prompt, temperature)
-        logger.error(f"💡 If error persists, manually clear: {clear_cmd}")
         raise GrokAPIError(
             f"API returned invalid response: {error_msg}. Response: {response[:200]}"
         )
@@ -612,13 +609,13 @@ class GrokClient:
         response_len = len(response)
         if response_len > 100000:
             logger.error(
-                "Response truncated at %d chars - likely hit max_tokens limit",
+                "Response truncated at %d chars — likely hit max_tokens limit (manual split needed)",
                 response_len,
             )
-            logger.error("💡 Consider splitting this chapter into smaller sections")
         else:
             logger.error(
-                "Response truncated at %d chars - transient API error", response_len
+                "Response truncated at %d chars — transient API error, cache cleared, will retry",
+                response_len,
             )
             
             # Auto-clear corrupted cache entry
@@ -626,12 +623,8 @@ class GrokClient:
             cache_key = self._make_cache_key(prompt, temperature)
             if cache_key in cache:
                 cache.pop(cache_key, None)
-                logger.warning("Corrupted cache entry cleared automatically")
-            
-            clear_cmd = self._make_cache_clear_command(cache_type, prompt, temperature)
-            logger.error(f"💡 If error persists, manually clear: {clear_cmd}")
 
-        logger.error("JSON error: %s", error_msg)
+        logger.debug("JSON error: %s", error_msg)
         logger.debug("Last 200 chars: ...%s", response[-200:])
         raise GrokAPIError(
             f"API response truncated at {response_len} chars. "
