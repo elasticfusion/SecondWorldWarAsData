@@ -199,6 +199,17 @@ class GrokClient:
 
             self._handle_api_errors(response)
             result = response.json()
+            
+            # Validate response structure
+            if "choices" not in result or not result["choices"]:
+                raise GrokAPIError(f"Invalid API response structure: {result}")
+            
+            content = result["choices"][0]["message"]["content"]
+            
+            # Validate minimum response length (should be at least valid JSON)
+            if len(content) < 10:
+                raise GrokAPIError(f"API returned suspiciously short response ({len(content)} chars): {content}")
+            
             self._log_api_response(result)
 
             return result
@@ -475,11 +486,8 @@ class GrokClient:
             content = content[:-3]
         content = content.strip()
 
-        # Sanitize control characters
-        import re
-
-        content = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", content)
-        content = re.sub(r'\\(?!["\\/bfnrtu])', r"\\\\", content)
+        # Sanitize
+        content = self._sanitize_json_response(content)
 
         try:
             result = json.loads(content)
@@ -515,14 +523,55 @@ class GrokClient:
         return response.strip()
 
     def _sanitize_json_response(self, response: str) -> str:
-        """Sanitize JSON response by removing control chars and fixing escapes."""
+        """Sanitize JSON response by removing control chars and fixing invalid escapes."""
         import re
 
-        # Remove control characters (0x00-0x1f except whitespace)
+        # Remove non-whitespace control characters
         response = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", response)
-        # Fix invalid escape sequences (valid JSON escapes: " \ / b f n r t u)
-        response = re.sub(r'\\(?!["\\/bfnrtu]|u[0-9a-fA-F]{4})', r"\\\\", response)
-        return response
+
+        # Map for control chars that need escaping inside JSON strings
+        _ctrl_escape = {'\t': '\\t', '\n': '\\n', '\r': '\\r'}
+
+        # Fix invalid escapes and control chars by walking character by character,
+        # only processing content inside JSON string values.
+        result = []
+        i = 0
+        in_string = False
+        n = len(response)
+        while i < n:
+            ch = response[i]
+            if not in_string:
+                if ch == '"':
+                    in_string = True
+                result.append(ch)
+                i += 1
+            else:
+                # Inside a JSON string
+                if ch == '"':
+                    in_string = False
+                    result.append(ch)
+                    i += 1
+                elif ch == '\\' and i + 1 < n:
+                    nxt = response[i + 1]
+                    if nxt in '"\\/bfnrt':
+                        result.append(ch)
+                        result.append(nxt)
+                        i += 2
+                    elif nxt == 'u' and i + 5 < n and all(
+                        c in '0123456789abcdefABCDEF' for c in response[i+2:i+6]
+                    ):
+                        result.append(response[i:i+6])
+                        i += 6
+                    else:
+                        # Invalid escape — remove the backslash
+                        i += 1
+                elif ch in _ctrl_escape:
+                    result.append(_ctrl_escape[ch])
+                    i += 1
+                else:
+                    result.append(ch)
+                    i += 1
+        return ''.join(result)
 
     def _make_cache_clear_command(
         self, cache_type: str, prompt: str, temperature: float
@@ -537,20 +586,29 @@ class GrokClient:
         )
 
     def _handle_short_response_error(
-        self, response: str, error_msg: str, clear_cmd: str
+        self, response: str, error_msg: str, cache_type: str, prompt: str, temperature: float
     ) -> None:
-        """Handle short/invalid response errors."""
+        """Handle short/invalid response errors with auto-clear."""
         logger.error("API returned short/invalid response (%d chars)", len(response))
         logger.debug("Response: %s", response)
-        logger.error(f"💡 Clear cache: {clear_cmd}")
+        
+        # Auto-clear corrupted cache entry
+        cache = self._get_cache(cache_type)
+        cache_key = self._make_cache_key(prompt, temperature)
+        if cache_key in cache:
+            cache.pop(cache_key, None)
+            logger.warning("Corrupted cache entry cleared automatically")
+        
+        clear_cmd = self._make_cache_clear_command(cache_type, prompt, temperature)
+        logger.error(f"💡 If error persists, manually clear: {clear_cmd}")
         raise GrokAPIError(
             f"API returned invalid response: {error_msg}. Response: {response[:200]}"
         )
 
     def _handle_truncation_error(
-        self, response: str, error_msg: str, clear_cmd: str
+        self, response: str, error_msg: str, cache_type: str, prompt: str, temperature: float
     ) -> None:
-        """Handle truncated response errors."""
+        """Handle truncated response errors with auto-clear."""
         response_len = len(response)
         if response_len > 100000:
             logger.error(
@@ -562,7 +620,16 @@ class GrokClient:
             logger.error(
                 "Response truncated at %d chars - transient API error", response_len
             )
-            logger.error(f"💡 Clear cache: {clear_cmd}")
+            
+            # Auto-clear corrupted cache entry
+            cache = self._get_cache(cache_type)
+            cache_key = self._make_cache_key(prompt, temperature)
+            if cache_key in cache:
+                cache.pop(cache_key, None)
+                logger.warning("Corrupted cache entry cleared automatically")
+            
+            clear_cmd = self._make_cache_clear_command(cache_type, prompt, temperature)
+            logger.error(f"💡 If error persists, manually clear: {clear_cmd}")
 
         logger.error("JSON error: %s", error_msg)
         logger.debug("Last 200 chars: ...%s", response[-200:])
@@ -582,18 +649,16 @@ class GrokClient:
 
         logger.debug("Attempting to fix invalid escape sequences...")
 
-        # Fix 1: Replace invalid escapes
-        repaired = re.sub(r'\\(?!["\\/bfnrtu]|u[0-9a-fA-F]{4})', r"\\\\", response)
-        repaired = re.sub(r'\\(?=["}\]])', r"\\\\", repaired)
-
+        # Fix 1: Double-escape invalid backslashes
+        repaired = re.sub(r'\\(?!["\\/bfnrtu])', r"\\\\", response)
         try:
             result = json.loads(repaired)
-            logger.info("✓ JSON repaired successfully (invalid escapes fixed)")
+            logger.info("✓ JSON repaired (double-escaped invalid backslashes)")
             return result
         except json.JSONDecodeError:
             pass
 
-        # Fix 2: Remove invalid backslashes
+        # Fix 2: Remove invalid backslashes entirely
         try:
             ultra_clean = re.sub(r'\\([^"\\/bfnrtu])', r"\1", response)
             result = json.loads(ultra_clean)
@@ -607,6 +672,15 @@ class GrokClient:
             cleaned = response.replace(r"\[", "[").replace(r"\]", "]")
             result = json.loads(cleaned)
             logger.info("✓ JSON repaired (removed escaped brackets)")
+            return result
+        except json.JSONDecodeError:
+            pass
+
+        # Fix 4: Nuclear - remove ALL backslashes except valid JSON escapes
+        try:
+            nuclear = re.sub(r'\\(?!["\\/bfnrtu])', '', response)
+            result = json.loads(nuclear)
+            logger.info("✓ JSON repaired (stripped all invalid backslashes)")
             return result
         except json.JSONDecodeError:
             pass
@@ -647,17 +721,17 @@ class GrokClient:
             return json.loads(response)
         except json.JSONDecodeError as e:
             error_msg = str(e)
-            clear_cmd = self._make_cache_clear_command(cache_type, prompt, temperature)
 
-            # Handle short responses
+            # Handle short responses (auto-clear cache)
             if len(response) < 500:
-                self._handle_short_response_error(response, error_msg, clear_cmd)
+                self._handle_short_response_error(response, error_msg, cache_type, prompt, temperature)
 
-            # Handle truncated responses
+            # Handle truncated responses (auto-clear cache)
             if "Unterminated string" in error_msg or "Expecting" in error_msg:
-                self._handle_truncation_error(response, error_msg, clear_cmd)
+                self._handle_truncation_error(response, error_msg, cache_type, prompt, temperature)
 
             # Try to repair JSON
+            clear_cmd = self._make_cache_clear_command(cache_type, prompt, temperature)
             repaired = self._try_repair_json(response, error_msg)
             if repaired is not None:
                 return repaired

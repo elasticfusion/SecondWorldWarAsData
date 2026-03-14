@@ -51,6 +51,7 @@ Essential architecture, configuration, and API documentation.
 
 - **[ISO_COUNTRY_CODES.md](core/ISO_COUNTRY_CODES.md)** - ISO 3166-1 alpha-3 country codes
 - **[JSON_REPAIR.md](core/JSON_REPAIR.md)** - Automatic JSON repair patterns
+- **[CACHE_AUTO_RECOVERY.md](core/CACHE_AUTO_RECOVERY.md)** - Cache corruption auto-recovery
 
 ### Testing
 
