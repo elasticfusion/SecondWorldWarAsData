@@ -665,6 +665,7 @@ class GrokClient:
         temperature: float = 0.1,
         use_cache: bool = True,
         cache_type: str = "default",
+        _retried: bool = False,
     ) -> Dict[str, Any]:
         """
         Get JSON response from Grok API.
@@ -682,6 +683,16 @@ class GrokClient:
         response = self.chat_completion(
             prompt, system_prompt, temperature, use_cache, cache_type
         )
+
+        # Auto-retry short responses before even trying to parse
+        if not _retried and len(response) < 500:
+            logger.warning("Short response (%d chars), clearing cache and retrying", len(response))
+            cache = self._get_cache(cache_type)
+            cache_key = self._make_cache_key(prompt, temperature)
+            cache.pop(cache_key, None)
+            return self.extract_json(
+                prompt, system_prompt, temperature, False, cache_type, _retried=True
+            )
 
         # Clean and sanitize response
         response = self._strip_markdown_wrapper(response)

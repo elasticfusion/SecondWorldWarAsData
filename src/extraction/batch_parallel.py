@@ -94,11 +94,12 @@ def _process_batch_results(
             results["failed"] += 1
         elif isinstance(result, dict):
             logger.info(
-                "  ✓ %s: dates=%s, places=%s, groups=%s",
+                "  ✓ %s: dates=%s, places=%s, groups=%s, people=%s",
                 name,
                 result.get("dates"),
                 result.get("places"),
                 result.get("groups"),
+                result.get("people"),
             )
             results["processed"] += 1
             results["chapters"].append(name)
@@ -236,6 +237,7 @@ async def extract_all_async(
         extract_dates_batch_async(event_data, parsed_data, grok_client, output_root),
         extract_places_batch_async(event_data, parsed_data, grok_client, output_root),
         extract_people_groups_batch_async(event_data, grok_client, output_root),
+        extract_people_batch_async(event_data, grok_client, output_root),
         return_exceptions=True,
     )
 
@@ -248,6 +250,9 @@ async def extract_all_async(
         ),
         "groups": (
             results[2] if not isinstance(results[2], Exception) else str(results[2])
+        ),
+        "people": (
+            results[3] if not isinstance(results[3], Exception) else str(results[3])
         ),
     }
 
