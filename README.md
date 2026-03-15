@@ -412,7 +412,7 @@ kill $(cat .openserp.pid)
 Docker alternative:
 ```bash
 cd openserp
-docker compose up -d    # Runs on port 7000 by default
+docker compose up -d    # Runs on port 7001
 ```
 
 See [OpenSERP Integration](docs/current/features/external-maps/openserp-integration.md) for full details.

@@ -129,22 +129,38 @@ flowchart TD
     GetName -->|Yes| SearchGrok["Search Grokipedia<br/>HTTP GET with timeout"]
     
     SearchGrok --> GrokFound{Text<br/>found?}
-    GrokFound -->|Yes| ExtractGrok["Grok AI: extract structured JSON<br/>birth/death, ranks, units,<br/>awards, education, family"]
+    GrokFound -->|Yes| ExtractGrok["Grok AI: extract structured JSON<br/>birth/death, ranks, units,<br/>awards, education, family,<br/>source_urls"]
     GrokFound -->|No| SearchWiki
     ExtractGrok --> MergeGrok["Merge into bio_profile<br/>(simple fields, lists, family)"]
     MergeGrok --> SearchWiki
     
     SearchWiki["Search Wikipedia API"] --> WikiFound{Text<br/>found?}
-    WikiFound -->|Yes| ExtractWiki["Grok AI: extract structured JSON<br/>(same schema)"]
+    WikiFound -->|Yes| ExtractWiki["Grok AI: extract structured JSON<br/>(same schema + source_urls)"]
     WikiFound -->|No| CheckRefs
     ExtractWiki --> MergeWiki[Merge into bio_profile]
     MergeWiki --> CheckRefs
     
     CheckRefs{References<br/>enabled?}
     CheckRefs -->|Yes| FollowRefs["Follow up to 3 references<br/>Grokipedia → Wikipedia fallback"]
-    CheckRefs -->|No| CheckEnriched
+    CheckRefs -->|No| ValidateURLs
     FollowRefs --> MergeRefs[Merge reference data]
-    MergeRefs --> CheckEnriched
+    MergeRefs --> ValidateURLs
+    
+    ValidateURLs{Source URLs<br/>returned?}
+    ValidateURLs -->|Yes| FetchURLs["Fetch each URL<br/>(HTTP GET)"]
+    ValidateURLs -->|No| CheckEnriched
+    
+    FetchURLs --> URLExists{HTTP 200?}
+    URLExists -->|No| MarkBroken["Mark URL broken"]
+    URLExists -->|Yes| GrokVerify["Submit page content to Grok:<br/>Is this about the person?<br/>Contains relevant bio data?"]
+    
+    GrokVerify --> Relevant{Relevant?}
+    Relevant -->|Yes| StoreURL["Add to biography_sources<br/>(confidence: 0.9)"]
+    Relevant -->|No| MarkIrrelevant["Discard URL"]
+    
+    MarkBroken --> CheckEnriched
+    StoreURL --> CheckEnriched
+    MarkIrrelevant --> CheckEnriched
     
     CheckEnriched{Any new<br/>data added?}
     CheckEnriched -->|No| LogNoData["Log: no new data found"]
@@ -172,12 +188,16 @@ flowchart TD
     style ExtractWiki fill:#87CEEB
     style Validate fill:#DDA0DD
     style FollowRefs fill:#FFE4B5
+    style FetchURLs fill:#FFB6C1
+    style GrokVerify fill:#87CEEB
+    style StoreURL fill:#90EE90
 ```
 
 **Key Operations:**
 - Two-source search: Grokipedia first, then Wikipedia (both results merged)
-- Grok AI extracts structured biographical JSON from raw source text
+- Grok AI extracts structured biographical JSON from raw source text, including source URLs
 - Reference following: up to 3 referenced entities searched for additional context
+- URL validation: each source URL is fetched, then page content submitted to Grok to verify relevance
 - Pydantic model validation before saving
 - All API responses cached (Grok client cache)
 - Currently people-only; weather/maps enrichment planned but not yet implemented

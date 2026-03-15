@@ -3,6 +3,7 @@ Biographical enrichment from external sources.
 
 Searches Grokipedia and Wikipedia for additional biographical data
 after person extraction. Follows references for deeper enrichment.
+Validates source URLs by fetching content and verifying relevance via Grok.
 """
 
 import json
@@ -15,6 +16,10 @@ import requests
 from src.grok_client import GrokClient
 
 logger = logging.getLogger(__name__)
+
+_URL_HEADERS = {
+    "User-Agent": "WWII-Data-Extraction-Bot/1.0 (Historical research project)"
+}
 
 
 def search_grokipedia(
@@ -36,19 +41,22 @@ def search_grokipedia(
                 return response.text
 
             logger.debug(
-                f"Grokipedia returned {response.status_code} for {person_name}"
+                "Grokipedia returned %d for %s", response.status_code, person_name
             )
             return None
 
         except requests.Timeout as e:
             if attempt < max_retries - 1:
                 logger.debug(
-                    f"Grokipedia timeout for {person_name}, retrying ({attempt + 2}/{max_retries})..."
+                    "Grokipedia timeout for %s, retrying (%d/%d)...",
+                    person_name,
+                    attempt + 2,
+                    max_retries,
                 )
             else:
-                logger.debug(f"Grokipedia timeout for {person_name}: {e}")
+                logger.debug("Grokipedia timeout for %s: %s", person_name, e)
         except Exception as e:
-            logger.debug(f"Grokipedia search failed for {person_name}: {e}")
+            logger.debug("Grokipedia search failed for %s: %s", person_name, e)
             return None
 
     return None
@@ -91,20 +99,24 @@ def _handle_wikipedia_error(
     if isinstance(e, requests.Timeout):
         if attempt < max_retries - 1:
             logger.debug(
-                f"Wikipedia timeout for {person_name}, retrying ({attempt + 2}/{max_retries})..."
+                "Wikipedia timeout for %s, retrying (%d/%d)...",
+                person_name,
+                attempt + 2,
+                max_retries,
             )
             return True
-        logger.debug(f"Wikipedia timeout for {person_name}: {e}")
+        logger.debug("Wikipedia timeout for %s: %s", person_name, e)
         return False
 
     if isinstance(e, requests.HTTPError) and e.response.status_code == 403:
         logger.warning(
-            f"Wikipedia API blocked request for {person_name} (403 Forbidden). "
-            f"Wikipedia may be rate limiting or blocking automated requests."
+            "Wikipedia API blocked request for %s (403 Forbidden). "
+            "Wikipedia may be rate limiting or blocking automated requests.",
+            person_name,
         )
         return False
 
-    logger.debug(f"Wikipedia search failed for {person_name}: {e}")
+    logger.debug("Wikipedia search failed for %s: %s", person_name, e)
     return False
 
 
@@ -125,13 +137,16 @@ def search_wikipedia(
 
             if response.status_code == 403:
                 logger.warning(
-                    f"Wikipedia API blocked request for {person_name} (403 Forbidden). "
-                    f"Wikipedia may be rate limiting or blocking automated requests. "
-                    f"Consider using a different approach or contacting Wikipedia."
+                    "Wikipedia API blocked request for %s (403 Forbidden). "
+                    "Wikipedia may be rate limiting or blocking automated requests. "
+                    "Consider using a different approach or contacting Wikipedia.",
+                    person_name,
                 )
                 return None
 
-            logger.debug(f"Wikipedia returned {response.status_code} for {person_name}")
+            logger.debug(
+                "Wikipedia returned %d for %s", response.status_code, person_name
+            )
             return None
 
         except Exception as e:
@@ -181,7 +196,8 @@ Return JSON with any available biographical data:
   }},
   "aliases": ["Nickname1", "Nickname2"],
   "biographical_details": "Brief summary",
-  "references": ["Unit name", "Organization name", "Related person"]
+  "references": ["Unit name", "Organization name", "Related person"],
+  "source_urls": ["https://en.wikipedia.org/wiki/...", "https://..."]
 }}
 
 Only include fields with actual data. Return empty object if no data found."""
@@ -208,7 +224,9 @@ Only include fields with actual data. Return empty object if no data found."""
                     f"Biographical extraction failed for {person_name}, retrying ({attempt + 2}/{max_retries})..."
                 )
             else:
-                logger.debug(f"Biographical extraction failed for {person_name}: {e}")
+                logger.debug(
+                    "Biographical extraction failed for %s: %s", person_name, e
+                )
 
     return None
 
@@ -226,11 +244,11 @@ def search_references(
         # Skip if already searched
         ref_normalized = ref.lower().strip()
         if ref_normalized in searched:
-            logger.debug(f"  Skipping duplicate reference: {ref}")
+            logger.debug("  Skipping duplicate reference: %s", ref)
             continue
 
         searched.add(ref_normalized)
-        logger.info(f"  Searching reference: {ref}")
+        logger.info("  Searching reference: %s", ref)
 
         # Try Grokipedia first
         text = search_grokipedia(ref)
@@ -254,6 +272,78 @@ def search_references(
     return enrichment_data
 
 
+def _fetch_url_content(url: str, timeout: int = 15) -> Optional[str]:
+    """Fetch URL content. Returns text or None on failure."""
+    try:
+        resp = requests.get(
+            url, headers=_URL_HEADERS, timeout=timeout, allow_redirects=True
+        )
+        if resp.status_code == 200:
+            return resp.text
+        logger.debug("  URL returned %d: %s", resp.status_code, url)
+    except requests.RequestException as exc:
+        logger.debug("  URL fetch failed (%s): %s", exc, url)
+    return None
+
+
+def _validate_url_relevance(
+    url: str,
+    page_text: str,
+    person_name: str,
+    grok_client: GrokClient,
+) -> bool:
+    """Ask Grok whether page content is relevant to the person."""
+    prompt = (
+        f"I fetched the following web page to verify biographical information "
+        f'about the WWII-era person "{person_name}".\n\n'
+        f"URL: {url}\n\n"
+        f"Page content (first 3000 chars):\n{page_text[:3000]}\n\n"
+        f'Is this page genuinely about "{person_name}" and does it contain '
+        f"relevant biographical or military-service information?\n\n"
+        f'Return JSON: {{"relevant": true/false, "reason": "brief explanation"}}'
+    )
+    try:
+        result = grok_client.extract_json(
+            prompt=prompt, cache_type="api", temperature=0.1
+        )
+        if isinstance(result, dict):
+            return bool(result.get("relevant"))
+    except Exception as exc:
+        logger.debug("  URL relevance check failed: %s", exc)
+    return False
+
+
+def validate_source_urls(
+    urls: list[str],
+    person_name: str,
+    grok_client: GrokClient,
+    max_urls: int = 5,
+) -> list[dict]:
+    """Fetch each URL, verify it exists and is relevant via Grok.
+
+    Returns list of validated source dicts with url, status, and reason.
+    """
+    validated = []
+    for url in urls[:max_urls]:
+        if not url or not url.startswith("http"):
+            continue
+
+        logger.info("  Validating URL: %s", url)
+
+        page_text = _fetch_url_content(url)
+        if page_text is None:
+            logger.info("    ❌ URL unreachable")
+            validated.append({"url": url, "status": "broken", "relevant": False})
+            continue
+
+        relevant = _validate_url_relevance(url, page_text, person_name, grok_client)
+        status = "validated" if relevant else "irrelevant"
+        logger.info("    %s %s", "✅" if relevant else "❌", status)
+        validated.append({"url": url, "status": status, "relevant": relevant})
+
+    return validated
+
+
 def _search_and_enrich(
     person_name: str,
     source_name: str,
@@ -262,7 +352,7 @@ def _search_and_enrich(
     grok_client: GrokClient,
 ) -> bool:
     """Search source and enrich if data found. Returns True if enriched."""
-    logger.info(f"  Searching {source_name}...")
+    logger.info("  Searching %s...", source_name)
     text = search_func(person_name)
 
     if text:
@@ -271,6 +361,46 @@ def _search_and_enrich(
             return _merge_enrichment(bio_profile, data)
 
     return False
+
+
+def _follow_references(bio_profile: Dict[str, Any], grok_client: GrokClient) -> bool:
+    """Follow entity references and merge any enrichment data found."""
+    references = bio_profile.get("references", [])
+    if not references:
+        return False
+    logger.info("  Following %d reference(s)...", len(references))
+    enriched = False
+    for data in search_references(references, grok_client):
+        enriched = _merge_enrichment(bio_profile, data) or enriched
+    return enriched
+
+
+def _validate_and_store_urls(
+    bio_profile: Dict[str, Any],
+    person_name: str,
+    grok_client: GrokClient,
+) -> bool:
+    """Validate source URLs from Grok and store validated ones."""
+    source_urls = bio_profile.pop("source_urls", [])
+    if not source_urls:
+        return False
+    logger.info("  Validating %d source URL(s)...", len(source_urls))
+    results = validate_source_urls(source_urls, person_name, grok_client)
+    validated = [r for r in results if r["relevant"]]
+    if not validated:
+        return False
+    sources = bio_profile.get("biography_sources", [])
+    for r in validated:
+        sources.append(
+            {
+                "source": r["url"],
+                "page": None,
+                "confidence": 0.9,
+                "fields_sourced": ["url_validated"],
+            }
+        )
+    bio_profile["biography_sources"] = sources
+    return True
 
 
 def enrich_person_biography(
@@ -296,7 +426,7 @@ def enrich_person_biography(
         if not person_name:
             return False
 
-        logger.info(f"Enriching: {person_name}")
+        logger.info("Enriching: %s", person_name)
 
         bio_profile = person_data.get("biographical_profile", {})
         enrichment_added = False
@@ -316,14 +446,15 @@ def enrich_person_biography(
 
         # Follow references if enabled
         if search_references_flag:
-            references = bio_profile.get("references", [])
-            if references:
-                logger.info(f"  Following {len(references)} reference(s)...")
-                ref_data = search_references(references, grok_client)
-                for data in ref_data:
-                    enrichment_added = (
-                        _merge_enrichment(bio_profile, data) or enrichment_added
-                    )
+            enrichment_added = (
+                _follow_references(bio_profile, grok_client) or enrichment_added
+            )
+
+        # Validate source URLs returned by Grok
+        enrichment_added = (
+            _validate_and_store_urls(bio_profile, person_name, grok_client)
+            or enrichment_added
+        )
 
         # Save if enriched
         if enrichment_added:
@@ -335,19 +466,19 @@ def enrich_person_biography(
 
                 Person(**person_data)
             except Exception as e:
-                logger.error(f"  ❌ Validation failed for {person_name}: {e}")
+                logger.error("  ❌ Validation failed for %s: %s", person_name, e)
                 return False
 
             with open(person_file, "w", encoding="utf-8") as f:
                 json.dump(person_data, f, indent=2, ensure_ascii=False)
-            logger.info(f"  ✅ Enriched {person_name}")
+            logger.info("  ✅ Enriched %s", person_name)
             return True
         else:
-            logger.info(f"  No new data found")
+            logger.info("  No new data found")
             return False
 
     except Exception as e:
-        logger.error(f"Enrichment failed for {person_file.name}: {e}")
+        logger.error("Enrichment failed for %s: %s", person_file.name, e)
         return False
 
 
@@ -477,7 +608,7 @@ def enrich_all_people(
         Number of people enriched
     """
     if not people_dir.exists():
-        logger.error(f"Directory not found: {people_dir}")
+        logger.error("Directory not found: %s", people_dir)
         return 0
 
     person_files = [
@@ -489,7 +620,7 @@ def enrich_all_people(
     if max_people:
         person_files = person_files[:max_people]
 
-    logger.info(f"Enriching {len(person_files)} people from external sources...")
+    logger.info("Enriching %d people from external sources...", len(person_files))
     logger.info("=" * 60)
 
     enriched = 0
@@ -499,7 +630,9 @@ def enrich_all_people(
             enriched += 1
 
     logger.info("=" * 60)
-    logger.info(f"Enrichment complete: {enriched}/{len(person_files)} people enriched")
+    logger.info(
+        "Enrichment complete: %d/%d people enriched", enriched, len(person_files)
+    )
 
     return enriched
 
