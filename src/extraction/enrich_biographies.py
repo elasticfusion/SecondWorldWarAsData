@@ -623,11 +623,19 @@ def enrich_all_people(
     logger.info("Enriching %d people from external sources...", len(person_files))
     logger.info("=" * 60)
 
+    from src.utils.heartbeat import Heartbeat
+
+    heartbeat = Heartbeat(timeout=300, label="Phase 3")
+    heartbeat.start()
+
     enriched = 0
 
     for person_file in person_files:
         if enrich_person_biography(person_file, grok_client, search_references_flag):
             enriched += 1
+        heartbeat.ping(f"{person_file.stem} ({enriched} enriched)")
+
+    heartbeat.stop()
 
     logger.info("=" * 60)
     logger.info(
