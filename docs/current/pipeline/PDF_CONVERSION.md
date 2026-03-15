@@ -435,7 +435,7 @@ If you control the source:
 
 - [ADDING_DATA_SOURCES.md](ADDING_DATA_SOURCES.md) - Adding content
 - [PAPERS_AND_ARTICLES.md](PAPERS_AND_ARTICLES.md) - Handling papers
-- [DEVELOPMENT.md](DEVELOPMENT.md) - Development guide
+- [DEVELOPMENT.md](../core/DEVELOPMENT.md) - Development guide
 
 ## Summary
 

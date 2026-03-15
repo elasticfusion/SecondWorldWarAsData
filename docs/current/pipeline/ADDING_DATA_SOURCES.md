@@ -407,7 +407,6 @@ After adding new content:
 
 ## Related Documentation
 
-- [PIPELINE.md](PIPELINE.md) - Pipeline overview
-- [METADATA.md](METADATA.md) - Metadata system
-- [PEOPLE_MANAGEMENT.md](PEOPLE_MANAGEMENT.md) - People tracking
-- [PEOPLE_GROUPS.md](PEOPLE_GROUPS.md) - Group management
+- [PIPELINE.md](../core/PIPELINE.md) - Pipeline overview
+- [People Extraction](../features/people/README.md) - People tracking
+- [People Groups](../features/people/groups.md) - Group management

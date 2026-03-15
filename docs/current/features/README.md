@@ -110,8 +110,7 @@ Military equipment extraction with specifications and media.
 ---
 
 ### Casualties (`casualties.py`)
-**Status:** Experimental  
-**Documentation:** [casualties/INTEGRATION.md](casualties/INTEGRATION.md)
+**Status:** Experimental
 
 Casualty data extraction from events.
 

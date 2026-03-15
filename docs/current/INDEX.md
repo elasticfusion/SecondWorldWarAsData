@@ -13,16 +13,6 @@
 
 ---
 
-## Quality Assurance
-
-QA reports and templates.
-
-- **[qa-reports/PERFORMANCE_BENCHMARK_TEMPLATE.md](qa-reports/PERFORMANCE_BENCHMARK_TEMPLATE.md)** - Performance benchmark template
-
-**Historical QA reports archived to:** `../archive/qa-reports-2026-03-13/`
-
----
-
 ## Core Documentation
 
 Essential architecture, configuration, and API documentation.
@@ -88,12 +78,12 @@ External map discovery from archives, museums, and historical sites.
 Person extraction, deduplication, and group management.
 
 - **[README.md](features/people/README.md)** - Overview and file-per-person architecture
-- **[implementation.md](features/people/implementation.md)** - Implementation details
 - **[biographical-enrichment.md](features/people/biographical-enrichment.md)** - Phase 3 biographical enrichment ⭐
 - **[deduplication.md](features/people/deduplication.md)** - Duplicate detection strategy
 - **[duplicate-exclusions.md](features/people/duplicate-exclusions.md)** - False positive prevention
 - **[groups.md](features/people/groups.md)** - Organizations and military units
 - **[GROUP_DEDUPLICATION_SYSTEM.md](features/people/GROUP_DEDUPLICATION_SYSTEM.md)** - Group deduplication v2.0
+- **[TODO_peoplegroup_enrichment.md](features/people/TODO_peoplegroup_enrichment.md)** - Planned: people-to-group enrichment
 
 ### Maps
 
@@ -109,6 +99,11 @@ Military equipment extraction and tracking (experimental).
 - **[MILITARY_EQUIPMENT.md](features/equipment/MILITARY_EQUIPMENT.md)** - Complete proposal and examples
 - **[MILITARY_EQUIPMENT_SUMMARY.md](features/MILITARY_EQUIPMENT_SUMMARY.md)** - Quick summary
 - **[EQUIPMENT_FINAL_STRUCTURE.md](features/equipment/EQUIPMENT_FINAL_STRUCTURE.md)** - Final schema structure
+- **[EQUIPMENT_IMPLEMENTATION_SUMMARY.md](features/equipment/EQUIPMENT_IMPLEMENTATION_SUMMARY.md)** - Implementation summary
+- **[EQUIPMENT_DEDUPLICATION.md](features/equipment/EQUIPMENT_DEDUPLICATION.md)** - Equipment deduplication
+- **[EQUIPMENT_ENTITY_LINKING.md](features/equipment/EQUIPMENT_ENTITY_LINKING.md)** - Entity linking
+- **[EQUIPMENT_MEDIA_INTEGRATION.md](features/equipment/EQUIPMENT_MEDIA_INTEGRATION.md)** - Media integration
+- **[EQUIPMENT_ERROR_HANDLING.md](features/equipment/EQUIPMENT_ERROR_HANDLING.md)** - Error handling
 
 ### Supplemental Material
 
@@ -129,11 +124,22 @@ Parallel chapter processing and batched API calls.
 
 ---
 
-## Quality Assurance
+## Reference
 
+- **[SCHEMA_REFERENCE.md](SCHEMA_REFERENCE.md)** - JSON schema reference
+- **[SCHEMA_EVOLUTION.md](SCHEMA_EVOLUTION.md)** - Schema versioning and migration tools
+- **[VALIDATION_REPORTS.md](VALIDATION_REPORTS.md)** - Validation report generation
+- **[MONGODB_IMPORT_PLAN.md](MONGODB_IMPORT_PLAN.md)** - MongoDB import plan
+- **[FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md)** - Distributed processing options
+- **[TODO.md](TODO.md)** - Outstanding tasks
+- **[TEXT_UTILS.md](core/TEXT_UTILS.md)** - Text utility functions
 - **[qa-reports/PERFORMANCE_BENCHMARK_TEMPLATE.md](qa-reports/PERFORMANCE_BENCHMARK_TEMPLATE.md)** - Performance benchmark template
 
-**Historical QA reports archived to:** `../archive/qa-reports-2026-03-13/`
+---
+
+## Reviews
+
+- **[PHASE2_REVIEW.md](reviews/PHASE2_REVIEW.md)** - Phase 2 operational review and metrics
 
 ---
 

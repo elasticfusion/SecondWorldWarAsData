@@ -248,7 +248,7 @@ jq -r 'select(.place_name == "Normandy") | .map_title' output/maps/*.json
 - [S3_STORAGE.md](S3_STORAGE.md) - S3 configuration guide
 - `contextmanagement/Specs/maps.md` - Technical specification
 - `contextmanagement/Specs/maps_v1_schema.json` - JSON schema
-- [PIPELINE.md](PIPELINE.md) - Complete pipeline documentation
+- [PIPELINE.md](../../core/PIPELINE.md) - Complete pipeline documentation
 
 ## Examples
 

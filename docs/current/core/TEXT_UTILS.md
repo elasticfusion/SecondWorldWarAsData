@@ -256,7 +256,7 @@ python3 -m pytest tests/unit/test_extraction/test_people.py -v
 
 ## Related
 
-- **Code Quality:** [CODE_QUALITY_IMPROVEMENTS_2026-03-13.md](../qa-reports/CODE_QUALITY_IMPROVEMENTS_2026-03-13.md)
+- **Code Quality:** See `contextmanagement/Specs/quality_assurance.md`
 - **People Extraction:** [../features/people/README.md](../features/people/README.md)
 - **Deduplication:** [../features/people/deduplication.md](../features/people/deduplication.md)
 
