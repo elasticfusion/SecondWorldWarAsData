@@ -48,17 +48,15 @@ def _parse_legacy_metadata(content: str) -> Metadata:
 
     if len(lines) >= 1:
         metadata.series = lines[0]
-    if len(lines) >= 2:
-        metadata.book = lines[1] if len(lines) >= 3 else ""
     if len(lines) >= 3:
         metadata.book = lines[2]
+    elif len(lines) >= 2:
+        metadata.book = lines[1]
     if len(lines) >= 4:
         metadata.author = lines[3]
     if len(lines) >= 5:
-        chapter_line = lines[4]
-        metadata.chapter_title = (
-            chapter_line.split(" - ", 1)[1] if " - " in chapter_line else chapter_line
-        )
+        ch = lines[4]
+        metadata.chapter_title = ch.split(" - ", 1)[1] if " - " in ch else ch
     if len(lines) >= 6:
         metadata.license = lines[5]
 

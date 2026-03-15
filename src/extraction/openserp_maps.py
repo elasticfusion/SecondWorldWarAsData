@@ -154,6 +154,44 @@ Respond with ONLY a JSON object:
     return False, url
 
 
+def _find_license_text(url: str, page_timeout: int, headers: dict) -> tuple:
+    """Try to find license text from a URL. Returns (text, license_url)."""
+    base_url = f"{urlparse(url).scheme}://{urlparse(url).netloc}"
+
+    # Try license page via links on the page
+    try:
+        response = requests.get(
+            url, timeout=page_timeout, headers=headers, allow_redirects=True
+        )
+        if response.status_code == 200:
+            text, found_url = _find_license_link(
+                response.text, base_url, page_timeout, headers
+            )
+            if text:
+                return text, found_url
+    except Exception:  # nosec B110
+        pass
+
+    # Try common paths
+    text, found_url = _try_common_license_paths(base_url, page_timeout, headers)
+    if text:
+        return text, found_url or url
+
+    # Check main page footer
+    try:
+        response = requests.get(
+            url, timeout=page_timeout, headers=headers, allow_redirects=True
+        )
+        if response.status_code == 200:
+            text = _extract_footer_license(response.text)
+            if text:
+                return text, url
+    except Exception:  # nosec B110
+        pass
+
+    return "", url
+
+
 def _check_license_terms(
     url: str, grok_client: GrokClient, page_timeout: int = 10
 ) -> tuple[bool, str]:
@@ -169,52 +207,17 @@ def _check_license_terms(
     try:
         domain = urlparse(url).netloc
 
-        # Skip license check for .gov and .edu domains
         if _is_trusted_domain(domain):
             logger.info(f"   ✅ Trusted domain ({domain}) - skipping license check")
             return True, url
 
-        base_url = f"{urlparse(url).scheme}://{domain}"
         headers = {"User-Agent": USER_AGENT}
-        license_text = ""
-        license_url = url
-
-        # Try to find license page via links
-        try:
-            response = requests.get(
-                url, timeout=page_timeout, headers=headers, allow_redirects=True
-            )
-            if response.status_code == 200:
-                license_text, license_url = _find_license_link(
-                    response.text, base_url, page_timeout, headers
-                )
-        except Exception:  # nosec B110
-            pass
-
-        # Try common paths if no link found
-        if not license_text:
-            license_text, found_url = _try_common_license_paths(
-                base_url, page_timeout, headers
-            )
-            if found_url:
-                license_url = found_url
-
-        # Check main page footer if no dedicated license page
-        if not license_text:
-            try:
-                response = requests.get(
-                    url, timeout=page_timeout, headers=headers, allow_redirects=True
-                )
-                if response.status_code == 200:
-                    license_text = _extract_footer_license(response.text)
-            except Exception:  # nosec B110
-                pass
+        license_text, license_url = _find_license_text(url, page_timeout, headers)
 
         if not license_text or len(license_text) < 50:
             logger.info(f"   ✅ No license found for {domain} - assuming public domain")
             return True, url
 
-        # Analyze with Grok
         return _analyze_license_with_grok(domain, url, license_text, grok_client)
 
     except Exception as e:
@@ -514,6 +517,79 @@ def _process_search_result(
     return True, 0
 
 
+def _process_place_file(
+    place_file: Path,
+    idx: int,
+    total: int,
+    history,
+    skip_searched: bool,
+    search_limit: int,
+    openserp_url: str,
+    grok_client: GrokClient,
+    page_timeout: int,
+    image_timeout: int,
+    image_storage_path: Optional[str],
+    output_dir: Path,
+    downloaded_urls: set,
+) -> tuple:
+    """Process a single place file for map search. Returns (imported, skipped_searched, skipped_downloaded)."""
+    with open(place_file) as f:
+        place_data = json.load(f)
+
+    place_name = place_data.get("current_name", "")
+    if not place_name:
+        return 0, 0, 0
+
+    if skip_searched and history.has_searched(place_name):
+        logger.info(f"[{idx}/{total}] {place_name} - ⏭️  Previously searched")
+        return 0, 1, 0
+
+    logger.info(f"[{idx}/{total}] {place_name}")
+
+    event_mentions = place_data.get("event_mentions", [])
+    event_context = "WWII operations"
+    date = None
+    if event_mentions:
+        first = event_mentions[0]
+        event_name = first.get("Event_Name", "")
+        sub_event_name = first.get("Sub_event_Name", "")
+        if event_name and sub_event_name:
+            event_context = f"{event_name} - {sub_event_name}"
+
+    results = search_with_openserp(
+        place_name, date, limit=search_limit, openserp_url=openserp_url
+    )
+    history.mark_searched(place_name)
+
+    if not results:
+        logger.info("   ⚠ No results from OpenSERP")
+        return 0, 0, 0
+
+    logger.info(f"   ✓ Found {len(results)} potential map(s) from OpenSERP")
+
+    imported = 0
+    skipped_downloaded = 0
+    for result in results:
+        was_imported, skipped = _process_search_result(
+            result,
+            place_name,
+            place_data,
+            date,
+            event_context,
+            grok_client,
+            page_timeout,
+            image_timeout,
+            image_storage_path,
+            output_dir,
+            downloaded_urls,
+        )
+        if was_imported:
+            imported += 1
+        skipped_downloaded += skipped
+
+    return imported, 0, skipped_downloaded
+
+
 def import_openserp_maps(
     places_dir: Path,
     output_dir: Path,
@@ -577,68 +653,24 @@ def import_openserp_maps(
 
     for idx, place_file in enumerate(place_files, 1):
         try:
-            with open(place_file) as f:
-                place_data = json.load(f)
-
-            place_name = place_data.get("current_name", "")
-            if not place_name:
-                continue
-
-            # Skip if already searched
-            if skip_searched and history.has_searched(place_name):
-                logger.info(
-                    f"[{idx}/{len(place_files)}] {place_name} - ⏭️  Previously searched"
-                )
-                skipped_searched += 1
-                continue
-
-            logger.info(f"[{idx}/{len(place_files)}] {place_name}")
-
-            # Get event context
-            event_mentions = place_data.get("event_mentions", [])
-            event_context = "WWII operations"
-            date = None
-
-            if event_mentions:
-                first_mention = event_mentions[0]
-                event_name = first_mention.get("Event_Name", "")
-                sub_event_name = first_mention.get("Sub_event_Name", "")
-                if event_name and sub_event_name:
-                    event_context = f"{event_name} - {sub_event_name}"
-
-            # Search with OpenSERP
-            results = search_with_openserp(
-                place_name, date, limit=search_limit, openserp_url=openserp_url
+            result_imported, result_skipped_s, result_skipped_d = _process_place_file(
+                place_file,
+                idx,
+                len(place_files),
+                history,
+                skip_searched,
+                search_limit,
+                openserp_url,
+                grok_client,
+                page_timeout,
+                image_timeout,
+                image_storage_path,
+                output_dir,
+                downloaded_urls,
             )
-
-            # Mark as searched
-            history.mark_searched(place_name)
-
-            if not results:
-                logger.info(f"   ⚠ No results from OpenSERP")
-                continue
-
-            logger.info(f"   ✓ Found {len(results)} potential map(s) from OpenSERP")
-
-            # Process each result
-            for result in results:
-                was_imported, skipped = _process_search_result(
-                    result,
-                    place_name,
-                    place_data,
-                    date,
-                    event_context,
-                    grok_client,
-                    page_timeout,
-                    image_timeout,
-                    image_storage_path,
-                    output_dir,
-                    downloaded_urls,
-                )
-                if was_imported:
-                    imported += 1
-                skipped_downloaded += skipped
-
+            imported += result_imported
+            skipped_searched += result_skipped_s
+            skipped_downloaded += result_skipped_d
         except Exception as e:
             logger.warning(f"Error processing {place_file.name}: {e}")
             continue
