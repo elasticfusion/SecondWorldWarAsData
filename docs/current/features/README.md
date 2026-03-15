@@ -207,8 +207,8 @@ Bibliography and reference extraction.
 ## Advanced Features
 
 ### Batch Processing (`batch_parallel.py`)
-**Status:** Experimental  
-**Documentation:** [concurrency/](concurrency/)
+**Status:** Production  
+**Documentation:** [batch_processing/README.md](batch_processing/README.md)
 
 Parallel and batch extraction for performance.
 
@@ -218,20 +218,6 @@ Parallel and batch extraction for performance.
 - Configurable concurrency limits
 - Error handling per file
 - Progress tracking
-
----
-
-### Concurrent Processing (`concurrent.py`)
-**Status:** Experimental  
-**Documentation:** [concurrency/HYBRID_CONCURRENT_IMPLEMENTATION.md](concurrency/HYBRID_CONCURRENT_IMPLEMENTATION.md)
-
-Hybrid concurrent extraction strategy.
-
-**Key Features:**
-- Group-based concurrency
-- Sequential fallback for complex extractions
-- ThreadPoolExecutor for I/O-bound tasks
-- Configurable max workers
 
 ---
 
@@ -337,10 +323,9 @@ supplemental.py (independent)
 
 ## Performance Considerations
 
-- **Batch Processing:** Use `batch_parallel.py` for large datasets
-- **Concurrent Processing:** Use `concurrent.py` for I/O-bound tasks
+- **Parallel Processing:** `batch_parallel.py` processes chapters concurrently with batched API calls (default)
 - **Caching:** All API responses cached in `cache/api/`
-- **Skip Logic:** Processed files tracked to avoid reprocessing
+- **Auto-Recovery:** Corrupted cache entries cleared automatically on retry
 
 ---
 

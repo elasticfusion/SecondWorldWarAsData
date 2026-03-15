@@ -1,8 +1,8 @@
 # Batch and Parallel Processing
 
 **Module:** `src/extraction/batch_parallel.py`  
-**Status:** Experimental  
-**Last Updated:** 2026-03-13
+**Status:** Production  
+**Last Updated:** 2026-03-15
 
 ---
 
@@ -45,6 +45,9 @@ Extract Events  Extract Events  Extract Events
 ├─────────────┼─────────────┼─────────────┤
 │   Groups    │   Groups    │   Groups    │
 │  (parallel) │  (parallel) │  (parallel) │
+├─────────────┼─────────────┼─────────────┤
+│   People    │   People    │   People    │
+│  (parallel) │  (parallel) │  (parallel) │
 └─────────────┴─────────────┴─────────────┘
 ```
 
@@ -57,8 +60,9 @@ Extract Events  Extract Events  Extract Events
 
 **Level 2: Entity-Level**
 - Within each chapter, extract entities in parallel
-- Dates, Places, Groups extracted simultaneously
+- Dates, Places, Groups, People extracted simultaneously
 - Uses `asyncio.gather()`
+- Shared `_batch_extract` helper eliminates code duplication
 
 ---
 
@@ -112,11 +116,12 @@ results = await asyncio.gather(
     extract_dates_batch_async(...),
     extract_places_batch_async(...),
     extract_people_groups_batch_async(...),
+    extract_people_batch_async(...),
     return_exceptions=True
 )
 ```
 
-**All three run simultaneously** instead of sequentially.
+**All four run simultaneously** instead of sequentially.
 
 ### 4. Error Isolation
 
@@ -139,9 +144,9 @@ results = await asyncio.gather(
 **Real-time progress:**
 ```
 Processing batch 1: 3 chapters
-  ✓ chapter1-parsed.json: dates=15, places=8, groups=3
-  ✓ chapter2-parsed.json: dates=12, places=6, groups=2
-  ✓ chapter3-parsed.json: dates=18, places=10, groups=4
+  ✓ chapter1-parsed.json: dates=15, places=8, groups=3, people=12
+  ✓ chapter2-parsed.json: dates=12, places=6, groups=2, people=8
+  ✓ chapter3-parsed.json: dates=18, places=10, groups=4, people=15
 Processing batch 2: 3 chapters
   ...
 ```
@@ -454,6 +459,5 @@ python3 phase2_extract.py  # Without --concurrent
 - [Events Extraction](../events/README.md)
 - [Dates Extraction](../dates/README.md)
 - [Places Extraction](../places/README.md)
-- [Concurrency](../concurrency/HYBRID_CONCURRENT_IMPLEMENTATION.md)
 - [Error Handling](../../core/error_handling.md)
 - [Configuration](../../core/CONFIGURATION.md)
