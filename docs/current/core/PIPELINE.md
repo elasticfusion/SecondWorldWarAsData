@@ -11,7 +11,7 @@ Converts markdown source files into structured JSON with absolute paragraph numb
 Extracts entities and events using Grok AI.
 
 ### Phase 3: Enrichment
-Enriches extracted entities with external data (biographies, weather API, etc.).
+Enriches people with biographical data from Wikipedia/Grokipedia.
 
 ## Phase 1: Parse
 
