@@ -50,6 +50,37 @@ Main extraction pipeline using Grok AI.
 python3 phase2_extract.py [--log-level LEVEL]
 ```
 
+#### `phase3_enrich_data.py`
+Enriches extracted entities with external data.
+
+**What it enriches:**
+- People — biographical data from Wikipedia/Grokipedia (birth/death dates, service history, awards)
+
+**Options:**
+- `--max-items N` — limit items per entity type
+- `--people-only` — skip non-people enrichment
+- `--no-references` — skip reference following (faster)
+
+**Usage:**
+```bash
+python3 phase3_enrich_data.py [--people-only] [--max-items 50]
+```
+
+#### `phase2_retry.py` / `phase3_retry.py`
+Automatic retry wrappers for Phase 2 and Phase 3.
+
+**Features:**
+- Runs the underlying phase script multiple times
+- Counts remaining work after each attempt
+- Stops early when all files are processed
+- Default: 3 attempts
+
+**Usage:**
+```bash
+python3 phase2_retry.py [--max-attempts 5]
+python3 phase3_retry.py [--max-attempts 5]
+```
+
 ### Utility Scripts (`scripts/`)
 
 #### `find_duplicate_people.py`

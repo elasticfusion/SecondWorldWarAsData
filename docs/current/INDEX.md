@@ -47,15 +47,10 @@ Essential architecture, configuration, and API documentation.
 ### Testing
 
 - **[TESTING.md](core/TESTING.md)** - Testing framework and best practices
-- **[TEST_STATUS.md](core/testing/TEST_STATUS.md)** - Current test coverage status
-- **[TEST_DIRECTORY_CLEANUP.md](core/testing/TEST_DIRECTORY_CLEANUP.md)** - Test directory organization
-- **[TESTING_IMPROVEMENTS.md](core/testing/TESTING_IMPROVEMENTS.md)** - Testing improvements log
 
 ### Scripts
 
-- **[SCRIPT_ERROR_HANDLING.md](core/scripts/SCRIPT_ERROR_HANDLING.md)** - Script error handling patterns
-- **[SCRIPTS_REVIEW.md](core/scripts/SCRIPTS_REVIEW.md)** - Scripts review and analysis
-- **[MERGE_SCRIPTS_COMPARISON.md](core/scripts/MERGE_SCRIPTS_COMPARISON.md)** - Merge script comparison
+See [scripts/README.md](../../scripts/README.md) for the complete scripts reference.
 
 ---
 
@@ -64,13 +59,10 @@ Essential architecture, configuration, and API documentation.
 Data ingestion and processing workflows.
 
 - **[RETRY_WRAPPERS.md](pipeline/RETRY_WRAPPERS.md)** - Automatic retry for Phase 2 & 3 ⭐
-- **[PHASE1_IMPLEMENTATION_SUMMARY.md](pipeline/PHASE1_IMPLEMENTATION_SUMMARY.md)** - Phase 1 implementation
-- **[PHASE2_COMPLETE.md](pipeline/PHASE2_COMPLETE.md)** - Phase 2 extraction guide
-- **[PHASE3_COMPLETE.md](pipeline/PHASE3_COMPLETE.md)** - Phase 3 enrichment guide
-- **[PHASE2_REPROCESSING_ISSUES.md](pipeline/PHASE2_REPROCESSING_ISSUES.md)** - Reprocessing troubleshooting
 - **[ADDING_DATA_SOURCES.md](pipeline/ADDING_DATA_SOURCES.md)** - How to add new books/content
 - **[PAPERS_AND_ARTICLES.md](pipeline/PAPERS_AND_ARTICLES.md)** - Handling papers, articles, and non-chapter documents
 - **[PDF_CONVERSION.md](pipeline/PDF_CONVERSION.md)** - Converting PDFs to markdown
+- **[HYPERWAR_HTML_IMPORT.md](pipeline/HYPERWAR_HTML_IMPORT.md)** - HyperWar HTML import
 
 ---
 
@@ -97,10 +89,11 @@ Person extraction, deduplication, and group management.
 
 - **[README.md](features/people/README.md)** - Overview and file-per-person architecture
 - **[implementation.md](features/people/implementation.md)** - Implementation details
+- **[biographical-enrichment.md](features/people/biographical-enrichment.md)** - Phase 3 biographical enrichment ⭐
 - **[deduplication.md](features/people/deduplication.md)** - Duplicate detection strategy
 - **[duplicate-exclusions.md](features/people/duplicate-exclusions.md)** - False positive prevention
 - **[groups.md](features/people/groups.md)** - Organizations and military units
-- **[GROUP_DEDUPLICATION_SYSTEM.md](features/people/GROUP_DEDUPLICATION_SYSTEM.md)** - Group deduplication v2.0 ⭐
+- **[GROUP_DEDUPLICATION_SYSTEM.md](features/people/GROUP_DEDUPLICATION_SYSTEM.md)** - Group deduplication v2.0
 
 ### Maps
 
@@ -116,8 +109,6 @@ Military equipment extraction and tracking (experimental).
 - **[MILITARY_EQUIPMENT.md](features/equipment/MILITARY_EQUIPMENT.md)** - Complete proposal and examples
 - **[MILITARY_EQUIPMENT_SUMMARY.md](features/MILITARY_EQUIPMENT_SUMMARY.md)** - Quick summary
 - **[EQUIPMENT_FINAL_STRUCTURE.md](features/equipment/EQUIPMENT_FINAL_STRUCTURE.md)** - Final schema structure
-- **[EQUIPMENT_PEOPLE_PATTERN.md](features/equipment/EQUIPMENT_PEOPLE_PATTERN.md)** - Pattern comparison
-- **[EQUIPMENT_DESCRIPTION_FIELDS.md](features/equipment/EQUIPMENT_DESCRIPTION_FIELDS.md)** - Description fields
 
 ### Supplemental Material
 
@@ -129,41 +120,20 @@ Citations, footnotes, endnotes, and bibliographic references.
 - **[SUPPLEMENTAL_VALIDATION.md](features/supplemental/SUPPLEMENTAL_VALIDATION.md)** - URL validation
 - **[SUPPLEMENTAL_ERROR_HANDLING.md](features/supplemental/SUPPLEMENTAL_ERROR_HANDLING.md)** - Error handling
 - **[SUPPLEMENTAL_TESTING.md](features/supplemental/SUPPLEMENTAL_TESTING.md)** - Testing guide
-- **[SUPPLEMENTAL_QA_RESULTS.md](features/supplemental/SUPPLEMENTAL_QA_RESULTS.md)** - QA results
 
-### Batch Processing & Concurrency
+### Batch Processing
 
 Parallel chapter processing and batched API calls.
 
 - **[batch_processing/README.md](features/batch_processing/README.md)** - Batch and parallel processing architecture ⭐
 
-**Historical concurrency docs archived to:** `../archive/concurrency/`
-
-### Casualties
-
-Casualty tracking (experimental).
-
-- **[README.md](features/casualties/README.md)** - Casualties feature documentation
-
 ---
 
 ## Quality Assurance
 
-QA reports and improvement documentation.
+- **[qa-reports/PERFORMANCE_BENCHMARK_TEMPLATE.md](qa-reports/PERFORMANCE_BENCHMARK_TEMPLATE.md)** - Performance benchmark template
 
-- **[2026-03-02-grok-search.md](qa-reports/2026-03-02-grok-search.md)** - Grok search QA report
-- **[grok-search-improvements.md](qa-reports/grok-search-improvements.md)** - Quality improvements
-- **[EQUIPMENT_QA_REPORT.md](qa-reports/EQUIPMENT_QA_REPORT.md)** - Equipment feature QA
-- **[2026-03-03-testing-code.md](qa-reports/2026-03-03-testing-code.md)** - Testing code QA
-- **[QA_BLACK.md](qa-reports/QA_BLACK.md)** - Black formatter QA
-- **[QA_LOGISTICS.md](qa-reports/QA_LOGISTICS.md)** - Logistics feature QA
-- **[QA_VULTURE.md](qa-reports/QA_VULTURE.md)** - Dead code detection QA
-
----
-
-## Changelog
-
-- **[CHANGELOG_2026_03_08.md](CHANGELOG_2026_03_08.md)** - Latest changes (retry wrappers, group dedup v2.0)
+**Historical QA reports archived to:** `../archive/qa-reports-2026-03-13/`
 
 ---
 

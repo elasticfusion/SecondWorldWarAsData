@@ -1,0 +1,74 @@
+{
+  "phase_1_parse_workflow": {
+    "heading": "Phase 1: Parse Workflow",
+    "hash": "b1837ff3eb4b",
+    "file": "phase_1_parse_workflow.png",
+    "source": "WORKFLOW_DIAGRAMS.md"
+  },
+  "phase_2_extract_workflow": {
+    "heading": "Phase 2: Extract Workflow",
+    "hash": "99c69c2736af",
+    "file": "phase_2_extract_workflow.png",
+    "source": "WORKFLOW_DIAGRAMS.md"
+  },
+  "phase_3_enrich_workflow": {
+    "heading": "Phase 3: Enrich Workflow",
+    "hash": "af8e9ba3d9ce",
+    "file": "phase_3_enrich_workflow.png",
+    "source": "WORKFLOW_DIAGRAMS.md"
+  },
+  "complete_pipeline_flow": {
+    "heading": "Complete Pipeline Flow",
+    "hash": "4aa7e2c2f692",
+    "file": "complete_pipeline_flow.png",
+    "source": "WORKFLOW_DIAGRAMS.md"
+  },
+  "event_extraction_detail": {
+    "heading": "Event Extraction Detail",
+    "hash": "767ad87543b7",
+    "file": "event_extraction_detail.png",
+    "source": "WORKFLOW_DIAGRAMS.md"
+  },
+  "entity_deduplication_flow": {
+    "heading": "Entity Deduplication Flow",
+    "hash": "177c78f43bc1",
+    "file": "entity_deduplication_flow.png",
+    "source": "WORKFLOW_DIAGRAMS.md"
+  },
+  "validation_workflow": {
+    "heading": "Validation Workflow",
+    "hash": "c9b2b083ce66",
+    "file": "validation_workflow.png",
+    "source": "WORKFLOW_DIAGRAMS.md"
+  },
+  "batch_processing_flow": {
+    "heading": "Batch Processing Flow",
+    "hash": "9440316f8fc9",
+    "file": "batch_processing_flow.png",
+    "source": "WORKFLOW_DIAGRAMS.md"
+  },
+  "cache_management_flow": {
+    "heading": "Cache Management Flow",
+    "hash": "f531694bd063",
+    "file": "cache_management_flow.png",
+    "source": "WORKFLOW_DIAGRAMS.md"
+  },
+  "mongodb_import_flow": {
+    "heading": "MongoDB Import Flow",
+    "hash": "844bf0fd1caa",
+    "file": "mongodb_import_flow.png",
+    "source": "WORKFLOW_DIAGRAMS.md"
+  },
+  "error_handling_recovery_flow": {
+    "heading": "Error Handling & Recovery Flow",
+    "hash": "e14d22712fcd",
+    "file": "error_handling_recovery_flow.png",
+    "source": "WORKFLOW_DIAGRAMS.md"
+  },
+  "legend": {
+    "heading": "Legend",
+    "hash": "2db10203bf90",
+    "file": "legend.png",
+    "source": "WORKFLOW_DIAGRAMS.md"
+  }
+}

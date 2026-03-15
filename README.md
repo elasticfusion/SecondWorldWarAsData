@@ -23,17 +23,24 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Set API key
+# Set API key (choose one method)
+
+# Option 1: .env file (recommended — auto-loaded by pipeline)
+cp .env.example .env
+# Then edit .env with your key
+
+# Option 2: Environment variable
 export GROK_API_KEY="your-api-key"  # Linux/macOS (current session)
-# or
-echo 'export GROK_API_KEY="your-api-key"' >> ~/.bashrc  # Linux/macOS (permanent)
-source ~/.bashrc
-# or
-set GROK_API_KEY=your-api-key       # Windows CMD (current session)
-setx GROK_API_KEY "your-api-key"    # Windows CMD (permanent)
-# or
-$env:GROK_API_KEY="your-api-key"    # Windows PowerShell (current session)
-[System.Environment]::SetEnvironmentVariable('GROK_API_KEY','your-api-key','User')  # PowerShell (permanent)
+```
+
+**`.env` file format** (see `.env.example`):
+```bash
+# Required
+GROK_API_KEY=xai-a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6
+
+# Optional (defaults shown)
+GROK_API_BASE_URL=https://api.x.ai/v1/chat/completions
+GROK_MODEL=grok-beta
 ```
 
 **Chrome/Chromium Required** (for PDF conversion and web scraping):
@@ -87,6 +94,7 @@ Extracts structured data from WWII historical documents:
 - **Equipment** - Weapons, vehicles, specifications
 - **Weather** - Historical weather data
 - **Logistics** - Supply chain information
+- **Casualties** - Casualty tracking
 - **Maps** - Source and external maps
 - **Citations** - Bibliography and references
 
@@ -106,13 +114,11 @@ SecondWorldWarAsData/
 ├── import_to_mongodb.py           # Import to database
 ├── contentrepository/             # Source documents (markdown)
 ├── output/                        # Extracted data (JSON)
-│   ├── events/
-│   ├── dates/
-│   ├── places/
-│   ├── people/
-│   ├── people_groups/
-│   ├── equipment/
-│   └── ...
+│   ├── {BookName}/                # Per-book: *-parsed.json, *-event.json
+│   ├── dates/                     # Flat: per-date JSON files
+│   ├── places/                    # Flat: per-place JSON files
+│   ├── people/                    # Flat: per-person JSON files (after extraction)
+│   └── people_groups/             # Flat: per-group JSON files
 ├── cache/                         # API response cache
 ├── logs/                          # Pipeline logs
 ├── src/                           # Source code
@@ -155,7 +161,6 @@ SecondWorldWarAsData/
 
 ### Performance
 - **[Batch Processing](docs/current/features/batch_processing/README.md)** - Parallel extraction
-- **[Batch Processing](docs/current/features/batch_processing/README.md)** - Parallel extraction
 
 ### Reference
 - **[API Reference](docs/current/core/API_REFERENCE.md)** - API documentation
@@ -184,10 +189,12 @@ equipment:
 logistics:
   enabled: true
 
-# Configure concurrency
+casualties:
+  enabled: true
+
+# Configure parallel processing
 concurrency:
-  enabled: false
-  max_event_files: 3
+  max_event_files: 3              # Max chapters processed in parallel
 ```
 
 See [Configuration Guide](docs/current/core/CONFIGURATION.md) for all options.
@@ -352,9 +359,9 @@ See [Error Handling Guide](docs/current/core/error_handling.md)
 
 **Phase 3: Enrich**
 - Wikipedia/Grokipedia biographical data
-- Historical weather API
-- External map search
-- URL validation
+- Grok AI structured extraction (birth/death, ranks, awards, units)
+- Reference following for additional context
+- Pydantic validation before save
 
 See [Architecture Guide](docs/current/core/CODE_ARCHITECTURE.md)
 
@@ -364,17 +371,51 @@ See [Architecture Guide](docs/current/core/CODE_ARCHITECTURE.md)
 
 **Grok API:**
 - Model: `grok-beta`
-- Context: 131,072 tokens (~500K chars)
+- Max output tokens: 131,072
 - Temperature: 0.1 (deterministic)
-- Caching: All responses cached
+- Caching: All responses cached via diskcache
 
 **Open-Meteo API (Weather):**
 - Free tier, no API key
 - Historical data 1940-present
 
-**OpenSERP (Maps/Media):**
-- Local service (port 7000)
-- See `openserp/` directory
+**OpenSERP (Maps/Media Search):**
+- Local Go service — uses real search engines (Google, Bing, DuckDuckGo) instead of AI search
+- Required for: external maps, equipment media, supplemental material searches
+- Falls back gracefully if not running (Grok search used instead, but may hallucinate)
+
+Setup:
+```bash
+# Option 1: Quick setup (clones, builds, starts)
+cd tools && bash setup_openserp.sh
+
+# Option 2: Manual — requires Go 1.24+
+cd openserp
+go build -o openserp .
+cd ..
+```
+
+Start/Stop:
+```bash
+# Start (background, port 7001 to match config.yaml)
+cd openserp && ./openserp serve -p 7001 &
+echo $! > ../.openserp.pid
+cd ..
+
+# Verify
+curl -s "http://localhost:7001/mega/search?text=test&limit=1" | head -c 200
+
+# Stop
+kill $(cat .openserp.pid)
+```
+
+Docker alternative:
+```bash
+cd openserp
+docker compose up -d    # Runs on port 7000 by default
+```
+
+See [OpenSERP Integration](docs/current/features/external-maps/openserp-integration.md) for full details.
 
 ---
 
@@ -453,7 +494,6 @@ See individual source documents for specific licenses.
 - ⚠️ Weather, Equipment, Logistics, Casualties
 
 **Comprehensive Documentation:**
-- ✅ 54 documentation files
 - ✅ All features documented
 - ✅ Complete API reference
 - ✅ Troubleshooting guides
