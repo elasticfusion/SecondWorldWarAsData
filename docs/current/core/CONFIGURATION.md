@@ -301,10 +301,10 @@ GROK_MODEL=grok-beta
 
 ## Related Documentation
 
-- [Domain Blacklist](DOMAIN_BLACKLIST.md) - Configure URL filtering
-- [Vision Verification](VISION_VERIFICATION.md) - How image verification works
-- [External Maps](EXTERNAL_MAPS.md) - External maps feature overview
-- [Quality Assurance](../Specs/quality_assurance.md) - Code quality tools
+- [Domain Blacklist](../features/external-maps/domain-blacklist.md) - Configure URL filtering
+- [Vision Verification](../features/external-maps/vision-verification.md) - How image verification works
+- [External Maps](../features/external-maps/README.md) - External maps feature overview
+- [Quality Assurance](../../../contextmanagement/Specs/quality_assurance.md) - Code quality tools
 
 ---
 

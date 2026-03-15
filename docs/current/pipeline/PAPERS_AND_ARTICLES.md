@@ -424,5 +424,4 @@ Potential improvements for better paper support:
 ## Related Documentation
 
 - [ADDING_DATA_SOURCES.md](ADDING_DATA_SOURCES.md) - Adding new content
-- [METADATA.md](METADATA.md) - Metadata format
-- [PIPELINE.md](PIPELINE.md) - Pipeline overview
+- [PIPELINE.md](../core/PIPELINE.md) - Pipeline overview
