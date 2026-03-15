@@ -131,20 +131,16 @@ def _create_chapter_tasks(
 
 
 def _get_cache_clear_command(name: str, error_msg: str) -> str:
-    """Generate cache clearing command based on error type."""
+    """Generate cache clearing command for a specific chapter across all cache types."""
     chapter_id = name.replace("-parsed.json", "")
-
-    if any(
-        keyword in error_msg.lower()
-        for keyword in ["invalid", "escape", "control character", "unterminated string"]
-    ):
-        return (
-            f'python3 -c "from pathlib import Path; from diskcache import Cache; '
-            f"c=Cache('cache/api/events'); "
-            f"[c.pop(k) for k in list(c) if '{chapter_id}' in str(c.get(k, ''))]\""
-        )
-
-    return "rm -rf cache/api/*"
+    return (
+        f'python3 -c "from diskcache import Cache; from pathlib import Path; '
+        f"[Cache(str(d)).pop(k, None) "
+        f"for d in Path('cache/api').iterdir() if d.is_dir() "
+        f"for k in list(Cache(str(d))) "
+        f"if '{chapter_id}' in str(Cache(str(d)).get(k, ''))]; "
+        f"print('Cleared cache entries for {chapter_id}')\""
+    )
 
 
 def _process_batch_results(
