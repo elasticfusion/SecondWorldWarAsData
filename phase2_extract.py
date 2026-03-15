@@ -328,8 +328,13 @@ def _retry_missing_events(parsed_files, grok_client, logger):
     for parsed_file in missing_events:
         logger.info("Retrying: %s", parsed_file.name)
 
+        # Clear only this chapter's cache entries (not the entire events cache)
+        chapter_id = parsed_file.name.replace("-parsed.json", "")
         cache = grok_client._get_cache("events")
-        cache.clear()
+        for key in list(cache):
+            val = cache.get(key, "")
+            if chapter_id in str(val):
+                cache.pop(key, None)
 
         try:
             output_file = extract_events(
