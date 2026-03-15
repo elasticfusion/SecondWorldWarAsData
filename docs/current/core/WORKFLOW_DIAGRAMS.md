@@ -50,58 +50,68 @@ flowchart TD
 ```mermaid
 flowchart TD
     Start([Start Phase 2]) --> LoadConfig[Load config.yaml]
-    LoadConfig --> InitCache[Initialize API cache]
-    InitCache --> LoadParsed[Load parsed JSON files]
-    
-    LoadParsed --> ForEachChapter{For each<br/>chapter}
-    ForEachChapter --> CheckCache{Cache<br/>exists?}
-    CheckCache -->|Yes| LoadCache[Load from cache]
-    CheckCache -->|No| CallAPI[Call Grok API]
-    
-    CallAPI --> ExtractEvents[Extract Events<br/>with hierarchy]
-    ExtractEvents --> SaveCache[Save to cache]
-    SaveCache --> ProcessEvents
-    LoadCache --> ProcessEvents[Process events]
-    
-    ProcessEvents --> ExtractCore[Extract Core Entities:<br/>- Dates<br/>- Places<br/>- People<br/>- Groups]
-    
-    ExtractCore --> CheckOptional{Optional<br/>features<br/>enabled?}
-    CheckOptional -->|Yes| ExtractOptional[Extract Optional:<br/>- Weather<br/>- Equipment<br/>- Logistics<br/>- Maps]
-    CheckOptional -->|No| SaveEntities
-    ExtractOptional --> SaveEntities
-    
-    SaveEntities[Save Entities] --> SaveEvents[Save to output/events/]
-    SaveEvents --> SaveDates[Save to output/dates/]
-    SaveDates --> SavePlaces[Save to output/places/]
-    SavePlaces --> SavePeople[Save to output/people/]
-    SavePeople --> SaveGroups[Save to output/people_groups/]
-    
-    SaveGroups --> CheckOpt2{Optional<br/>enabled?}
-    CheckOpt2 -->|Yes| SaveOptional[Save optional entities]
-    CheckOpt2 -->|No| NextChapter
-    SaveOptional --> NextChapter{More<br/>chapters?}
-    
-    NextChapter -->|Yes| ForEachChapter
-    NextChapter -->|No| Dedup[Run deduplication:<br/>- Merge duplicate people<br/>- Merge duplicate places<br/>- Link related groups]
-    
-    Dedup --> Summary[Generate summary:<br/>- Events extracted<br/>- Entities created<br/>- API calls made<br/>- Cache hits]
-    
-    Summary --> End([Phase 2 Complete])
-    
+    LoadConfig --> CompleteMeta[Complete missing metadata]
+    CompleteMeta --> InitGrok[Initialize Grok client<br/>+ API cache]
+
+    InitGrok --> Step1["<b>Step 1: Parallel Core Extraction</b><br/>max 3 chapters concurrent"]
+
+    Step1 --> Batch{For each batch<br/>of chapters}
+    Batch --> Ch1[Chapter A<br/>async]
+    Batch --> Ch2[Chapter B<br/>async]
+    Batch --> Ch3[Chapter C<br/>async]
+
+    Ch1 --> Events1[Extract Events]
+    Ch2 --> Events2[Extract Events]
+    Ch3 --> Events3[Extract Events]
+
+    Events1 --> Gather1["asyncio.gather:<br/>Dates | Places | Groups | People"]
+    Events2 --> Gather2["asyncio.gather:<br/>Dates | Places | Groups | People"]
+    Events3 --> Gather3["asyncio.gather:<br/>Dates | Places | Groups | People"]
+
+    Gather1 --> Results[Collect results]
+    Gather2 --> Results
+    Gather3 --> Results
+
+    Results --> Step2["<b>Step 2: Retry Missing Events</b><br/>Per-chapter cache clear + re-extract"]
+
+    Step2 --> Step3{"Optional<br/>features<br/>enabled?"}
+    Step3 -->|Yes| OptLoop["<b>Step 3: Optional Entities</b><br/>Sequential per event file"]
+    Step3 -->|No| Step4
+
+    OptLoop --> Weather[Weather]
+    OptLoop --> Equipment[Equipment]
+    OptLoop --> Logistics[Logistics]
+    OptLoop --> Casualties[Casualties]
+    OptLoop --> Supplemental[Supplemental]
+
+    Weather --> Step4
+    Equipment --> Step4
+    Logistics --> Step4
+    Casualties --> Step4
+    Supplemental --> Step4
+
+    Step4["<b>Step 4: Maps</b><br/>Source maps + External maps"] --> Step5
+
+    Step5["<b>Step 5: Analysis</b><br/>Duplicate people report<br/>Related groups report"] --> End([Phase 2 Complete])
+
     style Start fill:#90EE90
     style End fill:#90EE90
-    style CallAPI fill:#FFB6C1
-    style ExtractCore fill:#87CEEB
-    style ExtractOptional fill:#FFE4B5
-    style Dedup fill:#DDA0DD
+    style Step1 fill:#87CEEB
+    style Step2 fill:#FFE4B5
+    style OptLoop fill:#FFE4B5
+    style Step4 fill:#DDA0DD
+    style Step5 fill:#DDA0DD
+    style Gather1 fill:#87CEEB
+    style Gather2 fill:#87CEEB
+    style Gather3 fill:#87CEEB
 ```
 
 **Key Operations:**
-- Event extraction with hierarchy
-- Entity extraction (dates, places, people, groups)
-- Optional features (weather, equipment, logistics, maps)
-- API caching
-- Deduplication
+- Parallel chapter processing (async/await)
+- Batched API calls (4 entity types per chapter in parallel)
+- Per-chapter cache clearing on retry (not full cache wipe)
+- Optional entities run sequentially per event file
+- Analysis reports generated at end
 
 ---
 
@@ -110,51 +120,67 @@ flowchart TD
 ```mermaid
 flowchart TD
     Start([Start Phase 3]) --> LoadConfig[Load config.yaml]
-    LoadConfig --> LoadPeople[Load people JSON files]
+    LoadConfig --> InitGrok[Initialize Grok client<br/>+ API cache]
+    InitGrok --> LoadPeople["Load people JSON files<br/>(skip index, duplicate_report,<br/>not_duplicates)"]
     
-    LoadPeople --> ForEachPerson{For each<br/>person}
-    ForEachPerson --> CheckBio{Has<br/>biography?}
-    CheckBio -->|Yes| NextPerson
-    CheckBio -->|No| SearchWiki[Search Wikipedia/<br/>Grokipedia]
+    LoadPeople --> ForEachPerson{For each<br/>person file}
+    ForEachPerson --> GetName{Has<br/>name?}
+    GetName -->|No| SkipPerson[Skip file]
+    GetName -->|Yes| SearchGrok["Search Grokipedia<br/>HTTP GET with timeout"]
     
-    SearchWiki --> FoundBio{Biography<br/>found?}
-    FoundBio -->|Yes| ExtractBio[Extract:<br/>- Birth/death dates<br/>- Biography text<br/>- Service info<br/>- Awards]
-    FoundBio -->|No| MarkMissing[Mark as not found]
+    SearchGrok --> GrokFound{Text<br/>found?}
+    GrokFound -->|Yes| ExtractGrok["Grok AI: extract structured JSON<br/>birth/death, ranks, units,<br/>awards, education, family"]
+    GrokFound -->|No| SearchWiki
+    ExtractGrok --> MergeGrok["Merge into bio_profile<br/>(simple fields, lists, family)"]
+    MergeGrok --> SearchWiki
     
-    ExtractBio --> ValidateURLs[Validate URLs]
-    ValidateURLs --> UpdatePerson[Update person JSON]
-    MarkMissing --> UpdatePerson
-    UpdatePerson --> NextPerson{More<br/>people?}
+    SearchWiki["Search Wikipedia API"] --> WikiFound{Text<br/>found?}
+    WikiFound -->|Yes| ExtractWiki["Grok AI: extract structured JSON<br/>(same schema)"]
+    WikiFound -->|No| CheckRefs
+    ExtractWiki --> MergeWiki[Merge into bio_profile]
+    MergeWiki --> CheckRefs
+    
+    CheckRefs{References<br/>enabled?}
+    CheckRefs -->|Yes| FollowRefs["Follow up to 3 references<br/>Grokipedia → Wikipedia fallback"]
+    CheckRefs -->|No| CheckEnriched
+    FollowRefs --> MergeRefs[Merge reference data]
+    MergeRefs --> CheckEnriched
+    
+    CheckEnriched{Any new<br/>data added?}
+    CheckEnriched -->|No| LogNoData["Log: no new data found"]
+    CheckEnriched -->|Yes| Validate["Validate with Person model<br/>(Pydantic)"]
+    
+    Validate --> ValidOK{Valid?}
+    ValidOK -->|Yes| SaveJSON["Save updated person JSON<br/>in-place"]
+    ValidOK -->|No| LogError["Log validation error<br/>+ skip save"]
+    
+    SaveJSON --> NextPerson
+    LogNoData --> NextPerson
+    LogError --> NextPerson
+    SkipPerson --> NextPerson{More<br/>people?}
     
     NextPerson -->|Yes| ForEachPerson
-    NextPerson -->|No| CheckWeather{Weather<br/>enabled?}
-    
-    CheckWeather -->|Yes| EnrichWeather[Enrich weather data:<br/>- Historical API calls<br/>- Temperature<br/>- Conditions<br/>- Precipitation]
-    CheckWeather -->|No| CheckMaps
-    EnrichWeather --> CheckMaps
-    
-    CheckMaps{Maps<br/>enabled?}
-    CheckMaps -->|Yes| SearchMaps[Search external maps:<br/>- Battle maps<br/>- Campaign maps<br/>- Strategic maps]
-    CheckMaps -->|No| Summary
-    SearchMaps --> ValidateMapURLs[Validate map URLs]
-    ValidateMapURLs --> SaveMaps[Save to output/external_maps/]
-    
-    SaveMaps --> Summary[Generate summary:<br/>- People enriched<br/>- Biographies added<br/>- Weather data added<br/>- Maps found]
+    NextPerson -->|No| Summary["Summary:<br/>enriched / total people"]
     
     Summary --> End([Phase 3 Complete])
     
     style Start fill:#90EE90
     style End fill:#90EE90
+    style SearchGrok fill:#FFB6C1
     style SearchWiki fill:#FFB6C1
-    style EnrichWeather fill:#87CEEB
-    style SearchMaps fill:#FFE4B5
+    style ExtractGrok fill:#87CEEB
+    style ExtractWiki fill:#87CEEB
+    style Validate fill:#DDA0DD
+    style FollowRefs fill:#FFE4B5
 ```
 
 **Key Operations:**
-- Wikipedia/Grokipedia biographical enrichment
-- Historical weather data
-- External map search
-- URL validation
+- Two-source search: Grokipedia first, then Wikipedia (both results merged)
+- Grok AI extracts structured biographical JSON from raw source text
+- Reference following: up to 3 referenced entities searched for additional context
+- Pydantic model validation before saving
+- All API responses cached (Grok client cache)
+- Currently people-only; weather/maps enrichment planned but not yet implemented
 
 ---
 
@@ -162,24 +188,32 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    MD[Markdown Files<br/>contentrepository/] --> Phase1[Phase 1<br/>Parse]
-    Phase1 --> Parsed[Parsed JSON<br/>output/parsed/]
+    MD[Markdown Files<br/>contentrepository/] --> Phase1["<b>phase1_parse.py</b><br/>Parse"]
+    Phase1 --> Parsed[Parsed JSON<br/>*-parsed.json]
     
-    Parsed --> Phase2[Phase 2<br/>Extract]
-    Phase2 --> Events[Events JSON<br/>output/events/]
-    Phase2 --> Entities[Entity JSON<br/>output/dates/<br/>output/places/<br/>output/people/<br/>output/people_groups/]
+    Parsed --> P2Retry["<b>phase2_retry.py</b><br/>Auto-retry wrapper"]
+    P2Retry --> Phase2["<b>phase2_extract.py</b><br/>Extract"]
+    Phase2 --> Events[Events<br/>*-event.json]
+    Phase2 --> Core[Core Entities<br/>dates/ places/<br/>people/ people_groups/]
+    Phase2 --> Optional[Optional Entities<br/>weather/ equipment/<br/>logistics/ casualties/<br/>supplemental/]
+    Phase2 --> Maps[Maps<br/>maps/ external_maps/]
     
-    Events --> Phase3[Phase 3<br/>Enrich]
-    Entities --> Phase3
-    Phase3 --> Enriched[Enriched JSON<br/>Updated entities<br/>with external data]
+    Events --> P3Retry["<b>phase3_retry.py</b><br/>Auto-retry wrapper"]
+    Core --> P3Retry
+    P3Retry --> Phase3["<b>phase3_enrich_data.py</b><br/>Enrich"]
+    Phase3 --> Enriched[Enriched JSON<br/>Biographies in-place]
     
-    Enriched --> Import[Import to MongoDB<br/>Optional]
+    Enriched --> Import["<b>import_to_mongodb.py</b><br/>Optional"]
+    Optional --> Import
+    Maps --> Import
     Import --> DB[(MongoDB<br/>Database)]
     
     style Phase1 fill:#87CEEB
     style Phase2 fill:#90EE90
     style Phase3 fill:#FFB6C1
     style Import fill:#DDA0DD
+    style P2Retry fill:#FFE4B5
+    style P3Retry fill:#FFE4B5
 ```
 
 ---
@@ -298,37 +332,49 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Start([Batch Processing]) --> LoadConfig[Load config.yaml]
-    LoadConfig --> CheckMode{Concurrent<br/>enabled?}
-    
-    CheckMode -->|Yes| InitPool[Initialize thread pool<br/>max_workers from config]
-    CheckMode -->|No| Sequential[Sequential processing]
-    
-    InitPool --> LoadChapters[Load all chapter files]
-    LoadChapters --> Partition[Partition into batches<br/>max_event_files limit]
+    Start([Batch Processing]) --> LoadFiles[Load all parsed files]
+    LoadFiles --> Partition["Partition into batches<br/>(max_parallel chapters)"]
     
     Partition --> ForEachBatch{For each<br/>batch}
-    ForEachBatch --> ProcessParallel[Process chapters in parallel:<br/>- Each thread extracts events<br/>- Shared cache<br/>- Thread-safe writes]
+    ForEachBatch --> Async["asyncio.gather<br/>per batch"]
     
-    ProcessParallel --> MergeResults[Merge results:<br/>- Combine events<br/>- Deduplicate entities<br/>- Update references]
+    Async --> ChA[Chapter async]
+    Async --> ChB[Chapter async]
+    Async --> ChC[Chapter async]
     
-    MergeResults --> NextBatch{More<br/>batches?}
+    ChA --> EvA[Extract Events<br/>if needed]
+    ChB --> EvB[Extract Events<br/>if needed]
+    ChC --> EvC[Extract Events<br/>if needed]
+    
+    EvA --> GatherA["_batch_extract × 4:<br/>Dates | Places | Groups | People"]
+    EvB --> GatherB["_batch_extract × 4:<br/>Dates | Places | Groups | People"]
+    EvC --> GatherC["_batch_extract × 4:<br/>Dates | Places | Groups | People"]
+    
+    GatherA --> Collect[Collect results<br/>+ error isolation]
+    GatherB --> Collect
+    GatherC --> Collect
+    
+    Collect --> NextBatch{More<br/>batches?}
     NextBatch -->|Yes| ForEachBatch
-    NextBatch -->|No| Summary
+    NextBatch -->|No| Summary["Summary:<br/>processed / failed<br/>dates / places / groups / people"]
     
-    Sequential --> ForEachChapter{For each<br/>chapter}
-    ForEachChapter --> ProcessOne[Process chapter]
-    ProcessOne --> NextChapter{More<br/>chapters?}
-    NextChapter -->|Yes| ForEachChapter
-    NextChapter -->|No| Summary
-    
-    Summary[Generate summary:<br/>- Processing time<br/>- Speedup vs sequential<br/>- Entities extracted] --> End([Batch Complete])
+    Summary --> End([Batch Complete])
     
     style Start fill:#90EE90
     style End fill:#90EE90
-    style ProcessParallel fill:#87CEEB
-    style MergeResults fill:#FFE4B5
+    style Async fill:#87CEEB
+    style GatherA fill:#87CEEB
+    style GatherB fill:#87CEEB
+    style GatherC fill:#87CEEB
+    style Collect fill:#FFE4B5
 ```
+
+**Key Design:**
+- Two-level parallelism: chapters concurrent + entities concurrent within each chapter
+- Shared `_batch_extract` helper for all 4 entity types (dates, places, groups, people)
+- `return_exceptions=True` — one entity failure doesn't stop others
+- Per-chapter error isolation — one chapter failure doesn't stop the batch
+- Targeted cache clearing on failure (per-entry, not full wipe)
 
 ---
 
@@ -336,33 +382,54 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Start([API Call]) --> CheckCache{Cache<br/>exists?}
-    CheckCache -->|Yes| LoadCache[Load from cache/<br/>diskcache]
+    Start([API Call]) --> MakeKey["Generate cache key<br/>sha256(prompt + temp + model)"]
+    MakeKey --> CheckCache{Key in<br/>cache?}
+    CheckCache -->|Yes| ReturnCached[Return cached response]
     CheckCache -->|No| MakeRequest[Make API request]
     
-    LoadCache --> ValidateCache{Cache<br/>valid?}
-    ValidateCache -->|Yes| ReturnCached[Return cached response]
-    ValidateCache -->|No| MakeRequest
-    
     MakeRequest --> CheckError{API<br/>error?}
-    CheckError -->|Yes| Retry[Retry with backoff:<br/>- 3 attempts<br/>- Exponential delay]
-    CheckError -->|No| SaveCache[Save to cache]
+    CheckError -->|Yes| Retry["Retry with backoff:<br/>5 attempts, 4s→60s<br/>HTTP 429 Retry-After"]
+    CheckError -->|No| Sanitize["Sanitize response:<br/>Strip control chars<br/>Fix invalid escapes"]
     
     Retry --> RetrySuccess{Success?}
-    RetrySuccess -->|Yes| SaveCache
-    RetrySuccess -->|No| LogError[Log error]
+    RetrySuccess -->|Yes| Sanitize
+    RetrySuccess -->|No| Fail([API Failed])
     
-    SaveCache --> ReturnResponse[Return response]
+    Sanitize --> SaveCache[Save to cache]
+    SaveCache --> ParseJSON[Parse JSON response]
+    
+    ParseJSON --> ParseOK{Valid<br/>JSON?}
+    ParseOK -->|Yes| ReturnResponse[Return parsed response]
+    ParseOK -->|No| CheckTruncated{"Truncated?<br/>(< 100K chars)"}
+    
+    CheckTruncated -->|Yes| AutoClear["Auto-clear cache entry<br/>cache.pop(key)"]
+    CheckTruncated -->|No| ManualSplit[Log: manual split needed]
+    
+    AutoClear --> RepairJSON["Try JSON repair:<br/>Close brackets<br/>Fix trailing commas"]
+    ManualSplit --> Fail
+    
+    RepairJSON --> Repaired{Repaired?}
+    Repaired -->|Yes| ReturnResponse
+    Repaired -->|No| Fail
+    
     ReturnCached --> End([Response])
     ReturnResponse --> End
-    LogError --> Fail([API Failed])
     
     style Start fill:#90EE90
     style End fill:#90EE90
     style Fail fill:#FFB6C1
-    style LoadCache fill:#87CEEB
+    style ReturnCached fill:#87CEEB
     style SaveCache fill:#FFE4B5
+    style AutoClear fill:#FFB6C1
+    style RepairJSON fill:#DDA0DD
 ```
+
+**Key Design:**
+- Cache key = sha256 of prompt + temperature + model
+- Per-type cache directories: `cache/api/{events,dates,places,people,...}`
+- Auto-clear corrupted entries (truncated/short responses) — no manual intervention
+- JSON repair attempted before failing
+- Retry with exponential backoff + HTTP 429 Retry-After support
 
 ---
 
@@ -409,6 +476,55 @@ flowchart TD
 
 ---
 
+## Error Handling & Recovery Flow
+
+```mermaid
+flowchart TD
+    Error([Error Occurs]) --> Classify{Error Type}
+    
+    Classify -->|Truncated JSON| Truncated["Response < 100K chars?"]
+    Classify -->|Short Response| Short["Response < 500 chars"]
+    Classify -->|API Error| APIErr["HTTP 429 / 500 / timeout"]
+    Classify -->|File I/O| FileErr["OSError / IOError"]
+    Classify -->|JSON Parse| JSONErr["JSONDecodeError"]
+    
+    Truncated -->|Yes| AutoClear1["Auto-clear cache entry<br/>+ raise GrokAPIError"]
+    Truncated -->|No| LogSplit["Log: split chapter needed<br/>+ raise GrokAPIError"]
+    
+    Short --> AutoClear2["Auto-clear cache entry<br/>+ retry once"]
+    
+    APIErr --> Backoff["Exponential backoff<br/>5 attempts, 4s→60s"]
+    Backoff --> Recovered{Recovered?}
+    Recovered -->|Yes| Continue[Continue processing]
+    Recovered -->|No| FailChapter["Fail chapter<br/>(others continue)"]
+    
+    FileErr --> LogFile["Log with file name<br/>+ continue to next entity"]
+    JSONErr --> LogJSON["Log with file name<br/>+ continue to next entity"]
+    
+    AutoClear1 --> NextRun["Next run: fresh API call"]
+    AutoClear2 --> NextRun
+    LogSplit --> Manual["Manual: split chapter"]
+    
+    FailChapter --> RetryStep["Step 2: Retry missing events<br/>Per-chapter cache clear"]
+    RetryStep --> NextRun
+    
+    style Error fill:#FFB6C1
+    style AutoClear1 fill:#FFE4B5
+    style AutoClear2 fill:#FFE4B5
+    style Continue fill:#90EE90
+    style NextRun fill:#90EE90
+    style FailChapter fill:#FFB6C1
+    style RetryStep fill:#87CEEB
+```
+
+**Key Principles:**
+- Errors are isolated: one chapter/entity failure doesn't stop the pipeline
+- Cache corruption auto-clears the specific entry (not the whole cache)
+- Retry step catches anything missed in the parallel phase
+- All error messages include file context for debugging
+
+---
+
 ## Legend
 
 ```mermaid
@@ -433,5 +549,5 @@ flowchart LR
 
 ---
 
-**Generated:** 2026-03-13  
+**Generated:** 2026-03-15  
 **Pipeline Version:** 2.0

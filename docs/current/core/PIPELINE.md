@@ -2,13 +2,16 @@
 
 ## Overview
 
-The extraction pipeline consists of two main phases:
+The extraction pipeline consists of three main phases:
 
 ### Phase 1: Parsing
 Converts markdown source files into structured JSON with absolute paragraph numbering.
 
 ### Phase 2: Extraction
 Extracts entities and events using Grok AI.
+
+### Phase 3: Enrichment
+Enriches extracted entities with external data (biographies, weather API, etc.).
 
 ## Phase 1: Parse
 
@@ -110,3 +113,42 @@ Phase 2 intelligently skips already-processed files:
 ```bash
 rm output/{Book}/chapter*-{type}.json
 ```
+
+## Phase 3: Enrich
+
+```bash
+python3 phase3_enrich_data.py
+```
+
+**What it does:**
+- Enriches people with biographical data from Wikipedia/Grokipedia
+- Searches for birth/death dates, service history, awards
+- Follows references for additional context
+- Caches all external lookups
+
+**Options:**
+```bash
+python3 phase3_enrich_data.py --max-items 50        # Limit items per type
+python3 phase3_enrich_data.py --people-only          # Only enrich people
+python3 phase3_enrich_data.py --no-references        # Skip reference following (faster)
+```
+
+**Output:** Updates existing `people/{Name}_{ID}.json` files in-place with enrichment data.
+
+## Retry Wrappers
+
+Both Phase 2 and Phase 3 have retry wrappers that handle transient errors automatically:
+
+```bash
+# Recommended: use retry wrappers instead of calling phases directly
+python3 phase2_retry.py    # Retries until all event files exist (default: 3 attempts)
+python3 phase3_retry.py    # Retries until all people are enriched (default: 3 attempts)
+```
+
+**Features:**
+- Counts remaining work after each run
+- Stops early if everything is processed
+- Corrupted cache entries auto-cleared between retries
+- Configurable: `--max-attempts N`
+
+See [Retry Wrappers](../pipeline/RETRY_WRAPPERS.md) for details.

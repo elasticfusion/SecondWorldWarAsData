@@ -201,14 +201,20 @@ async def main():
 asyncio.run(main())
 ```
 
-### With Phase 2 (Future)
+### With Phase 2
+
+Batch parallel processing is the default extraction path in `phase2_extract.py`:
 
 ```bash
-# When enabled in config
-python3 phase2_extract.py --concurrent
+python3 phase2_extract.py
 ```
 
-**Note:** Not yet integrated into main pipeline.
+All chapters are processed in parallel batches automatically. Configure concurrency in `config.yaml`:
+
+```yaml
+concurrency:
+  max_parallel_chapters: 3  # chapters processed simultaneously
+```
 
 ---
 
