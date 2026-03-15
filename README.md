@@ -338,6 +338,21 @@ echo $GROK_API_KEY
 curl -H "Authorization: Bearer $GROK_API_KEY" https://api.x.ai/v1/chat/completions
 ```
 
+### Pipeline appears hung
+
+Both Phase 2 and Phase 3 have a heartbeat monitor that warns if no progress is made for 5 minutes:
+
+```
+WARNING - Phase 2: no progress for 5 minutes. Last: Optional entities: chapter8c-event.json
+```
+
+Check the log for this warning:
+```bash
+tail -f logs/pipeline*.log
+```
+
+If the log file itself isn't being written to, the process may be stuck in a CPU-bound loop. Check with `ps aux | grep phase`.
+
 See [Error Handling Guide](docs/current/core/error_handling.md)
 
 ---
@@ -352,6 +367,7 @@ See [Error Handling Guide](docs/current/core/error_handling.md)
 
 **Phase 2: Extract**
 - Events → Dates, Places, People, Groups (parallel, batched)
+- Auto-split on truncation (splits at section boundaries, merges results)
 - Retry missing events (per-chapter cache clear)
 - Optional: Weather, Equipment, Logistics, Casualties, Supplemental (sequential per event)
 - Optional: Source maps, External maps
