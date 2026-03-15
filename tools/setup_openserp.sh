@@ -21,7 +21,7 @@ fi
 echo ""
 echo "2️⃣ Starting OpenSERP server..."
 cd openserp
-./openserp serve -p 7000 &
+./openserp serve -p 7001 &
 OPENSERP_PID=$!
 cd ..
 sleep 2
@@ -29,7 +29,7 @@ sleep 2
 # 3. Test OpenSERP
 echo ""
 echo "3️⃣ Testing OpenSERP..."
-curl -s "http://localhost:7000/mega/search?text=test&limit=1" > /dev/null
+curl -s "http://localhost:7001/mega/search?text=test&limit=1" > /dev/null
 if [ $? -eq 0 ]; then
     echo "✅ OpenSERP is running (PID: $OPENSERP_PID)"
     echo $OPENSERP_PID > .openserp.pid
