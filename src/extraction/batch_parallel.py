@@ -4,11 +4,79 @@ import asyncio
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List
 
 from src.grok_client import GrokClient
 
 logger = logging.getLogger(__name__)
+
+
+def _load_index(index_file: Path, entity_type: str) -> dict:
+    """Load a JSON index file, returning empty dict on failure."""
+    try:
+        if index_file.exists():
+            return json.loads(index_file.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as e:
+        logger.warning("Failed to load %s index, starting fresh: %s", entity_type, e)
+    return {}
+
+
+async def _batch_extract(
+    event_data: Dict[str, Any],
+    grok_client: GrokClient,
+    output_root: Path,
+    entity_type: str,
+    cache_type: str,
+    prompt_header: str,
+    response_key: str,
+    inner_key: str,
+    make_key: Callable[[dict], str],
+    make_record: Callable[[dict], dict],
+) -> int:
+    """Generic batch extraction: API call → process nested response → write index + files."""
+    from src.utils.file_lock import write_json_with_lock
+
+    sub_events = event_data.get("Event", {}).get("Sub-events", [])
+    if not sub_events:
+        return 0
+
+    # Build prompt
+    prompt = prompt_header
+    for i, se in enumerate(sub_events, 1):
+        prompt += f"\n{i}. [{se.get('Sub-eventID')}] {se.get('Sub-event_summary', '')}"
+
+    # API call
+    loop = asyncio.get_event_loop()
+    try:
+        response = await loop.run_in_executor(
+            None, lambda: grok_client.extract_json(prompt, cache_type=cache_type)
+        )
+    except Exception as e:  # pylint: disable=broad-except
+        logger.error("%s batch extraction failed: %s", entity_type, e)
+        return 0
+
+    # Process response
+    entity_dir = output_root / entity_type
+    entity_dir.mkdir(parents=True, exist_ok=True)
+    index_file = entity_dir / "index.json"
+    index = _load_index(index_file, entity_type)
+
+    count = 0
+    for item in response.get(response_key, []):
+        if not isinstance(item, dict):
+            continue
+        for obj in item.get(inner_key, []):
+            if not isinstance(obj, dict):
+                continue
+            key = make_key(obj)
+            if key and key not in index:
+                entity_file = entity_dir / f"{key}.json"
+                write_json_with_lock(entity_file, make_record(obj))
+                index[key] = str(entity_file.name)
+            count += 1
+
+    write_json_with_lock(index_file, index)
+    return count
 
 
 async def process_chapter_async(
@@ -118,7 +186,9 @@ async def process_chapters_parallel(
     # Process in batches to limit concurrency
     for i in range(0, len(parsed_files), max_parallel):
         batch = parsed_files[i : i + max_parallel]
-        logger.info(f"Processing batch {i//max_parallel + 1}: {len(batch)} chapters")
+        logger.info(
+            "Processing batch %d: %d chapters", i // max_parallel + 1, len(batch)
+        )
 
         # Create tasks for this batch
         tasks = _create_chapter_tasks(batch, grok_client, output_root, config)
@@ -226,11 +296,19 @@ async def extract_all_async(
     config: Dict[str, Any],  # pylint: disable=unused-argument
 ) -> Dict[str, Any]:
     """Extract all entities in parallel with batched API calls."""
-    with open(event_file, "r") as f:
-        event_data = json.load(f)
+    try:
+        with open(event_file, "r", encoding="utf-8") as f:
+            event_data = json.load(f)
+    except (OSError, json.JSONDecodeError) as e:
+        logger.error("Failed to load event file %s: %s", event_file.name, e)
+        raise
 
-    with open(parsed_file, "r") as f:
-        parsed_data = json.load(f)
+    try:
+        with open(parsed_file, "r", encoding="utf-8") as f:
+            parsed_data = json.load(f)
+    except (OSError, json.JSONDecodeError) as e:
+        logger.error("Failed to load parsed file %s: %s", parsed_file.name, e)
+        raise
 
     # Run all extractions in parallel
     results = await asyncio.gather(
@@ -264,50 +342,19 @@ async def extract_dates_batch_async(
     output_root: Path,
 ) -> int:
     """Extract dates from all sub-events in single API call."""
-    dates_dir = output_root / "dates"
-    dates_dir.mkdir(parents=True, exist_ok=True)
-
-    sub_events = event_data.get("Event", {}).get("Sub-events", [])
-    if not sub_events:
-        return 0
-
-    # Batch prompt
-    prompt = f"""Extract all dates from these {len(sub_events)} sub-events. Return JSON:
-{{"dates": [{{"sub_event_id": "ID", "dates": [{{"date": "YYYY-MM-DD", "type": "exact|approximate", "precision": "day|month|year"}}]}}]}}
-
-Sub-events:
-"""
-    for i, se in enumerate(sub_events, 1):
-        prompt += f"\n{i}. [{se.get('Sub-eventID')}] {se.get('Sub-event_summary', '')}"
-
-    # Single API call
-    loop = asyncio.get_event_loop()
-    try:
-        response = await loop.run_in_executor(
-            None, lambda: grok_client.extract_json(prompt, cache_type="dates")
-        )
-    except Exception as e:
-        logger.error(f"Dates batch extraction failed: {e}")
-        return 0
-
-    # Process and save
-    from src.utils.file_lock import write_json_with_lock
-
-    index_file = dates_dir / "index.json"
-    index = json.load(open(index_file)) if index_file.exists() else {}
-
-    count = 0
-    for item in response.get("dates", []):
-        for date_obj in item.get("dates", []):
-            date_str = date_obj.get("date", "")
-            if date_str and date_str not in index:
-                date_file = dates_dir / f"{date_str}.json"
-                write_json_with_lock(date_file, {"date": date_str, "mentions": []})
-                index[date_str] = str(date_file.name)
-            count += 1
-
-    write_json_with_lock(index_file, index)
-    return count
+    n = len(event_data.get("Event", {}).get("Sub-events", []))
+    return await _batch_extract(
+        event_data,
+        grok_client,
+        output_root,
+        entity_type="dates",
+        cache_type="dates",
+        prompt_header=f'Extract all dates from these {n} sub-events. Return JSON:\n{{"dates": [{{"sub_event_id": "ID", "dates": [{{"date": "YYYY-MM-DD", "type": "exact|approximate", "precision": "day|month|year"}}]}}]}}\n\nSub-events:',
+        response_key="dates",
+        inner_key="dates",
+        make_key=lambda obj: obj.get("date", ""),
+        make_record=lambda obj: {"date": obj.get("date", ""), "mentions": []},
+    )
 
 
 async def extract_places_batch_async(
@@ -317,52 +364,19 @@ async def extract_places_batch_async(
     output_root: Path,
 ) -> int:
     """Extract places from all sub-events in single API call."""
-    places_dir = output_root / "places"
-    places_dir.mkdir(parents=True, exist_ok=True)
-
-    sub_events = event_data.get("Event", {}).get("Sub-events", [])
-    if not sub_events:
-        return 0
-
-    # Batch prompt
-    prompt = f"""Extract all places from these {len(sub_events)} sub-events. Return JSON:
-{{"places": [{{"sub_event_id": "ID", "places": [{{"name": "Name", "type": "city|town|region", "coordinates": {{"latitude": 0, "longitude": 0}}}}]}}]}}
-
-Sub-events:
-"""
-    for i, se in enumerate(sub_events, 1):
-        prompt += f"\n{i}. [{se.get('Sub-eventID')}] {se.get('Sub-event_summary', '')}"
-
-    # Single API call
-    loop = asyncio.get_event_loop()
-    response = await loop.run_in_executor(
-        None, lambda: grok_client.extract_json(prompt, cache_type="places")
+    n = len(event_data.get("Event", {}).get("Sub-events", []))
+    return await _batch_extract(
+        event_data,
+        grok_client,
+        output_root,
+        entity_type="places",
+        cache_type="places",
+        prompt_header=f'Extract all places from these {n} sub-events. Return JSON:\n{{"places": [{{"sub_event_id": "ID", "places": [{{"name": "Name", "type": "city|town|region", "coordinates": {{"latitude": 0, "longitude": 0}}}}]}}]}}\n\nSub-events:',
+        response_key="places",
+        inner_key="places",
+        make_key=lambda obj: obj.get("name", "").lower().replace(" ", "_"),
+        make_record=lambda obj: {"name": obj.get("name"), "mentions": []},
     )
-
-    # Process and save
-    from src.utils.file_lock import write_json_with_lock
-
-    index_file = places_dir / "index.json"
-    if index_file.exists():
-        with open(index_file, encoding="utf-8") as f:
-            index = json.load(f)
-    else:
-        index = {}
-
-    count = 0
-    for item in response.get("places", []):
-        for place_obj in item.get("places", []):
-            place_name = place_obj.get("name", "").lower().replace(" ", "_")
-            if place_name and place_name not in index:
-                place_file = places_dir / f"{place_name}.json"
-                write_json_with_lock(
-                    place_file, {"name": place_obj.get("name"), "mentions": []}
-                )
-                index[place_name] = str(place_file.name)
-            count += 1
-
-    write_json_with_lock(index_file, index)
-    return count
 
 
 async def extract_people_groups_batch_async(
@@ -371,53 +385,21 @@ async def extract_people_groups_batch_async(
     output_root: Path,
 ) -> int:
     """Extract people groups in batch."""
-    sub_events = event_data.get("Event", {}).get("Sub-events", [])
-    if not sub_events:
-        return 0
-
-    # Batch prompt
-    prompt = f"""Extract military units/groups from these {len(sub_events)} sub-events. Return JSON:
-{{"groups": [{{"sub_event_id": "ID", "groups": [{{"name": "Unit Name", "type": "division|corps|army", "country": "USA|Germany"}}]}}]}}
-
-Sub-events:
-"""
-    for i, se in enumerate(sub_events, 1):
-        prompt += f"\n{i}. [{se.get('Sub-eventID')}] {se.get('Sub-event_summary', '')}"
-
-    # Single API call
-    loop = asyncio.get_event_loop()
-    response = await loop.run_in_executor(
-        None, lambda: grok_client.extract_json(prompt, cache_type="peoplegroups")
-    )
-
-    # Process and save
     from src.extraction.people_groups import _normalize_name
-    from src.utils.file_lock import write_json_with_lock
 
-    groups_dir = output_root / "people_groups"
-    groups_dir.mkdir(parents=True, exist_ok=True)
-
-    index_file = groups_dir / "index.json"
-    if index_file.exists():
-        with open(index_file, encoding="utf-8") as f:
-            index = json.load(f)
-    else:
-        index = {}
-
-    count = 0
-    for item in response.get("groups", []):
-        for group_obj in item.get("groups", []):
-            group_key = _normalize_name(group_obj.get("name", ""))
-            if group_key and group_key not in index:
-                group_file = groups_dir / f"{group_key}.json"
-                write_json_with_lock(
-                    group_file, {"name": group_obj.get("name"), "mentions": []}
-                )
-                index[group_key] = str(group_file.name)
-            count += 1
-
-    write_json_with_lock(index_file, index)
-    return count
+    n = len(event_data.get("Event", {}).get("Sub-events", []))
+    return await _batch_extract(
+        event_data,
+        grok_client,
+        output_root,
+        entity_type="people_groups",
+        cache_type="peoplegroups",
+        prompt_header=f'Extract military units/groups from these {n} sub-events. Return JSON:\n{{"groups": [{{"sub_event_id": "ID", "groups": [{{"name": "Unit Name", "type": "division|corps|army", "country": "USA|Germany"}}]}}]}}\n\nSub-events:',
+        response_key="groups",
+        inner_key="groups",
+        make_key=lambda obj: _normalize_name(obj.get("name", "")),
+        make_record=lambda obj: {"name": obj.get("name"), "mentions": []},
+    )
 
 
 async def extract_people_batch_async(
@@ -426,50 +408,18 @@ async def extract_people_batch_async(
     output_root: Path,
 ) -> int:
     """Extract people in batch."""
-    sub_events = event_data.get("Event", {}).get("Sub-events", [])
-    if not sub_events:
-        return 0
-
-    # Batch prompt
-    prompt = f"""Extract people from these {len(sub_events)} sub-events. Return JSON:
-{{"people": [{{"sub_event_id": "ID", "people": [{{"name": "Full Name", "rank": "Rank", "unit": "Unit", "country": "USA|Germany"}}]}}]}}
-
-Sub-events:
-"""
-    for i, se in enumerate(sub_events, 1):
-        prompt += f"\n{i}. [{se.get('Sub-eventID')}] {se.get('Sub-event_summary', '')}"
-
-    # Single API call
-    loop = asyncio.get_event_loop()
-    response = await loop.run_in_executor(
-        None, lambda: grok_client.extract_json(prompt, cache_type="people")
-    )
-
-    # Process and save
     from src.extraction.people import _normalize_name
-    from src.utils.file_lock import write_json_with_lock
 
-    people_dir = output_root / "people"
-    people_dir.mkdir(parents=True, exist_ok=True)
-
-    index_file = people_dir / "index.json"
-    if index_file.exists():
-        with open(index_file, encoding="utf-8") as f:
-            index = json.load(f)
-    else:
-        index = {}
-
-    count = 0
-    for item in response.get("people", []):
-        for person_obj in item.get("people", []):
-            person_key = _normalize_name(person_obj.get("name", ""))
-            if person_key and person_key not in index:
-                person_file = people_dir / f"{person_key}.json"
-                write_json_with_lock(
-                    person_file, {"name": person_obj.get("name"), "mentions": []}
-                )
-                index[person_key] = str(person_file.name)
-            count += 1
-
-    write_json_with_lock(index_file, index)
-    return count
+    n = len(event_data.get("Event", {}).get("Sub-events", []))
+    return await _batch_extract(
+        event_data,
+        grok_client,
+        output_root,
+        entity_type="people",
+        cache_type="people",
+        prompt_header=f'Extract people from these {n} sub-events. Return JSON:\n{{"people": [{{"sub_event_id": "ID", "people": [{{"name": "Full Name", "rank": "Rank", "unit": "Unit", "country": "USA|Germany"}}]}}]}}\n\nSub-events:',
+        response_key="people",
+        inner_key="people",
+        make_key=lambda obj: _normalize_name(obj.get("name", "")),
+        make_record=lambda obj: {"name": obj.get("name"), "mentions": []},
+    )

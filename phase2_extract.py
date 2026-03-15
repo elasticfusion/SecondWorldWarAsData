@@ -5,9 +5,9 @@ Phase 2: Event and Entity Extraction with Grok API
 
 import argparse
 import asyncio
+import json
 import os
 import sys
-import traceback
 from pathlib import Path
 
 from src.utils.config import load_config, get_paths
@@ -22,10 +22,10 @@ sys.path.insert(0, str(Path(__file__).parent / "scripts"))
 from find_duplicate_people import generate_duplicate_report
 from find_related_groups import generate_related_groups_report
 
-
 # ---------------------------------------------------------------------------
 # Stage helpers
 # ---------------------------------------------------------------------------
+
 
 def _complete_metadata(base_dir, paths, logger):
     """Step 0: Complete any incomplete metadata."""
@@ -48,7 +48,7 @@ def _complete_metadata(base_dir, paths, logger):
 
             if is_metadata_incomplete(metadata):
                 incomplete_count += 1
-                logger.info(f"  Completing: {meta_file.relative_to(content_dir)}")
+                logger.info("  Completing: %s", meta_file.relative_to(content_dir))
 
                 grok_client = GrokClient(paths["api_cache"])
                 updated_metadata = extract_metadata_with_grok(
@@ -64,110 +64,154 @@ def _complete_metadata(base_dir, paths, logger):
                             sort_keys=False,
                         )
                     logger.info(
-                        f"    ✓ Updated: {updated_metadata.get('chapter_title')}"
+                        "    ✓ Updated: %s", updated_metadata.get("chapter_title")
                     )
                     updated_count += 1
 
         if incomplete_count > 0:
             logger.info(
-                f"  Completed {updated_count}/{incomplete_count} metadata file(s)"
+                "  Completed %d/%d metadata file(s)", updated_count, incomplete_count
             )
         else:
             logger.info("  ✓ All metadata complete")
 
     except Exception as e:
-        logger.warning(f"  Metadata completion failed: {e}")
+        logger.warning("  Metadata completion failed: %s", e)
         logger.warning("  Continuing with existing metadata...")
 
 
-def _extract_optional_entities(event_file, parsed_file, grok_client, paths, config, logger):
+def _extract_optional_entities(
+    event_file, parsed_file, grok_client, paths, config, logger
+):
     """Run optional entity extractors (weather, equipment, logistics, casualties, supplemental) for a single event file."""
     output_root = paths["output_root"]
 
-    # Weather
-    if config.get("weather", {}).get("enabled", False):
-        try:
-            from src.extraction.weather_central import extract_weather_central
+    _extract_weather(event_file, parsed_file, grok_client, output_root, config, logger)
+    _extract_equipment(event_file, grok_client, output_root, config, logger)
+    _extract_logistics(event_file, grok_client, output_root, config, logger)
+    _extract_casualties(event_file, grok_client, output_root, config, logger)
+    _extract_supplemental(event_file, grok_client, output_root, config, logger)
 
-            weather_output = extract_weather_central(
-                event_file=event_file,
-                weather_dir=output_root / "weather",
-                grok_client=grok_client,
-                places_dir=output_root / "places",
-                parsed_file=parsed_file,
-                fetch_api=config.get("weather", {}).get("fetch_api_data", False),
-                max_retries=3,
-            )
-            if weather_output:
-                logger.info(f"    ✓ Weather updated")
-        except Exception as e:
-            logger.error(f"    Error extracting weather: {e}")
 
-    # Equipment
-    if config.get("equipment", {}).get("enabled", False):
-        try:
-            from src.extraction.equipment import extract_equipment_from_event
+def _extract_weather(event_file, parsed_file, grok_client, output_root, config, logger):
+    if not config.get("weather", {}).get("enabled", False):
+        return
+    try:
+        from src.extraction.weather_central import extract_weather_central
 
-            equipment_files = extract_equipment_from_event(
-                event_file=event_file,
-                output_dir=output_root / "equipment",
-                grok_client=grok_client,
-                output_root=output_root,
-                enable_enrichment=config.get("equipment", {}).get("enable_enrichment", False),
-                verify_media_with_vision=config.get("equipment", {}).get("verify_media_with_vision", True),
-            )
-            if equipment_files:
-                logger.info(f"    ✓ Equipment: {len(equipment_files)} file(s)")
-        except Exception as e:
-            logger.error(f"    Error extracting equipment: {e}")
+        result = extract_weather_central(
+            event_file=event_file,
+            weather_dir=output_root / "weather",
+            grok_client=grok_client,
+            places_dir=output_root / "places",
+            parsed_file=parsed_file,
+            fetch_api=config.get("weather", {}).get("fetch_api_data", False),
+            max_retries=3,
+        )
+        if result:
+            logger.info("    ✓ Weather updated")
+    except ValueError as e:
+        logger.error("    Weather config error for %s: %s", event_file.name, e)
+    except (OSError, IOError) as e:
+        logger.error("    Weather file I/O error for %s: %s", event_file.name, e)
+    except Exception as e:  # pylint: disable=broad-except
+        logger.error("    Error extracting weather from %s: %s", event_file.name, e)
 
-    # Logistics
-    if config.get("logistics", {}).get("enabled", False):
-        try:
-            from src.extraction.logistics import extract_logistics_from_event
 
-            logistics_dir = extract_logistics_from_event(
-                event_file=event_file,
-                output_root=output_root,
-                grok_client=grok_client,
-            )
-            if logistics_dir:
-                logger.info(f"    ✓ Logistics updated")
-        except Exception as e:
-            logger.error(f"    Error extracting logistics: {e}")
+def _extract_equipment(event_file, grok_client, output_root, config, logger):
+    if not config.get("equipment", {}).get("enabled", False):
+        return
+    try:
+        from src.extraction.equipment import extract_equipment_from_event
 
-    # Casualties
-    if config.get("casualties", {}).get("enabled", False):
-        try:
-            from src.extraction.casualties import extract_casualties
+        equipment_files = extract_equipment_from_event(
+            event_file=event_file,
+            output_dir=output_root / "equipment",
+            grok_client=grok_client,
+            output_root=output_root,
+            enable_enrichment=config.get("equipment", {}).get(
+                "enable_enrichment", False
+            ),
+            verify_media_with_vision=config.get("equipment", {}).get(
+                "verify_media_with_vision", True
+            ),
+        )
+        if equipment_files:
+            logger.info("    ✓ Equipment: %d file(s)", len(equipment_files))
+    except json.JSONDecodeError as e:
+        logger.error("    Equipment JSON parse error for %s: %s", event_file.name, e)
+    except (OSError, IOError) as e:
+        logger.error("    Equipment file I/O error for %s: %s", event_file.name, e)
+    except Exception as e:  # pylint: disable=broad-except
+        logger.error("    Error extracting equipment from %s: %s", event_file.name, e)
 
-            casualties = extract_casualties(
-                event_file=event_file,
-                output_root=output_root,
-                grok_client=grok_client,
-            )
-            if casualties:
-                logger.info(f"    ✓ Casualties: {len(casualties)} record(s)")
-        except Exception as e:
-            logger.error(f"    Error extracting casualties: {e}")
 
-    # Supplemental material
-    if config.get("supplemental_material", {}).get("enabled", False):
-        try:
-            from src.extraction.supplemental import extract_supplemental
+def _extract_logistics(event_file, grok_client, output_root, config, logger):
+    if not config.get("logistics", {}).get("enabled", False):
+        return
+    try:
+        from src.extraction.logistics import extract_logistics_from_event
 
-            supplemental_dir = output_root / "supplemental"
-            supplemental_dir.mkdir(parents=True, exist_ok=True)
-            supplemental_file = extract_supplemental(
-                event_file=event_file,
-                grok_client=grok_client,
-                output_dir=supplemental_dir,
-                output_root=output_root,
-            )
-            if supplemental_file:
-                logger.info(f"    ✓ Supplemental updated")
-        except Exception as e:
-            logger.error(f"    Error extracting supplemental: {e}")
+        result = extract_logistics_from_event(
+            event_file=event_file,
+            output_root=output_root,
+            grok_client=grok_client,
+        )
+        if result:
+            logger.info("    ✓ Logistics updated")
+    except json.JSONDecodeError as e:
+        logger.error("    Logistics JSON parse error for %s: %s", event_file.name, e)
+    except (OSError, IOError) as e:
+        logger.error("    Logistics file I/O error for %s: %s", event_file.name, e)
+    except Exception as e:  # pylint: disable=broad-except
+        logger.error("    Error extracting logistics from %s: %s", event_file.name, e)
+
+
+def _extract_casualties(event_file, grok_client, output_root, config, logger):
+    if not config.get("casualties", {}).get("enabled", False):
+        return
+    try:
+        from src.extraction.casualties import extract_casualties
+
+        casualties = extract_casualties(
+            event_file=event_file,
+            output_root=output_root,
+            grok_client=grok_client,
+        )
+        if casualties:
+            logger.info("    ✓ Casualties: %d record(s)", len(casualties))
+    except json.JSONDecodeError as e:
+        logger.error("    Casualties JSON parse error for %s: %s", event_file.name, e)
+    except (OSError, IOError) as e:
+        logger.error("    Casualties file I/O error for %s: %s", event_file.name, e)
+    except Exception as e:  # pylint: disable=broad-except
+        logger.error("    Error extracting casualties from %s: %s", event_file.name, e)
+
+
+def _extract_supplemental(event_file, grok_client, output_root, config, logger):
+    if not config.get("supplemental_material", {}).get("enabled", False):
+        return
+    try:
+        from src.extraction.supplemental import extract_supplemental
+
+        supplemental_dir = output_root / "supplemental"
+        supplemental_dir.mkdir(parents=True, exist_ok=True)
+        result = extract_supplemental(
+            event_file=event_file,
+            grok_client=grok_client,
+            output_dir=supplemental_dir,
+            output_root=output_root,
+        )
+        if result:
+            logger.info("    ✓ Supplemental updated")
+    except json.JSONDecodeError as e:
+        logger.error("    Supplemental JSON parse error for %s: %s", event_file.name, e)
+    except (OSError, IOError) as e:
+        logger.error("    Supplemental file I/O error for %s: %s", event_file.name, e)
+    except Exception as e:  # pylint: disable=broad-except
+        logger.error(
+            "    Error extracting supplemental from %s: %s", event_file.name, e
+        )
 
 
 def _extract_maps(output_root, config, logger):
@@ -175,7 +219,7 @@ def _extract_maps(output_root, config, logger):
     if not config.get("maps", {}).get("enabled", False):
         return
 
-    logger.info("\n" + "=" * 60)
+    logger.info("\n%s", "=" * 60)
     logger.info("Extracting maps from source material...")
     logger.info("=" * 60)
     try:
@@ -189,7 +233,7 @@ def _extract_maps(output_root, config, logger):
             config=config,
         )
     except Exception as e:
-        logger.error(f"  Error extracting maps: {e}")
+        logger.error("  Error extracting maps: %s", e)
 
 
 def _extract_external_maps(base_dir, grok_client, paths, config, logger):
@@ -197,7 +241,7 @@ def _extract_external_maps(base_dir, grok_client, paths, config, logger):
     if not config.get("external_maps", {}).get("enabled", False):
         return
 
-    logger.info("\n" + "=" * 60)
+    logger.info("\n%s", "=" * 60)
     logger.info("Searching for external maps...")
     logger.info("=" * 60)
 
@@ -219,7 +263,7 @@ def _extract_external_maps(base_dir, grok_client, paths, config, logger):
     except requests.Timeout:
         logger.warning("  OpenSERP timeout - skipping external map search")
     except Exception as e:
-        logger.warning(f"  OpenSERP check failed: {e}")
+        logger.warning("  OpenSERP check failed: %s", e)
 
     if openserp_available:
         try:
@@ -237,9 +281,9 @@ def _extract_external_maps(base_dir, grok_client, paths, config, logger):
                 image_timeout=ext_config.get("image_download_timeout", 30),
                 image_storage_path=ext_config.get("image_storage_path"),
             )
-            logger.info(f"  ✓ Imported {imported} maps via OpenSERP")
+            logger.info("  ✓ Imported %d maps via OpenSERP", imported)
         except Exception as e:
-            logger.error(f"  Error with OpenSERP: {e}")
+            logger.error("  Error with OpenSERP: %s", e)
 
     # Import from YAML if it exists
     yaml_path = base_dir / "external_maps.yaml"
@@ -251,12 +295,16 @@ def _extract_external_maps(base_dir, grok_client, paths, config, logger):
                 output_dir=paths["output_root"] / "external_maps",
                 places_dir=paths["output_root"] / "places",
                 dates_dir=paths["output_root"] / "dates",
-                storage_backend=config.get("external_maps", {}).get("storage_backend", "filesystem"),
-                allowed_licenses=config.get("external_maps", {}).get("allowed_licenses"),
+                storage_backend=config.get("external_maps", {}).get(
+                    "storage_backend", "filesystem"
+                ),
+                allowed_licenses=config.get("external_maps", {}).get(
+                    "allowed_licenses"
+                ),
             )
-            logger.info(f"  ✓ Imported {yaml_imported} maps from YAML")
+            logger.info("  ✓ Imported %d maps from YAML", yaml_imported)
         except Exception as e:
-            logger.error(f"  Error importing from YAML: {e}")
+            logger.error("  Error importing from YAML: %s", e)
 
 
 def _retry_missing_events(parsed_files, grok_client, logger):
@@ -272,13 +320,13 @@ def _retry_missing_events(parsed_files, grok_client, logger):
     if not missing_events:
         return 0, 0
 
-    logger.warning(f"\n{len(missing_events)} file(s) missing event files")
+    logger.warning("\n%d file(s) missing event files", len(missing_events))
     logger.info("Retrying with cache cleared...")
 
     retried = 0
     retry_failed = 0
     for parsed_file in missing_events:
-        logger.info(f"Retrying: {parsed_file.name}")
+        logger.info("Retrying: %s", parsed_file.name)
 
         cache = grok_client._get_cache("events")
         cache.clear()
@@ -290,12 +338,12 @@ def _retry_missing_events(parsed_files, grok_client, logger):
                 output_dir=parsed_file.parent,
             )
             if output_file:
-                logger.info(f"  ✓ Generated: {output_file.name}")
+                logger.info("  ✓ Generated: %s", output_file.name)
                 retried += 1
             else:
-                logger.warning(f"  ⏭ Skipped (footnotes only)")
+                logger.warning("  ⏭ Skipped (footnotes only)")
         except Exception as e:
-            logger.error(f"  ✗ Retry failed: {e}")
+            logger.error("  ✗ Retry failed: %s", e)
             retry_failed += 1
 
     return retried, retry_failed
@@ -304,7 +352,7 @@ def _retry_missing_events(parsed_files, grok_client, logger):
 def _run_analysis(output_root, logger):
     """Run duplicate detection and group analysis."""
     # People duplicates
-    logger.info("\n" + "=" * 60)
+    logger.info("\n%s", "=" * 60)
     logger.info("Analyzing for duplicate people...")
     logger.info("=" * 60)
 
@@ -313,9 +361,9 @@ def _run_analysis(output_root, logger):
         try:
             duplicate_report = people_dir / "duplicate_report.json"
             generate_duplicate_report(people_dir, duplicate_report)
-            logger.info(f"  ✓ Saved: {duplicate_report.name}")
+            logger.info("  ✓ Saved: %s", duplicate_report.name)
         except Exception as e:
-            logger.error(f"  ✗ Duplicate detection failed: {e}")
+            logger.error("  ✗ Duplicate detection failed: %s", e)
     else:
         logger.warning("No people directory found")
 
@@ -329,7 +377,7 @@ def _run_analysis(output_root, logger):
         try:
             related_report = groups_dir / "related_groups_report.json"
             generate_related_groups_report(groups_dir, related_report)
-            logger.info(f"  ✓ Saved: {related_report.name}")
+            logger.info("  ✓ Saved: %s", related_report.name)
         except Exception as e:
             logger.error("  ✗ Related groups analysis failed: %s", e)
     else:
@@ -339,6 +387,7 @@ def _run_analysis(output_root, logger):
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def main():
     """Main entry point for Phase 2."""
@@ -370,13 +419,14 @@ def main():
     logger.info("Starting Phase 2: Event and Entity Extraction")
 
     # Step 0: Complete metadata
-    logger.info("\n" + "=" * 60)
+    logger.info("\n%s", "=" * 60)
     logger.info("Checking metadata completeness...")
     logger.info("=" * 60)
     _complete_metadata(base_dir, paths, logger)
 
     # Check for API key
     from dotenv import load_dotenv
+
     load_dotenv()
 
     if not os.getenv("GROK_API_KEY"):
@@ -388,7 +438,7 @@ def main():
     cache_dir = paths["api_cache"]
     cache_dir.mkdir(parents=True, exist_ok=True)
     grok_client = GrokClient(cache_dir)
-    logger.info(f"Initialized Grok client with API cache: {cache_dir}")
+    logger.info("Initialized Grok client with API cache: %s", cache_dir)
 
     # Ensure cache directories exist
     for cache_type in ["image_cache", "map_cache"]:
@@ -400,17 +450,17 @@ def main():
     parsed_files = list(output_root.rglob("*-parsed.json"))
 
     if not parsed_files:
-        logger.error(f"No parsed files found in {output_root}")
+        logger.error("No parsed files found in %s", output_root)
         logger.error("Please run phase1_parse.py first")
         sys.exit(1)
 
-    logger.info(f"Found {len(parsed_files)} parsed file(s)")
+    logger.info("Found %d parsed file(s)", len(parsed_files))
 
     # -----------------------------------------------------------------------
     # Step 1: Parallel extraction of events + core entities
     #         (events, dates, places, people_groups, people)
     # -----------------------------------------------------------------------
-    logger.info("\n" + "=" * 60)
+    logger.info("\n%s", "=" * 60)
     logger.info("Processing all chapters in parallel...")
     logger.info("=" * 60)
 
@@ -431,15 +481,15 @@ def main():
     processed = results["processed"]
     failed = results["failed"]
 
-    logger.info(f"\n{'='*60}")
-    logger.info(f"Parallel processing complete!")
-    logger.info(f"Processed: {processed}, Failed: {failed}")
-    logger.info(f"{'='*60}")
+    logger.info("\n%s", "=" * 60)
+    logger.info("Parallel processing complete!")
+    logger.info("Processed: %d, Failed: %d", processed, failed)
+    logger.info("%s", "=" * 60)
 
     # -----------------------------------------------------------------------
     # Step 2: Retry any missing event files
     # -----------------------------------------------------------------------
-    logger.info("\n" + "=" * 60)
+    logger.info("\n%s", "=" * 60)
     logger.info("Validating event file generation...")
     logger.info("=" * 60)
 
@@ -453,25 +503,37 @@ def main():
     # -----------------------------------------------------------------------
     any_optional = any(
         config.get(feature, {}).get("enabled", False)
-        for feature in ["weather", "equipment", "logistics", "casualties", "supplemental_material"]
+        for feature in [
+            "weather",
+            "equipment",
+            "logistics",
+            "casualties",
+            "supplemental_material",
+        ]
     )
 
     if any_optional:
-        logger.info("\n" + "=" * 60)
-        logger.info("Extracting optional entities (weather, equipment, logistics, casualties, supplemental)...")
+        logger.info("\n%s", "=" * 60)
+        logger.info(
+            "Extracting optional entities (weather, equipment, logistics, casualties, supplemental)..."
+        )
         logger.info("=" * 60)
 
         event_files = sorted(output_root.rglob("*-event.json"))
-        logger.info(f"Found {len(event_files)} event file(s)")
+        logger.info("Found %d event file(s)", len(event_files))
 
         for event_file in event_files:
             # Find corresponding parsed file
-            parsed_file = event_file.parent / event_file.name.replace("-event.json", "-parsed.json")
+            parsed_file = event_file.parent / event_file.name.replace(
+                "-event.json", "-parsed.json"
+            )
             if not parsed_file.exists():
                 parsed_file = None
 
-            logger.info(f"  Processing: {event_file.name}")
-            _extract_optional_entities(event_file, parsed_file, grok_client, paths, config, logger)
+            logger.info("  Processing: %s", event_file.name)
+            _extract_optional_entities(
+                event_file, parsed_file, grok_client, paths, config, logger
+            )
 
     # -----------------------------------------------------------------------
     # Step 4: Maps extraction
@@ -488,7 +550,7 @@ def main():
     # Done
     # -----------------------------------------------------------------------
     logger.info("\n%s", "=" * 60)
-    logger.info(f"Phase 2 complete! Processed: {processed}, Failed: {failed}")
+    logger.info("Phase 2 complete! Processed: %d, Failed: %d", processed, failed)
     logger.info("%s", "=" * 60)
 
 
