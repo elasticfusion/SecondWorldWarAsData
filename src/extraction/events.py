@@ -4,12 +4,12 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from jsonschema import ValidationError, validate
 import ulid
 
-from src.grok_client import GrokClient
+from src.grok_client import GrokClient, GrokAPIError
 from src.json_schemas import EVENT_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
 
@@ -191,6 +191,69 @@ def _save_event_output(response: dict, parsed_file: Path, output_dir: Path) -> P
     return output_file
 
 
+def _split_paragraphs(paragraphs: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
+    """Split paragraphs at section boundaries (headings), falling back to midpoint."""
+    if len(paragraphs) <= 10:
+        return [paragraphs]
+
+    # Find heading-like paragraphs (short, title-case, no period at end)
+    boundaries = []
+    for i, para in enumerate(paragraphs):
+        text = para["text"].strip()
+        if (
+            i > 0
+            and len(text) < 120
+            and not text.endswith(".")
+            and (text[0].isupper() if text else False)
+            and text == text.title()
+        ):
+            boundaries.append(i)
+
+    # Use best boundary near midpoint, or fall back to midpoint
+    mid = len(paragraphs) // 2
+    if boundaries:
+        split_at = min(boundaries, key=lambda b: abs(b - mid))
+    else:
+        split_at = mid
+
+    return [paragraphs[:split_at], paragraphs[split_at:]]
+
+
+def _merge_event_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Merge multiple event extraction results into one, combining sub-events."""
+    base = results[0]
+    for extra in results[1:]:
+        extra_subs = extra.get("Event", {}).get("Sub-events", [])
+        base.setdefault("Event", {}).setdefault("Sub-events", []).extend(extra_subs)
+    return base
+
+
+def _extract_chunk(
+    parsed_data: Dict[str, Any],
+    paragraphs: List[Dict[str, Any]],
+    chunk_idx: int,
+    grok_client: GrokClient,
+) -> Optional[Dict[str, Any]]:
+    """Extract events from a paragraph chunk."""
+    chunk_data = {**parsed_data, "paragraphs": paragraphs}
+    prompt = create_event_prompt(chunk_data)
+    if prompt is None:
+        return None
+
+    logger.info(
+        "  Extracting chunk %d (%d paragraphs)...", chunk_idx + 1, len(paragraphs)
+    )
+    result = grok_client.extract_json(
+        prompt=prompt,
+        system_prompt=SYSTEM_PROMPT,
+        temperature=0.1,
+        use_cache=True,
+        cache_type="events",
+    )
+    validate_event_json(result)
+    return result
+
+
 def _try_fix_ulid_errors(
     response: dict, e: ValidationError, parsed_file: Path, output_dir: Path
 ) -> Optional[Path]:
@@ -231,6 +294,33 @@ Please fix the JSON to match the schema exactly. Ensure:
 """
 
 
+def _auto_split_and_extract(
+    parsed_data: Dict[str, Any],
+    parsed_file: Path,
+    output_dir: Path,
+    grok_client: GrokClient,
+) -> Optional[Path]:
+    """Split a too-large chapter into chunks, extract each, merge results."""
+    content_paras = [
+        p
+        for p in parsed_data["paragraphs"]
+        if not _is_footnote_paragraph(p, parsed_data["paragraphs"])
+    ]
+    chunks = _split_paragraphs(content_paras)
+    if len(chunks) < 2:
+        return None
+    results = []
+    for idx, chunk in enumerate(chunks):
+        result = _extract_chunk(parsed_data, chunk, idx, grok_client)
+        if result:
+            results.append(result)
+    if not results:
+        return None
+    merged = _merge_event_results(results)
+    logger.info("  Merged %d chunks into single event", len(results))
+    return _save_event_output(merged, parsed_file, output_dir)
+
+
 def extract_events(
     parsed_file: Path, grok_client: GrokClient, output_dir: Path, max_retries: int = 3
 ) -> Optional[Path]:
@@ -264,14 +354,25 @@ def extract_events(
 
     # Try to get valid JSON with retries
     for attempt in range(max_retries):
-        # Call Grok API
-        response = grok_client.extract_json(
-            prompt=prompt,
-            system_prompt=SYSTEM_PROMPT,
-            temperature=0.1,
-            use_cache=True,
-            cache_type="events",
-        )
+        try:
+            # Call Grok API
+            response = grok_client.extract_json(
+                prompt=prompt,
+                system_prompt=SYSTEM_PROMPT,
+                temperature=0.1,
+                use_cache=True,
+                cache_type="events",
+            )
+        except GrokAPIError as e:
+            if "splitting chapter" not in str(e).lower():
+                raise
+            logger.warning("  Response truncated — auto-splitting chapter")
+            split_result = _auto_split_and_extract(
+                parsed_data, parsed_file, output_dir, grok_client
+            )
+            if split_result:
+                return split_result
+            raise
 
         # Validate against schema
         try:
@@ -310,29 +411,5 @@ def extract_events(
                     f"JSON validation failed after {max_retries} attempts: {e.message}"
                 ) from e
 
-    # Log extraction summary with paragraph groupings
-    extraction_summary = {
-        "book": parsed_data["book"],
-        "chapter": parsed_data["chapter_title"],
-        "section": parsed_data.get("section", "full"),
-        "event_id": response.get("Event", {}).get("EventID", ""),
-        "sub_events": [],
-    }
-
-    for sub_event in response.get("Event", {}).get("Sub-events", []):
-        paragraphs = list(sub_event.get("Sub-event_fulltext", {}).keys())
-        para_numbers = [int(p.split("_")[1]) for p in paragraphs if "_" in p]
-        extraction_summary["sub_events"].append(
-            {
-                "sub_event_id": sub_event.get("Sub-eventID", ""),
-                "summary": sub_event.get("Sub-event_summary", ""),
-                "paragraphs": sorted(para_numbers),
-            }
-        )
-
-    summary_log = Path("logs") / "extraction_summary.json"
-    with open(summary_log, "a", encoding="utf-8") as f:
-        f.write(json.dumps(extraction_summary) + "\n")
-
-    # Should never reach here
+    # Should never reach here — all loop paths return or raise
     raise ValueError("Unexpected error in validation loop")

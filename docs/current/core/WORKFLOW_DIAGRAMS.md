@@ -509,7 +509,10 @@ flowchart TD
     Classify -->|JSON Parse| JSONErr["JSONDecodeError"]
     
     Truncated -->|Yes| AutoClear1["Auto-clear cache entry<br/>+ raise GrokAPIError"]
-    Truncated -->|No| LogSplit["Log: split chapter needed<br/>+ raise GrokAPIError"]
+    Truncated -->|No| AutoSplit["Auto-split chapter at<br/>section boundaries"]
+    AutoSplit --> ExtractChunks["Extract each chunk<br/>separately"]
+    ExtractChunks --> MergeResults["Merge sub-events<br/>into single output"]
+    MergeResults --> Continue
     
     Short --> AutoClear2["Auto-clear cache entry<br/>+ retry once"]
     
@@ -523,7 +526,6 @@ flowchart TD
     
     AutoClear1 --> NextRun["Next run: fresh API call"]
     AutoClear2 --> NextRun
-    LogSplit --> Manual["Manual: split chapter"]
     
     FailChapter --> RetryStep["Step 2: Retry missing events<br/>Per-chapter cache clear"]
     RetryStep --> NextRun
@@ -531,6 +533,7 @@ flowchart TD
     style Error fill:#FFB6C1
     style AutoClear1 fill:#FFE4B5
     style AutoClear2 fill:#FFE4B5
+    style AutoSplit fill:#FFE4B5
     style Continue fill:#90EE90
     style NextRun fill:#90EE90
     style FailChapter fill:#FFB6C1
@@ -540,6 +543,7 @@ flowchart TD
 **Key Principles:**
 - Errors are isolated: one chapter/entity failure doesn't stop the pipeline
 - Cache corruption auto-clears the specific entry (not the whole cache)
+- Truncated responses auto-split the chapter at section boundaries and re-extract
 - Retry step catches anything missed in the parallel phase
 - All error messages include file context for debugging
 
