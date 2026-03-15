@@ -1394,6 +1394,21 @@ All errors logged with:
 
 ## Recent Improvements
 
+**2026-03-14**: Auto-retry on short API responses
+- `extract_json()` now retries once when API returns <500 chars
+- Clears cached short response before retry to force fresh API call
+- Uses `_retried` flag to prevent infinite recursion (max 1 retry)
+- Motivated by chapter10c (CCA) transient failure: 473-char response
+- File: `src/grok_client.py`
+
+**2026-03-14**: Supplemental extraction wired into Phase 2 pipeline
+- `extract_supplemental()` existed in `src/extraction/supplemental.py` but was
+  never called from `phase2_extract.py` — only imported in test files
+- The single existing output file (`chapter11b-endnotes.json`) was from a manual run
+- **Fix**: Added supplemental extraction block after logistics in the per-chapter
+  extraction loop, gated by `supplemental_material.enabled` config flag
+- File: `phase2_extract.py`
+
 **2026-03-14**: HyperWar paragraph separation fix
 - `html2text` collapsed multiple `<p>` and `<center>` tags inside `<blockquote>`
   elements into single long lines, merging paragraphs

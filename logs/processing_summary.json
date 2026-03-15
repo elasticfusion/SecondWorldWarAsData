@@ -8,71 +8,284 @@
 {"book": "Breakout and Pursuit", "chapter": "Take Brest", "section": "full", "paragraph_range": {"start": 1, "end": 111, "count": 111}}
 {"book": "Breakout and Pursuit", "chapter": "The Mortain Counterattack", "section": "full", "paragraph_range": {"start": 1, "end": 17, "count": 17}}
 {"book": "Breakout and Pursuit", "chapter": "The Battle for St. L\u00f4", "section": "full", "paragraph_range": {"start": 50, "end": 79, "count": 30}}
-{"book": "Cross-Channel Attack", "chapter": "THE V CORPS LODGMENT (7-18 JUNE)", "section": "full", "paragraph_range": {"start": 1, "end": 2, "count": 2}}
-{"book": "Cross-Channel Attack", "chapter": "THE ROOTS OF STRATEGY", "section": "full", "paragraph_range": {"start": 55, "end": 89, "count": 35}}
-{"book": "Cross-Channel Attack", "chapter": "COMPARATIVE FIRE POWER OF THE U.S. AND GERMAN 1944-TYPE INFANTRY DIVISIONS", "section": "full", "paragraph_range": {"start": 1, "end": 10, "count": 10}}
-{"book": "Cross-Channel Attack", "chapter": "GERMAN DEFENSE MEASURES, 1944", "section": "full", "paragraph_range": {"start": 1, "end": 2, "count": 2}}
-{"book": "Cross-Channel Attack", "chapter": "BIBLIOGRAPHICAL NOTE", "section": "full", "paragraph_range": {"start": 1, "end": 3, "count": 3}}
-{"book": "Cross-Channel Attack", "chapter": "THE GERMAN ARMY IN FRANCE, 1940-1943", "section": "full", "paragraph_range": {"start": 3, "end": 62, "count": 60}}
-{"book": "Cross-Channel Attack", "chapter": "THE CAPTURE OF CHERBOURG (8 JUNE-1 JULY)", "section": "full", "paragraph_range": {"start": 103, "end": 141, "count": 39}}
-{"book": "Cross-Channel Attack", "chapter": "CHRONOLOGY OF MAIN PLANNING PAPERS FROM 1 JANUARY 1944", "section": "full", "paragraph_range": {"start": 1, "end": 11, "count": 11}}
-{"book": "Cross-Channel Attack", "chapter": "DIGEST OF OPERATION OVERLORD", "section": "full", "paragraph_range": {"start": 33, "end": 45, "count": 13}}
-{"book": "Cross-Channel Attack", "chapter": "THE CAPTURE OF CHERBOURG (8 JUNE-1 JULY)", "section": "full", "paragraph_range": {"start": 1, "end": 2, "count": 2}}
-{"book": "Cross-Channel Attack", "chapter": "OVERLORD IN BALANCE (AUGUST-DECEMBER 1943)", "section": "full", "paragraph_range": {"start": 3, "end": 83, "count": 81}}
-{"book": "Cross-Channel Attack", "chapter": "OUTLINE OVERLORD (JANUARY-JULY 1943)", "section": "full", "paragraph_range": {"start": 3, "end": 40, "count": 38}}
-{"book": "Cross-Channel Attack", "chapter": "THE SIXTH OF JUNE", "section": "full", "paragraph_range": {"start": 1, "end": 3, "count": 3}}
-{"book": "Cross-Channel Attack", "chapter": "DIGEST OF OPERATION OVERLORD", "section": "full", "paragraph_range": {"start": 5, "end": 17, "count": 13}}
-{"book": "Cross-Channel Attack", "chapter": "OVERLORD REVISED", "section": "full", "paragraph_range": {"start": 81, "end": 106, "count": 26}}
-{"book": "Cross-Channel Attack", "chapter": "RECIPIENTS OF THE DISTINGUISHED SERVICE CROSS", "section": "full", "paragraph_range": {"start": 1, "end": 12, "count": 12}}
-{"book": "Cross-Channel Attack", "chapter": "GERMAN DEFENSE MEASURES, 1944", "section": "full", "paragraph_range": {"start": 59, "end": 127, "count": 69}}
-{"book": "Cross-Channel Attack", "chapter": "THE V CORPS LODGMENT (7-18 JUNE)", "section": "full", "paragraph_range": {"start": 136, "end": 190, "count": 55}}
-{"book": "Cross-Channel Attack", "chapter": "THE GERMAN ARMY IN FRANCE, 1940-1943", "section": "full", "paragraph_range": {"start": 100, "end": 238, "count": 139}}
-{"book": "Cross-Channel Attack", "chapter": "THE ROOTS OF STRATEGY", "section": "full", "paragraph_range": {"start": 147, "end": 170, "count": 24}}
-{"book": "Cross-Channel Attack", "chapter": "OVERLORD REVISED", "section": "full", "paragraph_range": {"start": 107, "end": 122, "count": 16}}
-{"book": "Cross-Channel Attack", "chapter": "OVERLORD IN BALANCE (AUGUST-DECEMBER 1943)", "section": "full", "paragraph_range": {"start": 1, "end": 2, "count": 2}}
-{"book": "Cross-Channel Attack", "chapter": "PRELIMINARY OPERATIONS", "section": "full", "paragraph_range": {"start": 49, "end": 92, "count": 44}}
-{"book": "Cross-Channel Attack", "chapter": "THE SIXTH OF JUNE", "section": "full", "paragraph_range": {"start": 4, "end": 402, "count": 399}}
-{"book": "Cross-Channel Attack", "chapter": "DIGEST OF OPERATION OVERLORD", "section": "full", "paragraph_range": {"start": 20, "end": 32, "count": 13}}
+{"book": "Breakout and Pursuit", "chapter": "The Allies", "section": "full", "paragraph_range": {"start": 1, "end": 16, "count": 16}}
+{"book": "Breakout and Pursuit", "chapter": "The Allies", "section": "full", "paragraph_range": {"start": 33, "end": 42, "count": 10}}
+{"book": "Breakout and Pursuit", "chapter": "The Allies", "section": "full", "paragraph_range": {"start": 17, "end": 32, "count": 16}}
+{"book": "Breakout and Pursuit", "chapter": "The Allies", "section": "full", "paragraph_range": {"start": 43, "end": 59, "count": 17}}
+{"book": "Breakout and Pursuit", "chapter": "The Enemy", "section": "full", "paragraph_range": {"start": 1, "end": 22, "count": 22}}
+{"book": "Breakout and Pursuit", "chapter": "The Enemy", "section": "full", "paragraph_range": {"start": 23, "end": 63, "count": 41}}
+{"book": "Breakout and Pursuit", "chapter": "The Enemy", "section": "full", "paragraph_range": {"start": 64, "end": 94, "count": 31}}
+{"book": "Breakout and Pursuit", "chapter": "The Situation", "section": "full", "paragraph_range": {"start": 1, "end": 54, "count": 54}}
+{"book": "Breakout and Pursuit", "chapter": "The Situation", "section": "full", "paragraph_range": {"start": 55, "end": 72, "count": 18}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Launched", "section": "full", "paragraph_range": {"start": 1, "end": 19, "count": 19}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Launched", "section": "full", "paragraph_range": {"start": 20, "end": 27, "count": 8}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Launched", "section": "full", "paragraph_range": {"start": 28, "end": 45, "count": 18}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Launched", "section": "full", "paragraph_range": {"start": 46, "end": 95, "count": 50}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Launched", "section": "full", "paragraph_range": {"start": 96, "end": 123, "count": 28}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Broadened", "section": "full", "paragraph_range": {"start": 1, "end": 62, "count": 62}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Broadened", "section": "full", "paragraph_range": {"start": 63, "end": 122, "count": 60}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Continued", "section": "full", "paragraph_range": {"start": 1, "end": 20, "count": 20}}
+{"book": "Breakout and Pursuit", "chapter": "The Attempt to Exploit", "section": "full", "paragraph_range": {"start": 1, "end": 81, "count": 81}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Continued", "section": "full", "paragraph_range": {"start": 21, "end": 45, "count": 25}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Continued", "section": "full", "paragraph_range": {"start": 46, "end": 76, "count": 31}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Continued", "section": "full", "paragraph_range": {"start": 77, "end": 108, "count": 32}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for St. L\u00f4", "section": "full", "paragraph_range": {"start": 1, "end": 31, "count": 31}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Continued", "section": "full", "paragraph_range": {"start": 109, "end": 131, "count": 23}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for St. L\u00f4", "section": "full", "paragraph_range": {"start": 32, "end": 49, "count": 18}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for St. L\u00f4", "section": "full", "paragraph_range": {"start": 80, "end": 104, "count": 25}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for St. L\u00f4", "section": "full", "paragraph_range": {"start": 105, "end": 120, "count": 16}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for St. L\u00f4", "section": "full", "paragraph_range": {"start": 50, "end": 79, "count": 30}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for St. L\u00f4", "section": "full", "paragraph_range": {"start": 121, "end": 169, "count": 49}}
+{"book": "Breakout and Pursuit", "chapter": "The Conclusions", "section": "full", "paragraph_range": {"start": 1, "end": 13, "count": 13}}
+{"book": "Breakout and Pursuit", "chapter": "The Conclusions", "section": "full", "paragraph_range": {"start": 14, "end": 35, "count": 22}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough Idea", "section": "full", "paragraph_range": {"start": 1, "end": 15, "count": 15}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough Idea", "section": "full", "paragraph_range": {"start": 16, "end": 56, "count": 41}}
+{"book": "Breakout and Pursuit", "chapter": "COBRA Preparations", "section": "full", "paragraph_range": {"start": 1, "end": 43, "count": 43}}
+{"book": "Breakout and Pursuit", "chapter": "COBRA Preparations", "section": "full", "paragraph_range": {"start": 44, "end": 73, "count": 30}}
+{"book": "Breakout and Pursuit", "chapter": "COBRA Preparations", "section": "full", "paragraph_range": {"start": 86, "end": 128, "count": 43}}
+{"book": "Breakout and Pursuit", "chapter": "COBRA Preparations", "section": "full", "paragraph_range": {"start": 74, "end": 85, "count": 12}}
+{"book": "Breakout and Pursuit", "chapter": "COBRA", "section": "full", "paragraph_range": {"start": 1, "end": 18, "count": 18}}
+{"book": "Breakout and Pursuit", "chapter": "COBRA", "section": "full", "paragraph_range": {"start": 19, "end": 56, "count": 38}}
+{"book": "Breakout and Pursuit", "chapter": "COBRA", "section": "full", "paragraph_range": {"start": 57, "end": 80, "count": 24}}
+{"book": "Breakout and Pursuit", "chapter": "COBRA", "section": "full", "paragraph_range": {"start": 81, "end": 109, "count": 29}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough", "section": "full", "paragraph_range": {"start": 1, "end": 9, "count": 9}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough", "section": "full", "paragraph_range": {"start": 10, "end": 25, "count": 16}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough", "section": "full", "paragraph_range": {"start": 45, "end": 89, "count": 45}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough Developed", "section": "full", "paragraph_range": {"start": 1, "end": 13, "count": 13}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough", "section": "full", "paragraph_range": {"start": 26, "end": 44, "count": 19}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough Developed", "section": "full", "paragraph_range": {"start": 43, "end": 90, "count": 48}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough Developed", "section": "full", "paragraph_range": {"start": 14, "end": 42, "count": 29}}
+{"book": "Breakout and Pursuit", "chapter": "Exploiting the Breach", "section": "full", "paragraph_range": {"start": 1, "end": 25, "count": 25}}
+{"book": "Breakout and Pursuit", "chapter": "Exploiting the Breach", "section": "full", "paragraph_range": {"start": 42, "end": 64, "count": 23}}
+{"book": "Breakout and Pursuit", "chapter": "Exploiting the Breach", "section": "full", "paragraph_range": {"start": 26, "end": 41, "count": 16}}
+{"book": "Breakout and Pursuit", "chapter": "Exploiting the Breach", "section": "full", "paragraph_range": {"start": 65, "end": 111, "count": 47}}
+{"book": "Breakout and Pursuit", "chapter": "The \"Incalculable\" Results", "section": "full", "paragraph_range": {"start": 1, "end": 18, "count": 18}}
+{"book": "Breakout and Pursuit", "chapter": "Breakthrough Becomes Breakout", "section": "full", "paragraph_range": {"start": 1, "end": 65, "count": 65}}
+{"book": "Breakout and Pursuit", "chapter": "Breakthrough Becomes Breakout", "section": "full", "paragraph_range": {"start": 66, "end": 88, "count": 23}}
+{"book": "Breakout and Pursuit", "chapter": "The \"Incalculable\" Results", "section": "full", "paragraph_range": {"start": 19, "end": 49, "count": 31}}
+{"book": "Breakout and Pursuit", "chapter": "The \"Incalculable\" Results", "section": "full", "paragraph_range": {"start": 50, "end": 67, "count": 18}}
+{"book": "Breakout and Pursuit", "chapter": "Plans, Personalities, and Problems", "section": "full", "paragraph_range": {"start": 1, "end": 21, "count": 21}}
+{"book": "Breakout and Pursuit", "chapter": "Plans, Personalities, and Problems", "section": "full", "paragraph_range": {"start": 22, "end": 38, "count": 17}}
+{"book": "Breakout and Pursuit", "chapter": "Plans, Personalities, and Problems", "section": "full", "paragraph_range": {"start": 39, "end": 56, "count": 18}}
+{"book": "Breakout and Pursuit", "chapter": "Plans, Personalities, and Problems", "section": "full", "paragraph_range": {"start": 57, "end": 78, "count": 22}}
+{"book": "Breakout and Pursuit", "chapter": "St. Malo and the North Shore", "section": "full", "paragraph_range": {"start": 1, "end": 15, "count": 15}}
+{"book": "Breakout and Pursuit", "chapter": "Take Brest", "section": "full", "paragraph_range": {"start": 1, "end": 111, "count": 111}}
+{"book": "Breakout and Pursuit", "chapter": "Rennes, Lorient, and Nantes", "section": "full", "paragraph_range": {"start": 1, "end": 65, "count": 65}}
+{"book": "Breakout and Pursuit", "chapter": "St. Malo and the North Shore", "section": "full", "paragraph_range": {"start": 27, "end": 57, "count": 31}}
+{"book": "Breakout and Pursuit", "chapter": "St. Malo and the North Shore", "section": "full", "paragraph_range": {"start": 58, "end": 72, "count": 15}}
+{"book": "Breakout and Pursuit", "chapter": "St. Malo and the North Shore", "section": "full", "paragraph_range": {"start": 16, "end": 26, "count": 11}}
+{"book": "Breakout and Pursuit", "chapter": "St. Malo and the North Shore", "section": "full", "paragraph_range": {"start": 73, "end": 88, "count": 16}}
+{"book": "Breakout and Pursuit", "chapter": "Week of Decision", "section": "full", "paragraph_range": {"start": 1, "end": 29, "count": 29}}
+{"book": "Breakout and Pursuit", "chapter": "St. Malo and the North Shore", "section": "full", "paragraph_range": {"start": 89, "end": 113, "count": 25}}
+{"book": "Breakout and Pursuit", "chapter": "Week of Decision", "section": "full", "paragraph_range": {"start": 30, "end": 49, "count": 20}}
+{"book": "Breakout and Pursuit", "chapter": "Week of Decision", "section": "full", "paragraph_range": {"start": 50, "end": 63, "count": 14}}
+{"book": "Breakout and Pursuit", "chapter": "Week of Decision", "section": "full", "paragraph_range": {"start": 64, "end": 101, "count": 38}}
+{"book": "Breakout and Pursuit", "chapter": "Opportunities and Intentions", "section": "full", "paragraph_range": {"start": 1, "end": 13, "count": 13}}
+{"book": "Breakout and Pursuit", "chapter": "Opportunities and Intentions", "section": "full", "paragraph_range": {"start": 14, "end": 19, "count": 6}}
+{"book": "Breakout and Pursuit", "chapter": "Opportunities and Intentions", "section": "full", "paragraph_range": {"start": 20, "end": 41, "count": 22}}
+{"book": "Breakout and Pursuit", "chapter": "Opportunities and Intentions", "section": "full", "paragraph_range": {"start": 42, "end": 66, "count": 25}}
+{"book": "Breakout and Pursuit", "chapter": "The Mortain Counterattack", "section": "full", "paragraph_range": {"start": 1, "end": 17, "count": 17}}
+{"book": "Breakout and Pursuit", "chapter": "Opportunities and Intentions", "section": "full", "paragraph_range": {"start": 67, "end": 83, "count": 17}}
+{"book": "Breakout and Pursuit", "chapter": "The Mortain Counterattack", "section": "full", "paragraph_range": {"start": 18, "end": 40, "count": 23}}
+{"book": "Breakout and Pursuit", "chapter": "The Mortain Counterattack", "section": "full", "paragraph_range": {"start": 41, "end": 89, "count": 49}}
+{"book": "Breakout and Pursuit", "chapter": "Encirclement", "section": "full", "paragraph_range": {"start": 1, "end": 34, "count": 34}}
+{"book": "Breakout and Pursuit", "chapter": "Encirclement", "section": "full", "paragraph_range": {"start": 59, "end": 86, "count": 28}}
+{"book": "Breakout and Pursuit", "chapter": "Encirclement", "section": "full", "paragraph_range": {"start": 87, "end": 103, "count": 17}}
+{"book": "Breakout and Pursuit", "chapter": "Encirclement", "section": "full", "paragraph_range": {"start": 35, "end": 58, "count": 24}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for St. L\u00f4", "section": "full", "paragraph_range": {"start": 50, "end": 79, "count": 30}}
+{"book": "Breakout and Pursuit", "chapter": "Encirclement", "section": "full", "paragraph_range": {"start": 35, "end": 58, "count": 24}}
+{"book": "Breakout and Pursuit", "chapter": "Encirclement", "section": "full", "paragraph_range": {"start": 87, "end": 103, "count": 17}}
+{"book": "Breakout and Pursuit", "chapter": "Encirclement", "section": "full", "paragraph_range": {"start": 59, "end": 86, "count": 28}}
+{"book": "Breakout and Pursuit", "chapter": "Encirclement", "section": "full", "paragraph_range": {"start": 104, "end": 138, "count": 35}}
+{"book": "Breakout and Pursuit", "chapter": "The Argentan-Falaise Pocket", "section": "full", "paragraph_range": {"start": 1, "end": 16, "count": 16}}
+{"book": "Breakout and Pursuit", "chapter": "The Argentan-Falaise Pocket", "section": "full", "paragraph_range": {"start": 17, "end": 21, "count": 5}}
+{"book": "Breakout and Pursuit", "chapter": "The Argentan-Falaise Pocket", "section": "full", "paragraph_range": {"start": 22, "end": 40, "count": 19}}
+{"book": "Breakout and Pursuit", "chapter": "The Argentan-Falaise Pocket", "section": "full", "paragraph_range": {"start": 41, "end": 88, "count": 48}}
+{"book": "Breakout and Pursuit", "chapter": "The Argentan-Falaise Pocket", "section": "full", "paragraph_range": {"start": 89, "end": 105, "count": 17}}
+{"book": "Breakout and Pursuit", "chapter": "Closing the Pocket", "section": "full", "paragraph_range": {"start": 1, "end": 26, "count": 26}}
+{"book": "Breakout and Pursuit", "chapter": "Closing the Pocket", "section": "full", "paragraph_range": {"start": 53, "end": 81, "count": 29}}
+{"book": "Breakout and Pursuit", "chapter": "Closing the Pocket", "section": "full", "paragraph_range": {"start": 27, "end": 52, "count": 26}}
+{"book": "Breakout and Pursuit", "chapter": "Closing the Pocket", "section": "full", "paragraph_range": {"start": 82, "end": 108, "count": 27}}
+{"book": "Breakout and Pursuit", "chapter": "Closing the Pocket", "section": "full", "paragraph_range": {"start": 109, "end": 164, "count": 56}}
+{"book": "Breakout and Pursuit", "chapter": "Closing the Pocket", "section": "full", "paragraph_range": {"start": 165, "end": 182, "count": 18}}
+{"book": "Breakout and Pursuit", "chapter": "The Drive to the Seine", "section": "full", "paragraph_range": {"start": 23, "end": 61, "count": 39}}
+{"book": "Breakout and Pursuit", "chapter": "The Drive to the Seine", "section": "full", "paragraph_range": {"start": 62, "end": 78, "count": 17}}
+{"book": "Breakout and Pursuit", "chapter": "The Drive to the Seine", "section": "full", "paragraph_range": {"start": 1, "end": 22, "count": 22}}
+{"book": "Breakout and Pursuit", "chapter": "The Drive to the Seine", "section": "full", "paragraph_range": {"start": 79, "end": 118, "count": 40}}
+{"book": "Breakout and Pursuit", "chapter": "The Drive to the Seine", "section": "full", "paragraph_range": {"start": 119, "end": 152, "count": 34}}
+{"book": "Breakout and Pursuit", "chapter": "The Liberation of Paris", "section": "full", "paragraph_range": {"start": 1, "end": 8, "count": 8}}
+{"book": "Breakout and Pursuit", "chapter": "The Liberation of Paris", "section": "full", "paragraph_range": {"start": 29, "end": 42, "count": 14}}
+{"book": "Breakout and Pursuit", "chapter": "The Liberation of Paris", "section": "full", "paragraph_range": {"start": 9, "end": 20, "count": 12}}
+{"book": "Breakout and Pursuit", "chapter": "The Liberation of Paris", "section": "full", "paragraph_range": {"start": 21, "end": 28, "count": 8}}
+{"book": "Breakout and Pursuit", "chapter": "The Liberation of Paris", "section": "full", "paragraph_range": {"start": 57, "end": 71, "count": 15}}
+{"book": "Breakout and Pursuit", "chapter": "The Liberation of Paris", "section": "full", "paragraph_range": {"start": 43, "end": 56, "count": 14}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for Brest", "section": "full", "paragraph_range": {"start": 1, "end": 15, "count": 15}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for Brest", "section": "full", "paragraph_range": {"start": 107, "end": 115, "count": 9}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for Brest", "section": "full", "paragraph_range": {"start": 44, "end": 106, "count": 63}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for Brest", "section": "full", "paragraph_range": {"start": 16, "end": 43, "count": 28}}
+{"book": "Breakout and Pursuit", "chapter": "The Drive Beyond the Seine", "section": "full", "paragraph_range": {"start": 33, "end": 64, "count": 32}}
+{"book": "Breakout and Pursuit", "chapter": "The Drive Beyond the Seine", "section": "full", "paragraph_range": {"start": 1, "end": 32, "count": 32}}
+{"book": "Breakout and Pursuit", "chapter": "The Drive Beyond the Seine", "section": "full", "paragraph_range": {"start": 65, "end": 88, "count": 24}}
+{"book": "Breakout and Pursuit", "chapter": "Toward the Heart of Germany", "section": "full", "paragraph_range": {"start": 42, "end": 58, "count": 17}}
+{"book": "Breakout and Pursuit", "chapter": "Toward the Heart of Germany", "section": "full", "paragraph_range": {"start": 59, "end": 74, "count": 16}}
+{"book": "Breakout and Pursuit", "chapter": "Toward the Heart of Germany", "section": "full", "paragraph_range": {"start": 1, "end": 41, "count": 41}}
+{"book": "Breakout and Pursuit", "chapter": "Toward the Heart of Germany", "section": "full", "paragraph_range": {"start": 75, "end": 97, "count": 23}}
+{"book": "Breakout and Pursuit", "chapter": "Toward the Heart of Germany", "section": "full", "paragraph_range": {"start": 98, "end": 128, "count": 31}}
+{"book": "Cross-Channel Attack", "chapter": "Forward", "section": "full", "paragraph_range": {"start": 1, "end": 3, "count": 3}}
+{"book": "Cross-Channel Attack", "chapter": "Forward", "section": "full", "paragraph_range": {"start": 4, "end": 5, "count": 2}}
+{"book": "Cross-Channel Attack", "chapter": "THE ROOTS OF STRATEGY", "section": "full", "paragraph_range": {"start": 1, "end": 26, "count": 26}}
+{"book": "Cross-Channel Attack", "chapter": "Forward", "section": "full", "paragraph_range": {"start": 6, "end": 12, "count": 7}}
+{"book": "Cross-Channel Attack", "chapter": "THE ROOTS OF STRATEGY", "section": "full", "paragraph_range": {"start": 27, "end": 43, "count": 17}}
+{"book": "Cross-Channel Attack", "chapter": "THE ROOTS OF STRATEGY", "section": "full", "paragraph_range": {"start": 67, "end": 79, "count": 13}}
+{"book": "Cross-Channel Attack", "chapter": "THE ROOTS OF STRATEGY", "section": "full", "paragraph_range": {"start": 44, "end": 66, "count": 23}}
+{"book": "Cross-Channel Attack", "chapter": "THE ROOTS OF STRATEGY", "section": "full", "paragraph_range": {"start": 80, "end": 98, "count": 19}}
+{"book": "Cross-Channel Attack", "chapter": "OUTLINE OVERLORD (JANUARY-JULY 1943)", "section": "full", "paragraph_range": {"start": 3, "end": 19, "count": 17}}
 {"book": "Cross-Channel Attack", "chapter": "OUTLINE OVERLORD (JANUARY-JULY 1943)", "section": "full", "paragraph_range": {"start": 1, "end": 2, "count": 2}}
-{"book": "Cross-Channel Attack", "chapter": "THE CAPTURE OF CHERBOURG (8 JUNE-1 JULY)", "section": "full", "paragraph_range": {"start": 3, "end": 50, "count": 48}}
-{"book": "Cross-Channel Attack", "chapter": "OUTLINE OVERLORD (JANUARY-JULY 1943)", "section": "full", "paragraph_range": {"start": 66, "end": 85, "count": 20}}
-{"book": "Cross-Channel Attack", "chapter": "OVERLORD IN BALANCE (AUGUST-DECEMBER 1943)", "section": "full", "paragraph_range": {"start": 113, "end": 175, "count": 63}}
-{"book": "Cross-Channel Attack", "chapter": "BIBLIOGRAPHICAL NOTE", "section": "full", "paragraph_range": {"start": 4, "end": 44, "count": 41}}
-{"book": "Cross-Channel Attack", "chapter": "GERMAN DEFENSE MEASURES, 1944", "section": "full", "paragraph_range": {"start": 3, "end": 26, "count": 24}}
-{"book": "Cross-Channel Attack", "chapter": "THE ROOTS OF STRATEGY", "section": "full", "paragraph_range": {"start": 1, "end": 54, "count": 54}}
-{"book": "Cross-Channel Attack", "chapter": "THE V CORPS LODGMENT (7-18 JUNE)", "section": "full", "paragraph_range": {"start": 3, "end": 77, "count": 75}}
-{"book": "Cross-Channel Attack", "chapter": "OVERLORD REVISED", "section": "full", "paragraph_range": {"start": 32, "end": 73, "count": 42}}
-{"book": "Cross-Channel Attack", "chapter": "Forward", "section": "full", "paragraph_range": {"start": 16, "end": 36, "count": 21}}
+{"book": "Cross-Channel Attack", "chapter": "OUTLINE OVERLORD (JANUARY-JULY 1943)", "section": "full", "paragraph_range": {"start": 31, "end": 39, "count": 9}}
+{"book": "Cross-Channel Attack", "chapter": "OUTLINE OVERLORD (JANUARY-JULY 1943)", "section": "full", "paragraph_range": {"start": 20, "end": 30, "count": 11}}
+{"book": "Cross-Channel Attack", "chapter": "OUTLINE OVERLORD (JANUARY-JULY 1943)", "section": "full", "paragraph_range": {"start": 40, "end": 54, "count": 15}}
+{"book": "Cross-Channel Attack", "chapter": "OUTLINE OVERLORD (JANUARY-JULY 1943)", "section": "full", "paragraph_range": {"start": 55, "end": 55, "count": 1}}
+{"book": "Cross-Channel Attack", "chapter": "OVERLORD IN BALANCE (AUGUST-DECEMBER 1943)", "section": "full", "paragraph_range": {"start": 1, "end": 2, "count": 2}}
+{"book": "Cross-Channel Attack", "chapter": "OVERLORD IN BALANCE (AUGUST-DECEMBER 1943)", "section": "full", "paragraph_range": {"start": 3, "end": 37, "count": 35}}
+{"book": "Cross-Channel Attack", "chapter": "OVERLORD IN BALANCE (AUGUST-DECEMBER 1943)", "section": "full", "paragraph_range": {"start": 38, "end": 48, "count": 11}}
+{"book": "Cross-Channel Attack", "chapter": "OVERLORD IN BALANCE (AUGUST-DECEMBER 1943)", "section": "full", "paragraph_range": {"start": 49, "end": 75, "count": 27}}
+{"book": "Cross-Channel Attack", "chapter": "OVERLORD IN BALANCE (AUGUST-DECEMBER 1943)", "section": "full", "paragraph_range": {"start": 76, "end": 97, "count": 22}}
 {"book": "Cross-Channel Attack", "chapter": "THE GERMAN ARMY IN FRANCE, 1940-1943", "section": "full", "paragraph_range": {"start": 1, "end": 2, "count": 2}}
-{"book": "Cross-Channel Attack", "chapter": "OVERLORD REVISED", "section": "full", "paragraph_range": {"start": 74, "end": 80, "count": 7}}
-{"book": "Cross-Channel Attack", "chapter": "GERMAN DEFENSE MEASURES, 1944", "section": "full", "paragraph_range": {"start": 128, "end": 285, "count": 158}}
-{"book": "Cross-Channel Attack", "chapter": "THE V CORPS LODGMENT (7-18 JUNE)", "section": "full", "paragraph_range": {"start": 191, "end": 331, "count": 141}}
-{"book": "Cross-Channel Attack", "chapter": "PRELIMINARY OPERATIONS", "section": "full", "paragraph_range": {"start": 1, "end": 2, "count": 2}}
-{"book": "Cross-Channel Attack", "chapter": "DIVISIONS AVAILABLE TO GERMANY ON 6 JUNE 1944", "section": "full", "paragraph_range": {"start": 1, "end": 5, "count": 5}}
-{"book": "Cross-Channel Attack", "chapter": "DIGEST OF OPERATION OVERLORD", "section": "full", "paragraph_range": {"start": 3, "end": 4, "count": 2}}
-{"book": "Cross-Channel Attack", "chapter": "PRELIMINARY OPERATIONS", "section": "full", "paragraph_range": {"start": 93, "end": 286, "count": 194}}
-{"book": "Cross-Channel Attack", "chapter": "OUTLINE OVERLORD (JANUARY-JULY 1943)", "section": "full", "paragraph_range": {"start": 41, "end": 65, "count": 25}}
-{"book": "Cross-Channel Attack", "chapter": "OVERLORD IN BALANCE (AUGUST-DECEMBER 1943)", "section": "full", "paragraph_range": {"start": 84, "end": 112, "count": 29}}
-{"book": "Cross-Channel Attack", "chapter": "OUTLINE OVERLORD (JANUARY-JULY 1943)", "section": "full", "paragraph_range": {"start": 120, "end": 121, "count": 2}}
-{"book": "Cross-Channel Attack", "chapter": "THE GERMAN ARMY IN FRANCE, 1940-1943", "section": "full", "paragraph_range": {"start": 63, "end": 99, "count": 37}}
-{"book": "Cross-Channel Attack", "chapter": "THE CAPTURE OF CHERBOURG (8 JUNE-1 JULY)", "section": "full", "paragraph_range": {"start": 142, "end": 172, "count": 31}}
-{"book": "Cross-Channel Attack", "chapter": "Forward", "section": "full", "paragraph_range": {"start": 1, "end": 8, "count": 8}}
-{"book": "Cross-Channel Attack", "chapter": "THE ROOTS OF STRATEGY", "section": "full", "paragraph_range": {"start": 90, "end": 146, "count": 57}}
+{"book": "Cross-Channel Attack", "chapter": "THE GERMAN ARMY IN FRANCE, 1940-1943", "section": "full", "paragraph_range": {"start": 3, "end": 27, "count": 25}}
+{"book": "Cross-Channel Attack", "chapter": "THE GERMAN ARMY IN FRANCE, 1940-1943", "section": "full", "paragraph_range": {"start": 28, "end": 44, "count": 17}}
+{"book": "Cross-Channel Attack", "chapter": "THE GERMAN ARMY IN FRANCE, 1940-1943", "section": "full", "paragraph_range": {"start": 45, "end": 66, "count": 22}}
 {"book": "Cross-Channel Attack", "chapter": "OVERLORD REVISED", "section": "full", "paragraph_range": {"start": 1, "end": 2, "count": 2}}
-{"book": "Cross-Channel Attack", "chapter": "Forward", "section": "full", "paragraph_range": {"start": 9, "end": 15, "count": 7}}
-{"book": "Cross-Channel Attack", "chapter": "TABLE OF EQUIVALENT RANKS", "section": "full", "paragraph_range": {"start": 1, "end": 5, "count": 5}}
-{"book": "Cross-Channel Attack", "chapter": "DIRECTIVE TO SUPREME COMMANDER, ALLIED\nEXPEDITIONARY FORCE", "section": "full", "paragraph_range": {"start": 1, "end": 14, "count": 14}}
-{"book": "Cross-Channel Attack", "chapter": "HITLER DIRECTIVE NO. 40", "section": "full", "paragraph_range": {"start": 1, "end": 76, "count": 76}}
-{"book": "Cross-Channel Attack", "chapter": "OVERLORD REVISED", "section": "full", "paragraph_range": {"start": 3, "end": 31, "count": 29}}
-{"book": "Cross-Channel Attack", "chapter": "GERMAN DEFENSE MEASURES, 1944", "section": "full", "paragraph_range": {"start": 27, "end": 58, "count": 32}}
-{"book": "Cross-Channel Attack", "chapter": "OVERLORD IN BALANCE (AUGUST-DECEMBER 1943)", "section": "full", "paragraph_range": {"start": 176, "end": 384, "count": 209}}
-{"book": "Cross-Channel Attack", "chapter": "THE V CORPS LODGMENT (7-18 JUNE)", "section": "full", "paragraph_range": {"start": 78, "end": 135, "count": 58}}
-{"book": "Cross-Channel Attack", "chapter": "THE CAPTURE OF CHERBOURG (8 JUNE-1 JULY)", "section": "full", "paragraph_range": {"start": 173, "end": 252, "count": 80}}
-{"book": "Cross-Channel Attack", "chapter": "BIBLIOGRAPHICAL NOTE", "section": "full", "paragraph_range": {"start": 45, "end": 57, "count": 13}}
-{"book": "Cross-Channel Attack", "chapter": "OUTLINE OVERLORD (JANUARY-JULY 1943)", "section": "full", "paragraph_range": {"start": 86, "end": 119, "count": 34}}
-{"book": "Cross-Channel Attack", "chapter": "DIGEST OF OPERATION OVERLORD", "section": "full", "paragraph_range": {"start": 18, "end": 19, "count": 2}}
-{"book": "Cross-Channel Attack", "chapter": "THE CAPTURE OF CHERBOURG (8 JUNE-1 JULY)", "section": "full", "paragraph_range": {"start": 51, "end": 102, "count": 52}}
-{"book": "Cross-Channel Attack", "chapter": "HITLER DIRECTIVE NO. 51", "section": "full", "paragraph_range": {"start": 1, "end": 49, "count": 49}}
-{"book": "Cross-Channel Attack", "chapter": "PRELIMINARY OPERATIONS", "section": "full", "paragraph_range": {"start": 3, "end": 48, "count": 46}}
+{"book": "Cross-Channel Attack", "chapter": "OVERLORD REVISED", "section": "full", "paragraph_range": {"start": 3, "end": 15, "count": 13}}
+{"book": "Cross-Channel Attack", "chapter": "OVERLORD REVISED", "section": "full", "paragraph_range": {"start": 16, "end": 34, "count": 19}}
+{"book": "Cross-Channel Attack", "chapter": "OVERLORD REVISED", "section": "full", "paragraph_range": {"start": 38, "end": 50, "count": 13}}
+{"book": "Cross-Channel Attack", "chapter": "OVERLORD REVISED", "section": "full", "paragraph_range": {"start": 35, "end": 37, "count": 3}}
+{"book": "Cross-Channel Attack", "chapter": "OVERLORD REVISED", "section": "full", "paragraph_range": {"start": 51, "end": 57, "count": 7}}
+{"book": "Cross-Channel Attack", "chapter": "PRELIMINARY OPERATIONS", "section": "full", "paragraph_range": {"start": 1, "end": 2, "count": 2}}
+{"book": "Cross-Channel Attack", "chapter": "PRELIMINARY OPERATIONS", "section": "full", "paragraph_range": {"start": 3, "end": 21, "count": 19}}
+{"book": "Cross-Channel Attack", "chapter": "PRELIMINARY OPERATIONS", "section": "full", "paragraph_range": {"start": 43, "end": 72, "count": 30}}
+{"book": "Cross-Channel Attack", "chapter": "GERMAN DEFENSE MEASURES, 1944", "section": "full", "paragraph_range": {"start": 1, "end": 2, "count": 2}}
+{"book": "Cross-Channel Attack", "chapter": "PRELIMINARY OPERATIONS", "section": "full", "paragraph_range": {"start": 22, "end": 42, "count": 21}}
+{"book": "Cross-Channel Attack", "chapter": "GERMAN DEFENSE MEASURES, 1944", "section": "full", "paragraph_range": {"start": 3, "end": 13, "count": 11}}
+{"book": "Cross-Channel Attack", "chapter": "GERMAN DEFENSE MEASURES, 1944", "section": "full", "paragraph_range": {"start": 14, "end": 26, "count": 13}}
+{"book": "Cross-Channel Attack", "chapter": "GERMAN DEFENSE MEASURES, 1944", "section": "full", "paragraph_range": {"start": 27, "end": 59, "count": 33}}
+{"book": "Cross-Channel Attack", "chapter": "GERMAN DEFENSE MEASURES, 1944", "section": "full", "paragraph_range": {"start": 60, "end": 81, "count": 22}}
+{"book": "Cross-Channel Attack", "chapter": "THE SIXTH OF JUNE", "section": "full", "paragraph_range": {"start": 1, "end": 2, "count": 2}}
+{"book": "Cross-Channel Attack", "chapter": "THE SIXTH OF JUNE", "section": "full", "paragraph_range": {"start": 3, "end": 131, "count": 129}}
+{"book": "Cross-Channel Attack", "chapter": "THE V CORPS LODGMENT (7-18 JUNE)", "section": "full", "paragraph_range": {"start": 1, "end": 2, "count": 2}}
+{"book": "Cross-Channel Attack", "chapter": "THE V CORPS LODGMENT (7-18 JUNE)", "section": "full", "paragraph_range": {"start": 3, "end": 33, "count": 31}}
+{"book": "Cross-Channel Attack", "chapter": "THE V CORPS LODGMENT (7-18 JUNE)", "section": "full", "paragraph_range": {"start": 34, "end": 60, "count": 27}}
+{"book": "Cross-Channel Attack", "chapter": "THE CAPTURE OF CHERBOURG (8 JUNE-1 JULY)", "section": "full", "paragraph_range": {"start": 1, "end": 2, "count": 2}}
+{"book": "Cross-Channel Attack", "chapter": "THE V CORPS LODGMENT (7-18 JUNE)", "section": "full", "paragraph_range": {"start": 61, "end": 83, "count": 23}}
+{"book": "Cross-Channel Attack", "chapter": "THE V CORPS LODGMENT (7-18 JUNE)", "section": "full", "paragraph_range": {"start": 84, "end": 103, "count": 20}}
+{"book": "Cross-Channel Attack", "chapter": "THE CAPTURE OF CHERBOURG (8 JUNE-1 JULY)", "section": "full", "paragraph_range": {"start": 3, "end": 23, "count": 21}}
+{"book": "Cross-Channel Attack", "chapter": "THE CAPTURE OF CHERBOURG (8 JUNE-1 JULY)", "section": "full", "paragraph_range": {"start": 49, "end": 65, "count": 17}}
+{"book": "Cross-Channel Attack", "chapter": "THE CAPTURE OF CHERBOURG (8 JUNE-1 JULY)", "section": "full", "paragraph_range": {"start": 24, "end": 48, "count": 25}}
+{"book": "Cross-Channel Attack", "chapter": "THE CAPTURE OF CHERBOURG (8 JUNE-1 JULY)", "section": "full", "paragraph_range": {"start": 66, "end": 78, "count": 13}}
+{"book": "Cross-Channel Attack", "chapter": "THE CAPTURE OF CHERBOURG (8 JUNE-1 JULY)", "section": "full", "paragraph_range": {"start": 79, "end": 111, "count": 33}}
 {"book": "Cross-Channel Attack", "chapter": "DIGEST OF OPERATION OVERLORD", "section": "full", "paragraph_range": {"start": 1, "end": 2, "count": 2}}
-{"book": "Cross-Channel Attack", "chapter": "THE ROOTS OF STRATEGY", "section": "full", "paragraph_range": {"start": 171, "end": 373, "count": 203}}
+{"book": "Cross-Channel Attack", "chapter": "DIGEST OF OPERATION OVERLORD", "section": "full", "paragraph_range": {"start": 3, "end": 3, "count": 1}}
+{"book": "Cross-Channel Attack", "chapter": "DIGEST OF OPERATION OVERLORD", "section": "full", "paragraph_range": {"start": 4, "end": 7, "count": 4}}
+{"book": "Cross-Channel Attack", "chapter": "DIGEST OF OPERATION OVERLORD", "section": "full", "paragraph_range": {"start": 8, "end": 8, "count": 1}}
+{"book": "Cross-Channel Attack", "chapter": "DIGEST OF OPERATION OVERLORD", "section": "full", "paragraph_range": {"start": 9, "end": 11, "count": 3}}
+{"book": "Cross-Channel Attack", "chapter": "DIRECTIVE TO SUPREME COMMANDER, ALLIED\nEXPEDITIONARY FORCE", "section": "full", "paragraph_range": {"start": 1, "end": 6, "count": 6}}
+{"book": "Cross-Channel Attack", "chapter": "DIGEST OF OPERATION OVERLORD", "section": "full", "paragraph_range": {"start": 12, "end": 14, "count": 3}}
+{"book": "Cross-Channel Attack", "chapter": "HITLER DIRECTIVE NO. 40", "section": "full", "paragraph_range": {"start": 1, "end": 13, "count": 13}}
+{"book": "Cross-Channel Attack", "chapter": "HITLER DIRECTIVE NO. 51", "section": "full", "paragraph_range": {"start": 1, "end": 12, "count": 12}}
+{"book": "Cross-Channel Attack", "chapter": "CHRONOLOGY OF MAIN PLANNING PAPERS FROM 1 JANUARY 1944", "section": "full", "paragraph_range": {"start": 1, "end": 7, "count": 7}}
+{"book": "Cross-Channel Attack", "chapter": "COMPARATIVE FIRE POWER OF THE U.S. AND GERMAN 1944-TYPE INFANTRY DIVISIONS", "section": "full", "paragraph_range": {"start": 1, "end": 5, "count": 5}}
+{"book": "Cross-Channel Attack", "chapter": "TABLE OF EQUIVALENT RANKS", "section": "full", "paragraph_range": {"start": 1, "end": 4, "count": 4}}
+{"book": "Cross-Channel Attack", "chapter": "DIVISIONS AVAILABLE TO GERMANY ON 6 JUNE 1944", "section": "full", "paragraph_range": {"start": 1, "end": 4, "count": 4}}
+{"book": "Cross-Channel Attack", "chapter": "BIBLIOGRAPHICAL NOTE", "section": "full", "paragraph_range": {"start": 3, "end": 9, "count": 7}}
+{"book": "Cross-Channel Attack", "chapter": "BIBLIOGRAPHICAL NOTE", "section": "full", "paragraph_range": {"start": 1, "end": 2, "count": 2}}
+{"book": "Cross-Channel Attack", "chapter": "RECIPIENTS OF THE DISTINGUISHED SERVICE CROSS", "section": "full", "paragraph_range": {"start": 1, "end": 10, "count": 10}}
+{"book": "Cross-Channel Attack", "chapter": "BIBLIOGRAPHICAL NOTE", "section": "full", "paragraph_range": {"start": 10, "end": 16, "count": 7}}
+{"book": "Cross-Channel Attack", "chapter": "OVERLORD IN BALANCE (AUGUST-DECEMBER 1943)", "section": "full", "paragraph_range": {"start": 3, "end": 37, "count": 35}}
+{"book": "Cross-Channel Attack", "chapter": "OVERLORD IN BALANCE (AUGUST-DECEMBER 1943)", "section": "full", "paragraph_range": {"start": 3, "end": 37, "count": 35}}
+{"book": "Cross-Channel Attack", "chapter": "OVERLORD IN BALANCE (AUGUST-DECEMBER 1943)", "section": "full", "paragraph_range": {"start": 3, "end": 37, "count": 35}}
+{"book": "Cross-Channel Attack", "chapter": "OVERLORD REVISED", "section": "full", "paragraph_range": {"start": 3, "end": 15, "count": 13}}
+{"book": "Cross-Channel Attack", "chapter": "GERMAN DEFENSE MEASURES, 1944", "section": "full", "paragraph_range": {"start": 3, "end": 13, "count": 11}}
+{"book": "Cross-Channel Attack", "chapter": "OVERLORD IN BALANCE (AUGUST-DECEMBER 1943)", "section": "full", "paragraph_range": {"start": 3, "end": 37, "count": 35}}
+{"book": "Cross-Channel Attack", "chapter": "GERMAN DEFENSE MEASURES, 1944", "section": "full", "paragraph_range": {"start": 3, "end": 13, "count": 11}}
+{"book": "Cross-Channel Attack", "chapter": "THE SIXTH OF JUNE", "section": "full", "paragraph_range": {"start": 3, "end": 131, "count": 129}}
+{"book": "Cross-Channel Attack", "chapter": "THE V CORPS LODGMENT (7-18 JUNE)", "section": "full", "paragraph_range": {"start": 84, "end": 103, "count": 20}}
+{"book": "Breakout and Pursuit", "chapter": "The Allies", "section": "full", "paragraph_range": {"start": 33, "end": 42, "count": 10}}
+{"book": "Breakout and Pursuit", "chapter": "The Allies", "section": "full", "paragraph_range": {"start": 1, "end": 16, "count": 16}}
+{"book": "Breakout and Pursuit", "chapter": "The Allies", "section": "full", "paragraph_range": {"start": 17, "end": 32, "count": 16}}
+{"book": "Breakout and Pursuit", "chapter": "The Enemy", "section": "full", "paragraph_range": {"start": 1, "end": 22, "count": 22}}
+{"book": "Breakout and Pursuit", "chapter": "The Allies", "section": "full", "paragraph_range": {"start": 43, "end": 59, "count": 17}}
+{"book": "Breakout and Pursuit", "chapter": "The Enemy", "section": "full", "paragraph_range": {"start": 23, "end": 63, "count": 41}}
+{"book": "Breakout and Pursuit", "chapter": "The Situation", "section": "full", "paragraph_range": {"start": 1, "end": 54, "count": 54}}
+{"book": "Breakout and Pursuit", "chapter": "The Situation", "section": "full", "paragraph_range": {"start": 55, "end": 72, "count": 18}}
+{"book": "Breakout and Pursuit", "chapter": "The Enemy", "section": "full", "paragraph_range": {"start": 64, "end": 94, "count": 31}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Launched", "section": "full", "paragraph_range": {"start": 20, "end": 27, "count": 8}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Launched", "section": "full", "paragraph_range": {"start": 1, "end": 19, "count": 19}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Launched", "section": "full", "paragraph_range": {"start": 28, "end": 45, "count": 18}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Launched", "section": "full", "paragraph_range": {"start": 96, "end": 123, "count": 28}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Launched", "section": "full", "paragraph_range": {"start": 46, "end": 95, "count": 50}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Broadened", "section": "full", "paragraph_range": {"start": 1, "end": 62, "count": 62}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Continued", "section": "full", "paragraph_range": {"start": 1, "end": 20, "count": 20}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Broadened", "section": "full", "paragraph_range": {"start": 63, "end": 122, "count": 60}}
+{"book": "Breakout and Pursuit", "chapter": "The Attempt to Exploit", "section": "full", "paragraph_range": {"start": 1, "end": 81, "count": 81}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Continued", "section": "full", "paragraph_range": {"start": 21, "end": 45, "count": 25}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Continued", "section": "full", "paragraph_range": {"start": 77, "end": 108, "count": 32}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Continued", "section": "full", "paragraph_range": {"start": 46, "end": 76, "count": 31}}
+{"book": "Breakout and Pursuit", "chapter": "The Offensive Continued", "section": "full", "paragraph_range": {"start": 109, "end": 131, "count": 23}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for St. L\u00f4", "section": "full", "paragraph_range": {"start": 1, "end": 31, "count": 31}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for St. L\u00f4", "section": "full", "paragraph_range": {"start": 32, "end": 49, "count": 18}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for St. L\u00f4", "section": "full", "paragraph_range": {"start": 50, "end": 79, "count": 30}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for St. L\u00f4", "section": "full", "paragraph_range": {"start": 80, "end": 104, "count": 25}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for St. L\u00f4", "section": "full", "paragraph_range": {"start": 105, "end": 120, "count": 16}}
+{"book": "Breakout and Pursuit", "chapter": "The Conclusions", "section": "full", "paragraph_range": {"start": 1, "end": 13, "count": 13}}
+{"book": "Breakout and Pursuit", "chapter": "The Conclusions", "section": "full", "paragraph_range": {"start": 14, "end": 35, "count": 22}}
+{"book": "Breakout and Pursuit", "chapter": "The Battle for St. L\u00f4", "section": "full", "paragraph_range": {"start": 121, "end": 169, "count": 49}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough Idea", "section": "full", "paragraph_range": {"start": 1, "end": 15, "count": 15}}
+{"book": "Breakout and Pursuit", "chapter": "COBRA Preparations", "section": "full", "paragraph_range": {"start": 1, "end": 43, "count": 43}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough Idea", "section": "full", "paragraph_range": {"start": 16, "end": 56, "count": 41}}
+{"book": "Breakout and Pursuit", "chapter": "COBRA Preparations", "section": "full", "paragraph_range": {"start": 74, "end": 85, "count": 12}}
+{"book": "Breakout and Pursuit", "chapter": "COBRA Preparations", "section": "full", "paragraph_range": {"start": 44, "end": 73, "count": 30}}
+{"book": "Breakout and Pursuit", "chapter": "COBRA Preparations", "section": "full", "paragraph_range": {"start": 86, "end": 128, "count": 43}}
+{"book": "Breakout and Pursuit", "chapter": "COBRA", "section": "full", "paragraph_range": {"start": 1, "end": 18, "count": 18}}
+{"book": "Breakout and Pursuit", "chapter": "COBRA", "section": "full", "paragraph_range": {"start": 19, "end": 56, "count": 38}}
+{"book": "Breakout and Pursuit", "chapter": "COBRA", "section": "full", "paragraph_range": {"start": 57, "end": 80, "count": 24}}
+{"book": "Breakout and Pursuit", "chapter": "COBRA", "section": "full", "paragraph_range": {"start": 81, "end": 109, "count": 29}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough", "section": "full", "paragraph_range": {"start": 1, "end": 9, "count": 9}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough", "section": "full", "paragraph_range": {"start": 10, "end": 25, "count": 16}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough", "section": "full", "paragraph_range": {"start": 26, "end": 44, "count": 19}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough Developed", "section": "full", "paragraph_range": {"start": 1, "end": 13, "count": 13}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough", "section": "full", "paragraph_range": {"start": 45, "end": 89, "count": 45}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough Developed", "section": "full", "paragraph_range": {"start": 14, "end": 42, "count": 29}}
+{"book": "Breakout and Pursuit", "chapter": "Exploiting the Breach", "section": "full", "paragraph_range": {"start": 1, "end": 25, "count": 25}}
+{"book": "Breakout and Pursuit", "chapter": "The Breakthrough Developed", "section": "full", "paragraph_range": {"start": 43, "end": 90, "count": 48}}
+{"book": "Breakout and Pursuit", "chapter": "Exploiting the Breach", "section": "full", "paragraph_range": {"start": 42, "end": 64, "count": 23}}
+{"book": "Breakout and Pursuit", "chapter": "Exploiting the Breach", "section": "full", "paragraph_range": {"start": 26, "end": 41, "count": 16}}
+{"book": "Breakout and Pursuit", "chapter": "Exploiting the Breach", "section": "full", "paragraph_range": {"start": 65, "end": 111, "count": 47}}
+{"book": "Breakout and Pursuit", "chapter": "The \"Incalculable\" Results", "section": "full", "paragraph_range": {"start": 1, "end": 18, "count": 18}}
+{"book": "Breakout and Pursuit", "chapter": "Breakthrough Becomes Breakout", "section": "full", "paragraph_range": {"start": 1, "end": 65, "count": 65}}
+{"book": "Breakout and Pursuit", "chapter": "Breakthrough Becomes Breakout", "section": "full", "paragraph_range": {"start": 66, "end": 88, "count": 23}}
+{"book": "Breakout and Pursuit", "chapter": "The \"Incalculable\" Results", "section": "full", "paragraph_range": {"start": 19, "end": 49, "count": 31}}
+{"book": "Breakout and Pursuit", "chapter": "The \"Incalculable\" Results", "section": "full", "paragraph_range": {"start": 50, "end": 67, "count": 18}}
+{"book": "Breakout and Pursuit", "chapter": "Plans, Personalities, and Problems", "section": "full", "paragraph_range": {"start": 1, "end": 21, "count": 21}}
+{"book": "Breakout and Pursuit", "chapter": "Plans, Personalities, and Problems", "section": "full", "paragraph_range": {"start": 22, "end": 38, "count": 17}}
+{"book": "Breakout and Pursuit", "chapter": "Plans, Personalities, and Problems", "section": "full", "paragraph_range": {"start": 39, "end": 56, "count": 18}}
+{"book": "Breakout and Pursuit", "chapter": "Plans, Personalities, and Problems", "section": "full", "paragraph_range": {"start": 57, "end": 78, "count": 22}}
+{"book": "Breakout and Pursuit", "chapter": "Rennes, Lorient, and Nantes", "section": "full", "paragraph_range": {"start": 1, "end": 65, "count": 65}}
+{"book": "Breakout and Pursuit", "chapter": "Take Brest", "section": "full", "paragraph_range": {"start": 1, "end": 111, "count": 111}}
+{"book": "Breakout and Pursuit", "chapter": "St. Malo and the North Shore", "section": "full", "paragraph_range": {"start": 1, "end": 15, "count": 15}}
+{"book": "Breakout and Pursuit", "chapter": "St. Malo and the North Shore", "section": "full", "paragraph_range": {"start": 16, "end": 26, "count": 11}}
+{"book": "Breakout and Pursuit", "chapter": "St. Malo and the North Shore", "section": "full", "paragraph_range": {"start": 27, "end": 57, "count": 31}}
+{"book": "Breakout and Pursuit", "chapter": "St. Malo and the North Shore", "section": "full", "paragraph_range": {"start": 58, "end": 72, "count": 15}}
+{"book": "Breakout and Pursuit", "chapter": "Week of Decision", "section": "full", "paragraph_range": {"start": 1, "end": 29, "count": 29}}
+{"book": "Breakout and Pursuit", "chapter": "St. Malo and the North Shore", "section": "full", "paragraph_range": {"start": 89, "end": 113, "count": 25}}
+{"book": "Breakout and Pursuit", "chapter": "St. Malo and the North Shore", "section": "full", "paragraph_range": {"start": 73, "end": 88, "count": 16}}
+{"book": "Breakout and Pursuit", "chapter": "Week of Decision", "section": "full", "paragraph_range": {"start": 50, "end": 63, "count": 14}}
+{"book": "Breakout and Pursuit", "chapter": "Week of Decision", "section": "full", "paragraph_range": {"start": 30, "end": 49, "count": 20}}
+{"book": "Breakout and Pursuit", "chapter": "Week of Decision", "section": "full", "paragraph_range": {"start": 64, "end": 101, "count": 38}}
+{"book": "Breakout and Pursuit", "chapter": "Opportunities and Intentions", "section": "full", "paragraph_range": {"start": 1, "end": 13, "count": 13}}
+{"book": "Breakout and Pursuit", "chapter": "Opportunities and Intentions", "section": "full", "paragraph_range": {"start": 20, "end": 41, "count": 22}}
+{"book": "Breakout and Pursuit", "chapter": "Opportunities and Intentions", "section": "full", "paragraph_range": {"start": 14, "end": 19, "count": 6}}
+{"book": "Breakout and Pursuit", "chapter": "Opportunities and Intentions", "section": "full", "paragraph_range": {"start": 42, "end": 66, "count": 25}}
+{"book": "Breakout and Pursuit", "chapter": "Opportunities and Intentions", "section": "full", "paragraph_range": {"start": 67, "end": 83, "count": 17}}
+{"book": "Breakout and Pursuit", "chapter": "The Mortain Counterattack", "section": "full", "paragraph_range": {"start": 1, "end": 17, "count": 17}}
+{"book": "Breakout and Pursuit", "chapter": "The Mortain Counterattack", "section": "full", "paragraph_range": {"start": 18, "end": 40, "count": 23}}
+{"book": "Breakout and Pursuit", "chapter": "Encirclement", "section": "full", "paragraph_range": {"start": 1, "end": 34, "count": 34}}
+{"book": "Breakout and Pursuit", "chapter": "The Mortain Counterattack", "section": "full", "paragraph_range": {"start": 41, "end": 89, "count": 49}}
