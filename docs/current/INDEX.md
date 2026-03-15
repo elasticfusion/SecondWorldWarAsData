@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated:** 2026-03-13
+**Last Updated:** 2026-03-15
 
 ---
 
@@ -13,22 +13,13 @@
 
 ---
 
-## Quality Assurance (NEW - 2026-03-13)
+## Quality Assurance
 
-Recent code quality improvements and reports.
+QA reports and templates.
 
-- **[qa-reports/QA_REPORT_2026-03-13.md](qa-reports/QA_REPORT_2026-03-13.md)** - ✅ Complete QA report (all targets met)
-- **[qa-reports/CODE_QUALITY_IMPROVEMENTS_2026-03-13.md](qa-reports/CODE_QUALITY_IMPROVEMENTS_2026-03-13.md)** - 40 functions refactored (66% complexity reduction)
-- **[qa-reports/REFACTORING_SUMMARY_2026-03-13.md](qa-reports/REFACTORING_SUMMARY_2026-03-13.md)** - Detailed refactoring metrics
-- **[qa-reports/CENTRALIZATION_RECOMMENDATIONS.md](qa-reports/CENTRALIZATION_RECOMMENDATIONS.md)** - Code consolidation (125+ lines removed)
-- **[qa-reports/RADON_COMPLEXITY_2026-03-13.md](qa-reports/RADON_COMPLEXITY_2026-03-13.md)** - Complexity analysis
+- **[qa-reports/PERFORMANCE_BENCHMARK_TEMPLATE.md](qa-reports/PERFORMANCE_BENCHMARK_TEMPLATE.md)** - Performance benchmark template
 
-**Key Achievements:**
-- ✅ All C and D grade functions eliminated (100%)
-- ✅ Average complexity reduced by 66%
-- ✅ ULID validation centralized (5 files)
-- ✅ 125+ lines of duplicate code removed
-- ✅ Pylint: 9.35/10, Mypy: 0 errors, Bandit: 0 issues
+**Historical QA reports archived to:** `../archive/qa-reports-2026-03-13/`
 
 ---
 
@@ -140,13 +131,13 @@ Citations, footnotes, endnotes, and bibliographic references.
 - **[SUPPLEMENTAL_TESTING.md](features/supplemental/SUPPLEMENTAL_TESTING.md)** - Testing guide
 - **[SUPPLEMENTAL_QA_RESULTS.md](features/supplemental/SUPPLEMENTAL_QA_RESULTS.md)** - QA results
 
-### Concurrency
+### Batch Processing & Concurrency
 
-Concurrent processing for improved performance.
+Parallel chapter processing and batched API calls.
 
-- **[CONCURRENCY_ANALYSIS.md](features/concurrency/CONCURRENCY_ANALYSIS.md)** - Concurrency analysis and design
-- **[HYBRID_CONCURRENT_IMPLEMENTATION.md](features/concurrency/HYBRID_CONCURRENT_IMPLEMENTATION.md)** - Implementation guide
-- **[QA_CONCURRENT.md](features/concurrency/QA_CONCURRENT.md)** - Concurrency QA report
+- **[batch_processing/README.md](features/batch_processing/README.md)** - Batch and parallel processing architecture ⭐
+
+**Historical concurrency docs archived to:** `../archive/concurrency/`
 
 ### Casualties
 
@@ -210,4 +201,4 @@ Located in: `../archive/`
 - QA reports → `qa-reports/`
 - Dated docs → Archive after consolidation
 
-**Last Updated:** 2026-03-08
+**Last Updated:** 2026-03-15

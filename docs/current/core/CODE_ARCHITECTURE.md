@@ -30,15 +30,17 @@ python3 phase1_parse.py
 #### `phase2_extract.py`
 Main extraction pipeline using Grok AI.
 
-**Workflow:**
-1. Complete missing metadata (chapter titles/numbers)
-2. Extract events from parsed files
-3. Extract dates, places, people, people groups
-4. Generate duplicate people report
-5. Generate related groups report
+**Workflow (5 stages):**
+1. Parallel core extraction — events + dates + places + people_groups + people (batched, concurrent)
+2. Retry missing events — per-chapter cache clear and re-extract
+3. Optional entity extraction — weather, equipment, logistics, casualties, supplemental (sequential per event file)
+4. Maps — source maps + external maps via OpenSERP
+5. Analysis — duplicate people report + related groups report
 
 **Key features:**
-- Timestamp-based skip logic (avoids reprocessing)
+- Parallel chapter processing via `batch_parallel.py`
+- Batched API calls (multiple entities per request)
+- Targeted per-entry cache clearing on failure
 - Caching of all API responses
 - Incremental extraction (people/groups accumulate)
 - Automatic report generation

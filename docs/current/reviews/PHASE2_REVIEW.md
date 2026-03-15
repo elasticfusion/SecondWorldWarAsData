@@ -59,6 +59,8 @@ Phase 2 successfully processed **116 of 119 chapters** (97.5% success rate) from
 | `equipment.py` | Military equipment | `output/equipment/` |
 | `logistics.py` | Supply/logistics issues | `output/logistics/` |
 | `weather_central.py` | Weather conditions | `output/weather/` (central) |
+| `casualties.py` | Casualty records | `output/casualties/` |
+| `supplemental.py` | Supplemental material | `output/supplemental/` |
 | `maps.py` | Maps from source | `output/maps/` |
 | `openserp_maps.py` | External map search | `output/external_maps/` |
 
@@ -77,20 +79,27 @@ Phase 2 successfully processed **116 of 119 chapters** (97.5% success rate) from
 
 3. Parallel Chapter Processing (max 3 concurrent)
    ├─> Extract Events (if not exists)
-   ├─> Extract Entities (parallel batch mode)
-   │   ├─> Dates (batch API call)
-   │   ├─> Places (batch API call)
-   │   └─> People Groups (batch API call)
-   ├─> Extract Weather (if enabled)
-   ├─> Extract Equipment (if enabled)
-   └─> Extract Logistics (if enabled)
+   └─> Extract Core Entities (parallel batch mode)
+       ├─> Dates (batch API call)
+       ├─> Places (batch API call)
+       ├─> People Groups (batch API call)
+       └─> People (batch API call)
 
-4. Map Extraction (if enabled)
+4. Retry Missing Events
+   └─> Per-chapter cache clear + re-extract
+
+5. Optional Entity Extraction (sequential per event file)
+   ├─> Weather (if enabled)
+   ├─> Equipment (if enabled)
+   ├─> Logistics (if enabled)
+   ├─> Casualties (if enabled)
+   └─> Supplemental (if enabled)
+
+6. Map Extraction (if enabled)
    ├─> Extract from source material
    └─> Search external sources (OpenSERP)
 
-5. Post-Processing
-   ├─> Validate event file generation
+7. Analysis
    ├─> Generate duplicate people report
    └─> Generate related groups report
 ```

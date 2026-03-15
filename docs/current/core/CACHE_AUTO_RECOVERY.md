@@ -131,10 +131,9 @@ ERROR - 💡 To clear cache and retry: rm -rf cache/api/events
 ```
 ERROR - API returned short/invalid response (401 chars)
 WARNING - Corrupted cache entry cleared automatically
-ERROR - 💡 If error persists, manually clear: rm -rf cache/api/events
 ```
 
-**User Action Required:** Just retry (cache already cleared)
+**User Action Required:** Just retry (corrupted entry already cleared automatically)
 
 ---
 

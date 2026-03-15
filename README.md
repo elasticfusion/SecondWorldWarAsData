@@ -4,7 +4,7 @@ Extract structured data from World War II historical documents using AI-powered 
 
 **Status:** Production Ready  
 **Version:** 2.0  
-**Last Updated:** 2026-03-13
+**Last Updated:** 2026-03-15
 
 ---
 
@@ -155,7 +155,7 @@ SecondWorldWarAsData/
 
 ### Performance
 - **[Batch Processing](docs/current/features/batch_processing/README.md)** - Parallel extraction
-- **[Concurrency](docs/current/features/concurrency/HYBRID_CONCURRENT_IMPLEMENTATION.md)** - Concurrent processing
+- **[Batch Processing](docs/current/features/batch_processing/README.md)** - Parallel extraction
 
 ### Reference
 - **[API Reference](docs/current/core/API_REFERENCE.md)** - API documentation
@@ -246,14 +246,16 @@ open validation_dashboard.html
 ### Clear Cache
 
 ```bash
-# Clear all caches
-rm -rf cache/api/*
+# Clear specific chapter's cache entries (recommended)
+python3 -c "from diskcache import Cache; from pathlib import Path; \
+[Cache(str(d)).pop(k, None) for d in Path('cache/api').iterdir() if d.is_dir() \
+for k in list(Cache(str(d))) if 'chapter8c' in str(Cache(str(d)).get(k, ''))]"
 
-# Clear specific cache
+# Clear specific cache type
 rm -rf cache/api/events/*
 
-# File-specific (from error message)
-python3 -c "from diskcache import Cache; c=Cache('cache/api/events'); [c.pop(k) for k in list(c) if 'chapter8c' in str(c.get(k, ''))]"
+# Clear all caches (use sparingly)
+rm -rf cache/api/*
 ```
 
 ---
@@ -291,8 +293,8 @@ See [Schema Reference](docs/current/SCHEMA_REFERENCE.md)
 
 **Optimization:**
 - All API responses cached
-- Batch processing available (3-5x faster)
-- Concurrent processing (experimental)
+- Parallel chapter processing with batched API calls (3-5x faster)
+- Corrupted cache entries auto-cleared on retry
 
 See [Performance Guide](docs/current/features/batch_processing/README.md)
 
@@ -306,21 +308,18 @@ See [Performance Guide](docs/current/features/batch_processing/README.md)
 # Check logs
 tail -100 logs/pipeline*.log
 
-# Clear cache
-rm -rf cache/api/events/*
-
-# Retry
+# Retry (corrupted cache entries are auto-cleared)
 python3 phase2_retry.py
 ```
 
 ### JSON parsing errors
 
-**Check error message for cache clearing command:**
-```
-💡 Clear cache: python3 -c "..."
+**Corrupted cache entries are auto-cleared.** Just retry:
+```bash
+python3 phase2_retry.py
 ```
 
-**Run the provided command, then retry.**
+If the error persists, use the cache clearing command from the log output.
 
 ### API errors
 
@@ -345,10 +344,11 @@ See [Error Handling Guide](docs/current/core/error_handling.md)
 - Auto-splitting for large chapters
 
 **Phase 2: Extract**
-- Events → Dates, Places, People, Groups
-- Optional: Weather, Equipment, Logistics, Maps
-- Central repositories (dates, places, weather)
-- File-per-entity (people, groups, equipment)
+- Events → Dates, Places, People, Groups (parallel, batched)
+- Retry missing events (per-chapter cache clear)
+- Optional: Weather, Equipment, Logistics, Casualties, Supplemental (sequential per event)
+- Optional: Source maps, External maps
+- Analysis: Duplicate people, Related groups
 
 **Phase 3: Enrich**
 - Wikipedia/Grokipedia biographical data
@@ -450,8 +450,7 @@ See individual source documents for specific licenses.
 - ✅ MongoDB Import
 
 **Experimental:**
-- ⚠️ Weather, Equipment, Logistics
-- ⚠️ Batch/Concurrent Processing
+- ⚠️ Weather, Equipment, Logistics, Casualties
 
 **Comprehensive Documentation:**
 - ✅ 54 documentation files

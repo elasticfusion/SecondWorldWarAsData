@@ -40,19 +40,20 @@ When a chapter exceeds 400K characters (leaves 100K headroom for API responses):
 python3 phase2_extract.py
 ```
 
-**Steps:**
+**Pipeline Stages:**
 1. **Metadata Completion** - Auto-fills missing chapter titles/numbers
-2. **Event Extraction** - Hierarchical events and sub-events
-3. **Date Extraction** - Temporal entities with context (central repository)
-4. **Place Extraction** - Geographic entities with coordinates (central repository)
-5. **People Extraction** - Biographical profiles (file-per-person)
-6. **People Groups** - Organizations and military units
-7. **Weather Extraction** - Weather conditions with API integration (optional, central repository)
-8. **Equipment Extraction** - Military equipment mentions (optional, experimental)
-9. **Maps Extraction** - Maps from source material (optional)
-10. **External Maps** - Third-party maps via OpenSERP (optional)
-11. **Duplicate Detection** - Finds similar people
-12. **Related Groups** - Finds related organizations
+2. **Parallel Core Extraction** - Processes all chapters concurrently (max 3):
+   - Event extraction (if event file doesn't exist)
+   - Dates, Places, People Groups, People (batched API calls, parallel per chapter)
+3. **Retry Missing Events** - Retries any chapters that failed event extraction (per-chapter cache clear)
+4. **Optional Entity Extraction** - Sequential per event file:
+   - Weather (if enabled)
+   - Equipment (if enabled)
+   - Logistics (if enabled)
+   - Casualties (if enabled)
+   - Supplemental material (if enabled)
+5. **Maps Extraction** - Source maps + external maps via OpenSERP (if enabled)
+6. **Analysis** - Duplicate people report + related groups report
 
 **Output Files:**
 - `chapter*-event.json` - Events and sub-events
@@ -81,7 +82,20 @@ All Grok API responses are cached in `cache/api/`:
 - Faster re-runs
 - Cost savings
 
-**Clear cache:**
+**Clear cache (specific entry):**
+```bash
+# Use the command from error log output — clears only the affected entry
+python3 -c "from diskcache import Cache; c=Cache('cache/api/{type}'); c.pop('{key}', None)"
+```
+
+**Clear cache (specific chapter across all types):**
+```bash
+python3 -c "from diskcache import Cache; from pathlib import Path; \
+[Cache(str(d)).pop(k, None) for d in Path('cache/api').iterdir() if d.is_dir() \
+for k in list(Cache(str(d))) if 'chapter8c' in str(Cache(str(d)).get(k, ''))]"
+```
+
+**Clear cache (entire type — use sparingly):**
 ```bash
 rm -rf cache/api/{type}/*
 ```
