@@ -1,381 +1,109 @@
-# Biographical Enrichment
+# Biographical Enrichment (Phase 3)
 
-**Version:** 1.0.0  
-**Status:** Ready for testing  
-**Last Updated:** 2026-03-02
+**Status:** Production Ready  
+**Last Updated:** 2026-03-15
 
 ---
 
 ## Overview
 
-Automatically enriches person biographies by searching external sources (Grokipedia, Wikipedia) after initial extraction. Follows references for deeper enrichment.
-
----
-
-## Features
-
-### 1. Multi-Source Search
-Searches in priority order:
-1. **Grokipedia** - First priority
-2. **Wikipedia** - Second priority
-3. **References** - Follows mentioned entities (units, organizations)
-
-### 2. Reference Following
-When biographical data mentions entities (units served, organizations), automatically searches those for additional context.
-
-### 3. Smart Merging
-- Only adds data if field is empty
-- Deduplicates list items (ranks, awards, etc.)
-- Tracks sources with lower confidence (0.8 for external)
-- Preserves existing data
-
-### 4. Source Tracking
-Automatically adds to `biography_sources`:
-```json
-{
-  "source": "Wikipedia",
-  "page": null,
-  "confidence": 0.8,
-  "fields_sourced": ["birth_date", "ranks", "units_served"]
-}
-```
-
----
-
-## Usage
-
-### Command Line
+Enriches person biographies by searching external sources (Grokipedia, Wikipedia), following references, and validating source URLs. Runs as Phase 3 after entity extraction.
 
 ```bash
-# Enrich all people
-python3 -m src.extraction.enrich_biographies
+# Recommended: use retry wrapper
+python3 phase3_retry.py
 
-# Enrich first 10 people
-python3 -m src.extraction.enrich_biographies --max-people 10
-
-# Don't follow references (faster)
-python3 -m src.extraction.enrich_biographies --no-references
-```
-
-### Programmatic
-
-```python
-from pathlib import Path
-from src.grok_client import GrokClient
-from src.extraction.enrich_biographies import enrich_all_people
-
-people_dir = Path("output/people")
-grok_client = GrokClient(Path("cache/grok_cache"))
-
-# Enrich all people with reference following
-enriched_count = enrich_all_people(
-    people_dir,
-    grok_client,
-    max_people=None,  # All people
-    search_references_flag=True  # Follow references
-)
-
-print(f"Enriched {enriched_count} people")
-```
-
-### Single Person
-
-```python
-from src.extraction.enrich_biographies import enrich_person_biography
-
-person_file = Path("output/people/Dwight_D_Eisenhower_01KJ3ABC.json")
-
-enriched = enrich_person_biography(
-    person_file,
-    grok_client,
-    search_references_flag=True
-)
+# Direct with options
+python3 phase3_enrich_data.py --max-items 10 --log-level DEBUG
+python3 phase3_enrich_data.py --no-references    # Skip reference following (faster)
+python3 phase3_enrich_data.py --people-only       # Only enrich people
 ```
 
 ---
 
-## Search Strategy
+## Pipeline
 
-### 1. Grokipedia Search
-- Searches: `https://grokipedia.com/search?q={person_name}`
-- User-Agent: Bot identification
-- Extracts full page content
-- Parses with Grok for structured data
+For each person in `output/people/`:
 
-### 2. Wikipedia Search
-- Uses Wikipedia API: `https://en.wikipedia.org/w/api.php`
-- Gets intro extract (summary section)
-- User-Agent: Bot identification
-- Parses with Grok for structured data
-
-### 3. Reference Search
-- Extracts references from biographical data
-- Searches each reference (max 3)
-- Same search strategy (Grokipedia → Wikipedia)
-- Merges additional context
+1. **Search Grokipedia** — HTTP GET `https://grokipedia.com/search?q={name}`, extract page text
+2. **Search Wikipedia** — Wikipedia API, extract intro section
+3. **Grok AI extraction** — Submit source text to Grok, get structured JSON (birth/death, ranks, units, awards, education, family, source_urls)
+4. **Merge** — Add new data to `biographical_profile` (simple fields only if empty, lists deduplicated)
+5. **Follow references** — Up to 3 referenced entities (units, organizations) searched via same Grokipedia→Wikipedia strategy
+6. **Validate source URLs** — Fetch each URL Grok returned, submit page content to Grok to verify relevance to the person
+7. **Pydantic validation** — Validate against Person model before saving
+8. **Save** — Update person JSON file in-place
 
 ---
 
-## Data Extraction
+## URL Validation
 
-### Grok Prompt
-Extracts structured data from source text:
-- Birth/death dates and places
-- Nationality
-- Military ranks with dates
-- Units served with periods
-- Education
-- Military awards
-- Family (spouse, children)
-- Aliases
-- Biographical summary
-- **References** (for follow-up searches)
+When Grok returns `source_urls` in its extraction response:
 
-### Confidence Levels
-- **Source material:** 0.9-1.0 (high confidence)
-- **External sources:** 0.8 (medium confidence)
-- Allows prioritizing source material over external data
+1. **Fetch** — HTTP GET each URL (15s timeout)
+2. **Verify** — Submit first 3000 chars of page content to Grok: "Is this page about {person_name}? Does it contain relevant biographical/military data?"
+3. **Store** — Validated URLs added to `biography_sources` with confidence 0.9
+4. **Discard** — Broken URLs (non-200) and irrelevant pages are dropped
+
+Up to 5 URLs validated per person.
 
 ---
 
 ## Merging Logic
 
-### Simple Fields
-Only adds if field is empty:
-- `birth_date`, `birth_place`
-- `death_date`, `death_place`
-- `nationality`, `role_type`
-- `biographical_details`
+**Simple fields** (only added if empty): `birth_date`, `birth_place`, `death_date`, `death_place`, `nationality`, `role_type`, `biographical_details`
 
-### List Fields
-Merges without duplicates:
-- `ranks` - Military rank progression
-- `units_served` - Service history
-- `education` - Educational background
-- `military_awards` - Decorations
-- `aliases` - Alternative names
+**List fields** (merged, deduplicated): `ranks`, `units_served`, `education`, `military_awards`, `aliases`
 
-### Family
-- Adds spouse if missing
-- Merges children without duplicates
+**Family**: Adds spouse if missing, merges children without duplicates.
 
-### Source Tracking
-Adds entry to `biography_sources` with:
-- Source name (Grokipedia/Wikipedia)
-- Confidence: 0.8
-- Fields sourced: List of added fields
-
----
-
-## Example Output
-
-### Before Enrichment
+**Source tracking**: Each source adds an entry to `biography_sources`:
 ```json
 {
-  "PersonID": "01KJ3ABC...",
-  "name": "Dwight D. Eisenhower",
-  "biographical_profile": {
-    "birth_date": null,
-    "nationality": null,
-    "ranks": [],
-    "biography_sources": []
-  }
+  "source": "Wikipedia",
+  "page": null,
+  "confidence": 0.8,
+  "fields_sourced": ["birth_date", "ranks"]
 }
-```
-
-### After Enrichment
-```json
-{
-  "PersonID": "01KJ3ABC...",
-  "name": "Dwight D. Eisenhower",
-  "biographical_profile": {
-    "birth_date": "1890-10-14",
-    "nationality": "American",
-    "ranks": [
-      {"rank": "General of the Army", "date": "1944-12-20", "branch": "US Army"}
-    ],
-    "biography_sources": [
-      {
-        "source": "Wikipedia",
-        "page": null,
-        "confidence": 0.8,
-        "fields_sourced": ["birth_date", "nationality", "ranks"]
-      }
-    ]
-  }
-}
-```
-
----
-
-## Performance
-
-### API Calls
-Per person:
-- 1-2 HTTP requests (Grokipedia, Wikipedia)
-- 1-2 Grok API calls (extraction)
-- 0-3 additional searches (references)
-
-**Total:** ~2-7 API calls per person
-
-### Caching
-- Grok extractions cached
-- HTTP responses not cached (fresh data)
-- Reduces cost on re-runs
-
-### Rate Limiting
-- Respects site policies
-- Uses proper User-Agent
-- No built-in delays (add if needed)
-
----
-
-## Configuration
-
-### Search Limits
-```python
-max_references: int = 3  # Max references to follow
-```
-
-### Timeouts
-```python
-timeout: int = 30  # HTTP request timeout (seconds)
-```
-
-### Text Limits
-```python
-source_text[:5000]  # First 5000 chars sent to Grok
 ```
 
 ---
 
 ## Error Handling
 
-### HTTP Failures
-- Returns `None` on failure
-- Logs at debug level
-- Continues with next source
-
-### 403 Forbidden Errors
-- Detected in both response and exception
-- Logs at warning level (visible)
-- No retry (won't succeed)
-- Suggests checking User-Agent
-- Continues with next person
-
-### Extraction Failures
-- Returns `None` on Grok error
-- Logs at debug level
-- Continues with next person
-
-### Retry Logic
-- **HTTP requests:** 2 retries on timeout
-- **Grok extraction:** 2 retries with cache bypass
-- **First attempt:** Uses cache (fast)
-- **Retry:** Bypasses cache (fresh data)
-
-### File Errors
-- Logs at error level
-- Continues with next person
-- Returns False (not enriched)
+- **HTTP failures** — Returns None, continues with next source
+- **403 Forbidden** — Logged at warning level, no retry, continues
+- **Grok extraction failures** — 2 retries (first uses cache, retry bypasses cache)
+- **URL validation failures** — Broken/irrelevant URLs silently discarded
+- **File errors** — Logged at error level, continues with next person
+- **Pydantic validation failure** — Logged, save skipped
 
 ---
 
-## Integration
+## Performance
 
-### After Person Extraction
-```python
-# In phase2_extract.py or people extraction
-from src.extraction.enrich_biographies import enrich_person_biography
-
-# After saving person file
-person_file = people_dir / f"{filename}.json"
-with open(person_file, "w") as f:
-    json.dump(person_data, f, indent=2)
-
-# Enrich from external sources
-enrich_person_biography(person_file, grok_client)
-```
-
-### Batch Processing
-```python
-# After all extractions complete
-from src.extraction.enrich_biographies import enrich_all_people
-
-enriched = enrich_all_people(
-    people_dir,
-    grok_client,
-    max_people=None,
-    search_references_flag=True
-)
-```
+Per person: ~2-7 API calls (1-2 HTTP searches, 1-2 Grok extractions, 0-3 reference searches, 0-5 URL validations). All Grok responses cached via diskcache. ~5-10 seconds per person.
 
 ---
 
-## Limitations
+## Code Reference
 
-### Grokipedia
-- May not have all WWII figures
-- Content quality varies
-- Search may return no results
+**Entry point:** `phase3_enrich_data.py` → `enrich_all_people()`  
+**Core module:** `src/extraction/enrich_biographies.py`  
+**Retry wrapper:** `phase3_retry.py`
 
-### Wikipedia
-- API returns intro only (not full article)
-- May not have detailed military data
-- Some figures may not have pages
-
-### References
-- Limited to 3 references per person
-- May not find all referenced entities
-- Depends on reference name accuracy
+Key functions:
+- `search_grokipedia()` / `search_wikipedia()` — Source search
+- `extract_biographical_data()` — Grok AI structured extraction
+- `search_references()` — Follow referenced entities
+- `validate_source_urls()` — Fetch + Grok relevance check
+- `enrich_person_biography()` — Orchestrates full enrichment for one person
 
 ---
 
-## Future Enhancements
+## Related
 
-1. **More sources** - Add military archives, historical databases
-2. **Better reference extraction** - NER for entity recognition
-3. **Conflict resolution** - Handle contradicting data
-4. **Incremental enrichment** - Only search if data is sparse
-5. **Quality scoring** - Rate source reliability
-6. **Rate limiting** - Respect API limits
-7. **Parallel processing** - Speed up batch enrichment
-
----
-
-## Quality Assurance
-
-- ✅ Pylint: 9.23/10
-- ✅ Mypy: 0 errors
-- ✅ Black: Formatted
-
----
-
-## Related Documentation
-
-- **People Extraction:** `docs/current/features/people/implementation.md`
-- **Source Tracking:** `docs/current/features/people/source-tracking.md`
-- **Error Handling:** `docs/current/core/error_handling.md`
-
----
-
-## Example Run
-
-```bash
-$ python3 -m src.extraction.enrich_biographies --max-people 5
-
-Enriching 5 people from external sources...
-============================================================
-Enriching: Dwight D. Eisenhower
-  Searching Grokipedia...
-  Searching Wikipedia...
-  Following 2 reference(s)...
-  Searching reference: Supreme Headquarters Allied Expeditionary Force
-  ✅ Enriched Dwight D. Eisenhower
-Enriching: George S. Patton Jr.
-  Searching Grokipedia...
-  Searching Wikipedia...
-  No new data found
-============================================================
-Enrichment complete: 1/5 people enriched
-```
+- [People Extraction](README.md)
+- [Deduplication](deduplication.md)
+- [Workflow Diagrams](../../core/WORKFLOW_DIAGRAMS.md) — Phase 3 diagram
+- [Error Handling](../../core/error_handling.md)
