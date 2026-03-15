@@ -461,6 +461,12 @@ def main():
 
     logger.info("Found %d parsed file(s)", len(parsed_files))
 
+    # Start heartbeat monitor (warns if no progress for 5 minutes)
+    from src.utils.heartbeat import Heartbeat
+
+    heartbeat = Heartbeat(timeout=300, label="Phase 2")
+    heartbeat.start()
+
     # -----------------------------------------------------------------------
     # Step 1: Parallel extraction of events + core entities
     #         (events, dates, places, people_groups, people)
@@ -490,6 +496,7 @@ def main():
     logger.info("Parallel processing complete!")
     logger.info("Processed: %d, Failed: %d", processed, failed)
     logger.info("%s", "=" * 60)
+    heartbeat.ping(f"Step 1 done: {processed} processed, {failed} failed")
 
     # -----------------------------------------------------------------------
     # Step 2: Retry any missing event files
@@ -501,6 +508,7 @@ def main():
     retried, retry_failed = _retry_missing_events(parsed_files, grok_client, logger)
     processed += retried
     failed += retry_failed
+    heartbeat.ping(f"Step 2 done: retried {retried}")
 
     # -----------------------------------------------------------------------
     # Step 3: Optional entity extraction (weather, equipment, logistics,
@@ -539,6 +547,7 @@ def main():
             _extract_optional_entities(
                 event_file, parsed_file, grok_client, paths, config, logger
             )
+            heartbeat.ping(f"Optional entities: {event_file.name}")
 
     # -----------------------------------------------------------------------
     # Step 4: Maps extraction
@@ -557,6 +566,7 @@ def main():
     logger.info("\n%s", "=" * 60)
     logger.info("Phase 2 complete! Processed: %d, Failed: %d", processed, failed)
     logger.info("%s", "=" * 60)
+    heartbeat.stop()
 
 
 if __name__ == "__main__":
