@@ -1,7 +1,8 @@
 # TODO: Short Response Rejection Breaks Valid Empty Results
 
 **Priority:** High  
-**Created:** 2026-03-16
+**Created:** 2026-03-16  
+**Status:** ✅ Done
 
 ## Problem
 
