@@ -250,7 +250,7 @@ def find_potential_duplicates(people_dir_path: Path) -> List[Dict[str, Any]]:
                         {
                             "filename": person1["_filename"],
                             "name": name1,
-                            "PersonID": person1["PersonID"],
+                            "PersonID": person1.get("PersonID", ""),
                         }
                     )
 
@@ -258,7 +258,7 @@ def find_potential_duplicates(people_dir_path: Path) -> List[Dict[str, Any]]:
                     {
                         "filename": person2["_filename"],
                         "name": name2,
-                        "PersonID": person2["PersonID"],
+                        "PersonID": person2.get("PersonID", ""),
                     }
                 )
 

@@ -89,3 +89,4 @@ review/
 *.bak
 *.orig
 filestore/equipment/
+.gitnexus
