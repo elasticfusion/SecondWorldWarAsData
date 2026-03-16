@@ -74,15 +74,19 @@ def main():
         result = subprocess.run(cmd, cwd=base_dir)
 
         if result.returncode != 0:
-            logger.error(f"Attempt {attempt} failed with exit code {result.returncode}")
+            if result.returncode < 0:
+                import signal
+                sig = -result.returncode
+                sig_name = signal.Signals(sig).name if sig in signal.valid_signals() else str(sig)
+                logger.error("Attempt %d killed by signal %s", attempt, sig_name)
+            else:
+                logger.error("Attempt %d failed with exit code %d", attempt, result.returncode)
             if attempt < args.max_attempts:
                 logger.info("Retrying...")
                 continue
             else:
                 logger.error("Maximum attempts reached, giving up")
                 return 1
-
-        # Check for missing files
         missing = count_missing_files(output_root)
         
         if missing == 0:

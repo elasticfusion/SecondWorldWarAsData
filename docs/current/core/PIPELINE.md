@@ -47,6 +47,7 @@ python3 phase2_extract.py
 1. **Metadata Completion** - Auto-fills missing chapter titles/numbers
 2. **Parallel Core Extraction** - Processes all chapters concurrently (max 3):
    - Event extraction (if event file doesn't exist)
+2. **Core Entity Extraction** - Per chapter (parallel):
    - Dates, Places, People Groups, People (batched API calls, parallel per chapter)
 3. **Retry Missing Events** - Retries any chapters that failed event extraction (per-chapter cache clear)
 4. **Optional Entity Extraction** - Sequential per event file:
@@ -57,6 +58,10 @@ python3 phase2_extract.py
    - Supplemental material (if enabled)
 5. **Maps Extraction** - Source maps + external maps via OpenSERP (if enabled)
 6. **Analysis** - Duplicate people report + related groups report
+
+**Auto-split on truncation:** If a Grok API response is truncated (>100K chars), the chapter is automatically split at section boundaries and each half is extracted separately, then merged.
+
+**Heartbeat monitor:** Both Phase 2 and Phase 3 log a warning if no progress is made for 5 minutes, showing the last item processed.
 
 **Output Files:**
 - `chapter*-event.json` - Events and sub-events
