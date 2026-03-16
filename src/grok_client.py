@@ -140,10 +140,13 @@ class GrokClient:
                 logger.warning(f"Unexpected finish_reason: {finish_reason}")
 
             if len(content) < 200:
-                logger.warning(
-                    f"API returned very short response: {len(content)} chars"
-                )
-                logger.warning(f"Content: {content}")
+                try:
+                    json.loads(content)
+                except (json.JSONDecodeError, ValueError):
+                    logger.warning(
+                        f"API returned very short response: {len(content)} chars"
+                    )
+                    logger.warning(f"Content: {content}")
 
             # Log preview
             preview = content[: self.debug_resp_chars]
