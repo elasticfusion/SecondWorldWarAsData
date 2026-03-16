@@ -466,6 +466,7 @@ def main():
 
     heartbeat = Heartbeat(timeout=300, label="Phase 2")
     heartbeat.start()
+    heartbeat.ping("Step 1: parallel extraction started")
 
     # -----------------------------------------------------------------------
     # Step 1: Parallel extraction of events + core entities
