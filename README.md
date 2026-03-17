@@ -253,13 +253,16 @@ open validation_dashboard.html
 ### Clear Cache
 
 ```bash
-# Clear specific chapter's cache entries (recommended)
+# Clear specific chapter's cache entries (recommended — searches all cache dirs including per-book)
 python3 -c "from diskcache import Cache; from pathlib import Path; \
-[Cache(str(d)).pop(k, None) for d in Path('cache/api').iterdir() if d.is_dir() \
-for k in list(Cache(str(d))) if 'chapter8c' in str(Cache(str(d)).get(k, ''))]"
+[Cache(str(d.parent)).pop(k, None) for d in Path('cache/api').rglob('cache.db') \
+for k in list(Cache(str(d.parent))) if 'chapter8c' in str(Cache(str(d.parent)).get(k, ''))]"
 
-# Clear specific cache type
-rm -rf cache/api/events/*
+# Clear one book's event cache
+rm -rf cache/api/books/BreakoutAndPursuit/events/*
+
+# Clear specific global cache type
+rm -rf cache/api/dates/*
 
 # Clear all caches (use sparingly)
 rm -rf cache/api/*

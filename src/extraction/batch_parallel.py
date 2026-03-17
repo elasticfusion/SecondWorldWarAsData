@@ -6,7 +6,7 @@ import logging
 from pathlib import Path
 from typing import Any, Callable, Dict, List
 
-from src.grok_client import GrokClient
+from src.grok_client import GrokClient, current_book
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +87,12 @@ async def process_chapter_async(
     config: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Process single chapter: events + entities in parallel."""
+    # Set book context for per-book cache routing
+    book_name = parsed_file.parent.name
+    if book_name == output_root.name:
+        book_name = None  # Files directly in output root — no book
+    current_book.set(book_name)
+
     # If event file doesn't exist, extract events first
     if not event_file.exists():
         from src.extraction.events import extract_events
@@ -125,34 +131,26 @@ def _create_chapter_tasks(
             output_root=output_root,
             config=config,
         )
-        tasks.append((pf.name, task))
+        tasks.append((pf.parent.name, pf.name, task))
 
     return tasks
 
 
-def _get_cache_clear_command(name: str, error_msg: str) -> str:
-    """Generate cache clearing command for a specific chapter across all cache types."""
-    chapter_id = name.replace("-parsed.json", "")
-    return (
-        f'python3 -c "from diskcache import Cache; from pathlib import Path; '
-        f"[Cache(str(d)).pop(k, None) "
-        f"for d in Path('cache/api').iterdir() if d.is_dir() "
-        f"for k in list(Cache(str(d))) "
-        f"if '{chapter_id}' in str(Cache(str(d)).get(k, ''))]; "
-        f"print('Cleared cache entries for {chapter_id}')\""
-    )
+def _get_cache_clear_command(book_name: str) -> str:
+    """Generate command to clear a book's per-book cache."""
+    return f"rm -rf cache/api/books/{book_name}/"
 
 
 def _process_batch_results(
     tasks: List[tuple], batch_results: list, results: Dict[str, Any]
 ) -> None:
     """Process results from a batch of chapters."""
-    for (name, _), result in zip(tasks, batch_results):
+    for (book_name, name, _), result in zip(tasks, batch_results):
         if isinstance(result, Exception):
             error_msg = str(result)
             logger.error("  ✗ %s: %s", name, result)
 
-            cache_cmd = _get_cache_clear_command(name, error_msg)
+            cache_cmd = _get_cache_clear_command(book_name)
             logger.error("  💡 Clear cache: %s", cache_cmd)
 
             results["failed"] += 1
@@ -191,7 +189,7 @@ async def process_chapters_parallel(
 
         # Run batch in parallel
         batch_results = await asyncio.gather(
-            *[t[1] for t in tasks], return_exceptions=True
+            *[t[2] for t in tasks], return_exceptions=True
         )
 
         # Process results

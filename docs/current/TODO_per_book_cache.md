@@ -1,39 +1,40 @@
 # TODO: Per-Book Cache Structure
 
 **Priority:** Low  
+**Status:** ✅ Done (2026-03-16)  
 **Created:** 2026-03-16
 
-## Problem
+---
 
-All books share flat cache databases (`cache/api/{events,dates,places,peoplegroups}/`). Can't easily clear one book's cache without affecting others.
+## Summary
 
-## Proposed Structure
+Book-specific cache types (events, weather, equipment, logistics, casualties, supplemental) now route to `cache/api/books/{BookName}/{type}/` when a book context is set. Global types (dates, places, people, peoplegroups) always use `cache/api/{type}/`.
+
+## Implementation
+
+- `src/grok_client.py`: `current_book` context variable (thread/async safe via `contextvars`), `BOOK_CACHE_TYPES` set, `_get_cache()` routes based on `current_book.get()`
+- `src/extraction/batch_parallel.py`: sets `current_book` in `process_chapter_async()` before extraction
+- `phase2_extract.py`: sets `current_book` before optional entity extraction and retry loops
+
+## Cache Structure
 
 ```
-cache/
+cache/api/
 ├── books/
 │   ├── BreakoutAndPursuit/
-│   │   └── events/          # Event extraction (book-specific prompts)
+│   │   ├── events/          # Book-specific
+│   │   ├── weather/
+│   │   └── supplemental/
 │   └── CrossChannelAttack/
 │       └── events/
-└── global/
-    ├── dates/                # Shared — same date across books
-    ├── places/               # Shared — same place across books
-    ├── people/               # Shared — same person across books
-    ├── peoplegroups/         # Shared
-    └── enrichment/           # Phase 3 (global)
+├── dates/                    # Global (shared across books)
+├── places/
+├── people/
+└── peoplegroups/
 ```
 
-## Rationale
+## Clearing Per-Book Cache
 
-- Events are book-specific (prompt includes chapter text) → per-book cache
-- Dates, places, people are cross-book entities that get deduplicated → shared global cache avoids redundant API calls
-- Phase 3 enrichment is entirely global (operates on `output/people/`)
-- Per-book caches allow independent processing and targeted cache clearing
-
-## Impact
-
-- `GrokClient` cache path logic
-- `phase2_extract.py` needs to pass book name to cache
-- `config.yaml` cache paths
-- Cache clearing commands in docs/README
+```bash
+rm -rf cache/api/books/BreakoutAndPursuit/events/*
+```
