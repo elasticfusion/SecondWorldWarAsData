@@ -110,6 +110,14 @@ class GrokClient:
         content = f"{prompt}:{temperature}:{self.model}"
         return hashlib.sha256(content.encode()).hexdigest()
 
+    def clear_cache_entry(
+        self, prompt: str, cache_type: str = "default", temperature: float = 0.1
+    ) -> bool:
+        """Remove a single cache entry by prompt. Returns True if removed."""
+        cache = self._get_cache(cache_type)
+        key = self._make_cache_key(prompt, temperature)
+        return cache.pop(key, None) is not None
+
     @retry(
         stop=stop_after_attempt(5),
         wait=wait_exponential(multiplier=2, min=4, max=60),
@@ -507,14 +515,7 @@ class GrokClient:
         try:
             result = json.loads(content)
         except json.JSONDecodeError as e:
-            # Generate cache clearing command
-            cache_key = self._make_cache_key(prompt, temperature)
-            clear_cmd = (
-                f'python3 -c "from diskcache import Cache; '
-                f"c=Cache('cache/api/{cache_type}'); "
-                f"c.pop('{cache_key}', None); "
-                f"print('Cache entry cleared')\""
-            )
+            clear_cmd = self._make_cache_clear_command(cache_type, prompt, temperature)
             logger.error(f"💡 Clear cache: {clear_cmd}")
             raise GrokAPIError(
                 f"Failed to parse JSON response: {e}\nContent: {content[:500]}"
@@ -597,10 +598,11 @@ class GrokClient:
         self, cache_type: str, prompt: str, temperature: float
     ) -> str:
         """Generate cache clearing command for specific entry."""
+        cache = self._get_cache(cache_type)
         cache_key = self._make_cache_key(prompt, temperature)
         return (
             f'python3 -c "from diskcache import Cache; '
-            f"c=Cache('cache/api/{cache_type}'); "
+            f"c=Cache('{cache.directory}'); "
             f"c.pop('{cache_key}', None); "
             f"print('Cache entry cleared')\""
         )
@@ -845,17 +847,3 @@ class GrokClient:
         cache[cache_key] = parsed.model_dump()
 
         return parsed
-
-    def clear_cache(self, cache_type: Optional[str] = None):
-        """
-        Clear the cache.
-
-        Args:
-            cache_type: Specific cache type to clear, or None for all
-        """
-        if cache_type:
-            if cache_type in self.caches:
-                self.caches[cache_type].clear()
-        else:
-            for cache in self.caches.values():
-                cache.clear()

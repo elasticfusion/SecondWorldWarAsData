@@ -137,8 +137,8 @@ def _create_chapter_tasks(
 
 
 def _get_cache_clear_command(book_name: str) -> str:
-    """Generate command to clear a book's per-book cache."""
-    return f"rm -rf cache/api/books/{book_name}/"
+    """Generate command to clear a book's event cache."""
+    return f"rm -rf cache/api/books/{book_name}/events/"
 
 
 def _process_batch_results(
