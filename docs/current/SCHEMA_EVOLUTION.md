@@ -2,6 +2,27 @@
 
 Tools for managing schema versions and migrations.
 
+## Current Schema Version: 1.1
+
+### Version History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0 | Initial | Base schemas for all entity types |
+| 1.1 | 2026-03-16 | Batch cross-referencing: entity files gain ULIDs + `event_mentions`; sub-events gain `dates`/`places`/`people`/`peoplegroups` ULID arrays |
+
+### 1.0 → 1.1 Migration
+
+**Affected files:** `output/dates/*.json`, `output/places/*.json`, `output/people/*.json`, `output/people_groups/*.json`, `output/{Book}/*-event.json`
+
+**Changes:**
+- Entity files: `{"date": "...", "mentions": []}` → `{"date": "...", "DateID": "01...", "event_mentions": [...]}`
+- Entity files gain ID field (`DateID`, `PlaceID`, `PersonID`, `GroupID`)
+- Entity files gain `event_mentions` array (replaces empty `mentions`)
+- Event sub-events gain `dates`, `places`, `people`, `peoplegroups` arrays of entity ULIDs
+
+**Migration:** Re-run `phase2_retry.py` to re-extract. Existing stub files (v1.0) will be loaded and enriched with IDs and `event_mentions` on next extraction. No manual migration script needed — the batch extractor handles both new and existing files.
+
 ## Features
 
 1. **Version Detection** - Automatically detect schema versions in JSON files

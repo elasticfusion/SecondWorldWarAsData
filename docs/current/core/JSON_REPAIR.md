@@ -45,6 +45,14 @@ The Grok API client includes automatic JSON repair logic to handle common syntax
 
 **Fix:** Logs warning and triggers retry logic (not automatically repairable).
 
+### 4. Concatenated / Extra Data Responses
+
+**Problem:** API returns two JSON objects concatenated, or prefixes JSON with text (e.g. `Yes.{"dates":...}`).
+
+**Error:** `Extra data: line X column Y`
+
+**Fix:** Cache entry auto-cleared on any unrecoverable `JSONDecodeError` (including `Extra data`), so the next retry gets a fresh API response. Not structurally repairable — requires re-fetch.
+
 ## Implementation
 
 **Location:** `src/grok_client.py` - `_parse_json_response()` method
@@ -113,7 +121,6 @@ Potential additions:
 - Fix unescaped quotes in strings
 - Repair malformed Unicode sequences
 - Handle missing commas between array/object elements
-- Auto-complete truncated JSON (risky)
 
 ## Related
 
