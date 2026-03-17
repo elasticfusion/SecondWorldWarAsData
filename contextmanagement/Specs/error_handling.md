@@ -1146,6 +1146,55 @@ if not _retried and len(response) < 500:
 
 ---
 
+### 27. Auto-Clear Cache on Unrecoverable JSON Errors
+
+**Used in:** `GrokClient.extract_json()`
+
+**Problem:** When the API returns concatenated JSON objects (`Extra data` error) or text-prefixed JSON (`Yes.{...}`), the corrupt response gets cached. Every retry hits the same corrupt entry, wasting all attempts.
+
+**Fix:**
+```python
+# In extract_json() — after all repair attempts fail:
+self.clear_cache_entry(prompt, cache_type, temperature)
+raise GrokAPIError(f"Failed to parse JSON response: {e}")
+```
+
+**Errors covered:**
+- `Extra data: line X column Y` — two JSON objects concatenated
+- `Expecting value: line 1 column 1` — text prefix before JSON
+- Any `JSONDecodeError` not handled by short-response, truncation, or repair logic
+
+**Benefits:**
+- Corrupt cache entries auto-purged on first encounter
+- Next retry gets a fresh API response
+- No manual `💡 Clear cache:` commands needed
+- Works with both `phase2_retry.py` outer loop and per-sub-event retry
+
+**File:** `src/grok_client.py`
+
+---
+
+### 28. Filename Sanitization for LLM-Generated Categories
+
+**Used in:** Logistics extraction
+
+**Problem:** LLM returns category values containing `/` (e.g. `"personnel/equipment"`). When used in filenames via `Path(dir) / filename`, the slash creates a subdirectory that doesn't exist, causing `FileNotFoundError`.
+
+**Fix:**
+```python
+safe_cat = extraction.category.replace("/", "_").replace("\\", "_")
+filename = f"{safe_cat}_{extraction.type}_{date_str}_{logistics_id}.json"
+```
+
+**Benefits:**
+- Prevents `[Errno 2] No such file or directory` errors
+- Handles both forward and back slashes
+- Preserves all other category characters
+
+**File:** `src/extraction/logistics.py`
+
+---
+
 ## Logging
 
 ### Unified Pipeline Log
@@ -1371,6 +1420,10 @@ When creating new extraction services, implement:
 22. **Method name validation** - Use correct API client interface
 23. **Schema validation** - Sanitize before validating
 24. **File I/O handling** - Catch OSError for all file operations
+25. **Anachronistic citation detection** - Validate dates against source
+26. **Valid short JSON handling** - Accept `[]` and `{}` as valid
+27. **Auto-clear corrupt cache** - Purge unrecoverable JSON on failure
+28. **Filename sanitization** - Strip path separators from LLM-generated values
 
 ---
 
@@ -1446,6 +1499,24 @@ All errors logged with:
 ---
 
 ## Recent Improvements
+
+**2026-03-16**: Auto-clear cache on unrecoverable JSON errors (Pattern 27)
+- `extract_json()` now calls `clear_cache_entry()` when all JSON repair attempts fail
+- Fixes `Extra data` errors persisting across retries due to corrupt cached responses
+- Replaces manual `💡 Clear cache:` log messages with automatic purge
+- File: `src/grok_client.py`
+
+**2026-03-16**: Filename sanitization for logistics categories (Pattern 28)
+- Sanitizes `/` and `\` in LLM-generated category values before building filenames
+- Fixes `FileNotFoundError` when category contains path separators (e.g. `personnel/equipment`)
+- File: `src/extraction/logistics.py`
+
+**2026-03-16**: Batch entity cross-referencing (Schema 1.1)
+- Batch extraction now assigns ULIDs to dates, places, people, people_groups
+- Entity files include `event_mentions` array linking back to EventID/Sub-eventID
+- Event sub-events include `dates`, `places`, `people`, `peoplegroups` ULID arrays
+- Bidirectional cross-referencing matches README schema
+- File: `src/extraction/batch_parallel.py`
 
 **2026-03-16**: Anachronistic citation detection (Pattern 25)
 - Supplemental extraction now validates citation `publication_date` against source book's `copyright_date`

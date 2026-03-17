@@ -457,7 +457,8 @@ def extract_logistics_from_event(
                     else "UNKNOWN"
                 )
                 logistics_id = logistics_data["LogisticsID"][:8]
-                filename = f"{extraction.category}_{extraction.type}_{date_str}_{logistics_id}.json"
+                safe_cat = extraction.category.replace("/", "_").replace("\\", "_")
+                filename = f"{safe_cat}_{extraction.type}_{date_str}_{logistics_id}.json"
                 output_file = logistics_dir / filename
 
                 # Validate structure

@@ -780,13 +780,12 @@ class GrokClient:
                 )
 
             # Try to repair JSON
-            clear_cmd = self._make_cache_clear_command(cache_type, prompt, temperature)
             repaired = self._try_repair_json(response, error_msg)
             if repaired is not None:
                 return repaired
 
-            # All repair attempts failed
-            logger.error(f"💡 Clear cache: {clear_cmd}")
+            # All repair attempts failed — auto-clear so retry gets fresh response
+            self.clear_cache_entry(prompt, cache_type, temperature)
             raise GrokAPIError(
                 f"Failed to parse JSON response: {e}\n"
                 f"Response length: {len(response)} chars\n"

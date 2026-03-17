@@ -1,6 +1,6 @@
 # JSON Schema Documentation
 
-**Schema Version:** 1.0
+**Schema Version:** 1.1
 
 This document describes all JSON schemas used in the WWII data extraction pipeline.
 
@@ -23,12 +23,41 @@ This document describes all JSON schemas used in the WWII data extraction pipeli
         - `Sub-event_fulltext` (object, **required**)
         - `Endnote_References` (array, optional)
         - `Footnote_References` (array, optional)
+        - `dates` (array of ULID strings, optional) — DateIDs referenced by this sub-event
+        - `places` (array of ULID strings, optional) — PlaceIDs referenced by this sub-event
+        - `people` (array of ULID strings, optional) — PersonIDs referenced by this sub-event
+        - `peoplegroups` (array of ULID strings, optional) — GroupIDs referenced by this sub-event
 
 ## Date Schema
 
-**Version:** 1.0
+**Version:** 1.1
 
-### Fields
+### Central Repository File (`output/dates/{date}.json`)
+
+- `DateID` (string, **required**)
+  - Pattern: `^[0-9A-HJKMNP-TV-Z]{26}$`
+- `date` (string, **required**) — ISO date or approximate (e.g. `1944-07-01`, `mid-1944-07`)
+- `date_start` (string, optional) — present when created by full extractor
+- `date_end` (['string', 'null'], optional)
+- `time_start` (['string', 'null'], optional)
+- `time_end` (['string', 'null'], optional)
+- `time_precision` (['string', 'null'], optional)
+- `date_precision` (['string', 'null'], optional)
+- `time_source` (['string', 'null'], optional)
+- `original_text` (string, optional)
+- `event_mentions` (array, **required**) — cross-references back to events
+  - Array items:
+    - `MentionID` (string, **required**)
+      - Pattern: `^[0-9A-HJKMNP-TV-Z]{26}$`
+    - `Event_Name` (string, **required**)
+    - `EventID` (string, **required**)
+    - `Sub_event_Name` (string, **required**)
+    - `Sub_eventID` (string, **required**)
+    - `book` (string, **required**)
+    - `author` (string, **required**)
+    - `series` (string, **required**)
+
+### Full Extractor Response (per sub-event API response)
 
 - `Event_Name` (string, **required**)
 - `EventID` (string, **required**)
@@ -50,9 +79,26 @@ This document describes all JSON schemas used in the WWII data extraction pipeli
 
 ## Place Schema
 
-**Version:** 1.0
+**Version:** 1.1
 
-### Fields
+### Central Repository File (`output/places/{name}.json`)
+
+- `PlaceID` (string, **required**)
+  - Pattern: `^[0-9A-HJKMNP-TV-Z]{26}$`
+- `name` (string, **required**)
+- `event_mentions` (array, **required**) — cross-references back to events
+  - Array items:
+    - `MentionID` (string, **required**)
+      - Pattern: `^[0-9A-HJKMNP-TV-Z]{26}$`
+    - `Event_Name` (string, **required**)
+    - `EventID` (string, **required**)
+    - `Sub_event_Name` (string, **required**)
+    - `Sub_eventID` (string, **required**)
+    - `book` (string, **required**)
+    - `author` (string, **required**)
+    - `series` (string, **required**)
+
+### Full Extractor Response (per sub-event API response)
 
 - `Event_Name` (string, **required**)
 - `EventID` (string, **required**)
@@ -128,9 +174,9 @@ This document describes all JSON schemas used in the WWII data extraction pipeli
 
 ## People Schema
 
-**Version:** 1.0
+**Version:** 1.1
 
-### Fields
+### Central Repository File (`output/people/{name}.json`)
 
 - `PersonID` (string, **required**)
   - Pattern: `^[0-9A-HJKMNP-TV-Z]{26}$`
@@ -149,7 +195,18 @@ This document describes all JSON schemas used in the WWII data extraction pipeli
     - `date_awarded` (['string', 'null'], optional)
     - `citation` (['string', 'null'], optional)
 - `family` (['object', 'null'], optional)
-- `events` (array, **required**)
+- `event_mentions` (array, **required**) — cross-references back to events
+  - Array items:
+    - `MentionID` (string, **required**)
+      - Pattern: `^[0-9A-HJKMNP-TV-Z]{26}$`
+    - `Event_Name` (string, **required**)
+    - `EventID` (string, **required**)
+    - `Sub_event_Name` (string, **required**)
+    - `Sub_eventID` (string, **required**)
+    - `book` (string, **required**)
+    - `author` (string, **required**)
+    - `series` (string, **required**)
+- `events` (array, optional) — legacy format from full extractor
   - Array items:
     - `EventID` (string, **required**)
       - Pattern: `^[0-9A-HJKMNP-TV-Z]{26}$`
@@ -160,14 +217,15 @@ This document describes all JSON schemas used in the WWII data extraction pipeli
 
 ## People Groups Schema
 
-**Version:** 1.0
+**Version:** 1.1
 
-### Fields
+### Central Repository File (`output/people_groups/{name}.json`)
 
 - `GroupID` (string, **required**)
   - Pattern: `^[0-9A-HJKMNP-TV-Z]{26}$`
-- `group_name` (string, **required**)
-- `group_type` (string, **required**)
+- `name` (string, **required**)
+- `group_name` (string, optional) — present when created by full extractor
+- `group_type` (string, optional)
 - `nationality` (['string', 'null'], optional)
 - `branch` (['string', 'null'], optional)
 - `parent_unit` (['string', 'null'], optional)
@@ -175,7 +233,18 @@ This document describes all JSON schemas used in the WWII data extraction pipeli
 - `formation_date` (['string', 'null'], optional)
 - `dissolution_date` (['string', 'null'], optional)
 - `description` (['string', 'null'], optional)
-- `events` (array, **required**)
+- `event_mentions` (array, **required**) — cross-references back to events
+  - Array items:
+    - `MentionID` (string, **required**)
+      - Pattern: `^[0-9A-HJKMNP-TV-Z]{26}$`
+    - `Event_Name` (string, **required**)
+    - `EventID` (string, **required**)
+    - `Sub_event_Name` (string, **required**)
+    - `Sub_eventID` (string, **required**)
+    - `book` (string, **required**)
+    - `author` (string, **required**)
+    - `series` (string, **required**)
+- `events` (array, optional) — legacy format from full extractor
   - Array items:
     - `EventID` (string, **required**)
       - Pattern: `^[0-9A-HJKMNP-TV-Z]{26}$`
