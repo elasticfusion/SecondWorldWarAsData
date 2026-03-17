@@ -590,6 +590,84 @@ def _merge_enrichment(bio_profile: Dict[str, Any], enrichment: Dict[str, Any]) -
     return modified
 
 
+def _find_group_file(
+    unit_name: str, group_index: Dict[str, str], groups_dir: Path
+) -> Optional[Path]:
+    """Find a people group file by unit name (case-insensitive)."""
+    for key, filename in group_index.items():
+        if key.lower() == unit_name.lower():
+            path = groups_dir / filename
+            return path if path.exists() else None
+    return None
+
+
+def _add_member_to_group(
+    group_file: Path, person_id: str, person_name: str, unit: Dict[str, Any]
+) -> bool:
+    """Add person as member to a group file. Returns True if added."""
+    with open(group_file, "r", encoding="utf-8") as f:
+        group_data = json.load(f)
+
+    members = group_data.setdefault("members", [])
+    if any(m.get("PersonID") == person_id for m in members):
+        return False
+
+    members.append(
+        {
+            "PersonID": person_id,
+            "name": person_name,
+            "role": unit.get("role", "Member"),
+            "from_date": unit.get("from"),
+            "to_date": unit.get("to"),
+            "source": "biographical_enrichment",
+            "confidence": 0.8,
+        }
+    )
+
+    with open(group_file, "w", encoding="utf-8") as f:
+        json.dump(group_data, f, indent=2, ensure_ascii=False)
+    return True
+
+
+def _link_person_to_groups(person_file: Path, people_groups_dir: Path) -> int:
+    """Add person as member to matching people groups based on units_served."""
+    if not people_groups_dir.exists():
+        return 0
+
+    with open(person_file, "r", encoding="utf-8") as f:
+        person_data = json.load(f)
+
+    bio = person_data.get("biographical_profile", {})
+    units = bio.get("units_served", [])
+    if not units:
+        return 0
+
+    person_id = person_data.get("PersonID", "")
+    person_name = person_data.get("name", "")
+    if not person_name:
+        return 0
+
+    index_file = people_groups_dir / "index.json"
+    if not index_file.exists():
+        return 0
+    with open(index_file, "r", encoding="utf-8") as f:
+        group_index = json.load(f)
+
+    linked = 0
+    for unit in units:
+        unit_name = unit.get("unit", "")
+        if not unit_name:
+            continue
+        group_file = _find_group_file(unit_name, group_index, people_groups_dir)
+        if not group_file:
+            continue
+        if _add_member_to_group(group_file, person_id, person_name, unit):
+            linked += 1
+            logger.info("  Linked %s → %s", person_name, unit_name)
+
+    return linked
+
+
 def enrich_all_people(
     people_dir: Path,
     grok_client: GrokClient,
@@ -636,6 +714,16 @@ def enrich_all_people(
         heartbeat.ping(f"{person_file.stem} ({enriched} enriched)")
 
     heartbeat.stop()
+
+    # Link enriched people to people groups
+    people_groups_dir = people_dir.parent / "people_groups"
+    if people_groups_dir.exists():
+        logger.info("Linking people to groups...")
+        groups_linked = 0
+        for person_file in person_files:
+            groups_linked += _link_person_to_groups(person_file, people_groups_dir)
+        if groups_linked:
+            logger.info("Linked %d person-group membership(s)", groups_linked)
 
     logger.info("=" * 60)
     logger.info(
