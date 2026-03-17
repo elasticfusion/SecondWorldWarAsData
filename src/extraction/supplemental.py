@@ -650,6 +650,55 @@ def _separate_by_type(
     return endnotes, footnotes
 
 
+def _get_source_copyright_year(event_file: Path) -> Optional[int]:
+    """Get copyright year from the source book's metadata."""
+    book_dir = event_file.parent.name  # e.g. "BreakoutAndPursuit"
+    content_root = Path("contentrepository") / book_dir
+    if not content_root.exists():
+        return None
+    # Check first chapter's metadata for copyright_date
+    for meta in sorted(content_root.rglob("*-meta.yaml")):
+        try:
+            import yaml
+
+            with open(meta, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+            year = data.get("copyright_date")
+            if year:
+                return int(str(year).strip("'\""))
+        except (ValueError, OSError):
+            continue
+    return None
+
+
+def _filter_anachronistic_citations(
+    groups: List[Dict[str, Any]], source_year: int
+) -> List[Dict[str, Any]]:
+    """Remove citations with publication dates after the source book's copyright year."""
+    for group in groups:
+        materials = group.get("Supplemental_Material", [])
+        filtered = []
+        for mat in materials:
+            citation = mat.get("citation") or {}
+            pub_date = citation.get("publication_date") or ""
+            try:
+                pub_year = int(str(pub_date)[:4])
+            except (ValueError, IndexError):
+                filtered.append(mat)
+                continue
+            if pub_year > source_year:
+                logger.warning(
+                    "Removing anachronistic citation: '%s' (%s) post-dates source (%d)",
+                    citation.get("title", "unknown"),
+                    pub_date,
+                    source_year,
+                )
+            else:
+                filtered.append(mat)
+        group["Supplemental_Material"] = filtered
+    return groups
+
+
 def _write_supplemental_files(
     output_dir: Path,
     base_name: str,
@@ -742,6 +791,12 @@ def extract_supplemental(
     endnotes, footnotes = _separate_by_type(
         all_supplemental, people_index, groups_index, grok_client, enrich=True
     )
+
+    # Validate citation dates against source book copyright
+    source_year = _get_source_copyright_year(event_file)
+    if source_year:
+        endnotes = _filter_anachronistic_citations(endnotes, source_year)
+        footnotes = _filter_anachronistic_citations(footnotes, source_year)
 
     # Write output files
     base_name = event_file.name.replace("-event.json", "")

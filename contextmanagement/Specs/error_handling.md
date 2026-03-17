@@ -1,8 +1,8 @@
 # Error Handling - Extraction Services
 
-**Version:** 2.0.0  
+**Version:** 2.1.0  
 **Status:** Active  
-**Last Updated:** 2026-03-14
+**Last Updated:** 2026-03-16
 
 ---
 
@@ -1093,6 +1093,59 @@ ensure_ascii: bool = False  # Allow Unicode in JSON output
 
 ---
 
+### 25. Anachronistic Citation Detection
+
+**Used in:** Supplemental material extraction
+
+**Pattern:**
+```python
+source_year = _get_source_copyright_year(event_file)  # From chapter-meta.yaml
+if source_year:
+    for citation in materials:
+        pub_year = int(str(citation["publication_date"])[:4])
+        if pub_year > source_year:
+            logger.warning("Removing anachronistic citation: '%s' (%s) post-dates source (%d)",
+                           citation["title"], pub_date, source_year)
+            # Remove from output
+```
+
+**Benefits:**
+- Catches AI-hallucinated citations (e.g., 2002 book cited in 1950 source)
+- Uses source book's `copyright_date` from `chapter-meta.yaml` as ground truth
+- Logs removed citations at WARNING level for review
+- Prevents fabricated references from polluting output data
+
+**File:** `src/extraction/supplemental.py`
+
+---
+
+### 26. Valid Short JSON Response Handling
+
+**Used in:** Grok API client
+
+**Pattern:**
+```python
+# In _call_api: accept valid short JSON ([], {}) instead of rejecting < 10 chars
+if not content or not content.strip():
+    raise GrokAPIError("API returned empty response")
+
+# In extract_json: only retry short responses that aren't valid JSON
+if not _retried and len(response) < 500:
+    try:
+        json.loads(response)  # Valid short JSON — accept it
+    except (json.JSONDecodeError, ValueError):
+        # Invalid — clear cache and retry
+```
+
+**Benefits:**
+- Accepts `[]` as valid "no data found" response (matches prompt instructions)
+- Prevents 2 wasted API calls per empty result (was retrying then failing)
+- Affects 5 extractors: casualties, equipment, maps, supplemental, enrichment
+
+**File:** `src/grok_client.py`
+
+---
+
 ## Logging
 
 ### Unified Pipeline Log
@@ -1393,6 +1446,30 @@ All errors logged with:
 ---
 
 ## Recent Improvements
+
+**2026-03-16**: Anachronistic citation detection (Pattern 25)
+- Supplemental extraction now validates citation `publication_date` against source book's `copyright_date`
+- Citations post-dating the source are removed and logged at WARNING level
+- Catches AI-hallucinated references (e.g., 2002 book cited in 1950 source)
+- File: `src/extraction/supplemental.py`
+
+**2026-03-16**: Valid short JSON response handling (Pattern 26)
+- `_call_api()` no longer rejects valid short JSON like `[]` and `{}`
+- `extract_json()` only retries short responses that fail `json.loads()`
+- Prevents 2 wasted API calls per empty result across 5 extractors
+- File: `src/grok_client.py`
+
+**2026-03-16**: Heartbeat monitor for stall detection
+- New `src/utils/heartbeat.py` — daemon thread warns if no progress for 5 minutes
+- Wired into Phase 2 (`phase2_extract.py`) and Phase 3 (`enrich_biographies.py`)
+- Retry wrappers now log signal names on crash (e.g., SIGKILL from OOM)
+- Files: `src/utils/heartbeat.py`, `phase2_extract.py`, `phase2_retry.py`, `phase3_retry.py`
+
+**2026-03-16**: Auto-split on truncation (events.py)
+- Phase 2 now auto-splits large chapters at section boundaries when Grok truncates
+- Extracts each chunk separately, merges sub-events into single output
+- Replaces "manual split needed" error with automated recovery
+- File: `src/extraction/events.py`
 
 **2026-03-14**: Auto-retry on short API responses
 - `extract_json()` now retries once when API returns <500 chars
