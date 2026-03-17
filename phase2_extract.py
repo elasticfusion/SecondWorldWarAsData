@@ -12,7 +12,7 @@ from pathlib import Path
 
 from src.utils.config import load_config, get_paths
 from src.utils.logger import setup_logging
-from src.grok_client import GrokClient
+from src.grok_client import GrokClient, current_book
 from src.extraction.events import extract_events
 from src.extraction.external_maps import import_maps
 
@@ -327,14 +327,11 @@ def _retry_missing_events(parsed_files, grok_client, logger):
     retry_failed = 0
     for parsed_file in missing_events:
         logger.info("Retrying: %s", parsed_file.name)
+        current_book.set(parsed_file.parent.name)
 
-        # Clear only this chapter's cache entries (not the entire events cache)
-        chapter_id = parsed_file.name.replace("-parsed.json", "")
+        # Clear this book's event cache (per-book structure makes this safe)
         cache = grok_client._get_cache("events")
-        for key in list(cache):
-            val = cache.get(key, "")
-            if chapter_id in str(val):
-                cache.pop(key, None)
+        cache.clear()
 
         try:
             output_file = extract_events(
@@ -537,6 +534,9 @@ def main():
         logger.info("Found %d event file(s)", len(event_files))
 
         for event_file in event_files:
+            # Set book context for per-book cache routing
+            current_book.set(event_file.parent.name)
+
             # Find corresponding parsed file
             parsed_file = event_file.parent / event_file.name.replace(
                 "-event.json", "-parsed.json"

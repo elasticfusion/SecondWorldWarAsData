@@ -1,5 +1,6 @@
 """Grok API client with retry logic and caching."""
 
+import contextvars
 import json
 import logging
 import os
@@ -10,6 +11,11 @@ import requests
 from diskcache import Cache
 from dotenv import load_dotenv
 from pydantic import BaseModel
+
+# Context variable for per-book cache routing (thread/async safe)
+current_book: contextvars.ContextVar[Optional[str]] = contextvars.ContextVar(
+    "current_book", default=None
+)
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -66,13 +72,36 @@ class GrokClient:
             "supplemental",
         ]
 
+        # Book-specific cache types (prompt includes chapter text)
+        self.BOOK_CACHE_TYPES = {
+            "events",
+            "weather",
+            "equipment",
+            "logistics",
+            "casualties",
+            "supplemental",
+            "supplemental_narrative",
+            "supplemental_search",
+            "supplemental_advanced",
+        }
+
     def _get_cache(self, cache_type: str = "default") -> Cache:
-        """Get or create cache for specific type."""
-        if cache_type not in self.caches:
-            type_cache_dir = self.cache_dir / cache_type
+        """Get or create cache for specific type.
+
+        Book-specific types route to books/{book_name}/{cache_type}/
+        when current_book context var is set. Global types always use {cache_type}/.
+        """
+        book_name = current_book.get()
+        if book_name and cache_type in self.BOOK_CACHE_TYPES:
+            cache_key = f"books/{book_name}/{cache_type}"
+        else:
+            cache_key = cache_type
+
+        if cache_key not in self.caches:
+            type_cache_dir = self.cache_dir / cache_key
             type_cache_dir.mkdir(parents=True, exist_ok=True)
-            self.caches[cache_type] = Cache(str(type_cache_dir))
-        return self.caches[cache_type]
+            self.caches[cache_key] = Cache(str(type_cache_dir))
+        return self.caches[cache_key]
 
     def _make_cache_key(self, prompt: str, temperature: float) -> str:
         """Create cache key from prompt and parameters."""
