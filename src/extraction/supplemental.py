@@ -177,94 +177,41 @@ Return JSON in this format:
       "MaterialID": "GENERATE_NEW_ULID",
       "EventID": "{event_id}",
       "Sub-eventID": "{sub_event_id}",
-      "reference_type": "endnote",
-      "reference_number": "4",
-      "verbatim_reference": "Shirer, William L. The Rise and Fall of the Third Reich: A History of Nazi Germany. New York: Simon & Schuster, 1960, pp. 597-598.",
+      "reference_type": "endnote|footnote|bibliography",
+      "reference_number": "number or symbol from text",
+      "verbatim_reference": "EXACT text from the source document — do NOT invent references",
       "citation": {{
-        "author": ["Shirer, William L."],
-        "title": "The Rise and Fall of the Third Reich: A History of Nazi Germany",
-        "publisher": "Simon & Schuster",
-        "publication_date": "1960",
-        "first_edition_date": "1960",
-        "publication_location": "New York",
-        "publication_country": "USA",
-        "isbn": null,
-        "isbn_edition": null,
-        "pages": "597-598",
-        "volume": null,
-        "edition": null,
-        "translator": null,
-        "periodical_name": null,
-        "document_type": null
+        "author": ["Last, First"],
+        "title": "Title from the source text",
+        "publisher": "Publisher or null",
+        "publication_date": "YYYY or YYYY-MM-DD or null",
+        "first_edition_date": "YYYY or null",
+        "publication_location": "City or null",
+        "publication_country": "ISO 3166-1 alpha-3 or null",
+        "isbn": "ISBN or null",
+        "isbn_edition": "ISBN of specific edition or null",
+        "pages": "page range or null",
+        "volume": "volume or null",
+        "edition": "edition or null",
+        "translator": "translator or null",
+        "periodical_name": "journal/newspaper name or null",
+        "document_type": "Primary source document or null",
+        "author_death_date": "YYYY or YYYY-MM-DD or null"
       }},
-      "availability": "offline",
+      "availability": "online|offline|unknown",
       "resource_urls": [],
-      "license": "copyright",
-      "license_notes": "Copyright - Simon & Schuster"
-    }},
-    {{
-      "MaterialID": "GENERATE_NEW_ULID",
-      "EventID": "{event_id}",
-      "Sub-eventID": "{sub_event_id}",
-      "reference_type": "endnote",
-      "reference_number": "5",
-      "verbatim_reference": "German Federal Archives, 'Invasion of Poland - Military Orders,' Document R 43 II/1270, September 1, 1939.",
-      "citation": {{
-        "author": ["German Federal Archives"],
-        "title": "Invasion of Poland - Military Orders",
-        "publisher": null,
-        "publication_date": "1939-09-01",
-        "first_edition_date": null,
-        "publication_location": null,
-        "publication_country": "DEU",
-        "isbn": null,
-        "isbn_edition": null,
-        "pages": null,
-        "volume": null,
-        "edition": null,
-        "translator": null,
-        "periodical_name": null,
-        "document_type": "Primary source document"
-      }},
-      "availability": "online",
-      "resource_urls": ["https://www.bundesarchiv.de/cocoon/barch/0/r/r43ii/1270/index.html"],
-      "license": "public_domain",
-      "license_notes": "Historical government document"
-    }},
-    {{
-      "MaterialID": "GENERATE_NEW_ULID",
-      "EventID": "{event_id}",
-      "Sub-eventID": "{sub_event_id}",
-      "reference_type": "footnote",
-      "reference_number": "*",
-      "verbatim_reference": "The exact time of 4:45 AM is disputed. See Zaloga, Steven J. Poland 1939: The Birth of Blitzkrieg. Oxford: Osprey Publishing, 2002, p. 42.",
-      "citation": {{
-        "author": ["Zaloga, Steven J."],
-        "title": "Poland 1939: The Birth of Blitzkrieg",
-        "publisher": "Osprey Publishing",
-        "publication_date": "2002",
-        "first_edition_date": "2002",
-        "publication_location": "Oxford",
-        "publication_country": "GBR",
-        "isbn": "978-1841763552",
-        "isbn_edition": null,
-        "pages": "42",
-        "volume": null,
-        "edition": null,
-        "translator": null,
-        "periodical_name": null,
-        "document_type": null,
-        "author_death_date": null
-      }},
-      "availability": "offline",
-      "resource_urls": [],
-      "archive_reference_number": null,
-      "archive_physical_address": null,
-      "license": "copyright",
-      "license_notes": "Copyright - Osprey Publishing"
+      "archive_reference_number": "archive ref or null",
+      "archive_physical_address": "archive address or null",
+      "license": "public_domain|copyright|unknown",
+      "license_notes": "brief license note"
     }}
   ]
 }}
+
+CRITICAL: Only extract references that actually appear in the source text above.
+Do NOT invent, fabricate, or copy example references. The verbatim_reference field
+must contain the EXACT text from the document. If no references are found, return
+an empty Supplemental_Material array.
 
 Extract ALL references (endnotes, footnotes, bibliography).
 For MaterialID, use placeholder "GENERATE_NEW_ULID" - will be replaced with actual ULIDs.
