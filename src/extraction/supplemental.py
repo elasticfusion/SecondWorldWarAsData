@@ -213,6 +213,13 @@ Do NOT invent, fabricate, or copy example references. The verbatim_reference fie
 must contain the EXACT text from the document. If no references are found, return
 an empty Supplemental_Material array.
 
+MULTIPLE SOURCES IN ONE REFERENCE: A single endnote/footnote often contains multiple
+distinct sources separated by semicolons, periods, or other delimiters. Each distinct
+source MUST become its own Supplemental_Material entry with a separate citation object.
+They share the same reference_number but each gets its own MaterialID.
+Example: "Eisenhower, Crusade in Europe (1948), pp 245; Answers by Smith, OCMH Files."
+= TWO entries: one book, one government document.
+
 Extract ALL references (endnotes, footnotes, bibliography).
 For MaterialID, use placeholder "GENERATE_NEW_ULID" - will be replaced with actual ULIDs.
 For online resources, include all URLs in resource_urls array.
