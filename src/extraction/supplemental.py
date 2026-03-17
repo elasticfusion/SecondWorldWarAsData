@@ -799,5 +799,5 @@ def extract_supplemental(
         footnotes = _filter_anachronistic_citations(footnotes, source_year)
 
     # Write output files
-    base_name = event_file.name.replace("-event.json", "")
+    base_name = f"{event_file.parent.name}-{event_file.name.replace('-event.json', '')}"
     return _write_supplemental_files(output_dir, base_name, endnotes, footnotes)
