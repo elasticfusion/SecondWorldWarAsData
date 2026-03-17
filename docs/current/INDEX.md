@@ -26,6 +26,7 @@ Essential architecture, configuration, and API documentation.
 - **[PIPELINE.md](core/PIPELINE.md)** - Phase 1 & 2 pipeline overview
 - **[WORKFLOW_DIAGRAMS.md](core/WORKFLOW_DIAGRAMS.md)** - Visual workflow diagrams
 - **[error_handling.md](core/error_handling.md)** - Error handling patterns (25 patterns)
+- **[PROMPT_MANAGEMENT.md](core/PROMPT_MANAGEMENT.md)** - Grok prompt inventory, patterns, and modification guide
 - **[ULID_IMPLEMENTATION.md](core/ULID_IMPLEMENTATION.md)** - ULID identifier system
 
 ### Standards

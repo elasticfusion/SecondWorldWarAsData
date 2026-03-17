@@ -136,7 +136,34 @@ Phase 1 Requirements:
 Return ONLY valid JSON. No additional text."""
 
 
-def create_supplemental_prompt(event_data: Dict[str, Any]) -> List[tuple]:
+def _build_ref_context(
+    endnote_refs: List,
+    footnote_refs: List,
+    endnote_texts: Optional[Dict[int, str]],
+) -> tuple:
+    """Build endnote text block and type hint for a sub-event."""
+    from src.extraction.fetch_endnotes import format_endnote_text_block
+
+    all_refs = [r for r in endnote_refs + footnote_refs if isinstance(r, int)]
+    endnote_block = ""
+    if endnote_texts and all_refs:
+        endnote_block = format_endnote_text_block(endnote_texts, all_refs)
+        return endnote_block, ""
+
+    ref_type_hint = ""
+    if endnote_refs and not footnote_refs:
+        ref_type_hint = "\nNote: These are endnotes (on a separate page from the text)."
+    elif footnote_refs and not endnote_refs:
+        ref_type_hint = (
+            "\nNote: These are footnotes (at the bottom of the same page as the text)."
+        )
+    return endnote_block, ref_type_hint
+
+
+def create_supplemental_prompt(
+    event_data: Dict[str, Any],
+    endnote_texts: Optional[Dict[int, str]] = None,
+) -> List[tuple]:
     """Create prompt for supplemental material extraction."""
     event_name = event_data.get("Event", {})
     event_id = event_name.get("EventID", "")
@@ -152,6 +179,9 @@ def create_supplemental_prompt(event_data: Dict[str, Any]) -> List[tuple]:
         footnote_refs = sub_event.get("Footnote_References", [])
 
         text = "\n".join(fulltext.values())
+        endnote_block, ref_type_hint = _build_ref_context(
+            endnote_refs, footnote_refs, endnote_texts
+        )
 
         prompt = f"""Extract supplemental material references from this sub-event:
 
@@ -165,6 +195,8 @@ Text:
 
 Endnote References Found: {endnote_refs}
 Footnote References Found: {footnote_refs}
+{endnote_block}
+{ref_type_hint}
 
 Return JSON in this format:
 {{
@@ -209,9 +241,11 @@ Return JSON in this format:
 }}
 
 CRITICAL: Only extract references that actually appear in the source text above.
-Do NOT invent, fabricate, or copy example references. The verbatim_reference field
-must contain the EXACT text from the document. If no references are found, return
-an empty Supplemental_Material array.
+Do NOT invent, fabricate, or copy example references. If "Actual endnote/footnote text"
+is provided above, use that as the verbatim_reference — it is the real text from the
+source document. If no actual text is provided, use the reference number only and set
+verbatim_reference to the reference number (e.g. "5"). Do NOT fabricate citation text.
+If no references are found, return an empty Supplemental_Material array.
 
 MULTIPLE SOURCES IN ONE REFERENCE: A single endnote/footnote often contains multiple
 distinct sources separated by semicolons, periods, or other delimiters. Each distinct
@@ -717,8 +751,16 @@ def extract_supplemental(
     if not event_data:
         return None
 
+    # Fetch actual endnote/footnote text from ibiblio
+    from src.extraction.fetch_endnotes import fetch_endnote_texts
+
+    parsed_file = event_file.with_name(
+        event_file.name.replace("-event.json", "-parsed.json")
+    )
+    endnote_texts = fetch_endnote_texts(parsed_file)
+
     # Create prompts
-    prompts = create_supplemental_prompt(event_data)
+    prompts = create_supplemental_prompt(event_data, endnote_texts)
     if not prompts:
         logger.info("No sub-events found in %s", event_file.name)
         return None

@@ -165,6 +165,7 @@ SecondWorldWarAsData/
 ### Reference
 - **[API Reference](docs/current/core/API_REFERENCE.md)** - API documentation
 - **[Error Handling](docs/current/core/error_handling.md)** - Error handling guide
+- **[Prompt Management](docs/current/core/PROMPT_MANAGEMENT.md)** - Grok prompt inventory and patterns
 - **[Scripts Reference](scripts/README.md)** - Utility scripts
 - **[Tools Reference](tools/README.md)** - Go tools
 
