@@ -11,7 +11,12 @@ from typing import Dict, List
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-SKIP_FILES = {"index.json", ".processed_events.json", "duplicate_report.json", "not_duplicates.json"}
+SKIP_FILES = {
+    "index.json",
+    ".processed_events.json",
+    "duplicate_report.json",
+    "not_duplicates.json",
+}
 
 
 def load_duplicate_report(report_path: Path) -> List[Dict]:
@@ -27,38 +32,35 @@ def load_equipment(equipment_dir: Path, filename: str) -> Dict:
         return json.load(f)
 
 
+def _merge_list_by_key(primary: Dict, secondary: Dict, field: str, key: str):
+    """Merge a list field from secondary into primary, deduplicating by key."""
+    existing = {item[key] for item in primary.get(field, [])}
+    for item in secondary.get(field, []):
+        if item[key] not in existing:
+            primary.setdefault(field, []).append(item)
+
+
 def merge_equipment_data(primary: Dict, secondary: Dict) -> Dict:
     """Merge secondary equipment into primary, deduplicating all lists."""
-    # Mentions by MentionID
-    existing_ids = {m["MentionID"] for m in primary.get("mentions", [])}
-    for m in secondary.get("mentions", []):
-        if m["MentionID"] not in existing_ids:
-            primary.setdefault("mentions", []).append(m)
+    _merge_list_by_key(primary, secondary, "mentions", "MentionID")
+    _merge_list_by_key(primary, secondary, "media", "url")
+    _merge_list_by_key(primary, secondary, "variants", "variant_name")
 
-    # Media by URL
-    existing_urls = {m["url"] for m in primary.get("media", [])}
-    for m in secondary.get("media", []):
-        if m["url"] not in existing_urls:
-            primary.setdefault("media", []).append(m)
-
-    # Alternate names
+    # Alternate names — also add secondary's common_name if different
     existing_names = set(primary.get("alternate_names", []))
-    # Also add secondary's common_name as alternate if different
+    names_lower = {n.lower() for n in existing_names}
     sec_name = secondary.get("common_name", "")
-    if sec_name and sec_name != primary.get("common_name", ""):
-        existing_names_lower = {n.lower() for n in existing_names}
-        if sec_name.lower() not in existing_names_lower:
-            primary.setdefault("alternate_names", []).append(sec_name)
-            existing_names.add(sec_name)
+    if (
+        sec_name
+        and sec_name.lower() not in names_lower
+        and sec_name != primary.get("common_name", "")
+    ):
+        primary.setdefault("alternate_names", []).append(sec_name)
+        existing_names.add(sec_name)
+        names_lower.add(sec_name.lower())
     for n in secondary.get("alternate_names", []):
         if n not in existing_names:
             primary.setdefault("alternate_names", []).append(n)
-
-    # Variants by variant_name
-    existing_variants = {v["variant_name"] for v in primary.get("variants", [])}
-    for v in secondary.get("variants", []):
-        if v["variant_name"] not in existing_variants:
-            primary.setdefault("variants", []).append(v)
 
     return primary
 
@@ -82,11 +84,13 @@ def add_to_exclusion_list(equipment_dir: Path, items: List[Dict]):
         with open(exclusion_file, "r", encoding="utf-8") as f:
             exclusions = json.load(f)
     for i, item1 in enumerate(items):
-        for item2 in items[i + 1:]:
-            exclusions["exclusions"].append({
-                "file1": item1["filename"],
-                "file2": item2["filename"],
-            })
+        for item2 in items[i + 1 :]:
+            exclusions["exclusions"].append(
+                {
+                    "file1": item1["filename"],
+                    "file2": item2["filename"],
+                }
+            )
     with open(exclusion_file, "w", encoding="utf-8") as f:
         json.dump(exclusions, f, indent=2, ensure_ascii=False)
 
@@ -101,22 +105,20 @@ def _mention_count(equipment_dir: Path, filename: str) -> int:
 
 
 def _get_user_action() -> str:
-    """Get user action. Returns: 'merge', 'skip', 'exclude', 'stop'."""
-    response = input("\nMerge this group? (y/n/skip/exclude): ").lower()
-    if response == "n":
-        return "stop"
-    if response == "skip":
-        return "skip"
+    """Get user action. Returns: 'merge', 'skip', 'exclude', 'quit'."""
+    response = input("\nMerge this group? (y/n/exclude/quit): ").lower()
+    if response == "quit":
+        return "quit"
     if response in ("exclude", "e"):
         return "exclude"
-    return "merge"
+    if response in ("y", "yes"):
+        return "merge"
+    return "skip"
 
 
 def _get_primary_index(items: list) -> int:
     """Get index of primary equipment item."""
-    choice = input(
-        f"\nKeep which as primary? (1-{len(items)}, default=1): "
-    ).strip()
+    choice = input(f"\nKeep which as primary? (1-{len(items)}, default=1): ").strip()
     if not choice:
         return 0
     if not choice.isdigit():
@@ -146,7 +148,7 @@ def merge_duplicate_group(equipment_dir: Path, group: Dict):
         print(f"{i}. {item['name']} ({item['filename']}) [{count} mentions]")
 
     action = _get_user_action()
-    if action == "stop":
+    if action == "quit":
         return False
     if action == "skip":
         return None
@@ -160,6 +162,14 @@ def merge_duplicate_group(equipment_dir: Path, group: Dict):
         print("Invalid choice, skipping")
         return None
 
+    primary = items[primary_idx]
+    _do_merge(equipment_dir, items, primary_idx)
+    print(f"✓ Merged {len(items) - 1} duplicate(s) into {primary['name']}")
+    return True
+
+
+def _do_merge(equipment_dir: Path, items: List[Dict], primary_idx: int):
+    """Merge secondary items into primary."""
     primary = items[primary_idx]
     primary_data = load_equipment(equipment_dir, primary["filename"])
     print(f"\nMerging into: {primary['name']}")
@@ -177,9 +187,6 @@ def merge_duplicate_group(equipment_dir: Path, group: Dict):
     with open(equipment_dir / primary["filename"], "w", encoding="utf-8") as f:
         json.dump(primary_data, f, indent=2, ensure_ascii=False)
 
-    print(f"✓ Merged {len(items) - 1} duplicate(s) into {primary['name']}")
-    return True
-
 
 def main():
     """Main entry point."""
@@ -190,7 +197,9 @@ def main():
     report_path = equipment_dir / "duplicate_report.json"
 
     if not report_path.exists():
-        logger.error("No duplicate report found. Run find_duplicate_equipment.py first.")
+        logger.error(
+            "No duplicate report found. Run find_duplicate_equipment.py first."
+        )
         return 1
 
     duplicates = load_duplicate_report(report_path)
@@ -201,9 +210,9 @@ def main():
     print(f"\nFound {len(duplicates)} duplicate group(s)")
     print("\nOptions:")
     print("  y = merge this group")
-    print("  n = don't merge, exit")
-    print("  skip = skip this group, continue to next")
+    print("  n = skip this group, continue to next")
     print("  exclude = mark as NOT duplicates")
+    print("  quit = exit")
 
     merged_count = 0
     skipped_count = 0
