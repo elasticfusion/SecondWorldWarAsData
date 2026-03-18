@@ -1295,6 +1295,11 @@ def _extract_equipment_with_llm(
     """Extract equipment using LLM with retry logic."""
     prompt = f"""Extract military equipment mentioned in this WWII event data.
 
+IMPORTANT: Always identify specific equipment by name/designation, not generic categories.
+For example, use "Browning Automatic Rifle" not "Light machine guns and automatic rifles",
+"M4 Sherman" not "Medium tanks", "M1 Garand" not "Rifles". If the text only mentions a
+generic category without identifying specific equipment, omit it.
+
 Event Data:
 {json.dumps(event_data, indent=2)}
 
@@ -1318,6 +1323,7 @@ Return a JSON array of equipment objects with these fields:
 - alternate_names (optional array)
 - category (required)
 - subcategory (optional)
+- country_of_origin (optional, ISO 3166-1 alpha-3 code e.g. 'USA', 'DEU', 'GBR', 'JPN')
 - variants (optional array)
 - specifications (optional dict)
 - using_unit_name (optional)
@@ -1441,6 +1447,8 @@ def _build_equipment_data(eq: EquipmentExtraction) -> Dict[str, Any]:
         equipment_data["alternate_names"] = list(eq.alternate_names)  # type: ignore[assignment]
     if eq.subcategory:
         equipment_data["subcategory"] = eq.subcategory
+    if eq.country_of_origin:
+        equipment_data["country_of_origin"] = eq.country_of_origin
     if eq.variants:
         equipment_data["variants"] = [v.model_dump() for v in eq.variants]  # type: ignore[assignment]
     if eq.specifications:
