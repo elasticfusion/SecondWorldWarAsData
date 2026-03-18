@@ -11,12 +11,18 @@ from typing import Any, Dict, List, Set
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-SKIP_FILES = {"index.json", ".processed_events.json", "duplicate_report.json", "not_duplicates.json"}
+SKIP_FILES = {
+    "index.json",
+    ".processed_events.json",
+    "duplicate_report.json",
+    "not_duplicates.json",
+}
 
 
 def _normalize(name: str) -> str:
     """Normalize equipment name for comparison."""
     import re
+
     name = name.lower().strip()
     # Normalize caliber formats: ".50-caliber" -> "50 caliber", "155-mm" -> "155mm"
     name = re.sub(r"^\.(\d)", r"\1", name)
@@ -61,23 +67,73 @@ def _name_contained(equip1: Dict, equip2: Dict) -> bool:
         for n2 in names2:
             # Require meaningful length and that the shorter name is >60% of the longer
             shorter, longer = sorted([n1, n2], key=len)
-            if len(shorter) >= 8 and shorter in longer and len(shorter) / len(longer) > 0.6:
+            if (
+                len(shorter) >= 8
+                and shorter in longer
+                and len(shorter) / len(longer) > 0.6
+            ):
                 return True
     return False
 
 
+def _load_exclusions(equipment_dir: Path) -> Set[tuple]:
+    """Load excluded pairs from not_duplicates.json."""
+    exclusion_file = equipment_dir / "not_duplicates.json"
+    if not exclusion_file.exists():
+        return set()
+    with open(exclusion_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return {tuple(sorted([p["file1"], p["file2"]])) for p in data.get("exclusions", [])}
+
+
+def _score_pair(item1: Dict, item2: Dict) -> tuple:
+    """Score a pair of equipment items. Returns (confidence, reasons, best_match)."""
+    confidence = 0.0
+    reasons = []
+
+    best_match = _best_name_match(item1, item2)
+    if best_match >= 0.85:
+        confidence += 0.5
+        reasons.append(f"name_similarity={best_match:.2f}")
+    elif best_match >= 0.7:
+        confidence += 0.3
+        reasons.append(f"name_similarity={best_match:.2f}")
+
+    if _name_contained(item1, item2):
+        confidence += 0.2
+        reasons.append("name_contained")
+
+    if _same_category(item1, item2):
+        confidence += 0.1
+        reasons.append("same_category")
+
+    return confidence, reasons, best_match
+
+
+def _make_group(item1: Dict, item2: Dict, confidence: float, reasons: list) -> Dict:
+    """Create a duplicate group entry from a pair."""
+    return {
+        "people": [
+            {
+                "filename": item1["_filename"],
+                "name": item1.get("common_name", "?"),
+                "EquipmentID": item1.get("EquipmentID", ""),
+            },
+            {
+                "filename": item2["_filename"],
+                "name": item2.get("common_name", "?"),
+                "EquipmentID": item2.get("EquipmentID", ""),
+            },
+        ],
+        "confidence": confidence,
+        "reasons": list(dict.fromkeys(reasons)),
+    }
+
+
 def find_potential_duplicates(equipment_dir: Path) -> List[Dict[str, Any]]:
     """Find potential duplicate equipment based on name similarity and category."""
-    # Load exclusions
-    exclusion_file = equipment_dir / "not_duplicates.json"
-    excluded_pairs: Set[tuple] = set()
-    if exclusion_file.exists():
-        with open(exclusion_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            for pair in data.get("exclusions", []):
-                excluded_pairs.add(tuple(sorted([pair["file1"], pair["file2"]])))
+    excluded_pairs = _load_exclusions(equipment_dir)
 
-    # Load all equipment
     equipment_files = [
         f for f in sorted(equipment_dir.glob("*.json")) if f.name not in SKIP_FILES
     ]
@@ -90,7 +146,7 @@ def find_potential_duplicates(equipment_dir: Path) -> List[Dict[str, Any]]:
 
     logger.info("Analyzing %d equipment items for duplicates...", len(items))
 
-    # Build pairwise matches (no transitive chaining)
+    # Score all pairs
     pairs = []
     for i, item1 in enumerate(items):
         for j in range(i + 1, len(items)):
@@ -98,27 +154,7 @@ def find_potential_duplicates(equipment_dir: Path) -> List[Dict[str, Any]]:
             pair_key = tuple(sorted([item1["_filename"], item2["_filename"]]))
             if pair_key in excluded_pairs:
                 continue
-
-            confidence = 0.0
-            reasons = []
-
-            best_match = _best_name_match(item1, item2)
-            if best_match >= 0.85:
-                confidence += 0.5
-                reasons.append(f"name_similarity={best_match:.2f}")
-            elif best_match >= 0.7:
-                confidence += 0.3
-                reasons.append(f"name_similarity={best_match:.2f}")
-
-            if _name_contained(item1, item2):
-                confidence += 0.2
-                reasons.append("name_contained")
-
-            if _same_category(item1, item2):
-                confidence += 0.1
-                reasons.append("same_category")
-
-            # Require name similarity as primary signal
+            confidence, reasons, best_match = _score_pair(item1, item2)
             if confidence > 0.5 and best_match >= 0.7:
                 pairs.append((item1, item2, confidence, reasons))
 
@@ -126,21 +162,11 @@ def find_potential_duplicates(equipment_dir: Path) -> List[Dict[str, Any]]:
     duplicates = []
     processed: Set[str] = set()
     for item1, item2, confidence, reasons in pairs:
-        f1, f2 = item1["_filename"], item2["_filename"]
-        if f1 in processed or f2 in processed:
+        if item1["_filename"] in processed or item2["_filename"] in processed:
             continue
-        duplicates.append({
-            "people": [
-                {"filename": f1, "name": item1.get("common_name", "?"),
-                 "EquipmentID": item1.get("EquipmentID", "")},
-                {"filename": f2, "name": item2.get("common_name", "?"),
-                 "EquipmentID": item2.get("EquipmentID", "")},
-            ],
-            "confidence": confidence,
-            "reasons": list(dict.fromkeys(reasons)),
-        })
-        processed.add(f1)
-        processed.add(f2)
+        duplicates.append(_make_group(item1, item2, confidence, reasons))
+        processed.add(item1["_filename"])
+        processed.add(item2["_filename"])
 
     return duplicates
 
@@ -149,9 +175,9 @@ def generate_duplicate_report(equipment_dir: Path, output_file: Path) -> None:
     """Generate duplicate report."""
     duplicates = find_potential_duplicates(equipment_dir)
     report = {
-        "total_equipment": len([
-            f for f in equipment_dir.glob("*.json") if f.name not in SKIP_FILES
-        ]),
+        "total_equipment": len(
+            [f for f in equipment_dir.glob("*.json") if f.name not in SKIP_FILES]
+        ),
         "duplicate_groups": len(duplicates),
         "duplicates": duplicates,
     }

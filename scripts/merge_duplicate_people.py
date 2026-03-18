@@ -8,7 +8,7 @@ import logging
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -52,26 +52,27 @@ def update_index(index_path: Path, old_name: str, new_filename: str):
         json.dump(index, f, indent=2, ensure_ascii=False)
 
 
-def add_to_exclusion_list(people_dir: Path, people: List[Dict]):
-    """Add a pair to the exclusion list."""
+def _save_exclusion_pairs(people_dir: Path, pairs: List[tuple]):
+    """Append exclusion pairs to not_duplicates.json."""
     exclusion_file = people_dir / "not_duplicates.json"
-
-    # Load existing exclusions
     exclusions: Dict = {"comment": "Confirmed non-duplicates", "exclusions": []}
     if exclusion_file.exists():
         with open(exclusion_file, "r", encoding="utf-8") as f:
             exclusions = json.load(f)
-
-    # Add all pairs in this group
-    for i, person1 in enumerate(people):
-        for person2 in people[i + 1 :]:
-            exclusions["exclusions"].append(
-                {"person1": person1["filename"], "person2": person2["filename"]}
-            )
-
-    # Save
+    for p1, p2 in pairs:
+        exclusions["exclusions"].append({"person1": p1, "person2": p2})
     with open(exclusion_file, "w", encoding="utf-8") as f:
         json.dump(exclusions, f, indent=2, ensure_ascii=False)
+
+
+def add_to_exclusion_list(people_dir: Path, people: List[Dict]):
+    """Add all pairs in a group to the exclusion list."""
+    pairs = [
+        (people[i]["filename"], people[j]["filename"])
+        for i in range(len(people))
+        for j in range(i + 1, len(people))
+    ]
+    _save_exclusion_pairs(people_dir, pairs)
 
 
 def name_completeness_score(name: str) -> tuple:
@@ -96,47 +97,52 @@ def name_completeness_score(name: str) -> tuple:
 
 
 def _get_user_action(auto_confirm: bool) -> str:
-    """Get user action for merge group. Returns: 'merge', 'skip', 'exclude', 'stop'."""
+    """Get user action for merge group. Returns: 'merge', 'skip', 'exclude', 'quit'."""
     if auto_confirm:
         return "merge"
-    response = input("\nMerge this group? (y/n/skip/exclude): ").lower()
-    if response == "n":
-        return "stop"
-    if response == "skip":
-        return "skip"
+    response = input("\nMerge this group? (y/n/exclude/quit): ").lower()
+    if response == "quit":
+        return "quit"
     if response in ["exclude", "e"]:
         return "exclude"
-    return "merge"
+    if response in ["y", "yes"]:
+        return "merge"
+    return "skip"
 
 
 def _get_exclusions_from_user(people: List[Dict]) -> List[int]:
     """Prompt user to select which people to exclude from the group.
-    
+
     Returns list of indices (0-based) to exclude.
     """
     while True:
-        response = input("\nEnter person numbers to exclude (comma-separated, or 'all' for entire group): ").strip()
-        
+        response = input(
+            "\nEnter person numbers to exclude (comma-separated, or 'all' for entire group): "
+        ).strip()
+
         if response.lower() == "all":
             return list(range(len(people)))
-        
+
         try:
             # Parse comma-separated numbers (1-based from user)
             indices = [int(x.strip()) - 1 for x in response.split(",")]
-            
+
             # Validate indices
             if all(0 <= i < len(people) for i in indices):
                 return indices
             else:
-                print(f"❌ Invalid numbers. Please enter numbers between 1 and {len(people)}")
+                print(
+                    f"❌ Invalid numbers. Please enter numbers between 1 and {len(people)}"
+                )
         except ValueError:
-            print("❌ Invalid input. Please enter numbers separated by commas (e.g., 1,4,5)")
-
+            print(
+                "❌ Invalid input. Please enter numbers separated by commas (e.g., 1,4,5)"
+            )
 
 
 def _get_primary_index(people: list, auto_confirm: bool) -> int:
     """Get index of primary person. Returns -1 if invalid.
-    
+
     Assumes people list is already sorted by completeness (most complete first).
     """
     default_idx = 0  # Most complete name is first after sorting
@@ -161,92 +167,46 @@ def _get_primary_index(people: list, auto_confirm: bool) -> int:
     return idx if 0 <= idx < len(people) else -1
 
 
-def merge_duplicate_group(people_dir: Path, group: Dict, auto_confirm: bool = False):
-    """Merge a duplicate group. Prompts user to select primary person, then merges others into it."""
-    # Filter out people whose files no longer exist (already merged)
-    people = [p for p in group["people"] if (people_dir / p["filename"]).exists()]
-    
-    if len(people) < 2:
-        print(f"\nSkipping group - only {len(people)} file(s) still exist (likely already merged)")
-        return None
-    
-    # Sort by name completeness
-    people = sorted(people, key=lambda p: name_completeness_score(p["name"]), reverse=True)
-
-    print("\n" + "=" * 80)
-    print(f"Duplicate Group (Confidence: {group['confidence']:.2f})")
-    print(f"Reasons: {', '.join(group['reasons'])}")
-    print("=" * 80)
-
-    for i, person in enumerate(people, 1):
-        print(f"{i}. {person['name']} ({person['filename']})")
-
-    # Get user action
-    action = _get_user_action(auto_confirm)
-    if action == "stop":
-        return False
-    if action == "skip":
-        return None
-    if action == "exclude":
-        # Get which people to exclude
-        exclude_indices = _get_exclusions_from_user(people)
-        
-        if not exclude_indices:
-            print("❌ No exclusions specified")
-            return None
-        
-        # If excluding all, add all pairs to exclusion list
-        if len(exclude_indices) == len(people):
-            add_to_exclusion_list(people_dir, people)
-            print("✓ Added entire group to exclusion list")
-            return None
-        
-        # Otherwise, add pairs between excluded and remaining people
-        excluded_people = [people[i] for i in exclude_indices]
-        remaining_people = [p for i, p in enumerate(people) if i not in exclude_indices]
-        
-        # Add exclusion pairs
-        exclusion_file = people_dir / "not_duplicates.json"
-        exclusions: Dict = {"comment": "Confirmed non-duplicates", "exclusions": []}
-        if exclusion_file.exists():
-            with open(exclusion_file, "r", encoding="utf-8") as f:
-                exclusions = json.load(f)
-        
-        for excluded in excluded_people:
-            for remaining in remaining_people:
-                exclusions["exclusions"].append({
-                    "person1": excluded["filename"],
-                    "person2": remaining["filename"]
-                })
-        
-        with open(exclusion_file, "w", encoding="utf-8") as f:
-            json.dump(exclusions, f, indent=2, ensure_ascii=False)
-        
-        print(f"✓ Excluded {len(excluded_people)} person(s) from this group")
-        
-        # Ask if user wants to merge the remaining people
-        if len(remaining_people) >= 2:
-            print(f"\n{len(remaining_people)} people remain in group:")
-            for i, p in enumerate(remaining_people, 1):
-                print(f"{i}. {p['name']} ({p['filename']})")
-            
-            merge_remaining = input("\nMerge remaining people? (y/n): ").lower()
-            if merge_remaining != "y":
-                return None
-            
-            # Continue with merge of remaining people
-            people = remaining_people
-        else:
-            print("Only 1 person remains - nothing to merge")
-            return None
-
-    # Get primary person
-    primary_idx = _get_primary_index(people, auto_confirm)
-    if primary_idx < 0:
-        print("Invalid choice, skipping group")
+def _handle_exclusions(people_dir: Path, people: List[Dict]) -> Optional[List[Dict]]:
+    """Handle exclude action. Returns remaining people to merge, or None."""
+    exclude_indices = _get_exclusions_from_user(people)
+    if not exclude_indices:
+        print("❌ No exclusions specified")
         return None
 
-    # Merge
+    if len(exclude_indices) == len(people):
+        add_to_exclusion_list(people_dir, people)
+        print("✓ Added entire group to exclusion list")
+        return None
+
+    excluded_people = [people[i] for i in exclude_indices]
+    remaining_people = [p for i, p in enumerate(people) if i not in exclude_indices]
+
+    _save_exclusion_pairs(
+        people_dir,
+        [
+            (ex["filename"], rem["filename"])
+            for ex in excluded_people
+            for rem in remaining_people
+        ],
+    )
+
+    print(f"✓ Excluded {len(excluded_people)} person(s) from this group")
+
+    if len(remaining_people) < 2:
+        print("Only 1 person remains - nothing to merge")
+        return None
+
+    print(f"\n{len(remaining_people)} people remain in group:")
+    for i, p in enumerate(remaining_people, 1):
+        print(f"{i}. {p['name']} ({p['filename']})")
+    if input("\nMerge remaining people? (y/n): ").lower() != "y":
+        return None
+    return remaining_people
+
+
+def _do_merge(people_dir: Path, people: List[Dict], primary_idx: int):
+    """Merge secondary people into primary."""
     primary_person = people[primary_idx]
     primary_data = load_person(people_dir, primary_person["filename"])
     print(f"\nMerging into: {primary_person['name']}")
@@ -267,6 +227,47 @@ def merge_duplicate_group(people_dir: Path, group: Dict, auto_confirm: bool = Fa
         json.dump(primary_data, f, indent=2, ensure_ascii=False)
 
     print(f"✓ Merged {len(people)-1} duplicate(s) into {primary_person['name']}")
+
+
+def merge_duplicate_group(people_dir: Path, group: Dict, auto_confirm: bool = False):
+    """Merge a duplicate group interactively."""
+    people = [p for p in group["people"] if (people_dir / p["filename"]).exists()]
+
+    if len(people) < 2:
+        print(
+            f"\nSkipping group - only {len(people)} file(s) still exist (likely already merged)"
+        )
+        return None
+
+    people = sorted(
+        people, key=lambda p: name_completeness_score(p["name"]), reverse=True
+    )
+
+    print("\n" + "=" * 80)
+    print(f"Duplicate Group (Confidence: {group['confidence']:.2f})")
+    print(f"Reasons: {', '.join(group['reasons'])}")
+    print("=" * 80)
+
+    for i, person in enumerate(people, 1):
+        print(f"{i}. {person['name']} ({person['filename']})")
+
+    action = _get_user_action(auto_confirm)
+    if action == "quit":
+        return False
+    if action == "skip":
+        return None
+    if action == "exclude":
+        remaining = _handle_exclusions(people_dir, people)
+        if remaining is None:
+            return None
+        people = remaining
+
+    primary_idx = _get_primary_index(people, auto_confirm)
+    if primary_idx < 0:
+        print("Invalid choice, skipping group")
+        return None
+
+    _do_merge(people_dir, people, primary_idx)
     return True
 
 
@@ -292,9 +293,9 @@ def main():
     print(f"\nFound {len(duplicates)} duplicate group(s)")
     print("\nOptions:")
     print("  y = merge this group")
-    print("  n = don't merge, exit")
-    print("  skip = skip this group, continue to next")
+    print("  n = skip this group, continue to next")
     print("  exclude = mark as NOT duplicates (prevents future detection)")
+    print("  quit = exit")
 
     merged_count = 0
     skipped_count = 0
