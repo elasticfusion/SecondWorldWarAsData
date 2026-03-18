@@ -256,8 +256,19 @@ Example: "Eisenhower, Crusade in Europe (1948), pp 245; Answers by Smith, OCMH F
 
 Extract ALL references (endnotes, footnotes, bibliography).
 For MaterialID, use placeholder "GENERATE_NEW_ULID" - will be replaced with actual ULIDs.
-For online resources, include all URLs in resource_urls array.
-For archive materials, include archive_reference_number and archive_physical_address if available.
+
+RESOURCE LOCATION RULES:
+- resource_urls must point to where the CITED DOCUMENT can be found, NOT the HyperWar
+  page where the footnote/endnote appears. HyperWar URLs are the source we're extracting
+  FROM, not the resource being cited. Only include a URL if the cited document itself is
+  available online (e.g., a digitized report, a journal article URL).
+- For military files, memos, cables, and government records (e.g., "SHAEF SGS file",
+  "FUSA AAR", "AG files", "OCMH files"), set availability to "archive" and use your
+  knowledge to populate archive_physical_address (typically "National Archives and Records
+  Administration (NARA), College Park, MD, USA" for US military records).
+- For published books, set availability to "offline" unless you know of a specific online
+  edition. Do NOT guess URLs.
+- Only set availability to "online" when the cited material itself has a known URL.
 For author_death_date, include if known (format: YYYY or YYYY-MM-DD).
 For government/educational institutions, use license "public_domain".
 For commercial publishers, use license "copyright".
