@@ -301,7 +301,7 @@ class PersonEventMention(BaseModel):
     DateMentionID: Optional[str] = None
     position_at_event: Optional[str] = None
     life_event: Optional[str] = None
-    original_text: str
+    original_text: Optional[str] = None
 
     model_config = ConfigDict(populate_by_name=True)
 
