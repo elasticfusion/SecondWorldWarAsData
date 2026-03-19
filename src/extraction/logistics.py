@@ -186,6 +186,94 @@ def _build_entity_index(
     return index
 
 
+def _get_sub_event_text(sub_event: Dict[str, Any]) -> str:
+    """Extract text from a sub-event."""
+    text = sub_event.get("text", "")
+    if not text and "Sub-event_fulltext" in sub_event:
+        fulltext = sub_event["Sub-event_fulltext"]
+        if isinstance(fulltext, dict):
+            text = "\n\n".join(fulltext.values())
+        else:
+            text = str(fulltext)
+    return text
+
+
+def _batch_extract_logistics(
+    sub_events: List[Dict[str, Any]],
+    grok_client: GrokClient,
+) -> Dict[str, List[LogisticsExtraction]]:
+    """Extract logistics from all sub-events in a single API call.
+
+    Returns dict mapping sub_event_id → list of LogisticsExtraction.
+    """
+    # Build sub-event texts
+    relevant = []
+    for se in sub_events:
+        text = _get_sub_event_text(se)
+        if text:
+            relevant.append((se.get("Sub-eventID", ""), text))
+
+    if not relevant:
+        return {}
+
+    sub_event_block = "\n\n".join(
+        f"--- Sub-event [{seid}] ---\n{text}" for seid, text in relevant
+    )
+
+    prompt = f"""Extract logistics issues from these WWII historical sub-events.
+
+{sub_event_block}
+
+Look for:
+1. Supply problems: shortages, delays, disruptions (fuel, ammunition, food, equipment)
+2. Transportation issues: damaged roads/rails, vehicle losses, movement restrictions
+3. Capacity constraints: port limits, beach capacity, force level restrictions
+
+For each issue found, extract:
+- type: supply_shortage, delivery_delay, transport_disruption, capacity_constraint
+- category: fuel, ammunition, food, equipment, personnel, general
+- description: what the problem was
+- severity: critical, high, medium, low
+- impacted_organizations, impacted_people, impacted_places, impacted_equipment
+- date_start, date_end (ISO dates if mentioned)
+
+Return JSON object keyed by sub-event ID:
+{{"<Sub-eventID>": {{"logistics": [<items>]}}, ...}}
+Return empty logistics arrays for sub-events with no issues."""
+
+    try:
+        response = grok_client.extract_json(
+            prompt=prompt,
+            use_cache=True,
+            cache_type="logistics",
+        )
+    except Exception as e:
+        logger.error("Batch logistics extraction failed: %s", e)
+        return {}
+
+    return _parse_logistics_response(response)
+
+
+def _parse_logistics_response(
+    response: Any,
+) -> Dict[str, List[LogisticsExtraction]]:
+    """Parse and validate batched logistics response."""
+    if not isinstance(response, dict):
+        return {}
+    result: Dict[str, List[LogisticsExtraction]] = {}
+    for seid, data in response.items():
+        items = data.get("logistics", []) if isinstance(data, dict) else []
+        validated = []
+        for item in items:
+            try:
+                validated.append(LogisticsExtraction.model_validate(item))
+            except Exception as e:
+                logger.debug("Skipping invalid logistics item: %s", e)
+        if validated:
+            result[seid] = validated
+    return result
+
+
 def _extract_logistics_with_llm(
     _event_data: Dict[str, Any],
     sub_event: Dict[str, Any],
@@ -423,18 +511,20 @@ def extract_logistics_from_event(
 
     logger.info("Processing %d sub-events for logistics extraction", len(sub_events))
 
-    for sub_event in sub_events:
-        sub_event_name = sub_event.get(
-            "Sub-event_Name", sub_event.get("Sub-event_summary", "Unknown")
-        )
-        logger.debug("Processing sub-event: %s", sub_event_name[:80])
+    # Batch extract from all sub-events in single API call
+    batch_results = _batch_extract_logistics(sub_events, grok_client)
 
-        extractions = _extract_logistics_with_llm(event, sub_event, grok_client)
+    for sub_event in sub_events:
+        sub_event_id = sub_event.get("Sub-eventID", "")
+        extractions = batch_results.get(sub_event_id, [])
         if not extractions:
-            logger.debug("No logistics found in sub-event: %s", sub_event_name[:80])
             continue
 
-        logger.info("Found %d logistics issue(s) in sub-event", len(extractions))
+        logger.info(
+            "Found %d logistics issue(s) in sub-event %s",
+            len(extractions),
+            sub_event_id[:8],
+        )
 
         for extraction in extractions:
             try:
@@ -458,7 +548,9 @@ def extract_logistics_from_event(
                 )
                 logistics_id = logistics_data["LogisticsID"][:8]
                 safe_cat = extraction.category.replace("/", "_").replace("\\", "_")
-                filename = f"{safe_cat}_{extraction.type}_{date_str}_{logistics_id}.json"
+                filename = (
+                    f"{safe_cat}_{extraction.type}_{date_str}_{logistics_id}.json"
+                )
                 output_file = logistics_dir / filename
 
                 # Validate structure

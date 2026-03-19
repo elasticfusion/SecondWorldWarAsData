@@ -1,8 +1,8 @@
 # Error Handling - Extraction Services
 
-**Version:** 2.1.0  
+**Version:** 2.2.0  
 **Status:** Active  
-**Last Updated:** 2026-03-16
+**Last Updated:** 2026-03-19
 
 ---
 
@@ -1195,6 +1195,46 @@ filename = f"{safe_cat}_{extraction.type}_{date_str}_{logistics_id}.json"
 
 ---
 
+### 29. Batch Response Parsing with Per-Sub-Event Isolation
+
+**Used in:** Weather, Logistics, Casualties batch extraction
+
+**Problem:** When batching all sub-events into a single API call, a malformed response for one sub-event could lose results for all sub-events.
+
+**Pattern:**
+```python
+def _parse_weather_response(response: Dict[str, Any]) -> Dict[str, List[Dict]]:
+    """Validate each sub-event's results independently."""
+    result = {}
+    for seid, mentions in response.items():
+        if not isinstance(mentions, list):
+            continue  # Skip malformed sub-event, keep others
+        fixed = _fix_invalid_ulids(mentions)
+        if isinstance(fixed, list):
+            mentions = fixed
+        result[seid] = [
+            m for m in mentions
+            if isinstance(m, dict) and m.get("date") and m.get("place_name")
+        ]
+    return result
+```
+
+**Key design decisions:**
+- Response is `Dict[str, List]` keyed by Sub-eventID
+- Each sub-event's items validated independently (ULID fixing, schema checks)
+- Invalid items filtered per sub-event — valid items from other sub-events preserved
+- Parsing extracted into separate functions (`_parse_casualty_response`, `_parse_logistics_response`, `_parse_weather_response`) to keep batch functions at B complexity or better
+
+**Benefits:**
+- One malformed sub-event doesn't lose results from other sub-events
+- Same validation applied as per-sub-event path (ULID fixing, schema checks)
+- Reduces API calls by ~80% for optional extractors (1 call per chapter vs 1 per sub-event)
+- Retry logic wraps the entire batch call, not individual sub-events
+
+**Files:** `src/extraction/weather_central.py`, `src/extraction/logistics.py`, `src/extraction/casualties.py`
+
+---
+
 ## Logging
 
 ### Unified Pipeline Log
@@ -1424,6 +1464,7 @@ When creating new extraction services, implement:
 26. **Valid short JSON handling** - Accept `[]` and `{}` as valid
 27. **Auto-clear corrupt cache** - Purge unrecoverable JSON on failure
 28. **Filename sanitization** - Strip path separators from LLM-generated values
+29. **Batch response isolation** - Validate each sub-event independently in batch responses
 
 ---
 
@@ -1499,6 +1540,13 @@ All errors logged with:
 ---
 
 ## Recent Improvements
+
+**2026-03-19**: Batch extraction for optional extractors (Pattern 29)
+- Weather, Logistics, Casualties now send all sub-events in a single API call per chapter
+- Response parsed with per-sub-event isolation — one bad sub-event doesn't lose others
+- Parsing logic extracted into `_parse_weather_response`, `_parse_logistics_response`, `_parse_casualty_response`
+- Reduces optional extractor API calls by ~80% (~2,249 fewer calls)
+- Files: `src/extraction/weather_central.py`, `src/extraction/logistics.py`, `src/extraction/casualties.py`
 
 **2026-03-16**: Auto-clear cache on unrecoverable JSON errors (Pattern 27)
 - `extract_json()` now calls `clear_cache_entry()` when all JSON repair attempts fail

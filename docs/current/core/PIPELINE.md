@@ -50,7 +50,7 @@ python3 phase2_extract.py
 2. **Core Entity Extraction** - Per chapter (parallel):
    - Dates, Places, People Groups, People (batched API calls, parallel per chapter)
 3. **Retry Missing Events** - Retries any chapters that failed event extraction (per-chapter cache clear)
-4. **Optional Entity Extraction** - Sequential per event file:
+4. **Optional Entity Extraction** - Sequential per event file (batched per chapter — 1 API call per extractor):
    - Weather (if enabled)
    - Equipment (if enabled)
    - Logistics (if enabled)

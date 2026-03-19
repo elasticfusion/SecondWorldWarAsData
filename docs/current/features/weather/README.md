@@ -2,7 +2,7 @@
 
 **Module:** `src/extraction/weather_central.py`  
 **Status:** Optional (Disabled by default)  
-**Last Updated:** 2026-03-13
+**Last Updated:** 2026-03-19
 
 ---
 
@@ -29,9 +29,12 @@ Weather extraction analyzes event files for weather mentions and enriches them w
 ```
 Event File (JSON)
     ↓
-For each Sub-event
+Batch all Sub-events → Single Grok API call
+(includes per-sub-event place/date context)
     ↓
-Extract Weather Mentions (Grok)
+Response: {Sub-eventID: [mentions], ...}
+    ↓
+For each mention:
     ↓
 Filter (exact dates only)
     ↓
@@ -45,6 +48,8 @@ Add Event Mention
     ↓
 Update Index
 ```
+
+**Batching:** All sub-events are sent in a single API call per chapter (via `_batch_extract_weather`). Post-processing (coordinate lookup, API fetch, file creation) remains per-mention.
 
 ### Central Repository Structure
 

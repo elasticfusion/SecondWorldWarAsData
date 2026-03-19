@@ -408,9 +408,9 @@ All extractors validate Grok API responses before writing output:
 | dates.py | Pydantic (`extract_structured`) | ✅ `_fix_invalid_ulids` |
 | places.py | Pydantic (`extract_structured`) | ✅ `_fix_invalid_ulids` |
 | people.py | Pydantic (`extract_structured`) | ✅ `_fix_invalid_ulids` |
-| weather_central.py | Pydantic (`extract_structured`) | ✅ `_fix_invalid_ulids` |
-| logistics.py | Pydantic (`extract_structured` + `model_validate`) | N/A (ULIDs local) |
+| weather_central.py | Pydantic fields + `_fix_invalid_ulids` (batch: `extract_json`) | ✅ `_fix_invalid_ulids` |
+| logistics.py | Pydantic `model_validate` (batch: `extract_json`) | N/A (ULIDs local) |
 | equipment.py | Pydantic (`model_validate`) | ✅ `_fix_invalid_ulids` |
-| casualties.py | JSON Schema (`CASUALTY_ITEM_SCHEMA`) per item | ✅ `_fix_invalid_ulids` |
+| casualties.py | JSON Schema (`CASUALTY_ITEM_SCHEMA`) per item (batch: `chat_completion`) | ✅ `_fix_invalid_ulids` |
 | people_groups.py | JSON Schema (`PEOPLE_GROUP_ITEM_SCHEMA`) per item | ✅ `_fix_invalid_ulids` |
 | batch_parallel.py | Downstream extractors validate | ✅ `_fix_invalid_ulids` |
