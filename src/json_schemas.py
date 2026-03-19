@@ -363,7 +363,7 @@ CASUALTY_ITEM_SCHEMA = {
     "type": "object",
     "required": ["type", "description"],
     "properties": {
-        "type": {"type": "string", "enum": ["wounded", "killed", "casualties", "pow"]},
+        "type": {"type": "string", "enum": ["wounded", "killed", "casualties", "pow", "missing"]},
         "description": {"type": "string"},
         "count": {"type": "object"},
     },

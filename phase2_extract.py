@@ -489,6 +489,7 @@ def main():
             output_root=output_root,
             config=config,
             max_parallel=max_parallel,
+            heartbeat=heartbeat,
         )
     )
 
@@ -550,10 +551,10 @@ def main():
                 parsed_file = None
 
             logger.info("  Processing: %s", event_file.name)
+            heartbeat.ping(f"Optional entities: {event_file.name}")
             _extract_optional_entities(
                 event_file, parsed_file, grok_client, paths, config, logger
             )
-            heartbeat.ping(f"Optional entities: {event_file.name}")
 
     # -----------------------------------------------------------------------
     # Step 4: Maps extraction
