@@ -330,6 +330,7 @@ async def process_chapters_parallel(
     output_root: Path,
     config: Dict[str, Any],
     max_parallel: int = 3,
+    heartbeat=None,
 ) -> Dict[str, Any]:
     """Process multiple chapters in parallel."""
     results: Dict[str, Any] = {"processed": 0, "failed": 0, "chapters": []}
@@ -337,9 +338,12 @@ async def process_chapters_parallel(
     # Process in batches to limit concurrency
     for i in range(0, len(parsed_files), max_parallel):
         batch = parsed_files[i : i + max_parallel]
+        batch_num = i // max_parallel + 1
         logger.info(
-            "Processing batch %d: %d chapters", i // max_parallel + 1, len(batch)
+            "Processing batch %d: %d chapters", batch_num, len(batch)
         )
+        if heartbeat:
+            heartbeat.ping(f"Step 1 batch {batch_num}: {len(batch)} chapters")
 
         # Create tasks for this batch
         tasks = _create_chapter_tasks(batch, grok_client, output_root, config)
