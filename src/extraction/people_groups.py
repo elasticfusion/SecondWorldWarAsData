@@ -16,6 +16,8 @@ from typing import Dict, Optional
 from ulid import new as new_ulid
 
 from src.grok_client import GrokClient
+from src.json_schemas import PEOPLE_GROUP_ITEM_SCHEMA
+from src.utils.json_validator import _fix_invalid_ulids
 from src.utils.text_utils import normalize_name
 
 logger = logging.getLogger(__name__)
@@ -207,6 +209,20 @@ def _parse_groups_response(response: str) -> list:
     return data.get("People_Groups", [])
 
 
+def _validate_group_items(items: list) -> list:
+    """Validate group items against schema, dropping invalid ones."""
+    from jsonschema import validate, ValidationError
+
+    valid = []
+    for item in items:
+        try:
+            validate(instance=item, schema=PEOPLE_GROUP_ITEM_SCHEMA)
+            valid.append(item)
+        except ValidationError as e:
+            logger.warning("Dropping invalid group item: %s", e.message)
+    return valid
+
+
 def _save_group(
     groups_dir: Path, index_file: Path, group: dict, book: str, author: str, series: str
 ):
@@ -286,6 +302,9 @@ def extract_people_groups(
     if not groups:
         logger.info("  No people groups found")
         return groups_dir
+
+    groups = _fix_invalid_ulids(groups)
+    groups = _validate_group_items(groups)
 
     index_file = groups_dir / "index.json"
     for group in groups:

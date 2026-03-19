@@ -191,15 +191,18 @@ Third-party map search and verification.
 **Status:** Production  
 **Documentation:** [supplemental/](supplemental/)
 
-Bibliography and reference extraction.
+Bibliography and reference extraction with split architecture.
 
 **Key Features:**
+- Split routing: document references → `output/bibliography/`, factual content → notes-event files
+- Deduplicated bibliography with fuzzy title matching (`bibliography.py`)
+- `alt_title` for expanded abbreviations (e.g., "OB WEST KTB" → "Oberbefehlshaber West Kriegstagebuch")
+- `content_class` classification (document_reference / factual_content / ambiguous)
 - Citation parsing (books, articles, archives)
-- ISBN extraction (post-1966)
-- Copyright determination
-- URL validation
-- Search integration (Gutenberg, Archive.org, OpenSERP)
-- Availability classification
+- Anachronistic citation filtering
+- ULID fixing for Grok responses
+- JSON schema validation
+- Ambiguous items queued for human review
 
 ---
 

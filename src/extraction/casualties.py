@@ -13,6 +13,8 @@ from typing import Any, Dict, List, Optional
 import ulid
 
 from src.grok_client import GrokClient
+from src.json_schemas import CASUALTY_ITEM_SCHEMA
+from src.utils.json_validator import _fix_invalid_ulids
 
 logger = logging.getLogger(__name__)
 
@@ -177,6 +179,8 @@ def _extract_from_event(
                 prompt, use_cache=use_cache, cache_type="casualties"
             )
             casualties_data = _parse_response(response)
+            casualties_data = _fix_invalid_ulids(casualties_data)
+            casualties_data = _validate_items(casualties_data)
             break  # Success, exit retry loop
         except Exception as e:
             if attempt < max_retries - 1:
@@ -283,6 +287,20 @@ def _parse_response(response: str) -> List[Dict[str, Any]]:
     except Exception as e:
         logger.error("Unexpected error parsing response: %s", e)
         return []
+
+
+def _validate_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Validate casualty items against schema, dropping invalid ones."""
+    from jsonschema import validate, ValidationError
+
+    valid = []
+    for item in items:
+        try:
+            validate(instance=item, schema=CASUALTY_ITEM_SCHEMA)
+            valid.append(item)
+        except ValidationError as e:
+            logger.warning("Dropping invalid casualty item: %s", e.message)
+    return valid
 
 
 def _build_casualty(

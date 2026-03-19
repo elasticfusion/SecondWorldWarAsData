@@ -8,6 +8,7 @@ import ulid
 from jsonschema import ValidationError, validate
 
 from src.grok_client import GrokClient
+from src.utils.json_validator import _fix_invalid_ulids
 from src.json_schemas import SUPPLEMENTAL_SCHEMA
 
 logger = logging.getLogger(__name__)
@@ -183,7 +184,7 @@ def create_supplemental_prompt(
             endnote_refs, footnote_refs, endnote_texts
         )
 
-        prompt = f"""Extract supplemental material references from this sub-event:
+        prompt = f"""Classify and extract endnote/footnote references from this sub-event.
 
 Event: {event_title}
 EventID: {event_id}
@@ -198,6 +199,18 @@ Footnote References Found: {footnote_refs}
 {endnote_block}
 {ref_type_hint}
 
+CLASSIFICATION: Each endnote/footnote must be classified as one of:
+- "document_reference" — a citation to a book, report, memo, field order, AAR, letter,
+  journal article, or any other document. The note tells you WHERE information came from.
+- "factual_content" — historical narrative containing facts: casualties, awards, troop
+  movements, dates, equipment details, weather, or other extractable information.
+  The note tells you WHAT happened.
+- "ambiguous" — cannot clearly determine if it is a document reference or factual content.
+
+MIXED ENTRIES: If a single endnote/footnote contains BOTH a factual statement AND a
+document citation, split it into TWO separate entries sharing the same reference_number:
+one classified as "factual_content" and one as "document_reference".
+
 Return JSON in this format:
 {{
   "Event_Name": "{event_title}",
@@ -209,12 +222,14 @@ Return JSON in this format:
       "MaterialID": "GENERATE_NEW_ULID",
       "EventID": "{event_id}",
       "Sub-eventID": "{sub_event_id}",
+      "content_class": "document_reference|factual_content|ambiguous",
       "reference_type": "endnote|footnote|bibliography",
       "reference_number": "number or symbol from text",
       "verbatim_reference": "EXACT text from the source document — do NOT invent references",
       "citation": {{
         "author": ["Last, First"],
         "title": "Title from the source text",
+        "alt_title": "Expanded/unabbreviated form of the title, or null if title is already full",
         "publisher": "Publisher or null",
         "publication_date": "YYYY or YYYY-MM-DD or null",
         "first_edition_date": "YYYY or null",
@@ -230,7 +245,7 @@ Return JSON in this format:
         "document_type": "Primary source document or null",
         "author_death_date": "YYYY or YYYY-MM-DD or null"
       }},
-      "availability": "online|offline|unknown",
+      "availability": "online|offline|archive|unknown",
       "resource_urls": [],
       "archive_reference_number": "archive ref or null",
       "archive_physical_address": "archive address or null",
@@ -252,10 +267,13 @@ distinct sources separated by semicolons, periods, or other delimiters. Each dis
 source MUST become its own Supplemental_Material entry with a separate citation object.
 They share the same reference_number but each gets its own MaterialID.
 Example: "Eisenhower, Crusade in Europe (1948), pp 245; Answers by Smith, OCMH Files."
-= TWO entries: one book, one government document.
+= TWO entries, both "document_reference".
 
-Extract ALL references (endnotes, footnotes, bibliography).
-For MaterialID, use placeholder "GENERATE_NEW_ULID" - will be replaced with actual ULIDs.
+CLASSIFICATION NOTES for citation fields:
+- For "document_reference": populate citation fields fully.
+  Use alt_title to expand military abbreviations (e.g., "357th Inf Jnl" → "357th Infantry Journal").
+- For "factual_content": set citation to null. The verbatim_reference IS the content.
+- For "ambiguous": populate citation if possible, preserve verbatim_reference.
 
 RESOURCE LOCATION RULES:
 - resource_urls must point to where the CITED DOCUMENT can be found, NOT the HyperWar
@@ -287,6 +305,7 @@ def _sanitize_material(material: Dict[str, Any]) -> None:
         "MaterialID": "",
         "EventID": "",
         "Sub-eventID": "",
+        "content_class": "document_reference",
         "reference_type": "bibliography",
         "verbatim_reference": "",
         "availability": "unknown",
@@ -294,6 +313,11 @@ def _sanitize_material(material: Dict[str, Any]) -> None:
     for key, default in defaults.items():
         if material.get(key) is None:
             material[key] = default
+
+    # Validate content_class
+    valid_classes = {"document_reference", "factual_content", "ambiguous"}
+    if material.get("content_class") not in valid_classes:
+        material["content_class"] = "document_reference"
 
     # Validate and normalize reference_type
     ref_type = material.get("reference_type", "")
@@ -312,7 +336,8 @@ def _sanitize_material(material: Dict[str, Any]) -> None:
         material["resource_urls"] = []
 
     # Citation defaults
-    citation = material.get("citation", {})
+    citation = material.get("citation") or {}
+    material["citation"] = citation
     if citation.get("title") is None:
         citation["title"] = "Unknown"
     if citation.get("author") is None:
@@ -487,6 +512,7 @@ def _extract_with_retry(
             )
 
             response = generate_ulids(response)
+            response = _fix_invalid_ulids(response)
             response = sanitize_supplemental_data(response)
 
             try:
@@ -698,56 +724,142 @@ def _filter_anachronistic_citations(
     return groups
 
 
-def _write_supplemental_files(
-    output_dir: Path,
-    base_name: str,
-    endnotes: List[Dict[str, Any]],
-    footnotes: List[Dict[str, Any]],
+def _route_by_content_class(
+    all_supplemental: List[Dict[str, Any]],
+    bib_dir: Path,
+    book: str,
+    chapter: str,
+    grok_client: Any = None,
+    enrich: bool = False,
+) -> tuple:
+    """Route materials by content_class. Returns (factual_items, ambiguous_items, bib_count)."""
+    factual_items = []
+    ambiguous_items = []
+    bib_count = 0
+
+    for sub_event_data in all_supplemental:
+        event_id = sub_event_data.get("EventID", "")
+        sub_event_id = sub_event_data.get("Sub-eventID", "")
+        sub_event_name = sub_event_data.get("Sub-event_Name", "")
+
+        for material in sub_event_data.get("Supplemental_Material", []):
+            content_class = material.get("content_class", "document_reference")
+
+            if content_class == "document_reference":
+                if enrich:
+                    _enrich_material(material, grok_client)
+                from src.extraction.bibliography import store_bibliography_entry
+
+                store_bibliography_entry(bib_dir, material, book, chapter)
+                bib_count += 1
+
+            elif content_class == "factual_content":
+                factual_items.append(
+                    {
+                        "verbatim_reference": material.get("verbatim_reference", ""),
+                        "reference_type": material.get("reference_type", ""),
+                        "reference_number": material.get("reference_number", ""),
+                        "source_EventID": event_id,
+                        "source_Sub-eventID": sub_event_id,
+                        "source_Sub-event_Name": sub_event_name,
+                        "BibliographyID": material.get("_BibliographyID"),
+                    }
+                )
+
+            elif content_class == "ambiguous":
+                ambiguous_items.append(
+                    {
+                        "book": book,
+                        "chapter": chapter,
+                        "reference_type": material.get("reference_type", ""),
+                        "reference_number": material.get("reference_number", ""),
+                        "verbatim_reference": material.get("verbatim_reference", ""),
+                        "EventID": event_id,
+                        "Sub-eventID": sub_event_id,
+                    }
+                )
+
+    return factual_items, ambiguous_items, bib_count
+
+
+def _write_notes_event(
+    event_file: Path,
+    factual_items: List[Dict[str, Any]],
 ) -> Optional[Path]:
-    """Write endnotes and footnotes to separate files."""
-    output_dir.mkdir(parents=True, exist_ok=True)
-    files_written = []
-
-    try:
-        if endnotes:
-            endnotes_file = output_dir / f"{base_name}-endnotes.json"
-            with open(endnotes_file, "w", encoding="utf-8") as f:
-                json.dump(endnotes, f, indent=2, ensure_ascii=False)
-            total = sum(len(e.get("Supplemental_Material") or []) for e in endnotes)
-            logger.info("Extracted %d endnote(s) to %s", total, endnotes_file.name)
-            files_written.append(endnotes_file)
-
-        if footnotes:
-            footnotes_file = output_dir / f"{base_name}-footnotes.json"
-            with open(footnotes_file, "w", encoding="utf-8") as f:
-                json.dump(footnotes, f, indent=2, ensure_ascii=False)
-            total = sum(len(f.get("Supplemental_Material") or []) for f in footnotes)
-            logger.info("Extracted %d footnote(s) to %s", total, footnotes_file.name)
-            files_written.append(footnotes_file)
-
-        return files_written[0] if files_written else None
-
-    except (OSError, IOError) as e:
-        logger.error("Failed to write output files: %s", e)
+    """Write factual content as a notes-event file alongside the source event."""
+    if not factual_items:
         return None
+
+    notes_file = event_file.with_name(
+        event_file.name.replace("-event.json", "-notes-event.json")
+    )
+
+    sub_events = []
+    for item in factual_items:
+        sub_events.append(
+            {
+                "Sub-eventID": str(ulid.new()),
+                "Sub-event_summary": item["verbatim_reference"][:200],
+                "Sub-event_fulltext": {"paragraph_1": item["verbatim_reference"]},
+                "source_reference": {
+                    "reference_type": item["reference_type"],
+                    "reference_number": item["reference_number"],
+                    "source_EventID": item["source_EventID"],
+                    "source_Sub-eventID": item["source_Sub-eventID"],
+                    "BibliographyID": item.get("BibliographyID"),
+                },
+                "Endnote_References": [],
+                "Footnote_References": [],
+            }
+        )
+
+    event_data = {
+        "Event": {
+            "EventID": str(ulid.new()),
+            "Event_Name": f"Notes: {event_file.stem.replace('-event', '')}",
+            "Sub-events": sub_events,
+        }
+    }
+
+    with open(notes_file, "w", encoding="utf-8") as f:
+        json.dump(event_data, f, indent=2, ensure_ascii=False)
+
+    logger.info("Wrote %d factual items to %s", len(sub_events), notes_file.name)
+    return notes_file
+
+
+def _append_to_review_queue(bib_dir: Path, items: List[Dict[str, Any]]) -> None:
+    """Append ambiguous items to review_queue.json."""
+    if not items:
+        return
+    queue_file = bib_dir / "review_queue.json"
+    existing = []
+    if queue_file.exists():
+        with open(queue_file, "r", encoding="utf-8") as f:
+            existing = json.load(f)
+    existing.extend(items)
+    with open(queue_file, "w", encoding="utf-8") as f:
+        json.dump(existing, f, indent=2, ensure_ascii=False)
+    logger.info("Added %d ambiguous items to review queue", len(items))
 
 
 def extract_supplemental(
     event_file: Path,
     grok_client: GrokClient,
-    output_dir: Path,
-    output_root: Optional[Path] = None,
+    output_root: Path,
+    enrich: bool = False,
 ) -> Optional[Path]:
-    """Extract supplemental material references from event file - Phase 1."""
-    logger.info("Extracting supplemental material from %s", event_file.name)
+    """Extract and classify endnotes/footnotes from event file.
 
-    # Build entity indexes
-    if output_root is None:
-        output_root = (
-            Path(output_dir).parent
-            if not isinstance(output_dir, Path)
-            else output_dir.parent
-        )
+    Routes document references to output/bibliography/,
+    factual content to {chapter}-notes-event.json,
+    and ambiguous items to review_queue.json.
+
+    Args:
+        enrich: If True, search online/offline repositories for bibliography URLs
+                and determine copyright status before storing.
+    """
+    logger.info("Extracting supplemental material from %s", event_file.name)
 
     people_index = _build_people_index(output_root)
     groups_index = _build_groups_index(output_root)
@@ -788,23 +900,32 @@ def extract_supplemental(
         logger.info("No supplemental material extracted from %s", event_file.name)
         return None
 
-    # Process narrative subevents
-    narrative_subevents = extract_narrative_from_references(event_data, grok_client)
-    if narrative_subevents:
-        narrative_subevents = generate_ulids(narrative_subevents)
-        append_subevents_to_files(event_file, narrative_subevents)
+    # Sanitize and generate ULIDs
+    for sub_event_data in all_supplemental:
+        sanitize_supplemental_data(sub_event_data)
+    all_supplemental = generate_ulids(all_supplemental)
 
-    # Separate by type, resolve entities, and enrich
-    endnotes, footnotes = _separate_by_type(
-        all_supplemental, people_index, groups_index, grok_client, enrich=True
+    # Route by content class
+    book = event_file.parent.name
+    chapter = event_file.name.replace("-event.json", "")
+    bib_dir = output_root / "bibliography"
+
+    factual, ambiguous, bib_count = _route_by_content_class(
+        all_supplemental, bib_dir, book, chapter, grok_client, enrich
     )
 
-    # Validate citation dates against source book copyright
-    source_year = _get_source_copyright_year(event_file)
-    if source_year:
-        endnotes = _filter_anachronistic_citations(endnotes, source_year)
-        footnotes = _filter_anachronistic_citations(footnotes, source_year)
+    # Write factual content as notes-event file
+    notes_file = _write_notes_event(event_file, factual)
 
-    # Write output files
-    base_name = f"{event_file.parent.name}-{event_file.name.replace('-event.json', '')}"
-    return _write_supplemental_files(output_dir, base_name, endnotes, footnotes)
+    # Queue ambiguous items for human review
+    _append_to_review_queue(bib_dir, ambiguous)
+
+    logger.info(
+        "  %s: %d bibliography, %d factual, %d ambiguous",
+        event_file.name,
+        bib_count,
+        len(factual),
+        len(ambiguous),
+    )
+
+    return notes_file or (bib_dir if bib_count > 0 else None)

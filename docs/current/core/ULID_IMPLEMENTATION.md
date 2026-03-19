@@ -157,27 +157,19 @@ def _is_valid_ulid(value: str) -> bool:
 
 ### Auto-Fixing Invalid ULIDs
 
-**Location:** `src/extraction/events.py`
+**Location:** `src/utils/json_validator.py` — `_fix_invalid_ulids()`
+
+Used by all extractors that receive ULIDs from Grok API responses. Grok sometimes generates fake ULIDs with wrong length or invalid characters.
 
 ```python
-def _fix_invalid_ulids(data: Union[Dict[str, Any], list]) -> Union[Dict[str, Any], list]:
-    """Recursively fix invalid ULIDs in the response."""
-    ulid_pattern = re.compile(r"^[0-9A-HJKMNP-TV-Z]{26}$")
-    
-    if isinstance(data, dict):
-        for key, value in data.items():
-            if key in ["EventID", "Sub-eventID"] and isinstance(value, str):
-                if not ulid_pattern.match(value):
-                    new_ulid = str(ulid.new())
-                    data[key] = new_ulid
-                    logger.debug(f"Replaced invalid ULID '{value}' with '{new_ulid}'")
-            elif isinstance(value, (dict, list)):
-                data[key] = _fix_invalid_ulids(value)
-    elif isinstance(data, list):
-        return [_fix_invalid_ulids(item) for item in data]
-    
-    return data
+from src.utils.json_validator import _fix_invalid_ulids
 ```
+
+**Extractors using `_fix_invalid_ulids`:**
+- events.py, dates.py, places.py, people.py, weather_central.py
+- supplemental.py, equipment.py, casualties.py, people_groups.py, batch_parallel.py
+
+**Not needed:** logistics.py (ULIDs via Pydantic `default_factory`)
 
 ---
 

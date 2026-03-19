@@ -10,6 +10,7 @@ import ulid as ulid_mod
 
 from src.grok_client import GrokClient, current_book
 from src.utils.file_lock import write_json_with_lock
+from src.utils.json_validator import _fix_invalid_ulids
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +26,12 @@ def _load_index(index_file: Path, entity_type: str) -> dict:
 
 
 def _get_or_create_entity(  # pylint: disable=too-many-arguments,too-many-positional-arguments
-    key: str, obj: dict, index: dict, entity_dir: Path,
-    make_record: Callable[[dict], dict], id_field: str,
+    key: str,
+    obj: dict,
+    index: dict,
+    entity_dir: Path,
+    make_record: Callable[[dict], dict],
+    id_field: str,
 ) -> tuple:
     """Get existing or create new entity file. Returns (entity_file, entity_id, record)."""
     if key not in index:
@@ -50,34 +55,48 @@ def _get_or_create_entity(  # pylint: disable=too-many-arguments,too-many-positi
 
 
 def _add_event_mention_batch(  # pylint: disable=too-many-arguments,too-many-positional-arguments
-    record: dict, entity_file: Path,
-    seid: str, se_name: str, event_id: str, event_name: str,
+    record: dict,
+    entity_file: Path,
+    seid: str,
+    se_name: str,
+    event_id: str,
+    event_name: str,
     meta: Dict[str, str],
 ) -> None:
     """Add event_mention to entity record if not already present."""
     mentions = record.get("event_mentions", [])
     if any(m.get("Sub_eventID") == seid for m in mentions):
         return
-    mentions.append({
-        "MentionID": str(ulid_mod.new()),
-        "Event_Name": event_name,
-        "EventID": event_id,
-        "Sub_event_Name": se_name,
-        "Sub_eventID": seid,
-        "book": meta.get("book", ""),
-        "author": meta.get("author", ""),
-        "series": meta.get("series", ""),
-    })
+    mentions.append(
+        {
+            "MentionID": str(ulid_mod.new()),
+            "Event_Name": event_name,
+            "EventID": event_id,
+            "Sub_event_Name": se_name,
+            "Sub_eventID": seid,
+            "book": meta.get("book", ""),
+            "author": meta.get("author", ""),
+            "series": meta.get("series", ""),
+        }
+    )
     record["event_mentions"] = mentions
     write_json_with_lock(entity_file, record)
 
 
 def _process_entity_obj(  # pylint: disable=too-many-arguments,too-many-positional-arguments
-    obj: dict, make_key: Callable[[dict], str],
-    make_record: Callable[[dict], dict], entity_dir: Path,
-    index: dict, id_field: str,
-    seid: str, se_name: str, event_id: str, event_name: str,
-    meta: dict, sub_event_key: str, links: Dict[str, list],
+    obj: dict,
+    make_key: Callable[[dict], str],
+    make_record: Callable[[dict], dict],
+    entity_dir: Path,
+    index: dict,
+    id_field: str,
+    seid: str,
+    se_name: str,
+    event_id: str,
+    event_name: str,
+    meta: dict,
+    sub_event_key: str,
+    links: Dict[str, list],
 ) -> bool:
     """Process a single entity object. Returns True if processed."""
     key = make_key(obj)
@@ -85,12 +104,13 @@ def _process_entity_obj(  # pylint: disable=too-many-arguments,too-many-position
         return False
 
     entity_file, entity_id, record = _get_or_create_entity(
-        key, obj, index, entity_dir, make_record, id_field)
+        key, obj, index, entity_dir, make_record, id_field
+    )
 
     if id_field and seid and event_id:
         _add_event_mention_batch(
-            record, entity_file, seid, se_name,
-            event_id, event_name, meta)
+            record, entity_file, seid, se_name, event_id, event_name, meta
+        )
 
     if sub_event_key and seid and entity_id:
         links.setdefault(seid, []).append(entity_id)
@@ -99,10 +119,18 @@ def _process_entity_obj(  # pylint: disable=too-many-arguments,too-many-position
 
 
 def _process_batch_response(  # pylint: disable=too-many-arguments,too-many-positional-arguments
-    response: dict, response_key: str, inner_key: str,
-    make_key: Callable[[dict], str], make_record: Callable[[dict], dict],
-    entity_dir: Path, index: dict, id_field: str,
-    se_by_id: dict, event_id: str, event_name: str, meta: dict,
+    response: dict,
+    response_key: str,
+    inner_key: str,
+    make_key: Callable[[dict], str],
+    make_record: Callable[[dict], dict],
+    entity_dir: Path,
+    index: dict,
+    id_field: str,
+    se_by_id: dict,
+    event_id: str,
+    event_name: str,
+    meta: dict,
     sub_event_key: str,
 ) -> Dict[str, Any]:
     """Process API response: create entities, add mentions, collect links."""
@@ -117,9 +145,19 @@ def _process_batch_response(  # pylint: disable=too-many-arguments,too-many-posi
 
         for obj in item.get(inner_key, []):
             if isinstance(obj, dict) and _process_entity_obj(
-                obj, make_key, make_record, entity_dir, index,
-                id_field, seid, se_name, event_id, event_name,
-                meta, sub_event_key, links,
+                obj,
+                make_key,
+                make_record,
+                entity_dir,
+                index,
+                id_field,
+                seid,
+                se_name,
+                event_id,
+                event_name,
+                meta,
+                sub_event_key,
+                links,
             ):
                 count += 1
 
@@ -170,6 +208,8 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
         logger.error("%s batch extraction failed: %s", entity_type, e)
         return empty
 
+    response = _fix_invalid_ulids(response)
+
     # Process response
     entity_dir = output_root / entity_type
     entity_dir.mkdir(parents=True, exist_ok=True)
@@ -177,9 +217,19 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     index = _load_index(index_file, entity_type)
 
     result = _process_batch_response(
-        response, response_key, inner_key, make_key, make_record,
-        entity_dir, index, id_field, se_by_id,
-        event_id, event_name, meta, sub_event_key,
+        response,
+        response_key,
+        inner_key,
+        make_key,
+        make_record,
+        entity_dir,
+        index,
+        id_field,
+        se_by_id,
+        event_id,
+        event_name,
+        meta,
+        sub_event_key,
     )
 
     write_json_with_lock(index_file, index)
@@ -420,13 +470,15 @@ async def extract_all_async(
     # Run all extractions in parallel
     results = await asyncio.gather(
         extract_dates_batch_async(
-            event_data, parsed_data, grok_client, output_root, book_meta),
+            event_data, parsed_data, grok_client, output_root, book_meta
+        ),
         extract_places_batch_async(
-            event_data, parsed_data, grok_client, output_root, book_meta),
+            event_data, parsed_data, grok_client, output_root, book_meta
+        ),
         extract_people_groups_batch_async(
-            event_data, grok_client, output_root, book_meta),
-        extract_people_batch_async(
-            event_data, grok_client, output_root, book_meta),
+            event_data, grok_client, output_root, book_meta
+        ),
+        extract_people_batch_async(event_data, grok_client, output_root, book_meta),
         return_exceptions=True,
     )
 
@@ -438,8 +490,7 @@ async def extract_all_async(
         for idx, se_key in key_map.items():
             res = results[idx]
             if isinstance(res, dict):
-                se.setdefault(se_key, []).extend(
-                    res.get("links", {}).get(seid, []))
+                se.setdefault(se_key, []).extend(res.get("links", {}).get(seid, []))
 
     write_json_with_lock(event_file, event_data)
 
@@ -466,13 +517,19 @@ async def extract_dates_batch_async(
     """Extract dates from all sub-events in single API call."""
     n = len(event_data.get("Event", {}).get("Sub-events", []))
     return await _batch_extract(
-        event_data, grok_client, output_root,
-        entity_type="dates", cache_type="dates",
+        event_data,
+        grok_client,
+        output_root,
+        entity_type="dates",
+        cache_type="dates",
         prompt_header=f'Extract all dates from these {n} sub-events. Return JSON:\n{{"dates": [{{"sub_event_id": "ID", "dates": [{{"date": "YYYY-MM-DD", "type": "exact|approximate", "precision": "day|month|year"}}]}}]}}\n\nSub-events:',
-        response_key="dates", inner_key="dates",
+        response_key="dates",
+        inner_key="dates",
         make_key=lambda obj: obj.get("date", ""),
         make_record=lambda obj: {"date": obj.get("date", "")},
-        id_field="DateID", sub_event_key="dates", book_meta=book_meta,
+        id_field="DateID",
+        sub_event_key="dates",
+        book_meta=book_meta,
     )
 
 
@@ -486,13 +543,19 @@ async def extract_places_batch_async(
     """Extract places from all sub-events in single API call."""
     n = len(event_data.get("Event", {}).get("Sub-events", []))
     return await _batch_extract(
-        event_data, grok_client, output_root,
-        entity_type="places", cache_type="places",
+        event_data,
+        grok_client,
+        output_root,
+        entity_type="places",
+        cache_type="places",
         prompt_header=f'Extract all places from these {n} sub-events. Return JSON:\n{{"places": [{{"sub_event_id": "ID", "places": [{{"name": "Name", "type": "city|town|region", "coordinates": {{"latitude": 0, "longitude": 0}}}}]}}]}}\n\nSub-events:',
-        response_key="places", inner_key="places",
+        response_key="places",
+        inner_key="places",
         make_key=lambda obj: obj.get("name", "").lower().replace(" ", "_"),
         make_record=lambda obj: {"name": obj.get("name")},
-        id_field="PlaceID", sub_event_key="places", book_meta=book_meta,
+        id_field="PlaceID",
+        sub_event_key="places",
+        book_meta=book_meta,
     )
 
 
@@ -507,13 +570,19 @@ async def extract_people_groups_batch_async(
 
     n = len(event_data.get("Event", {}).get("Sub-events", []))
     return await _batch_extract(
-        event_data, grok_client, output_root,
-        entity_type="people_groups", cache_type="peoplegroups",
+        event_data,
+        grok_client,
+        output_root,
+        entity_type="people_groups",
+        cache_type="peoplegroups",
         prompt_header=f'Extract military units/groups from these {n} sub-events. Return JSON:\n{{"groups": [{{"sub_event_id": "ID", "groups": [{{"name": "Unit Name", "type": "division|corps|army", "country": "USA|Germany"}}]}}]}}\n\nSub-events:',
-        response_key="groups", inner_key="groups",
+        response_key="groups",
+        inner_key="groups",
         make_key=lambda obj: _normalize_name(obj.get("name", "")),
         make_record=lambda obj: {"name": obj.get("name")},
-        id_field="GroupID", sub_event_key="peoplegroups", book_meta=book_meta,
+        id_field="GroupID",
+        sub_event_key="peoplegroups",
+        book_meta=book_meta,
     )
 
 
@@ -528,11 +597,17 @@ async def extract_people_batch_async(
 
     n = len(event_data.get("Event", {}).get("Sub-events", []))
     return await _batch_extract(
-        event_data, grok_client, output_root,
-        entity_type="people", cache_type="people",
+        event_data,
+        grok_client,
+        output_root,
+        entity_type="people",
+        cache_type="people",
         prompt_header=f'Extract people from these {n} sub-events. Return JSON:\n{{"people": [{{"sub_event_id": "ID", "people": [{{"name": "Full Name", "rank": "Rank", "unit": "Unit", "country": "USA|Germany"}}]}}]}}\n\nSub-events:',
-        response_key="people", inner_key="people",
+        response_key="people",
+        inner_key="people",
         make_key=lambda obj: _normalize_name(obj.get("name", "")),
         make_record=lambda obj: {"name": obj.get("name")},
-        id_field="PersonID", sub_event_key="people", book_meta=book_meta,
+        id_field="PersonID",
+        sub_event_key="people",
+        book_meta=book_meta,
     )
