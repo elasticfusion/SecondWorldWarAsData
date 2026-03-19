@@ -64,6 +64,12 @@ Extract Events  Extract Events  Extract Events
 - Uses `asyncio.gather()`
 - Shared `_batch_extract` helper eliminates code duplication
 
+**Level 3: Optional Entity Batching**
+- Weather, Logistics, Casualties each send all sub-events in a single API call per chapter
+- `_batch_extract_weather()`, `_batch_extract_logistics()`, `_batch_extract_casualties()`
+- Post-processing (entity linking, file creation, API enrichment) remains per-item
+- Reduces optional extractor API calls from ~2,807 to ~558 (~80% reduction)
+
 ---
 
 ## Features

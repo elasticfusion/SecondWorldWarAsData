@@ -122,10 +122,11 @@ Follows same validation pattern as other extractors:
 - `events.py`: Uses `validate_event_json()` + `_fix_invalid_ulids`
 - `dates.py`: Uses Pydantic schemas + `_fix_invalid_ulids`
 - `places.py`: Uses Pydantic schemas + `_fix_invalid_ulids`
-- `logistics.py`: Uses Pydantic model validation
+- `logistics.py`: Uses Pydantic `model_validate` (batch: `_parse_logistics_response`)
 - `equipment.py`: Uses Pydantic model validation + `_fix_invalid_ulids`
-- `casualties.py`: Uses `CASUALTY_ITEM_SCHEMA` per item + `_fix_invalid_ulids`
+- `casualties.py`: Uses `CASUALTY_ITEM_SCHEMA` per item + `_fix_invalid_ulids` (batch: `_parse_casualty_response`)
+- `weather_central.py`: Uses Pydantic fields + `_fix_invalid_ulids` (batch: `_parse_weather_response`)
 - `people_groups.py`: Uses `PEOPLE_GROUP_ITEM_SCHEMA` per item + `_fix_invalid_ulids`
 - `supplemental.py`: Uses `validate_supplemental_json()` + `_fix_invalid_ulids` ✅
 
-All extractors use jsonschema or Pydantic for validation, and `_fix_invalid_ulids` from `src/utils/json_validator.py` for ULID repair.
+All extractors use jsonschema or Pydantic for validation, and `_fix_invalid_ulids` from `src/utils/json_validator.py` for ULID repair. Weather, logistics, and casualties use batched API calls (1 per chapter) with per-item validation on the response.

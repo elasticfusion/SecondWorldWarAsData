@@ -76,47 +76,41 @@ def extract_casualties(
 
     casualties = []
 
-    # Process main event
-    extracted = _extract_from_event(
-        event,
-        event_id,
-        None,
-        book,
-        chapter,
+    # Batch extract from all sub-events with casualty mentions
+    batch_results = _batch_extract_casualties(
+        sub_events,
         grok_client,
         dates_index,
         places_index,
         people_index,
         people_groups_index,
         equipment_index,
-        weather_index,
     )
-    casualties.extend(extracted)
 
-    # Process sub-events
+    # Process results for each sub-event
     for sub_event in sub_events:
         sub_event_id = sub_event.get("Sub-eventID")
-        try:
-            extracted = _extract_from_event(
-                sub_event,
-                event_id,
-                sub_event_id,
-                book,
-                chapter,
-                grok_client,
-                dates_index,
-                places_index,
-                people_index,
-                people_groups_index,
-                equipment_index,
-                weather_index,
-            )
-            casualties.extend(extracted)
-        except Exception as e:
-            logger.error(
-                "Failed to extract casualties from sub-event %s: %s", sub_event_id, e
-            )
-            continue  # Skip this sub-event, continue with next
+        casualties_data = batch_results.get(sub_event_id, [])
+
+        for casualty_data in casualties_data:
+            try:
+                casualty = _build_casualty(
+                    casualty_data,
+                    event_id,
+                    sub_event_id,
+                    book,
+                    chapter,
+                    sub_event.get("paragraph_number"),
+                    dates_index,
+                    places_index,
+                    people_index,
+                    people_groups_index,
+                    equipment_index,
+                    weather_index,
+                )
+                casualties.append(casualty)
+            except Exception as e:
+                logger.error("Failed to build casualty: %s", e)
 
     # Save casualties
     for casualty in casualties:
@@ -125,9 +119,109 @@ def extract_casualties(
         except Exception as e:
             casualty_id = casualty.get("CasualtyID", "unknown")
             logger.error("Failed to save casualty %s: %s", casualty_id, e)
-            continue  # Skip this one, continue with next
 
     return casualties
+
+
+def _batch_extract_casualties(
+    sub_events: List[Dict[str, Any]],
+    grok_client: GrokClient,
+    dates_index: Dict[str, Any],
+    places_index: Dict[str, Any],
+    people_index: Dict[str, Any],
+    people_groups_index: Dict[str, Any],
+    equipment_index: Dict[str, Any],
+) -> Dict[str, List[Dict[str, Any]]]:
+    """Extract casualties from all sub-events in a single API call.
+
+    Returns dict mapping sub_event_id → list of casualty items.
+    """
+    # Filter to sub-events that mention casualties
+    relevant = []
+    for se in sub_events:
+        text = se.get("description", "")
+        if not text and "Sub-event_fulltext" in se:
+            fulltext = se.get("Sub-event_fulltext", {})
+            text = " ".join(str(v) for v in fulltext.values())
+        if _has_casualty_mention(text):
+            relevant.append((se.get("Sub-eventID", ""), text))
+
+    if not relevant:
+        return {}
+
+    # Build batched prompt
+    entity_context = (
+        f"Available entities:\n"
+        f"- Dates: {list(dates_index.keys())[:10]}\n"
+        f"- Places: {list(places_index.keys())[:10]}\n"
+        f"- People: {list(people_index.keys())[:10]}\n"
+        f"- Organizations: {list(people_groups_index.keys())[:10]}\n"
+        f"- Equipment: {list(equipment_index.keys())[:10]}\n"
+    )
+
+    sub_event_block = "\n\n".join(
+        f"--- Sub-event [{seid}] ---\n{text}" for seid, text in relevant
+    )
+
+    prompt = f"""Extract casualty information from these sub-events.
+
+{entity_context}
+
+{sub_event_block}
+
+For each casualty incident, provide:
+1. type: wounded|killed|casualties|pow
+2. description: Brief description
+3. count: {{killed, wounded, missing, captured, total}} (only if numbers mentioned)
+4. impacted_organizations: Organizations with nationality (ISO 3166-1 alpha-3) and role
+   - For POW: MUST include both "captured" and "captor" organizations
+5. impacted_people: People involved (if named)
+6. impacted_places: Places involved
+7. impacted_equipment: Equipment losses (if mentioned)
+
+Return JSON object keyed by sub-event ID:
+{{"<Sub-eventID>": [<casualty items>], ...}}
+Return empty arrays for sub-events with no casualties."""
+
+    return _call_and_parse_casualties(grok_client, prompt)
+
+
+def _call_and_parse_casualties(
+    grok_client: GrokClient, prompt: str
+) -> Dict[str, List[Dict[str, Any]]]:
+    """Call Grok API and parse batched casualty response."""
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = grok_client.chat_completion(
+                prompt, use_cache=(attempt == 0), cache_type="casualties"
+            )
+            return _parse_casualty_response(response)
+        except Exception as e:
+            if attempt < max_retries - 1:
+                logger.warning(
+                    "  ⚠ Batch casualties attempt %d failed: %s", attempt + 1, e
+                )
+            else:
+                logger.error("  ✗ All %d batch attempts failed: %s", max_retries, e)
+    return {}
+
+
+def _parse_casualty_response(response: str) -> Dict[str, List[Dict[str, Any]]]:
+    """Parse raw Grok response into validated casualty items by sub-event."""
+    start = response.find("{")
+    end = response.rfind("}") + 1
+    if start == -1 or end == 0:
+        return {}
+    parsed = json.loads(response[start:end])
+    if not isinstance(parsed, dict):
+        return {}
+    result = {}
+    for seid, items in parsed.items():
+        if isinstance(items, list):
+            items = _fix_invalid_ulids(items)
+            result[seid] = _validate_items(items)
+    return result
 
 
 def _extract_from_event(

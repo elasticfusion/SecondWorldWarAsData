@@ -1,6 +1,6 @@
 ar# TODO
 
-**Last Updated:** 2026-03-19
+**Last Updated:** 2026-03-19T12:34
 
 ---
 
@@ -83,6 +83,13 @@ Create PowerShell equivalents for all bash shell scripts to support Windows user
 ---
 
 ## Completed
+
+### Batch Weather/Logistics/Casualties Extraction (✅ 2026-03-19)
+- All three optional extractors now send 1 API call per chapter instead of 1 per sub-event
+- `_batch_extract_weather()`, `_batch_extract_logistics()`, `_batch_extract_casualties()`
+- Post-processing (entity linking, file creation, API enrichment) unchanged
+- Estimated ~2,249 fewer API calls (~44% total reduction)
+- All batch functions refactored to B-rated or better (radon)
 
 ### Supplemental Split Architecture (✅ 2026-03-19)
 - Bibliography + factual content split routing

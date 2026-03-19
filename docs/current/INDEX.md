@@ -120,7 +120,7 @@ Citations, footnotes, endnotes, and bibliographic references.
 
 ### Batch Processing
 
-Parallel chapter processing and batched API calls.
+Parallel chapter processing and batched API calls for both core and optional extractors.
 
 - **[batch_processing/README.md](features/batch_processing/README.md)** - Batch and parallel processing architecture ⭐
 

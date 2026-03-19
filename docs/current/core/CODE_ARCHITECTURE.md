@@ -33,7 +33,7 @@ Main extraction pipeline using Grok AI.
 **Workflow (5 stages):**
 1. Parallel core extraction — events + dates + places + people_groups + people (batched, concurrent)
 2. Retry missing events — per-chapter cache clear and re-extract
-3. Optional entity extraction — weather, equipment, logistics, casualties, supplemental (sequential per event file)
+3. Optional entity extraction — weather, equipment, logistics, casualties, supplemental (sequential per event file, batched per chapter)
 4. Maps — source maps + external maps via OpenSERP
 5. Analysis — duplicate people report + related groups report
 

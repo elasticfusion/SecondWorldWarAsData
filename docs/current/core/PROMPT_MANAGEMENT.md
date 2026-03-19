@@ -72,23 +72,23 @@ Short valid JSON (`[]`, `{}`) passes step 3 and is returned without retry.
 
 #### weather_central.py
 - **System prompt:** Module-level `SYSTEM_PROMPT` — expert historian, extract weather
-- **User prompt:** 1 — extract weather mentions from event text
+- **User prompt:** 1 — batch extract weather mentions from all sub-events (includes per-sub-event place/date context)
 - **Anti-hallucination:** "ONLY extract weather explicitly mentioned", "Only extract EXACT dates"
-- **Schema:** Pydantic `WeatherExtractionOutput`
-- **Method:** `extract_structured`
+- **Schema:** Response is JSON dict keyed by Sub-eventID; each mention validated against `WeatherMention` fields
+- **Method:** `extract_json` (batch), `extract_structured` (single, legacy)
 - **Cache:** `weather` (book-scoped)
 
 #### logistics.py
 - **System prompt:** None (inline in prompt)
-- **User prompt:** 1 — extract logistics issues
-- **Schema:** Pydantic `LogisticsExtractionOutput`
-- **Method:** `extract_structured`
+- **User prompt:** 1 — batch extract logistics issues from all sub-events
+- **Schema:** Response is JSON dict keyed by Sub-eventID; each item validated via `LogisticsExtraction.model_validate()`
+- **Method:** `extract_json` (batch), `extract_structured` (single, legacy)
 - **Cache:** `logistics` (book-scoped)
 
 #### casualties.py
 - **System prompt:** None (inline in prompt)
-- **User prompt:** Built dynamically (not via f-string template)
-- **Method:** `chat_completion` → parsed manually
+- **User prompt:** 1 — batch extract casualties from all sub-events with casualty mentions
+- **Method:** `chat_completion` → parsed manually (batch), same for single (legacy)
 - **Cache:** `casualties` (book-scoped)
 
 #### equipment.py

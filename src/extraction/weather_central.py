@@ -246,41 +246,58 @@ def _update_existing_weather(
     date: str,
 ) -> bool:
     """Update existing weather file if needed. Returns True if updated."""
-    needs_update = False
+    updated_coords = _maybe_update_coordinates(
+        weather_data, mention, place_name, places_dir, weather_file
+    )
+    updated_api = _maybe_fetch_api_data(weather_data, fetch_api, date, weather_file)
 
-    # Update coordinates if missing
-    if (
-        weather_data["location"]["latitude"] == 0.0
-        and weather_data["location"]["longitude"] == 0.0
-    ):
-        latitude, longitude, place_id, country = _lookup_coordinates(
-            mention.get("PlaceMentionID"), place_name, places_dir
-        )
-        if latitude != 0.0 and longitude != 0.0:
-            weather_data["location"]["latitude"] = latitude
-            weather_data["location"]["longitude"] = longitude
-            weather_data["location"]["PlaceID"] = place_id
-            weather_data["location"]["country"] = country
-            needs_update = True
-            logger.info("    Updated coordinates for %s", weather_file.name)
-
-    # Fetch API data if enabled and missing
-    if fetch_api and weather_data.get("api_data") is None:
-        lat = weather_data["location"]["latitude"]
-        lon = weather_data["location"]["longitude"]
-        if lat != 0.0 and lon != 0.0:
-            api_response = _fetch_weather_from_api(date, lat, lon)
-            if api_response:
-                weather_data["source_type"] = "hybrid"
-                weather_data["api_data"] = _create_api_data_dict(api_response)
-                needs_update = True
-                logger.info("    Added API data to %s", weather_file.name)
-
-    # Save if updated
-    if needs_update:
+    if updated_coords or updated_api:
         write_json_with_lock(weather_file, weather_data)
+        return True
+    return False
 
-    return needs_update
+
+def _maybe_update_coordinates(
+    weather_data: dict,
+    mention: Dict[str, Any],
+    place_name: str,
+    places_dir: Path,
+    weather_file: Path,
+) -> bool:
+    """Update coordinates if missing. Returns True if updated."""
+    loc = weather_data["location"]
+    if loc["latitude"] != 0.0 or loc["longitude"] != 0.0:
+        return False
+    latitude, longitude, place_id, country = _lookup_coordinates(
+        mention.get("PlaceMentionID"), place_name, places_dir
+    )
+    if latitude == 0.0 and longitude == 0.0:
+        return False
+    loc["latitude"] = latitude
+    loc["longitude"] = longitude
+    loc["PlaceID"] = place_id
+    loc["country"] = country
+    logger.info("    Updated coordinates for %s", weather_file.name)
+    return True
+
+
+def _maybe_fetch_api_data(
+    weather_data: dict, fetch_api: bool, date: str, weather_file: Path
+) -> bool:
+    """Fetch API data if enabled and missing. Returns True if updated."""
+    if not fetch_api or weather_data.get("api_data") is not None:
+        return False
+    lat = weather_data["location"]["latitude"]
+    lon = weather_data["location"]["longitude"]
+    if lat == 0.0 and lon == 0.0:
+        return False
+    api_response = _fetch_weather_from_api(date, lat, lon)
+    if not api_response:
+        return False
+    weather_data["source_type"] = "hybrid"
+    weather_data["api_data"] = _create_api_data_dict(api_response)
+    logger.info("    Added API data to %s", weather_file.name)
+    return True
 
 
 def _create_new_weather_file(
@@ -547,6 +564,105 @@ def _load_book_metadata_for_weather(
         )
 
 
+def _batch_extract_weather(
+    sub_events: list,
+    event_id: str,
+    event_name: str,
+    grok_client: GrokClient,
+    max_retries: int,
+) -> Dict[str, List[Dict[str, Any]]]:
+    """Extract weather from all sub-events in a single API call.
+
+    Returns dict mapping sub_event_id → list of weather mention dicts.
+    """
+    if not sub_events:
+        return {}
+
+    # Build per-sub-event blocks with their place/date context
+    blocks = []
+    for se in sub_events:
+        seid = se.get("Sub-eventID", "")
+        summary = se.get("Sub-event_summary", "")
+        fulltext = se.get("Sub-event_fulltext", {})
+        text = "\n".join(fulltext.values()) if fulltext else ""
+        if not text:
+            continue
+        places_section = _build_places_section(se)
+        dates_section = _build_dates_section(se)
+        blocks.append(
+            f"--- Sub-event [{seid}] {summary} ---{places_section}{dates_section}\n\nText:\n{text}"
+        )
+
+    if not blocks:
+        return {}
+
+    prompt = f"""Extract weather mentions from these WWII event sub-events.
+
+Event: {event_name}
+EventID: {event_id}
+
+{"".join(chr(10) + chr(10) + b for b in blocks)}
+
+For each weather mention provide:
+- WeatherMentionID: 26-character ULID
+- place_name, PlaceMentionID (from available places above)
+- date (YYYY-MM-DD exact only), DateMentionID (from available dates above)
+- weather_description, temperature, temperature_unit, measurement_system
+- notable_impact, original_text
+
+CRITICAL: Only extract EXACT dates. Skip approximate dates.
+
+Return JSON object keyed by Sub-eventID:
+{{"<Sub-eventID>": [{{"WeatherMentionID": "...", "place_name": "...", ...}}], ...}}
+Return empty arrays for sub-events with no weather mentions."""
+
+    return _call_and_parse_weather(grok_client, prompt, max_retries)
+
+
+def _call_and_parse_weather(
+    grok_client: GrokClient, prompt: str, max_retries: int
+) -> Dict[str, List[Dict[str, Any]]]:
+    """Call Grok API with retries and parse batched weather response."""
+    for attempt in range(max_retries):
+        try:
+            response = grok_client.extract_json(
+                prompt=prompt,
+                system_prompt=SYSTEM_PROMPT,
+                use_cache=(attempt == 0),
+                cache_type="weather",
+            )
+            if isinstance(response, dict):
+                return _parse_weather_response(response)
+            return {}
+        except Exception as e:
+            if attempt < max_retries - 1:
+                logger.warning(
+                    "  ⚠ Batch weather attempt %d failed: %s", attempt + 1, e
+                )
+            else:
+                logger.error("  ✗ All %d batch attempts failed: %s", max_retries, e)
+    return {}
+
+
+def _parse_weather_response(
+    response: Dict[str, Any],
+) -> Dict[str, List[Dict[str, Any]]]:
+    """Validate and fix ULIDs in batched weather response."""
+    result = {}
+    for seid, mentions in response.items():
+        if not isinstance(mentions, list):
+            continue
+        fixed = _fix_invalid_ulids(mentions)
+        if isinstance(fixed, list):
+            mentions = fixed
+        result[seid] = [
+            m
+            for m in mentions
+            if isinstance(m, dict) and m.get("date") and m.get("place_name")
+        ]
+    return result
+
+
 def _extract_weather_for_sub_event(
     sub_event: dict,
     event_id: str,
@@ -673,22 +789,32 @@ def extract_weather_central(
 
     weather_updated = 0
 
+    # Batch extract from all sub-events in single API call
+    batch_results = _batch_extract_weather(
+        sub_events, event_id, event_name, grok_client, max_retries
+    )
+
     for sub_event in sub_events:
-        count = _extract_weather_for_sub_event(
-            sub_event,
-            event_id,
-            event_name,
-            grok_client,
-            weather_dir,
-            index,
-            places_dir,
-            fetch_api,
-            book,
-            author,
-            series,
-            max_retries,
-        )
-        weather_updated += count
+        sub_event_id = sub_event.get("Sub-eventID", "")
+        sub_event_name = sub_event.get("Sub-event_summary", "")
+        mentions = batch_results.get(sub_event_id, [])
+
+        for mention in mentions:
+            weather_file = _find_or_create_weather(
+                mention, weather_dir, index, places_dir, fetch_api
+            )
+            _add_event_mention(
+                weather_file,
+                mention,
+                event_name,
+                event_id,
+                sub_event_name,
+                sub_event_id,
+                book,
+                author,
+                series,
+            )
+            weather_updated += 1
 
     # Save index
     index_file = weather_dir / "index.json"

@@ -2,7 +2,7 @@
 
 **Module:** `src/extraction/logistics.py`  
 **Status:** Experimental (Disabled by default)  
-**Last Updated:** 2026-03-13
+**Last Updated:** 2026-03-19
 
 ---
 
@@ -29,9 +29,13 @@ Logistics extraction analyzes event files for supply chain, transportation, and 
 ```
 Event File (JSON)
     ↓
-For each Sub-event
+Batch all Sub-events → Single Grok API call
     ↓
-Extract Logistics Mentions (Grok)
+Response: {Sub-eventID: {logistics: [items]}, ...}
+    ↓
+For each item:
+    ↓
+Validate via LogisticsExtraction.model_validate()
     ↓
 Link to Entities (People, Places, Equipment, Weather)
     ↓
@@ -39,6 +43,8 @@ Create Logistics File
     ↓
 Save to output/logistics/
 ```
+
+**Batching:** All sub-events are sent in a single API call per chapter (via `_batch_extract_logistics`). Entity linking and file creation remain per-item.
 
 ### Output Structure
 

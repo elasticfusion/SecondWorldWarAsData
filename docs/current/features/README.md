@@ -119,6 +119,7 @@ Casualty data extraction from events.
 - Side attribution (Allied, Axis, Civilian)
 - Event linkage
 - Structured output
+- Batched extraction (1 API call per chapter via `_batch_extract_casualties`)
 
 ---
 
@@ -127,6 +128,11 @@ Casualty data extraction from events.
 **Documentation:** [logistics/README.md](logistics/README.md)
 
 Supply chain and logistics extraction.
+
+**Key Features:**
+- Supply tracking, delivery classification, quantity analysis
+- Impact tracking (organizations, people, places, equipment)
+- Batched extraction (1 API call per chapter via `_batch_extract_logistics`)
 
 **Key Features:**
 - Supply types and quantities
@@ -149,6 +155,7 @@ Weather conditions extraction with API integration.
 - Central repository
 - Date and place linkage
 - API response caching
+- Batched extraction (1 API call per chapter via `_batch_extract_weather`)
 
 ---
 
