@@ -1,6 +1,7 @@
 # JSON Schema Documentation
 
-**Schema Version:** 1.1
+**Schema Version:** 1.1  
+**Last Updated:** 2026-03-19
 
 This document describes all JSON schemas used in the WWII data extraction pipeline.
 
@@ -149,6 +150,7 @@ This document describes all JSON schemas used in the WWII data extraction pipeli
       - Object properties:
         - `author` (array, optional)
         - `title` (string, **required**)
+        - `alt_title` (['string', 'null'], optional) — expanded/unabbreviated form of the title, or null if already full
         - `publisher` (['string', 'null'], optional)
         - `publication_date` (['string', 'null'], optional)
         - `first_edition_date` (['string', 'null'], optional)
@@ -163,6 +165,7 @@ This document describes all JSON schemas used in the WWII data extraction pipeli
         - `periodical_name` (['string', 'null'], optional)
         - `document_type` (['string', 'null'], optional)
         - `author_death_date` (['string', 'null'], optional)
+    - `content_class` (string, optional) — Grok classification: `document_reference`, `factual_content`, or `ambiguous`
     - `availability` (string, **required**)
     - `resource_urls` (array, optional)
     - `archive_reference_number` (['string', 'null'], optional)
@@ -329,3 +332,85 @@ This document describes all JSON schemas used in the WWII data extraction pipeli
 - `date` (['string', 'null'], optional)
 - `location` (['string', 'null'], optional)
 - `circumstances` (['string', 'null'], optional)
+
+## Bibliography Schema
+
+**Version:** 1.0
+
+### Central Repository File (`output/bibliography/{title_slug}_{ULID}.json`)
+
+Deduplicated document storage with cross-book mention tracking. One file per unique document/book.
+
+- `BibliographyID` (string, **required**)
+  - Pattern: `^[0-9A-HJKMNP-TV-Z]{26}$`
+- `title` (string, **required**)
+- `alt_title` (['string', 'null'], optional) — expanded/unabbreviated form of the title
+- `citation` (object, **required**)
+  - Object properties: same as supplemental citation (author, publisher, dates, ISBN, etc.)
+- `availability` (string, **required**) — online, offline, archive, unknown
+- `resource_urls` (array, optional)
+- `archive_reference_number` (['string', 'null'], optional)
+- `archive_physical_address` (['string', 'null'], optional)
+- `license` (['string', 'null'], optional)
+- `license_notes` (['string', 'null'], optional)
+- `mentions` (array, **required**) — all references to this document across chapters/books
+  - Array items:
+    - `MentionID` (string, **required**)
+      - Pattern: `^[0-9A-HJKMNP-TV-Z]{26}$`
+    - `EventID` (string, **required**)
+    - `Sub-eventID` (string, **required**)
+    - `book` (string, **required**)
+    - `chapter` (string, **required**)
+    - `reference_type` (string, **required**)
+    - `reference_number` (['string', 'integer', 'null'], optional)
+    - `verbatim_reference` (string, **required**)
+    - `pages` (['string', 'null'], optional)
+    - `volume` (['string', 'null'], optional)
+
+### Index File (`output/bibliography/index.json`)
+
+Maps normalized titles to filenames:
+```json
+{
+  "first u.s. army report of operations": "first_us_army_report_of_operations_01ABCDEF.json"
+}
+```
+
+## Casualty Item Schema (Grok Response Validation)
+
+**Version:** 1.0
+
+Per-item validation applied to each casualty returned by Grok before building casualty objects.
+
+- `type` (string, **required**) — enum: `wounded`, `killed`, `casualties`, `pow`
+- `description` (string, **required**)
+- `count` (object, optional)
+
+## People Group Item Schema (Grok Response Validation)
+
+**Version:** 1.0
+
+Per-item validation applied to each group returned by Grok before saving.
+
+- `group_name` (string, **required**)
+- `group_type` (['string', 'null'], optional)
+- `nationality` (['string', 'null'], optional)
+- `event_mentions` (array, optional)
+
+## Validation Coverage
+
+All extractors validate Grok API responses before writing output:
+
+| Extractor | Validation Method | ULID Fixing |
+|---|---|---|
+| events.py | JSON Schema (`EVENT_SCHEMA`) | ✅ `_fix_invalid_ulids` |
+| supplemental.py | JSON Schema (`SUPPLEMENTAL_SCHEMA`) | ✅ `_fix_invalid_ulids` |
+| dates.py | Pydantic (`extract_structured`) | ✅ `_fix_invalid_ulids` |
+| places.py | Pydantic (`extract_structured`) | ✅ `_fix_invalid_ulids` |
+| people.py | Pydantic (`extract_structured`) | ✅ `_fix_invalid_ulids` |
+| weather_central.py | Pydantic (`extract_structured`) | ✅ `_fix_invalid_ulids` |
+| logistics.py | Pydantic (`extract_structured` + `model_validate`) | N/A (ULIDs local) |
+| equipment.py | Pydantic (`model_validate`) | ✅ `_fix_invalid_ulids` |
+| casualties.py | JSON Schema (`CASUALTY_ITEM_SCHEMA`) per item | ✅ `_fix_invalid_ulids` |
+| people_groups.py | JSON Schema (`PEOPLE_GROUP_ITEM_SCHEMA`) per item | ✅ `_fix_invalid_ulids` |
+| batch_parallel.py | Downstream extractors validate | ✅ `_fix_invalid_ulids` |

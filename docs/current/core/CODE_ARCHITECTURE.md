@@ -271,6 +271,18 @@ Inspects API cache contents.
 python3 scripts/review_cache.py
 ```
 
+#### `validate_output.py`
+Validates all output JSON files across every entity type.
+
+**Checks per file:** required fields, correct types, valid ULID format on ID fields, valid ULIDs in event_mentions and sub-events.
+
+**Entity types:** event, notes-event, date, place, person, people_group, equipment, casualty, weather, logistics, map, bibliography, supplemental.
+
+**Usage:**
+```bash
+python3 scripts/validate_output.py
+```
+
 ## Core Library (`src/`)
 
 ### Models (`src/models.py`)
@@ -400,6 +412,39 @@ def extract_events(parsed_file: Path, grok_client: GrokClient, output_dir: Path)
 def create_event_prompt(parsed_data: Dict) -> str
     # Creates extraction prompt from parsed content
 ```
+
+### Supplemental (`src/extraction/supplemental.py`)
+
+Split architecture: classifies each endnote/footnote as `document_reference`, `factual_content`, or `ambiguous`, then routes accordingly.
+
+```python
+def extract_supplemental(event_file: Path, grok_client: GrokClient, output_dir: Path, ...) -> Optional[Path]
+    # Classifies and routes supplemental material
+    # document_reference → output/bibliography/ (via bibliography.py)
+    # factual_content → output/{Book}/{chapter}-notes-event.json
+    # ambiguous → output/bibliography/review_queue.json
+```
+
+**Output paths:**
+- `output/bibliography/{title_slug}_{ULID}.json` — deduplicated document references
+- `output/{Book}/{chapter}-notes-event.json` — factual content as event-like JSON
+- `output/bibliography/review_queue.json` — ambiguous items for human review
+
+### Bibliography (`src/extraction/bibliography.py`)
+
+Deduplicated document storage with fuzzy title matching.
+
+```python
+def store_bibliography_entry(material: Dict, bib_dir: Path) -> str
+    # Merge-or-create bibliography entry
+    # Returns: BibliographyID
+```
+
+**Key features:**
+- One JSON file per unique document
+- Fuzzy title matching for deduplication
+- Cross-book mention tracking
+- `alt_title` for expanded abbreviations
 
 ### Dates (`src/extraction/dates.py`)
 
@@ -563,6 +608,7 @@ contentrepository/
                                                │
                                     Phase 2 ↓  │
                                                ├── chapter*-event.json
+                                               ├── chapter*-notes-event.json  (factual endnotes)
                                                ├── chapter*-dates.json
                                                ├── chapter*-places.json
                                                │
@@ -573,6 +619,11 @@ contentrepository/
                                                └── people_groups/
                                                    ├── {Group}_{ID}.json
                                                    └── index.json
+
+                                               └── bibliography/
+                                                   ├── {title_slug}_{ID}.json
+                                                   ├── index.json
+                                                   └── review_queue.json
 ```
 
 ## Key Design Patterns

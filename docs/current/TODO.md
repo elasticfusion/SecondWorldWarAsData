@@ -1,6 +1,22 @@
 ar# TODO
 
-**Last Updated:** 2026-03-13
+**Last Updated:** 2026-03-19
+
+---
+
+## Active
+
+### Wire `supplemental_advanced.py` to `output/bibliography/`
+**Priority:** Medium  
+**Status:** Not Started
+
+Phase 3 enrichment (`supplemental_advanced.py`) still reads from old `output/supplemental/` location. Needs to read from `output/bibliography/` and enrich bibliography entries with ISBN, copyright status, and author death dates.
+
+### Fix `output/people_groups/3ad.json`
+**Priority:** Low  
+**Status:** Not Started
+
+Broken people_group file — only contains `event_mentions` array, missing `GroupID` and `name` fields. Detected by `scripts/validate_output.py`.
 
 ---
 
@@ -67,6 +83,18 @@ Create PowerShell equivalents for all bash shell scripts to support Windows user
 ---
 
 ## Completed
+
+### Supplemental Split Architecture (✅ 2026-03-19)
+- Bibliography + factual content split routing
+- `alt_title` field for expanded abbreviations
+- ULID fixing wired into all extractors
+- JSON schema validation for casualties and people_groups
+- Comprehensive output validation script (`scripts/validate_output.py`)
+
+### Resolved TODOs (Archived 2026-03-19)
+- `TODO_supplemental_naming_collision.md` — Fixed by book-prefixed filenames
+- `TODO_per_book_cache.md` — Implemented per-book cache routing
+- `TODO_short_response_rejection.md` — Fixed short valid JSON acceptance
 
 ### Phase 1-5: Comprehensive Documentation (✅ 2026-03-13)
 - Created 7 comprehensive feature READMEs

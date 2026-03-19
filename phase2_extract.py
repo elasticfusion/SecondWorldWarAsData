@@ -194,13 +194,13 @@ def _extract_supplemental(event_file, grok_client, output_root, config, logger):
     try:
         from src.extraction.supplemental import extract_supplemental
 
-        supplemental_dir = output_root / "supplemental"
-        supplemental_dir.mkdir(parents=True, exist_ok=True)
         result = extract_supplemental(
             event_file=event_file,
             grok_client=grok_client,
-            output_dir=supplemental_dir,
             output_root=output_root,
+            enrich=config.get("supplemental_material", {}).get(
+                "enrich_with_searches", False
+            ),
         )
         if result:
             logger.info("    ✓ Supplemental updated")

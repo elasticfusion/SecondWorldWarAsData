@@ -212,12 +212,21 @@ SUPPLEMENTAL_SCHEMA = {
                         "type": "string",
                         "enum": ["referenced_material", "supplemental_information"],
                     },
+                    "content_class": {
+                        "type": "string",
+                        "enum": [
+                            "document_reference",
+                            "factual_content",
+                            "ambiguous",
+                        ],
+                    },
                     "citation": {
                         "type": "object",
                         "required": ["title"],
                         "properties": {
                             "author": {"type": "array", "items": {"type": "string"}},
                             "title": {"type": "string"},
+                            "alt_title": {"type": ["string", "null"]},
                             "publisher": {"type": ["string", "null"]},
                             "publication_date": {"type": ["string", "null"]},
                             "first_edition_date": {"type": ["string", "null"]},
@@ -344,5 +353,29 @@ CASUALTIES_SCHEMA = {
     "required": ["casualties"],
     "properties": {
         "casualties": {"type": "array"},
+    },
+}
+
+
+# --- Item-level schemas for validating individual Grok response items ---
+
+CASUALTY_ITEM_SCHEMA = {
+    "type": "object",
+    "required": ["type", "description"],
+    "properties": {
+        "type": {"type": "string", "enum": ["wounded", "killed", "casualties", "pow"]},
+        "description": {"type": "string"},
+        "count": {"type": "object"},
+    },
+}
+
+PEOPLE_GROUP_ITEM_SCHEMA = {
+    "type": "object",
+    "required": ["group_name"],
+    "properties": {
+        "group_name": {"type": "string"},
+        "group_type": {"type": ["string", "null"]},
+        "nationality": {"type": ["string", "null"]},
+        "event_mentions": {"type": "array"},
     },
 }

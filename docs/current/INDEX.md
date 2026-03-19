@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated:** 2026-03-15
+**Last Updated:** 2026-03-19
 
 ---
 
@@ -110,12 +110,13 @@ Military equipment extraction and tracking (experimental).
 
 Citations, footnotes, endnotes, and bibliographic references.
 
-- **[SUPPLEMENTAL_COMPLETE.md](features/supplemental/SUPPLEMENTAL_COMPLETE.md)** - Complete implementation guide ⭐
+- **[SUPPLEMENTAL_COMPLETE.md](features/supplemental/SUPPLEMENTAL_COMPLETE.md)** - Complete implementation guide (split architecture) ⭐
 - **[SUPPLEMENTAL_PHASE1.md](features/supplemental/SUPPLEMENTAL_PHASE1.md)** - Phase 1: Basic extraction
 - **[SUPPLEMENTAL_PHASE2.md](features/supplemental/SUPPLEMENTAL_PHASE2.md)** - Phase 2: URL search and enrichment
-- **[SUPPLEMENTAL_VALIDATION.md](features/supplemental/SUPPLEMENTAL_VALIDATION.md)** - URL validation
+- **[SUPPLEMENTAL_VALIDATION.md](features/supplemental/SUPPLEMENTAL_VALIDATION.md)** - Validation and ULID fixing
 - **[SUPPLEMENTAL_ERROR_HANDLING.md](features/supplemental/SUPPLEMENTAL_ERROR_HANDLING.md)** - Error handling
 - **[SUPPLEMENTAL_TESTING.md](features/supplemental/SUPPLEMENTAL_TESTING.md)** - Testing guide
+- **[DESIGN_supplemental_split.md](pipeline/DESIGN_supplemental_split.md)** - Design: bibliography + factual content split
 
 ### Batch Processing
 
@@ -127,7 +128,7 @@ Parallel chapter processing and batched API calls.
 
 ## Reference
 
-- **[SCHEMA_REFERENCE.md](SCHEMA_REFERENCE.md)** - JSON schema reference
+- **[SCHEMA_REFERENCE.md](SCHEMA_REFERENCE.md)** - JSON schema reference (includes bibliography, validation coverage)
 - **[SCHEMA_EVOLUTION.md](SCHEMA_EVOLUTION.md)** - Schema versioning and migration tools
 - **[VALIDATION_REPORTS.md](VALIDATION_REPORTS.md)** - Validation report generation
 - **[MONGODB_IMPORT_PLAN.md](MONGODB_IMPORT_PLAN.md)** - MongoDB import plan
@@ -178,4 +179,4 @@ Located in: `../archive/`
 - QA reports → `qa-reports/`
 - Dated docs → Archive after consolidation
 
-**Last Updated:** 2026-03-15
+**Last Updated:** 2026-03-19

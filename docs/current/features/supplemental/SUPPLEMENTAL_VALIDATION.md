@@ -28,8 +28,14 @@ def validate_supplemental_json(data: Dict[str, Any]) -> None:
 
 ### 3. Integrated Validation Before Write
 ```python
+# Fix Grok's fake ULIDs (wrong length/chars)
+response = _fix_invalid_ulids(response)
+
 # Generate ULIDs for MaterialID placeholders
 response = generate_ulids(response)
+
+# Sanitize field defaults
+response = sanitize_supplemental_data(response)
 
 # Validate against schema
 try:
@@ -113,10 +119,13 @@ grep "Validation error" logs/pipeline*.log
 ## Pattern Consistency
 
 Follows same validation pattern as other extractors:
-- `events.py`: Uses `validate_event_json()`
-- `dates.py`: Uses Pydantic schemas
-- `places.py`: Uses Pydantic schemas
+- `events.py`: Uses `validate_event_json()` + `_fix_invalid_ulids`
+- `dates.py`: Uses Pydantic schemas + `_fix_invalid_ulids`
+- `places.py`: Uses Pydantic schemas + `_fix_invalid_ulids`
 - `logistics.py`: Uses Pydantic model validation
-- `supplemental.py`: Uses `validate_supplemental_json()` ✅
+- `equipment.py`: Uses Pydantic model validation + `_fix_invalid_ulids`
+- `casualties.py`: Uses `CASUALTY_ITEM_SCHEMA` per item + `_fix_invalid_ulids`
+- `people_groups.py`: Uses `PEOPLE_GROUP_ITEM_SCHEMA` per item + `_fix_invalid_ulids`
+- `supplemental.py`: Uses `validate_supplemental_json()` + `_fix_invalid_ulids` ✅
 
-All use jsonschema or Pydantic for validation before writing files.
+All extractors use jsonschema or Pydantic for validation, and `_fix_invalid_ulids` from `src/utils/json_validator.py` for ULID repair.

@@ -65,6 +65,7 @@ python3 phase2_extract.py
 
 **Output Files:**
 - `chapter*-event.json` - Events and sub-events
+- `chapter*-notes-event.json` - Factual content from endnotes/footnotes (supplemental split)
 - `dates/{YYYYMM}_{ID}.json` - Central dates repository
 - `places/{Name}_{ID}.json` - Central places repository
 - `weather/{YYYYMM}_{ID}.json` - Central weather repository (optional)
@@ -73,6 +74,8 @@ python3 phase2_extract.py
 - `external_maps/{Name}_{ID}.json` - Third-party maps (optional)
 - `people/{Name}_{ID}.json` - Individual person files
 - `people_groups/{Group}_{ID}.json` - Organization files
+- `bibliography/{title_slug}_{ID}.json` - Deduplicated document references (supplemental split)
+- `bibliography/review_queue.json` - Ambiguous endnotes for human review
 
 ## Caching
 

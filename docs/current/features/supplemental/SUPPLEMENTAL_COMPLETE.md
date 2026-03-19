@@ -2,40 +2,44 @@
 
 ## Overview
 
-Complete 3-phase implementation for extracting, enriching, and tracking referenced materials (footnotes, endnotes, bibliography) from WWII historical documents.
+Extracts, classifies, and routes referenced materials (footnotes, endnotes, bibliography) from WWII historical documents. Uses a split architecture that separates document references from factual content.
+
+## Architecture: Supplemental Split
+
+Grok classifies each endnote/footnote into one of three categories:
+
+- `document_reference` — pure citation → `output/bibliography/` (deduplicated, one file per document)
+- `factual_content` — historical narrative with extractable entities → `output/{Book}/{chapter}-notes-event.json`
+- `ambiguous` — unclear classification → `output/bibliography/review_queue.json` for human review
+
+Mixed entries (factual statement + citation) are split into separate entries.
+
+### Key Files
+- `src/extraction/supplemental.py` (922 lines) — classification, routing, extraction
+- `src/extraction/bibliography.py` (152 lines) — deduplicated document storage with fuzzy title matching
+- `src/extraction/supplemental_search.py` (243 lines) — Phase 2 URL search
+- `src/extraction/supplemental_advanced.py` (225 lines) — Phase 3 ISBN/copyright
 
 ## Implementation Status
 
-### ✅ Phase 1: Core Extraction (Complete)
-**File:** `src/extraction/supplemental.py` (249 lines)
+### ✅ Phase 1: Core Extraction + Split Architecture (Complete)
+**File:** `src/extraction/supplemental.py`
 
 **Features:**
 - ULID generation for MaterialID, EventID, Sub-eventID linkage
 - Structured citation parsing (author, title, publisher, dates, ISBN, etc.)
+- `alt_title` — expanded/unabbreviated form of titles (e.g., "CI 47" → "Combat Interview 47")
+- `content_class` routing — Grok classifies each note
 - Reference type classification (endnote/footnote/bibliography)
 - Availability determination (online/offline/archive/unknown)
 - Basic license detection (public_domain/copyright/unknown)
 - ISO 3166-1 alpha-3 country codes
 - JSON schema validation before file write
+- ULID fixing via `_fix_invalid_ulids` for Grok's fake ULIDs
 - Retry logic with exponential backoff (3 attempts)
-- Graceful degradation
-- **Narrative extraction from footnotes/endnotes (NEW)**
-- **Appends narrative content as sub-events to chapter files**
-- **Duplicate prevention for multiple runs**
-
-**Narrative Extraction:**
-- Detects footnotes/endnotes with historical narrative (beyond citations)
-- Creates new sub-events from narrative content
-- Appends to both chapter*-event.json and chapter*-parsed.json
-- Tracks by `reference_source` field to prevent duplicates
-- Example: "Footnote 4 notes that German 7th Army was depleted..." → New sub-event
-
-**QA Results:**
-- Pylint: 10.00/10 ✅
-- Mypy: 0 errors ✅
-- Bandit: 0 security issues ✅
-- Complexity: C (11) - Acceptable
-- Maintainability: A (52.22) ✅
+- Anachronistic citation filtering (rejects citations newer than source copyright year)
+- Factual content written as event-like JSON for downstream entity extraction
+- Bibliography deduplication with fuzzy title matching
 
 ### ✅ Phase 2: Search Integration (Complete)
 **File:** `src/extraction/supplemental_search.py` (243 lines)
@@ -152,85 +156,115 @@ python3 phase2_extract.py
 ```python
 from pathlib import Path
 from src.extraction.supplemental import extract_supplemental
-from src.extraction.supplemental_search import enrich_materials_with_search
-from src.extraction.supplemental_advanced import enrich_with_advanced_features
 from src.grok_client import GrokClient
 
-# Phase 1: Extract
+# Phase 1: Extract + route (bibliography + factual content)
 supplemental_file = extract_supplemental(
-    event_file=Path("output/Breakout_and_Pursuit/chapter1-event.json"),
+    event_file=Path("output/BreakoutAndPursuit/chapter1-event.json"),
     grok_client=GrokClient(Path("cache")),
-    output_dir=Path("output/supplemental"),
+    output_dir=Path("output"),
 )
-
-# Phase 2: Search
-config = {"llm_search": True, "search_archive_org": True}
-enrich_materials_with_search(supplemental_file, config, grok_client)
-
-# Phase 3: Advanced
-config = {"extract_isbn": True, "determine_copyright": True}
-enrich_with_advanced_features(supplemental_file, config, grok_client)
+# Creates: output/bibliography/*.json, output/BreakoutAndPursuit/chapter1-notes-event.json
 ```
 
-## Data Structure
+## Output Structure
 
-### Complete Material Example
+### Bibliography (`output/bibliography/`)
+
+One JSON file per unique document, deduplicated across chapters and books:
 
 ```json
 {
-  "MaterialID": "01HQXYZ123...",
-  "EventID": "01HQABC456...",
-  "Sub-eventID": "01HQDEF789...",
-  "reference_type": "bibliography",
-  "reference_number": null,
-  "verbatim_reference": "Shirer, William L. The Rise and Fall of the Third Reich. New York: Simon & Schuster, 1960.",
-  
+  "BibliographyID": "01HQXYZ123...",
+  "title": "First U.S. Army, Report of Operations",
+  "alt_title": null,
   "citation": {
-    "author": "William L. Shirer",
-    "title": "The Rise and Fall of the Third Reich",
-    "publisher": "Simon & Schuster",
-    "publication_date": "1960-01-01",
-    "publication_location": "New York",
-    "publication_country": "USA",
-    "isbn": "0671728695",
-    "type": "book"
+    "author": ["First U.S. Army"],
+    "title": "First U.S. Army, Report of Operations",
+    "publisher": "...",
+    "publication_date": "...",
+    "document_type": "Primary source"
   },
-  
-  "availability": "online",
-  "resource_urls": ["https://archive.org/details/risefallofsthird00shir"],
-  "url_capture_date": "2026-03-07T16:54:00Z",
-  "license": "copyright",
-  
-  "search_metadata": {
-    "gutenberg_checked": false,
-    "archive_org_checked": true,
-    "archive_org_url": "https://archive.org/details/risefallofsthird00shir",
-    "llm_search_checked": true,
-    "openserp_checked": false,
-    "found_via": "archive_org",
-    "search_date": "2026-03-07T16:54:00Z"
-  },
-  
-  "copyright_status": {
-    "status": "copyright",
-    "author_death_date": "1993-12-28",
-    "determination_basis": "Under copyright until 2063",
-    "jurisdiction": "USA"
+  "availability": "archive",
+  "resource_urls": [],
+  "archive_physical_address": "NARA, College Park, MD, USA",
+  "license": "public_domain",
+  "mentions": [
+    {
+      "MentionID": "01XXXX...",
+      "EventID": "...",
+      "Sub-eventID": "...",
+      "book": "Breakout and Pursuit",
+      "chapter": "chapter3a",
+      "reference_type": "endnote",
+      "reference_number": "21",
+      "verbatim_reference": "First U.S. Army, Report of Operations, I, 80",
+      "pages": "80",
+      "volume": "I"
+    }
+  ]
+}
+```
+
+### Factual Content (`output/{Book}/{chapter}-notes-event.json`)
+
+Structurally identical to normal event files so existing entity extractors work unchanged:
+
+```json
+{
+  "Chapter": "chapter7b-notes",
+  "Event": {
+    "EventID": "01XXXX...",
+    "Sub-events": [
+      {
+        "Sub-eventID": "01YYYY...",
+        "Sub-event_summary": "DSC awards for actions on 10 July",
+        "Sub-event_fulltext": { "paragraph_1": "Capt. Harry L. Gentry..." },
+        "source_reference": {
+          "reference_type": "endnote",
+          "reference_number": "18",
+          "source_EventID": "01KKWTB0C1...",
+          "source_Sub-eventID": "01KKWTB0C2..."
+        }
+      }
+    ]
   }
 }
 ```
 
+### Review Queue (`output/bibliography/review_queue.json`)
+
+Ambiguous items queued for human review:
+
+```json
+[
+  {
+    "book": "BreakoutAndPursuit",
+    "chapter": "chapter7b",
+    "reference_number": "18",
+    "verbatim_reference": "...",
+    "EventID": "...",
+    "Sub-eventID": "..."
+  }
+]
+```
+
 ## Processing Flow
 
-### Phase 1: Core Extraction
+### Phase 1: Core Extraction + Split Routing
 1. Load event file
-2. Extract LLM to identify citations
-3. Parse citation components
-4. Classify reference type
-5. Determine availability
-6. Generate ULIDs
-7. Validate against JSON schema
-8. Write to file
+2. For each sub-event with endnotes/footnotes:
+   - Build prompt with reference context
+   - Grok extracts structured citations with `content_class`
+   - `_fix_invalid_ulids` fixes Grok's fake ULIDs
+   - `generate_ulids` replaces GENERATE_NEW_ULID placeholders
+   - `sanitize_supplemental_data` applies field defaults
+   - `validate_supplemental_json` validates against schema
+3. Route by `content_class`:
+   - `document_reference` → `bibliography.store_bibliography_entry()` (merge or create)
+   - `factual_content` → `_write_notes_event()` as event-like JSON
+   - `ambiguous` → `_append_to_review_queue()`
+4. Filter anachronistic citations (newer than source copyright year)
 
 ### Phase 2: Search Integration
 1. Load supplemental file
@@ -429,7 +463,6 @@ find output/supplemental -name "*.json" -exec jq '.materials | length' {} \;
 
 ---
 
-**Implementation Date:** March 7, 2026  
-**Total Lines of Code:** 717 (249 + 243 + 225)  
-**QA Score:** 9.81-10.00/10  
+**Implementation Date:** March 7, 2026 (Phase 1-3), March 19, 2026 (Split Architecture)  
+**Total Lines of Code:** 1,542 (922 + 152 + 243 + 225)  
 **Status:** ✅ Complete

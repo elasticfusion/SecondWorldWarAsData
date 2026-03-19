@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from src.grok_client import GrokClient
 from src.utils.http_pool import get_session
+from src.utils.json_validator import _fix_invalid_ulids
 
 logger = logging.getLogger(__name__)
 
@@ -1367,6 +1368,9 @@ Example:
 
             if isinstance(equipment_list, dict) and "equipment" in equipment_list:
                 equipment_list = equipment_list["equipment"]
+
+            if isinstance(equipment_list, list):
+                equipment_list = _fix_invalid_ulids(equipment_list)
 
             return equipment_list
 
