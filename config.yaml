@@ -84,6 +84,7 @@ maps:
   download_images: true           # Download actual map image files
   storage_backend: "filesystem"    # filesystem or s3
   storage_path: "output/maps/"
+  image_storage_path: "filestore/maps/"  # Where to store downloaded map images
 
 # External Maps Search
 external_maps:
