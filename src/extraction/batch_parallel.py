@@ -178,6 +178,7 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     id_field: str = "",
     sub_event_key: str = "",
     book_meta: Optional[Dict[str, str]] = None,
+    include_fulltext: bool = False,
 ) -> Dict[str, Any]:
     """Generic batch extraction with cross-referencing.
 
@@ -197,6 +198,10 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     prompt = prompt_header
     for i, se in enumerate(sub_events, 1):
         prompt += f"\n{i}. [{se.get('Sub-eventID')}] {se.get('Sub-event_summary', '')}"
+        if include_fulltext:
+            ft = se.get("Sub-event_fulltext", {})
+            for pk in sorted(ft.keys()):
+                prompt += f"\n   {ft[pk]}"
 
     # API call
     loop = asyncio.get_event_loop()
@@ -339,9 +344,7 @@ async def process_chapters_parallel(
     for i in range(0, len(parsed_files), max_parallel):
         batch = parsed_files[i : i + max_parallel]
         batch_num = i // max_parallel + 1
-        logger.info(
-            "Processing batch %d: %d chapters", batch_num, len(batch)
-        )
+        logger.info("Processing batch %d: %d chapters", batch_num, len(batch))
         if heartbeat:
             heartbeat.ping(f"Step 1 batch {batch_num}: {len(batch)} chapters")
 
@@ -494,7 +497,9 @@ async def extract_all_async(
         for idx, se_key in key_map.items():
             res = results[idx]
             if isinstance(res, dict):
-                se.setdefault(se_key, []).extend(res.get("links", {}).get(seid, []))
+                new_ids = res.get("links", {}).get(seid, [])
+                existing = set(se.get(se_key, []))
+                se[se_key] = list(existing | set(new_ids))
 
     write_json_with_lock(event_file, event_data)
 
@@ -534,6 +539,7 @@ async def extract_dates_batch_async(
         id_field="DateID",
         sub_event_key="dates",
         book_meta=book_meta,
+        include_fulltext=True,
     )
 
 
@@ -560,6 +566,7 @@ async def extract_places_batch_async(
         id_field="PlaceID",
         sub_event_key="places",
         book_meta=book_meta,
+        include_fulltext=True,
     )
 
 
@@ -587,6 +594,7 @@ async def extract_people_groups_batch_async(
         id_field="GroupID",
         sub_event_key="peoplegroups",
         book_meta=book_meta,
+        include_fulltext=True,
     )
 
 
@@ -596,7 +604,7 @@ async def extract_people_batch_async(
     output_root: Path,
     book_meta: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
-    """Extract people in batch."""
+    """Extract people in batch — includes fulltext for complete coverage."""
     from src.extraction.people import _normalize_name
 
     n = len(event_data.get("Event", {}).get("Sub-events", []))
@@ -606,7 +614,7 @@ async def extract_people_batch_async(
         output_root,
         entity_type="people",
         cache_type="people",
-        prompt_header=f'Extract people from these {n} sub-events. Return JSON:\n{{"people": [{{"sub_event_id": "ID", "people": [{{"name": "Full Name", "rank": "Rank", "unit": "Unit", "country": "USA|Germany"}}]}}]}}\n\nSub-events:',
+        prompt_header=f'Extract ALL people mentioned in these {n} sub-events. Include every named individual, even if mentioned only once. Return JSON:\n{{"people": [{{"sub_event_id": "ID", "people": [{{"name": "Full Name", "rank": "Rank", "unit": "Unit", "country": "USA|Germany"}}]}}]}}\n\nSub-events:',
         response_key="people",
         inner_key="people",
         make_key=lambda obj: _normalize_name(obj.get("name", "")),
@@ -614,4 +622,5 @@ async def extract_people_batch_async(
         id_field="PersonID",
         sub_event_key="people",
         book_meta=book_meta,
+        include_fulltext=True,
     )

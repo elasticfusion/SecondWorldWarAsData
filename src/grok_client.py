@@ -555,6 +555,9 @@ class GrokClient:
             response = response[:-3]
         return response.strip()
 
+    _VALID_ESCAPES = frozenset('"\\/bfnrt')
+    _CTRL_ESCAPE = {"\t": "\\t", "\n": "\\n", "\r": "\\r"}
+
     def _sanitize_json_response(self, response: str) -> str:
         """Sanitize JSON response by removing control chars and fixing invalid escapes."""
         import re
@@ -562,11 +565,6 @@ class GrokClient:
         # Remove non-whitespace control characters
         response = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", response)
 
-        # Map for control chars that need escaping inside JSON strings
-        _ctrl_escape = {"\t": "\\t", "\n": "\\n", "\r": "\\r"}
-
-        # Fix invalid escapes and control chars by walking character by character,
-        # only processing content inside JSON string values.
         result = []
         i = 0
         in_string = False
@@ -579,37 +577,43 @@ class GrokClient:
                 result.append(ch)
                 i += 1
             else:
-                # Inside a JSON string
-                if ch == '"':
-                    in_string = False
-                    result.append(ch)
-                    i += 1
-                elif ch == "\\" and i + 1 < n:
-                    nxt = response[i + 1]
-                    if nxt in '"\\/bfnrt':
-                        result.append(ch)
-                        result.append(nxt)
-                        i += 2
-                    elif (
-                        nxt == "u"
-                        and i + 5 < n
-                        and all(
-                            c in "0123456789abcdefABCDEF"
-                            for c in response[i + 2 : i + 6]
-                        )
-                    ):
-                        result.append(response[i : i + 6])
-                        i += 6
-                    else:
-                        # Invalid escape — remove the backslash
-                        i += 1
-                elif ch in _ctrl_escape:
-                    result.append(_ctrl_escape[ch])
-                    i += 1
-                else:
-                    result.append(ch)
-                    i += 1
+                i, in_string = self._sanitize_string_char(
+                    response, i, n, result, in_string
+                )
         return "".join(result)
+
+    def _sanitize_string_char(
+        self, response: str, i: int, n: int, result: list, in_string: bool
+    ) -> tuple:
+        """Process one character inside a JSON string. Returns (new_i, in_string)."""
+        ch = response[i]
+        if ch == '"':
+            result.append(ch)
+            return i + 1, False
+        if ch == "\\" and i + 1 < n:
+            return self._sanitize_escape(response, i, n, result)
+        if ch in self._CTRL_ESCAPE:
+            result.append(self._CTRL_ESCAPE[ch])
+        else:
+            result.append(ch)
+        return i + 1, in_string
+
+    @staticmethod
+    def _sanitize_escape(response: str, i: int, n: int, result: list) -> tuple:
+        """Handle an escape sequence inside a JSON string. Returns (new_i, True)."""
+        nxt = response[i + 1]
+        if nxt in GrokClient._VALID_ESCAPES:
+            result.append(response[i : i + 2])
+            return i + 2, True
+        if (
+            nxt == "u"
+            and i + 5 < n
+            and all(c in "0123456789abcdefABCDEF" for c in response[i + 2 : i + 6])
+        ):
+            result.append(response[i : i + 6])
+            return i + 6, True
+        # Invalid escape — skip the backslash
+        return i + 1, True
 
     def _make_cache_clear_command(
         self, cache_type: str, prompt: str, temperature: float
