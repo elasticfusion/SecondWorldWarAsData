@@ -207,6 +207,25 @@ class GrokClient:
         if response.status_code != 200:
             raise GrokAPIError(f"API error {response.status_code}: {response.text}")
 
+    def _post_with_deadline(self, session, headers, payload):
+        """POST with hard wall-clock deadline to prevent indefinite hangs."""
+        import concurrent.futures
+
+        def _do_post():
+            return session.post(
+                self.base_url, headers=headers, json=payload, timeout=(10, self.timeout)
+            )
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            future = pool.submit(_do_post)
+            try:
+                return future.result(timeout=self.timeout)
+            except concurrent.futures.TimeoutError:
+                future.cancel()
+                raise GrokAPIError(
+                    f"API call exceeded {self.timeout}s wall-clock deadline"
+                )
+
     @retry(
         stop=stop_after_attempt(5),
         wait=wait_exponential(multiplier=2, min=4, max=60),
@@ -232,9 +251,7 @@ class GrokClient:
         }
 
         with get_session() as session:
-            response = session.post(
-                self.base_url, headers=headers, json=payload, timeout=self.timeout
-            )
+            response = self._post_with_deadline(session, headers, payload)
             logger.debug(f"API Response: {response.status_code}")
 
             self._handle_api_errors(response)
