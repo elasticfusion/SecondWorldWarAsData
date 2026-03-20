@@ -575,6 +575,10 @@ def main():
     logger.info("%s", "=" * 60)
     heartbeat.stop()
 
+    from src.utils.http_pool import close_session
+
+    close_session()
+
 
 if __name__ == "__main__":
     main()
