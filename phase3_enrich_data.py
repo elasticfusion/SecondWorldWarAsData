@@ -10,6 +10,7 @@ import argparse
 from pathlib import Path
 
 from src.extraction.enrich_biographies import enrich_all_people
+from src.extraction.enrich_groups import enrich_all_groups
 from src.grok_client import GrokClient
 from src.utils.config import load_config
 from src.utils.logger import setup_logging
@@ -56,6 +57,19 @@ def enrich_people_data(
     )
 
     logger.info(f"✓ Enriched {enriched} people")
+    return enriched
+
+
+def enrich_groups_data(
+    groups_dir: Path, grok_client: GrokClient, max_items: int = None
+) -> int:
+    """Enrich people groups with external data."""
+    logger.info("\n" + "=" * 80)
+    logger.info("ENRICHING PEOPLE GROUPS")
+    logger.info("=" * 80)
+
+    enriched = enrich_all_groups(groups_dir, grok_client, max_groups=max_items)
+    logger.info(f"✓ Enriched {enriched} groups")
     return enriched
 
 
@@ -137,10 +151,13 @@ def main():
     )
     total_enriched += people_enriched
 
-    # Future: Add other entity types here
-    # if not args.people_only:
-    #     places_enriched = enrich_places_data(...)
-    #     total_enriched += places_enriched
+    # Enrich people groups
+    if not args.people_only:
+        groups_dir = args.output_dir / "people_groups"
+        groups_enriched = enrich_groups_data(
+            groups_dir, grok_client, max_items=args.max_items
+        )
+        total_enriched += groups_enriched
 
     logger.info("\n" + "=" * 80)
     logger.info(f"ENRICHMENT COMPLETE: {total_enriched} total items enriched")
