@@ -25,6 +25,7 @@ start() {
 
     echo "Starting OpenSERP on port $PORT..."
     nohup "$BINARY" serve -p "$PORT" > /dev/null 2>&1 &
+    disown
     echo $! > "$PIDFILE"
     sleep 2
 

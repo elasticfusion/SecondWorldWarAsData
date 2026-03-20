@@ -146,6 +146,10 @@ def main():
     logger.info(f"ENRICHMENT COMPLETE: {total_enriched} total items enriched")
     logger.info("=" * 80)
 
+    from src.utils.http_pool import close_session
+
+    close_session()
+
     return 0
 
 
