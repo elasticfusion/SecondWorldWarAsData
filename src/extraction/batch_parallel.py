@@ -543,6 +543,32 @@ async def extract_dates_batch_async(
     )
 
 
+def _make_place_record(obj: dict) -> dict:
+    """Build initial place file record from extracted data."""
+    from src.extraction.places import _calculate_bounding_box, _generate_map_urls
+
+    record: Dict[str, Any] = {
+        "current_name": obj.get("name", ""),
+        "historical_names": [],
+        "aliases": [],
+        "source_language": "English",
+        "geography_type": obj.get("type", "other"),
+    }
+    coords = obj.get("coordinates", {})
+    lat = coords.get("latitude", 0)
+    lon = coords.get("longitude", 0)
+    if lat and lon:
+        record["coordinates"] = {
+            "latitude": lat,
+            "longitude": lon,
+            "precision": "approximate",
+            "confidence": 0.8,
+        }
+        record["bounding_box_100km"] = _calculate_bounding_box(lat, lon)
+        record["map_urls"] = _generate_map_urls(lat, lon)
+    return record
+
+
 async def extract_places_batch_async(
     event_data: Dict[str, Any],
     parsed_data: Dict[str, Any],  # pylint: disable=unused-argument
@@ -562,7 +588,7 @@ async def extract_places_batch_async(
         response_key="places",
         inner_key="places",
         make_key=lambda obj: obj.get("name", "").lower().replace(" ", "_"),
-        make_record=lambda obj: {"name": obj.get("name")},
+        make_record=lambda obj: _make_place_record(obj),
         id_field="PlaceID",
         sub_event_key="places",
         book_meta=book_meta,
