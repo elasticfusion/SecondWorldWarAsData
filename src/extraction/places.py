@@ -432,6 +432,45 @@ def _find_or_create_place(
     return place_file
 
 
+def _backfill_place_data(place_data: Dict[str, Any], mention: Dict[str, Any]) -> None:
+    """Backfill missing v3 schema fields on legacy place files."""
+    # Rename 'name' → 'current_name' if needed
+    if "name" in place_data and "current_name" not in place_data:
+        place_data["current_name"] = place_data.pop("name")
+
+    place_data.setdefault("historical_names", [])
+    place_data.setdefault("aliases", [])
+    place_data.setdefault("source_language", mention.get("source_language", "English"))
+
+    if not place_data.get("geography_type"):
+        place_data["geography_type"] = mention.get("geography_type", "other")
+
+    # Add coordinates if missing
+    lat = mention.get("latitude", 0)
+    lon = mention.get("longitude", 0)
+    if lat and lon and "coordinates" not in place_data:
+        place_data["coordinates"] = {
+            "latitude": lat,
+            "longitude": lon,
+            "precision": "approximate",
+            "confidence": 0.8,
+        }
+        place_data["bounding_box_100km"] = _calculate_bounding_box(lat, lon)
+        place_data["map_urls"] = _generate_map_urls(lat, lon)
+
+    # Add historical name if provided and not already present
+    hist_name = mention.get("historical_name")
+    if hist_name:
+        existing = {h["name"] for h in place_data.get("historical_names", [])}
+        if hist_name not in existing:
+            place_data["historical_names"].append(
+                {
+                    "name": hist_name,
+                    "language": mention.get("source_language", "English"),
+                }
+            )
+
+
 def _add_event_mention(
     place_file: Path,
     mention: Dict[str, Any],
@@ -446,6 +485,9 @@ def _add_event_mention(
     """Add event mention to place file."""
     with open(place_file, "r", encoding="utf-8") as f:
         place_data = json.load(f)
+
+    # Backfill missing v3 fields from mention data
+    _backfill_place_data(place_data, mention)
 
     # Create event mention
     event_mention = {
