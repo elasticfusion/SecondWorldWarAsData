@@ -426,9 +426,13 @@ def enrich_person_biography(
         if not person_name:
             return False
 
-        logger.info("Enriching: %s", person_name)
-
+        # Skip if already enriched (has substantive biographical data)
         bio_profile = person_data.get("biographical_profile", {})
+        if bio_profile.get("birth_date") or bio_profile.get("biographical_details"):
+            logger.debug("  Already enriched: %s, skipping", person_name)
+            return False
+
+        logger.info("Enriching: %s", person_name)
         enrichment_added = False
 
         # Search Grokipedia
