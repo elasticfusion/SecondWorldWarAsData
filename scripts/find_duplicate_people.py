@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """
-Identify possible duplicate people based on spelling variations and aliases.
+Identify possible duplicate people based on spelling variations, aliases,
+and text proximity (names appearing near each other in source text).
 """
 
 import json
 import logging
+import re
 import sys
 import unicodedata
 from functools import lru_cache
 from pathlib import Path
-from typing import List, Dict, Any, Set
+from typing import List, Dict, Any, Set, Optional
 from difflib import SequenceMatcher
 
 logger = logging.getLogger(__name__)
@@ -115,12 +117,156 @@ def _has_shared_positions(person1: Dict, person2: Dict) -> bool:
     return bool(positions1 & positions2)
 
 
-def find_potential_duplicates(people_dir_path: Path) -> List[Dict[str, Any]]:
+# ---------------------------------------------------------------------------
+# Text proximity helpers
+# ---------------------------------------------------------------------------
+
+_WORD_SPLIT = re.compile(r"\s+")
+
+# People with more than this many event_mentions are considered high-frequency.
+# For these, name-similarity alone is not enough — proximity or biographical
+# evidence is required to flag a duplicate.
+HIGH_FREQUENCY_THRESHOLD = 15
+
+
+def _build_text_index(
+    output_root: Path,
+) -> Dict[str, List[str]]:
+    """Build sub-event ID → concatenated fulltext mapping.
+
+    Returns dict mapping Sub-eventID → full text string.
+    """
+    index: Dict[str, str] = {}
+    for event_file in output_root.rglob("*-event.json"):
+        if "notes-event" in event_file.name:
+            continue
+        try:
+            data = json.loads(event_file.read_text(encoding="utf-8"))
+            event = data.get("Event", data)
+            for se in event.get("Sub-events", []):
+                seid = se.get("Sub-eventID", "")
+                ft = se.get("Sub-event_fulltext", {})
+                if seid and ft:
+                    index[seid] = " ".join(ft.values())
+        except Exception:
+            continue
+    return index
+
+
+def _person_sub_event_ids(person: Dict) -> Set[str]:
+    """Get set of Sub-eventIDs a person is mentioned in."""
+    return {
+        m["Sub_eventID"]
+        for m in person.get("event_mentions", [])
+        if m.get("Sub_eventID")
+    }
+
+
+def _get_person_titles(person: Dict) -> List[str]:
+    """Extract distinctive titles/ranks from biographical profile."""
+    bp = person.get("biographical_profile", {})
+    titles = []
+    for rank_entry in bp.get("ranks", []):
+        rank = rank_entry.get("rank", "")
+        # Only keep multi-word titles (not generic "General", "Colonel")
+        if rank and len(rank.split()) > 1:
+            titles.append(rank.lower())
+    return titles
+
+
+def _names_within_distance(
+    text: str, name1: str, name2: str, max_words: int = 1000
+) -> bool:
+    """Check if any occurrence of name1 is within max_words of name2 in text."""
+    text_lower = text.lower()
+    n1 = name1.lower()
+    n2 = name2.lower()
+
+    # Also check last-name-only variants
+    last1 = _extract_last_name(name1)
+    last2 = _extract_last_name(name2)
+    variants1 = {n1, last1}
+    variants2 = {n2, last2}
+
+    words = _WORD_SPLIT.split(text_lower)
+    word_text = " ".join(words)  # normalized spacing
+
+    for v1 in variants1:
+        for v2 in variants2:
+            if v1 == v2:
+                continue  # same string, skip
+            # Find all positions of each variant
+            pos1 = [m.start() for m in re.finditer(re.escape(v1), word_text)]
+            pos2 = [m.start() for m in re.finditer(re.escape(v2), word_text)]
+            if not pos1 or not pos2:
+                continue
+            for p1 in pos1:
+                for p2 in pos2:
+                    # Count words between the two positions
+                    start = min(p1, p2)
+                    end = max(p1, p2)
+                    between = word_text[start:end]
+                    word_count = len(_WORD_SPLIT.split(between))
+                    if word_count <= max_words:
+                        return True
+    return False
+
+
+def _check_proximity(
+    person1: Dict,
+    person2: Dict,
+    text_index: Dict[str, str],
+) -> bool:
+    """Check if two people's names or titles appear near each other in source text."""
+    name1 = person1.get("name", "")
+    name2 = person2.get("name", "")
+    if not name1 or not name2:
+        return False
+
+    # Get sub-events where either person is mentioned
+    se_ids = _person_sub_event_ids(person1) | _person_sub_event_ids(person2)
+
+    # Also check if one person's title appears near the other's name
+    titles1 = _get_person_titles(person1)
+    titles2 = _get_person_titles(person2)
+
+    for seid in se_ids:
+        text = text_index.get(seid, "")
+        if not text:
+            continue
+        # Name-to-name proximity
+        if _names_within_distance(text, name1, name2):
+            return True
+        # Title-to-name proximity (person1's title near person2's name)
+        for title in titles1:
+            if _names_within_distance(text, title, name2):
+                return True
+        for title in titles2:
+            if _names_within_distance(text, title, name1):
+                return True
+    return False
+
+
+def find_potential_duplicates(
+    people_dir_path: Path,
+    output_root: Optional[Path] = None,
+) -> List[Dict[str, Any]]:
     """
     Find potential duplicate people based on various heuristics.
 
+    Args:
+        people_dir_path: Path to output/people directory.
+        output_root: Path to output/ root (for text proximity). If None,
+                     proximity checking is skipped.
+
     Returns list of duplicate groups with similarity scores.
     """
+    # Build text index for proximity checking
+    text_index: Dict[str, str] = {}
+    if output_root:
+        logger.info("Building text index for proximity checking...")
+        text_index = _build_text_index(output_root)
+        logger.info("Indexed %d sub-events", len(text_index))
     # Load exclusion list
     exclusion_file = people_dir_path / "not_duplicates.json"
     excluded_pairs = set()
@@ -199,21 +345,28 @@ def find_potential_duplicates(people_dir_path: Path) -> List[Dict[str, Any]]:
                 reasons.append(f"Same last name: {last_name1}")
                 confidence += 0.4  # Increased weight
 
-            # Check 3: Shared biographical data
+            # Check 3: Shared biographical data (only boosts existing name match)
             if _has_shared_biographical_data(person1, person2):
-                reasons.append("Shared biographical data")
-                confidence += 0.5
+                if confidence > 0:  # Only if name-based match exists
+                    reasons.append("Shared biographical data")
+                    confidence += 0.5
 
             # Check 4: Shared positions
             if _has_shared_positions(person1, person2):
                 reasons.append("Shared positions")
                 confidence += 0.3
 
-            # Check 5: One name is substring of other (boosted)
-            if last_name1 in name2.lower() or last_name2 in name1.lower():
-                if len(last_name1) > 3:  # Lowered from 5
+            # Check 5: One name is substring of other (whole-word last name match)
+            if len(last_name1) > 3:
+                # Require last name to appear as a whole word, not embedded
+                # e.g. "Hall" should NOT match "Marshall"
+                pat1 = re.compile(r"\b" + re.escape(last_name1) + r"\b", re.IGNORECASE)
+                pat2 = re.compile(r"\b" + re.escape(last_name2) + r"\b", re.IGNORECASE)
+                if (last_name1 != last_name2) and (
+                    pat1.search(name2) or pat2.search(name1)
+                ):
                     reasons.append("Name substring match")
-                    confidence += 0.5  # Increased from 0.4
+                    confidence += 0.5
 
             # Check 5b: Single last name vs full name with same last name + shared bio
             if (
@@ -242,6 +395,35 @@ def find_potential_duplicates(people_dir_path: Path) -> List[Dict[str, Any]]:
             ):
                 reasons.append("German transliteration variant")
                 confidence += 0.6
+
+            # Check 7: Text proximity — names appear within 1000 words
+            # Only check when there's a plausible name connection
+            if text_index and confidence > 0.2:
+                names_related = (
+                    last_name1 == last_name2
+                    or similarity > 0.8
+                    or len(name1.split()) == 1
+                    or len(name2.split()) == 1
+                )
+                if names_related and _check_proximity(person1, person2, text_index):
+                    reasons.append("Text proximity (<1000 words)")
+                    confidence += 0.4
+
+            # High-frequency gate: people with many mentions need stronger
+            # evidence than name similarity alone
+            mentions1 = len(person1.get("event_mentions", []))
+            mentions2 = len(person2.get("event_mentions", []))
+            if (
+                mentions1 > HIGH_FREQUENCY_THRESHOLD
+                or mentions2 > HIGH_FREQUENCY_THRESHOLD
+            ):
+                has_strong_evidence = any(
+                    r
+                    for r in reasons
+                    if r.startswith(("Shared bio", "Shared pos", "Text prox"))
+                )
+                if not has_strong_evidence:
+                    confidence = 0.0  # Suppress name-only matches
 
             # If confidence is high enough, add to group (lowered from 0.6 to 0.5)
             if confidence > 0.5 and reasons:
@@ -283,9 +465,13 @@ def find_potential_duplicates(people_dir_path: Path) -> List[Dict[str, Any]]:
     return duplicates
 
 
-def generate_duplicate_report(people_dir_path: Path, output_file_path: Path) -> None:
+def generate_duplicate_report(
+    people_dir_path: Path,
+    output_file_path: Path,
+    output_root: Optional[Path] = None,
+) -> None:
     """Generate a report of potential duplicates."""
-    duplicates = find_potential_duplicates(people_dir_path)
+    duplicates = find_potential_duplicates(people_dir_path, output_root=output_root)
 
     # Sort by confidence
     duplicates.sort(key=lambda x: x["confidence"], reverse=True)
@@ -350,4 +536,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
     logger.info("Found %d people file(s)", len(people_files))
-    generate_duplicate_report(people_dir, output_file)
+    generate_duplicate_report(
+        people_dir, output_file, output_root=project_root / "output"
+    )
