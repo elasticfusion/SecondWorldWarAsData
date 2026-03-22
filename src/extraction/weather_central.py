@@ -268,7 +268,7 @@ def _maybe_update_coordinates(
     loc = weather_data["location"]
     if loc["latitude"] != 0.0 or loc["longitude"] != 0.0:
         return False
-    latitude, longitude, place_id, country = _lookup_coordinates(
+    latitude, longitude, place_id, _country = _lookup_coordinates(
         mention.get("PlaceMentionID"), place_name, places_dir
     )
     if latitude == 0.0 and longitude == 0.0:
@@ -276,7 +276,6 @@ def _maybe_update_coordinates(
     loc["latitude"] = latitude
     loc["longitude"] = longitude
     loc["PlaceID"] = place_id
-    loc["country"] = country
     logger.info("    Updated coordinates for %s", weather_file.name)
     return True
 
@@ -316,7 +315,7 @@ def _create_new_weather_file(
     weather_file = weather_dir / filename
 
     # Look up coordinates
-    latitude, longitude, place_id, country = _lookup_coordinates(
+    latitude, longitude, place_id, _country = _lookup_coordinates(
         mention.get("PlaceMentionID"), place_name, places_dir
     )
 
@@ -327,7 +326,6 @@ def _create_new_weather_file(
         "DateID": mention.get("DateMentionID"),
         "location": {
             "place_name": place_name,
-            "country": country,
             "PlaceID": place_id,
             "latitude": latitude,
             "longitude": longitude,
@@ -416,10 +414,10 @@ def _add_event_mention(
     if not weather_data["extracted_data"]:
         weather_data["extracted_data"] = {
             "description": mention.get("weather_description", ""),
-            "temperature": mention.get("temperature"),
-            "temperature_unit": mention.get("temperature_unit"),
-            "measurement_system": mention.get("measurement_system"),
-            "notable_impact": mention.get("notable_impact"),
+            "temperature": mention.get("temperature") or None,
+            "temperature_unit": mention.get("temperature_unit") or None,
+            "measurement_system": mention.get("measurement_system") or None,
+            "notable_impact": mention.get("notable_impact") or None,
             "original_text": mention.get("original_text", ""),
             "book": book,
             "author": author,
@@ -526,7 +524,7 @@ Return JSON matching this structure:
   ]
 }}
 
-IMPORTANT: 
+IMPORTANT:
 - Link PlaceMentionID and DateMentionID from the available lists above
 - Only extract EXACT dates (YYYY-MM-DD). Skip "early June", "mid-summer", etc.
 - Generate 26-character ULIDs using: 0-9 A-H J-K M-N P-T V-Z"""
@@ -661,76 +659,6 @@ def _parse_weather_response(
             if isinstance(m, dict) and m.get("date") and m.get("place_name")
         ]
     return result
-
-
-def _extract_weather_for_sub_event(
-    sub_event: dict,
-    event_id: str,
-    event_name: str,
-    grok_client: GrokClient,
-    weather_dir: Path,
-    index: dict,
-    places_dir: Path,
-    fetch_api: bool,
-    book: str,
-    author: str,
-    series: str,
-    max_retries: int,
-) -> int:
-    """Extract weather for a single sub-event. Returns count of weather mentions processed."""
-    sub_event_id = sub_event.get("Sub-eventID", "")
-    sub_event_name = sub_event.get("Sub-event_summary", "")
-    logger.info("  Processing sub-event %s", sub_event_id)
-
-    prompt = create_weather_prompt(sub_event, event_id, event_name)
-
-    for attempt in range(max_retries):
-        try:
-            weather_output = grok_client.extract_structured(
-                prompt=prompt,
-                schema=WeatherOutput,
-                system_prompt=SYSTEM_PROMPT,
-                use_cache=(attempt == 0),
-                cache_type="weather",
-            )
-
-            weather_dict: Dict[str, Any] = weather_output.model_dump(by_alias=True)
-            fixed_dict = _fix_invalid_ulids(weather_dict)
-            if isinstance(fixed_dict, dict):
-                weather_dict = fixed_dict
-            weather_dict = _filter_invalid_weather(weather_dict)
-
-            # Process each weather mention
-            count = 0
-            for mention in weather_dict.get("Weather_Mentions", []):
-                weather_file = _find_or_create_weather(
-                    mention, weather_dir, index, places_dir, fetch_api
-                )
-                _add_event_mention(
-                    weather_file,
-                    mention,
-                    event_name,
-                    event_id,
-                    sub_event_name,
-                    sub_event_id,
-                    book,
-                    author,
-                    series,
-                )
-                count += 1
-
-            logger.info("  ✓ Processed %d weather mention(s)", count)
-            return count
-
-        except (ValueError, KeyError, json.JSONDecodeError, TypeError) as e:
-            if attempt < max_retries - 1:
-                logger.warning(f"  ⚠ Attempt {attempt + 1} failed: {e}")
-                logger.info(f"  Retrying ({attempt + 2}/{max_retries})...")
-            else:
-                logger.error(f"  ✗ All {max_retries} attempts failed: {e}")
-                return 0
-
-    return 0
 
 
 def extract_weather_central(
