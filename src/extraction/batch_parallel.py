@@ -141,6 +141,10 @@ def _add_event_mention_batch(  # pylint: disable=too-many-arguments,too-many-pos
             mention["position_at_event"] = source_obj["position_at_event"]
         if source_obj.get("life_event"):
             mention["life_event"] = source_obj["life_event"]
+        if source_obj.get("date_context"):
+            mention["date_context"] = source_obj["date_context"]
+        if source_obj.get("role_in_event"):
+            mention["role_in_event"] = source_obj["role_in_event"]
     mentions.append(mention)
     record["event_mentions"] = mentions
     write_json_with_lock(entity_file, record)
@@ -253,6 +257,7 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     book_meta: Optional[Dict[str, str]] = None,
     include_fulltext: bool = False,
     make_filename: Optional[Callable[[str, str], str]] = None,
+    post_process: Optional[Callable] = None,
 ) -> Dict[str, Any]:
     """Generic batch extraction with cross-referencing.
 
@@ -313,6 +318,8 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     )
 
     write_json_with_lock(index_file, index)
+    if post_process:
+        post_process(response, entity_dir, index)
     return result
 
 
@@ -631,16 +638,47 @@ async def extract_dates_batch_async(
     )
 
 
+_VALID_GEO_TYPES = frozenset(
+    [
+        "city",
+        "town",
+        "village",
+        "country",
+        "region",
+        "province",
+        "state",
+        "sea",
+        "ocean",
+        "river",
+        "lake",
+        "mountain",
+        "island",
+        "peninsula",
+        "continent",
+        "military_base",
+        "battlefield",
+        "fortification",
+        "bridge",
+        "port",
+        "airfield",
+        "other",
+    ]
+)
+
+
 def _make_place_record(obj: dict) -> dict:
     """Build initial place file record from extracted data."""
     from src.extraction.places import _calculate_bounding_box, _generate_map_urls
 
+    geo_type = obj.get("type", "other")
+    if geo_type not in _VALID_GEO_TYPES:
+        geo_type = "other"
     record: Dict[str, Any] = {
         "current_name": obj.get("name", ""),
         "historical_names": [],
         "aliases": [],
         "source_language": "English",
-        "geography_type": obj.get("type", "other"),
+        "geography_type": geo_type,
     }
     coords = obj.get("coordinates", {})
     lat = coords.get("latitude", 0)
@@ -657,6 +695,51 @@ def _make_place_record(obj: dict) -> dict:
     return record
 
 
+_VALID_RELATIONSHIPS = frozenset(
+    ["contains", "part_of", "near", "connected_by_route", "same_as"]
+)
+
+
+def _process_place_relationships(response, entity_dir, index):
+    """Write related_places from LLM response into place files."""
+    for item in response.get("places", []):
+        if not isinstance(item, dict):
+            continue
+        for rel in item.get("relationships", []):
+            if not isinstance(rel, dict):
+                continue
+            rel_type = rel.get("type", "")
+            if rel_type not in _VALID_RELATIONSHIPS:
+                continue
+            from_key = rel.get("from", "").lower().replace(" ", "_")
+            to_key = rel.get("to", "").lower().replace(" ", "_")
+            if not from_key or not to_key:
+                continue
+            from_file = index.get(from_key)
+            to_file = index.get(to_key)
+            if not from_file or not to_file:
+                continue
+            _add_relationship(entity_dir / from_file, entity_dir / to_file, rel_type)
+
+
+def _add_relationship(from_path, to_path, rel_type):
+    """Add a single relationship to a place file if not duplicate."""
+    try:
+        data = json.loads(from_path.read_text(encoding="utf-8"))
+        to_data = json.loads(to_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return
+    to_id = to_data.get("PlaceID", "")
+    if not to_id:
+        return
+    related = data.get("related_places", [])
+    if any(r.get("PlaceID") == to_id for r in related):
+        return
+    related.append({"PlaceID": to_id, "relationship": rel_type})
+    data["related_places"] = related
+    write_json_with_lock(from_path, data)
+
+
 async def extract_places_batch_async(
     event_data: Dict[str, Any],
     parsed_data: Dict[str, Any],  # pylint: disable=unused-argument
@@ -666,13 +749,14 @@ async def extract_places_batch_async(
 ) -> Dict[str, Any]:
     """Extract places from all sub-events in single API call."""
     n = len(event_data.get("Event", {}).get("Sub-events", []))
+    geo_types = "city|town|village|country|region|province|state|sea|ocean|river|lake|mountain|island|peninsula|continent|military_base|battlefield|fortification|bridge|port|airfield|other"
     return await _batch_extract(
         event_data,
         grok_client,
         output_root,
         entity_type="places",
         cache_type="places",
-        prompt_header=f'Extract all places from these {n} sub-events. Return JSON:\n{{"places": [{{"sub_event_id": "ID", "places": [{{"name": "Name", "type": "city|town|region", "coordinates": {{"latitude": 0, "longitude": 0}}}}]}}]}}\n\nSub-events:',
+        prompt_header=f'Extract all places from these {n} sub-events. Return JSON:\n{{"places": [{{"sub_event_id": "ID", "places": [{{"name": "Name", "type": "{geo_types}", "coordinates": {{"latitude": 0, "longitude": 0}}, "date_context": "YYYY-MM-DD or null", "role_in_event": "role or null", "original_text": "exact quote"}}], "relationships": [{{"from": "Place A", "to": "Place B", "type": "part_of|near|contains|connected_by_route"}}]}}]}}\n\nSub-events:',
         response_key="places",
         inner_key="places",
         make_key=lambda obj: obj.get("name", "").lower().replace(" ", "_"),
@@ -681,6 +765,7 @@ async def extract_places_batch_async(
         sub_event_key="places",
         book_meta=book_meta,
         include_fulltext=True,
+        post_process=_process_place_relationships,
     )
 
 
