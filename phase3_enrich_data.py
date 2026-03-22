@@ -11,6 +11,7 @@ from pathlib import Path
 
 from src.extraction.enrich_biographies import enrich_all_people
 from src.extraction.enrich_groups import enrich_all_groups
+from src.extraction.enrich_places import enrich_all_places
 from src.grok_client import GrokClient
 from src.utils.config import load_config
 from src.utils.logger import setup_logging
@@ -158,6 +159,14 @@ def main():
             groups_dir, grok_client, max_items=args.max_items
         )
         total_enriched += groups_enriched
+
+    # Enrich places
+    if not args.people_only:
+        places_dir = args.output_dir / "places"
+        places_enriched = enrich_all_places(
+            places_dir, grok_client, max_places=args.max_items
+        )
+        total_enriched += places_enriched
 
     logger.info("\n" + "=" * 80)
     logger.info(f"ENRICHMENT COMPLETE: {total_enriched} total items enriched")
