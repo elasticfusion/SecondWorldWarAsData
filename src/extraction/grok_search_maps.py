@@ -269,22 +269,39 @@ def create_map_json(
     local_image_path: str,
 ) -> Dict[str, Any]:
     """Create map JSON record."""
+    # Detect file format from image path
+    file_format = None
+    if local_image_path:
+        ext = Path(local_image_path).suffix.lstrip(".")
+        if ext in ("jpg", "jpeg", "png", "tif", "gif", "pdf"):
+            file_format = "jpg" if ext == "jpeg" else ext
+
     return {
         "MapID": map_id,
         "map_title": map_data["title"],
         "external_source": map_data["source"],
         "external_source_url": map_data["url"],
-        "license": "Unknown",  # To be reviewed
+        "archive_id": None,
+        "license": "Unknown",
+        "license_url": None,
+        "date_created": None,
+        "creator": None,
         "EventID": event_id,
         "Event_Name": event_name,
         "Sub_eventID": sub_event_id,
         "Sub_event_Name": sub_event_name,
         "place_name": place_name,
+        "PlaceMentionID": None,
         "date": date,
+        "DateMentionID": None,
+        "local_path": f"output/external_maps/{map_id}.json",
         "local_image_path": local_image_path,
         "source_url": map_data["image_url"],
+        "file_format": file_format,
         "extracted_date": datetime.utcnow().isoformat() + "Z",
         "description": map_data.get("description"),
+        "map_type": None,
+        "storage_backend": "filesystem",
         "found_via": "grok_search",
         "verification_method": "grok_vision",
     }

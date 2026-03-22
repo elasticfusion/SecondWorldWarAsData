@@ -106,6 +106,13 @@ def import_all_external_maps(
     logger.info(f"Grok whitelist:  {grok_imported} maps")
     logger.info(f"OpenSERP:        {openserp_imported} maps")
     logger.info(f"Total imported:  {total} maps")
+
+    # Rebuild index
+    if total > 0:
+        from src.extraction.external_maps import _rebuild_index
+
+        _rebuild_index(output_dir)
+
     logger.info("=" * 60)
 
     return grok_imported, openserp_imported
