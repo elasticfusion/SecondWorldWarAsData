@@ -236,6 +236,32 @@ def _extract_maps(output_root, config, logger):
         logger.error("  Error extracting maps: %s", e)
 
 
+def _extract_images(output_root, config, logger):
+    """Extract images from source material."""
+    if not config.get("images", {}).get("enabled", True):
+        return
+
+    logger.info("\n%s", "=" * 60)
+    logger.info("Extracting images from source material...")
+    logger.info("=" * 60)
+    try:
+        from src.extraction.images import extract_images
+
+        img_config = config.get("images", {})
+        storage = img_config.get("image_storage_path")
+        storage_path = Path(storage) if storage else None
+
+        extract_images(
+            output_dir=output_root,
+            places_dir=output_root / "places",
+            dates_dir=output_root / "dates",
+            download=img_config.get("download", True),
+            image_storage_path=storage_path,
+        )
+    except Exception as e:
+        logger.error("  Error extracting images: %s", e)
+
+
 def _extract_external_maps(base_dir, grok_client, paths, config, logger):
     """Search for and import external maps."""
     if not config.get("external_maps", {}).get("enabled", False):
@@ -557,10 +583,11 @@ def main():
             )
 
     # -----------------------------------------------------------------------
-    # Step 4: Maps extraction
+    # Step 4: Maps and Images extraction
     # -----------------------------------------------------------------------
     _extract_maps(output_root, config, logger)
     _extract_external_maps(base_dir, grok_client, paths, config, logger)
+    _extract_images(output_root, config, logger)
 
     # -----------------------------------------------------------------------
     # Step 5: Analysis
