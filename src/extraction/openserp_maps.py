@@ -414,23 +414,47 @@ def _create_map_record(
     date: Optional[str],
     image_downloaded: bool,
     image_path: Optional[str],
+    event_id: Optional[str] = None,
+    event_name: Optional[str] = None,
+    sub_event_id: Optional[str] = None,
+    sub_event_name: Optional[str] = None,
 ) -> dict:
     """Create map record dictionary."""
+    # Detect file format from image path
+    file_format = None
+    if image_path:
+        ext = Path(image_path).suffix.lstrip(".")
+        if ext in ("jpg", "jpeg", "png", "tif", "gif", "pdf"):
+            file_format = "jpg" if ext == "jpeg" else ext
+
     return {
         "MapID": map_id,
         "map_title": result["title"],
         "external_source": result["engine"].title(),
         "external_source_url": result["url"],
-        "description": result.get("description", ""),
+        "archive_id": None,
         "license": "Unknown",
+        "license_url": None,
+        "date_created": None,
+        "creator": None,
+        "EventID": event_id,
+        "Event_Name": event_name,
+        "Sub_eventID": sub_event_id,
+        "Sub_event_Name": sub_event_name,
         "place_name": place_name,
-        "PlaceID": place_data.get("PlaceID"),
+        "PlaceMentionID": None,
         "date": date,
+        "DateMentionID": None,
+        "local_path": f"output/external_maps/{map_id}.json",
+        "local_image_path": image_path,
+        "source_url": result.get("url"),
+        "file_format": file_format,
+        "extracted_date": datetime.utcnow().isoformat() + "Z",
+        "description": result.get("description", ""),
+        "map_type": None,
+        "storage_backend": "filesystem",
         "found_via": f"OpenSERP {result['engine']} search",
         "found_date": datetime.utcnow().strftime("%Y-%m-%d"),
-        "extracted_date": datetime.utcnow().isoformat() + "Z",
-        "image_downloaded": image_downloaded,
-        "image_path": image_path,
     }
 
 
@@ -446,6 +470,10 @@ def _process_search_result(
     image_storage_path: Optional[str],
     output_dir: Path,
     downloaded_urls: set,
+    event_id: Optional[str] = None,
+    event_name: Optional[str] = None,
+    sub_event_id: Optional[str] = None,
+    sub_event_name: Optional[str] = None,
 ) -> tuple[bool, int]:
     """Process a single search result. Returns (imported, skipped_count)."""
     url = result["url"]
@@ -505,7 +533,17 @@ def _process_search_result(
 
     # Create and save map record
     map_record = _create_map_record(
-        map_id, result, place_data, place_name, date, image_downloaded, image_path
+        map_id,
+        result,
+        place_data,
+        place_name,
+        date,
+        image_downloaded,
+        image_path,
+        event_id,
+        event_name,
+        sub_event_id,
+        sub_event_name,
     )
 
     output_file = output_dir / f"{map_record['MapID']}.json"
@@ -549,9 +587,12 @@ def _process_place_file(
     event_mentions = place_data.get("event_mentions", [])
     event_context = "WWII operations"
     date = None
+    event_id = event_name = sub_event_id = sub_event_name = None
     if event_mentions:
         first = event_mentions[0]
+        event_id = first.get("EventID")
         event_name = first.get("Event_Name", "")
+        sub_event_id = first.get("Sub_eventID")
         sub_event_name = first.get("Sub_event_Name", "")
         if event_name and sub_event_name:
             event_context = f"{event_name} - {sub_event_name}"
@@ -582,6 +623,10 @@ def _process_place_file(
             image_storage_path,
             output_dir,
             downloaded_urls,
+            event_id,
+            event_name,
+            sub_event_id,
+            sub_event_name,
         )
         if was_imported:
             imported += 1

@@ -162,8 +162,9 @@ def find_date_match(date_str: str, sub_event_id: str, dates_dir: Path) -> Option
             with open(date_file, encoding="utf-8") as f:
                 date_data = json.load(f)
 
-            # Check if date matches
-            if date_data.get("date") != date_str:
+            # Check if date matches (date_start is spec field, date is legacy)
+            file_date = date_data.get("date_start") or date_data.get("date")
+            if file_date != date_str:
                 continue
 
             # Check if date is mentioned in this sub-event
@@ -411,7 +412,26 @@ def import_maps(
     if skipped > 0:
         logger.info(f"\n⚠ Skipped {skipped} map(s) due to errors")
 
+    _rebuild_index(output_dir)
     return imported
+
+
+def _rebuild_index(output_dir: Path) -> None:
+    """Rebuild index.json from all map files in output_dir."""
+    index = {}
+    for f in output_dir.glob("*.json"):
+        if f.name == "index.json":
+            continue
+        try:
+            data = json.load(f.open(encoding="utf-8"))
+            map_id = data.get("MapID", f.stem)
+            index[map_id] = f.name
+        except (json.JSONDecodeError, OSError):
+            continue
+    index_file = output_dir / "index.json"
+    with open(index_file, "w", encoding="utf-8") as fh:
+        json.dump(index, fh, indent=2, ensure_ascii=False)
+    logger.info(f"  Updated index.json ({len(index)} maps)")
 
 
 def main():
