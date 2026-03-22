@@ -119,6 +119,30 @@ class Logistics(BaseModel):
     resolution: Optional[Resolution] = None
 
 
+_VALID_TYPES = {
+    "supply_shortage",
+    "supply_excess",
+    "delivery_delay",
+    "transport_disruption",
+}
+_VALID_CATEGORIES = {
+    "ammunition",
+    "fuel",
+    "food",
+    "medical",
+    "equipment",
+    "personnel",
+    "general",
+}
+_VALID_SEVERITIES = {"critical", "high", "medium", "low"}
+_VALID_STATUSES = {"unresolved", "in_progress", "resolved", "worsened"}
+
+
+def _clamp_enum(value: str, valid: set, default: str) -> str:
+    """Return value if valid, else default."""
+    return value if value in valid else default
+
+
 class LogisticsExtraction(BaseModel):
     """LLM extraction output."""
 
@@ -229,13 +253,26 @@ Look for:
 2. Transportation issues: damaged roads/rails, vehicle losses, movement restrictions
 3. Capacity constraints: port limits, beach capacity, force level restrictions
 
-For each issue found, extract:
-- type: supply_shortage, delivery_delay, transport_disruption, capacity_constraint
-- category: fuel, ammunition, food, equipment, personnel, general
-- description: what the problem was
+For each issue found, extract ALL of these fields:
+- type: supply_shortage, supply_excess, delivery_delay, transport_disruption
+- category: ammunition, fuel, food, medical, equipment, personnel, general
+- description: detailed description of the problem
 - severity: critical, high, medium, low
-- impacted_organizations, impacted_people, impacted_places, impacted_equipment
-- date_start, date_end (ISO dates if mentioned)
+- date_start, date_end: ISO dates (YYYY-MM-DD) if mentioned
+- delivery_method: sea_transport, air_delivery, ground_transport, rail, pipeline, mixed (if applicable)
+- status: unresolved, in_progress, resolved, worsened
+- quantity: {{"required": number, "available": number, "unit": "string", "shortage": number}} (if numbers mentioned)
+- impacted_organizations: list of military unit/organization names
+- impacted_people: list of person names
+- impacted_places: list of place names
+- impacted_equipment: list of equipment names
+- weather: description of weather impact if relevant
+- resolution_resolved: true/false if resolution mentioned
+- resolution_date: ISO date of resolution
+- resolution_description: how it was resolved
+- resolution_method: air_delivery, sea_transport, ground_transport, reallocation, local_procurement, rationing, substitution
+- context: one-sentence summary of the logistics issue in context
+- paragraphs: list of paragraph numbers where this issue is mentioned
 
 Return JSON object keyed by sub-event ID:
 {{"<Sub-eventID>": {{"logistics": [<items>]}}, ...}}
@@ -358,15 +395,36 @@ def _build_temporal(
     )
 
 
+def _find_entity(
+    name: str, index: Dict[str, str], lower_index: Dict
+) -> Optional[tuple]:
+    """Find entity by exact, case-insensitive, or substring match."""
+    if eid := index.get(name):
+        return name, eid
+    if hit := lower_index.get(name.lower()):
+        return hit
+    nl = name.lower()
+    for idx_lower, pair in lower_index.items():
+        if nl in idx_lower or idx_lower in nl:
+            return pair
+    return None
+
+
 def _link_entities(
     names: List[str], index: Dict[str, str], id_key: str, name_key: str
 ) -> List[Dict[str, Any]]:
-    """Link entity names to IDs from index."""
-    return [
-        {id_key: entity_id, name_key: name, "impact_description": ""}
-        for name in names
-        if (entity_id := index.get(name))
-    ]
+    """Link entity names to IDs from index with fuzzy fallback."""
+    if not names or not index:
+        return []
+    lower_index = {k.lower(): (k, v) for k, v in index.items()}
+    result = []
+    for name in names:
+        match = _find_entity(name, index, lower_index)
+        if match:
+            result.append(
+                {id_key: match[1], name_key: match[0], "impact_description": ""}
+            )
+    return result
 
 
 def _build_weather_impact(
@@ -411,15 +469,17 @@ def _build_logistics_data(
     """Build complete logistics data structure."""
     data = {
         "LogisticsID": str(ulid.new()),
-        "logistics_type": extraction.type,
-        "category": extraction.category,
+        "logistics_type": _clamp_enum(extraction.type, _VALID_TYPES, "supply_shortage"),
+        "category": _clamp_enum(extraction.category, _VALID_CATEGORIES, "general"),
         "description": extraction.description,
-        "severity": extraction.severity,
+        "severity": _clamp_enum(extraction.severity, _VALID_SEVERITIES, "medium"),
         "temporal": _build_temporal(extraction, dates_index).model_dump(
             exclude_none=True
         ),
         "delivery_method": extraction.delivery_method,
-        "status": extraction.status or "unresolved",
+        "status": _clamp_enum(
+            extraction.status or "unresolved", _VALID_STATUSES, "unresolved"
+        ),
         "event_mentions": [
             {
                 "EventMentionID": str(ulid.new()),
@@ -461,6 +521,73 @@ def _build_logistics_data(
     return data
 
 
+def _load_existing_keys(logistics_dir: Path) -> set:
+    """Load dedup keys from existing logistics files."""
+    keys = set()
+    for f in logistics_dir.glob("*.json"):
+        if f.name == "index.json":
+            continue
+        try:
+            d = json.loads(f.read_text())
+            em = d.get("event_mentions", [{}])[0]
+            keys.add(
+                (
+                    em.get("Sub_eventID", ""),
+                    d.get("category", ""),
+                    d.get("logistics_type", ""),
+                    d.get("temporal", {}).get("date_start", ""),
+                )
+            )
+        except Exception:
+            pass
+    return keys
+
+
+def _save_extraction(
+    extraction, event, sub_event, indexes, logistics_dir, existing_keys
+) -> bool:
+    """Validate, dedup, and save a single logistics extraction. Returns True if saved."""
+    sub_event_id = sub_event.get("Sub-eventID", "")
+    dedup_key = (
+        sub_event_id,
+        _clamp_enum(extraction.category, _VALID_CATEGORIES, "general"),
+        _clamp_enum(extraction.type, _VALID_TYPES, "supply_shortage"),
+        extraction.date_start or "unknown",
+    )
+    if dedup_key in existing_keys:
+        return False
+    existing_keys.add(dedup_key)
+
+    try:
+        people_idx, groups_idx, places_idx, equip_idx, weather_idx, dates_idx = indexes
+        data = _build_logistics_data(
+            extraction,
+            event,
+            sub_event,
+            people_idx,
+            groups_idx,
+            places_idx,
+            equip_idx,
+            weather_idx,
+            dates_idx,
+        )
+        validated = Logistics.model_validate(data)
+
+        date_str = (
+            extraction.date_start.replace("-", "")
+            if extraction.date_start
+            else "UNKNOWN"
+        )
+        filename = f"{data['category']}_{data['logistics_type']}_{date_str}_{data['LogisticsID'][:8]}.json"
+        with open(logistics_dir / filename, "w", encoding="utf-8") as f:
+            json.dump(validated.model_dump(exclude_none=True), f, indent=2)
+        logger.info("Extracted: %s", filename)
+        return True
+    except Exception as e:
+        logger.error("Failed to process extraction: %s", e)
+        return False
+
+
 def extract_logistics_from_event(
     event_file: Path,
     output_root: Path,
@@ -482,9 +609,9 @@ def extract_logistics_from_event(
     # Build entity indexes
     people_index = _build_entity_index(output_root, "people", "PersonID", "name")
     groups_index = _build_entity_index(
-        output_root, "people_groups", "PeopleGroupID", "group_name"
+        output_root, "people_groups", "GroupID", "group_name"
     )
-    places_index = _build_entity_index(output_root, "places", "PlaceID", "current_name")
+    places_index = _build_entity_index(output_root, "places", "PlaceID", "name")
     equipment_index = _build_entity_index(
         output_root, "equipment", "EquipmentID", "common_name"
     )
@@ -511,8 +638,19 @@ def extract_logistics_from_event(
 
     logger.info("Processing %d sub-events for logistics extraction", len(sub_events))
 
+    existing_keys = _load_existing_keys(logistics_dir)
+
     # Batch extract from all sub-events in single API call
     batch_results = _batch_extract_logistics(sub_events, grok_client)
+
+    indexes = (
+        people_index,
+        groups_index,
+        places_index,
+        equipment_index,
+        weather_index,
+        dates_index,
+    )
 
     for sub_event in sub_events:
         sub_event_id = sub_event.get("Sub-eventID", "")
@@ -527,48 +665,27 @@ def extract_logistics_from_event(
         )
 
         for extraction in extractions:
-            try:
-                logistics_data = _build_logistics_data(
-                    extraction,
-                    event,  # Use event instead of event_data
-                    sub_event,
-                    people_index,
-                    groups_index,
-                    places_index,
-                    equipment_index,
-                    weather_index,
-                    dates_index,
-                )
-
-                # Generate filename
-                date_str = (
-                    extraction.date_start.replace("-", "")
-                    if extraction.date_start
-                    else "UNKNOWN"
-                )
-                logistics_id = logistics_data["LogisticsID"][:8]
-                safe_cat = extraction.category.replace("/", "_").replace("\\", "_")
-                filename = (
-                    f"{safe_cat}_{extraction.type}_{date_str}_{logistics_id}.json"
-                )
-                output_file = logistics_dir / filename
-
-                # Validate structure
-                validated = Logistics.model_validate(logistics_data)
-
-                # Save
-                with open(output_file, "w", encoding="utf-8") as f:
-                    json.dump(validated.model_dump(exclude_none=True), f, indent=2)
-
+            if _save_extraction(
+                extraction, event, sub_event, indexes, logistics_dir, existing_keys
+            ):
                 extracted_count += 1
-                logger.info("Extracted: %s", filename)
-
-            except Exception as e:
-                logger.error("Failed to process extraction: %s", e)
-                continue
 
     if extracted_count > 0:
         logger.info("Extracted %d logistics issue(s)", extracted_count)
-        return logistics_dir
 
-    return None
+    _rebuild_index(logistics_dir)
+    return logistics_dir if extracted_count > 0 else None
+
+
+def _rebuild_index(logistics_dir: Path) -> None:
+    """Build index.json mapping key → filename."""
+    index = {}
+    for f in sorted(logistics_dir.glob("*.json")):
+        if f.name == "index.json":
+            continue
+        # Key is filename without the ULID suffix
+        parts = f.stem.rsplit("_", 1)
+        if len(parts) == 2:
+            index[parts[0]] = f.name
+    with open(logistics_dir / "index.json", "w", encoding="utf-8") as fh:
+        json.dump(index, fh, indent=2)
