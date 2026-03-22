@@ -1,111 +1,89 @@
-ar# TODO
+# TODO
 
-**Last Updated:** 2026-03-19T12:34
+**Last Updated:** 2026-03-22
 
 ---
 
 ## Active
 
+### Re-extract all entities with fixed prompts
+**Priority:** High
+**Status:** Pending (user will run)
+
+After cache clear, re-run pipeline with updated prompts that request:
+- Places: `original_text`, `role_in_event`, `related_places`, full 22-type geography_type enum
+- People: `position_at_event`, `life_event`, `original_text`
+- People groups: `context`, `original_text`
+- Logistics: `context`, `paragraph_numbers`
+
+### Run full place enrichment
+**Priority:** High
+**Status:** Pending (user will run)
+
+`enrich_all_places()` for remaining ~1093 places without hierarchy. Only 46/1138 have hierarchy data. Command: `python3 phase3_enrich_data.py` or standalone.
+
 ### Wire `supplemental_advanced.py` to `output/bibliography/`
-**Priority:** Medium  
+**Priority:** Medium
 **Status:** Not Started
 
-Phase 3 enrichment (`supplemental_advanced.py`) still reads from old `output/supplemental/` location. Needs to read from `output/bibliography/` and enrich bibliography entries with ISBN, copyright status, and author death dates.
+Phase 3 enrichment still reads from old `output/supplemental/` location. Needs to read from `output/bibliography/` and enrich bibliography entries with ISBN, copyright status, and author death dates.
 
-### Fix `output/people_groups/3ad.json`
-**Priority:** Low  
+### Casualties spec review
+**Priority:** Medium
 **Status:** Not Started
 
-Broken people_group file — only contains `event_mentions` array, missing `GroupID` and `name` fields. Detected by `scripts/validate_output.py`.
+No formal spec exists for casualties. Known issues:
+- 77 `impacted_equipment.EquipmentID` are null (no match found during extraction)
+- 4 `event_context.EventID` broken refs
+- `source.EventID` not populated (event context is in `event_context` instead)
+- `count` field has mixed types (integer and string)
+
+### Event→People orphaned refs
+**Priority:** Medium
+**Status:** Not Started
+
+277 unique PersonIDs referenced in event `Sub-events[].people[]` that have no matching file in `output/people/`. Likely from deduplication/merging — old IDs not updated in event files.
+
+### Places parent_place_id fake ULIDs
+**Priority:** Low
+**Status:** Not Started
+
+4 place files (england, london, leningrad, berlin) have hand-crafted placeholder IDs like `01ENGLAND0000000000000000` in `hierarchy.parent_place_id`. Need real PlaceIDs or removal.
+
+### Fix 5 people_groups with empty group_type
+**Priority:** Low
+**Status:** Not Started
+
+Files: `u.s. assault division.json`, `eighteen divisions.json`, `363d infantry division.json`, `three assault divisions.json`, `77 parachute.json` — all have `group_type: ""`.
+
+### Fix 1 weather file with date range
+**Priority:** Low
+**Status:** Not Started
+
+`19440619 to 19440621_Channel_01KM4A04.json` has `date: "1944-06-19 to 1944-06-21"` instead of single YYYY-MM-DD.
 
 ---
 
 ## Windows PowerShell Scripts
-
-**Priority:** Medium  
+**Priority:** Low
 **Status:** Not Started
 
-### Objective
-Create PowerShell equivalents for all bash shell scripts to support Windows users.
-
-### Shell Scripts Requiring PowerShell Equivalents
-
-#### Active Scripts (8)
-1. **tools/setup_openserp.sh** - OpenSERP service setup
-2. **scripts/test_grok_search.sh** - Test Grok search functionality
-3. **scripts/test_blacklist_comments.sh** - Test domain blacklist
-4. **scripts/run_tests.sh** - Run test suite
-5. **scripts/archive_merge_duplicate_groups.sh** - Archive merge script
-6. **scripts/cleanup_people.sh** - People data cleanup
-7. **scripts/archive_scripts.sh** - Archive old scripts
-8. **scripts/qa_check_tests.sh** - QA test checker
-
-### Implementation Plan
-
-1. **Create scripts/powershell/ directory**
-2. **Port each .sh script to .ps1**
-   - Maintain same functionality
-   - Use PowerShell idioms
-   - Test on Windows 10/11
-3. **Update documentation**
-   - Add PowerShell examples to scripts/README.md
-   - Update main README.md with PowerShell usage
-   - Add Windows-specific troubleshooting
-4. **Create master script**
-   - `scripts/powershell/run_all_tests.ps1`
-   - Equivalent to run_tests.sh
-
-### Notes
-- PowerShell 5.1+ required (built into Windows 10+)
-- Consider cross-platform PowerShell Core (7+)
-- Test on both Windows CMD and PowerShell environments
-
-### Related Documentation
-- [Scripts Reference](../../scripts/README.md)
-- [Development Guide](core/DEVELOPMENT.md)
+Create PowerShell equivalents for bash scripts to support Windows users. See `scripts/README.md` for full list.
 
 ---
 
-## Future Enhancements
+## Completed (2026-03-22)
 
-### Documentation
-- Add diagrams - Convert ASCII diagrams to images
-- Add screenshots - Visual examples of output
-- Add tutorials - Step-by-step guides for common workflows
-- Generate API docs - Auto-generate from docstrings
+- ✅ Weather: removed dead `_extract_weather_for_sub_event`, fixed DateID hallucination, normalized empty strings, removed non-spec `country` field
+- ✅ Cross-reference consistency: all DateMentionID/PlaceMentionID now point to top-level entity IDs (weather, places, people, groups, images, maps)
+- ✅ Code fixes: `batch_parallel.py`, `weather_central.py`, `images.py`, `external_maps.py`, `casualties.py` — all resolve entity IDs from lookups instead of trusting LLM
+- ✅ Places: backfilled current_name, geography_type, coordinates, bounding_box, map_urls, date linking
+- ✅ People groups: fixed group_type to spec enum, backfilled date linking
+- ✅ SCHEMA_REFERENCE.md: comprehensive schema documentation for all 11 entity types
+- ✅ Archived 8 stale docs to `docs/archive/2026-03-22/`
 
-### Features
-- Review existing feature docs (48 docs) for accuracy against current code
-- Add integration tests for full pipeline
-- Add performance benchmarks
-- Add data quality metrics
+## Completed (2026-03-19)
 
----
-
-## Completed
-
-### Batch Weather/Logistics/Casualties Extraction (✅ 2026-03-19)
-- All three optional extractors now send 1 API call per chapter instead of 1 per sub-event
-- `_batch_extract_weather()`, `_batch_extract_logistics()`, `_batch_extract_casualties()`
-- Post-processing (entity linking, file creation, API enrichment) unchanged
-- Estimated ~2,249 fewer API calls (~44% total reduction)
-- All batch functions refactored to B-rated or better (radon)
-
-### Supplemental Split Architecture (✅ 2026-03-19)
-- Bibliography + factual content split routing
-- `alt_title` field for expanded abbreviations
-- ULID fixing wired into all extractors
-- JSON schema validation for casualties and people_groups
-- Comprehensive output validation script (`scripts/validate_output.py`)
-
-### Resolved TODOs (Archived 2026-03-19)
-- `TODO_supplemental_naming_collision.md` — Fixed by book-prefixed filenames
-- `TODO_per_book_cache.md` — Implemented per-book cache routing
-- `TODO_short_response_rejection.md` — Fixed short valid JSON acceptance
-
-### Phase 1-5: Comprehensive Documentation (✅ 2026-03-13)
-- Created 7 comprehensive feature READMEs
-- Updated core pipeline documentation
-- Created scripts and tools documentation
-- Archived outdated documents
-- Cleaned up project structure
+- ✅ Batch weather/logistics/casualties extraction (1 API call per chapter)
+- ✅ Supplemental split architecture (bibliography + factual content)
+- ✅ ULID fixing, JSON schema validation, output validation script

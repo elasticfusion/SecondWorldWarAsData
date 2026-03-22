@@ -1,25 +1,72 @@
 # People Groups → People Linking
 
+**Last Updated:** 2026-03-22
+
 ## Implementation: Option 2 (Groups → People)
 
-### Added to People Groups Extraction
+### Group File Schema
 
-**New Field: `members`**
 ```json
 {
-  "GroupID": "01...",
+  "GroupID": "01ULID...",
+  "name": "XIX Army Corps",
   "group_name": "XIX Army Corps",
   "group_type": "military_unit",
+  "military_hierarchy": "corps",
+  "source_language": "English",
+  "country_of_origin": "DEU",
+  "alliance_membership": ["Axis Powers"],
+  "common_name": "XIX Corps",
+  "description": "...",
+  "parent_organization": "Army Group B",
+  "enrichment_data": {
+    "full_name": "XIX Army Corps",
+    "unit_type": "corps",
+    "branch": "Wehrmacht",
+    "nationality": "German",
+    "formed_date": "1938-10-01",
+    "disbanded_date": "1945-05-08",
+    "parent_unit": "Army Group B",
+    "description": "...",
+    "commanding_officers": [
+      { "name": "Heinz Guderian", "from_date": "1939-09-01", "to_date": "1940-05-10" }
+    ],
+    "notable_operations": ["Fall Gelb", "Operation Barbarossa"]
+  },
   "members": [
     {
-      "PersonID": "01...",
+      "PersonID": "01ULID...",
       "name": "Heinz Guderian",
       "role": "Commander",
-      "date_range": "1939-09-01 to 1940-05-10"
+      "confidence": 0.9,
+      "source": "enrichment",
+      "from_date": "1939-09-01",
+      "to_date": "1940-05-10"
+    }
+  ],
+  "event_mentions": [
+    {
+      "MentionID": "01ULID...",
+      "Event_Name": "...",
+      "EventID": "01ULID...",
+      "Sub_event_Name": "...",
+      "Sub_eventID": "01ULID...",
+      "book": "...",
+      "author": "...",
+      "series": "United States Army in World War II",
+      "date": "1944-06-06",
+      "DateMentionID": "01ULID..."
     }
   ]
 }
 ```
+
+**`group_type` enum:** `military_unit`, `country`, `alliance`, `political_party`, `government_organization`, `anti_government_organization`, `religious_organization`
+
+**Cross-references:**
+- `DateMentionID` in mentions → top-level `DateID` in `output/dates/*.json`
+- `members[].PersonID` → top-level `PersonID` in `output/people/*.json`
+- `enrichment_data` populated during Phase 3 enrichment
 
 ### Extraction Logic
 

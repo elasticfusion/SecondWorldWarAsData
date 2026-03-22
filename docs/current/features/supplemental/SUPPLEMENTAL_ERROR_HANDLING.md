@@ -193,5 +193,5 @@ All extractors now follow consistent error handling patterns.
 ## Related Documentation
 
 - `contextmanagement/Specs/error_handling.md` - Full error handling spec
-- `docs/current/SUPPLEMENTAL_PHASE1.md` - Implementation guide
-- `docs/current/SUPPLEMENTAL_VALIDATION.md` - Validation details
+- `docs/current/features/supplemental/SUPPLEMENTAL_COMPLETE.md` - Complete implementation guide
+- `docs/current/features/supplemental/SUPPLEMENTAL_VALIDATION.md` - Validation details

@@ -250,7 +250,7 @@ Wikipedia and Grokipedia integration for people.
 
 ### Copyright Calculator (`copyright_calculator.py`)
 **Status:** Production  
-**Documentation:** [supplemental/SUPPLEMENTAL_PHASE2.md](supplemental/SUPPLEMENTAL_PHASE2.md)
+**Documentation:** [supplemental/SUPPLEMENTAL_COMPLETE.md](supplemental/SUPPLEMENTAL_COMPLETE.md)
 
 Copyright status determination for supplemental materials.
 
