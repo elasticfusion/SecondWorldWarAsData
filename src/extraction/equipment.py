@@ -61,7 +61,6 @@ class MediaItem(BaseModel):
     source: str = Field(description="wikipedia, commons, archive, etc.")
     license: Optional[str] = Field(default=None, description="License info")
     description: Optional[str] = Field(default=None, description="Media description")
-    maintenance_issues: List[str] = Field(default_factory=list)
 
 
 class EquipmentMention(BaseModel):
@@ -100,6 +99,32 @@ class Variant(BaseModel):
     variant_name: str
     differences: Optional[str] = None
     alternate_names: List[str] = Field(default_factory=list)
+
+
+class ExternalDataPoint(BaseModel):
+    """Single data point from external source."""
+
+    field: str
+    value: str
+    verified: bool = False
+    notes: Optional[str] = None
+
+
+class ExternalSource(BaseModel):
+    """External data source."""
+
+    source_type: str = Field(description="museum, archive, reference, etc.")
+    source_name: str
+    url: str
+    data_points: List[ExternalDataPoint] = Field(default_factory=list)
+
+
+class ExternalData(BaseModel):
+    """External supplemental data."""
+
+    grokipedia_url: Optional[str] = None
+    wikipedia_url: Optional[str] = None
+    additional_sources: List[ExternalSource] = Field(default_factory=list)
 
 
 class EquipmentExtraction(BaseModel):
@@ -408,16 +433,31 @@ def _extract_year_from_date(
     return None
 
 
+def _build_external_data(
+    enriched: Dict[str, Any], equipment_data: Dict[str, Any]
+) -> None:
+    """Build external_data from enrichment URLs if not already present."""
+    wiki_url = enriched.get("wikipedia_url")
+    grok_url = enriched.get("grokipedia_url")
+    if (wiki_url or grok_url) and "external_data" not in equipment_data:
+        ext: Dict[str, Any] = {}
+        if grok_url:
+            ext["grokipedia_url"] = grok_url
+        if wiki_url:
+            ext["wikipedia_url"] = wiki_url
+        equipment_data["external_data"] = ext
+
+
 def _merge_enriched_data(
     equipment_data: Dict[str, Any], enriched: Dict[str, Any]
 ) -> None:
     """Merge enriched data into equipment data (don't overwrite existing)."""
     for key in ["description", "specifications", "alternate_names", "variants"]:
         if key in enriched and enriched[key]:
-            # Only use enriched data if field is missing or empty
             if key not in equipment_data or not equipment_data[key]:
                 equipment_data[key] = enriched[key]
                 logger.debug("  Enriched %s: %s", key, type(enriched[key]).__name__)
+    _build_external_data(enriched, equipment_data)
 
 
 def _add_downloaded_media(
@@ -1048,13 +1088,17 @@ Provide a brief summary with:
 2. Key specifications (if applicable: weight, dimensions, armament, speed, range, crew)
 3. Alternate names/designations
 4. Notable variants
+5. Wikipedia URL (if it exists)
+6. Grokipedia URL (if it exists, format: https://grokipedia.com/Article_Name)
 
 Return as JSON:
 {{
   "description": "Brief description",
   "specifications": {{"key": "value"}},
   "alternate_names": ["name1", "name2"],
-  "variants": [{{"variant_name": "name", "description": "desc"}}]
+  "variants": [{{"variant_name": "name", "description": "desc"}}],
+  "wikipedia_url": "https://en.wikipedia.org/wiki/...",
+  "grokipedia_url": "https://grokipedia.com/..."
 }}
 
 If information is not available, return empty fields."""
@@ -1171,10 +1215,13 @@ def _merge_into_existing(
     with open(eq_file, encoding="utf-8") as f:
         existing = json.load(f)
 
-    # Check if mention already exists
-    existing_mention_ids = {m["MentionID"] for m in existing.get("mentions", [])}
-    if new_mention["MentionID"] in existing_mention_ids:
-        logger.debug("Mention %s already exists, skipping", new_mention["MentionID"])
+    # Check if mention already exists (semantic dedup by event+sub-event)
+    existing_keys = {
+        (m.get("EventID"), m.get("Sub_eventID")) for m in existing.get("mentions", [])
+    }
+    new_key = (new_mention.get("EventID"), new_mention.get("Sub_eventID"))
+    if new_key in existing_keys:
+        logger.debug("Mention for %s already exists, skipping", new_key)
         return eq_file
 
     # Append mention
@@ -1384,6 +1431,30 @@ Example:
     return None
 
 
+def _find_sub_event(
+    event_data: Dict[str, Any], paragraph_numbers: List[int]
+) -> Dict[str, Any]:
+    """Find the sub-event matching the given paragraph numbers."""
+    sub_events = event_data["Event"].get("Sub-events", [])
+    if not sub_events:
+        return {}
+    if not paragraph_numbers:
+        return sub_events[0]
+
+    # Match by paragraph number in fulltext keys
+    for se in sub_events:
+        fulltext = se.get("Sub-event_fulltext", {})
+        if isinstance(fulltext, dict):
+            for key in fulltext:
+                try:
+                    para_num = int(key.split("_")[-1]) if "_" in key else int(key)
+                    if para_num in paragraph_numbers:
+                        return se
+                except (ValueError, IndexError):
+                    continue
+    return sub_events[0]
+
+
 def _build_mention(
     eq: EquipmentExtraction,
     event_data: Dict[str, Any],
@@ -1395,15 +1466,12 @@ def _build_mention(
     output_root: Path,
 ) -> Dict[str, Any]:
     """Build equipment mention with all metadata."""
+    sub_event = _find_sub_event(event_data, eq.paragraph_numbers)
     mention_id = str(ulid.new())
     mention = {
         "MentionID": mention_id,
         "EventID": event_data["Event"]["EventID"],
-        "Sub_eventID": (
-            event_data["Event"]["Sub-events"][0]["Sub-eventID"]
-            if event_data["Event"].get("Sub-events")
-            else str(ulid.new())
-        ),
+        "Sub_eventID": sub_event.get("Sub-eventID", str(ulid.new())),
     }
 
     # Add metadata and event names
@@ -1596,14 +1664,28 @@ def _save_processed_registry(output_dir: Path, processed: Dict[str, bool]) -> No
 def _link_entity(
     entity_name: Optional[str], entity_index: Dict[str, str], entity_type: str
 ) -> Optional[Dict[str, str]]:
-    """Link entity by name to ID."""
-    if not entity_name:
+    """Link entity by name to ID with fuzzy fallback."""
+    if not entity_name or not entity_index:
         return None
+    id_key = "PersonID" if entity_type == "person" else "PeopleGroupID"
+
+    # Exact match
     entity_id = entity_index.get(entity_name)
     if entity_id:
-        id_key = "PersonID" if entity_type == "person" else "PeopleGroupID"
-        logger.debug("Linked %s '%s' to %s", entity_type, entity_name, entity_id)
         return {id_key: entity_id, "name": entity_name}
+
+    # Case-insensitive match
+    name_lower = entity_name.lower()
+    for idx_name, idx_id in entity_index.items():
+        if idx_name.lower() == name_lower:
+            return {id_key: idx_id, "name": idx_name}
+
+    # Substring match
+    for idx_name, idx_id in entity_index.items():
+        il = idx_name.lower()
+        if name_lower in il or il in name_lower:
+            return {id_key: idx_id, "name": idx_name}
+
     logger.debug("%s not found: %s", entity_type.capitalize(), entity_name)
     return None
 
@@ -1648,12 +1730,12 @@ def _add_event_names_to_mention(
     """Add event names to mention."""
     if event_data["Event"].get("Event_Name"):
         mention["Event_Name"] = event_data["Event"]["Event_Name"]
-    if event_data["Event"].get("Sub-events") and event_data["Event"]["Sub-events"][
-        0
-    ].get("Sub-event_Name"):
-        mention["Sub_event_Name"] = event_data["Event"]["Sub-events"][0][
-            "Sub-event_Name"
-        ]
+    # Find the sub-event matching the mention's Sub_eventID
+    sub_event_id = mention.get("Sub_eventID")
+    for se in event_data["Event"].get("Sub-events", []):
+        if se.get("Sub-eventID") == sub_event_id and se.get("Sub-event_Name"):
+            mention["Sub_event_Name"] = se["Sub-event_Name"]
+            break
 
 
 def _link_date_to_mention(
@@ -1674,8 +1756,9 @@ def _link_date_to_mention(
     if date_file.exists():
         with open(date_file, encoding="utf-8") as f:
             date_data = json.load(f)
-            if date_data.get("date"):
-                mention["date"] = date_data["date"]
+            date_val = date_data.get("date_start") or date_data.get("date")
+            if date_val:
+                mention["date"] = date_val
     logger.debug("Linked to date %s", mention["DateID"])
 
 
