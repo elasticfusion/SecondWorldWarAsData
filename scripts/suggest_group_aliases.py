@@ -51,7 +51,7 @@ def get_all_extracted_groups(groups_dir: Path) -> List[str]:
 
         with open(group_file, "r", encoding="utf-8") as f:
             data = json.load(f)
-            group_names.add(data.get("group_name", ""))
+            group_names.add(data.get("group_name") or data.get("name", ""))
 
     return sorted(group_names)
 

@@ -69,6 +69,86 @@ def normalize_group_name(name: str, alias_map: Dict[str, str]) -> str:
     return name
 
 
+def _get_group_name(data):
+    """Get group name from data, trying group_name then name."""
+    return data.get("group_name") or data.get("name", "")
+
+
+def _group_by_canonical(groups_dir, alias_map):
+    """Load group files and group by canonical name."""
+    skip = {"index.json", "related_groups_report.json"}
+    canonical_groups: Dict[str, List[Path]] = {}
+    for group_file in groups_dir.glob("*.json"):
+        if group_file.name in skip:
+            continue
+        with open(group_file, "r", encoding="utf-8") as f:
+            group_data = json.load(f)
+        canonical = normalize_group_name(_get_group_name(group_data), alias_map)
+        canonical_groups.setdefault(canonical, []).append(group_file)
+    return canonical_groups
+
+
+def _merge_into(merged_data, data):
+    """Merge event mentions and members from data into merged_data."""
+    # Merge event mentions
+    existing = merged_data.get("event_mentions", [])
+    ids = {m["MentionID"] for m in existing}
+    for mention in data.get("event_mentions", []):
+        if mention["MentionID"] not in ids:
+            existing.append(mention)
+    merged_data["event_mentions"] = existing
+
+    # Merge members
+    if "members" in data:
+        members = merged_data.get("members", [])
+        pids = {m.get("PersonID") for m in members if m.get("PersonID")}
+        for member in data.get("members", []):
+            if member.get("PersonID") and member["PersonID"] not in pids:
+                members.append(member)
+        merged_data["members"] = members
+
+
+def _merge_canonical_groups(canonical_groups):
+    """Merge file groups with >1 file. Returns merge count."""
+    merged_count = 0
+    for canonical_name, files in canonical_groups.items():
+        if len(files) <= 1:
+            continue
+        logger.info("Merging %d groups into: %s", len(files), canonical_name)
+
+        with open(files[0], "r", encoding="utf-8") as f:
+            merged_data = json.load(f)
+        merged_data["group_name"] = canonical_name
+
+        for group_file in files[1:]:
+            with open(group_file, "r", encoding="utf-8") as f:
+                _merge_into(merged_data, json.load(f))
+            group_file.unlink()
+            logger.info("  Deleted: %s", group_file.name)
+
+        with open(files[0], "w", encoding="utf-8") as f:
+            json.dump(merged_data, f, indent=2, ensure_ascii=False)
+        merged_count += 1
+
+    return merged_count
+
+
+def _rebuild_group_index(groups_dir):
+    """Rebuild the groups index.json."""
+    skip = {"index.json", "related_groups_report.json"}
+    index = {}
+    for group_file in groups_dir.glob("*.json"):
+        if group_file.name in skip:
+            continue
+        with open(group_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        index[_get_group_name(data).lower()] = group_file.name
+
+    with open(groups_dir / "index.json", "w", encoding="utf-8") as f:
+        json.dump(index, f, indent=2, ensure_ascii=False)
+    logger.info("Index updated with %d entries", len(index))
+
+
 def consolidate_groups(groups_dir: Path, config: Dict) -> None:
     """
     Consolidate people groups based on alias configuration.
@@ -79,112 +159,16 @@ def consolidate_groups(groups_dir: Path, config: Dict) -> None:
     """
     alias_map = build_alias_map(config)
     merge_rules = build_merge_rules(config)
+    logger.info("Loaded %d aliases, %d merge rules", len(alias_map), len(merge_rules))
 
-    logger.info("Loaded %d aliases", len(alias_map))
-    logger.info("Loaded %d merge rules", len(merge_rules))
+    canonical_groups = _group_by_canonical(groups_dir, alias_map)
+    logger.info("Processing %d canonical groups...", len(canonical_groups))
 
-    # Load all group files
-    group_files = [
-        f
-        for f in groups_dir.glob("*.json")
-        if f.name not in ["index.json", "related_groups_report.json"]
-    ]
-
-    logger.info("Processing %d group files...", len(group_files))
-
-    # Track groups to merge
-    canonical_groups: Dict[str, List[Path]] = {}
-
-    for group_file in group_files:
-        with open(group_file, "r", encoding="utf-8") as f:
-            group_data = json.load(f)
-
-        group_name = group_data.get("group_name", "")
-        canonical_name = normalize_group_name(group_name, alias_map)
-
-        if canonical_name not in canonical_groups:
-            canonical_groups[canonical_name] = []
-
-        canonical_groups[canonical_name].append(group_file)
-
-    # Merge groups with same canonical name
-    merged_count = 0
-    for canonical_name, files in canonical_groups.items():
-        if len(files) > 1:
-            logger.info("Merging %d groups into: %s", len(files), canonical_name)
-
-            # Load all data
-            merged_data = None
-            for group_file in files:
-                with open(group_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-
-                if merged_data is None:
-                    merged_data = data
-                    merged_data["group_name"] = canonical_name
-                else:
-                    # Merge event mentions
-                    existing_mentions = merged_data.get("event_mentions", [])
-                    new_mentions = data.get("event_mentions", [])
-
-                    mention_ids = {m["MentionID"] for m in existing_mentions}
-                    for mention in new_mentions:
-                        if mention["MentionID"] not in mention_ids:
-                            existing_mentions.append(mention)
-
-                    merged_data["event_mentions"] = existing_mentions
-
-                    # Merge members
-                    if "members" in data:
-                        existing_members = merged_data.get("members", [])
-                        new_members = data.get("members", [])
-
-                        person_ids = {
-                            m.get("PersonID")
-                            for m in existing_members
-                            if m.get("PersonID")
-                        }
-                        for member in new_members:
-                            if (
-                                member.get("PersonID")
-                                and member["PersonID"] not in person_ids
-                            ):
-                                existing_members.append(member)
-
-                        merged_data["members"] = existing_members
-
-            # Save merged data to first file
-            primary_file = files[0]
-            with open(primary_file, "w", encoding="utf-8") as f:
-                json.dump(merged_data, f, indent=2, ensure_ascii=False)
-
-            # Delete other files
-            for group_file in files[1:]:
-                group_file.unlink()
-                logger.info("  Deleted: %s", group_file.name)
-
-            merged_count += 1
-
+    merged_count = _merge_canonical_groups(canonical_groups)
     logger.info("Merged %d group(s)", merged_count)
 
-    # Rebuild index
     logger.info("Rebuilding index...")
-    index = {}
-    for group_file in groups_dir.glob("*.json"):
-        if group_file.name in ["index.json", "related_groups_report.json"]:
-            continue
-
-        with open(group_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-
-        group_name = data.get("group_name", "")
-        index[group_name.lower()] = group_file.name
-
-    index_file = groups_dir / "index.json"
-    with open(index_file, "w", encoding="utf-8") as f:
-        json.dump(index, f, indent=2, ensure_ascii=False)
-
-    logger.info("Index updated with %d entries", len(index))
+    _rebuild_group_index(groups_dir)
 
 
 def main():
