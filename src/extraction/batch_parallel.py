@@ -26,6 +26,25 @@ def _load_index(index_file: Path, entity_type: str) -> dict:
     return {}
 
 
+def _build_date_id_lookup(dates_dir: Path) -> Dict[str, str]:
+    """Build date_start → DateID map from dates directory."""
+    lookup: Dict[str, str] = {}
+    if not dates_dir.exists():
+        return lookup
+    for f in dates_dir.glob("*.json"):
+        if f.name == "index.json":
+            continue
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        ds = data.get("date_start")
+        did = data.get("DateID")
+        if ds and did:
+            lookup[ds] = did
+    return lookup
+
+
 def _make_date_key(obj: dict) -> str:
     """Create date lookup key, including time if present. Rejects non-WWII dates."""
     key = obj.get("date_start") or obj.get("date", "")
@@ -119,6 +138,7 @@ def _add_event_mention_batch(  # pylint: disable=too-many-arguments,too-many-pos
     event_name: str,
     meta: Dict[str, str],
     source_obj: Optional[dict] = None,
+    date_id_lookup: Optional[Dict[str, str]] = None,
 ) -> None:
     """Add event_mention to entity record if not already present."""
     mentions = record.get("event_mentions", [])
@@ -141,8 +161,11 @@ def _add_event_mention_batch(  # pylint: disable=too-many-arguments,too-many-pos
             mention["position_at_event"] = source_obj["position_at_event"]
         if source_obj.get("life_event"):
             mention["life_event"] = source_obj["life_event"]
-        if source_obj.get("date_context"):
-            mention["date_context"] = source_obj["date_context"]
+        date_ctx = source_obj.get("date_context")
+        if date_ctx:
+            mention["date_context"] = date_ctx
+            if date_id_lookup and date_ctx in date_id_lookup:
+                mention["DateMentionID"] = date_id_lookup[date_ctx]
         if source_obj.get("role_in_event"):
             mention["role_in_event"] = source_obj["role_in_event"]
     mentions.append(mention)
@@ -165,6 +188,7 @@ def _process_entity_obj(  # pylint: disable=too-many-arguments,too-many-position
     sub_event_key: str,
     links: Dict[str, list],
     make_filename: Optional[Callable[[str, str], str]] = None,
+    date_id_lookup: Optional[Dict[str, str]] = None,
 ) -> bool:
     """Process a single entity object. Returns True if processed."""
     key = make_key(obj)
@@ -185,6 +209,7 @@ def _process_entity_obj(  # pylint: disable=too-many-arguments,too-many-position
             event_name,
             meta,
             source_obj=obj,
+            date_id_lookup=date_id_lookup,
         )
 
     if sub_event_key and seid and entity_id:
@@ -208,6 +233,7 @@ def _process_batch_response(  # pylint: disable=too-many-arguments,too-many-posi
     meta: dict,
     sub_event_key: str,
     make_filename: Optional[Callable[[str, str], str]] = None,
+    date_id_lookup: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
     """Process API response: create entities, add mentions, collect links."""
     count = 0
@@ -235,6 +261,7 @@ def _process_batch_response(  # pylint: disable=too-many-arguments,too-many-posi
                 sub_event_key,
                 links,
                 make_filename,
+                date_id_lookup,
             ):
                 count += 1
 
@@ -300,6 +327,10 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     index_file = entity_dir / "index.json"
     index = _load_index(index_file, entity_type)
 
+    # Build date_start → DateID lookup for cross-referencing
+    dates_dir = output_root / "dates"
+    date_id_lookup = _build_date_id_lookup(dates_dir)
+
     result = _process_batch_response(
         response,
         response_key,
@@ -315,6 +346,7 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
         meta,
         sub_event_key,
         make_filename,
+        date_id_lookup,
     )
 
     write_json_with_lock(index_file, index)

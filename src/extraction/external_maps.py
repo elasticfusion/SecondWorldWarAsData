@@ -140,10 +140,7 @@ def find_place_mention_id(
             # Match keywords
             place_name = place_data.get("place_name", "").lower()
             if any(kw.lower() in place_name for kw in place_keywords):
-                # Find the specific mention ID
-                for mention in event_mentions:
-                    if mention.get("Sub_eventID") == sub_event_id:
-                        return mention.get("PlaceMentionID")
+                return place_data.get("PlaceID")
 
         except (json.JSONDecodeError, KeyError) as e:
             logger.debug(f"  Skipping place file {place_file.name}: {e}")
@@ -171,7 +168,7 @@ def find_date_match(date_str: str, sub_event_id: str, dates_dir: Path) -> Option
             event_mentions = date_data.get("event_mentions", [])
             for mention in event_mentions:
                 if mention.get("Sub_eventID") == sub_event_id:
-                    return mention.get("DateMentionID")
+                    return date_data.get("DateID")
 
         except (json.JSONDecodeError, KeyError) as e:
             logger.debug(f"  Skipping date file {date_file.name}: {e}")
