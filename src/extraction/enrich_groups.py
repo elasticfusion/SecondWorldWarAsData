@@ -54,17 +54,28 @@ _ALLIANCE_MAP = {
 }
 
 
+def _infer_alliance(data, enrich):
+    """Set alliance_membership from nationality if not already set."""
+    nat = enrich.get("nationality", "")
+    if nat and not data.get("alliance_membership"):
+        alliance = _ALLIANCE_MAP.get(nat)
+        if alliance:
+            data["alliance_membership"] = [alliance]
+
+
 def _promote_enrichment(data):
     """Promote enrichment_data fields to spec-level top-level fields."""
     enrich = data.get("enrichment_data")
     if not enrich or not isinstance(enrich, dict):
         return
 
+    # unit_type is the hierarchy (division, corps, etc.) — group_type is the spec enum
+    unit_type = enrich.get("unit_type")
     mapping = {
-        "group_type": enrich.get("unit_type"),
+        "group_type": "military_unit" if unit_type else None,
         "country_of_origin": enrich.get("nationality"),
         "description": enrich.get("description"),
-        "military_hierarchy": enrich.get("unit_type"),
+        "military_hierarchy": unit_type,
         "parent_organization": enrich.get("parent_unit"),
         "common_name": enrich.get("full_name"),
         "sub_organizations": enrich.get("sub_organizations"),
@@ -75,14 +86,8 @@ def _promote_enrichment(data):
         if value and not data.get(key):
             data[key] = value
 
-    # Infer alliance from nationality
-    nat = enrich.get("nationality", "")
-    if nat and not data.get("alliance_membership"):
-        alliance = _ALLIANCE_MAP.get(nat)
-        if alliance:
-            data["alliance_membership"] = [alliance]
+    _infer_alliance(data, enrich)
 
-    # Source language is always English for this corpus
     if not data.get("source_language"):
         data["source_language"] = "English"
 
