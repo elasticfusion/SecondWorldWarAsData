@@ -2,7 +2,7 @@
 
 **Module:** `src/extraction/weather_central.py`  
 **Status:** Optional (Disabled by default)  
-**Last Updated:** 2026-03-19
+**Last Updated:** 2026-03-22
 
 ---
 
@@ -11,11 +11,12 @@
 Weather extraction analyzes event files for weather mentions and enriches them with historical weather data from the **Open-Meteo API**. Data is stored in a central repository with links to dates and places.
 
 **Key Features:**
-- Extracts weather mentions from text
-- Fetches historical weather data from Open-Meteo API
+- Extracts weather mentions from text into `extracted_data` object
+- Fetches historical weather data from Open-Meteo API into `api_data` object
 - Central repository (one file per date+place combination)
-- Links to DateID and PlaceID
-- Temperature, precipitation, wind, cloud cover
+- `DateID` resolved from dates directory lookup (not LLM-provided)
+- `location` object with PlaceID, coordinates
+- `source_type` tracking: `extracted`, `api`, or `hybrid`
 - Operational impact tracking
 
 **Status:** Optional feature, disabled by default in `config.yaml`
@@ -38,6 +39,8 @@ For each mention:
     ↓
 Filter (exact dates only)
     ↓
+Resolve DateID from dates directory lookup
+    ↓
 Lookup Place Coordinates
     ↓
 Fetch Historical Weather (Open-Meteo API)
@@ -48,6 +51,8 @@ Add Event Mention
     ↓
 Update Index
 ```
+
+**DateID Resolution:** DateID is resolved by matching the date string against the dates directory, not trusting LLM-provided IDs.
 
 **Batching:** All sub-events are sent in a single API call per chapter (via `_batch_extract_weather`). Post-processing (coordinate lookup, API fetch, file creation) remains per-mention.
 
@@ -71,45 +76,59 @@ output/weather/
 
 ```json
 {
-  "WeatherID": "01KHYP2M4N6P8Q0R2S4T6V8W0X",
+  "WeatherID": "01ULID...",
   "date": "1944-06-06",
-  "place_name": "Normandy",
-  "PlaceID": "01KHYP2N5P7Q9R1S3T5V7W9X1Z",
-  "coordinates": {
-    "latitude": 49.18,
-    "longitude": -0.37
+  "DateID": "01ULID...",
+  "location": {
+    "place_name": "Normandy",
+    "PlaceID": "01ULID...",
+    "latitude": 49.35,
+    "longitude": -0.50
   },
-  "country": "FRA",
+  "source_type": "hybrid",
+  "extracted_data": {
+    "description": "Heavy overcast with rain",
+    "temperature": null,
+    "temperature_unit": null,
+    "measurement_system": null,
+    "notable_impact": "Delayed air support",
+    "original_text": "The weather on 6 June was overcast with light rain",
+    "book": "Cross-Channel Attack",
+    "author": "Gordon A. Harrison"
+  },
   "api_data": {
-    "temperature_2m_max": 18.5,
-    "temperature_2m_min": 12.3,
-    "precipitation_sum": 2.5,
-    "windspeed_10m_max": 25.0,
-    "cloud_cover_mean": 75.0,
-    "source": "Open-Meteo Archive API",
-    "fetched_at": "2026-03-13T09:40:00Z"
+    "provider": "open-meteo",
+    "retrieved_at": "2026-03-22T16:53:30Z",
+    "temperature_max_c": 16.2,
+    "temperature_min_c": 12.8,
+    "precipitation_mm": 4.8,
+    "windspeed_max_kmh": 23.2,
+    "cloud_cover_percent": 91,
+    "raw_response": {}
   },
   "event_mentions": [
     {
-      "MentionID": "01KHYP2P6Q8R0S2T4V6W8X0Y2Z",
+      "MentionID": "01ULID...",
       "Event_Name": "Operation Overlord",
-      "EventID": "01KHXNSE0W41DV7VV6PEMDJJ5H",
+      "EventID": "01ULID...",
       "Sub_event_Name": "D-Day landings",
-      "Sub_eventID": "01KHXNSE0WX99GG0CB53CD2242",
+      "Sub_eventID": "01ULID...",
       "book": "Cross-Channel Attack",
       "author": "Gordon A. Harrison",
-      "series": "United States Army in World War II",
-      "weather_description": "overcast with light rain",
-      "temperature": 15.0,
-      "temperature_unit": "celsius",
-      "measurement_system": "metric",
-      "notable_impact": "Poor visibility delayed airborne operations",
-      "original_text": "The weather on 6 June was overcast with light rain",
-      "context": null
+      "series": "United States Army in World War II"
     }
   ]
 }
 ```
+
+**`source_type` values:**
+- `extracted` — LLM-extracted weather description only (no API data)
+- `api` — Open-Meteo API data only (no text extraction)
+- `hybrid` — Both extracted description and API data
+
+**Cross-references:**
+- `DateID` → top-level `DateID` in `output/dates/*.json`
+- `location.PlaceID` → top-level `PlaceID` in `output/places/*.json`
 
 ---
 
@@ -381,7 +400,7 @@ rm -rf cache/api/weather/*
 
 ## Examples
 
-### Example 1: D-Day Weather
+### Example: D-Day Weather
 
 **Input Text:**
 ```
@@ -389,57 +408,51 @@ rm -rf cache/api/weather/*
 Visibility was poor, delaying airborne operations."
 ```
 
-**Output:**
+**Output (weather file):**
 ```json
 {
-  "WeatherMentionID": "01KHYP2M4N6P8Q0R2S4T6V8W0X",
-  "place_name": "Normandy",
-  "PlaceMentionID": "01KHYP2N5P7Q9R1S3T5V7W9X1Z",
+  "WeatherID": "01ULID...",
   "date": "1944-06-06",
-  "DateMentionID": "01KHYP2P6Q8R0S2T4V6W8X0Y2Z",
-  "weather_description": "overcast with light rain and strong winds",
-  "temperature": null,
-  "temperature_unit": null,
-  "measurement_system": null,
-  "notable_impact": "Poor visibility delayed airborne operations",
-  "original_text": "The weather on 6 June was overcast with light rain and strong winds"
-}
-```
-
-**API Data Added:**
-```json
-{
+  "DateID": "01ULID...",
+  "location": {
+    "place_name": "Normandy",
+    "PlaceID": "01ULID...",
+    "latitude": 49.35,
+    "longitude": -0.50
+  },
+  "source_type": "hybrid",
+  "extracted_data": {
+    "description": "overcast with light rain and strong winds",
+    "temperature": null,
+    "temperature_unit": null,
+    "measurement_system": null,
+    "notable_impact": "Poor visibility delayed airborne operations",
+    "original_text": "The weather on 6 June was overcast with light rain and strong winds",
+    "book": "Cross-Channel Attack",
+    "author": "Gordon A. Harrison"
+  },
   "api_data": {
-    "temperature_2m_max": 18.5,
-    "temperature_2m_min": 12.3,
-    "precipitation_sum": 2.5,
-    "windspeed_10m_max": 25.0,
-    "cloud_cover_mean": 75.0,
-    "source": "Open-Meteo Archive API",
-    "fetched_at": "2026-03-13T09:40:00Z"
-  }
-}
-```
-
-### Example 2: Temperature Mention
-
-**Input Text:**
-```
-"On 15 July, temperatures reached 30°C, making conditions difficult for troops."
-```
-
-**Output:**
-```json
-{
-  "WeatherMentionID": "01KHYP3N5Q7R9S1T3V5W7X9Y1Z",
-  "place_name": "France",
-  "date": "1944-07-15",
-  "weather_description": "hot conditions",
-  "temperature": 30.0,
-  "temperature_unit": "celsius",
-  "measurement_system": "metric",
-  "notable_impact": "Difficult conditions for troops",
-  "original_text": "temperatures reached 30°C"
+    "provider": "open-meteo",
+    "retrieved_at": "2026-03-22T...",
+    "temperature_max_c": 16.2,
+    "temperature_min_c": 12.8,
+    "precipitation_mm": 4.8,
+    "windspeed_max_kmh": 23.2,
+    "cloud_cover_percent": 91,
+    "raw_response": {}
+  },
+  "event_mentions": [
+    {
+      "MentionID": "01ULID...",
+      "Event_Name": "Operation Overlord",
+      "EventID": "01ULID...",
+      "Sub_event_Name": "D-Day landings",
+      "Sub_eventID": "01ULID...",
+      "book": "Cross-Channel Attack",
+      "author": "Gordon A. Harrison",
+      "series": "United States Army in World War II"
+    }
+  ]
 }
 ```
 

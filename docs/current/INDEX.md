@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated:** 2026-03-19
+**Last Updated:** 2026-03-22
 
 ---
 
@@ -84,7 +84,6 @@ Person extraction, deduplication, and group management.
 - **[duplicate-exclusions.md](features/people/duplicate-exclusions.md)** - False positive prevention
 - **[groups.md](features/people/groups.md)** - Organizations and military units
 - **[GROUP_DEDUPLICATION_SYSTEM.md](features/people/GROUP_DEDUPLICATION_SYSTEM.md)** - Group deduplication v2.0
-- **[TODO_peoplegroup_enrichment.md](features/people/TODO_peoplegroup_enrichment.md)** - Planned: people-to-group enrichment
 
 ### Maps
 
@@ -100,7 +99,6 @@ Military equipment extraction and tracking (experimental).
 - **[MILITARY_EQUIPMENT.md](features/equipment/MILITARY_EQUIPMENT.md)** - Complete proposal and examples
 - **[MILITARY_EQUIPMENT_SUMMARY.md](features/MILITARY_EQUIPMENT_SUMMARY.md)** - Quick summary
 - **[EQUIPMENT_FINAL_STRUCTURE.md](features/equipment/EQUIPMENT_FINAL_STRUCTURE.md)** - Final schema structure
-- **[EQUIPMENT_IMPLEMENTATION_SUMMARY.md](features/equipment/EQUIPMENT_IMPLEMENTATION_SUMMARY.md)** - Implementation summary
 - **[EQUIPMENT_DEDUPLICATION.md](features/equipment/EQUIPMENT_DEDUPLICATION.md)** - Equipment deduplication
 - **[EQUIPMENT_ENTITY_LINKING.md](features/equipment/EQUIPMENT_ENTITY_LINKING.md)** - Entity linking
 - **[EQUIPMENT_MEDIA_INTEGRATION.md](features/equipment/EQUIPMENT_MEDIA_INTEGRATION.md)** - Media integration
@@ -111,12 +109,9 @@ Military equipment extraction and tracking (experimental).
 Citations, footnotes, endnotes, and bibliographic references.
 
 - **[SUPPLEMENTAL_COMPLETE.md](features/supplemental/SUPPLEMENTAL_COMPLETE.md)** - Complete implementation guide (split architecture) ⭐
-- **[SUPPLEMENTAL_PHASE1.md](features/supplemental/SUPPLEMENTAL_PHASE1.md)** - Phase 1: Basic extraction
-- **[SUPPLEMENTAL_PHASE2.md](features/supplemental/SUPPLEMENTAL_PHASE2.md)** - Phase 2: URL search and enrichment
 - **[SUPPLEMENTAL_VALIDATION.md](features/supplemental/SUPPLEMENTAL_VALIDATION.md)** - Validation and ULID fixing
 - **[SUPPLEMENTAL_ERROR_HANDLING.md](features/supplemental/SUPPLEMENTAL_ERROR_HANDLING.md)** - Error handling
 - **[SUPPLEMENTAL_TESTING.md](features/supplemental/SUPPLEMENTAL_TESTING.md)** - Testing guide
-- **[DESIGN_supplemental_split.md](pipeline/DESIGN_supplemental_split.md)** - Design: bibliography + factual content split
 
 ### Batch Processing
 
@@ -128,20 +123,18 @@ Parallel chapter processing and batched API calls for both core and optional ext
 
 ## Reference
 
-- **[SCHEMA_REFERENCE.md](SCHEMA_REFERENCE.md)** - JSON schema reference (includes bibliography, validation coverage)
-- **[SCHEMA_EVOLUTION.md](SCHEMA_EVOLUTION.md)** - Schema versioning and migration tools
+- **[SCHEMA_REFERENCE.md](SCHEMA_REFERENCE.md)** - JSON schema reference for all 11 entity types, cross-reference conventions
 - **[VALIDATION_REPORTS.md](VALIDATION_REPORTS.md)** - Validation report generation
 - **[MONGODB_IMPORT_PLAN.md](MONGODB_IMPORT_PLAN.md)** - MongoDB import plan
 - **[FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md)** - Distributed processing options
 - **[TODO.md](TODO.md)** - Outstanding tasks
 - **[TEXT_UTILS.md](core/TEXT_UTILS.md)** - Text utility functions
-- **[qa-reports/PERFORMANCE_BENCHMARK_TEMPLATE.md](qa-reports/PERFORMANCE_BENCHMARK_TEMPLATE.md)** - Performance benchmark template
 
 ---
 
-## Reviews
+## Archive
 
-- **[PHASE2_REVIEW.md](reviews/PHASE2_REVIEW.md)** - Phase 2 operational review and metrics
+Historical docs moved to `docs/archive/` — includes phase implementation logs, point-in-time reviews, and superseded schema docs.
 
 ---
 

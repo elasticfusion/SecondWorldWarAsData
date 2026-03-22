@@ -349,13 +349,10 @@ Ambiguous items queued for human review:
 - `contextmanagement/Specs/supplementalmaterial_v2.json` - JSON schema
 
 ### Implementation Docs
-- `docs/current/SUPPLEMENTAL_PHASE1.md` - Phase 1 details
-- `docs/current/SUPPLEMENTAL_PHASE2.md` - Phase 2 details
-- `docs/current/PHASE3_COMPLETE.md` - Phase 3 details
-- `docs/current/SUPPLEMENTAL_QA_RESULTS.md` - QA results
-- `docs/current/SUPPLEMENTAL_ERROR_HANDLING.md` - Error handling
-- `docs/current/SUPPLEMENTAL_VALIDATION.md` - Validation details
-- `docs/current/PHASE1_IMPLEMENTATION_SUMMARY.md` - Original summary
+- `docs/archive/2026-03-22/SUPPLEMENTAL_PHASE1.md` - Phase 1 details (archived)
+- `docs/archive/2026-03-22/SUPPLEMENTAL_PHASE2.md` - Phase 2 details (archived)
+- `docs/current/features/supplemental/SUPPLEMENTAL_ERROR_HANDLING.md` - Error handling
+- `docs/current/features/supplemental/SUPPLEMENTAL_VALIDATION.md` - Validation details
 
 ### This Document
 - Complete overview of all phases

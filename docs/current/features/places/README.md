@@ -2,7 +2,7 @@
 
 **Module:** `src/extraction/places.py`  
 **Status:** Production  
-**Last Updated:** 2026-03-13
+**Last Updated:** 2026-03-22
 
 ---
 
@@ -11,11 +11,13 @@
 Places extraction analyzes event files and extracts all geographic mentions with GPS coordinates into a **central repository**. Each unique place gets its own file, with event mentions linked via MentionID.
 
 **Key Features:**
-- GPS coordinates (latitude/longitude)
+- GPS coordinates (latitude/longitude) with precision and confidence
 - Automatic bounding box calculation (100km radius)
 - Map service URL generation (Google Maps, OpenStreetMap)
-- Place type classification
-- Historical vs current names
+- 22-type geography classification
+- Historical names array and aliases
+- Hierarchy data (continent/country/region) via enrichment
+- DateMentionID cross-referencing to dates directory
 - Central repository prevents duplication
 
 ---
@@ -68,42 +70,57 @@ output/places/
 
 ```json
 {
-  "PlaceID": "01KHYP2M4N6P8Q0R2S4T6V8W0X",
+  "PlaceID": "01ULID...",
+  "name": "Normandy",
   "current_name": "Normandy",
-  "historical_name": null,
   "source_language": "English",
-  "latitude": 49.18,
-  "longitude": -0.37,
+  "geography_type": "region",
+  "historical_names": [
+    { "name": "Normandie", "language": "French", "date_range": "1939-1945" }
+  ],
+  "aliases": [],
+  "coordinates": {
+    "latitude": 49.18,
+    "longitude": -0.37,
+    "precision": "approximate",
+    "confidence": 0.8
+  },
   "bounding_box_100km": {
     "north": 50.08,
     "south": 48.28,
     "east": 0.53,
     "west": -1.27
   },
-  "geography_type": "region",
-  "country_code": "FRA",
   "map_urls": {
     "google_maps": "https://www.google.com/maps?q=49.18,-0.37",
     "openstreetmap": "https://www.openstreetmap.org/?mlat=49.18&mlon=-0.37&zoom=12"
   },
+  "hierarchy": {
+    "continent": "Europe",
+    "country": "France",
+    "region": "Normandy",
+    "parent_place_id": null
+  },
   "event_mentions": [
     {
-      "MentionID": "01KHYP2N5P7Q9R1S3T5V7W9X1Z",
+      "MentionID": "01ULID...",
       "Event_Name": "Operation Overlord",
-      "EventID": "01KHXNSE0W41DV7VV6PEMDJJ5H",
+      "EventID": "01ULID...",
       "Sub_event_Name": "Planning phase",
-      "Sub_eventID": "01KHXNSE0WX99GG0CB53CD2242",
+      "Sub_eventID": "01ULID...",
       "book": "Cross-Channel Attack",
       "author": "Gordon A. Harrison",
       "series": "United States Army in World War II",
       "date_context": "June 1944",
-      "role_in_event": "location of Allied invasion",
-      "original_text": "the beaches of Normandy",
-      "context": null
+      "DateMentionID": "01ULID..."
     }
   ]
 }
 ```
+
+**Cross-references:**
+- `DateMentionID` in mentions → top-level `DateID` in `output/dates/*.json`
+- `hierarchy.parent_place_id` → top-level `PlaceID` in another place file (when populated)
 
 ### Index Structure
 
@@ -189,23 +206,35 @@ bounding_box = {
 - `town` - Small urban area
 - `village` - Rural settlement
 - `region` - Geographic region
+- `province` - Administrative province
+- `state` - Administrative state
 - `country` - Nation state
-- `sea` - Body of water (ocean, sea)
+- `continent` - Continent
+- `sea` - Body of water (sea)
+- `ocean` - Body of water (ocean)
 - `river` - Waterway
+- `lake` - Lake
 - `mountain` - Mountain or range
-- `forest` - Forested area
-- `beach` - Coastal area
 - `island` - Island
-- `front` - Military front (e.g., "Western Front")
-- `Unknown` - Type not determined
+- `peninsula` - Peninsula
+- `military_base` - Military installation
+- `battlefield` - Battle site
+- `fortification` - Defensive structure
+- `bridge` - Bridge
+- `port` - Port or harbor
+- `airfield` - Airfield or airport
+- `other` - Other type
 
-### 6. Historical vs Current Names
+### 6. Historical Names & Aliases
 
-**Tracks name changes:**
+**Tracks name changes (array of historical names):**
 ```json
 {
   "current_name": "Gdańsk",
-  "historical_name": "Danzig",
+  "historical_names": [
+    { "name": "Danzig", "language": "German", "date_range": "1939-1945" }
+  ],
+  "aliases": ["Gdansk"],
   "source_language": "German"
 }
 ```
@@ -225,21 +254,29 @@ bounding_box = {
 - Place's function in the event
 - Examples: "target of attack", "defensive position", "supply route"
 
-### 8. Country Codes
+### 8. Hierarchy (via Enrichment)
 
-**ISO 3166-1 alpha-3:**
-- `FRA` - France
-- `DEU` - Germany
-- `GBR` - United Kingdom
-- `USA` - United States
+**Geographic hierarchy populated during enrichment:**
+```json
+{
+  "hierarchy": {
+    "continent": "Europe",
+    "country": "France",
+    "region": "Normandy",
+    "parent_place_id": null
+  }
+}
+```
 
-**Added during enrichment** (not in initial extraction)
+Enrichment uses Grok + Wikipedia fallback to populate hierarchy for places missing this data.
 
 ---
 
 ## Configuration
 
 No specific configuration options. Runs automatically in Phase 2.
+
+**Enrichment:** Run `phase3_enrich_data.py` or use `enrich_all_places()` to populate hierarchy data.
 
 ---
 

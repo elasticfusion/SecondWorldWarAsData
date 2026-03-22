@@ -1,5 +1,7 @@
 # File-Per-Person Implementation
 
+**Last Updated:** 2026-03-22
+
 ## Structure
 
 ```
@@ -20,34 +22,40 @@ Each file contains a single person:
 
 ```json
 {
-  "PersonID": "01H8XYZI1AB123CD456EF789GH",
+  "PersonID": "01ULID...",
   "name": "Dwight D. Eisenhower",
   "source_language": "English",
-  "aliases": [],
   "biographical_profile": {
     "birth_date": "1890-10-14",
-    "birth_place": "Denison, Texas, USA",
+    "death_date": "1969-03-28",
     "nationality": "American",
-    "role_type": "military_leader",
-    "military_awards": [...],
-    "biographical_details": "..."
+    "biographical_details": "...",
+    "ranks": [{ "rank": "General", "branch": "US Army", "date": "1945-03-12" }],
+    "units_served": [{ "unit": "SHAEF", "from": "1944-01", "to": "1945-05" }],
+    "military_awards": [{ "award": "...", "class": null, "date_awarded": null }],
+    "biography_sources": [{ "source": "Wikipedia", "confidence": 0.9, "fields_sourced": ["birth_date"], "page": null }]
   },
   "event_mentions": [
     {
-      "MentionID": "01...",
+      "MentionID": "01ULID...",
       "Event_Name": "The Allies",
-      "EventID": "01...",
-      "Sub-event_Name": "...",
-      "Sub-eventID": "01...",
+      "EventID": "01ULID...",
+      "Sub_event_Name": "...",
+      "Sub_eventID": "01ULID...",
       "book": "Breakout and Pursuit",
       "author": "Martin Blumenson",
       "series": "United States Army in World War II",
-      "position_at_event": "Supreme Commander",
-      "original_text": "..."
+      "date": "1944-06-06",
+      "DateMentionID": "01ULID..."
     }
   ]
 }
 ```
+
+**Notes:**
+- `biographical_profile` is populated during Phase 3 enrichment (may be absent before enrichment)
+- `DateMentionID` → top-level `DateID` in `output/dates/*.json` (resolved via lookup, not LLM-provided)
+- `Sub_event_Name` uses underscore (not hyphen)
 
 ## Index File
 
