@@ -44,8 +44,8 @@ def extract_casualties(
         return []
 
     # Build entity indexes
-    dates_index = _build_entity_index(output_root, "dates", "DateID", "date_start")
-    places_index = _build_entity_index(output_root, "places", "PlaceID", "current_name")
+    dates_index = _build_entity_index(output_root, "dates", "DateID", "date")
+    places_index = _build_entity_index(output_root, "places", "PlaceID", "name")
     people_index = _build_entity_index(output_root, "people", "PersonID", "name")
     people_groups_index = _build_entity_index(
         output_root, "people_groups", "PeopleGroupID", "group_name"
@@ -61,7 +61,7 @@ def extract_casualties(
     casualties_dir.mkdir(parents=True, exist_ok=True)
 
     # Get book and chapter from event data
-    book = event_data.get("Book", "Unknown")
+    book = event_data.get("Book") or _book_name_from_path(event_file)
     chapter = event_data.get("Chapter", "Unknown")
 
     # Handle both old and new formats
@@ -100,7 +100,7 @@ def extract_casualties(
                     sub_event_id,
                     book,
                     chapter,
-                    sub_event.get("paragraph_number"),
+                    _first_paragraph_number(sub_event),
                     dates_index,
                     places_index,
                     people_index,
@@ -173,11 +173,14 @@ For each casualty incident, provide:
 1. type: wounded|killed|casualties|pow
 2. description: Brief description
 3. count: {{killed, wounded, missing, captured, total}} (only if numbers mentioned)
-4. impacted_organizations: Organizations with nationality (ISO 3166-1 alpha-3) and role
+4. date_string: The date as mentioned in text (e.g. "18 July 1944")
+5. impacted_organizations: Array of {{"name": "...", "nationality": "USA", "role": "attacking_force"}}
+   - nationality: ISO 3166-1 alpha-3
+   - role: one of attacking_force, defending_force, captured, captor, suffered_casualties
    - For POW: MUST include both "captured" and "captor" organizations
-5. impacted_people: People involved (if named)
-6. impacted_places: Places involved
-7. impacted_equipment: Equipment losses (if mentioned)
+6. impacted_people: Array of {{"name": "Captain Smith", "casualty_type": "killed"}}
+7. impacted_places: Array of {{"name": "Omaha Beach"}}
+8. impacted_equipment: Array of {{"common_name": "M4 Sherman", "count_lost": 5}}
 
 Return JSON object keyed by sub-event ID:
 {{"<Sub-eventID>": [<casualty items>], ...}}
@@ -309,6 +312,28 @@ def _extract_from_event(
     return casualties
 
 
+def _book_name_from_path(event_file: Path) -> str:
+    """Derive book name from event file parent directory (e.g. BreakoutAndPursuit)."""
+    import re
+
+    dir_name = event_file.parent.name
+    # Insert spaces before capitals: BreakoutAndPursuit → Breakout And Pursuit
+    return re.sub(r"(?<=[a-z])(?=[A-Z])", " ", dir_name) or "Unknown"
+
+
+def _first_paragraph_number(sub_event: Dict[str, Any]) -> Optional[int]:
+    """Extract first paragraph number from sub-event fulltext keys."""
+    fulltext = sub_event.get("Sub-event_fulltext", {})
+    for key in fulltext:
+        # Keys like "Paragraph_7"
+        if key.startswith("Paragraph_"):
+            try:
+                return int(key.split("_", 1)[1])
+            except (ValueError, IndexError):
+                pass
+    return None
+
+
 def _has_casualty_mention(text: str) -> bool:
     """Check if text mentions casualties."""
     keywords = [
@@ -345,11 +370,14 @@ For each casualty incident, provide:
 1. type: wounded|killed|casualties|pow
 2. description: Brief description
 3. count: {{killed, wounded, missing, captured, total}} (only if numbers mentioned)
-4. impacted_organizations: Organizations with nationality (ISO 3166-1 alpha-3) and role
+4. date_string: The date as mentioned in text (e.g. "18 July 1944")
+5. impacted_organizations: Array of {{"name": "...", "nationality": "USA", "role": "attacking_force"}}
+   - nationality: ISO 3166-1 alpha-3
+   - role: one of attacking_force, defending_force, captured, captor, suffered_casualties
    - For POW: MUST include both "captured" and "captor" organizations
-5. impacted_people: People involved (if named)
-6. impacted_places: Places involved
-7. impacted_equipment: Equipment losses (if mentioned)
+6. impacted_people: Array of {{"name": "Captain Smith", "casualty_type": "killed"}}
+7. impacted_places: Array of {{"name": "Omaha Beach"}}
+8. impacted_equipment: Array of {{"common_name": "M4 Sherman", "count_lost": 5}}
 
 Available entities:
 - Dates: {list(dates_index.keys())[:10]}
@@ -397,6 +425,45 @@ def _validate_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return valid
 
 
+def _resolve_casualty_date(
+    casualty_data: Dict[str, Any], dates_index: Dict[str, Any]
+) -> Optional[Dict[str, Any]]:
+    """Resolve date from casualty data (structured or string)."""
+    for key in ("date", "date_string"):
+        if key in casualty_data:
+            resolved = _resolve_date(casualty_data[key], dates_index)
+            if resolved:
+                return resolved
+    return None
+
+
+def _resolve_impacted_entities(
+    casualty_data: Dict[str, Any],
+    casualty: Dict[str, Any],
+    places_index: Dict[str, Any],
+    people_index: Dict[str, Any],
+    people_groups_index: Dict[str, Any],
+    equipment_index: Dict[str, Any],
+    weather_index: Dict[str, Any],
+) -> None:
+    """Resolve and attach all impacted entity arrays to casualty."""
+    resolvers = {
+        "impacted_organizations": (
+            lambda d: _resolve_organizations(d, people_groups_index)
+        ),
+        "impacted_people": lambda d: _resolve_people(d, people_index),
+        "impacted_places": lambda d: _resolve_places(d, places_index),
+        "impacted_equipment": lambda d: _resolve_equipment(d, equipment_index),
+    }
+    for field, resolver in resolvers.items():
+        if field in casualty_data:
+            casualty[field] = resolver(casualty_data[field])
+    if "weather" in casualty_data:
+        resolved = _resolve_weather(casualty_data["weather"], weather_index)
+        if resolved:
+            casualty["weather_conditions"] = resolved
+
+
 def _build_casualty(
     casualty_data: Dict[str, Any],
     event_id: str,
@@ -412,10 +479,8 @@ def _build_casualty(
     weather_index: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Build casualty JSON structure."""
-    casualty_id = str(ulid.new())
-
     casualty = {
-        "CasualtyID": casualty_id,
+        "CasualtyID": str(ulid.new()),
         "type": casualty_data.get("type", "casualties"),
         "description": casualty_data.get("description", ""),
         "event_context": {"EventID": event_id, "Sub-eventID": sub_event_id},
@@ -426,43 +491,24 @@ def _build_casualty(
         },
     }
 
-    # Add count if present
     if "count" in casualty_data:
         casualty["count"] = casualty_data["count"]
 
-    # Add date
-    if "date" in casualty_data:
-        casualty["date"] = _resolve_date(casualty_data["date"], dates_index)
+    date = _resolve_casualty_date(casualty_data, dates_index)
+    if date:
+        casualty["date"] = date
 
-    # Add impacted organizations
-    if "impacted_organizations" in casualty_data:
-        casualty["impacted_organizations"] = _resolve_organizations(
-            casualty_data["impacted_organizations"], people_groups_index
-        )
+    _resolve_impacted_entities(
+        casualty_data,
+        casualty,
+        places_index,
+        people_index,
+        people_groups_index,
+        equipment_index,
+        weather_index,
+    )
 
-    # Add impacted people
-    if "impacted_people" in casualty_data:
-        casualty["impacted_people"] = _resolve_people(
-            casualty_data["impacted_people"], people_index
-        )
-
-    # Add impacted places
-    if "impacted_places" in casualty_data:
-        casualty["impacted_places"] = _resolve_places(
-            casualty_data["impacted_places"], places_index
-        )
-
-    # Add impacted equipment
-    if "impacted_equipment" in casualty_data:
-        casualty["impacted_equipment"] = _resolve_equipment(
-            casualty_data["impacted_equipment"], equipment_index
-        )
-
-    # Add weather
-    if "weather" in casualty_data:
-        casualty["weather_conditions"] = _resolve_weather(
-            casualty_data["weather"], weather_index
-        )
+    return casualty
 
     return casualty
 
@@ -470,17 +516,116 @@ def _build_casualty(
 def _resolve_date(
     date_ref: Any, dates_index: Dict[str, Any]
 ) -> Optional[Dict[str, Any]]:
-    """Resolve date reference to DateID."""
+    """Resolve date reference to DateID.
+
+    Handles: dict with DateID, ISO date string, or natural language date string.
+    """
     if isinstance(date_ref, dict) and "DateID" in date_ref:
         return date_ref
-    if isinstance(date_ref, str) and date_ref in dates_index:
+
+    if not isinstance(date_ref, str) or not date_ref:
+        return None
+
+    # Direct match on ISO date key (e.g. "1944-07-18")
+    if date_ref in dates_index:
         date_data = dates_index[date_ref]
         return {
             "DateID": date_data.get("DateID"),
-            "date_string": date_data.get("date_string"),
-            "precision": date_data.get("precision"),
+            "date_string": date_ref,
+            "precision": "day",
         }
+
+    # Fuzzy match: parse natural language date to ISO and look up
+    iso = _parse_date_string(date_ref)
+    if iso and iso in dates_index:
+        date_data = dates_index[iso]
+        return {
+            "DateID": date_data.get("DateID"),
+            "date_string": date_ref,
+            "precision": "day" if len(iso) == 10 else "month",
+        }
+
+    # No match — still record the date string without a DateID
+    return {"DateID": None, "date_string": date_ref, "precision": "unknown"}
+
+
+def _parse_date_string(date_str: str) -> Optional[str]:
+    """Parse natural language date to ISO format (best effort)."""
+    import re
+    from datetime import datetime
+
+    date_str = date_str.strip()
+    # Try common patterns: "18 July 1944", "July 1944", "6 June 1944"
+    for fmt in ("%d %B %Y", "%B %d, %Y", "%d %b %Y", "%B %Y", "%b %Y"):
+        try:
+            dt = datetime.strptime(date_str, fmt)
+            if "%d" in fmt:
+                return dt.strftime("%Y-%m-%d")
+            return dt.strftime("%Y-%m-01")
+        except ValueError:
+            continue
+    # Try extracting year-month-day with regex
+    m = re.search(r"(\d{1,2})\s+(\w+)\s+(\d{4})", date_str)
+    if m:
+        try:
+            dt = datetime.strptime(
+                f"{m.group(1)} {m.group(2)} {m.group(3)}", "%d %B %Y"
+            )
+            return dt.strftime("%Y-%m-%d")
+        except ValueError:
+            pass
     return None
+
+
+VALID_ROLES = {
+    "attacking_force",
+    "defending_force",
+    "captured",
+    "captor",
+    "suffered_casualties",
+}
+
+# Map freeform LLM roles to controlled vocabulary
+_ROLE_MAP = {
+    "attacker": "attacking_force",
+    "attackers": "attacking_force",
+    "attacking": "attacking_force",
+    "attacking force": "attacking_force",
+    "assaulting": "attacking_force",
+    "assaulting force": "attacking_force",
+    "assault force": "attacking_force",
+    "assault": "attacking_force",
+    "defender": "defending_force",
+    "defenders": "defending_force",
+    "defending": "defending_force",
+    "captured": "captured",
+    "captor": "captor",
+    "suffered casualties": "suffered_casualties",
+    "suffered_casualties": "suffered_casualties",
+    "sustained casualties": "suffered_casualties",
+    "sustained-casualties": "suffered_casualties",
+    "suffered-casualties": "suffered_casualties",
+    "suffered": "suffered_casualties",
+    "suffered heavy casualties": "suffered_casualties",
+    "suffered losses": "suffered_casualties",
+    "suffered heavy losses": "suffered_casualties",
+    "suffered light casualties": "suffered_casualties",
+    "suffered severe casualties": "suffered_casualties",
+    "suffered wounded": "suffered_casualties",
+    "suffered killed": "suffered_casualties",
+    "victim": "suffered_casualties",
+    "wounded": "suffered_casualties",
+    "killed": "suffered_casualties",
+    "overrun": "suffered_casualties",
+}
+
+
+def _normalize_role(role: str) -> str:
+    """Normalize freeform role to controlled vocabulary."""
+    role_lower = role.lower().strip()
+    if role_lower in VALID_ROLES:
+        return role_lower
+    return _ROLE_MAP.get(role_lower, "suffered_casualties")
 
 
 def _resolve_organizations(
@@ -491,13 +636,15 @@ def _resolve_organizations(
     for org in orgs:
         if isinstance(org, dict):
             org_name = org.get("name", "")
+            if not org_name:
+                continue
             org_id = _find_organization_id(org_name, people_groups_index)
             resolved.append(
                 {
                     "PeopleGroupID": org_id or str(ulid.new()),
                     "name": org_name,
                     "nationality": org.get("nationality", ""),
-                    "role": org.get("role", ""),
+                    "role": _normalize_role(org.get("role", "")),
                 }
             )
     return resolved
@@ -509,8 +656,12 @@ def _resolve_people(
     """Resolve people references to PersonIDs."""
     resolved = []
     for person in people:
+        if isinstance(person, str):
+            person = {"name": person, "casualty_type": ""}
         if isinstance(person, dict):
             person_name = person.get("name", "")
+            if not person_name:
+                continue
             person_id = _find_person_id(person_name, people_index)
             resolved.append(
                 {
@@ -528,8 +679,12 @@ def _resolve_places(
     """Resolve place references to PlaceIDs."""
     resolved = []
     for place in places:
+        if isinstance(place, str):
+            place = {"name": place}
         if isinstance(place, dict):
             place_name = place.get("name", "")
+            if not place_name:
+                continue
             place_id = _find_place_id(place_name, places_index)
             resolved.append(
                 {"PlaceID": place_id or str(ulid.new()), "name": place_name}
@@ -543,14 +698,20 @@ def _resolve_equipment(
     """Resolve equipment references to EquipmentIDs."""
     resolved = []
     for equip in equipment:
+        if isinstance(equip, str):
+            equip = {"common_name": equip}
         if isinstance(equip, dict):
-            equip_name = equip.get("common_name", "")
+            # Handle LLM returning "name" instead of "common_name"
+            equip_name = equip.get("common_name") or equip.get("name", "")
+            if not equip_name:
+                continue
             equip_id = _find_equipment_id(equip_name, equipment_index)
+            count_lost = equip.get("count_lost") or equip.get("count", 0)
             resolved.append(
                 {
                     "EquipmentID": equip_id or str(ulid.new()),
                     "common_name": equip_name,
-                    "count_lost": equip.get("count_lost", 0),
+                    "count_lost": count_lost,
                 }
             )
     return resolved

@@ -247,6 +247,150 @@ def _check_proximity(
     return False
 
 
+def _check_name_similarity(name1: str, name2: str) -> tuple[list[str], float]:
+    """Check 1: High name similarity."""
+    similarity = _similarity_ratio(name1, name2)
+    if similarity > 0.7:
+        return [f"Name similarity: {similarity:.2f}"], similarity * 0.5
+    return [], 0.0
+
+
+def _check_same_last_name(last1: str, last2: str) -> tuple[list[str], float]:
+    """Check 2: Same last name."""
+    if last1 == last2 and len(last1) > 2:
+        return [f"Same last name: {last1}"], 0.4
+    return [], 0.0
+
+
+def _check_shared_bio(
+    p1: Dict, p2: Dict, has_name_match: bool
+) -> tuple[list[str], float]:
+    """Check 3: Shared biographical data (only boosts existing name match)."""
+    if has_name_match and _has_shared_biographical_data(p1, p2):
+        return ["Shared biographical data"], 0.5
+    return [], 0.0
+
+
+def _check_shared_positions(p1: Dict, p2: Dict) -> tuple[list[str], float]:
+    """Check 4: Shared positions."""
+    if _has_shared_positions(p1, p2):
+        return ["Shared positions"], 0.3
+    return [], 0.0
+
+
+def _check_substring_match(
+    name1: str, name2: str, last1: str, last2: str
+) -> tuple[list[str], float]:
+    """Check 5: One name's last name is a whole-word substring of the other."""
+    if len(last1) > 3 and last1 != last2:
+        pat1 = re.compile(r"\b" + re.escape(last1) + r"\b", re.IGNORECASE)
+        pat2 = re.compile(r"\b" + re.escape(last2) + r"\b", re.IGNORECASE)
+        if pat1.search(name2) or pat2.search(name1):
+            return ["Name substring match"], 0.5
+    return [], 0.0
+
+
+def _check_single_name(
+    name1: str, name2: str, last1: str, last2: str, p1: Dict, p2: Dict
+) -> tuple[list[str], float]:
+    """Check 5b: Single last name vs full name with shared context."""
+    if (len(name1.split()) == 1 or len(name2.split()) == 1) and last1 == last2:
+        if _has_shared_biographical_data(p1, p2) or _has_shared_positions(p1, p2):
+            return ["Single name match with shared context"], 0.6
+    return [], 0.0
+
+
+def _check_unicode_variants(name1: str, name2: str) -> tuple[list[str], float]:
+    """Check 6: ASCII/Unicode and German transliteration variants."""
+    n1a = _normalize_unicode(name1).lower()
+    n2a = _normalize_unicode(name2).lower()
+    n1g = _normalize_german(name1).lower()
+    n2g = _normalize_german(name2).lower()
+
+    if n1a == n2a:
+        return ["ASCII/Unicode variant"], 0.6
+    if n1g == n2g or n1g == n2a or n1a == n2g:
+        return ["German transliteration variant"], 0.6
+    return [], 0.0
+
+
+def _check_text_proximity(
+    p1: Dict,
+    p2: Dict,
+    text_index: Dict,
+    confidence: float,
+    last1: str,
+    last2: str,
+    name1: str,
+    name2: str,
+) -> tuple[list[str], float]:
+    """Check 7: Text proximity — names appear within 1000 words."""
+    if not text_index or confidence <= 0.2:
+        return [], 0.0
+    similarity = _similarity_ratio(name1, name2)
+    names_related = (
+        last1 == last2
+        or similarity > 0.8
+        or len(name1.split()) == 1
+        or len(name2.split()) == 1
+    )
+    if names_related and _check_proximity(p1, p2, text_index):
+        return ["Text proximity (<1000 words)"], 0.4
+    return [], 0.0
+
+
+def _score_pair(
+    person1: Dict, person2: Dict, text_index: Dict[str, str]
+) -> tuple[list[str], float]:
+    """Score a pair of people for duplicate likelihood."""
+    name1 = person1["name"]
+    name2 = person2["name"]
+    last1 = _extract_last_name(name1)
+    last2 = _extract_last_name(name2)
+
+    all_reasons: list[str] = []
+    total_confidence = 0.0
+
+    checks = [
+        _check_name_similarity(name1, name2),
+        _check_same_last_name(last1, last2),
+        _check_shared_positions(person1, person2),
+        _check_substring_match(name1, name2, last1, last2),
+        _check_single_name(name1, name2, last1, last2, person1, person2),
+        _check_unicode_variants(name1, name2),
+    ]
+
+    for reasons, conf in checks:
+        all_reasons.extend(reasons)
+        total_confidence += conf
+
+    # Check 3 depends on whether we have a name match
+    r, c = _check_shared_bio(person1, person2, total_confidence > 0)
+    all_reasons.extend(r)
+    total_confidence += c
+
+    # Check 7 depends on accumulated confidence
+    r, c = _check_text_proximity(
+        person1, person2, text_index, total_confidence, last1, last2, name1, name2
+    )
+    all_reasons.extend(r)
+    total_confidence += c
+
+    # High-frequency gate
+    mentions1 = len(person1.get("event_mentions", []))
+    mentions2 = len(person2.get("event_mentions", []))
+    if mentions1 > HIGH_FREQUENCY_THRESHOLD or mentions2 > HIGH_FREQUENCY_THRESHOLD:
+        has_strong = any(
+            r
+            for r in all_reasons
+            if r.startswith(("Shared bio", "Shared pos", "Text prox"))
+        )
+        if not has_strong:
+            total_confidence = 0.0
+
+    return all_reasons, total_confidence
+
+
 def find_potential_duplicates(
     people_dir_path: Path,
     output_root: Optional[Path] = None,
@@ -274,189 +418,83 @@ def find_potential_duplicates(
         with open(exclusion_file, "r", encoding="utf-8") as f:
             data = json.load(f)
             for pair in data.get("exclusions", []):
-                # Store as sorted tuple for bidirectional matching
                 excluded_pairs.add(tuple(sorted([pair["person1"], pair["person2"]])))
 
     # Load all people files
-    people_files = list(people_dir_path.glob("*.json"))
-    # Exclude index.json and duplicate_report.json
-    people_files = [
-        f
-        for f in people_files
-        if f.name not in ["index.json", "duplicate_report.json", "not_duplicates.json"]
-    ]
+    people_data = _load_people_data(people_dir_path)
+    logger.info("Analyzing %d people for duplicates...", len(people_data))
 
+    return _find_duplicate_groups(people_data, excluded_pairs, text_index)
+
+
+def _load_people_data(people_dir_path: Path) -> List[Dict[str, Any]]:
+    """Load all people JSON files."""
+    skip = {"index.json", "duplicate_report.json", "not_duplicates.json"}
     people_data = []
-    for person_file in people_files:
+    for person_file in people_dir_path.glob("*.json"):
+        if person_file.name in skip:
+            continue
         with open(person_file, "r", encoding="utf-8") as f:
             data = json.load(f)
             data["_filename"] = person_file.name
             people_data.append(data)
+    return people_data
 
-    logger.info("Analyzing %d people for duplicates...", len(people_data))
 
+def _find_duplicate_groups(
+    people_data: List[Dict[str, Any]],
+    excluded_pairs: Set[tuple],
+    text_index: Dict[str, str],
+) -> List[Dict[str, Any]]:
+    """Find duplicate groups from scored pairs."""
     duplicates = []
     processed: Set[str] = set()
 
     for i, person1 in enumerate(people_data):
         if person1["_filename"] in processed:
             continue
-
-        # Skip if person doesn't have a name
         if "name" not in person1:
-            logger.warning(f"Skipping {person1['_filename']}: missing 'name' field")
             continue
-
-        name1 = person1["name"]
-        last_name1 = _extract_last_name(name1)
 
         group: List[Dict[str, Any]] = []
         group_reasons: List[str] = []
         group_confidence = 0.0
 
         for person2 in people_data[i + 1 :]:
-            if person2["_filename"] in processed:
+            if person2["_filename"] in processed or "name" not in person2:
                 continue
 
-            # Skip if person doesn't have a name
-            if "name" not in person2:
-                logger.warning(f"Skipping {person2['_filename']}: missing 'name' field")
-                continue
-
-            # Check if this pair is in exclusion list
             pair_key = tuple(sorted([person1["_filename"], person2["_filename"]]))
             if pair_key in excluded_pairs:
                 continue
 
-            name2 = person2["name"]
-            last_name2 = _extract_last_name(name2)
+            reasons, confidence = _score_pair(person1, person2, text_index)
 
-            reasons = []
-            confidence = 0.0
-
-            # Check 1: High name similarity (lowered threshold from 0.8 to 0.7)
-            similarity = _similarity_ratio(name1, name2)
-            if similarity > 0.7:
-                reasons.append(f"Name similarity: {similarity:.2f}")
-                confidence += similarity * 0.5  # Increased weight
-
-            # Check 2: Same last name
-            if last_name1 == last_name2 and len(last_name1) > 2:
-                reasons.append(f"Same last name: {last_name1}")
-                confidence += 0.4  # Increased weight
-
-            # Check 3: Shared biographical data (only boosts existing name match)
-            if _has_shared_biographical_data(person1, person2):
-                if confidence > 0:  # Only if name-based match exists
-                    reasons.append("Shared biographical data")
-                    confidence += 0.5
-
-            # Check 4: Shared positions
-            if _has_shared_positions(person1, person2):
-                reasons.append("Shared positions")
-                confidence += 0.3
-
-            # Check 5: One name is substring of other (whole-word last name match)
-            if len(last_name1) > 3:
-                # Require last name to appear as a whole word, not embedded
-                # e.g. "Hall" should NOT match "Marshall"
-                pat1 = re.compile(r"\b" + re.escape(last_name1) + r"\b", re.IGNORECASE)
-                pat2 = re.compile(r"\b" + re.escape(last_name2) + r"\b", re.IGNORECASE)
-                if (last_name1 != last_name2) and (
-                    pat1.search(name2) or pat2.search(name1)
-                ):
-                    reasons.append("Name substring match")
-                    confidence += 0.5
-
-            # Check 5b: Single last name vs full name with same last name + shared bio
-            if (
-                len(name1.split()) == 1 or len(name2.split()) == 1
-            ) and last_name1 == last_name2:
-                # One is just a last name, other is full name
-                if _has_shared_biographical_data(
-                    person1, person2
-                ) or _has_shared_positions(person1, person2):
-                    reasons.append("Single name match with shared context")
-                    confidence += 0.6
-
-            # Check 6: ASCII/Unicode variants (Dönitz vs Doenitz)
-            norm1_ascii = _normalize_unicode(name1).lower()
-            norm2_ascii = _normalize_unicode(name2).lower()
-            norm1_german = _normalize_german(name1).lower()
-            norm2_german = _normalize_german(name2).lower()
-
-            if norm1_ascii == norm2_ascii:
-                reasons.append("ASCII/Unicode variant")
-                confidence += 0.6
-            elif (
-                norm1_german == norm2_german
-                or norm1_german == norm2_ascii
-                or norm1_ascii == norm2_german
-            ):
-                reasons.append("German transliteration variant")
-                confidence += 0.6
-
-            # Check 7: Text proximity — names appear within 1000 words
-            # Only check when there's a plausible name connection
-            if text_index and confidence > 0.2:
-                names_related = (
-                    last_name1 == last_name2
-                    or similarity > 0.8
-                    or len(name1.split()) == 1
-                    or len(name2.split()) == 1
-                )
-                if names_related and _check_proximity(person1, person2, text_index):
-                    reasons.append("Text proximity (<1000 words)")
-                    confidence += 0.4
-
-            # High-frequency gate: people with many mentions need stronger
-            # evidence than name similarity alone
-            mentions1 = len(person1.get("event_mentions", []))
-            mentions2 = len(person2.get("event_mentions", []))
-            if (
-                mentions1 > HIGH_FREQUENCY_THRESHOLD
-                or mentions2 > HIGH_FREQUENCY_THRESHOLD
-            ):
-                has_strong_evidence = any(
-                    r
-                    for r in reasons
-                    if r.startswith(("Shared bio", "Shared pos", "Text prox"))
-                )
-                if not has_strong_evidence:
-                    confidence = 0.0  # Suppress name-only matches
-
-            # If confidence is high enough, add to group (lowered from 0.6 to 0.5)
             if confidence > 0.5 and reasons:
                 if not group:
                     group.append(
                         {
                             "filename": person1["_filename"],
-                            "name": name1,
+                            "name": person1["name"],
                             "PersonID": person1.get("PersonID", ""),
                         }
                     )
-
                 group.append(
                     {
                         "filename": person2["_filename"],
-                        "name": name2,
+                        "name": person2["name"],
                         "PersonID": person2.get("PersonID", ""),
                     }
                 )
-
-                # Accumulate confidence and reasons for the group
                 group_confidence = max(group_confidence, confidence)
                 group_reasons.extend(reasons)
-
                 processed.add(person2["_filename"])
 
         if group:
-            # Remove duplicate reasons
-            group_reasons = list(set(group_reasons))
             duplicates.append(
                 {
                     "confidence": group_confidence,
-                    "reasons": group_reasons,
+                    "reasons": list(set(group_reasons)),
                     "people": group,
                 }
             )

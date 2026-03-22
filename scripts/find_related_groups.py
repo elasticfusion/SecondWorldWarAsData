@@ -6,6 +6,7 @@ Uses LLM to verify if groups are true duplicates vs hierarchically related.
 
 import json
 import logging
+import re
 import sys
 import unicodedata
 from functools import lru_cache
@@ -80,14 +81,14 @@ def _verify_duplicate_with_llm(
     prompt = f"""Analyze these two military organizations and determine their relationship:
 
 Organization 1:
-- Name: {group1.get('group_name')}
+- Name: {_get_group_name(group1)}
 - Type: {group1.get('group_type')}
 - Country: {group1.get('country_of_origin')}
 - Parent: {group1.get('parent_organization', 'None')}
 - Description: {group1.get('description', 'None')[:200]}
 
 Organization 2:
-- Name: {group2.get('group_name')}
+- Name: {_get_group_name(group2)}
 - Type: {group2.get('group_type')}
 - Country: {group2.get('country_of_origin')}
 - Parent: {group2.get('parent_organization', 'None')}
@@ -139,8 +140,8 @@ def _is_parent_child(group1: Dict, group2: Dict) -> bool:
     parent1 = group1.get("parent_organization", "")
     parent2 = group2.get("parent_organization", "")
 
-    name1 = group1.get("group_name", "")
-    name2 = group2.get("group_name", "")
+    name1 = group1.get("group_name") or group1.get("name", "")
+    name2 = group2.get("group_name") or group2.get("name", "")
 
     # Check if one is parent of the other
     if parent1 and parent1.lower() in name2.lower():
@@ -177,6 +178,211 @@ def _has_shared_events(group1: Dict, group2: Dict) -> bool:
     return len(events1 & events2) >= 2
 
 
+def _get_group_name(data: Dict) -> str:
+    """Get group name from data, trying group_name then name."""
+    return data.get("group_name") or data.get("name", "")
+
+
+def _different_unit_identifiers(name1: str, name2: str) -> bool:
+    """Return True if names have different unit numbers, Roman numerals, or letters."""
+    num1 = re.findall(r"\b(\d+)(?:st|nd|rd|th|d)?\b", name1.lower())
+    num2 = re.findall(r"\b(\d+)(?:st|nd|rd|th|d)?\b", name2.lower())
+    if num1 and num2 and num1 != num2:
+        return True
+
+    roman1 = re.findall(r"\b([IVXLC]+)\s+(?:Corps|Army|Division|Panzer)", name1)
+    roman2 = re.findall(r"\b([IVXLC]+)\s+(?:Corps|Army|Division|Panzer)", name2)
+    if roman1 and roman2 and roman1 != roman2:
+        return True
+
+    letter1 = re.findall(r"\b(?:group|army|corps)\s+([a-z])\b", name1.lower())
+    letter2 = re.findall(r"\b(?:group|army|corps)\s+([a-z])\b", name2.lower())
+    if letter1 and letter2 and letter1 != letter2:
+        return True
+
+    return False
+
+
+def _score_group_pair(group1: Dict, group2: Dict) -> tuple[list[str], float]:
+    """Score a pair of groups for duplicate likelihood. Returns (reasons, confidence)."""
+    name1 = _get_group_name(group1)
+    name2 = _get_group_name(group2)
+    type1 = group1.get("group_type", "")
+    type2 = group2.get("group_type", "")
+
+    reasons: list[str] = []
+    confidence = 0.0
+
+    # Check 0: Different countries — skip unless very high similarity
+    country1 = (group1.get("country_of_origin") or "").lower()
+    country2 = (group2.get("country_of_origin") or "").lower()
+    if country1 and country2 and country1 != country2:
+        similarity = _similarity_ratio(name1, name2)
+        if similarity < 0.90:
+            return [], 0.0
+        reasons.append(
+            f"⚠️ Different countries ({country1} vs {country2}) but very high name similarity"
+        )
+
+    # Check 0.5: Different unit numbers/letters — skip
+    if _different_unit_identifiers(name1, name2):
+        return [], 0.0
+
+    # Check 1: High name similarity
+    similarity = _similarity_ratio(name1, name2)
+    if similarity > 0.7:
+        reasons.append(f"Name similarity: {similarity:.2f}")
+        confidence += similarity * 0.5
+
+    # Check 2: Core name match
+    core1 = _extract_core_name(name1)
+    core2 = _extract_core_name(name2)
+    core_similarity = _similarity_ratio(core1, core2)
+    if core_similarity > 0.8:
+        reasons.append(f"Core name match: {core_similarity:.2f}")
+        confidence += 0.6
+
+    # Check 3: Same type
+    if type1 == type2 and type1:
+        reasons.append(f"Same type: {type1}")
+        confidence += 0.3
+
+    # Check 4: Parent-child — skip entirely
+    if _is_parent_child(group1, group2):
+        return [], 0.0
+
+    # Check 5: Shared context
+    if _has_shared_context(group1, group2):
+        reasons.append("Shared context")
+        confidence += 0.1
+
+    # Check 6: Shared events
+    if _has_shared_events(group1, group2):
+        reasons.append("Shared events")
+        confidence += 0.2
+
+    # Check 7: Substring match (only if very similar)
+    if name1.lower() in name2.lower() or name2.lower() in name1.lower():
+        if similarity > 0.85 and len(name1) > 5:
+            reasons.append("Name substring match")
+            confidence += 0.3
+
+    # Check 8: ASCII/Unicode variants
+    if _normalize_unicode(name1).lower() == _normalize_unicode(name2).lower():
+        reasons.append("ASCII/Unicode variant")
+        confidence += 0.6
+
+    return reasons, confidence
+
+
+def _load_groups_data(groups_dir_path: Path) -> List[Dict[str, Any]]:
+    """Load all group JSON files."""
+    excluded_files = {
+        "index.json",
+        "related_groups_report.json",
+        "not_related.json",
+        ".processed_events.json",
+    }
+    groups_data = []
+    for group_file in groups_dir_path.glob("*.json"):
+        if group_file.name in excluded_files:
+            continue
+        with open(group_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            data["_filename"] = group_file.name
+            groups_data.append(data)
+    return groups_data
+
+
+def _find_related_clusters(
+    groups_data: List[Dict[str, Any]],
+    excluded_clusters: List[Set[str]],
+    use_llm_verification: bool,
+    grok_client,
+) -> List[Dict[str, Any]]:
+    """Find related group clusters from scored pairs."""
+    related: list[dict[str, Any]] = []
+    processed: Set[str] = set()
+
+    for i, group1 in enumerate(groups_data):
+        if group1["_filename"] in processed:
+            continue
+        if not _get_group_name(group1):
+            continue
+
+        cluster: list[dict[str, Any]] = []
+        cluster_reasons: list[str] = []
+        cluster_confidence = 0.0
+
+        for group2 in groups_data[i + 1 :]:
+            if group2["_filename"] in processed or not _get_group_name(group2):
+                continue
+
+            reasons, confidence = _score_group_pair(group1, group2)
+
+            if confidence <= 0.8 or not reasons:
+                continue
+
+            # LLM verification
+            if use_llm_verification and grok_client:
+                llm_result = _verify_duplicate_with_llm(group1, group2, grok_client)
+                if llm_result.get("relationship") != "TRUE_DUPLICATE":
+                    logger.info(
+                        "LLM rejected match: %s vs %s (relationship=%s, reasoning=%s)",
+                        _get_group_name(group1),
+                        _get_group_name(group2),
+                        llm_result.get("relationship"),
+                        llm_result.get("reasoning"),
+                    )
+                    continue
+                llm_conf = llm_result.get("confidence", 0.0)
+                reasons.append(
+                    f"LLM verified: {llm_result.get('reasoning', '')} "
+                    f"(confidence={llm_conf:.2f})"
+                )
+                confidence = max(confidence, llm_conf)
+
+            if not cluster:
+                cluster.append(
+                    {
+                        "filename": group1["_filename"],
+                        "name": _get_group_name(group1),
+                        "type": group1.get("group_type", ""),
+                        "GroupID": group1["GroupID"],
+                    }
+                )
+            cluster.append(
+                {
+                    "filename": group2["_filename"],
+                    "name": _get_group_name(group2),
+                    "type": group2.get("group_type", ""),
+                    "GroupID": group2["GroupID"],
+                }
+            )
+            cluster_confidence = max(cluster_confidence, confidence)
+            cluster_reasons.extend(reasons)
+            processed.add(group2["_filename"])
+
+        if cluster:
+            cluster_group_ids = {g["GroupID"] for g in cluster}
+            if _is_cluster_excluded(cluster_group_ids, excluded_clusters):
+                logger.info(
+                    "Skipping excluded cluster: %s",
+                    ", ".join(g["name"] for g in cluster),
+                )
+                continue
+            related.append(
+                {
+                    "confidence": cluster_confidence,
+                    "reasons": list(set(cluster_reasons)),
+                    "groups": cluster,
+                }
+            )
+            processed.add(group1["_filename"])
+
+    return related
+
+
 def find_related_groups(
     groups_dir_path: Path, use_llm_verification: bool = True
 ) -> List[Dict[str, Any]]:
@@ -189,12 +395,10 @@ def find_related_groups(
 
     Returns list of related group clusters.
     """
-    # Load excluded clusters
     excluded_clusters = _load_excluded_clusters(groups_dir_path)
     if excluded_clusters:
         logger.info("Loaded %d excluded cluster(s)", len(excluded_clusters))
 
-    # Initialize Grok client if verification enabled
     grok_client = None
     if use_llm_verification:
         try:
@@ -202,229 +406,16 @@ def find_related_groups(
             logger.info("LLM verification enabled")
         except Exception as e:
             logger.warning(
-                f"Failed to initialize Grok client: {e}. Proceeding without LLM verification."
+                "Failed to initialize Grok client: %s. Proceeding without LLM.", e
             )
             use_llm_verification = False
 
-    # Load all group files
-    group_files = list(groups_dir_path.glob("*.json"))
-    # Exclude system files and hidden files
-    excluded_files = {
-        "index.json",
-        "related_groups_report.json",
-        "not_related.json",
-        ".processed_events.json",
-    }
-    group_files = [f for f in group_files if f.name not in excluded_files]
-
-    groups_data = []
-    for group_file in group_files:
-        with open(group_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            data["_filename"] = group_file.name
-            groups_data.append(data)
-
+    groups_data = _load_groups_data(groups_dir_path)
     logger.info("Analyzing %d groups for relationships...", len(groups_data))
 
-    related = []
-    processed: Set[str] = set()
-
-    for i, group1 in enumerate(groups_data):
-        if group1["_filename"] in processed:
-            continue
-
-        # Skip if group doesn't have a name
-        if "group_name" not in group1:
-            logger.warning(
-                f"Skipping {group1['_filename']}: missing 'group_name' field"
-            )
-            continue
-
-        name1 = group1["group_name"]
-        core1 = _extract_core_name(name1)
-        type1 = group1.get("group_type", "")
-
-        cluster: List[Dict[str, Any]] = []
-        cluster_reasons: List[str] = []
-        cluster_confidence = 0.0
-
-        for group2 in groups_data[i + 1 :]:
-            if group2["_filename"] in processed:
-                continue
-
-            # Skip if group doesn't have a name
-            if "group_name" not in group2:
-                logger.warning(
-                    f"Skipping {group2['_filename']}: missing 'group_name' field"
-                )
-                continue
-
-            name2 = group2["group_name"]
-            core2 = _extract_core_name(name2)
-            type2 = group2.get("group_type", "")
-
-            reasons = []
-            confidence = 0.0
-
-            # Check 0: DIFFERENT countries - skip unless very high similarity
-            country1 = (group1.get("country_of_origin") or "").lower()
-            country2 = (group2.get("country_of_origin") or "").lower()
-            if country1 and country2 and country1 != country2:
-                # Different countries - only match if name similarity is very high (90%+)
-                similarity = _similarity_ratio(name1, name2)
-                if similarity < 0.90:
-                    continue  # Skip this pair
-                reasons.append(
-                    f"⚠️ Different countries ({country1} vs {country2}) but very high name similarity"
-                )
-
-            # Check 0.5: Different unit numbers/letters - skip
-            # Examples: "1st Division" vs "2d Division", "Army Group B" vs "Army Group G"
-            import re
-
-            # Extract numbers and letters that differentiate units
-            # Match: 1st, 2nd, 3rd, 4th OR 1d, 2d, 3d (common military abbreviations)
-            # Also match Roman numerals: I, II, III, IV, V, VI, VII, VIII, IX, X, etc.
-            num1 = re.findall(r"\b(\d+)(?:st|nd|rd|th|d)?\b", name1.lower())
-            num2 = re.findall(r"\b(\d+)(?:st|nd|rd|th|d)?\b", name2.lower())
-
-            # Extract Roman numerals (I-LXXXVIII covers most WWII units)
-            roman1 = re.findall(r"\b([IVXLC]+)\s+(?:Corps|Army|Division|Panzer)", name1)
-            roman2 = re.findall(r"\b([IVXLC]+)\s+(?:Corps|Army|Division|Panzer)", name2)
-
-            letter1 = re.findall(r"\b(?:group|army|corps)\s+([a-z])\b", name1.lower())
-            letter2 = re.findall(r"\b(?:group|army|corps)\s+([a-z])\b", name2.lower())
-
-            # If they have different unit numbers or letters, they're different units
-            if num1 and num2 and num1 != num2:
-                # Different unit numbers (e.g., "1st" vs "2d" vs "3d")
-                continue
-            if roman1 and roman2 and roman1 != roman2:
-                # Different Roman numeral units (e.g., "V Corps" vs "VII Corps")
-                continue
-            if letter1 and letter2 and letter1 != letter2:
-                # Different letter designations (e.g., "Group B" vs "Group G")
-                continue
-
-            # Check 1: High name similarity (70%+)
-            similarity = _similarity_ratio(name1, name2)
-            if similarity > 0.7:
-                reasons.append(f"Name similarity: {similarity:.2f}")
-                confidence += similarity * 0.5
-
-            # Check 2: Core name match (without prefixes)
-            core_similarity = _similarity_ratio(core1, core2)
-            if core_similarity > 0.8:
-                reasons.append(f"Core name match: {core_similarity:.2f}")
-                confidence += 0.6
-
-            # Check 3: Same type
-            if type1 == type2 and type1:
-                reasons.append(f"Same type: {type1}")
-                confidence += 0.3
-
-            # Check 4: Parent-child relationship (SKIP - these should NOT be merged)
-            # Parent-child means hierarchically related but distinct entities
-            if _is_parent_child(group1, group2):
-                # Don't add confidence - these are related but should NOT merge
-                continue  # Skip this pair entirely
-
-            # Check 5: Shared context (country/alliance) - REDUCE weight
-            # Shared context alone doesn't mean they should merge
-            if _has_shared_context(group1, group2):
-                reasons.append("Shared context")
-                confidence += 0.1  # Reduced from 0.4
-
-            # Check 6: Appear in same events - REDUCE weight
-            # Many groups appear in same events but are distinct
-            if _has_shared_events(group1, group2):
-                reasons.append("Shared events")
-                confidence += 0.2  # Reduced from 0.5
-
-            # Check 7: One name substring of other (ONLY if very similar)
-            # Avoid matching hierarchies like "United States" with "First United States Army"
-            if name1.lower() in name2.lower() or name2.lower() in name1.lower():
-                # Only count if the names are very similar (not just substring)
-                if similarity > 0.85 and len(name1) > 5:
-                    reasons.append("Name substring match")
-                    confidence += 0.3  # Reduced from 0.5
-
-            # Check 8: ASCII/Unicode variants
-            if _normalize_unicode(name1).lower() == _normalize_unicode(name2).lower():
-                reasons.append("ASCII/Unicode variant")
-                confidence += 0.6
-
-            # If confidence high enough, verify with LLM
-            # INCREASED threshold from 0.5 to 0.8 to be more conservative
-            if confidence > 0.8 and reasons:
-                # LLM verification (if enabled)
-                if use_llm_verification and grok_client:
-                    llm_result = _verify_duplicate_with_llm(group1, group2, grok_client)
-                    relationship = llm_result.get("relationship", "UNKNOWN")
-                    llm_confidence = llm_result.get("confidence", 0.0)
-                    llm_reasoning = llm_result.get("reasoning", "")
-
-                    # Only add to cluster if LLM confirms TRUE_DUPLICATE
-                    if relationship != "TRUE_DUPLICATE":
-                        logger.info(
-                            f"LLM rejected match: {name1} vs {name2} "
-                            f"(relationship={relationship}, reasoning={llm_reasoning})"
-                        )
-                        continue
-
-                    # Add LLM reasoning to cluster
-                    reasons.append(
-                        f"LLM verified: {llm_reasoning} (confidence={llm_confidence:.2f})"
-                    )
-                    confidence = max(confidence, llm_confidence)
-
-                # Add to cluster
-                if not cluster:
-                    cluster.append(
-                        {
-                            "filename": group1["_filename"],
-                            "name": name1,
-                            "type": type1,
-                            "GroupID": group1["GroupID"],
-                        }
-                    )
-
-                cluster.append(
-                    {
-                        "filename": group2["_filename"],
-                        "name": name2,
-                        "type": type2,
-                        "GroupID": group2["GroupID"],
-                    }
-                )
-
-                cluster_confidence = max(cluster_confidence, confidence)
-                cluster_reasons.extend(reasons)
-
-                processed.add(group2["_filename"])
-
-        if cluster:
-            # Check if this cluster is excluded
-            cluster_group_ids = {g["GroupID"] for g in cluster}
-            if _is_cluster_excluded(cluster_group_ids, excluded_clusters):
-                logger.info(
-                    "Skipping excluded cluster: %s",
-                    ", ".join(g["name"] for g in cluster),
-                )
-                # Don't add to processed - allow individual groups to match with others
-                continue
-
-            cluster_reasons = list(set(cluster_reasons))
-            related.append(
-                {
-                    "confidence": cluster_confidence,
-                    "reasons": cluster_reasons,
-                    "groups": cluster,
-                }
-            )
-            processed.add(group1["_filename"])
-
-    return related
+    return _find_related_clusters(
+        groups_data, excluded_clusters, use_llm_verification, grok_client
+    )
 
 
 def generate_related_groups_report(

@@ -47,147 +47,118 @@ def normalize_name(name, rules):
     return normalized.strip()
 
 
-def main():
-    config = load_config()
-    normalization_rules = config.get("normalization_rules", [])
-    large_region_types = config.get("large_region_types", [])
+def _place_info_from_data(data, filename):
+    """Build a place_info dict from loaded JSON data."""
+    coords = data.get("coordinates", {})
+    return {
+        "file": filename,
+        "PlaceID": data.get("PlaceID"),
+        "name": data.get("current_name", "") or data.get("name", ""),
+        "lat": coords.get("latitude"),
+        "lon": coords.get("longitude"),
+        "mentions": len(data.get("event_mentions", [])),
+        "geography_type": data.get("geography_type"),
+    }
 
-    places_dir = Path("output/places")
-    place_files = [f for f in places_dir.glob("*.json") if f.name != "index.json"]
 
-    # Group by exact name
+def _load_places(places_dir, normalization_rules):
+    """Load all place files and index by name and normalized name."""
     by_name = defaultdict(list)
-    # Group by normalized name
     by_normalized = defaultdict(list)
 
-    for place_file in place_files:
+    for place_file in places_dir.glob("*.json"):
+        if place_file.name == "index.json":
+            continue
         with open(place_file, "r", encoding="utf-8") as f:
             data = json.load(f)
 
-        name = data.get("current_name", "") or data.get("name", "")
+        info = _place_info_from_data(data, place_file.name)
+        name = info["name"]
         if not name:
-            # Fall back to filename (e.g. "alençon.json" → "alençon")
             name = place_file.stem.replace("_", " ")
         name = name.lower()
+        info["name"] = name
+
         normalized = normalize_name(name, normalization_rules)
-        coords = data.get("coordinates", {})
-        lat = coords.get("latitude")
-        lon = coords.get("longitude")
+        by_name[name].append(info)
+        by_normalized[normalized].append(info)
 
-        place_info = {
-            "file": place_file.name,
-            "PlaceID": data.get("PlaceID"),
-            "name": name,
-            "lat": lat,
-            "lon": lon,
-            "mentions": len(data.get("event_mentions", [])),
-            "geography_type": data.get("geography_type"),
-        }
+    return by_name, by_normalized
 
-        by_name[name].append(place_info)
-        by_normalized[normalized].append(place_info)
 
-    # Find exact duplicates
-    exact_duplicates = {
-        name: places for name, places in by_name.items() if len(places) > 1
-    }
+def _group_by_distance(places):
+    """Group places into clusters where members are within 50km of the first."""
+    groups = []
+    for place in places:
+        added = False
+        for group in groups:
+            if place["lat"] and group[0]["lat"]:
+                dist = haversine(
+                    place["lat"], place["lon"], group[0]["lat"], group[0]["lon"]
+                )
+                if dist < 50:
+                    group.append(place)
+                    added = True
+                    break
+            elif not place["lat"] and not group[0]["lat"]:
+                group.append(place)
+                added = True
+                break
+        if not added:
+            groups.append([place])
+    return [g for g in groups if len(g) > 1]
 
-    # Find semantic duplicates (same normalized name, close coords OR both missing coords)
-    semantic_duplicates = {}
+
+def _find_semantic_duplicates(by_normalized, large_region_types):
+    """Find semantic duplicates: same normalized name, close coords or large region."""
+    semantic = {}
     for normalized, places in by_normalized.items():
-        if len(places) > 1:
-            # For large regions/theaters, just group by normalized name
-            # For specific places, check distance
-            is_large_region = any(
-                p.get("geography_type") in large_region_types for p in places
-            )
+        if len(places) <= 1:
+            continue
+        is_large = any(p.get("geography_type") in large_region_types for p in places)
+        if is_large:
+            semantic[f"{normalized} (semantic)"] = places
+        else:
+            for group in _group_by_distance(places):
+                semantic[f"{normalized} (semantic)"] = group
+    return semantic
 
-            if is_large_region:
-                # Large regions - group all with same normalized name
-                semantic_duplicates[f"{normalized} (semantic)"] = places
-            else:
-                # Specific places - check distance
-                groups = []
-                for place in places:
-                    added = False
-                    for group in groups:
-                        if place["lat"] and group[0]["lat"]:
-                            dist = haversine(
-                                place["lat"],
-                                place["lon"],
-                                group[0]["lat"],
-                                group[0]["lon"],
-                            )
-                            if dist < 50:
-                                group.append(place)
-                                added = True
-                                break
-                        elif not place["lat"] and not group[0]["lat"]:
-                            group.append(place)
-                            added = True
-                            break
-                    if not added:
-                        groups.append([place])
 
-                for group in groups:
-                    if len(group) > 1:
-                        semantic_duplicates[f"{normalized} (semantic)"] = group
-
-    duplicates = {**exact_duplicates, **semantic_duplicates}
-
-    # Fuzzy matching pass — catch near-identical names not caught by normalization
-    # Build list of all unique normalized names with their places
-    already_grouped = set()
-    for places in duplicates.values():
-        for p in places:
-            already_grouped.add(p["file"])
-
+def _find_fuzzy_duplicates(places_dir, normalization_rules, already_grouped):
+    """Fuzzy matching pass for near-identical names not caught by normalization."""
     all_places = []
-    for place_file in place_files:
+    for place_file in places_dir.glob("*.json"):
+        if place_file.name == "index.json" or place_file.name in already_grouped:
+            continue
         with open(place_file, "r", encoding="utf-8") as f:
             data = json.load(f)
         name = data.get("current_name", data.get("name", ""))
-        if not name or place_file.name in already_grouped:
+        if not name:
             continue
         norm = normalize_name(name, normalization_rules)
         all_places.append((norm, place_file.name, name, data))
 
+    fuzzy = {}
     for i, (norm1, file1, name1, data1) in enumerate(all_places):
         for norm2, file2, name2, data2 in all_places[i + 1 :]:
             if norm1 == norm2:
-                continue  # Already caught by semantic pass
+                continue
             ratio = SequenceMatcher(None, norm1, norm2).ratio()
             if ratio >= 0.92 and min(len(norm1), len(norm2)) >= 8:
                 key = f"{name1} / {name2} (fuzzy {ratio:.0%})"
-                coords1 = data1.get("coordinates", {})
-                coords2 = data2.get("coordinates", {})
-                duplicates[key] = [
-                    {
-                        "file": file1,
-                        "name": name1,
-                        "PlaceID": data1.get("PlaceID"),
-                        "lat": coords1.get("latitude"),
-                        "lon": coords1.get("longitude"),
-                        "mentions": len(data1.get("event_mentions", [])),
-                        "geography_type": data1.get("geography_type"),
-                    },
-                    {
-                        "file": file2,
-                        "name": name2,
-                        "PlaceID": data2.get("PlaceID"),
-                        "lat": coords2.get("latitude"),
-                        "lon": coords2.get("longitude"),
-                        "mentions": len(data2.get("event_mentions", [])),
-                        "geography_type": data2.get("geography_type"),
-                    },
+                fuzzy[key] = [
+                    _place_info_from_data(data1, file1),
+                    _place_info_from_data(data2, file2),
                 ]
+    return fuzzy
 
+
+def _print_report(duplicates):
+    """Print the duplicate places report."""
     if not duplicates:
         print("✓ No duplicates found")
         return
-
     print(f"Found {len(duplicates)} duplicate place names:\n")
-
     for name, places in sorted(duplicates.items()):
         print(f"📍 {name.title()}")
         for p in places:
@@ -197,9 +168,27 @@ def main():
             print(f"     Coords: ({p['lat']}, {p['lon']})")
             print(f"     Mentions: {p['mentions']}")
         print()
-
     print(f"\nTotal: {len(duplicates)} duplicate place names")
     print(f"Total files: {sum(len(places) for places in duplicates.values())}")
+
+
+def main():
+    config = load_config()
+    normalization_rules = config.get("normalization_rules", [])
+    large_region_types = config.get("large_region_types", [])
+    places_dir = Path("output/places")
+
+    by_name, by_normalized = _load_places(places_dir, normalization_rules)
+
+    exact = {n: ps for n, ps in by_name.items() if len(ps) > 1}
+    semantic = _find_semantic_duplicates(by_normalized, large_region_types)
+    duplicates = {**exact, **semantic}
+
+    already_grouped = {p["file"] for ps in duplicates.values() for p in ps}
+    fuzzy = _find_fuzzy_duplicates(places_dir, normalization_rules, already_grouped)
+    duplicates.update(fuzzy)
+
+    _print_report(duplicates)
 
 
 if __name__ == "__main__":
