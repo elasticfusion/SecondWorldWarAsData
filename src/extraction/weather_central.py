@@ -143,6 +143,25 @@ def _normalize_weather_key(date: str, place_name: str) -> str:
     return f"{date}_{place_name.replace(' ', '_')}"
 
 
+def _build_date_id_lookup(dates_dir: Path) -> Dict[str, str]:
+    """Build date_start → DateID map from dates directory."""
+    lookup: Dict[str, str] = {}
+    if not dates_dir.exists():
+        return lookup
+    for f in dates_dir.glob("*.json"):
+        if f.name == "index.json":
+            continue
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        ds = data.get("date_start")
+        did = data.get("DateID")
+        if ds and did:
+            lookup[ds] = did
+    return lookup
+
+
 def _lookup_by_place_id(
     place_id: str, places_dir: Path, places_index: dict
 ) -> tuple[float, float, Optional[str], Optional[str]]:
@@ -306,6 +325,7 @@ def _create_new_weather_file(
     weather_dir: Path,
     places_dir: Path,
     fetch_api: bool,
+    date_id_lookup: Optional[Dict[str, str]] = None,
 ) -> tuple[Path, str]:
     """Create new weather file. Returns (weather_file, filename)."""
     weather_id = str(ulid.new())
@@ -323,7 +343,7 @@ def _create_new_weather_file(
     weather_data: Dict[str, Any] = {
         "WeatherID": weather_id,
         "date": date,
-        "DateID": mention.get("DateMentionID"),
+        "DateID": (date_id_lookup or {}).get(date),
         "location": {
             "place_name": place_name,
             "PlaceID": place_id,
@@ -355,6 +375,7 @@ def _find_or_create_weather(
     index: Dict[str, str],
     places_dir: Path,
     fetch_api: bool = True,
+    date_id_lookup: Optional[Dict[str, str]] = None,
 ) -> Path:
     """Find existing weather file or create new one, updating if needed."""
     date = mention.get("date", "")
@@ -380,7 +401,7 @@ def _find_or_create_weather(
 
     # Create new weather file
     weather_file, filename = _create_new_weather_file(
-        mention, date, place_name, weather_dir, places_dir, fetch_api
+        mention, date, place_name, weather_dir, places_dir, fetch_api, date_id_lookup
     )
 
     index[weather_key] = filename
@@ -717,6 +738,10 @@ def extract_weather_central(
 
     weather_updated = 0
 
+    # Build date string → DateID lookup for resolving LLM-generated refs
+    dates_dir = places_dir.parent / "dates"
+    date_id_lookup = _build_date_id_lookup(dates_dir)
+
     # Batch extract from all sub-events in single API call
     batch_results = _batch_extract_weather(
         sub_events, event_id, event_name, grok_client, max_retries
@@ -729,7 +754,7 @@ def extract_weather_central(
 
         for mention in mentions:
             weather_file = _find_or_create_weather(
-                mention, weather_dir, index, places_dir, fetch_api
+                mention, weather_dir, index, places_dir, fetch_api, date_id_lookup
             )
             _add_event_mention(
                 weather_file,

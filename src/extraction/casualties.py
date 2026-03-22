@@ -709,7 +709,7 @@ def _resolve_equipment(
             count_lost = equip.get("count_lost") or equip.get("count", 0)
             resolved.append(
                 {
-                    "EquipmentID": equip_id or str(ulid.new()),
+                    "EquipmentID": equip_id,
                     "common_name": equip_name,
                     "count_lost": count_lost,
                 }

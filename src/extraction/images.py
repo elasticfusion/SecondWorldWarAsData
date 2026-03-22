@@ -72,8 +72,7 @@ def _find_linked_place(
         data = json.loads(fpath.read_text())
         for m in data.get("event_mentions", []):
             if m.get("Sub_eventID") == sub_event_id:
-                mention_id = m.get("PlaceMentionID") or m.get("MentionID")
-                return mention_id, data.get("current_name")
+                return data.get("PlaceID"), data.get("current_name")
     return None, None
 
 
@@ -93,9 +92,8 @@ def _find_linked_date(
         data = json.loads(fpath.read_text())
         for m in data.get("event_mentions", []):
             if m.get("Sub_eventID") == sub_event_id:
-                mention_id = m.get("DateMentionID") or m.get("MentionID")
                 date_val = data.get("date_start") or data.get("date")
-                return mention_id, date_val
+                return data.get("DateID"), date_val
     return None, None
 
 
