@@ -72,13 +72,12 @@ Return structured data matching the schema."""
 
 
 def _filter_invalid_dates(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Remove date mentions with missing required fields."""
+    """Remove date mentions with missing required fields or non-WWII dates."""
     if "Date_Mentions" in data and isinstance(data["Date_Mentions"], list):
         original_count = len(data["Date_Mentions"])
         valid_dates = []
         for mention in data["Date_Mentions"]:
             if isinstance(mention, dict):
-                # Check required fields
                 if not mention.get("date_start"):
                     logger.warning(
                         "  Filtered date mention with null date_start: %s",
@@ -88,6 +87,17 @@ def _filter_invalid_dates(data: Dict[str, Any]) -> Dict[str, Any]:
                 if not mention.get("original_text"):
                     logger.warning("  Filtered date mention with null original_text")
                     continue
+                # Reject dates outside WWII era (1919-1955)
+                import re  # pylint: disable=import-outside-toplevel
+
+                year_match = re.search(r"\d{4}", mention["date_start"])
+                if year_match:
+                    year = int(year_match.group())
+                    if year < 1919 or year > 1955:
+                        logger.warning(
+                            "  Filtered non-WWII date: %s", mention["date_start"]
+                        )
+                        continue
                 valid_dates.append(mention)
 
         filtered_count = original_count - len(valid_dates)

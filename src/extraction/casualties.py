@@ -44,7 +44,7 @@ def extract_casualties(
         return []
 
     # Build entity indexes
-    dates_index = _build_entity_index(output_root, "dates", "DateID", "date")
+    dates_index = _build_entity_index(output_root, "dates", "DateID", "date_start")
     places_index = _build_entity_index(output_root, "places", "PlaceID", "name")
     people_index = _build_entity_index(output_root, "people", "PersonID", "name")
     people_groups_index = _build_entity_index(
@@ -795,12 +795,18 @@ def _build_entity_index(
     if not entity_dir.exists():
         return index
 
+    # Fallback field names for transition compatibility
+    fallbacks = {"date_start": "date", "group_name": "name"}
+    fallback = fallbacks.get(name_field)
+
     for json_file in entity_dir.glob("*.json"):
         try:
             with open(json_file, encoding="utf-8") as f:
                 data = json.load(f)
                 entity_id = data.get(id_field)
-                name = data.get(name_field)
+                name = data.get(name_field) or (
+                    data.get(fallback) if fallback else None
+                )
                 if entity_id and name:
                     index[name] = data
         except (json.JSONDecodeError, KeyError) as e:

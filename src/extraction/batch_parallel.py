@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import re
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
@@ -25,6 +26,59 @@ def _load_index(index_file: Path, entity_type: str) -> dict:
     return {}
 
 
+def _make_date_key(obj: dict) -> str:
+    """Create date lookup key, including time if present. Rejects non-WWII dates."""
+    key = obj.get("date_start") or obj.get("date", "")
+    if not key:
+        return ""
+    # Extract year — reject dates outside 1919-1955 (WWII era + context)
+    year_match = re.search(r"\d{4}", key)
+    if year_match:
+        year = int(year_match.group())
+        if year < 1919 or year > 1955:
+            return ""
+    time_start = obj.get("time_start")
+    if time_start:
+        return f"{key}T{time_start}"
+    return key
+
+
+def _make_date_record(obj: dict) -> dict:
+    """Create spec-compliant date record from LLM output."""
+    return {
+        "date_start": obj.get("date_start") or obj.get("date", ""),
+        "date_end": obj.get("date_end"),
+        "time_start": obj.get("time_start"),
+        "time_end": obj.get("time_end"),
+        "time_precision": obj.get("time_precision"),
+        "date_precision": obj.get("date_precision"),
+        "time_source": obj.get("time_source"),
+        "original_text": obj.get("original_text", ""),
+        "normalized_datetime": None,
+    }
+
+
+def _make_date_filename(key: str, entity_id: str) -> str:
+    """Create spec-compliant date filename: YYYYMMDD[_HHMM]_ULID8.json"""
+    date_part = key.split("T")[0] if "T" in key else key
+    time_part = key.split("T")[1] if "T" in key else None
+
+    safe = (
+        date_part.replace("-", "")
+        .replace("early", "E")
+        .replace("mid", "M")
+        .replace("late", "L")
+        .replace("spring", "SP")
+        .replace("summer", "SU")
+        .replace("fall", "FA")
+        .replace("autumn", "AU")
+        .replace("winter", "WI")
+    )
+    if time_part:
+        safe += f"_{time_part.replace(':', '')}"
+    return f"{safe}_{entity_id[:8]}.json"
+
+
 def _get_or_create_entity(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     key: str,
     obj: dict,
@@ -32,6 +86,7 @@ def _get_or_create_entity(  # pylint: disable=too-many-arguments,too-many-positi
     entity_dir: Path,
     make_record: Callable[[dict], dict],
     id_field: str,
+    make_filename: Optional[Callable[[str, str], str]] = None,
 ) -> tuple:
     """Get existing or create new entity file. Returns (entity_file, entity_id, record)."""
     if key not in index:
@@ -40,7 +95,8 @@ def _get_or_create_entity(  # pylint: disable=too-many-arguments,too-many-positi
         if id_field:
             record[id_field] = entity_id
             record["event_mentions"] = []
-        entity_file = entity_dir / f"{key}.json"
+        filename = make_filename(key, entity_id) if make_filename else f"{key}.json"
+        entity_file = entity_dir / filename
         write_json_with_lock(entity_file, record)
         index[key] = str(entity_file.name)
         return entity_file, entity_id, record
@@ -62,23 +118,26 @@ def _add_event_mention_batch(  # pylint: disable=too-many-arguments,too-many-pos
     event_id: str,
     event_name: str,
     meta: Dict[str, str],
+    source_obj: Optional[dict] = None,
 ) -> None:
     """Add event_mention to entity record if not already present."""
     mentions = record.get("event_mentions", [])
     if any(m.get("Sub_eventID") == seid for m in mentions):
         return
-    mentions.append(
-        {
-            "MentionID": str(ulid_mod.new()),
-            "Event_Name": event_name,
-            "EventID": event_id,
-            "Sub_event_Name": se_name,
-            "Sub_eventID": seid,
-            "book": meta.get("book", ""),
-            "author": meta.get("author", ""),
-            "series": meta.get("series", ""),
-        }
-    )
+    mention = {
+        "MentionID": str(ulid_mod.new()),
+        "Event_Name": event_name,
+        "EventID": event_id,
+        "Sub_event_Name": se_name,
+        "Sub_eventID": seid,
+        "book": meta.get("book", ""),
+        "author": meta.get("author", ""),
+        "series": meta.get("series", ""),
+    }
+    if source_obj:
+        mention["context"] = source_obj.get("context")
+        mention["original_text"] = source_obj.get("original_text", "")
+    mentions.append(mention)
     record["event_mentions"] = mentions
     write_json_with_lock(entity_file, record)
 
@@ -97,6 +156,7 @@ def _process_entity_obj(  # pylint: disable=too-many-arguments,too-many-position
     meta: dict,
     sub_event_key: str,
     links: Dict[str, list],
+    make_filename: Optional[Callable[[str, str], str]] = None,
 ) -> bool:
     """Process a single entity object. Returns True if processed."""
     key = make_key(obj)
@@ -104,12 +164,19 @@ def _process_entity_obj(  # pylint: disable=too-many-arguments,too-many-position
         return False
 
     entity_file, entity_id, record = _get_or_create_entity(
-        key, obj, index, entity_dir, make_record, id_field
+        key, obj, index, entity_dir, make_record, id_field, make_filename
     )
 
     if id_field and seid and event_id:
         _add_event_mention_batch(
-            record, entity_file, seid, se_name, event_id, event_name, meta
+            record,
+            entity_file,
+            seid,
+            se_name,
+            event_id,
+            event_name,
+            meta,
+            source_obj=obj,
         )
 
     if sub_event_key and seid and entity_id:
@@ -132,6 +199,7 @@ def _process_batch_response(  # pylint: disable=too-many-arguments,too-many-posi
     event_name: str,
     meta: dict,
     sub_event_key: str,
+    make_filename: Optional[Callable[[str, str], str]] = None,
 ) -> Dict[str, Any]:
     """Process API response: create entities, add mentions, collect links."""
     count = 0
@@ -158,6 +226,7 @@ def _process_batch_response(  # pylint: disable=too-many-arguments,too-many-posi
                 meta,
                 sub_event_key,
                 links,
+                make_filename,
             ):
                 count += 1
 
@@ -179,6 +248,7 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     sub_event_key: str = "",
     book_meta: Optional[Dict[str, str]] = None,
     include_fulltext: bool = False,
+    make_filename: Optional[Callable[[str, str], str]] = None,
 ) -> Dict[str, Any]:
     """Generic batch extraction with cross-referencing.
 
@@ -235,6 +305,7 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
         event_name,
         meta,
         sub_event_key,
+        make_filename,
     )
 
     write_json_with_lock(index_file, index)
@@ -531,15 +602,28 @@ async def extract_dates_batch_async(
         output_root,
         entity_type="dates",
         cache_type="dates",
-        prompt_header=f'Extract all dates from these {n} sub-events. Return JSON:\n{{"dates": [{{"sub_event_id": "ID", "dates": [{{"date": "YYYY-MM-DD", "type": "exact|approximate", "precision": "day|month|year"}}]}}]}}\n\nSub-events:',
+        prompt_header=(
+            f"Extract all dates and times from these {n} sub-events. Return JSON:\n"
+            '{"dates": [{"sub_event_id": "ID", "dates": ['
+            '{"date_start": "YYYY-MM-DD", "date_end": null, '
+            '"time_start": "HH:MM or null", "time_end": null, '
+            '"time_precision": "exact|approximate|null", '
+            '"date_precision": "exact|early|mid|late|spring|summer|fall|winter", '
+            '"time_source": "German|Allied|Zulu|Local|null", '
+            '"original_text": "exact quote from text"}'
+            "]}]}\n"
+            "For approximate dates use prefix: mid-1944-07, early-1944, summer-1942\n"
+            "Sub-events:"
+        ),
         response_key="dates",
         inner_key="dates",
-        make_key=lambda obj: obj.get("date", ""),
-        make_record=lambda obj: {"date": obj.get("date", "")},
+        make_key=_make_date_key,
+        make_record=_make_date_record,
         id_field="DateID",
         sub_event_key="dates",
         book_meta=book_meta,
         include_fulltext=True,
+        make_filename=_make_date_filename,
     )
 
 
