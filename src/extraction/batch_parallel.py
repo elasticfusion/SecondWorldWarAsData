@@ -137,6 +137,10 @@ def _add_event_mention_batch(  # pylint: disable=too-many-arguments,too-many-pos
     if source_obj:
         mention["context"] = source_obj.get("context")
         mention["original_text"] = source_obj.get("original_text", "")
+        if source_obj.get("position_at_event"):
+            mention["position_at_event"] = source_obj["position_at_event"]
+        if source_obj.get("life_event"):
+            mention["life_event"] = source_obj["life_event"]
     mentions.append(mention)
     record["event_mentions"] = mentions
     write_json_with_lock(entity_file, record)
@@ -724,11 +728,31 @@ async def extract_people_batch_async(
         output_root,
         entity_type="people",
         cache_type="people",
-        prompt_header=f'Extract ALL people mentioned in these {n} sub-events. Include every named individual, even if mentioned only once. Return JSON:\n{{"people": [{{"sub_event_id": "ID", "people": [{{"name": "Full Name", "rank": "Rank", "unit": "Unit", "country": "USA|Germany"}}]}}]}}\n\nSub-events:',
+        prompt_header=(
+            f"Extract ALL people mentioned in these {n} sub-events. "
+            "Include every named individual, even if mentioned only once.\n"
+            "For each person extract:\n"
+            "- name: Full name as written\n"
+            "- rank: Military rank at time of mention\n"
+            "- unit: Military unit\n"
+            "- country: USA, Germany, Britain, etc.\n"
+            "- position_at_event: Role/position during this event\n"
+            "- life_event: What happened to this person in this sub-event\n"
+            "- original_text: The sentence(s) mentioning this person\n"
+            'Return JSON:\n{"people": [{"sub_event_id": "ID", '
+            '"people": [{"name": "Full Name", "rank": "Rank", '
+            '"unit": "Unit", "country": "USA", '
+            '"position_at_event": "Commander of...", '
+            '"life_event": "Ordered the attack on...", '
+            '"original_text": "General X ordered..."}]}]}\n\nSub-events:'
+        ),
         response_key="people",
         inner_key="people",
         make_key=lambda obj: _normalize_name(obj.get("name", "")),
-        make_record=lambda obj: {"name": obj.get("name")},
+        make_record=lambda obj: {
+            "name": obj.get("name"),
+            "source_language": "English",
+        },
         id_field="PersonID",
         sub_event_key="people",
         book_meta=book_meta,

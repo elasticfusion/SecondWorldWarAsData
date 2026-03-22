@@ -178,6 +178,7 @@ Return JSON with any available biographical data:
   "death_date": "YYYY-MM-DD or null",
   "death_place": "Location or null",
   "nationality": "Nationality or null",
+  "role_type": "military_leader, political_leader, military_personnel, civilian, or null",
   "ranks": [
     {{"rank": "General", "date": "1943", "branch": "US Army"}}
   ],
@@ -403,87 +404,83 @@ def _validate_and_store_urls(
     return True
 
 
+def _load_person_for_enrichment(person_file: Path) -> Optional[tuple]:
+    """Load person file, return (data, name, bio_profile) or None if skip."""
+    try:
+        with open(person_file, encoding="utf-8") as f:
+            person_data = json.load(f)
+    except (OSError, json.JSONDecodeError) as e:
+        logger.error("Failed to load %s: %s", person_file.name, e)
+        return None
+
+    person_name = person_data.get("name", "")
+    if not person_name:
+        return None
+
+    bio_profile = person_data.get("biographical_profile", {})
+    if bio_profile.get("birth_date") or bio_profile.get("biographical_details"):
+        logger.debug("  Already enriched: %s, skipping", person_name)
+        return None
+
+    return person_data, person_name, bio_profile
+
+
+def _run_enrichment_steps(
+    person_name: str,
+    bio_profile: Dict[str, Any],
+    grok_client: GrokClient,
+    search_references_flag: bool,
+) -> bool:
+    """Run all enrichment steps, return True if any data added."""
+    added = _search_and_enrich(
+        person_name, "Grokipedia", search_grokipedia, bio_profile, grok_client
+    )
+    added = (
+        _search_and_enrich(
+            person_name, "Wikipedia", search_wikipedia, bio_profile, grok_client
+        )
+        or added
+    )
+    if search_references_flag:
+        added = _follow_references(bio_profile, grok_client) or added
+    added = _validate_and_store_urls(bio_profile, person_name, grok_client) or added
+    return added
+
+
 def enrich_person_biography(
     person_file: Path,
     grok_client: GrokClient,
     search_references_flag: bool = True,
 ) -> bool:
-    """Enrich person biography from external sources.
-
-    Args:
-        person_file: Path to person JSON file
-        grok_client: Grok API client
-        search_references_flag: Whether to follow references
-
-    Returns:
-        True if enrichment was added
-    """
-    try:
-        with open(person_file, encoding="utf-8") as f:
-            person_data = json.load(f)
-
-        person_name = person_data.get("name", "")
-        if not person_name:
-            return False
-
-        # Skip if already enriched (has substantive biographical data)
-        bio_profile = person_data.get("biographical_profile", {})
-        if bio_profile.get("birth_date") or bio_profile.get("biographical_details"):
-            logger.debug("  Already enriched: %s, skipping", person_name)
-            return False
-
-        logger.info("Enriching: %s", person_name)
-        enrichment_added = False
-
-        # Search Grokipedia
-        enrichment_added = _search_and_enrich(
-            person_name, "Grokipedia", search_grokipedia, bio_profile, grok_client
-        )
-
-        # Search Wikipedia
-        enrichment_added = (
-            _search_and_enrich(
-                person_name, "Wikipedia", search_wikipedia, bio_profile, grok_client
-            )
-            or enrichment_added
-        )
-
-        # Follow references if enabled
-        if search_references_flag:
-            enrichment_added = (
-                _follow_references(bio_profile, grok_client) or enrichment_added
-            )
-
-        # Validate source URLs returned by Grok
-        enrichment_added = (
-            _validate_and_store_urls(bio_profile, person_name, grok_client)
-            or enrichment_added
-        )
-
-        # Save if enriched
-        if enrichment_added:
-            person_data["biographical_profile"] = bio_profile
-
-            # Validate before saving
-            try:
-                from src.extraction.people import Person
-
-                Person(**person_data)
-            except Exception as e:
-                logger.error("  ❌ Validation failed for %s: %s", person_name, e)
-                return False
-
-            with open(person_file, "w", encoding="utf-8") as f:
-                json.dump(person_data, f, indent=2, ensure_ascii=False)
-            logger.info("  ✅ Enriched %s", person_name)
-            return True
-        else:
-            logger.info("  No new data found")
-            return False
-
-    except Exception as e:
-        logger.error("Enrichment failed for %s: %s", person_file.name, e)
+    """Enrich person biography from external sources."""
+    loaded = _load_person_for_enrichment(person_file)
+    if not loaded:
         return False
+
+    person_data, person_name, bio_profile = loaded
+    logger.info("Enriching: %s", person_name)
+
+    if not _run_enrichment_steps(
+        person_name, bio_profile, grok_client, search_references_flag
+    ):
+        logger.info("  No new data found")
+        return False
+
+    person_data["biographical_profile"] = bio_profile
+    try:
+        from src.extraction.people import (
+            Person,
+        )  # pylint: disable=import-outside-toplevel
+
+        Person(**person_data)
+    except Exception as e:
+        logger.error("  ❌ Validation failed for %s: %s", person_name, e)
+        return False
+
+    with open(person_file, "w", encoding="utf-8") as f:
+        json.dump(person_data, f, indent=2, ensure_ascii=False)
+    logger.info("  ✅ Enriched %s", person_name)
+    return True
 
 
 def _merge_simple_fields(
