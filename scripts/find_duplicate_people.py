@@ -504,7 +504,11 @@ def _build_pairwise_matches(
     excluded_pairs: Set[tuple],
     text_index: Dict[str, str],
 ) -> list[tuple[int, int, list[str], float]]:
-    """Score all pairs and return those with name-based evidence above threshold."""
+    """Score all pairs and return those with name-based evidence above threshold.
+
+    Single-word names (e.g. "Marshall") are limited to their single best match
+    to prevent bridging unrelated people (e.g. George C. Marshall and S.L.A. Marshall).
+    """
     name_reasons = {
         "Name similarity",
         "Same last name",
@@ -513,7 +517,7 @@ def _build_pairwise_matches(
         "ASCII/Unicode variant",
         "German transliteration",
     }
-    pairs: list[tuple[int, int, list[str], float]] = []
+    raw_pairs: list[tuple[int, int, list[str], float]] = []
 
     for i, person1 in enumerate(people_data):
         if "name" not in person1:
@@ -536,8 +540,70 @@ def _build_pairwise_matches(
                     any(r.startswith(nr) for nr in name_reasons) for r in reasons
                 )
                 if has_name_evidence:
-                    pairs.append((i, j, reasons, confidence))
-    return pairs
+                    raw_pairs.append((i, j, reasons, confidence))
+
+    # Limit single-word names to their best match only
+    return _limit_single_name_matches(raw_pairs, people_data)
+
+
+def _is_ambiguous_name(name: str) -> bool:
+    """Check if a name is ambiguous (could match multiple different people).
+
+    Ambiguous = single word OR title/rank + single last name only.
+    """
+    titles = {
+        "general", "colonel", "major", "captain", "lieutenant", "field",
+        "marshal", "admiral", "commander", "sergeant", "gen", "col",
+        "maj", "lt", "brig", "sir",
+    }
+    parts = name.split()
+    if len(parts) <= 1:
+        return True
+    non_title = [p for p in parts if p.lower().rstrip(".") not in titles]
+    return len(non_title) <= 1
+
+
+def _best_nonambiguous_match(
+    pairs: list[tuple[int, int, list[str], float]],
+    ambiguous_indices: set[int],
+) -> dict[int, tuple[int, int, list[str], float]]:
+    """For each ambiguous person, find their best match to a non-ambiguous name."""
+    best: dict[int, tuple[int, int, list[str], float]] = {}
+    for pair in pairs:
+        i, j, reasons, confidence = pair
+        for idx, other in ((i, j), (j, i)):
+            if idx in ambiguous_indices and other not in ambiguous_indices:
+                if idx not in best or confidence > best[idx][3]:
+                    best[idx] = pair
+    return best
+
+
+def _limit_single_name_matches(
+    pairs: list[tuple[int, int, list[str], float]],
+    people_data: List[Dict[str, Any]],
+) -> list[tuple[int, int, list[str], float]]:
+    """For each ambiguous person, keep only their best match to a non-ambiguous name.
+
+    Ambiguous names (e.g. "Marshall", "General Marshall") can match multiple
+    different people. To prevent bridging, each ambiguous name only connects
+    to its best non-ambiguous match. Ambiguous-to-ambiguous pairs are dropped.
+    """
+    ambiguous_indices = {
+        i for i, p in enumerate(people_data)
+        if "name" in p and _is_ambiguous_name(p["name"])
+    }
+
+    if not ambiguous_indices:
+        return pairs
+
+    best = _best_nonambiguous_match(pairs, ambiguous_indices)
+    best_pair_ids = {id(p) for p in best.values()}
+
+    return [
+        pair for pair in pairs
+        if (pair[0] not in ambiguous_indices and pair[1] not in ambiguous_indices)
+        or id(pair) in best_pair_ids
+    ]
 
 
 def _find_duplicate_groups(
