@@ -55,7 +55,7 @@ def _extract_last_name(name: str) -> str:
     """Extract likely last name from full name."""
     parts = name.split()
     if len(parts) > 1:
-        # Skip titles/ranks
+        # Skip titles/ranks and suffixes
         titles = {
             "general",
             "colonel",
@@ -68,7 +68,10 @@ def _extract_last_name(name: str) -> str:
             "commander",
             "sergeant",
         }
-        filtered = [p for p in parts if p.lower() not in titles]
+        suffixes = {"jr.", "jr", "sr.", "sr", "ii", "iii", "iv"}
+        filtered = [
+            p for p in parts if p.lower() not in titles and p.lower() not in suffixes
+        ]
         if filtered:
             return filtered[-1].lower()
     return name.lower()
@@ -100,18 +103,32 @@ def _has_shared_biographical_data(person1: Dict, person2: Dict) -> bool:
 
 
 def _has_shared_positions(person1: Dict, person2: Dict) -> bool:
-    """Check if two people held the same positions."""
+    """Check if two people held the same specific positions."""
+    # Generic titles that many people share — not useful for dedup
+    generic = {
+        "commander",
+        "commanding general",
+        "commanding officer",
+        "general",
+        "chief of staff",
+        "deputy commander",
+        "assistant commander",
+        "division commander",
+        "corps commander",
+        "army commander",
+    }
+
     positions1 = set()
     positions2 = set()
 
     for mention in person1.get("event_mentions", []):
         pos = mention.get("position_at_event")
-        if pos:
+        if pos and pos.lower() not in generic:
             positions1.add(pos.lower())
 
     for mention in person2.get("event_mentions", []):
         pos = mention.get("position_at_event")
-        if pos:
+        if pos and pos.lower() not in generic:
             positions2.add(pos.lower())
 
     return bool(positions1 & positions2)
@@ -281,22 +298,33 @@ def _check_shared_positions(p1: Dict, p2: Dict) -> tuple[list[str], float]:
 def _check_substring_match(
     name1: str, name2: str, last1: str, last2: str
 ) -> tuple[list[str], float]:
-    """Check 5: One name's last name is a whole-word substring of the other."""
-    if len(last1) > 3 and last1 != last2:
-        pat1 = re.compile(r"\b" + re.escape(last1) + r"\b", re.IGNORECASE)
-        pat2 = re.compile(r"\b" + re.escape(last2) + r"\b", re.IGNORECASE)
-        if pat1.search(name2) or pat2.search(name1):
-            return ["Name substring match"], 0.5
+    """Check 5: Single-word name matches a multi-word name's last name exactly."""
+    # Only triggers when one name is a single word (e.g. "Dollman")
+    # and it matches the other's last name exactly
+    parts1 = name1.split()
+    parts2 = name2.split()
+    if len(parts1) == 1 and len(parts2) > 1 and last1 == last2 and len(last1) > 3:
+        return ["Name substring match"], 0.5
+    if len(parts2) == 1 and len(parts1) > 1 and last1 == last2 and len(last2) > 3:
+        return ["Name substring match"], 0.5
     return [], 0.0
 
 
 def _check_single_name(
     name1: str, name2: str, last1: str, last2: str, p1: Dict, p2: Dict
 ) -> tuple[list[str], float]:
-    """Check 5b: Single last name vs full name with shared context."""
-    if (len(name1.split()) == 1 or len(name2.split()) == 1) and last1 == last2:
+    """Check 5b: Single last name vs full name with matching last name."""
+    is_single = len(name1.split()) == 1 or len(name2.split()) == 1
+    if not is_single or len(last1) < 3:
+        return [], 0.0
+    # Exact or fuzzy last name match (handles Dollman/Dollmann)
+    last_sim = _similarity_ratio(last1, last2)
+    if last_sim >= 0.85:
         if _has_shared_biographical_data(p1, p2) or _has_shared_positions(p1, p2):
             return ["Single name match with shared context"], 0.6
+        # Even without shared context, high last-name similarity is enough
+        # for single-word names (they exist because the source used last name only)
+        return ["Single name match with shared context"], 0.6
     return [], 0.0
 
 
@@ -441,64 +469,119 @@ def _load_people_data(people_dir_path: Path) -> List[Dict[str, Any]]:
     return people_data
 
 
-def _find_duplicate_groups(
+def _union_find_groups(
+    pairs: list[tuple[int, int, list[str], float]],
+) -> dict[int, list[tuple[int, list[str], float]]]:
+    """Group pairwise matches using union-find."""
+    parent: dict[int, int] = {}
+
+    def find(x: int) -> int:
+        while parent.get(x, x) != x:
+            parent[x] = parent.get(parent[x], parent[x])
+            x = parent[x]
+        return x
+
+    def union(a: int, b: int):
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[ra] = rb
+
+    for i, j, _, _ in pairs:
+        union(i, j)
+
+    groups: dict[int, list[tuple[int, list[str], float]]] = {}
+    for i, j, reasons, confidence in pairs:
+        root = find(i)
+        if root not in groups:
+            groups[root] = []
+        groups[root].append((i, reasons, confidence))
+        groups[root].append((j, reasons, confidence))
+    return groups
+
+
+def _build_pairwise_matches(
     people_data: List[Dict[str, Any]],
     excluded_pairs: Set[tuple],
     text_index: Dict[str, str],
-) -> List[Dict[str, Any]]:
-    """Find duplicate groups from scored pairs."""
-    duplicates = []
-    processed: Set[str] = set()
+) -> list[tuple[int, int, list[str], float]]:
+    """Score all pairs and return those with name-based evidence above threshold."""
+    name_reasons = {
+        "Name similarity",
+        "Same last name",
+        "Name substring match",
+        "Single name match",
+        "ASCII/Unicode variant",
+        "German transliteration",
+    }
+    pairs: list[tuple[int, int, list[str], float]] = []
 
     for i, person1 in enumerate(people_data):
-        if person1["_filename"] in processed:
-            continue
         if "name" not in person1:
             continue
-
-        group: List[Dict[str, Any]] = []
-        group_reasons: List[str] = []
-        group_confidence = 0.0
-
-        for person2 in people_data[i + 1 :]:
-            if person2["_filename"] in processed or "name" not in person2:
+        for j in range(i + 1, len(people_data)):
+            person2 = people_data[j]
+            if "name" not in person2:
                 continue
 
-            pair_key = tuple(sorted([person1["_filename"], person2["_filename"]]))
+            pair_key = tuple(
+                sorted([person1["_filename"], person2["_filename"]])
+            )
             if pair_key in excluded_pairs:
                 continue
 
             reasons, confidence = _score_pair(person1, person2, text_index)
 
             if confidence > 0.5 and reasons:
-                if not group:
-                    group.append(
-                        {
-                            "filename": person1["_filename"],
-                            "name": person1["name"],
-                            "PersonID": person1.get("PersonID", ""),
-                        }
-                    )
-                group.append(
+                has_name_evidence = any(
+                    any(r.startswith(nr) for nr in name_reasons) for r in reasons
+                )
+                if has_name_evidence:
+                    pairs.append((i, j, reasons, confidence))
+    return pairs
+
+
+def _find_duplicate_groups(
+    people_data: List[Dict[str, Any]],
+    excluded_pairs: Set[tuple],
+    text_index: Dict[str, str],
+) -> List[Dict[str, Any]]:
+    """Find duplicate groups from scored pairs using union-find.
+
+    Only people with a direct pairwise match are grouped together.
+    Requires name-based evidence for any pair.
+    """
+    pairs = _build_pairwise_matches(people_data, excluded_pairs, text_index)
+    groups = _union_find_groups(pairs)
+
+    duplicates = []
+    for entries in groups.values():
+        seen: dict[int, bool] = {}
+        people_list = []
+        all_reasons: set[str] = set()
+        max_confidence = 0.0
+
+        for idx, reasons, confidence in entries:
+            if idx not in seen:
+                seen[idx] = True
+                p = people_data[idx]
+                people_list.append(
                     {
-                        "filename": person2["_filename"],
-                        "name": person2["name"],
-                        "PersonID": person2.get("PersonID", ""),
+                        "filename": p["_filename"],
+                        "name": p["name"],
+                        "PersonID": p.get("PersonID", ""),
                     }
                 )
-                group_confidence = max(group_confidence, confidence)
-                group_reasons.extend(reasons)
-                processed.add(person2["_filename"])
+            all_reasons.update(reasons)
+            max_confidence = max(max_confidence, confidence)
 
-        if group:
+        if len(people_list) >= 2:
             duplicates.append(
                 {
-                    "confidence": group_confidence,
-                    "reasons": list(set(group_reasons)),
-                    "people": group,
+                    "confidence": max_confidence,
+                    "reasons": list(all_reasons),
+                    "people": people_list,
                 }
             )
-            processed.add(person1["_filename"])
 
     return duplicates
 
