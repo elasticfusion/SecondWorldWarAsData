@@ -135,7 +135,7 @@ _ORDINAL_WORDS = {
     "fifteenth": "15", "sixteenth": "16", "seventeenth": "17", "eighteenth": "18",
     "nineteenth": "19", "twentieth": "20",
 }
-_ORDINAL_SUFFIX = re.compile(r"(\d+)(?:st|nd|rd|th)\b", re.IGNORECASE)
+_ORDINAL_SUFFIX = re.compile(r"(\d+)(?:st|nd|rd|th|d)\b", re.IGNORECASE)
 
 _WORD_TO_NUM = {
     "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
