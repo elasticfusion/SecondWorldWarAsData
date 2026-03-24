@@ -122,15 +122,89 @@ def _similarity_ratio(name1: str, name2: str) -> float:
     normalized_ratio = SequenceMatcher(
         None, _normalize_unicode(name1).lower(), _normalize_unicode(name2).lower()
     ).ratio()
-    return max(original_ratio, normalized_ratio)
+    ordinal_ratio = SequenceMatcher(
+        None, _normalize_ordinals(name1), _normalize_ordinals(name2)
+    ).ratio()
+    return max(original_ratio, normalized_ratio, ordinal_ratio)
+
+
+_ORDINAL_WORDS = {
+    "first": "1", "second": "2", "third": "3", "fourth": "4", "fifth": "5",
+    "sixth": "6", "seventh": "7", "eighth": "8", "ninth": "9", "tenth": "10",
+    "eleventh": "11", "twelfth": "12", "thirteenth": "13", "fourteenth": "14",
+    "fifteenth": "15", "sixteenth": "16", "seventeenth": "17", "eighteenth": "18",
+    "nineteenth": "19", "twentieth": "20",
+}
+_ORDINAL_SUFFIX = re.compile(r"(\d+)(?:st|nd|rd|th)\b", re.IGNORECASE)
+
+_WORD_TO_NUM = {
+    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+    "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+    "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15,
+    "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19,
+    "twenty": 20, "thirty": 30, "forty": 40, "fifty": 50,
+    "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90,
+    "hundred": 100,
+}
+
+
+def _words_to_number(words: list[str]) -> tuple[int, int]:
+    """Convert a sequence of number words to an integer. Returns (value, words_consumed)."""
+    total = 0
+    current = 0
+    consumed = 0
+    for w in words:
+        w_lower = w.lower()
+        if w_lower == "and":
+            consumed += 1
+            continue
+        val = _WORD_TO_NUM.get(w_lower)
+        if val is None:
+            # Check ordinal forms
+            val = _ORDINAL_WORDS.get(w_lower)
+            if val is not None:
+                current += int(val)
+                consumed += 1
+                break  # ordinal ends the number
+            break
+        if val == 100:
+            current = (current or 1) * 100
+        else:
+            current += val
+        consumed += 1
+    total += current
+    return total, consumed
+
+
+@lru_cache(maxsize=5000)
+def _normalize_ordinals(name: str) -> str:
+    """Normalize ordinal words and suffixes to digits.
+
+    Handles: 'Fifth'→'5', '1st'→'1', 'eighty second'→'82',
+    'one hundred and first'→'101'.
+    """
+    result = _ORDINAL_SUFFIX.sub(r"\1", name.lower())
+    words = result.split()
+    out: list[str] = []
+    i = 0
+    while i < len(words):
+        if words[i] in _WORD_TO_NUM or words[i] in _ORDINAL_WORDS:
+            val, consumed = _words_to_number(words[i:])
+            if val > 0 and consumed > 0:
+                out.append(str(val))
+                i += consumed
+                continue
+        out.append(words[i])
+        i += 1
+    return " ".join(out)
 
 
 @lru_cache(maxsize=5000)
 def _extract_core_name(name: str) -> str:
-    """Extract core name without common prefixes/suffixes."""
+    """Extract core name without common prefixes/suffixes, with ordinals normalized."""
     # Remove common military prefixes
     prefixes = ["u.s.", "us", "german", "british", "soviet", "the"]
-    words = name.lower().split()
+    words = _normalize_ordinals(name).split()
     filtered = [w for w in words if w not in prefixes]
     return " ".join(filtered) if filtered else name.lower()
 
@@ -185,8 +259,10 @@ def _get_group_name(data: Dict) -> str:
 
 def _different_unit_identifiers(name1: str, name2: str) -> bool:
     """Return True if names have different unit numbers, Roman numerals, or letters."""
-    num1 = re.findall(r"\b(\d+)(?:st|nd|rd|th|d)?\b", name1.lower())
-    num2 = re.findall(r"\b(\d+)(?:st|nd|rd|th|d)?\b", name2.lower())
+    n1 = _normalize_ordinals(name1)
+    n2 = _normalize_ordinals(name2)
+    num1 = re.findall(r"\b(\d+)\b", n1)
+    num2 = re.findall(r"\b(\d+)\b", n2)
     if num1 and num2 and num1 != num2:
         return True
 
