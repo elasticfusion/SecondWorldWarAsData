@@ -352,19 +352,30 @@ def _score_group_pair(group1: Dict, group2: Dict) -> tuple[list[str], float]:
 
 
 def _load_groups_data(groups_dir_path: Path) -> List[Dict[str, Any]]:
-    """Load all group JSON files."""
+    """Load all group JSON files, skipping known non-groups."""
     excluded_files = {
         "index.json",
         "related_groups_report.json",
         "not_related.json",
+        "not_groups.json",
+        "excluded_merges.md",
         ".processed_events.json",
     }
+    # Load not-a-group names
+    ng_file = groups_dir_path / "not_groups.json"
+    not_group_names: set[str] = set()
+    if ng_file.exists():
+        not_group_names = set(json.loads(ng_file.read_text(encoding="utf-8")).get("names", []))
+
     groups_data = []
     for group_file in groups_dir_path.glob("*.json"):
         if group_file.name in excluded_files:
             continue
         with open(group_file, "r", encoding="utf-8") as f:
             data = json.load(f)
+            name = (data.get("group_name") or data.get("name", "")).lower()
+            if name in not_group_names:
+                continue
             data["_filename"] = group_file.name
             groups_data.append(data)
     return groups_data

@@ -58,14 +58,16 @@ def merge_groups(primary: Dict, others: List[Dict]) -> Dict:
 
 
 def get_user_action() -> str:
-    """Get user action. Returns: 'merge', 'skip', 'exclude', 'stop'."""
-    response = input("\nMerge this cluster? (y/n/skip/exclude): ").lower()
+    """Get user action. Returns: 'merge', 'skip', 'exclude', 'notgroup', 'stop'."""
+    response = input("\nMerge this cluster? (y/n/skip/exclude/notgroup): ").lower()
     if response == "n":
         return "stop"
     if response == "skip":
         return "skip"
     if response in ["exclude", "e"]:
         return "exclude"
+    if response in ["notgroup", "ng"]:
+        return "notgroup"
     return "merge"
 
 
@@ -207,6 +209,65 @@ def _handle_exclude(groups_dir, groups):
     return remaining
 
 
+def _handle_notgroup(groups_dir, groups):
+    """Mark items as not-a-group: delete files, update index, remember in not_groups.json."""
+    print("\nEnter numbers of items that are NOT groups (comma-separated, or 'all'):")
+    for i, g in enumerate(groups, 1):
+        print(f"  {i}. {g['name']} ({g['filename']})")
+    response = input("> ").strip()
+
+    if response.lower() == "all":
+        indices = list(range(len(groups)))
+    else:
+        try:
+            indices = [int(x.strip()) - 1 for x in response.split(",")]
+            if not all(0 <= i < len(groups) for i in indices):
+                print("❌ Invalid numbers")
+                return None
+        except ValueError:
+            print("❌ Invalid input")
+            return None
+
+    # Save to not_groups.json
+    ng_file = groups_dir / "not_groups.json"
+    data = {"names": []}
+    if ng_file.exists():
+        data = json.loads(ng_file.read_text(encoding="utf-8"))
+    existing = set(data.get("names", []))
+
+    # Load index
+    index_file = groups_dir / "index.json"
+    index = {}
+    if index_file.exists():
+        index = json.loads(index_file.read_text(encoding="utf-8"))
+
+    for idx in indices:
+        g = groups[idx]
+        name = g["name"]
+        existing.add(name.lower())
+        # Delete file
+        fpath = groups_dir / g["filename"]
+        if fpath.exists():
+            fpath.unlink()
+            print(f"  ✓ Deleted {g['filename']}")
+        # Remove from index
+        norm = name.lower().strip()
+        if norm in index:
+            del index[norm]
+
+    data["names"] = sorted(existing)
+    ng_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    if index_file.exists():
+        index_file.write_text(json.dumps(index, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    print(f"✓ Marked {len(indices)} item(s) as not-a-group")
+
+    remaining = [g for i, g in enumerate(groups) if i not in indices]
+    if len(remaining) < 2:
+        return None
+    return None  # Don't auto-merge after removing non-groups
+
+
 def _execute_merge(groups_dir, groups):
     """Prompt for primary, merge, save, and delete others."""
     primary_idx = get_primary_index(groups)
@@ -250,6 +311,9 @@ def merge_related_cluster(groups_dir: Path, cluster: Dict) -> bool:
         groups = _handle_exclude(groups_dir, groups)
         if groups is None:
             return True
+    if action == "notgroup":
+        _handle_notgroup(groups_dir, groups)
+        return True
 
     _execute_merge(groups_dir, groups)
     return True
@@ -281,6 +345,7 @@ def main():
     print("  n = don't merge, exit")
     print("  skip = skip this cluster, continue to next")
     print("  exclude = mark as NOT related (prevents future detection)")
+    print("  notgroup = mark items as NOT a group (deletes files, remembers)")
 
     merged_count = 0
     for cluster in clusters:
