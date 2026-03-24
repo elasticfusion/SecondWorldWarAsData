@@ -49,10 +49,49 @@ _NOT_A_PERSON = re.compile(
     re.IGNORECASE,
 )
 
+# Persistent exclusion list — patterns confirmed as not-a-person
+_people_exclusion_patterns: list[re.Pattern] = []
+_people_exclusions_file: Optional[Path] = None
+
+
+def _load_people_exclusions(people_dir: Path) -> None:
+    """Load persistent exclusion patterns from people directory."""
+    global _people_exclusion_patterns, _people_exclusions_file  # pylint: disable=global-statement
+    _people_exclusions_file = people_dir / "not_people.json"
+    if _people_exclusions_file.exists():
+        data = json.loads(_people_exclusions_file.read_text(encoding="utf-8"))
+        _people_exclusion_patterns = [
+            re.compile(p, re.IGNORECASE)
+            for p in data.get("patterns", [])
+        ]
+        logger.debug("Loaded %d people exclusion patterns", len(_people_exclusion_patterns))
+
+
+def _add_people_exclusion(name: str) -> None:
+    """Add a name to the persistent exclusion list (logged for manual pattern creation)."""
+    if not _people_exclusions_file:
+        return
+    data = {"patterns": [], "auto_caught": []}
+    if _people_exclusions_file.exists():
+        data = json.loads(_people_exclusions_file.read_text(encoding="utf-8"))
+    caught = data.setdefault("auto_caught", [])
+    if name not in caught:
+        caught.append(name)
+        _people_exclusions_file.write_text(
+            json.dumps(data, indent=2), encoding="utf-8"
+        )
+    logger.debug("Excluded non-person: %s", name)
+
 
 def _is_not_a_person(name: str) -> bool:
     """Return True if name looks like an organization, not a person."""
-    return bool(_NOT_A_PERSON.search(name))
+    for pat in _people_exclusion_patterns:
+        if pat.search(name):
+            return True
+    if _NOT_A_PERSON.search(name):
+        _add_people_exclusion(name)
+        return True
+    return False
 
 
 def _load_index(index_file: Path, entity_type: str) -> dict:
@@ -882,6 +921,7 @@ async def extract_people_batch_async(
     """Extract people in batch — includes fulltext for complete coverage."""
     from src.extraction.people import _normalize_name
 
+    _load_people_exclusions(output_root / "people")
     n = len(event_data.get("Event", {}).get("Sub-events", []))
     return await _batch_extract(
         event_data,
