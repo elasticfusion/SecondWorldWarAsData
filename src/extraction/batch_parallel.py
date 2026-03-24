@@ -40,6 +40,21 @@ def _strip_rank(name: str) -> str:
     return result.strip() or name
 
 
+_NOT_A_PERSON = re.compile(
+    r"(?:G-[1-4]|S-[1-4]|J-[1-6]|A-[1-4]"
+    r"|\bCorps\b|\bArmy\b|\bDivision\b|\bRegiment\b|\bBattalion\b"
+    r"|\bBrigade\b|\bGroup\b|\bCommand\b|\bHQ\b|\bHeadquarters\b"
+    r"|\bSection\b|\bStaff\b|\bSquadron\b|\bCompany\b|\bPlatoon\b"
+    r"|\bFleet\b|\bWing\b|\bTask\s+Force\b)",
+    re.IGNORECASE,
+)
+
+
+def _is_not_a_person(name: str) -> bool:
+    """Return True if name looks like an organization, not a person."""
+    return bool(_NOT_A_PERSON.search(name))
+
+
 def _load_index(index_file: Path, entity_type: str) -> dict:
     """Load a JSON index file, returning empty dict on failure."""
     try:
@@ -880,6 +895,8 @@ async def extract_people_batch_async(
             "IMPORTANT: When a plural rank precedes multiple names joined by "
             "'and'/'or' (e.g. 'Admirals Leahy and King', 'Generals Bradley and "
             "Patton'), extract each as a SEPARATE person with the singular rank.\n"
+            "DO NOT extract staff sections, units, or organizations as people "
+            "(e.g. 'VIII Corps G-3', 'Third Army G-3', 'V Corps', '1st Division HQ').\n"
             "For each person extract:\n"
             "- name: Full name WITHOUT rank/title (e.g. 'George C. Marshall' not 'Gen. George C. Marshall')\n"
             "- rank: Military rank at time of mention\n"
@@ -897,7 +914,10 @@ async def extract_people_batch_async(
         ),
         response_key="people",
         inner_key="people",
-        make_key=lambda obj: _normalize_name(_strip_rank(obj.get("name", ""))),
+        make_key=lambda obj: (
+            "" if _is_not_a_person(obj.get("name", ""))
+            else _normalize_name(_strip_rank(obj.get("name", "")))
+        ),
         make_record=lambda obj: {
             "name": _strip_rank(obj.get("name", "")),
             "source_language": "English",
