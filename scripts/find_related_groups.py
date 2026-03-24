@@ -294,9 +294,25 @@ def _load_groups_data(groups_dir_path: Path) -> List[Dict[str, Any]]:
     return groups_data
 
 
+def _load_excluded_pairs(groups_dir: Path) -> Set[tuple]:
+    """Load pairwise exclusions from not_related.json."""
+    exclusion_file = groups_dir / "not_related.json"
+    pairs = set()
+    if exclusion_file.exists():
+        try:
+            data = json.loads(exclusion_file.read_text(encoding="utf-8"))
+            for exc in data.get("exclusions", []):
+                pair = tuple(sorted([exc["group1"], exc["group2"]]))
+                pairs.add(pair)
+        except Exception as e:
+            logger.warning("Failed to load not_related.json: %s", e)
+    return pairs
+
+
 def _find_related_clusters(
     groups_data: List[Dict[str, Any]],
     excluded_clusters: List[Set[str]],
+    excluded_pairs: Set[tuple],
     use_llm_verification: bool,
     grok_client,
 ) -> List[Dict[str, Any]]:
@@ -316,6 +332,10 @@ def _find_related_clusters(
 
         for group2 in groups_data[i + 1 :]:
             if group2["_filename"] in processed or not _get_group_name(group2):
+                continue
+
+            pair_key = tuple(sorted([group1["_filename"], group2["_filename"]]))
+            if pair_key in excluded_pairs:
                 continue
 
             reasons, confidence = _score_group_pair(group1, group2)
@@ -399,6 +419,10 @@ def find_related_groups(
     if excluded_clusters:
         logger.info("Loaded %d excluded cluster(s)", len(excluded_clusters))
 
+    excluded_pairs = _load_excluded_pairs(groups_dir_path)
+    if excluded_pairs:
+        logger.info("Loaded %d excluded pair(s)", len(excluded_pairs))
+
     grok_client = None
     if use_llm_verification:
         try:
@@ -414,7 +438,7 @@ def find_related_groups(
     logger.info("Analyzing %d groups for relationships...", len(groups_data))
 
     return _find_related_clusters(
-        groups_data, excluded_clusters, use_llm_verification, grok_client
+        groups_data, excluded_clusters, excluded_pairs, use_llm_verification, grok_client
     )
 
 
