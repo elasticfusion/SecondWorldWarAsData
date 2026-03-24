@@ -346,6 +346,7 @@ def create_people_prompt(
     text = "\n\n".join(text_parts)
 
     prompt = f"""Extract all people mentions from this WWII text with biographical details.
+When a plural rank precedes multiple names joined by 'and'/'or' (e.g. 'Admirals Leahy and King'), extract each as a SEPARATE person with the singular rank.
 
 Source: {book} by {author} ({series})
 Event: {event_name} (ID: {event_id})
