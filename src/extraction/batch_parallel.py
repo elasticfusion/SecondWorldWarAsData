@@ -15,6 +15,30 @@ from src.utils.json_validator import _fix_invalid_ulids
 
 logger = logging.getLogger(__name__)
 
+_RANK_PREFIX = re.compile(
+    r"^(?:(?:Field\s+)?Marshal|Gen(?:eral)?|Lt\.?\s*Gen(?:eral)?|"
+    r"Maj\.?\s*Gen(?:eral)?|Brig\.?\s*Gen(?:eral)?|Col(?:onel)?|"
+    r"Lt\.?\s*Col(?:onel)?|Maj(?:or)?|Capt(?:ain)?|"
+    r"Lt\.?\s*(?:Cmdr\.?|Commander)?|Lieutenant|"
+    r"Adm(?:iral)?|Vice\s*Adm(?:iral)?|Rear\s*Adm(?:iral)?|"
+    r"Sgt\.?|Serg(?:eant)?|Cpl\.?|Corp(?:oral)?|Pvt\.?|Private|"
+    r"Cmdr\.?|Commander|Commodore|"
+    r"Feldmarschall|Generaloberst|Generalleutnant|Generalmajor|Oberst|"
+    r"SS-(?:Obergruppenführer|Gruppenführer|Brigadeführer|Oberführer)|"
+    r"Sir|Lord|Mr\.?|Mrs\.?|Miss|Ms\.?|Dr\.?|Prof(?:essor)?|"
+    r"Dame|Baron|Baroness|Count|Countess|Prince|Princess|Duke|Duchess"
+    r")\.?\s+",
+    re.IGNORECASE,
+)
+
+
+def _strip_rank(name: str) -> str:
+    """Remove military rank/title prefix from a person's name."""
+    result = _RANK_PREFIX.sub("", name, count=1)
+    # Handle stacked prefixes like "Maj. Gen. J. Lawton Collins"
+    result = _RANK_PREFIX.sub("", result, count=1)
+    return result.strip() or name
+
 
 def _load_index(index_file: Path, entity_type: str) -> dict:
     """Load a JSON index file, returning empty dict on failure."""
@@ -853,8 +877,11 @@ async def extract_people_batch_async(
         prompt_header=(
             f"Extract ALL people mentioned in these {n} sub-events. "
             "Include every named individual, even if mentioned only once.\n"
+            "IMPORTANT: When a plural rank precedes multiple names joined by "
+            "'and'/'or' (e.g. 'Admirals Leahy and King', 'Generals Bradley and "
+            "Patton'), extract each as a SEPARATE person with the singular rank.\n"
             "For each person extract:\n"
-            "- name: Full name as written\n"
+            "- name: Full name WITHOUT rank/title (e.g. 'George C. Marshall' not 'Gen. George C. Marshall')\n"
             "- rank: Military rank at time of mention\n"
             "- unit: Military unit\n"
             "- country: USA, Germany, Britain, etc.\n"
@@ -870,9 +897,9 @@ async def extract_people_batch_async(
         ),
         response_key="people",
         inner_key="people",
-        make_key=lambda obj: _normalize_name(obj.get("name", "")),
+        make_key=lambda obj: _normalize_name(_strip_rank(obj.get("name", ""))),
         make_record=lambda obj: {
-            "name": obj.get("name"),
+            "name": _strip_rank(obj.get("name", "")),
             "source_language": "English",
         },
         id_field="PersonID",
