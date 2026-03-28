@@ -27,6 +27,7 @@ api:
     model: "grok-beta"
     max_retries: 3
     timeout: 60
+  calls_per_minute: 30            # Rate limit: max API calls per minute (across all threads)
 
 # Processing
 processing:

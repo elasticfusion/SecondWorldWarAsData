@@ -7,6 +7,7 @@ generic casualties, and prisoners of war.
 
 import json
 import logging
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -156,7 +157,6 @@ def _batch_extract_casualties(
         f"- Places: {list(places_index.keys())[:10]}\n"
         f"- People: {list(people_index.keys())[:10]}\n"
         f"- Organizations: {list(people_groups_index.keys())[:10]}\n"
-        f"- Equipment: {list(equipment_index.keys())[:10]}\n"
     )
 
     sub_event_block = "\n\n".join(
@@ -180,7 +180,6 @@ For each casualty incident, provide:
    - For POW: MUST include both "captured" and "captor" organizations
 6. impacted_people: Array of {{"name": "Captain Smith", "casualty_type": "killed"}}
 7. impacted_places: Array of {{"name": "Omaha Beach"}}
-8. impacted_equipment: Array of {{"common_name": "M4 Sherman", "count_lost": 5}}
 
 Return JSON object keyed by sub-event ID:
 {{"<Sub-eventID>": [<casualty items>], ...}}
@@ -334,6 +333,54 @@ def _first_paragraph_number(sub_event: Dict[str, Any]) -> Optional[int]:
     return None
 
 
+_COUNT_RE = re.compile(r"[\d,]+")
+_QUALIFIER_PATTERNS = [
+    (lambda t: t.startswith(">") or "more than" in t, "greater_than"),
+    (lambda t: t.startswith("<") or "fewer than" in t or "less than" in t, "less_than"),
+    (
+        lambda t: any(
+            w in t
+            for w in (
+                "nearly",
+                "almost",
+                "close to",
+                "about",
+                "approximately",
+                "around",
+            )
+        ),
+        "approximately",
+    ),
+]
+
+
+def _normalize_count_value(value):
+    """Normalize a single count value to {value, qualifier}."""
+    if isinstance(value, (int, float)):
+        return {"value": int(value), "qualifier": "exact"}
+    if not isinstance(value, str):
+        return {"value": 0, "qualifier": "unknown"}
+
+    text = value.strip().lower()
+    nums = _COUNT_RE.findall(text)
+    number = int(nums[0].replace(",", "")) if nums else 0
+
+    for check, qualifier in _QUALIFIER_PATTERNS:
+        if check(text):
+            return {"value": number, "qualifier": qualifier}
+
+    if number:
+        return {"value": number, "qualifier": "approximately"}
+    return {"value": 0, "qualifier": "unknown", "original_text": value}
+
+
+def _normalize_counts(count):
+    """Normalize all values in a count dict."""
+    if not isinstance(count, dict):
+        return count
+    return {k: _normalize_count_value(v) for k, v in count.items()}
+
+
 def _has_casualty_mention(text: str) -> bool:
     """Check if text mentions casualties."""
     keywords = [
@@ -377,14 +424,12 @@ For each casualty incident, provide:
    - For POW: MUST include both "captured" and "captor" organizations
 6. impacted_people: Array of {{"name": "Captain Smith", "casualty_type": "killed"}}
 7. impacted_places: Array of {{"name": "Omaha Beach"}}
-8. impacted_equipment: Array of {{"common_name": "M4 Sherman", "count_lost": 5}}
 
 Available entities:
 - Dates: {list(dates_index.keys())[:10]}
 - Places: {list(places_index.keys())[:10]}
 - People: {list(people_index.keys())[:10]}
 - Organizations: {list(people_groups_index.keys())[:10]}
-- Equipment: {list(equipment_index.keys())[:10]}
 
 Return JSON array of casualties. Return empty array [] if no casualties found.
 """
@@ -453,7 +498,6 @@ def _resolve_impacted_entities(
         ),
         "impacted_people": lambda d: _resolve_people(d, people_index),
         "impacted_places": lambda d: _resolve_places(d, places_index),
-        "impacted_equipment": lambda d: _resolve_equipment(d, equipment_index),
     }
     for field, resolver in resolvers.items():
         if field in casualty_data:
@@ -485,6 +529,8 @@ def _build_casualty(
         "description": casualty_data.get("description", ""),
         "event_context": {"EventID": event_id, "Sub-eventID": sub_event_id},
         "source": {
+            "EventID": event_id,
+            "Sub-eventID": sub_event_id,
             "book": book,
             "chapter": chapter,
             "paragraph_number": paragraph_number,
@@ -492,7 +538,7 @@ def _build_casualty(
     }
 
     if "count" in casualty_data:
-        casualty["count"] = casualty_data["count"]
+        casualty["count"] = _normalize_counts(casualty_data["count"])
 
     date = _resolve_casualty_date(casualty_data, dates_index)
     if date:
@@ -507,8 +553,6 @@ def _build_casualty(
         equipment_index,
         weather_index,
     )
-
-    return casualty
 
     return casualty
 

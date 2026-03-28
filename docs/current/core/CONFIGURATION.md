@@ -46,6 +46,7 @@ api:
     model: "grok-beta"
     max_retries: 3
     timeout: 60
+  calls_per_minute: 30            # Rate limit: max API calls per minute (across all threads)
 ```
 
 **Options:**
@@ -53,6 +54,7 @@ api:
 - `model` - Model to use (`grok-beta`, `grok-2`, etc.)
 - `max_retries` - Number of retry attempts on failure
 - `timeout` - Request timeout in seconds
+- `calls_per_minute` - Proactive rate limit across all threads (default 30). Increase if API allows more; decrease if still seeing 429s.
 
 **Environment Variables Required:**
 - `GROK_API_KEY` - Your Grok API key (set in `.env`)

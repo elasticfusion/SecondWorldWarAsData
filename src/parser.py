@@ -148,7 +148,7 @@ def extract_maps(text: str) -> List[Tuple[str, str]]:
         r"\[Map\s+([^\]]+)\]\((https?://[^\)]+)\)", text, re.IGNORECASE
     ):
         map_id = match.group(1).strip()
-        url = match.group(2)
+        url = match.group(2).split("%20target=")[0].rstrip()
 
         if url not in seen_urls:
             maps.append((map_id, url))

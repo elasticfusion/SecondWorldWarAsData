@@ -1,6 +1,6 @@
 # TODO
 
-**Last Updated:** 2026-03-22
+**Last Updated:** 2026-03-28
 
 ---
 
@@ -22,11 +22,11 @@ After cache clear, re-run pipeline with updated prompts that request:
 
 `enrich_all_places()` for remaining ~1093 places without hierarchy. Only 46/1138 have hierarchy data. Command: `python3 phase3_enrich_data.py` or standalone.
 
-### Wire `supplemental_advanced.py` to `output/bibliography/`
+### ~~Wire `supplemental_advanced.py` to `output/bibliography/`~~
 **Priority:** Medium
-**Status:** Not Started
+**Status:** ✅ Done (2026-03-28)
 
-Phase 3 enrichment still reads from old `output/supplemental/` location. Needs to read from `output/bibliography/` and enrich bibliography entries with ISBN, copyright status, and author death dates.
+`enrich_bibliography()` reads from `output/bibliography/`, enriches ISBN/copyright/archive URLs. Wired into `phase3_enrich_data.py`. Controlled by `supplemental_material` config flags (`extract_isbn`, `determine_copyright`, `verify_archive_urls`).
 
 ### Casualties spec review
 **Priority:** Medium
@@ -71,6 +71,16 @@ Files: `u.s. assault division.json`, `eighteen divisions.json`, `363d infantry d
 Create PowerShell equivalents for bash scripts to support Windows users. See `scripts/README.md` for full list.
 
 ---
+
+## Completed (2026-03-28)
+
+- ✅ Rate limiter: thread-safe token-bucket in `GrokClient` (30 calls/min default, configurable via `config.yaml`)
+- ✅ Empty event file retry: `_retry_missing_events` now re-extracts chapters with 0 sub-events
+- ✅ `find_related_groups.py`: fixed missing `cache_dir` argument to `GrokClient()`
+- ✅ Map URL parsing: fixed `%20target=` HTML attribute leak in 3 source files + parser guard
+- ✅ Equipment indexing: `load_equipment_index` and `generate_equipment_index` skip `.processed_events.json`
+- ✅ OpenSERP setup: auto-detects OS/architecture, cross-compiles, builds both `search_maps` and `search_media`
+- ✅ Duplicate return removed in `casualties.py`
 
 ## Completed (2026-03-22)
 
