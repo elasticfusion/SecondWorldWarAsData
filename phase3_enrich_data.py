@@ -12,6 +12,7 @@ from pathlib import Path
 from src.extraction.enrich_biographies import enrich_all_people
 from src.extraction.enrich_groups import enrich_all_groups
 from src.extraction.enrich_places import enrich_all_places
+from src.extraction.places import link_parent_place_ids
 from src.extraction.supplemental_advanced import enrich_bibliography
 from src.grok_client import GrokClient
 from src.utils.config import load_config
@@ -168,6 +169,9 @@ def main():
             places_dir, grok_client, max_places=args.max_items
         )
         total_enriched += places_enriched
+
+        # Link parent_place_id after enrichment populates hierarchy
+        link_parent_place_ids(places_dir)
 
     # Enrich bibliography (ISBN, copyright, archive URLs)
     if not args.people_only:

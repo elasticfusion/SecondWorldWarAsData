@@ -115,7 +115,7 @@ def _is_valid_place_mention(mention: Dict[str, Any]) -> bool:
 
 def _add_geo_data(mention: Dict[str, Any], lat: float, lon: float) -> None:
     """Add bounding box and map URLs to a place mention."""
-    mention["bounding_box_100km"] = _calculate_bounding_box(lat, lon)
+    mention["bounding_box"] = _calculate_bounding_box(lat, lon)
     if "map_urls" not in mention:
         mention["map_urls"] = _generate_map_urls(lat, lon)
 
@@ -418,7 +418,7 @@ def _find_or_create_place(
             "precision": "approximate",
             "confidence": 0.8,
         }
-        place_data["bounding_box_100km"] = mention.get("bounding_box_100km")
+        place_data["bounding_box"] = mention.get("bounding_box")
         # Generate map URLs if not present
         place_data["map_urls"] = mention.get("map_urls") or _generate_map_urls(lat, lon)
 
@@ -430,6 +430,80 @@ def _find_or_create_place(
 
     logger.debug(f"  Created new place: {filename}")
     return place_file
+
+
+def _build_place_name_index(
+    places_dir: Path,
+) -> tuple[Dict[str, str], Dict[Path, Dict[str, Any]]]:
+    """Build lowercase name → PlaceID index and load all place data."""
+    skip = {"index.json", "not_duplicates.json"}
+    name_to_id: Dict[str, str] = {}
+    file_data: Dict[Path, Dict[str, Any]] = {}
+    for pf in places_dir.glob("*.json"):
+        if pf.name in skip:
+            continue
+        try:
+            with open(pf, "r", encoding="utf-8") as fh:
+                data = json.load(fh)
+            if not isinstance(data, dict) or not data.get("PlaceID"):
+                continue
+            file_data[pf] = data
+            name = (data.get("current_name") or "").lower()
+            if name:
+                name_to_id[name] = data["PlaceID"]
+            for alias in data.get("aliases", []):
+                name_to_id[alias.lower()] = data["PlaceID"]
+        except (OSError, json.JSONDecodeError):
+            continue
+    return name_to_id, file_data
+
+
+def _find_parent_id(
+    hierarchy: Dict[str, Any], name_to_id: Dict[str, str], own_id: str = ""
+) -> Optional[str]:
+    """Find parent PlaceID from hierarchy region or country. Skips self."""
+    for field in ("region", "country", "continent"):
+        parent_name = hierarchy.get(field, "")
+        if parent_name:
+            parent_id = name_to_id.get(parent_name.lower())
+            if parent_id and parent_id != own_id:
+                return parent_id
+    return None
+
+
+def link_parent_place_ids(places_dir: Path) -> int:
+    """Link parent_place_id for all places using hierarchy data.
+
+    Processes in order: countries → regions → cities/towns/other.
+    Returns number of places updated.
+    """
+    if not places_dir.exists():
+        return 0
+
+    name_to_id, file_data = _build_place_name_index(places_dir)
+
+    # Process in hierarchy order so parents are indexed before children
+    priority = {"continent": 0, "country": 1, "region": 2}
+    ordered = sorted(
+        file_data.items(),
+        key=lambda item: priority.get(item[1].get("geography_type", ""), 3),
+    )
+
+    updated = 0
+    for pf, data in ordered:
+        hierarchy = data.get("hierarchy")
+        if not hierarchy or not isinstance(hierarchy, dict):
+            continue
+        if hierarchy.get("parent_place_id"):
+            continue
+        parent_id = _find_parent_id(hierarchy, name_to_id, data.get("PlaceID", ""))
+        if parent_id:
+            hierarchy["parent_place_id"] = parent_id
+            write_json_with_lock(pf, data)
+            updated += 1
+
+    logger.info("Linked parent_place_id for %d places", updated)
+    return updated
 
 
 def _backfill_place_data(place_data: Dict[str, Any], mention: Dict[str, Any]) -> None:
@@ -455,7 +529,7 @@ def _backfill_place_data(place_data: Dict[str, Any], mention: Dict[str, Any]) ->
             "precision": "approximate",
             "confidence": 0.8,
         }
-        place_data["bounding_box_100km"] = _calculate_bounding_box(lat, lon)
+        place_data["bounding_box"] = _calculate_bounding_box(lat, lon)
         place_data["map_urls"] = _generate_map_urls(lat, lon)
 
     # Add historical name if provided and not already present

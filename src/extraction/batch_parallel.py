@@ -61,10 +61,11 @@ def _load_people_exclusions(people_dir: Path) -> None:
     if _people_exclusions_file.exists():
         data = json.loads(_people_exclusions_file.read_text(encoding="utf-8"))
         _people_exclusion_patterns = [
-            re.compile(p, re.IGNORECASE)
-            for p in data.get("patterns", [])
+            re.compile(p, re.IGNORECASE) for p in data.get("patterns", [])
         ]
-        logger.debug("Loaded %d people exclusion patterns", len(_people_exclusion_patterns))
+        logger.debug(
+            "Loaded %d people exclusion patterns", len(_people_exclusion_patterns)
+        )
 
 
 def _add_people_exclusion(name: str) -> None:
@@ -77,9 +78,7 @@ def _add_people_exclusion(name: str) -> None:
     caught = data.setdefault("auto_caught", [])
     if name not in caught:
         caught.append(name)
-        _people_exclusions_file.write_text(
-            json.dumps(data, indent=2), encoding="utf-8"
-        )
+        _people_exclusions_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
     logger.debug("Excluded non-person: %s", name)
 
 
@@ -207,6 +206,30 @@ def _get_or_create_entity(  # pylint: disable=too-many-arguments,too-many-positi
     return entity_file, record.get(id_field, ""), record
 
 
+def _enrich_mention_from_source(
+    mention: dict,
+    record: dict,
+    source_obj: dict,
+    date_id_lookup: Optional[Dict[str, str]],
+) -> None:
+    """Copy source_obj fields into mention and backfill record."""
+    mention["context"] = source_obj.get("context")
+    mention["original_text"] = source_obj.get("original_text", "")
+    for src_key, dst_key in [("rank", "rank"), ("country", "nationality")]:
+        if source_obj.get(src_key):
+            mention[dst_key] = source_obj[src_key]
+            if not record.get(dst_key):
+                record[dst_key] = source_obj[src_key]
+    for key in ("position_at_event", "life_event", "role_in_event"):
+        if source_obj.get(key):
+            mention[key] = source_obj[key]
+    date_ctx = source_obj.get("date_context")
+    if date_ctx:
+        mention["date_context"] = date_ctx
+        if date_id_lookup and date_ctx in date_id_lookup:
+            mention["DateMentionID"] = date_id_lookup[date_ctx]
+
+
 def _add_event_mention_batch(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     record: dict,
     entity_file: Path,
@@ -233,19 +256,7 @@ def _add_event_mention_batch(  # pylint: disable=too-many-arguments,too-many-pos
         "series": meta.get("series", ""),
     }
     if source_obj:
-        mention["context"] = source_obj.get("context")
-        mention["original_text"] = source_obj.get("original_text", "")
-        if source_obj.get("position_at_event"):
-            mention["position_at_event"] = source_obj["position_at_event"]
-        if source_obj.get("life_event"):
-            mention["life_event"] = source_obj["life_event"]
-        date_ctx = source_obj.get("date_context")
-        if date_ctx:
-            mention["date_context"] = date_ctx
-            if date_id_lookup and date_ctx in date_id_lookup:
-                mention["DateMentionID"] = date_id_lookup[date_ctx]
-        if source_obj.get("role_in_event"):
-            mention["role_in_event"] = source_obj["role_in_event"]
+        _enrich_mention_from_source(mention, record, source_obj, date_id_lookup)
     mentions.append(mention)
     record["event_mentions"] = mentions
     write_json_with_lock(entity_file, record)
@@ -800,7 +811,7 @@ def _make_place_record(obj: dict) -> dict:
             "precision": "approximate",
             "confidence": 0.8,
         }
-        record["bounding_box_100km"] = _calculate_bounding_box(lat, lon)
+        record["bounding_box"] = _calculate_bounding_box(lat, lon)
         record["map_urls"] = _generate_map_urls(lat, lon)
     return record
 
@@ -903,6 +914,7 @@ async def extract_people_groups_batch_async(
             "name": obj.get("name"),
             "group_name": obj.get("name"),
             "group_type": "military_unit",
+            "nationality": obj.get("country"),
             "source_language": "English",
         },
         id_field="GroupID",
@@ -955,12 +967,15 @@ async def extract_people_batch_async(
         response_key="people",
         inner_key="people",
         make_key=lambda obj: (
-            "" if _is_not_a_person(obj.get("name", ""))
+            ""
+            if _is_not_a_person(obj.get("name", ""))
             else _normalize_name(_strip_rank(obj.get("name", "")))
         ),
         make_record=lambda obj: {
             "name": _strip_rank(obj.get("name", "")),
             "source_language": "English",
+            "rank": obj.get("rank"),
+            "nationality": obj.get("country"),
         },
         id_field="PersonID",
         sub_event_key="people",

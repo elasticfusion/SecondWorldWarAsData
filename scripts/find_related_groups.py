@@ -264,19 +264,14 @@ def _is_parent_child(group1: Dict, group2: Dict) -> bool:
 
 def _has_shared_context(group1: Dict, group2: Dict) -> bool:
     """Check if groups share country/alliance/type."""
-    # Same country of origin
     country1 = (group1.get("country_of_origin") or "").lower()
     country2 = (group2.get("country_of_origin") or "").lower()
     if country1 and country2 and country1 == country2:
         return True
 
-    # Same alliance membership
-    alliance1 = set(a.lower() for a in group1.get("alliance_membership", []))
-    alliance2 = set(a.lower() for a in group2.get("alliance_membership", []))
-    if alliance1 and alliance2 and alliance1 & alliance2:
-        return True
-
-    return False
+    alliance1 = {a.lower() for a in group1.get("alliance_membership", [])}
+    alliance2 = {a.lower() for a in group2.get("alliance_membership", [])}
+    return bool(alliance1 and alliance2 and alliance1 & alliance2)
 
 
 def _has_shared_events(group1: Dict, group2: Dict) -> bool:
@@ -315,74 +310,82 @@ def _different_unit_identifiers(name1: str, name2: str) -> bool:
     return False
 
 
-def _score_group_pair(group1: Dict, group2: Dict) -> tuple[list[str], float]:
-    """Score a pair of groups for duplicate likelihood. Returns (reasons, confidence)."""
-    name1 = _get_group_name(group1)
-    name2 = _get_group_name(group2)
-    type1 = group1.get("group_type", "")
-    type2 = group2.get("group_type", "")
-
-    reasons: list[str] = []
-    confidence = 0.0
-
-    # Check 0: Different countries — skip unless very high similarity
+def _should_skip_pair(group1: Dict, group2: Dict, name1: str, name2: str) -> bool:
+    """Check if pair should be skipped (different countries or unit IDs)."""
     country1 = (group1.get("country_of_origin") or "").lower()
     country2 = (group2.get("country_of_origin") or "").lower()
     if country1 and country2 and country1 != country2:
-        similarity = _similarity_ratio(name1, name2)
-        if similarity < 0.90:
-            return [], 0.0
-        reasons.append(
-            f"⚠️ Different countries ({country1} vs {country2}) but very high name similarity"
-        )
+        if _similarity_ratio(name1, name2) < 0.90:
+            return True
+    return _different_unit_identifiers(name1, name2)
 
-    # Check 0.5: Different unit numbers/letters — skip
-    if _different_unit_identifiers(name1, name2):
-        return [], 0.0
 
-    # Check 1: High name similarity
+def _score_name_similarity(
+    name1: str, name2: str, type1: str, type2: str
+) -> tuple[list[str], float]:
+    """Score name-based similarity signals."""
+    reasons: list[str] = []
+    confidence = 0.0
+
     similarity = _similarity_ratio(name1, name2)
     if similarity > 0.7:
         reasons.append(f"Name similarity: {similarity:.2f}")
         confidence += similarity * 0.5
 
-    # Check 2: Core name match
-    core1 = _extract_core_name(name1)
-    core2 = _extract_core_name(name2)
-    core_similarity = _similarity_ratio(core1, core2)
+    core_similarity = _similarity_ratio(
+        _extract_core_name(name1), _extract_core_name(name2)
+    )
     if core_similarity > 0.8:
         reasons.append(f"Core name match: {core_similarity:.2f}")
         confidence += 0.6
 
-    # Check 3: Same type
     if type1 == type2 and type1:
         reasons.append(f"Same type: {type1}")
         confidence += 0.3
 
-    # Check 4: Parent-child — skip entirely
-    if _is_parent_child(group1, group2):
-        return [], 0.0
-
-    # Check 5: Shared context
-    if _has_shared_context(group1, group2):
-        reasons.append("Shared context")
-        confidence += 0.1
-
-    # Check 6: Shared events
-    if _has_shared_events(group1, group2):
-        reasons.append("Shared events")
-        confidence += 0.2
-
-    # Check 7: Substring match (only if very similar)
     if name1.lower() in name2.lower() or name2.lower() in name1.lower():
         if similarity > 0.85 and len(name1) > 5:
             reasons.append("Name substring match")
             confidence += 0.3
 
-    # Check 8: ASCII/Unicode variants
     if _normalize_unicode(name1).lower() == _normalize_unicode(name2).lower():
         reasons.append("ASCII/Unicode variant")
         confidence += 0.6
+
+    return reasons, confidence
+
+
+def _score_group_pair(group1: Dict, group2: Dict) -> tuple[list[str], float]:
+    """Score a pair of groups for duplicate likelihood. Returns (reasons, confidence)."""
+    name1 = _get_group_name(group1)
+    name2 = _get_group_name(group2)
+
+    if _should_skip_pair(group1, group2, name1, name2):
+        return [], 0.0
+
+    if _is_parent_child(group1, group2):
+        return [], 0.0
+
+    reasons, confidence = _score_name_similarity(
+        name1, name2, group1.get("group_type", ""), group2.get("group_type", "")
+    )
+
+    # Different countries warning
+    country1 = (group1.get("country_of_origin") or "").lower()
+    country2 = (group2.get("country_of_origin") or "").lower()
+    if country1 and country2 and country1 != country2:
+        reasons.insert(
+            0,
+            f"⚠️ Different countries ({country1} vs {country2}) but very high name similarity",
+        )
+
+    if _has_shared_context(group1, group2):
+        reasons.append("Shared context")
+        confidence += 0.1
+
+    if _has_shared_events(group1, group2):
+        reasons.append("Shared events")
+        confidence += 0.2
 
     return reasons, confidence
 
@@ -434,6 +437,45 @@ def _load_excluded_pairs(groups_dir: Path) -> Set[tuple]:
     return pairs
 
 
+def _make_group_entry(group: Dict) -> Dict[str, Any]:
+    """Create cluster entry from group data."""
+    return {
+        "filename": group["_filename"],
+        "name": _get_group_name(group),
+        "type": group.get("group_type", ""),
+        "GroupID": group["GroupID"],
+    }
+
+
+def _try_match_pair(
+    group1: Dict, group2: Dict, use_llm: bool, grok_client
+) -> Optional[tuple[list[str], float]]:
+    """Score and optionally LLM-verify a pair. Returns (reasons, confidence) or None."""
+    reasons, confidence = _score_group_pair(group1, group2)
+    if confidence <= 0.8 or not reasons:
+        return None
+
+    if use_llm and grok_client:
+        llm_result = _verify_duplicate_with_llm(group1, group2, grok_client)
+        if llm_result.get("relationship") != "TRUE_DUPLICATE":
+            logger.info(
+                "LLM rejected match: %s vs %s (relationship=%s, reasoning=%s)",
+                _get_group_name(group1),
+                _get_group_name(group2),
+                llm_result.get("relationship"),
+                llm_result.get("reasoning"),
+            )
+            return None
+        llm_conf = llm_result.get("confidence", 0.0)
+        reasons.append(
+            f"LLM verified: {llm_result.get('reasoning', '')} "
+            f"(confidence={llm_conf:.2f})"
+        )
+        confidence = max(confidence, llm_conf)
+
+    return reasons, confidence
+
+
 def _find_related_clusters(
     groups_data: List[Dict[str, Any]],
     excluded_clusters: List[Set[str]],
@@ -458,52 +500,18 @@ def _find_related_clusters(
         for group2 in groups_data[i + 1 :]:
             if group2["_filename"] in processed or not _get_group_name(group2):
                 continue
-
             pair_key = tuple(sorted([group1["_filename"], group2["_filename"]]))
             if pair_key in excluded_pairs:
                 continue
 
-            reasons, confidence = _score_group_pair(group1, group2)
-
-            if confidence <= 0.8 or not reasons:
+            match = _try_match_pair(group1, group2, use_llm_verification, grok_client)
+            if not match:
                 continue
-
-            # LLM verification
-            if use_llm_verification and grok_client:
-                llm_result = _verify_duplicate_with_llm(group1, group2, grok_client)
-                if llm_result.get("relationship") != "TRUE_DUPLICATE":
-                    logger.info(
-                        "LLM rejected match: %s vs %s (relationship=%s, reasoning=%s)",
-                        _get_group_name(group1),
-                        _get_group_name(group2),
-                        llm_result.get("relationship"),
-                        llm_result.get("reasoning"),
-                    )
-                    continue
-                llm_conf = llm_result.get("confidence", 0.0)
-                reasons.append(
-                    f"LLM verified: {llm_result.get('reasoning', '')} "
-                    f"(confidence={llm_conf:.2f})"
-                )
-                confidence = max(confidence, llm_conf)
+            reasons, confidence = match
 
             if not cluster:
-                cluster.append(
-                    {
-                        "filename": group1["_filename"],
-                        "name": _get_group_name(group1),
-                        "type": group1.get("group_type", ""),
-                        "GroupID": group1["GroupID"],
-                    }
-                )
-            cluster.append(
-                {
-                    "filename": group2["_filename"],
-                    "name": _get_group_name(group2),
-                    "type": group2.get("group_type", ""),
-                    "GroupID": group2["GroupID"],
-                }
-            )
+                cluster.append(_make_group_entry(group1))
+            cluster.append(_make_group_entry(group2))
             cluster_confidence = max(cluster_confidence, confidence)
             cluster_reasons.extend(reasons)
             processed.add(group2["_filename"])

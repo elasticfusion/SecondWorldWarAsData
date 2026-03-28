@@ -262,10 +262,10 @@ For each issue found, extract ALL of these fields:
 - delivery_method: sea_transport, air_delivery, ground_transport, rail, pipeline, mixed (if applicable)
 - status: unresolved, in_progress, resolved, worsened
 - quantity: {{"required": number, "available": number, "unit": "string", "shortage": number}} (if numbers mentioned)
-- impacted_organizations: list of military unit/organization names
-- impacted_people: list of person names
-- impacted_places: list of place names
-- impacted_equipment: list of equipment names
+- impacted_organizations: list of military unit/organization names affected
+- impacted_people: list of person names involved (commanders, officers)
+- impacted_places: list of place names where the issue occurred or was felt (cities, ports, beaches, roads)
+- impacted_equipment: list of equipment types affected
 - weather: description of weather impact if relevant
 - resolution_resolved: true/false if resolution mentioned
 - resolution_date: ISO date of resolution

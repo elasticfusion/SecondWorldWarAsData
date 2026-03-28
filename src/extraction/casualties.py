@@ -507,6 +507,12 @@ def _resolve_impacted_entities(
         if resolved:
             casualty["weather_conditions"] = resolved
 
+    # Auto-link weather by date match
+    if "weather_conditions" not in casualty:
+        weather_match = _match_weather_by_date(casualty, weather_index)
+        if weather_match:
+            casualty["weather_conditions"] = weather_match
+
 
 def _build_casualty(
     casualty_data: Dict[str, Any],
@@ -576,6 +582,7 @@ def _resolve_date(
         return {
             "DateID": date_data.get("DateID"),
             "date_string": date_ref,
+            "iso_date": date_ref,
             "precision": "day",
         }
 
@@ -586,6 +593,7 @@ def _resolve_date(
         return {
             "DateID": date_data.get("DateID"),
             "date_string": date_ref,
+            "iso_date": iso,
             "precision": "day" if len(iso) == 10 else "month",
         }
 
@@ -769,6 +777,21 @@ def _resolve_weather(
         return weather_ref
     if isinstance(weather_ref, str) and weather_ref in weather_index:
         return {"WeatherID": weather_index[weather_ref].get("WeatherID")}
+    return None
+
+
+def _match_weather_by_date(
+    casualty: Dict[str, Any], weather_index: Dict[str, Any]
+) -> Optional[Dict[str, str]]:
+    """Match casualty to weather record by ISO date."""
+    date_info = casualty.get("date") or {}
+    # Try ISO date from DateID-linked date, or parse date_string
+    cas_date = date_info.get("iso_date") or date_info.get("date_string", "")
+    if not cas_date or len(cas_date) != 10:  # Only match YYYY-MM-DD
+        return None
+    for weather_data in weather_index.values():
+        if isinstance(weather_data, dict) and weather_data.get("date") == cas_date:
+            return {"WeatherID": weather_data.get("WeatherID")}
     return None
 
 
