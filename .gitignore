@@ -89,4 +89,5 @@ review/
 *.bak
 *.orig
 filestore/equipment/
+filestore/maps/
 .gitnexus
