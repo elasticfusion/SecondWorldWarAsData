@@ -316,7 +316,7 @@ def load_equipment_index(equipment_dir: Path) -> Dict[str, Path]:
         return index
 
     for eq_file in equipment_dir.glob("*.json"):
-        if eq_file.name == "index.json":
+        if eq_file.name in ("index.json", ".processed_events.json"):
             continue
         try:
             with open(eq_file, encoding="utf-8") as file_handle:
@@ -1847,7 +1847,7 @@ def generate_equipment_index(equipment_dir: Path) -> None:
     index = {}
 
     for eq_file in equipment_dir.glob("*.json"):
-        if eq_file.name == "index.json":
+        if eq_file.name in ("index.json", ".processed_events.json"):
             continue
         try:
             with open(eq_file, encoding="utf-8") as file_handle:

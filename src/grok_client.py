@@ -4,6 +4,8 @@ import contextvars
 import json
 import logging
 import os
+import threading
+import time as _time
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -31,6 +33,38 @@ logger = logging.getLogger(__name__)
 
 class GrokAPIError(Exception):
     """Grok API error."""
+
+
+class _RateLimiter:
+    """Thread-safe token-bucket rate limiter.
+
+    Enforces a minimum interval between API calls and backs off
+    when 429 responses are received.
+    """
+
+    def __init__(self, calls_per_minute: int = 30):
+        self._lock = threading.Lock()
+        self._min_interval = 60.0 / max(calls_per_minute, 1)
+        self._last_call = 0.0
+        self._backoff_until = 0.0
+
+    def wait(self) -> None:
+        """Block until the next call is allowed."""
+        with self._lock:
+            now = _time.monotonic()
+            earliest = max(self._last_call + self._min_interval, self._backoff_until)
+            delay = earliest - now
+            # Claim the slot before releasing lock
+            self._last_call = max(now, earliest)
+        if delay > 0:
+            logger.debug("Rate limiter: waiting %.1fs", delay)
+            _time.sleep(delay)
+
+    def backoff(self, seconds: float) -> None:
+        """Set a backoff period after a 429 response."""
+        with self._lock:
+            self._backoff_until = _time.monotonic() + seconds
+            logger.info("Rate limiter: backing off %.0fs after 429", seconds)
 
 
 class GrokClient:
@@ -84,6 +118,10 @@ class GrokClient:
             "supplemental_search",
             "supplemental_advanced",
         }
+
+        # Rate limiter — shared across all threads
+        calls_per_minute = config.get("api", {}).get("calls_per_minute", 30)
+        self._rate_limiter = _RateLimiter(calls_per_minute)
 
     def _get_cache(self, cache_type: str = "default") -> Cache:
         """Get or create cache for specific type.
@@ -195,10 +233,7 @@ class GrokClient:
         """Handle API error responses."""
         if response.status_code == 429:
             retry_after = int(response.headers.get("Retry-After", 60))
-            logger.warning(f"Rate limit hit, waiting {retry_after}s")
-            import time
-
-            time.sleep(retry_after)
+            self._rate_limiter.backoff(retry_after)
             response.raise_for_status()
 
         if response.status_code >= 500:
@@ -234,6 +269,7 @@ class GrokClient:
     )
     def _call_api(self, messages: list, temperature: float = 0.1) -> Dict[str, Any]:
         """Make API call with retry logic."""
+        self._rate_limiter.wait()
         self._validate_input_size(messages)
         self._log_api_request(messages, temperature)
 

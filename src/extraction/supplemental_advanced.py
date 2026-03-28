@@ -339,6 +339,60 @@ def _save_enriched_data(
         return False
 
 
+def enrich_bibliography(
+    bibliography_dir: Path,
+    config: Dict[str, Any],
+    grok_client: Any,
+) -> int:
+    """Enrich bibliography files with ISBN, copyright, and archive verification.
+
+    Reads individual bibliography JSON files from output/bibliography/.
+    Returns number of files enriched.
+    """
+    if not bibliography_dir.exists():
+        logger.warning("Bibliography directory not found: %s", bibliography_dir)
+        return 0
+
+    bib_files = [
+        f
+        for f in bibliography_dir.glob("*.json")
+        if f.name not in ("index.json", "review_queue.json")
+    ]
+
+    if not bib_files:
+        logger.info("No bibliography files found")
+        return 0
+
+    enriched_count = 0
+    for bib_file in sorted(bib_files):
+        if _enrich_bib_file(bib_file, config, grok_client):
+            enriched_count += 1
+
+    logger.info("Enriched %d of %d bibliography files", enriched_count, len(bib_files))
+    return enriched_count
+
+
+def _enrich_bib_file(bib_file: Path, config: Dict[str, Any], grok_client: Any) -> bool:
+    """Enrich a single bibliography file. Returns True if changed."""
+    data = _load_supplemental_data(bib_file)
+    if not data or not isinstance(data, dict):
+        return False
+
+    citation = data.get("citation", {})
+    if not citation or not isinstance(citation, dict):
+        return False
+
+    changed = (
+        _enrich_isbn(data, citation, config, grok_client)
+        | _enrich_copyright(data, citation, config, grok_client)
+        | _enrich_archive_url(data, config)
+    )
+
+    if changed:
+        _save_enriched_data(bib_file, data, 1)
+    return changed
+
+
 def enrich_with_advanced_features(
     supplemental_file: Path,
     config: Dict[str, Any],

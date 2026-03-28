@@ -1,8 +1,8 @@
 # Error Handling - Extraction Services
 
-**Version:** 2.2.0  
+**Version:** 2.3.0  
 **Status:** Active  
-**Last Updated:** 2026-03-19
+**Last Updated:** 2026-03-28
 
 ---
 
@@ -1235,6 +1235,77 @@ def _parse_weather_response(response: Dict[str, Any]) -> Dict[str, List[Dict]]:
 
 ---
 
+### 30. Proactive Rate Limiting
+
+**Used in:** All API calls via `GrokClient`
+
+**Problem:** Parallel chapter processing fires many API calls simultaneously, triggering 429 rate-limit responses. Reactive retry with exponential backoff then burns 5-20 minutes per chapter waiting. In one run, 3,993 rate-limit errors caused cascading failures across all optional extractors.
+
+**Pattern:**
+```python
+class _RateLimiter:
+    """Thread-safe token-bucket rate limiter."""
+    def __init__(self, calls_per_minute: int = 30):
+        self._lock = threading.Lock()
+        self._min_interval = 60.0 / max(calls_per_minute, 1)
+        self._last_call = 0.0
+        self._backoff_until = 0.0
+
+    def wait(self):
+        with self._lock:
+            earliest = max(self._last_call + self._min_interval, self._backoff_until)
+            self._last_call = max(time.monotonic(), earliest)
+        delay = earliest - time.monotonic()
+        if delay > 0:
+            time.sleep(delay)
+
+    def backoff(self, seconds):
+        with self._lock:
+            self._backoff_until = time.monotonic() + seconds
+```
+
+**Key design decisions:**
+- Proactive: enforces minimum interval *before* each call, preventing 429s
+- Thread-safe: slot claimed under lock, sleep outside lock — no races
+- Global backoff: when one thread gets a 429, `backoff()` delays all threads
+- Configurable: `config.yaml` → `api.calls_per_minute` (default 30)
+
+**Benefits:**
+- Eliminates burst-triggered 429 cascades
+- Removes 5-20 minute stalls from reactive retry
+- All threads share one limiter — no per-thread rate calculation needed
+
+**File:** `src/grok_client.py`
+
+---
+
+### 31. Empty Event File Detection on Retry
+
+**Used in:** Phase 2 retry logic
+
+**Problem:** When `batch_parallel` fails mid-extraction (timeout, truncation), it may write an event file with 0 sub-events. The retry function only checked `event_file.exists()`, so these empty shells were never re-extracted.
+
+**Pattern:**
+```python
+def _event_file_needs_retry(event_file: Path) -> bool:
+    if not event_file.exists():
+        return True
+    try:
+        with open(event_file) as f:
+            return not json.load(f).get("Sub-events")
+    except Exception:
+        return True
+```
+
+**Benefits:**
+- Catches failed extractions that left empty event files
+- Also catches corrupt/unparseable event files
+- No false positives — valid event files always have Sub-events
+
+**File:** `phase2_extract.py`
+
+---
+
 ## Logging
 
 ### Unified Pipeline Log
@@ -1465,6 +1536,8 @@ When creating new extraction services, implement:
 27. **Auto-clear corrupt cache** - Purge unrecoverable JSON on failure
 28. **Filename sanitization** - Strip path separators from LLM-generated values
 29. **Batch response isolation** - Validate each sub-event independently in batch responses
+30. **Proactive rate limiting** - Token-bucket limiter prevents 429 cascades
+31. **Empty event file detection** - Retry chapters with 0 sub-events, not just missing files
 
 ---
 
@@ -1540,6 +1613,26 @@ All errors logged with:
 ---
 
 ## Recent Improvements
+
+**2026-03-28**: Proactive rate limiting (Pattern 30)
+- Thread-safe `_RateLimiter` class in `GrokClient` enforces minimum interval between API calls
+- Global backoff on 429: all threads wait, not just the one that got rate-limited
+- Configurable via `config.yaml` → `api.calls_per_minute` (default 30)
+- Addresses 3,993 rate-limit errors from production run causing 5-20 min stalls per chapter
+- File: `src/grok_client.py`
+
+**2026-03-28**: Empty event file retry (Pattern 31)
+- `_retry_missing_events` now checks for event files with 0 sub-events (failed extraction)
+- Previously only checked `event_file.exists()`, missing empty shells from batch_parallel failures
+- 4 chapters in production run had empty event files that were never retried
+- File: `phase2_extract.py`
+
+**2026-03-28**: Bug fixes from production log analysis
+- `find_related_groups.py`: `GrokClient()` → `GrokClient(cache_dir=Path("cache/api"))`
+- Map URL parsing: stripped `%20target=` HTML attribute leak from source files + parser guard
+- Equipment indexing: `load_equipment_index` and `generate_equipment_index` skip `.processed_events.json`
+- OpenSERP setup: auto-detects OS/architecture for cross-compilation
+- Files: `scripts/find_related_groups.py`, `src/parser.py`, `src/extraction/equipment.py`, `tools/setup_openserp.sh`
 
 **2026-03-19**: Batch extraction for optional extractors (Pattern 29)
 - Weather, Logistics, Casualties now send all sub-events in a single API call per chapter

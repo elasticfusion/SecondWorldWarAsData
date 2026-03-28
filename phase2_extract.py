@@ -333,14 +333,27 @@ def _extract_external_maps(base_dir, grok_client, paths, config, logger):
             logger.error("  Error importing from YAML: %s", e)
 
 
+def _event_file_needs_retry(event_file: Path) -> bool:
+    """Check if event file is missing, empty, or has no sub-events."""
+    if not event_file.exists():
+        return True
+    try:
+        with open(event_file, "r", encoding="utf-8") as f:
+            return not json.load(f).get("Sub-events")
+    except Exception:
+        return True
+
+
 def _retry_missing_events(parsed_files, grok_client, logger):
-    """Retry any parsed files that are missing event files."""
+    """Retry any parsed files that are missing or empty event files."""
     missing_events = []
     for parsed_file in sorted(parsed_files):
         event_file = parsed_file.parent / parsed_file.name.replace(
             "-parsed.json", "-event.json"
         )
-        if not event_file.exists():
+        if _event_file_needs_retry(event_file):
+            if event_file.exists():
+                logger.warning("  Empty event file (0 sub-events): %s", event_file.name)
             missing_events.append(parsed_file)
 
     if not missing_events:
