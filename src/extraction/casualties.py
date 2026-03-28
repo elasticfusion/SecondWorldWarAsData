@@ -693,7 +693,7 @@ def _resolve_organizations(
             org_id = _find_organization_id(org_name, people_groups_index)
             resolved.append(
                 {
-                    "PeopleGroupID": org_id or str(ulid.new()),
+                    "PeopleGroupID": org_id,
                     "name": org_name,
                     "nationality": org.get("nationality", ""),
                     "role": _normalize_role(org.get("role", "")),
@@ -717,7 +717,7 @@ def _resolve_people(
             person_id = _find_person_id(person_name, people_index)
             resolved.append(
                 {
-                    "PersonID": person_id or str(ulid.new()),
+                    "PersonID": person_id,
                     "name": person_name,
                     "casualty_type": person.get("casualty_type", ""),
                 }
@@ -738,9 +738,7 @@ def _resolve_places(
             if not place_name:
                 continue
             place_id = _find_place_id(place_name, places_index)
-            resolved.append(
-                {"PlaceID": place_id or str(ulid.new()), "name": place_name}
-            )
+            resolved.append({"PlaceID": place_id, "name": place_name})
     return resolved
 
 

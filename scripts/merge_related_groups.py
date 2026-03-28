@@ -26,34 +26,37 @@ def save_group_file(groups_dir: Path, filename: str, data: Dict[str, Any]) -> No
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
-def merge_groups(primary: Dict, others: List[Dict]) -> Dict:
-    """Merge other groups into primary group."""
-    # Merge event mentions
-    existing_mentions = {
+def _merge_mentions(primary: Dict, others: List[Dict]) -> None:
+    """Merge event_mentions from others into primary, deduplicating by MentionID."""
+    existing = {
         m.get("MentionID") or m.get("mention_id")
         for m in primary.get("event_mentions", [])
     }
     for other in others:
         for mention in other.get("event_mentions", []):
-            mention_id = mention.get("MentionID") or mention.get("mention_id")
-            if mention_id and mention_id not in existing_mentions:
+            mid = mention.get("MentionID") or mention.get("mention_id")
+            if mid and mid not in existing:
                 primary.setdefault("event_mentions", []).append(mention)
-                existing_mentions.add(mention_id)
+                existing.add(mid)
 
-    # Merge alternate names
-    existing_names = set(primary.get("alternate_names", []))
+
+def _merge_names(primary: Dict, others: List[Dict]) -> None:
+    """Merge alternate_names and group names from others into primary."""
+    existing = set(primary.get("alternate_names", []))
     for other in others:
         for name in other.get("alternate_names", []):
-            if name not in existing_names:
+            if name not in existing:
                 primary.setdefault("alternate_names", []).append(name)
-                existing_names.add(name)
-
-    # Add merged group names as alternate names
-    for other in others:
+                existing.add(name)
         other_name = other.get("group_name") or other.get("name", "")
-        if other_name and other_name not in existing_names:
+        if other_name and other_name not in existing:
             primary.setdefault("alternate_names", []).append(other_name)
 
+
+def merge_groups(primary: Dict, others: List[Dict]) -> Dict:
+    """Merge other groups into primary group."""
+    _merge_mentions(primary, others)
+    _merge_names(primary, others)
     return primary
 
 
@@ -209,24 +212,29 @@ def _handle_exclude(groups_dir, groups):
     return remaining
 
 
+def _parse_notgroup_indices(response: str, count: int) -> Optional[List[int]]:
+    """Parse user input for not-a-group selection. Returns indices or None."""
+    if response.lower() == "all":
+        return list(range(count))
+    try:
+        indices = [int(x.strip()) - 1 for x in response.split(",")]
+        if all(0 <= i < count for i in indices):
+            return indices
+    except ValueError:
+        pass
+    print("❌ Invalid input")
+    return None
+
+
 def _handle_notgroup(groups_dir, groups):
     """Mark items as not-a-group: delete files, update index, remember in not_groups.json."""
     print("\nEnter numbers of items that are NOT groups (comma-separated, or 'all'):")
     for i, g in enumerate(groups, 1):
         print(f"  {i}. {g['name']} ({g['filename']})")
-    response = input("> ").strip()
 
-    if response.lower() == "all":
-        indices = list(range(len(groups)))
-    else:
-        try:
-            indices = [int(x.strip()) - 1 for x in response.split(",")]
-            if not all(0 <= i < len(groups) for i in indices):
-                print("❌ Invalid numbers")
-                return None
-        except ValueError:
-            print("❌ Invalid input")
-            return None
+    indices = _parse_notgroup_indices(input("> ").strip(), len(groups))
+    if indices is None:
+        return None
 
     # Save to not_groups.json
     ng_file = groups_dir / "not_groups.json"
@@ -258,7 +266,9 @@ def _handle_notgroup(groups_dir, groups):
     data["names"] = sorted(existing)
     ng_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
     if index_file.exists():
-        index_file.write_text(json.dumps(index, indent=2, ensure_ascii=False), encoding="utf-8")
+        index_file.write_text(
+            json.dumps(index, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
 
     print(f"✓ Marked {len(indices)} item(s) as not-a-group")
 
@@ -266,6 +276,44 @@ def _handle_notgroup(groups_dir, groups):
     if len(remaining) < 2:
         return None
     return None  # Don't auto-merge after removing non-groups
+
+
+def _replace_id_in_entity_files(output_root: Path, old_id: str, new_id: str):
+    """Replace old_id with new_id in logistics, casualties, and weather JSON files."""
+    for subdir in ("logistics", "casualties", "weather"):
+        entity_dir = output_root / subdir
+        if not entity_dir.exists():
+            continue
+        for f in entity_dir.glob("*.json"):
+            try:
+                text = f.read_text(encoding="utf-8")
+            except OSError:
+                continue
+            if old_id not in text:
+                continue
+            f.write_text(text.replace(old_id, new_id), encoding="utf-8")
+
+
+def _update_event_refs(output_root: Path, old_id: str, new_id: str, ref_key: str):
+    """Replace old entity ID with new ID in all event and entity files."""
+    for f in sorted(output_root.glob("*/*-event.json")):
+        try:
+            with open(f, "r", encoding="utf-8") as fh:
+                d = json.load(fh)
+        except (OSError, json.JSONDecodeError):
+            continue
+        event = d.get("Event", d)
+        changed = False
+        for se in event.get("Sub-events", []):
+            refs = se.get(ref_key, [])
+            if old_id in refs:
+                refs[refs.index(old_id)] = new_id
+                changed = True
+        if changed:
+            with open(f, "w", encoding="utf-8") as fh:
+                json.dump(d, fh, indent=2, ensure_ascii=False)
+
+    _replace_id_in_entity_files(output_root, old_id, new_id)
 
 
 def _execute_merge(groups_dir, groups):
@@ -281,9 +329,15 @@ def _execute_merge(groups_dir, groups):
     merged = merge_groups(primary_data, others_data)
     save_group_file(groups_dir, primary["filename"], merged)
 
-    for other in others:
+    primary_id = merged.get("GroupID") or merged.get("PeopleGroupID", "")
+    output_root = groups_dir.parent
+
+    for other, other_data in zip(others, others_data):
+        old_id = other_data.get("GroupID") or other_data.get("PeopleGroupID", "")
         (groups_dir / other["filename"]).unlink()
         print(f"  Deleted: {other['filename']}")
+        if old_id and primary_id:
+            _update_event_refs(output_root, old_id, primary_id, "peoplegroups")
     print(f"✓ Merged into: {primary['filename']}")
 
 
