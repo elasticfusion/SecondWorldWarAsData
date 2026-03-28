@@ -689,7 +689,7 @@ def _cleanup_empty_directory(equipment_dir: Path) -> None:
             equipment_dir.rmdir()
             logger.debug("Cleaned up empty directory: %s", equipment_dir.name)
         except Exception:
-            pass  # Ignore cleanup errors
+            logger.debug("Could not remove empty directory: %s", equipment_dir.name)
 
 
 def _download_media_file(
@@ -896,7 +896,7 @@ def _build_search_query(
 
 def _run_openserp_search(search_query: str) -> list:
     """Run OpenSERP search and return results."""
-    import subprocess
+    import subprocess  # nosec B404
 
     try:
         result = subprocess.run(  # nosec B603 B404
@@ -1217,7 +1217,8 @@ def _merge_into_existing(
 
     # Check if mention already exists (semantic dedup by event+sub-event)
     existing_keys = {
-        (m.get("EventID"), m.get("Sub_eventID")) for m in existing.get("mentions", [])
+        (m.get("EventID"), m.get("Sub_eventID"))
+        for m in existing.get("event_mentions", [])
     }
     new_key = (new_mention.get("EventID"), new_mention.get("Sub_eventID"))
     if new_key in existing_keys:
@@ -1225,7 +1226,7 @@ def _merge_into_existing(
         return eq_file
 
     # Append mention
-    existing["mentions"].append(new_mention)
+    existing["event_mentions"].append(new_mention)
 
     # Update optional fields
     _merge_equipment_fields(existing, equipment_data)
@@ -1265,7 +1266,7 @@ def _create_new_equipment(
 
     equipment_id = str(ulid.new())
     equipment_data["EquipmentID"] = equipment_id
-    equipment_data["mentions"] = [new_mention]
+    equipment_data["event_mentions"] = [new_mention]
     equipment_data["extracted_date"] = datetime.now(timezone.utc).isoformat()
 
     safe_name = common_name.replace(" ", "_").replace("/", "_")

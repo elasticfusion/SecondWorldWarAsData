@@ -100,7 +100,7 @@ class RoutePoint(BaseModel):
     historical_name: str
     latitude: float
     longitude: float
-    bounding_box_100km: Dict[str, float]
+    bounding_box: Dict[str, float]
     geography_type: str
 
     model_config = ConfigDict(populate_by_name=True)
@@ -115,7 +115,7 @@ class PlaceMention(BaseModel):
     source_language: str = "English"
     latitude: Optional[float] = None
     longitude: Optional[float] = None
-    bounding_box_100km: Optional[Dict[str, float]] = None
+    bounding_box: Optional[Dict[str, float]] = None
     geography_type: Optional[str] = None
     route: Optional[List[RoutePoint]] = None
     date_context: Optional[str] = None

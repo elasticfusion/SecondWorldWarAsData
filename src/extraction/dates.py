@@ -2,6 +2,7 @@
 
 import json
 import logging
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -71,40 +72,38 @@ CRITICAL RULES:
 Return structured data matching the schema."""
 
 
+def _is_valid_date_mention(mention: Any) -> bool:
+    """Check if a date mention has required fields and is in WWII era."""
+    if not isinstance(mention, dict):
+        return False
+    if not mention.get("date_start"):
+        logger.warning(
+            "  Filtered date mention with null date_start: %s",
+            mention.get("original_text", "unknown"),
+        )
+        return False
+    if not mention.get("original_text"):
+        logger.warning("  Filtered date mention with null original_text")
+        return False
+    year_match = re.search(r"\d{4}", mention["date_start"])
+    if year_match:
+        year = int(year_match.group())
+        if year < 1919 or year > 1955:
+            logger.warning("  Filtered non-WWII date: %s", mention["date_start"])
+            return False
+    return True
+
+
 def _filter_invalid_dates(data: Dict[str, Any]) -> Dict[str, Any]:
     """Remove date mentions with missing required fields or non-WWII dates."""
     if "Date_Mentions" in data and isinstance(data["Date_Mentions"], list):
         original_count = len(data["Date_Mentions"])
-        valid_dates = []
-        for mention in data["Date_Mentions"]:
-            if isinstance(mention, dict):
-                if not mention.get("date_start"):
-                    logger.warning(
-                        "  Filtered date mention with null date_start: %s",
-                        mention.get("original_text", "unknown"),
-                    )
-                    continue
-                if not mention.get("original_text"):
-                    logger.warning("  Filtered date mention with null original_text")
-                    continue
-                # Reject dates outside WWII era (1919-1955)
-                import re  # pylint: disable=import-outside-toplevel
-
-                year_match = re.search(r"\d{4}", mention["date_start"])
-                if year_match:
-                    year = int(year_match.group())
-                    if year < 1919 or year > 1955:
-                        logger.warning(
-                            "  Filtered non-WWII date: %s", mention["date_start"]
-                        )
-                        continue
-                valid_dates.append(mention)
-
-        filtered_count = original_count - len(valid_dates)
+        data["Date_Mentions"] = [
+            m for m in data["Date_Mentions"] if _is_valid_date_mention(m)
+        ]
+        filtered_count = original_count - len(data["Date_Mentions"])
         if filtered_count > 0:
             logger.info("  Filtered %d invalid date mention(s)", filtered_count)
-
-        data["Date_Mentions"] = valid_dates
     return data
 
 
@@ -192,6 +191,17 @@ def _normalize_date_key(date_start: str, time_start: Optional[str] = None) -> st
     return date_key
 
 
+def _build_normalized_datetime(mention: Dict[str, Any]) -> Optional[str]:
+    """Build ISO 8601 normalized datetime from date_start and time_start."""
+    ds = mention.get("date_start")
+    if not ds:
+        return None
+    ts = mention.get("time_start")
+    if ts:
+        return f"{ds}T{ts}:00Z" if ts.count(":") < 2 else f"{ds}T{ts}Z"
+    return f"{ds}T00:00:00Z"
+
+
 def _find_or_create_date(
     mention: Dict[str, Any], dates_dir: Path, index: Dict[str, str]
 ) -> Path:
@@ -240,7 +250,7 @@ def _find_or_create_date(
         "date_precision": mention.get("date_precision"),
         "time_source": mention.get("time_source"),
         "original_text": mention.get("original_text", ""),
-        "normalized_datetime": None,  # TODO: Implement normalization
+        "normalized_datetime": _build_normalized_datetime(mention),
         "event_mentions": [],
     }
 

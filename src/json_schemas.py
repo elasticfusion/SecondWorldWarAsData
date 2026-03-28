@@ -123,7 +123,7 @@ PLACE_SCHEMA = {
                     "source_language": {"type": "string"},
                     "latitude": {"type": ["number", "null"]},
                     "longitude": {"type": ["number", "null"]},
-                    "bounding_box_100km": {
+                    "bounding_box": {
                         "type": ["object", "null"],
                         "properties": {
                             "north": {"type": "number"},
@@ -146,7 +146,7 @@ PLACE_SCHEMA = {
                                 "historical_name": {"type": ["string", "null"]},
                                 "latitude": {"type": ["number", "null"]},
                                 "longitude": {"type": ["number", "null"]},
-                                "bounding_box_100km": {"type": ["object", "null"]},
+                                "bounding_box": {"type": ["object", "null"]},
                                 "geography_type": {"type": "string"},
                             },
                         },
@@ -363,7 +363,10 @@ CASUALTY_ITEM_SCHEMA = {
     "type": "object",
     "required": ["type", "description"],
     "properties": {
-        "type": {"type": "string", "enum": ["wounded", "killed", "casualties", "pow", "missing"]},
+        "type": {
+            "type": "string",
+            "enum": ["wounded", "killed", "casualties", "pow", "missing"],
+        },
         "description": {"type": "string"},
         "count": {"type": "object"},
     },
