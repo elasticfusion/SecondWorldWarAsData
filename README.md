@@ -58,6 +58,20 @@ sudo apt-get install -y google-chrome-stable
 # RHEL/CentOS/Fedora (headless)
 sudo dnf install -y google-chrome-stable
 
+# Amazon Linux (add Google repo first)
+sudo tee /etc/yum.repos.d/google-chrome.repo << 'EOF'
+[google-chrome]
+name=google-chrome
+baseurl=https://dl.google.com/linux/chrome/rpm/stable/x86_64
+enabled=1
+gpgcheck=1
+gpgkey=https://dl.google.com/linux/linux_signing_key.pub
+EOF
+sudo dnf install -y google-chrome-stable
+
+# Amazon Linux on ARM (Graviton) — no Chrome ARM RPM
+sudo dnf install -y chromium
+
 # Verify installation
 google-chrome --version
 ```
@@ -68,13 +82,16 @@ google-chrome --version
 # 1. Parse markdown to JSON
 python3 phase1_parse.py
 
-# 2. Extract entities (with automatic retry)
+# 2. Start OpenSERP (optional — needed for external maps and equipment media)
+cd tools && bash setup_openserp.sh && cd ..
+
+# 3. Extract entities (with automatic retry)
 python3 phase2_retry.py
 
-# 3. Enrich people data (optional)
+# 4. Enrich people data (optional)
 python3 phase3_retry.py
 
-# 4. Import to MongoDB (optional)
+# 5. Import to MongoDB (optional)
 python3 import_to_mongodb.py
 ```
 
@@ -403,6 +420,21 @@ See [Architecture Guide](docs/current/core/CODE_ARCHITECTURE.md)
 - Local Go service — uses real search engines (Google, Bing, DuckDuckGo) instead of AI search
 - Required for: external maps, equipment media, supplemental material searches
 - Falls back gracefully if not running (Grok search used instead, but may hallucinate)
+
+**Go Required** (for OpenSERP build):
+```bash
+# macOS
+brew install go
+
+# Ubuntu/Debian
+sudo apt-get install -y golang-go
+
+# Amazon Linux / RHEL / Fedora
+sudo dnf install -y golang
+
+# Verify (requires 1.21+)
+go version
+```
 
 Setup:
 ```bash
