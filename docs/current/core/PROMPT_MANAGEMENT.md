@@ -39,6 +39,7 @@ Short valid JSON (`[]`, `{}`) passes step 3 and is returned without retry.
 - **Method:** `extract_json` → temperature 0.1
 - **Cache:** `events` (book-scoped)
 - **Auto-split:** On truncation, splits chapter at section boundaries, merges results
+- **Token optimization:** Prompt asks for paragraph numbers only (`"paragraphs": [1, 5, 12]`), not fulltext echo. `_reconstruct_fulltext()` maps numbers back to text from parsed data. Saves ~72% of output tokens.
 
 #### dates.py
 - **System prompt:** Module-level `SYSTEM_PROMPT` — expert historian, extract dates

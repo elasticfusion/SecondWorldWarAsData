@@ -2,7 +2,7 @@
 
 **Module:** `src/extraction/batch_parallel.py`  
 **Status:** Production  
-**Last Updated:** 2026-03-15
+**Last Updated:** 2026-03-29
 
 ---
 
@@ -453,15 +453,49 @@ python3 phase2_extract.py  # Without --concurrent
 
 ---
 
+## xAI Batch API (50% Cost Reduction)
+
+**Module:** `src/utils/batch_api.py`  
+**Flag:** `--batch` on `phase2_extract.py` and `phase3_enrich_data.py`
+
+The xAI Batch API processes requests asynchronously at 50% of standard token pricing. Instead of real-time API calls, requests are queued and processed in the background (typically within 24 hours).
+
+### Usage
+
+```bash
+# Phase 2 with batch pricing
+python3 phase2_extract.py --batch
+
+# Phase 3 with batch pricing
+python3 phase3_enrich_data.py --batch
+```
+
+### How It Works
+
+1. Pipeline runs normally — cached results return instantly
+2. Uncached requests are collected (not sent) via `BatchModeCollecting`
+3. After first pass: all collected requests submitted as one xAI batch job
+4. Polls until batch completes (minutes to hours)
+5. Results written into local diskcache
+6. Pipeline re-runs — everything hits cache, processes normally
+
+### Key Details
+
+- Output is identical to real-time mode
+- Previously cached results are reused (free)
+- Batch requests don't count against rate limits
+- `GrokClient(batch_mode=True)` intercepts `chat_completion()` after cache check
+- Results stored in same diskcache as real-time responses
+- Subsequent runs (with or without `--batch`) reuse cached results
+
+---
+
 ## Future Enhancements
 
 **Planned:**
-- Integration with `phase2_extract.py`
-- Automatic retry logic
 - Progress bars
 - Better error recovery
 - Configurable batch sizes
-- Rate limit handling
 - Memory optimization
 
 ---

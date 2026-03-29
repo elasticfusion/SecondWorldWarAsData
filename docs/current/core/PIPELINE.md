@@ -41,6 +41,9 @@ When a chapter exceeds 400K characters (leaves 100K headroom for API responses):
 
 ```bash
 python3 phase2_extract.py
+
+# Or use Batch API for 50% cost reduction (async, may take hours)
+python3 phase2_extract.py --batch
 ```
 
 **Pipeline Stages:**
@@ -126,6 +129,9 @@ rm output/{Book}/chapter*-{type}.json
 
 ```bash
 python3 phase3_enrich_data.py
+
+# Or use Batch API for 50% cost reduction (async, may take hours)
+python3 phase3_enrich_data.py --batch
 ```
 
 **What it does:**

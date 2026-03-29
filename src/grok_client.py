@@ -67,10 +67,16 @@ class _RateLimiter:
             logger.info("Rate limiter: backing off %.0fs after 429", seconds)
 
 
+class BatchModeCollecting(Exception):
+    """Raised in batch mode when a request is queued instead of sent."""
+
+
 class GrokClient:
     """Client for Grok API with caching and retry logic."""
 
-    def __init__(self, cache_dir: Path, api_key: Optional[str] = None):
+    def __init__(
+        self, cache_dir: Path, api_key: Optional[str] = None, batch_mode: bool = False
+    ):
         """Initialize Grok client."""
         self.api_key = api_key or os.getenv("GROK_API_KEY")
         if not self.api_key:
@@ -123,6 +129,15 @@ class GrokClient:
         calls_per_minute = config.get("api", {}).get("calls_per_minute", 30)
         self._rate_limiter = _RateLimiter(calls_per_minute)
 
+        # Batch mode — collect requests instead of sending them
+        self.batch_mode = batch_mode
+        self._batch_collector = None
+        self._batch_meta: Dict[str, str] = {}
+        if batch_mode:
+            from src.utils.batch_api import BatchCollector
+
+            self._batch_collector = BatchCollector()
+
     def _get_cache(self, cache_type: str = "default") -> Cache:
         """Get or create cache for specific type.
 
@@ -155,6 +170,56 @@ class GrokClient:
         cache = self._get_cache(cache_type)
         key = self._make_cache_key(prompt, temperature)
         return cache.pop(key, None) is not None
+
+    def submit_batch(self, batch_name: str = "pipeline") -> Optional[str]:
+        """Submit collected batch requests to xAI Batch API.
+
+        Returns batch_id, or None if no requests to submit.
+        """
+        if not self._batch_collector or len(self._batch_collector) == 0:
+            logger.info("No batch requests to submit (all cached)")
+            return None
+
+        from src.utils.batch_api import submit_batch, poll_batch, retrieve_results
+
+        # Write JSONL
+        jsonl_path = self.cache_dir / "batch_requests.jsonl"
+        count = self._batch_collector.write_jsonl(jsonl_path)
+        logger.info("Wrote %d requests to %s", count, jsonl_path)
+
+        # Save request metadata for cache population later
+        self._batch_meta = {
+            r.request_id: r.cache_type for r in self._batch_collector.requests
+        }
+
+        # Submit
+        batch_id = submit_batch(self.api_key, jsonl_path, batch_name)
+
+        # Poll
+        logger.info("Waiting for batch to complete (may take minutes to hours)...")
+        poll_batch(self.api_key, batch_id)
+
+        # Retrieve and populate cache
+        results = retrieve_results(self.api_key, batch_id)
+        populated = 0
+        for request_id, content in results.items():
+            cache_type = self._batch_meta.get(request_id, "default")
+            cache = self._get_cache(cache_type)
+            import re
+
+            content = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", content)
+            content = re.sub(r'\\(?!["\\/bfnrtu]|u[0-9a-fA-F]{4})', r"\\\\", content)
+            cache[request_id] = content
+            populated += 1
+
+        logger.info("Populated %d cache entries from batch results", populated)
+
+        # Clean up
+        jsonl_path.unlink(missing_ok=True)
+        self._batch_collector = None
+        self.batch_mode = False
+
+        return batch_id
 
     @retry(
         stop=stop_after_attempt(5),
@@ -337,6 +402,25 @@ class GrokClient:
         if use_cache and cache_key in cache:
             logger.debug("[API] CACHE HIT | type=%s key=%s", cache_type, cache_key[:16])
             return cache[cache_key]
+
+        # Batch mode: queue request instead of calling API
+        if self.batch_mode:
+            from src.utils.batch_api import BatchRequest
+
+            messages = []
+            if system_prompt:
+                messages.append({"role": "system", "content": system_prompt})
+            messages.append({"role": "user", "content": prompt})
+            self._batch_collector.add(
+                BatchRequest(
+                    request_id=cache_key,
+                    messages=messages,
+                    model=self.model,
+                    temperature=temperature,
+                    cache_type=cache_type,
+                )
+            )
+            raise BatchModeCollecting(cache_key)
 
         # Log API call
         logger.debug(

@@ -47,8 +47,10 @@ Main extraction pipeline using Grok AI.
 
 **Usage:**
 ```bash
-python3 phase2_extract.py [--log-level LEVEL]
+python3 phase2_extract.py [--log-level LEVEL] [--batch]
 ```
+
+`--batch` uses xAI Batch API for 50% cost reduction (async processing via `src/utils/batch_api.py`).
 
 #### `phase3_enrich_data.py`
 Enriches extracted entities with external data.

@@ -446,6 +446,11 @@ def main():
         default=None,
         help="Set logging level (overrides config.yaml)",
     )
+    parser.add_argument(
+        "--batch",
+        action="store_true",
+        help="Use xAI Batch API (50%% cost reduction, async processing)",
+    )
     args = parser.parse_args()
 
     # Load configuration
@@ -483,7 +488,11 @@ def main():
     # Initialize Grok client
     cache_dir = paths["api_cache"]
     cache_dir.mkdir(parents=True, exist_ok=True)
-    grok_client = GrokClient(cache_dir)
+    grok_client = GrokClient(cache_dir, batch_mode=args.batch)
+    if args.batch:
+        logger.info(
+            "Batch mode enabled — collecting requests for xAI Batch API (50%% off)"
+        )
     logger.info("Initialized Grok client with API cache: %s", cache_dir)
 
     # Ensure cache directories exist
@@ -614,6 +623,69 @@ def main():
     logger.info("Phase 2 complete! Processed: %d, Failed: %d", processed, failed)
     logger.info("%s", "=" * 60)
     heartbeat.stop()
+
+    # If batch mode, submit collected requests, wait, then re-run
+    if (
+        args.batch
+        and grok_client._batch_collector
+        and len(grok_client._batch_collector) > 0
+    ):
+        logger.info("\n%s", "=" * 60)
+        logger.info(
+            "Submitting %d requests to xAI Batch API (50%% off)...",
+            len(grok_client._batch_collector),
+        )
+        logger.info("%s", "=" * 60)
+        batch_id = grok_client.submit_batch(batch_name="phase2")
+        if batch_id:
+            logger.info("Batch complete! Re-running pipeline with cached results...")
+            # Re-run with batch mode off (all results now in cache)
+            grok_client.batch_mode = False
+            # Re-run steps 1-3 using cached results
+            heartbeat = Heartbeat(timeout=300, label="Phase 2 (batch re-run)")
+            heartbeat.start()
+            heartbeat.ping("Batch re-run: step 1")
+
+            results = asyncio.run(
+                process_chapters_parallel(
+                    parsed_files=parsed_files,
+                    grok_client=grok_client,
+                    output_root=output_root,
+                    config=config,
+                    max_parallel=max_parallel,
+                    heartbeat=heartbeat,
+                )
+            )
+            processed = results["processed"]
+            failed = results["failed"]
+
+            retried, retry_failed = _retry_missing_events(
+                parsed_files, grok_client, logger
+            )
+            processed += retried
+            failed += retry_failed
+
+            if any_optional:
+                event_files = sorted(output_root.rglob("*-event.json"))
+                for event_file in event_files:
+                    current_book.set(event_file.parent.name)
+                    parsed_file = event_file.parent / event_file.name.replace(
+                        "-event.json", "-parsed.json"
+                    )
+                    if not parsed_file.exists():
+                        parsed_file = None
+                    _extract_optional_entities(
+                        event_file, parsed_file, grok_client, paths, config, logger
+                    )
+
+            heartbeat.stop()
+            logger.info("\n%s", "=" * 60)
+            logger.info(
+                "Phase 2 (batch) complete! Processed: %d, Failed: %d",
+                processed,
+                failed,
+            )
+            logger.info("%s", "=" * 60)
 
     from src.utils.http_pool import close_session
 

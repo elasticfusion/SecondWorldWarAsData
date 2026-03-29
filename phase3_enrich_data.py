@@ -114,6 +114,11 @@ def main():
         default="INFO",
         help="Set logging level (default: INFO)",
     )
+    parser.add_argument(
+        "--batch",
+        action="store_true",
+        help="Use xAI Batch API (50%% cost reduction, async processing)",
+    )
 
     args = parser.parse_args()
 
@@ -140,7 +145,11 @@ def main():
         logger.info("Reference following disabled")
 
     # Initialize Grok client
-    grok_client = GrokClient(args.cache_dir)
+    grok_client = GrokClient(args.cache_dir, batch_mode=args.batch)
+    if args.batch:
+        logger.info(
+            "Batch mode enabled — collecting requests for xAI Batch API (50%% off)"
+        )
 
     total_enriched = 0
 
@@ -183,6 +192,52 @@ def main():
     logger.info("\n" + "=" * 80)
     logger.info(f"ENRICHMENT COMPLETE: {total_enriched} total items enriched")
     logger.info("=" * 80)
+
+    # If batch mode, submit collected requests, wait, then re-run
+    if (
+        args.batch
+        and grok_client._batch_collector
+        and len(grok_client._batch_collector) > 0
+    ):
+        logger.info(
+            "Submitting %d requests to xAI Batch API (50%% off)...",
+            len(grok_client._batch_collector),
+        )
+        batch_id = grok_client.submit_batch(batch_name="phase3")
+        if batch_id:
+            logger.info("Batch complete! Re-running enrichment with cached results...")
+            grok_client.batch_mode = False
+            total_enriched = 0
+
+            people_enriched = enrich_people_data(
+                people_dir,
+                grok_client,
+                max_items=args.max_items,
+                search_references=not args.no_references,
+            )
+            total_enriched += people_enriched
+
+            if not args.people_only:
+                groups_dir = args.output_dir / "people_groups"
+                places_dir = args.output_dir / "places"
+                bib_dir = args.output_dir / "bibliography"
+                supplemental_config = config.get("supplemental_material", {})
+                total_enriched += enrich_groups_data(
+                    groups_dir, grok_client, max_items=args.max_items
+                )
+                total_enriched += enrich_all_places(
+                    places_dir, grok_client, max_places=args.max_items
+                )
+                link_parent_place_ids(places_dir)
+                total_enriched += enrich_bibliography(
+                    bib_dir, supplemental_config, grok_client
+                )
+
+            logger.info("\n" + "=" * 80)
+            logger.info(
+                f"ENRICHMENT (batch) COMPLETE: {total_enriched} total items enriched"
+            )
+            logger.info("=" * 80)
 
     from src.utils.http_pool import close_session
 

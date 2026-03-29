@@ -82,6 +82,11 @@ Create PowerShell equivalents for bash scripts to support Windows users. See `sc
 - ✅ OpenSERP setup: auto-detects OS/architecture, cross-compiles, builds both `search_maps` and `search_media`
 - ✅ Duplicate return removed in `casualties.py`
 
+## Completed (2026-03-29)
+
+- ✅ xAI Batch API integration (`--batch` flag) for 50% cost reduction on Phase 2 and Phase 3
+- ✅ Event extraction token optimization: paragraph numbers instead of fulltext echo (~72% output token reduction)
+
 ## Completed (2026-03-22)
 
 - ✅ Weather: removed dead `_extract_weather_for_sub_event`, fixed DateID hallucination, normalized empty strings, removed non-spec `country` field
