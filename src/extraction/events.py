@@ -69,6 +69,28 @@ def validate_event_json(data: Dict[str, Any]) -> None:
     validate(instance=data, schema=EVENT_SCHEMA)
 
 
+def _reconstruct_fulltext(response: dict, parsed_data: dict) -> dict:
+    """Replace 'paragraphs' number arrays with 'Sub-event_fulltext' dicts.
+
+    Looks up paragraph text from parsed_data by absolute_number.
+    """
+    para_lookup = {
+        p["absolute_number"]: p["text"] for p in parsed_data.get("paragraphs", [])
+    }
+    for se in response.get("Event", {}).get("Sub-events", []):
+        nums = se.pop("paragraphs", None)
+        if nums is None and "Sub-event_fulltext" in se:
+            continue  # Already has fulltext (cached old-format response)
+        fulltext = {}
+        for n in nums or []:
+            if isinstance(n, int) and n in para_lookup:
+                fulltext[f"Paragraph_{n}"] = para_lookup[n]
+            else:
+                logger.warning("  Paragraph %s not found in parsed data, skipping", n)
+        se["Sub-event_fulltext"] = fulltext
+    return response
+
+
 def create_event_prompt(parsed_data: Dict[str, Any]) -> Optional[str]:
     """Create prompt for event extraction."""
     book = parsed_data["book"]
@@ -142,10 +164,7 @@ Extract the main event and sub-events. Return JSON in this exact format:
       {{
         "Sub-eventID": "01KHXNSE0WX99GG0CB53CD2242",
         "Sub-event_summary": "Brief summary",
-        "Sub-event_fulltext": {{
-          "Paragraph_1": "exact text",
-          "Paragraph_2": "exact text"
-        }},
+        "paragraphs": [1, 2],
         "Endnote_References": [1, 2],
         "Footnote_References": ["*", "†"]
       }}
@@ -155,8 +174,7 @@ Extract the main event and sub-events. Return JSON in this exact format:
 
 OTHER REQUIREMENTS:
 - Group related paragraphs into sub-events
-- Use absolute paragraph numbers (Paragraph_N)
-- Preserve exact paragraph text
+- "paragraphs" is an array of absolute paragraph NUMBERS only (integers) — do NOT include paragraph text
 - Extract endnote numbers and footnote symbols from the text
 """
 
@@ -250,6 +268,7 @@ def _extract_chunk(
         use_cache=True,
         cache_type="events",
     )
+    _reconstruct_fulltext(result, chunk_data)
     validate_event_json(result)
     return result
 
@@ -288,7 +307,7 @@ PREVIOUS ATTEMPT FAILED VALIDATION:
 
 Please fix the JSON to match the schema exactly. Ensure:
 - All required fields are present
-- Paragraph keys use format "Paragraph_N" where N is the number
+- "paragraphs" is an array of integer paragraph numbers only
 - Images and Maps are arrays of [url, description] pairs
 - References are arrays of integers
 """
@@ -373,6 +392,9 @@ def extract_events(
             if split_result:
                 return split_result
             raise
+
+        # Reconstruct fulltext from parsed data before validation
+        _reconstruct_fulltext(response, parsed_data)
 
         # Validate against schema
         try:
