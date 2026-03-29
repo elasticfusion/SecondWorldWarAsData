@@ -115,9 +115,10 @@ Citations, footnotes, endnotes, and bibliographic references.
 
 ### Batch Processing
 
-Parallel chapter processing and batched API calls for both core and optional extractors.
+Parallel chapter processing, batched API calls, and xAI Batch API for 50% cost reduction.
 
 - **[batch_processing/README.md](features/batch_processing/README.md)** - Batch and parallel processing architecture ⭐
+- **`src/utils/batch_api.py`** - xAI Batch API client (`--batch` flag on phase2/phase3)
 
 ---
 

@@ -88,8 +88,14 @@ cd tools && bash setup_openserp.sh && cd ..
 # 3. Extract entities (with automatic retry)
 python3 phase2_retry.py
 
+# 3b. Or use Batch API for 50% cost reduction (async, may take hours)
+python3 phase2_extract.py --batch
+
 # 4. Enrich people data (optional)
 python3 phase3_retry.py
+
+# 4b. Or use Batch API for 50% cost reduction
+python3 phase3_enrich_data.py --batch
 
 # 5. Import to MongoDB (optional)
 python3 import_to_mongodb.py
@@ -323,6 +329,7 @@ See [Schema Reference](docs/current/SCHEMA_REFERENCE.md)
 - All API responses cached
 - Parallel chapter processing with batched API calls (3-5x faster)
 - Corrupted cache entries auto-cleared on retry
+- `--batch` flag uses xAI Batch API for 50% cost reduction (async)
 
 See [Performance Guide](docs/current/features/batch_processing/README.md)
 
@@ -411,6 +418,7 @@ See [Architecture Guide](docs/current/core/CODE_ARCHITECTURE.md)
 - Max output tokens: 131,072
 - Temperature: 0.1 (deterministic)
 - Caching: All responses cached via diskcache
+- Batch mode: `--batch` flag uses xAI Batch API for 50% cost reduction (async)
 
 **Open-Meteo API (Weather):**
 - Free tier, no API key
