@@ -76,8 +76,36 @@ DATE_SCHEMA = {
                     "date_end": {"type": ["string", "null"]},
                     "time_start": {"type": ["string", "null"]},
                     "time_end": {"type": ["string", "null"]},
-                    "time_precision": {"type": ["string", "null"]},
-                    "time_source": {"type": ["string", "null"]},
+                    "time_precision": {
+                        "type": ["string", "null"],
+                        "enum": ["exact", "approximate", None],
+                    },
+                    "date_precision": {
+                        "type": ["string", "null"],
+                        "enum": [
+                            "exact",
+                            "early",
+                            "mid",
+                            "late",
+                            "spring",
+                            "summer",
+                            "fall",
+                            "winter",
+                            None,
+                        ],
+                    },
+                    "time_source": {
+                        "type": ["string", "null"],
+                        "enum": [
+                            "German",
+                            "Allied",
+                            "Zulu",
+                            "GMT",
+                            "CET",
+                            "Local",
+                            None,
+                        ],
+                    },
                     "original_text": {"type": "string"},
                 },
             },
@@ -132,7 +160,38 @@ PLACE_SCHEMA = {
                             "west": {"type": "number"},
                         },
                     },
-                    "geography_type": {"type": "string"},
+                    "geography_type": {
+                        "type": "string",
+                        "enum": [
+                            "country",
+                            "state",
+                            "province",
+                            "city",
+                            "town",
+                            "village",
+                            "military_theater",
+                            "military_base",
+                            "fortification",
+                            "region",
+                            "peninsula",
+                            "island",
+                            "archipelago",
+                            "mountain",
+                            "mountain_range",
+                            "valley",
+                            "plain",
+                            "sea",
+                            "ocean",
+                            "river",
+                            "lake",
+                            "channel",
+                        ],
+                    },
+                    "precision": {
+                        "type": ["string", "null"],
+                        "enum": ["exact", "approximate", "region_center", None],
+                    },
+                    "confidence": {"type": ["number", "null"]},
                     "date_context": {"type": ["string", "null"]},
                     "original_text": {"type": "string"},
                     "route": {
@@ -339,9 +398,45 @@ MAP_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": SCHEMA_VERSION,
     "type": "object",
-    "required": ["MapID"],
+    "required": [
+        "MapID",
+        "map_title",
+        "source_book",
+        "source_author",
+        "EventID",
+        "Sub_eventID",
+        "local_path",
+        "extracted_date",
+    ],
     "properties": {
         "MapID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "map_title": {"type": "string", "minLength": 1},
+        "source_book": {"type": "string", "minLength": 1},
+        "source_author": {"type": "string", "minLength": 1},
+        "source_series": {"type": ["string", "null"]},
+        "page_number": {"type": ["integer", "null"]},
+        "figure_number": {"type": ["string", "null"]},
+        "EventID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "Event_Name": {"type": ["string", "null"]},
+        "Sub_eventID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "Sub_event_Name": {"type": ["string", "null"]},
+        "place_name": {"type": ["string", "null"]},
+        "PlaceMentionID": {"type": ["string", "null"]},
+        "date": {"type": ["string", "null"]},
+        "DateMentionID": {"type": ["string", "null"]},
+        "local_path": {"type": "string"},
+        "local_image_path": {"type": ["string", "null"]},
+        "source_url": {"type": ["string", "null"]},
+        "file_format": {
+            "type": ["string", "null"],
+            "enum": ["jpg", "png", "tif", "pdf", None],
+        },
+        "map_type": {
+            "type": ["string", "null"],
+            "enum": ["tactical", "strategic", "political", "terrain", "other", None],
+        },
+        "description": {"type": ["string", "null"]},
+        "extracted_date": {"type": "string"},
     },
 }
 
@@ -352,7 +447,274 @@ CASUALTIES_SCHEMA = {
     "type": "object",
     "required": ["casualties"],
     "properties": {
-        "casualties": {"type": "array"},
+        "casualties": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "CasualtyID",
+                    "type",
+                    "description",
+                    "event_context",
+                    "source",
+                ],
+                "properties": {
+                    "CasualtyID": {
+                        "type": "string",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": ["wounded", "killed", "casualties", "pow", "missing"],
+                    },
+                    "description": {"type": "string"},
+                    "count": {
+                        "type": ["object", "null"],
+                        "properties": {
+                            "killed": {"type": ["integer", "null"]},
+                            "wounded": {"type": ["integer", "null"]},
+                            "missing": {"type": ["integer", "null"]},
+                            "captured": {"type": ["integer", "null"]},
+                            "total": {"type": ["integer", "null"]},
+                        },
+                    },
+                    "date": {
+                        "type": ["object", "null"],
+                        "properties": {
+                            "DateID": {"type": ["string", "null"]},
+                            "date_string": {"type": ["string", "null"]},
+                            "precision": {"type": ["string", "null"]},
+                        },
+                    },
+                    "event_context": {
+                        "type": "object",
+                        "required": ["EventID"],
+                        "properties": {
+                            "EventID": {"type": "string"},
+                            "Sub-eventID": {"type": ["string", "null"]},
+                        },
+                    },
+                    "source": {
+                        "type": "object",
+                        "required": ["book", "chapter"],
+                        "properties": {
+                            "book": {"type": "string"},
+                            "chapter": {"type": "string"},
+                            "paragraph_number": {"type": ["integer", "null"]},
+                        },
+                    },
+                    "impacted_organizations": {"type": ["array", "null"]},
+                    "impacted_people": {"type": ["array", "null"]},
+                    "impacted_places": {"type": ["array", "null"]},
+                    "impacted_equipment": {"type": ["array", "null"]},
+                    "weather_conditions": {"type": ["object", "null"]},
+                },
+            },
+        },
+    },
+}
+
+
+# Weather schema (extraction-time format)
+WEATHER_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "version": SCHEMA_VERSION,
+    "type": "object",
+    "required": [
+        "Event_Name",
+        "EventID",
+        "Sub-event_Name",
+        "Sub-eventID",
+        "Weather_Mentions",
+    ],
+    "properties": {
+        "Event_Name": {"type": "string"},
+        "EventID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "Sub-event_Name": {"type": "string"},
+        "Sub-eventID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "Weather_Mentions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "WeatherMentionID",
+                    "place_name",
+                    "date",
+                    "weather_description",
+                    "original_text",
+                ],
+                "properties": {
+                    "WeatherMentionID": {
+                        "type": "string",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                    },
+                    "place_name": {"type": "string"},
+                    "PlaceMentionID": {"type": ["string", "null"]},
+                    "date": {"type": "string"},
+                    "DateMentionID": {"type": ["string", "null"]},
+                    "weather_description": {"type": "string"},
+                    "temperature": {"type": ["number", "null"]},
+                    "temperature_unit": {"type": ["string", "null"]},
+                    "measurement_system": {"type": ["string", "null"]},
+                    "notable_impact": {"type": ["string", "null"]},
+                    "original_text": {"type": "string"},
+                },
+            },
+        },
+    },
+}
+
+# Logistics schema (validated output format)
+LOGISTICS_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "version": SCHEMA_VERSION,
+    "type": "object",
+    "required": [
+        "LogisticsID",
+        "logistics_type",
+        "category",
+        "description",
+        "severity",
+        "temporal",
+        "status",
+        "event_mentions",
+        "extracted_date",
+    ],
+    "properties": {
+        "LogisticsID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "logistics_type": {
+            "type": "string",
+            "enum": [
+                "supply_shortage",
+                "supply_excess",
+                "delivery_delay",
+                "transport_disruption",
+            ],
+        },
+        "category": {
+            "type": "string",
+            "enum": [
+                "ammunition",
+                "fuel",
+                "food",
+                "medical",
+                "equipment",
+                "personnel",
+                "general",
+            ],
+        },
+        "description": {"type": "string"},
+        "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"],
+        },
+        "temporal": {
+            "type": "object",
+            "required": ["date_start", "date_type"],
+            "properties": {
+                "date_start": {"type": "string"},
+                "date_type": {"type": "string", "enum": ["specific", "range"]},
+                "date_end": {"type": ["string", "null"]},
+                "DateMentionID": {"type": ["string", "null"]},
+            },
+        },
+        "status": {
+            "type": "string",
+            "enum": ["unresolved", "in_progress", "resolved", "worsened"],
+        },
+        "event_mentions": {"type": "array", "minItems": 1},
+        "extracted_date": {"type": "string"},
+        "delivery_method": {
+            "type": ["string", "null"],
+            "enum": [
+                "sea_transport",
+                "air_delivery",
+                "ground_transport",
+                "rail",
+                "pipeline",
+                "mixed",
+                None,
+            ],
+        },
+        "quantity": {"type": ["object", "null"]},
+        "resolution": {"type": ["object", "null"]},
+        "impacted_organizations": {"type": ["array", "null"]},
+        "impacted_people": {"type": ["array", "null"]},
+        "impacted_places": {"type": ["array", "null"]},
+        "impacted_equipment": {"type": ["array", "null"]},
+        "weather_impact": {"type": ["object", "null"]},
+    },
+}
+
+# Images schema (output file format)
+IMAGES_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "version": SCHEMA_VERSION,
+    "type": "object",
+    "required": ["ImageID", "image_title", "content_type", "extracted_date"],
+    "properties": {
+        "ImageID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "image_title": {"type": "string"},
+        "image_type": {"type": "string"},
+        "content_type": {"type": "string"},
+        "source": {"type": ["string", "null"]},
+        "EventID": {"type": ["string", "null"]},
+        "Sub-eventID": {"type": ["string", "null"]},
+        "PlaceMentionID": {"type": ["string", "null"]},
+        "DateMentionID": {"type": ["string", "null"]},
+        "url": {"type": ["string", "null"]},
+        "local_copy": {"type": ["string", "null"]},
+        "license": {"type": ["string", "null"]},
+        "description": {"type": ["string", "null"]},
+        "extracted_date": {"type": "string"},
+    },
+}
+
+# Bibliography schema (output file format)
+BIBLIOGRAPHY_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "version": SCHEMA_VERSION,
+    "type": "object",
+    "required": ["BibliographyID", "title", "citation", "mentions"],
+    "properties": {
+        "BibliographyID": {
+            "type": "string",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+        },
+        "title": {"type": "string"},
+        "alt_title": {"type": ["string", "null"]},
+        "citation": {
+            "type": "object",
+            "required": ["title"],
+            "properties": {
+                "title": {"type": "string"},
+                "author": {"type": "array", "items": {"type": "string"}},
+                "publisher": {"type": ["string", "null"]},
+                "publication_date": {"type": ["string", "null"]},
+            },
+        },
+        "availability": {"type": "string"},
+        "resource_urls": {"type": "array", "items": {"type": "string"}},
+        "license": {"type": ["string", "null"]},
+        "mentions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "required": ["MentionID", "EventID", "Sub-eventID"],
+                "properties": {
+                    "MentionID": {
+                        "type": "string",
+                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                    },
+                    "EventID": {"type": "string"},
+                    "Sub-eventID": {"type": "string"},
+                    "reference_type": {"type": "string"},
+                    "reference_number": {"type": ["string", "integer", "null"]},
+                    "verbatim_reference": {"type": "string"},
+                },
+            },
+        },
     },
 }
 

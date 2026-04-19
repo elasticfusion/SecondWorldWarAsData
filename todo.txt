@@ -1,0 +1,43 @@
+  Based on everything I've seen across the codebase, docs, and scripts, here are the things I'd prioritize:                                           
+                                                                                                                                                      
+  High Value                                                                                                                                          
+                                                                                                                                                      
+  1. The `sys.path.insert(0, ...)` pattern is everywhere. Every script, every test file. A pyproject.toml with [project.scripts] entries and pip      
+  install -e . would eliminate all of it and make the project installable. This is the single highest-leverage cleanup — it touches 30+ files and     
+  makes the project feel more professional.                                                                                                           
+                                                                                                                                                      
+  2. The 277 orphaned PersonID references in event files (from your TODO.md). These are broken cross-references — event sub-events point to PersonIDs 
+  that no longer exist in output/people/. A script to scan event files and report/fix stale IDs would be straightforward and would improve data       
+  integrity significantly.                                                                                                                            
+                                                                                                                                                      
+  3. The error_handling.md symlink points outside the repo (contextmanagement/Specs/error_handling.md). Anyone who clones just this repo gets a broken
+  link. Either copy the file in or replace it with a stub that says where to find it.                                                                 
+                                                                                                                                                      
+  Medium Value                                                                                                                                        
+                                                                                                                                                      
+  4. JSON Schema coverage gaps. Weather, logistics, images, and bibliography have no JSON Schema validation — only Pydantic models at extraction time.
+  If a post-processing step corrupts the data, there's no validation catch. Adding schemas for these 4 types to the registry would close the gap.  Also, validate that current JSON schemas in code agree with the original specifications:  contextmanagement/Specs   Additive values should be OK, negative values should be identified    
+                                                                                                                                                      
+  5. The `use_lock=False` pattern in extraction modules. Five extraction modules (people, equipment, peoplegroups, maps, casualties) do               
+  read-modify-write on shared files without locking. This doesn't matter for single-server runs today, but it's a latent bug if you ever enable       
+  concurrency. The FUTUREENHANCEMENTS.md already documents this well — Option B (partition by chapter) is the quick win if you need parallelism.      
+                                                                                                                                                      
+  6. No `--dry-run` on the merge scripts. The find scripts are read-only, but merge_duplicate_people.py, merge_duplicate_places.py, and               
+  merge_related_groups.py are interactive and destructive. A --dry-run that shows what would be merged without writing would be useful for auditing.  
+                                                                                                                                                      
+  Low Value / Nice-to-Have                                                                                                                            
+                                                                                                                                                      
+  7. Shell scripts lack `set -euo pipefail`. cleanup_people.sh does rm -rf without strict mode. The archive scripts have hardcoded macOS paths        
+  (/Users/dchristian/projects/SecondWorkldWarasData — note the typo "Workld"). These are one-shot scripts so the risk is low, but the typo means      
+  they'd fail on any machine.                                                                                                                         
+                                                                                                                                                      
+  8. The `places parent_place_id` fake ULIDs (from TODO.md). Four place files have hand-crafted IDs like 01ENGLAND0000000000000000. These will fail   
+  ULID validation if you ever tighten it.                                                                                                             
+                                                                                                                                                      
+  9. Test coverage visibility. There's no CI badge or coverage report checked in. Running pytest --cov=src --cov-report=term and noting the number    
+  somewhere (even just in TESTING.md) would give you a baseline.                                                                                      
+                                                                                                                                                      
+  10. The archive is 159 files / 1.3MB. It's well-organized but growing. The retention policy says "reviewed annually" — a pass to delete anything    
+  from the misc/ catch-all (24 files) that's purely session notes or superseded planning docs would trim it meaningfully.                             
+                                                                                                                                                      
+  If I were picking the next thing to actually do, I'd go with #1 (pyproject.toml) — it's mechanical, high-impact, and makes everything else easier.
