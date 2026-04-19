@@ -37,6 +37,31 @@ Parameters:
     Description: ECR image URI for OpenSERP container
 
 Resources:
+  # --- Dead Letter Queues ---
+  Phase1DLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${EnvironmentName}-wwii-phase1-dlq
+      MessageRetentionPeriod: 1209600
+
+  Phase2DLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${EnvironmentName}-wwii-phase2-dlq
+      MessageRetentionPeriod: 1209600
+
+  Phase3DLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${EnvironmentName}-wwii-phase3-dlq
+      MessageRetentionPeriod: 1209600
+
+  ImportDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${EnvironmentName}-wwii-import-dlq
+      MessageRetentionPeriod: 1209600
+
   # --- Lambda Functions ---
   Phase1Function:
     Type: AWS::Lambda::Function
@@ -50,6 +75,8 @@ Resources:
       MemorySize: 512
       Timeout: 300
       Role: !Ref LambdaExecutionRoleArn
+      DeadLetterConfig:
+        TargetArn: !GetAtt Phase1DLQ.Arn
       VpcConfig:
         SubnetIds:
           - !Ref PrivateSubnet1Id
@@ -73,6 +100,8 @@ Resources:
       MemorySize: 2048
       Timeout: 900
       Role: !Ref LambdaExecutionRoleArn
+      DeadLetterConfig:
+        TargetArn: !GetAtt Phase2DLQ.Arn
       VpcConfig:
         SubnetIds:
           - !Ref PrivateSubnet1Id
@@ -96,6 +125,8 @@ Resources:
       MemorySize: 1024
       Timeout: 900
       Role: !Ref LambdaExecutionRoleArn
+      DeadLetterConfig:
+        TargetArn: !GetAtt Phase3DLQ.Arn
       VpcConfig:
         SubnetIds:
           - !Ref PrivateSubnet1Id
@@ -119,6 +150,8 @@ Resources:
       MemorySize: 2048
       Timeout: 900
       Role: !Ref LambdaExecutionRoleArn
+      DeadLetterConfig:
+        TargetArn: !GetAtt ImportDLQ.Arn
       Environment:
         Variables:
           S3_BUCKET: !Ref DataBucketName
