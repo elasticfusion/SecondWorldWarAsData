@@ -352,6 +352,71 @@ cloudformation/
 
 ---
 
+## Deployment Script
+
+`scripts/deploy_aws.py` — single entry point for deploying, updating, and tearing down the AWS infrastructure.
+
+```bash
+# Validate templates (runs cfn-lint)
+python3 scripts/deploy_aws.py validate
+
+# Deploy full stack (or update if exists)
+python3 scripts/deploy_aws.py deploy --env dev --region us-east-1
+
+# Deploy specific nested stack only
+python3 scripts/deploy_aws.py deploy --env dev --stack network
+
+# Check deployment status
+python3 scripts/deploy_aws.py status --env dev
+
+# Tear down everything
+python3 scripts/deploy_aws.py destroy --env dev
+```
+
+### Parameters
+
+| Flag | Default | Description |
+|---|---|---|
+| `--env` | `dev` | Environment name (prefixes all resource names) |
+| `--region` | `us-east-1` | AWS region |
+| `--stack` | (all) | Deploy only a specific nested stack: `network`, `storage`, `compute`, `events`, `iam` |
+| `--profile` | (default) | AWS CLI profile name |
+| `--dry-run` | false | Show what would be deployed without executing |
+
+### What It Does
+
+**`validate`:**
+1. Runs `cfn-lint` on all templates in `cloudformation/`
+2. Runs `aws cloudformation validate-template` for each template
+3. Reports errors and warnings
+
+**`deploy`:**
+1. Validates templates (fails fast on errors)
+2. Packages Lambda code into a zip, uploads to S3
+3. Builds and pushes OpenSERP Docker image to ECR
+4. Creates/updates the CloudFormation stack (`wwii-pipeline-{env}`)
+5. Waits for stack completion, streams events
+6. Outputs key resource ARNs (S3 bucket, DynamoDB tables, ECS cluster, Lambda functions)
+
+**`status`:**
+1. Shows stack status and last event
+2. Lists running ECS tasks
+3. Shows NAT Gateway state (active/deleted)
+4. Shows recent Lambda invocation counts
+
+**`destroy`:**
+1. Empties S3 buckets (required before stack deletion)
+2. Deletes the CloudFormation stack
+3. Waits for deletion, streams events
+
+### Dependencies
+
+```bash
+pip install cfn-lint boto3
+```
+
+---
+
 ## Implementation Phases
 
 ### Phase A: Storage Abstraction (local-compatible)
