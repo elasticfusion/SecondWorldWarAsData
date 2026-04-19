@@ -8,9 +8,6 @@ import sys
 from pathlib import Path
 import click
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from src.utils.logger import setup_logging
 from src.url_extractor import URLExtractor
 
@@ -20,8 +17,16 @@ from src.url_extractor import URLExtractor
 @click.option("--book-name", required=True, help="Name for book directory")
 @click.option("--output-dir", default="contentrepository", help="Output directory")
 @click.option("--content-selector", default=None, help="CSS selector for main content")
-@click.option("--chapter-pattern", default=None, help="Regex pattern for chapter headings")
-def main(url: str, book_name: str, output_dir: str, content_selector: str, chapter_pattern: str):
+@click.option(
+    "--chapter-pattern", default=None, help="Regex pattern for chapter headings"
+)
+def main(
+    url: str,
+    book_name: str,
+    output_dir: str,
+    content_selector: str,
+    chapter_pattern: str,
+):
     """Extract content from URL and save as chapter structure."""
 
     # Setup logging

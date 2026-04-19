@@ -14,9 +14,6 @@ from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from src.grok_client import GrokClient
 
 logging.basicConfig(level=logging.INFO)
@@ -476,6 +473,41 @@ def _try_match_pair(
     return reasons, confidence
 
 
+def _build_cluster(
+    group1: Dict[str, Any],
+    candidates: List[Dict[str, Any]],
+    processed: Set[str],
+    excluded_pairs: Set[tuple],
+    use_llm_verification: bool,
+    grok_client,
+) -> tuple:
+    """Try to build a cluster around group1 from candidates. Returns (cluster, reasons, confidence)."""
+    cluster: list[dict[str, Any]] = []
+    cluster_reasons: list[str] = []
+    cluster_confidence = 0.0
+
+    for group2 in candidates:
+        if group2["_filename"] in processed or not _get_group_name(group2):
+            continue
+        pair_key = tuple(sorted([group1["_filename"], group2["_filename"]]))
+        if pair_key in excluded_pairs:
+            continue
+
+        match = _try_match_pair(group1, group2, use_llm_verification, grok_client)
+        if not match:
+            continue
+        reasons, confidence = match
+
+        if not cluster:
+            cluster.append(_make_group_entry(group1))
+        cluster.append(_make_group_entry(group2))
+        cluster_confidence = max(cluster_confidence, confidence)
+        cluster_reasons.extend(reasons)
+        processed.add(group2["_filename"])
+
+    return cluster, cluster_reasons, cluster_confidence
+
+
 def _find_related_clusters(
     groups_data: List[Dict[str, Any]],
     excluded_clusters: List[Set[str]],
@@ -493,28 +525,14 @@ def _find_related_clusters(
         if not _get_group_name(group1):
             continue
 
-        cluster: list[dict[str, Any]] = []
-        cluster_reasons: list[str] = []
-        cluster_confidence = 0.0
-
-        for group2 in groups_data[i + 1 :]:
-            if group2["_filename"] in processed or not _get_group_name(group2):
-                continue
-            pair_key = tuple(sorted([group1["_filename"], group2["_filename"]]))
-            if pair_key in excluded_pairs:
-                continue
-
-            match = _try_match_pair(group1, group2, use_llm_verification, grok_client)
-            if not match:
-                continue
-            reasons, confidence = match
-
-            if not cluster:
-                cluster.append(_make_group_entry(group1))
-            cluster.append(_make_group_entry(group2))
-            cluster_confidence = max(cluster_confidence, confidence)
-            cluster_reasons.extend(reasons)
-            processed.add(group2["_filename"])
+        cluster, cluster_reasons, cluster_confidence = _build_cluster(
+            group1,
+            groups_data[i + 1 :],
+            processed,
+            excluded_pairs,
+            use_llm_verification,
+            grok_client,
+        )
 
         if cluster:
             cluster_group_ids = {g["GroupID"] for g in cluster}

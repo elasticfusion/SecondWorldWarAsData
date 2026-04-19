@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 """Generate markdown documentation from JSON schemas."""
 
-import sys
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.json_schemas import (
     CASUALTIES_SCHEMA,

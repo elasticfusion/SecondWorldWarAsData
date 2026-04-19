@@ -6,9 +6,9 @@ import logging
 import sys
 from pathlib import Path
 
-logging.basicConfig(level=logging.DEBUG, format="%(levelname)s - %(name)s - %(message)s")
-
-sys.path.insert(0, str(Path(__file__).parent))
+logging.basicConfig(
+    level=logging.DEBUG, format="%(levelname)s - %(name)s - %(message)s"
+)
 
 from src.grok_client import GrokClient
 from src.extraction.supplemental import extract_supplemental
@@ -31,11 +31,17 @@ print("=" * 60)
 # Check bibliography
 bib_dir = OUTPUT_ROOT / "bibliography"
 if bib_dir.exists():
-    bib_files = [f for f in bib_dir.glob("*.json") if f.name not in ("index.json", "review_queue.json")]
+    bib_files = [
+        f
+        for f in bib_dir.glob("*.json")
+        if f.name not in ("index.json", "review_queue.json")
+    ]
     print(f"\nBibliography entries: {len(bib_files)}")
     for f in sorted(bib_files)[:5]:
         data = json.load(open(f))
-        print(f"  {f.name}: {data.get('title', '?')} [{len(data.get('mentions', []))} mentions]")
+        print(
+            f"  {f.name}: {data.get('title', '?')} [{len(data.get('mentions', []))} mentions]"
+        )
     if len(bib_files) > 5:
         print(f"  ... and {len(bib_files) - 5} more")
 
@@ -46,7 +52,9 @@ if notes_file.exists():
     subs = data.get("Event", {}).get("Sub-events", [])
     print(f"\nFactual notes-event sub-events: {len(subs)}")
     for s in subs[:3]:
-        print(f"  ref {s.get('source_reference', {}).get('reference_number', '?')}: {s['Sub-event_summary'][:100]}")
+        print(
+            f"  ref {s.get('source_reference', {}).get('reference_number', '?')}: {s['Sub-event_summary'][:100]}"
+        )
 else:
     print("\nNo notes-event file created")
 
@@ -56,7 +64,9 @@ if queue_file.exists():
     queue = json.load(open(queue_file))
     print(f"\nAmbiguous (review queue): {len(queue)}")
     for item in queue[:3]:
-        print(f"  ref {item.get('reference_number', '?')}: {item.get('verbatim_reference', '')[:100]}")
+        print(
+            f"  ref {item.get('reference_number', '?')}: {item.get('verbatim_reference', '')[:100]}"
+        )
 else:
     print("\nNo ambiguous items")
 

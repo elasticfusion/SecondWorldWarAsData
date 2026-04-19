@@ -5,8 +5,6 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from src.extraction.enrich_groups import _promote_enrichment
 
 SKIP = frozenset(

@@ -10,8 +10,6 @@ import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 _ULID = re.compile(r"^[0-9A-HJKMNP-TV-Z]{26}$")
 
 # ---------------------------------------------------------------------------
@@ -24,16 +22,8 @@ def _is_str(v):
     return isinstance(v, str) and len(v) > 0
 
 
-def _is_str_or_null(v):
-    return v is None or isinstance(v, str)
-
-
 def _is_list(v):
     return isinstance(v, list)
-
-
-def _is_dict(v):
-    return isinstance(v, dict)
 
 
 def _is_ulid(v):
