@@ -6,7 +6,9 @@
 
 ## Quick Start
 
-- **[README.md](../../README.md)** - Project overview and quick start
+- **[README.md](../../README.md)** - Project overview and deployment options
+- **[Local Deployment](LOCAL_DEPLOYMENT.md)** - Run locally with filesystem storage
+- **[AWS Deployment](AWS_DEPLOYMENT.md)** - Deploy with Lambda, ECS, S3, DynamoDB
 - **[core/DEVELOPMENT.md](core/DEVELOPMENT.md)** - Setup and development workflow
 - **[core/PIPELINE.md](core/PIPELINE.md)** - Complete pipeline documentation
 - **[pipeline/RETRY_WRAPPERS.md](pipeline/RETRY_WRAPPERS.md)** - Automatic retry for Phase 2 & 3
