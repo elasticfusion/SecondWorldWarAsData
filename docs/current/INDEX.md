@@ -128,6 +128,7 @@ Parallel chapter processing, batched API calls, and xAI Batch API for 50% cost r
 - **[VALIDATION_REPORTS.md](VALIDATION_REPORTS.md)** - Validation report generation
 - **[MONGODB_IMPORT_PLAN.md](MONGODB_IMPORT_PLAN.md)** - MongoDB import plan
 - **[FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md)** - Distributed processing options
+- **[AWS_DEPLOYMENT_PLAN.md](AWS_DEPLOYMENT_PLAN.md)** - AWS Lambda/ECS/S3 deployment plan
 - **[TODO.md](TODO.md)** - Outstanding tasks
 - **[TEXT_UTILS.md](core/TEXT_UTILS.md)** - Text utility functions
 
