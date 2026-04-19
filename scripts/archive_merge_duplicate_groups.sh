@@ -1,7 +1,8 @@
 #!/bin/bash
 # Archive merge_duplicate_groups.py (superseded by merge_related_groups.py)
+set -euo pipefail
 
-SCRIPTS_DIR="/Users/dchristian/projects/SecondWorkldWarasData/scripts"
+SCRIPTS_DIR="$(cd "$(dirname "$0")" && pwd)"
 ARCHIVE_DIR="$SCRIPTS_DIR/archive/obsolete"
 
 mkdir -p "$ARCHIVE_DIR"
