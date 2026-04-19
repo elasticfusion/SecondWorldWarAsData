@@ -246,11 +246,11 @@ def _save_group(
 
     if existing_filename and (groups_dir / existing_filename).exists():
         # Merge with existing
-        with open(groups_dir / existing_filename, "r", encoding="utf-8") as f:
-            existing_group = json.load(f)
-        merged = _merge_group(existing_group, group)
-        with open(groups_dir / existing_filename, "w", encoding="utf-8") as f:
-            json.dump(merged, f, indent=2, ensure_ascii=False)
+        from src.utils.file_lock import locked_json
+
+        with locked_json(groups_dir / existing_filename) as (existing_group, save):
+            merged = _merge_group(existing_group, group)
+            save(merged)
         logger.info("    Updated: %s", group_name)
     else:
         # Create new file

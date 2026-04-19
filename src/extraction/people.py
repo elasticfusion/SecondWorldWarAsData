@@ -661,10 +661,12 @@ def _process_person(
         # Update existing person
         person_file = people_dir / existing_filename
         if person_file.exists():
-            existing_person = _load_person_file(person_file)
-            merged = _merge_person(existing_person, person)
-            Person(**merged)  # Validate
-            _save_person_file(person_file, merged)
+            from src.utils.file_lock import locked_json
+
+            with locked_json(person_file) as (existing_person, save):
+                merged = _merge_person(existing_person, person)
+                Person(**merged)  # Validate
+                save(merged)
             logger.debug("  Updated: %s", name)
             return False, True
         else:
