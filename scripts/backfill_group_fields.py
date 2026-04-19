@@ -20,6 +20,7 @@ SKIP = frozenset(
 
 
 def main():
+    dry_run = "--dry-run" in sys.argv
     groups_dir = Path("output/people_groups")
     updated = 0
 
@@ -39,11 +40,14 @@ def main():
         _promote_enrichment(data)
 
         if json.dumps(data, sort_keys=True) != before:
-            with open(group_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
+            if dry_run:
+                print(f"  Would update: {group_file.name}")
+            else:
+                with open(group_file, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False)
             updated += 1
 
-    print(f"Updated {updated} files")
+    print(f"{'Would update' if dry_run else 'Updated'} {updated} files")
 
 
 if __name__ == "__main__":

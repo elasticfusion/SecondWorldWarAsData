@@ -33,7 +33,7 @@ Main extraction pipeline using Grok AI.
 **Workflow (5 stages):**
 1. Parallel core extraction — events + dates + places + people_groups + people (batched, concurrent)
 2. Retry missing events — per-chapter cache clear and re-extract
-3. Optional entity extraction — weather, equipment, logistics, casualties, supplemental (sequential per event file, batched per chapter)
+3. Optional entity extraction — weather, equipment, logistics, casualties, images, supplemental (sequential per event file, batched per chapter)
 4. Maps — source maps + external maps via OpenSERP
 5. Analysis — duplicate people report + related groups report
 
@@ -57,6 +57,9 @@ Enriches extracted entities with external data.
 
 **What it enriches:**
 - People — biographical data from Wikipedia/Grokipedia (birth/death dates, service history, awards)
+- Groups — additional organizational context and hierarchy
+- Places — enhanced geographic data and historical context
+- Bibliography — expanded citation metadata and source verification
 
 **Options:**
 - `--max-items N` — limit items per entity type
@@ -362,6 +365,18 @@ class GrokClient:
 - `cache/api/people/` - People extractions
 - `cache/api/people_groups/` - Group extractions
 
+### JSON Schemas (`src/json_schemas.py`)
+
+JSON Schema definitions for validation of extracted entity files.
+
+### Types (`src/types.py`)
+
+Shared type definitions and type aliases used across the codebase.
+
+### URL Extractor (`src/url_extractor.py`)
+
+Extracts and normalizes URLs from text content.
+
 ### Parser (`src/parser.py`)
 
 Markdown parsing with entity extraction:
@@ -525,6 +540,22 @@ output/people_groups/
 └── related_groups_report.json           # Auto-generated
 ```
 
+### Images (`src/extraction/images.py`)
+
+Extracts and processes image references from parsed content.
+
+### Combined Map Search (`src/extraction/combined_map_search.py`)
+
+Unified map search across multiple sources (source maps and external maps via OpenSERP).
+
+### Supplemental Advanced (`src/extraction/supplemental_advanced.py`)
+
+Advanced supplemental material extraction with enhanced classification and routing.
+
+### Copyright Calculator (`src/extraction/copyright_calculator.py`)
+
+Calculates copyright status and public domain eligibility for source documents.
+
 ## Utilities (`src/utils/`)
 
 ### Configuration (`src/utils/config.py`)
@@ -544,6 +575,30 @@ def setup_logging(level: str = "INFO", log_file: Optional[str] = None, console: 
     # Configures logging with custom TRACE level
 ```
 
+### Heartbeat (`src/utils/heartbeat.py`)
+
+Progress monitoring that warns if no pipeline activity is detected for a configurable interval.
+
+### Batch API (`src/utils/batch_api.py`)
+
+Client for xAI Batch API supporting async batch submission and result retrieval for 50% cost reduction.
+
+### HTTP Pool (`src/utils/http_pool.py`)
+
+Connection pooling and retry logic for HTTP requests.
+
+### File Lock (`src/utils/file_lock.py`)
+
+File-based locking for safe concurrent access to shared output files.
+
+### Schema Registry (`src/utils/schema_registry.py`)
+
+Central registry of Pydantic schemas for entity validation and serialization.
+
+### Validation Reports (`src/utils/validation_reports.py`)
+
+Generates validation reports and dashboards for extracted data quality.
+
 ## Configuration Files
 
 ### `config.yaml`
@@ -551,12 +606,12 @@ Main configuration:
 ```yaml
 paths:
   content_root: contentrepository
-  output_dir: output
-  cache_dir: cache
+  output_root: output
+  cache_root: cache
 
-grok:
-  api_key: ${GROK_API_KEY}  # or explicit key
-  model: grok-2-1212
+api:
+  grok:
+    model: "grok-beta"
 
 logging:
   level: INFO

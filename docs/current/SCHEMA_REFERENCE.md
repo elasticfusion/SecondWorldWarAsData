@@ -5,6 +5,8 @@
 
 All entity files use 26-character ULIDs for cross-referencing. Cross-references always point to top-level entity IDs (e.g., `DateMentionID` → `DateID` in a date file, `PlaceMentionID` → `PlaceID` in a place file).
 
+> **Note:** This document describes the **output file format** — what is stored on disk after extraction and consolidation. This differs from the extraction-time schemas in `src/json_schemas.py`, which validate intermediate results returned by the LLM during pipeline execution. Where the two diverge (field names, enum values), this document reflects the final output.
+
 ---
 
 ## Cross-Reference Convention
@@ -290,11 +292,11 @@ Note: Equipment uses `mentions` (not `event_mentions`) and `DateID`/`DateMention
 ```json
 {
   "LogisticsID": "01ULID...",
-  "logistics_type": "supply_shortage|transport_disruption|...",
-  "category": "ammunition|fuel|food|medical|transport|...",
+  "logistics_type": "supply_shortage|supply_excess|delivery_delay|transport_disruption",
+  "category": "ammunition|fuel|food|medical|equipment|personnel|general",
   "description": "...",
   "severity": "critical|high|medium|low",
-  "status": "ongoing|resolved|...",
+  "status": "unresolved|in_progress|resolved|worsened",
   "temporal": {
     "date_start": "1944-06-10",
     "date_end": "1944-06-15|null",
@@ -324,7 +326,7 @@ Note: Logistics uses `EventMentionID` (not `MentionID`) in event_mentions.
 ```json
 {
   "CasualtyID": "01ULID...",
-  "type": "casualties|killed|wounded|captured|missing",
+  "type": "casualties|killed|wounded|pow|missing",
   "description": "...",
   "event_context": {
     "EventID": "01ULID...",
@@ -347,7 +349,7 @@ Note: Logistics uses `EventMentionID` (not `MentionID`) in event_mentions.
 }
 ```
 
-Note: Casualties use `event_context` (not `event_mentions`). `Sub-eventID` uses hyphen (not underscore).
+Note: Casualties use `event_context` (not `event_mentions`). `Sub-eventID` uses hyphen (not underscore). The `type` value `pow` means "prisoner of war".
 
 ---
 
@@ -422,7 +424,7 @@ Note: Images use `Sub-eventID` (hyphen) and `Sub-event_Name` (hyphen). No `event
 }
 ```
 
-Note: Bibliography uses `Sub-eventID` (hyphen) in mentions.
+Note: Bibliography uses `Sub-eventID` (hyphen) in mentions. The extraction-time schema (`src/json_schemas.py`) uses `MaterialID` per item, while the consolidated output uses `BibliographyID`. Similarly, the extraction-time `availability` enum is `online|offline|archive|unknown`, while the output format uses `public_domain|restricted|unknown`.
 
 ---
 

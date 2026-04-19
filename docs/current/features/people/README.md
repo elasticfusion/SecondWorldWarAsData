@@ -158,7 +158,7 @@ cat output/people/duplicate_report.json
 
 ### 3. Merge Duplicates (Manual)
 ```bash
-python merge_people.py \
+python scripts/merge_duplicate_people.py \
   --keep Dwight_D_Eisenhower_01ABC123.json \
   --merge Eisenhower_01MNO345.json \
   --merge Supreme_Commander_AEEF_01JKL012.json

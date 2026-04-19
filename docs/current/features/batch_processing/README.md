@@ -16,7 +16,7 @@ Batch and parallel processing provides **significant performance improvements** 
 - Concurrent chapter processing
 - Efficient resource utilization
 
-**Status:** Experimental - use with caution in production
+**Status:** Production
 
 ---
 
@@ -171,7 +171,7 @@ concurrency:
   max_extraction_group: 3        # Max parallel extractions per chapter
 ```
 
-**Note:** Currently experimental. Not enabled by default.
+**Note:** Not enabled by default. Set `enabled: true` to activate.
 
 ---
 
@@ -383,7 +383,6 @@ for result in results:
 - API rate limits are strict
 - Memory is constrained
 - Debugging errors
-- Production (until stable)
 
 ---
 
@@ -391,9 +390,8 @@ for result in results:
 
 ### Current Limitations
 
-1. **Experimental Status**
-   - Not fully tested in production
-   - May have edge cases
+1. **Known Limitations**
+   - May have edge cases with very large chapters
    - Schema may change
 
 2. **No Retry Logic**

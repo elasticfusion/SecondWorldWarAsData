@@ -1,128 +1,93 @@
-# People Deduplication Strategy
+# People Deduplication
 
-## Problem Statement
+**Last Updated:** 2026-04-19
 
-Historical texts reference people inconsistently:
-- **By name**: "Dwight Eisenhower", "Dwight D. Eisenhower"
-- **By title**: "Supreme Commander of the Allied Expeditionary Force"
-- **By position**: "Commander of the Third Army"
-- **By rank**: "General Patton"
-- **By nickname**: "Ike"
+## Problem
 
-Simple name matching creates duplicate entries for the same person.
+Historical texts reference people inconsistently — by full name, last name only, title, rank, or nickname. This creates duplicate person files in `output/people/`.
 
-## Current Limitation
+## Architecture
 
-The existing `_normalize_name()` function only handles:
-- Case variations: "EISENHOWER" → "eisenhower"
-- Whitespace: " Eisenhower " → "eisenhower"
+Each person is stored as an individual JSON file in `output/people/`. Deduplication operates on these files directly — no central file is needed.
 
-It **does NOT** handle:
-- Title references: "Supreme Commander" ≠ "Eisenhower"
-- Name variations: "Dwight D. Eisenhower" ≠ "Dwight Eisenhower"
-- Nicknames: "Ike" ≠ "Eisenhower"
+Key files:
 
-## Two-Phase Solution
+| File | Purpose |
+|------|---------|
+| `output/people/*.json` | Individual person files |
+| `output/people/duplicate_report.json` | Generated duplicate analysis |
+| `output/people/not_duplicates.json` | Exclusion list (confirmed non-duplicates) |
 
-### Phase 1: Extract Everything (Current)
-- Let AI extract whatever reference appears in text
-- Capture in `name` field (could be name, title, or position)
-- Record `position_at_event` for context
-- Store biographical clues
+## Workflow
 
-### Phase 2: AI-Powered Consolidation (New)
+### Step 1: Find Duplicates
 
-**Module**: `src/extraction/people_consolidation.py`
+```bash
+python3 scripts/find_duplicate_people.py
+```
 
-**Process**:
-1. Load all people from `people-central.json`
-2. Send summary to AI with biographical context
-3. AI identifies duplicate groups based on:
-   - Biographical data (birth/death dates, nationality)
-   - Positions held (cross-reference with titles)
-   - Historical context
-   - Name patterns
-4. Merge duplicate entries:
-   - Choose canonical name
-   - Combine event mentions
-   - Deduplicate awards
-   - Preserve all biographical data
-5. Save consolidated file
+Scans all person files in `output/people/` and generates `output/people/duplicate_report.json` containing grouped duplicate candidates with confidence scores and match reasons.
 
-**Example AI Analysis**:
+### Step 2: Merge Duplicates
+
+```bash
+python3 scripts/merge_duplicate_people.py
+```
+
+Interactive merge — for each duplicate group, prompts with:
+- **y** — merge into the primary person
+- **n** — skip this group
+- **skip** — skip this pair
+- **exclude** — add to `output/people/not_duplicates.json` (never flagged again)
+
+Merging combines event mentions, updates `output/people/index.json`, and deletes the merged files.
+
+## Detection Methods
+
+| Method | Description |
+|--------|-------------|
+| **Name similarity** | SequenceMatcher fuzzy match at 70%+ threshold |
+| **ASCII/Unicode variants** | Handles accented characters (e.g., "Müller" vs "Mueller") |
+| **Substring matching** | "Eisenhower" found within "Dwight D. Eisenhower" (>5 chars) |
+| **Shared biographical data** | Same birth date, nationality + birth year |
+| **Same last name** | "George Patton" vs "George S. Patton" (>3 char last names) |
+
+## Duplicate Report Format
+
 ```json
 {
+  "total_people": 1247,
+  "duplicate_groups": 23,
   "duplicates": [
     {
-      "canonical_name": "Dwight D. Eisenhower",
-      "indices": [0, 5, 12, 18],
-      "reason": "Entries 0='Dwight D. Eisenhower', 5='Eisenhower', 12='Supreme Commander of the Allied Expeditionary Force', 18='Ike' all refer to same person based on position (Supreme Commander) and context"
+      "confidence": 0.95,
+      "reasons": [
+        "Name similarity: 0.92",
+        "Same last name: eisenhower",
+        "Shared positions"
+      ],
+      "people": [
+        {
+          "filename": "Dwight_D_Eisenhower_01ABC123.json",
+          "name": "Dwight D. Eisenhower",
+          "PersonID": "01ABC123..."
+        },
+        {
+          "filename": "Eisenhower_01MNO345.json",
+          "name": "Eisenhower",
+          "PersonID": "01MNO345..."
+        }
+      ]
     }
   ]
 }
 ```
 
-## Workflow
+## Exclusion List
 
-### During Extraction (Automatic)
-```bash
-python phase2_extract.py
-```
-- Creates `people-central.json` with raw extractions
-- May contain duplicates
+Pairs added via the `exclude` option during interactive merge are stored in `output/people/not_duplicates.json`. These pairs are skipped in future duplicate detection runs.
 
-### After Extraction (Manual or Scheduled)
-```bash
-python consolidate_people.py
-```
-- Analyzes `people-central.json`
-- Creates `people-consolidated.json`
-- Logs merge decisions for review
+## See Also
 
-## Benefits
-
-1. **Accurate Extraction**: AI extracts exactly what appears in text
-2. **Intelligent Merging**: AI uses context to identify same person
-3. **Audit Trail**: Consolidation logs show merge reasoning
-4. **Reversible**: Original `people-central.json` preserved
-5. **Reviewable**: Human can verify merge decisions
-
-## Schema Addition
-
-Added `aliases` field to `Person` model:
-```python
-class Person(BaseModel):
-    PersonID: str
-    name: str  # Canonical name after consolidation
-    aliases: list[str]  # ["Ike", "Supreme Commander", "General Eisenhower"]
-    ...
-```
-
-## Future Enhancements
-
-1. **Confidence Scores**: AI provides certainty level for merges
-2. **Manual Review UI**: Flag uncertain merges for human review
-3. **Incremental Updates**: Re-run consolidation as new chapters added
-4. **Cross-Book Validation**: Use multiple books to confirm identities
-
-## Usage
-
-```python
-from src.extraction.people_consolidation import consolidate_people
-from src.grok_client import GrokClient
-
-grok = GrokClient()
-consolidate_people(
-    central_file=Path("output/BreakoutAndPursuit/people-central.json"),
-    grok_client=grok,
-    output_file=Path("output/BreakoutAndPursuit/people-consolidated.json")
-)
-```
-
-## Why This Approach?
-
-- **Leverages AI strengths**: Pattern recognition, context understanding
-- **Handles ambiguity**: "Montgomery" could be Bernard or multiple others
-- **Scalable**: Works across thousands of entries
-- **Maintainable**: No complex fuzzy matching rules to maintain
-- **Accurate**: Uses historical knowledge embedded in AI model
+- [People Extraction](README.md) — file-per-person architecture and schema
+- [People Groups](groups.md) — military unit linking
