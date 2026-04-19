@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import requests
-from diskcache import Cache
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
@@ -75,9 +74,26 @@ class GrokClient:
     """Client for Grok API with caching and retry logic."""
 
     def __init__(
-        self, cache_dir: Path, api_key: Optional[str] = None, batch_mode: bool = False
+        self,
+        cache_dir: "Path | CacheBackend",
+        api_key: Optional[str] = None,
+        batch_mode: bool = False,
     ):
-        """Initialize Grok client."""
+        """Initialize Grok client.
+
+        Args:
+            cache_dir: Path for DiskCacheBackend (backwards-compatible) or a CacheBackend instance.
+            api_key: Grok API key (falls back to GROK_API_KEY env var).
+            batch_mode: If True, collect requests for xAI Batch API.
+        """
+        from src.utils.cache_backend import CacheBackend, DiskCacheBackend
+
+        if isinstance(cache_dir, Path):
+            self.cache_dir = cache_dir
+            self._cache_backend = DiskCacheBackend(cache_dir)
+        else:
+            self.cache_dir = None
+            self._cache_backend = cache_dir
         self.api_key = api_key or os.getenv("GROK_API_KEY")
         if not self.api_key:
             raise ValueError("GROK_API_KEY not found in environment")
@@ -87,7 +103,7 @@ class GrokClient:
         )
         self.model = os.getenv("GROK_MODEL", "grok-beta")
         self.cache_dir = cache_dir
-        self.caches: Dict[str, Cache] = {}  # Cache per extraction type
+        self.caches: Dict[str, Any] = {}  # Cache per extraction type
         self.timeout = 600.0  # 10 minutes for large chapters
 
         # Load config for debug preview settings
@@ -138,7 +154,7 @@ class GrokClient:
 
             self._batch_collector = BatchCollector()
 
-    def _get_cache(self, cache_type: str = "default") -> Cache:
+    def _get_cache(self, cache_type: str = "default") -> "CacheBackend":
         """Get or create cache for specific type.
 
         Book-specific types route to books/{book_name}/{cache_type}/
@@ -151,9 +167,7 @@ class GrokClient:
             cache_key = cache_type
 
         if cache_key not in self.caches:
-            type_cache_dir = self.cache_dir / cache_key
-            type_cache_dir.mkdir(parents=True, exist_ok=True)
-            self.caches[cache_key] = Cache(str(type_cache_dir))
+            self.caches[cache_key] = self._cache_backend.get_sub_cache(cache_key)
         return self.caches[cache_key]
 
     def _make_cache_key(self, prompt: str, temperature: float) -> str:
