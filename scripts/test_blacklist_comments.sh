@@ -1,5 +1,6 @@
 #!/bin/bash
 # Test script to demonstrate blacklist comment functionality
+set -euo pipefail
 
 echo "Testing blacklist comment feature..."
 echo ""

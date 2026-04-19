@@ -1,9 +1,9 @@
 #!/bin/bash
 # Archive temporary and obsolete scripts
 
-set -e
+set -euo pipefail
 
-SCRIPTS_DIR="/Users/dchristian/projects/SecondWorkldWarasData/scripts"
+SCRIPTS_DIR="$(cd "$(dirname "$0")" && pwd)"
 ARCHIVE_DIR="$SCRIPTS_DIR/archive"
 
 echo "Creating archive directories..."

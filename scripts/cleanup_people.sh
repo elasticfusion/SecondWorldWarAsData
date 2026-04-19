@@ -1,5 +1,6 @@
 #!/bin/bash
 # Clean up old people files and cache before re-running extraction
+set -euo pipefail
 
 echo "Cleaning up old people files..."
 find output -name "*-people.json" -type f -delete

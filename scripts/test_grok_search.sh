@@ -1,5 +1,6 @@
 #!/bin/bash
 # Quick test of combined map search (Grok whitelist + OpenSERP)
+set -euo pipefail
 
 echo "=================================="
 echo "Combined Map Search - Quick Test"

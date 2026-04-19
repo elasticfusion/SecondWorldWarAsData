@@ -1,7 +1,7 @@
 #!/bin/bash
 # QA check script for test files
 
-set -e
+set -euo pipefail
 
 echo "🔍 Running QA checks on test files..."
 echo ""

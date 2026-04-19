@@ -1,7 +1,7 @@
 #!/bin/bash
 # Test runner script with different test modes
 
-set -e
+set -euo pipefail
 
 # Colors
 GREEN='\033[0;32m'
