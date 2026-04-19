@@ -1,0 +1,163 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: WWII Pipeline - Events (S3 notifications, SNS topics, EventBridge rule)
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: dev
+  DataBucketArn:
+    Type: String
+  Phase1FunctionArn:
+    Type: String
+  Phase2FunctionArn:
+    Type: String
+  Phase3FunctionArn:
+    Type: String
+  OpenSerpManagerFunctionArn:
+    Type: String
+
+Resources:
+  # --- SNS Topics ---
+  ContentUploadedTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${EnvironmentName}-wwii-content-uploaded
+
+  ChapterParsedTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${EnvironmentName}-wwii-chapter-parsed
+
+  EntityCreatedTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${EnvironmentName}-wwii-entity-created
+
+  # --- SNS Topic Policies (allow S3 to publish) ---
+  ContentUploadedPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref ContentUploadedTopic
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowS3Publish
+            Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref ContentUploadedTopic
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Ref DataBucketArn
+
+  ChapterParsedPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref ChapterParsedTopic
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowS3Publish
+            Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref ChapterParsedTopic
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Ref DataBucketArn
+
+  EntityCreatedPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref EntityCreatedTopic
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowS3Publish
+            Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref EntityCreatedTopic
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Ref DataBucketArn
+
+  # --- SNS → Lambda Subscriptions ---
+  Phase1Subscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref ContentUploadedTopic
+      Protocol: lambda
+      Endpoint: !Ref Phase1FunctionArn
+
+  Phase2Subscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref ChapterParsedTopic
+      Protocol: lambda
+      Endpoint: !Ref Phase2FunctionArn
+
+  Phase3Subscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref EntityCreatedTopic
+      Protocol: lambda
+      Endpoint: !Ref Phase3FunctionArn
+
+  # --- Lambda Permissions (allow SNS to invoke) ---
+  Phase1InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Phase1FunctionArn
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref ContentUploadedTopic
+
+  Phase2InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Phase2FunctionArn
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref ChapterParsedTopic
+
+  Phase3InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Phase3FunctionArn
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref EntityCreatedTopic
+
+  # --- EventBridge Rule for OpenSERP Idle Monitor ---
+  IdleMonitorRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-openserp-idle-monitor
+      ScheduleExpression: rate(10 minutes)
+      State: ENABLED
+      Targets:
+        - Id: OpenSerpManager
+          Arn: !Ref OpenSerpManagerFunctionArn
+
+  IdleMonitorPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref OpenSerpManagerFunctionArn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt IdleMonitorRule.Arn
+
+Outputs:
+  ContentUploadedTopicArn:
+    Value: !Ref ContentUploadedTopic
+  ChapterParsedTopicArn:
+    Value: !Ref ChapterParsedTopic
+  EntityCreatedTopicArn:
+    Value: !Ref EntityCreatedTopic

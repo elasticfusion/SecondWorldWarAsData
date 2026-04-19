@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: WWII Data Extraction Pipeline - Root Stack
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+  TemplateBucket:
+    Type: String
+    Description: S3 bucket containing nested stack templates
+  LambdaCodeBucket:
+    Type: String
+    Description: S3 bucket containing Lambda deployment package
+  LambdaCodeKey:
+    Type: String
+    Default: lambda/code.zip
+  OpenSerpImageUri:
+    Type: String
+    Description: ECR image URI for OpenSERP container
+
+Resources:
+  NetworkStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${TemplateBucket}.s3.amazonaws.com/cloudformation/network.yaml
+      Parameters:
+        EnvironmentName: !Ref EnvironmentName
+
+  StorageStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${TemplateBucket}.s3.amazonaws.com/cloudformation/storage.yaml
+      Parameters:
+        EnvironmentName: !Ref EnvironmentName
+
+  IAMStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${TemplateBucket}.s3.amazonaws.com/cloudformation/iam.yaml
+      Parameters:
+        EnvironmentName: !Ref EnvironmentName
+        DataBucketArn: !GetAtt StorageStack.Outputs.DataBucketArn
+        CacheTableArn: !GetAtt StorageStack.Outputs.CacheTableArn
+
+  ComputeStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${TemplateBucket}.s3.amazonaws.com/cloudformation/compute.yaml
+      Parameters:
+        EnvironmentName: !Ref EnvironmentName
+        VpcId: !GetAtt NetworkStack.Outputs.VpcId
+        PrivateSubnet1Id: !GetAtt NetworkStack.Outputs.PrivateSubnet1Id
+        PrivateSubnet2Id: !GetAtt NetworkStack.Outputs.PrivateSubnet2Id
+        LambdaSGId: !GetAtt NetworkStack.Outputs.LambdaSGId
+        OpenSerpSGId: !GetAtt NetworkStack.Outputs.OpenSerpSGId
+        AlbSGId: !GetAtt NetworkStack.Outputs.AlbSGId
+        LambdaExecutionRoleArn: !GetAtt IAMStack.Outputs.LambdaExecutionRoleArn
+        ECSTaskRoleArn: !GetAtt IAMStack.Outputs.ECSTaskRoleArn
+        ECSTaskExecutionRoleArn: !GetAtt IAMStack.Outputs.ECSTaskExecutionRoleArn
+        DataBucketName: !GetAtt StorageStack.Outputs.DataBucketName
+        CacheTableName: !GetAtt StorageStack.Outputs.CacheTableName
+        LambdaCodeBucket: !Ref LambdaCodeBucket
+        LambdaCodeKey: !Ref LambdaCodeKey
+        OpenSerpImageUri: !Ref OpenSerpImageUri
+
+  EventsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${TemplateBucket}.s3.amazonaws.com/cloudformation/events.yaml
+      Parameters:
+        EnvironmentName: !Ref EnvironmentName
+        DataBucketArn: !GetAtt StorageStack.Outputs.DataBucketArn
+        Phase1FunctionArn: !GetAtt ComputeStack.Outputs.Phase1FunctionArn
+        Phase2FunctionArn: !GetAtt ComputeStack.Outputs.Phase2FunctionArn
+        Phase3FunctionArn: !GetAtt ComputeStack.Outputs.Phase3FunctionArn
+        OpenSerpManagerFunctionArn: !GetAtt ComputeStack.Outputs.OpenSerpManagerFunctionArn
+
+Outputs:
+  DataBucket:
+    Value: !GetAtt StorageStack.Outputs.DataBucketName
+  ECSCluster:
+    Value: !GetAtt ComputeStack.Outputs.ECSClusterName
+  OpenSerpALB:
+    Value: !GetAtt ComputeStack.Outputs.OpenSerpALBDns
+  VpcId:
+    Value: !GetAtt NetworkStack.Outputs.VpcId

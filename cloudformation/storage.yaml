@@ -1,0 +1,171 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: WWII Pipeline - Storage (S3 bucket, DynamoDB tables)
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: dev
+
+Resources:
+  DataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${EnvironmentName}-wwii-data-pipeline
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: CleanupTempFiles
+            Prefix: tmp/
+            Status: Enabled
+            ExpirationInDays: 7
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  # API response cache
+  CacheTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${EnvironmentName}-wwii-api-cache
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: cache_key
+          AttributeType: S
+      KeySchema:
+        - AttributeName: cache_key
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  # Entity tables
+  PeopleTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${EnvironmentName}-wwii-people
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PersonID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PersonID
+          KeyType: HASH
+
+  GroupsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${EnvironmentName}-wwii-groups
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: GroupID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: GroupID
+          KeyType: HASH
+
+  PlacesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${EnvironmentName}-wwii-places
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PlaceID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PlaceID
+          KeyType: HASH
+
+  DatesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${EnvironmentName}-wwii-dates
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: DateID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: DateID
+          KeyType: HASH
+
+  EquipmentTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${EnvironmentName}-wwii-equipment
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: EquipmentID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: EquipmentID
+          KeyType: HASH
+
+  WeatherTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${EnvironmentName}-wwii-weather
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: WeatherID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: WeatherID
+          KeyType: HASH
+
+  LogisticsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${EnvironmentName}-wwii-logistics
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: LogisticsID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: LogisticsID
+          KeyType: HASH
+
+  CasualtiesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${EnvironmentName}-wwii-casualties
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: CasualtyID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: CasualtyID
+          KeyType: HASH
+
+  MapsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${EnvironmentName}-wwii-maps
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: MapID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: MapID
+          KeyType: HASH
+
+  BibliographyTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${EnvironmentName}-wwii-bibliography
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: BibliographyID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: BibliographyID
+          KeyType: HASH
+
+Outputs:
+  DataBucketName:
+    Value: !Ref DataBucket
+  DataBucketArn:
+    Value: !GetAtt DataBucket.Arn
+  CacheTableName:
+    Value: !Ref CacheTable
+  CacheTableArn:
+    Value: !GetAtt CacheTable.Arn
