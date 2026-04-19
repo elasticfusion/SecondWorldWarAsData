@@ -42,6 +42,7 @@ Utility scripts for data management, validation, and maintenance tasks. All scri
 - [validate_places.py](#validate_placespy)
 - [validate_supplemental_urls.py](#validate_supplemental_urlspy)
 - [validation_report.py](#validation_reportpy)
+- [fix_orphaned_person_refs.py](#fix_orphaned_person_refspy)
 
 ### Data Backfill
 - [backfill_date_fields.py](#backfill_date_fieldspy)
@@ -516,6 +517,28 @@ python3 scripts/validation_report.py
 
 ---
 
+### fix_orphaned_person_refs.py
+
+Find and remove orphaned PersonID references in event files.
+
+**Usage:**
+```bash
+python3 scripts/fix_orphaned_person_refs.py [--dry-run] [--verbose]
+```
+
+**Options:**
+- `--dry-run` - Report orphans without modifying files
+- `--verbose` / `-v` - Show each orphaned PersonID and its sub-event
+
+**What it does:**
+- Scans all `Sub-events[].people[]` arrays in event files
+- Compares against actual PersonIDs in `output/people/`
+- Removes references to PersonIDs that no longer have a matching file
+
+**Use Case:** After deduplication/merging, old PersonIDs may remain in event files. This script cleans them up.
+
+---
+
 ## Data Backfill
 
 One-shot scripts for backfilling spec-level fields on existing data files after schema changes.
@@ -892,6 +915,7 @@ python3 scripts/merge_related_groups.py
 # 3. Validate data
 python3 scripts/validate_data.py
 python3 scripts/validate_output.py
+python3 scripts/fix_orphaned_person_refs.py --dry-run
 
 # 4. Generate report
 python3 scripts/validation_report.py
