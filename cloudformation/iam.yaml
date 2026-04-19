@@ -63,6 +63,12 @@ Resources:
                   - sns:Publish
                 Resource:
                   - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-*
+              - Sid: SQSDeadLetterQueue
+                Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource:
+                  - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-*-dlq
               - Sid: ECSManagement
                 Effect: Allow
                 Action:

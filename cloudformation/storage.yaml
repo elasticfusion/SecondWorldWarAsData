@@ -19,6 +19,16 @@ Resources:
             Prefix: tmp/
             Status: Enabled
             ExpirationInDays: 7
+          - Id: CleanupCacheFiles
+            Prefix: cache/
+            Status: Enabled
+            ExpirationInDays: 90
+          - Id: TransitionOldOutputToIA
+            Prefix: output/
+            Status: Enabled
+            Transitions:
+              - StorageClass: STANDARD_IA
+                TransitionInDays: 30
       Tags:
         - Key: Environment
           Value: !Ref EnvironmentName
@@ -159,6 +169,26 @@ Resources:
       KeySchema:
         - AttributeName: BibliographyID
           KeyType: HASH
+
+  # --- Cost Monitoring ---
+  PipelineBudget:
+    Type: AWS::Budgets::Budget
+    Properties:
+      Budget:
+        BudgetName: !Sub ${EnvironmentName}-wwii-pipeline-monthly
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit:
+          Amount: 75
+          Unit: USD
+      NotificationsWithSubscribers:
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: 80
+          Subscribers:
+            - SubscriptionType: SNS
+              Address: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-alarms
 
 Outputs:
   DataBucketName:

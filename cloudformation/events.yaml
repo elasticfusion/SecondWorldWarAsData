@@ -154,6 +154,174 @@ Resources:
       Principal: events.amazonaws.com
       SourceArn: !GetAtt IdleMonitorRule.Arn
 
+  # --- CloudWatch Alarms ---
+  AlarmSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${EnvironmentName}-wwii-alarms
+
+  Phase1ErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-phase1-errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub ${EnvironmentName}-wwii-phase1-parse
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  Phase2ErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-phase2-errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub ${EnvironmentName}-wwii-phase2-extract
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  Phase3ErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-phase3-errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub ${EnvironmentName}-wwii-phase3-enrich
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  Phase2DurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-phase2-duration
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub ${EnvironmentName}-wwii-phase2-extract
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 840000
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  ThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-lambda-throttles
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  DLQAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-dlq-messages
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Dimensions:
+        - Name: QueueName
+          Value: !Sub ${EnvironmentName}-wwii-phase2-dlq
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  # --- CloudWatch Dashboard ---
+  PipelineDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub ${EnvironmentName}-wwii-pipeline
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "metric",
+              "x": 0, "y": 0, "width": 12, "height": 6,
+              "properties": {
+                "title": "Lambda Invocations",
+                "metrics": [
+                  ["AWS/Lambda", "Invocations", "FunctionName", "${EnvironmentName}-wwii-phase1-parse"],
+                  ["...", "${EnvironmentName}-wwii-phase2-extract"],
+                  ["...", "${EnvironmentName}-wwii-phase3-enrich"]
+                ],
+                "period": 300, "stat": "Sum", "region": "${AWS::Region}"
+              }
+            },
+            {
+              "type": "metric",
+              "x": 12, "y": 0, "width": 12, "height": 6,
+              "properties": {
+                "title": "Lambda Errors",
+                "metrics": [
+                  ["AWS/Lambda", "Errors", "FunctionName", "${EnvironmentName}-wwii-phase1-parse"],
+                  ["...", "${EnvironmentName}-wwii-phase2-extract"],
+                  ["...", "${EnvironmentName}-wwii-phase3-enrich"]
+                ],
+                "period": 300, "stat": "Sum", "region": "${AWS::Region}"
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0, "y": 6, "width": 12, "height": 6,
+              "properties": {
+                "title": "Lambda Duration (ms)",
+                "metrics": [
+                  ["AWS/Lambda", "Duration", "FunctionName", "${EnvironmentName}-wwii-phase1-parse"],
+                  ["...", "${EnvironmentName}-wwii-phase2-extract"],
+                  ["...", "${EnvironmentName}-wwii-phase3-enrich"]
+                ],
+                "period": 300, "stat": "Average", "region": "${AWS::Region}"
+              }
+            },
+            {
+              "type": "metric",
+              "x": 12, "y": 6, "width": 12, "height": 6,
+              "properties": {
+                "title": "DLQ Messages",
+                "metrics": [
+                  ["AWS/SQS", "ApproximateNumberOfMessagesVisible", "QueueName", "${EnvironmentName}-wwii-phase1-dlq"],
+                  ["...", "${EnvironmentName}-wwii-phase2-dlq"],
+                  ["...", "${EnvironmentName}-wwii-phase3-dlq"]
+                ],
+                "period": 300, "stat": "Sum", "region": "${AWS::Region}"
+              }
+            }
+          ]
+        }
+
 Outputs:
   ContentUploadedTopicArn:
     Value: !Ref ContentUploadedTopic
