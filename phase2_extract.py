@@ -16,11 +16,8 @@ from src.grok_client import GrokClient, current_book
 from src.extraction.events import extract_events
 from src.extraction.external_maps import import_maps
 
-# Import from scripts directory
-sys.path.insert(0, str(Path(__file__).parent / "scripts"))
-# pylint: disable=wrong-import-order,wrong-import-position
-from find_duplicate_people import generate_duplicate_report
-from find_related_groups import generate_related_groups_report
+from scripts.find_duplicate_people import generate_duplicate_report
+from scripts.find_related_groups import generate_related_groups_report
 
 # ---------------------------------------------------------------------------
 # Stage helpers
@@ -30,7 +27,7 @@ from find_related_groups import generate_related_groups_report
 def _complete_metadata(base_dir, paths, logger):
     """Step 0: Complete any incomplete metadata."""
     try:
-        from complete_metadata_with_grok import (
+        from scripts.complete_metadata_with_grok import (
             is_metadata_incomplete,
             extract_metadata_with_grok,
         )
@@ -435,6 +432,64 @@ def _run_analysis(output_root, logger):
 # ---------------------------------------------------------------------------
 
 
+def _run_core_extraction(
+    parsed_files,
+    grok_client,
+    output_root,
+    config,
+    paths,
+    max_parallel,
+    heartbeat,
+    logger,
+):
+    """Run steps 1-3: parallel extraction, retry, optional entities. Returns (processed, failed)."""
+    from src.extraction.batch_parallel import process_chapters_parallel
+
+    results = asyncio.run(
+        process_chapters_parallel(
+            parsed_files=parsed_files,
+            grok_client=grok_client,
+            output_root=output_root,
+            config=config,
+            max_parallel=max_parallel,
+            heartbeat=heartbeat,
+        )
+    )
+
+    processed = results["processed"]
+    failed = results["failed"]
+
+    retried, retry_failed = _retry_missing_events(parsed_files, grok_client, logger)
+    processed += retried
+    failed += retry_failed
+
+    any_optional = any(
+        config.get(feature, {}).get("enabled", False)
+        for feature in [
+            "weather",
+            "equipment",
+            "logistics",
+            "casualties",
+            "supplemental_material",
+        ]
+    )
+
+    if any_optional:
+        event_files = sorted(output_root.rglob("*-event.json"))
+        for event_file in event_files:
+            current_book.set(event_file.parent.name)
+            parsed_file = event_file.parent / event_file.name.replace(
+                "-event.json", "-parsed.json"
+            )
+            if not parsed_file.exists():
+                parsed_file = None
+            _extract_optional_entities(
+                event_file, parsed_file, grok_client, paths, config, logger
+            )
+
+    return processed, failed
+
+
 def main():
     """Main entry point for Phase 2."""
     parser = argparse.ArgumentParser(
@@ -519,8 +574,7 @@ def main():
     heartbeat.ping("Step 1: parallel extraction started")
 
     # -----------------------------------------------------------------------
-    # Step 1: Parallel extraction of events + core entities
-    #         (events, dates, places, people_groups, people)
+    # Steps 1-3: Parallel extraction, retry, optional entities
     # -----------------------------------------------------------------------
     logger.info("\n%s", "=" * 60)
     logger.info("Processing all chapters in parallel...")
@@ -530,79 +584,24 @@ def main():
 
     max_parallel = config.get("concurrency", {}).get("max_parallel_chapters", 3)
 
-    results = asyncio.run(
-        process_chapters_parallel(
-            parsed_files=parsed_files,
-            grok_client=grok_client,
-            output_root=output_root,
-            config=config,
-            max_parallel=max_parallel,
-            heartbeat=heartbeat,
-        )
+    heartbeat.ping("Step 1: parallel extraction started")
+
+    processed, failed = _run_core_extraction(
+        parsed_files,
+        grok_client,
+        output_root,
+        config,
+        paths,
+        max_parallel,
+        heartbeat,
+        logger,
     )
 
-    processed = results["processed"]
-    failed = results["failed"]
-
     logger.info("\n%s", "=" * 60)
-    logger.info("Parallel processing complete!")
-    logger.info("Processed: %d, Failed: %d", processed, failed)
+    logger.info(
+        "Core extraction complete! Processed: %d, Failed: %d", processed, failed
+    )
     logger.info("%s", "=" * 60)
-    heartbeat.ping(f"Step 1 done: {processed} processed, {failed} failed")
-
-    # -----------------------------------------------------------------------
-    # Step 2: Retry any missing event files
-    # -----------------------------------------------------------------------
-    logger.info("\n%s", "=" * 60)
-    logger.info("Validating event file generation...")
-    logger.info("=" * 60)
-
-    retried, retry_failed = _retry_missing_events(parsed_files, grok_client, logger)
-    processed += retried
-    failed += retry_failed
-    heartbeat.ping(f"Step 2 done: retried {retried}")
-
-    # -----------------------------------------------------------------------
-    # Step 3: Optional entity extraction (weather, equipment, logistics,
-    #         casualties, supplemental) — runs sequentially per event file
-    # -----------------------------------------------------------------------
-    any_optional = any(
-        config.get(feature, {}).get("enabled", False)
-        for feature in [
-            "weather",
-            "equipment",
-            "logistics",
-            "casualties",
-            "supplemental_material",
-        ]
-    )
-
-    if any_optional:
-        logger.info("\n%s", "=" * 60)
-        logger.info(
-            "Extracting optional entities (weather, equipment, logistics, casualties, supplemental)..."
-        )
-        logger.info("=" * 60)
-
-        event_files = sorted(output_root.rglob("*-event.json"))
-        logger.info("Found %d event file(s)", len(event_files))
-
-        for event_file in event_files:
-            # Set book context for per-book cache routing
-            current_book.set(event_file.parent.name)
-
-            # Find corresponding parsed file
-            parsed_file = event_file.parent / event_file.name.replace(
-                "-event.json", "-parsed.json"
-            )
-            if not parsed_file.exists():
-                parsed_file = None
-
-            logger.info("  Processing: %s", event_file.name)
-            heartbeat.ping(f"Optional entities: {event_file.name}")
-            _extract_optional_entities(
-                event_file, parsed_file, grok_client, paths, config, logger
-            )
 
     # -----------------------------------------------------------------------
     # Step 4: Maps and Images extraction
@@ -639,44 +638,21 @@ def main():
         batch_id = grok_client.submit_batch(batch_name="phase2")
         if batch_id:
             logger.info("Batch complete! Re-running pipeline with cached results...")
-            # Re-run with batch mode off (all results now in cache)
             grok_client.batch_mode = False
-            # Re-run steps 1-3 using cached results
             heartbeat = Heartbeat(timeout=300, label="Phase 2 (batch re-run)")
             heartbeat.start()
             heartbeat.ping("Batch re-run: step 1")
 
-            results = asyncio.run(
-                process_chapters_parallel(
-                    parsed_files=parsed_files,
-                    grok_client=grok_client,
-                    output_root=output_root,
-                    config=config,
-                    max_parallel=max_parallel,
-                    heartbeat=heartbeat,
-                )
+            processed, failed = _run_core_extraction(
+                parsed_files,
+                grok_client,
+                output_root,
+                config,
+                paths,
+                max_parallel,
+                heartbeat,
+                logger,
             )
-            processed = results["processed"]
-            failed = results["failed"]
-
-            retried, retry_failed = _retry_missing_events(
-                parsed_files, grok_client, logger
-            )
-            processed += retried
-            failed += retry_failed
-
-            if any_optional:
-                event_files = sorted(output_root.rglob("*-event.json"))
-                for event_file in event_files:
-                    current_book.set(event_file.parent.name)
-                    parsed_file = event_file.parent / event_file.name.replace(
-                        "-event.json", "-parsed.json"
-                    )
-                    if not parsed_file.exists():
-                        parsed_file = None
-                    _extract_optional_entities(
-                        event_file, parsed_file, grok_client, paths, config, logger
-                    )
 
             heartbeat.stop()
             logger.info("\n%s", "=" * 60)

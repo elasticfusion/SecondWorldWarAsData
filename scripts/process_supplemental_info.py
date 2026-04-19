@@ -6,8 +6,6 @@ import logging
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from src.extraction.supplemental_info_pipeline import process_supplemental_information
 from src.grok_client import GrokClient
 from src.utils.config import load_config
@@ -30,7 +28,8 @@ def main():
         help="Process a single file instead of all files",
     )
     parser.add_argument(
-        "-v", "--verbose",
+        "-v",
+        "--verbose",
         action="store_true",
         help="Verbose output",
     )
@@ -45,7 +44,7 @@ def main():
 
     # Load config
     config = load_config()
-    
+
     # Initialize Grok client
     cache_dir = Path(config.get("paths", {}).get("api_cache", "cache/api"))
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -56,37 +55,39 @@ def main():
         if not args.file.exists():
             logging.error("File not found: %s", args.file)
             sys.exit(1)
-        
+
         count = process_supplemental_information(
             args.file, grok_client, args.output_dir, config
         )
-        
+
         print(f"\nProcessed {count} supplemental information materials")
-        
+
     else:
         # Process all files
         if not args.output_dir.exists():
             logging.error("Output directory not found: %s", args.output_dir)
             sys.exit(1)
-        
+
         total = 0
         files_processed = 0
-        
+
         for file_path in args.output_dir.rglob("*-endnotes.json"):
             count = process_supplemental_information(
                 file_path, grok_client, args.output_dir, config
             )
             total += count
             files_processed += 1
-        
+
         for file_path in args.output_dir.rglob("*-footnotes.json"):
             count = process_supplemental_information(
                 file_path, grok_client, args.output_dir, config
             )
             total += count
             files_processed += 1
-        
-        print(f"\nProcessed {total} supplemental information materials from {files_processed} files")
+
+        print(
+            f"\nProcessed {total} supplemental information materials from {files_processed} files"
+        )
 
 
 if __name__ == "__main__":

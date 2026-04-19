@@ -13,9 +13,6 @@ from typing import Dict, List, Set
 
 import yaml
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from src.grok_client import GrokClient
 
 logging.basicConfig(level=logging.INFO)
@@ -165,6 +162,70 @@ def format_yaml_additions(suggestions: List[Dict]) -> str:
     return "\n".join(yaml_lines)
 
 
+def _handle_edit_choice(suggestion: Dict, config_path: Path) -> bool:
+    """Handle the 'edit' action in interactive review. Returns True if approved."""
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = yaml.safe_load(f)
+        canonicals = [entry["canonical"] for entry in config.get("aliases", [])]
+        for idx, canonical in enumerate(canonicals, 1):
+            print(f"  {idx}. {canonical}")
+
+    print(f"  {len(canonicals) + 1}. NEW (create new canonical)")
+
+    choice = input("\nEnter number or type canonical name: ").strip()
+
+    if choice.isdigit():
+        choice_idx = int(choice) - 1
+        if 0 <= choice_idx < len(canonicals):
+            suggestion["canonical"] = canonicals[choice_idx]
+            print(f"✓ Changed to: {suggestion['canonical']}")
+            return True
+        elif choice_idx == len(canonicals):
+            suggestion["canonical"] = "NEW"
+            print("✓ Will create as new canonical")
+            return True
+        else:
+            print("✗ Invalid choice, skipping")
+            return False
+    elif choice:
+        suggestion["canonical"] = choice
+        print(f"✓ Changed to: {choice}")
+        return True
+    else:
+        print("⊘ Skipped")
+        return False
+
+
+def _apply_suggestions(approved: List[Dict], config_path: Path) -> None:
+    """Apply approved suggestions to the YAML config file."""
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = yaml.safe_load(f)
+
+    for suggestion in approved:
+        if suggestion["canonical"] == "NEW":
+            config["aliases"].append(
+                {
+                    "canonical": suggestion["group_name"],
+                    "aliases": [],
+                    "note": suggestion["reason"],
+                }
+            )
+        else:
+            for entry in config["aliases"]:
+                if entry["canonical"] == suggestion["canonical"]:
+                    if "aliases" not in entry:
+                        entry["aliases"] = []
+                    entry["aliases"].append(suggestion["group_name"])
+                    break
+
+    with open(config_path, "w", encoding="utf-8") as f:
+        yaml.dump(
+            config, f, default_flow_style=False, allow_unicode=True, sort_keys=False
+        )
+
+    print(f"✓ Updated {config_path}")
+
+
 def interactive_review(suggestions: List[Dict], config_path: Path) -> None:
     """Interactively review and apply suggestions."""
     print("\n" + "=" * 80)
@@ -188,37 +249,9 @@ def interactive_review(suggestions: List[Dict], config_path: Path) -> None:
         elif response == "n":
             print("✗ Rejected")
         elif response == "edit":
-            # Let user specify alternative canonical
             print("\nAvailable canonical groups:")
-            with open(config_path, "r", encoding="utf-8") as f:
-                config = yaml.safe_load(f)
-                canonicals = [entry["canonical"] for entry in config.get("aliases", [])]
-                for idx, canonical in enumerate(canonicals, 1):
-                    print(f"  {idx}. {canonical}")
-
-            print(f"  {len(canonicals) + 1}. NEW (create new canonical)")
-
-            choice = input("\nEnter number or type canonical name: ").strip()
-
-            if choice.isdigit():
-                choice_idx = int(choice) - 1
-                if 0 <= choice_idx < len(canonicals):
-                    suggestion["canonical"] = canonicals[choice_idx]
-                    approved.append(suggestion)
-                    print(f"✓ Changed to: {suggestion['canonical']}")
-                elif choice_idx == len(canonicals):
-                    suggestion["canonical"] = "NEW"
-                    approved.append(suggestion)
-                    print("✓ Will create as new canonical")
-                else:
-                    print("✗ Invalid choice, skipping")
-            elif choice:
-                # User typed a canonical name
-                suggestion["canonical"] = choice
+            if _handle_edit_choice(suggestion, config_path):
                 approved.append(suggestion)
-                print(f"✓ Changed to: {choice}")
-            else:
-                print("⊘ Skipped")
         else:
             print("⊘ Skipped")
 
@@ -226,39 +259,8 @@ def interactive_review(suggestions: List[Dict], config_path: Path) -> None:
         print("\nNo suggestions approved.")
         return
 
-    # Apply approved suggestions
     print(f"\n{len(approved)} suggestion(s) approved. Updating YAML...")
-
-    with open(config_path, "r", encoding="utf-8") as f:
-        config = yaml.safe_load(f)
-
-    # Add to existing canonicals
-    for suggestion in approved:
-        if suggestion["canonical"] == "NEW":
-            # Add new canonical entry
-            config["aliases"].append(
-                {
-                    "canonical": suggestion["group_name"],
-                    "aliases": [],
-                    "note": suggestion["reason"],
-                }
-            )
-        else:
-            # Find canonical and add alias
-            for entry in config["aliases"]:
-                if entry["canonical"] == suggestion["canonical"]:
-                    if "aliases" not in entry:
-                        entry["aliases"] = []
-                    entry["aliases"].append(suggestion["group_name"])
-                    break
-
-    # Save updated config
-    with open(config_path, "w", encoding="utf-8") as f:
-        yaml.dump(
-            config, f, default_flow_style=False, allow_unicode=True, sort_keys=False
-        )
-
-    print(f"✓ Updated {config_path}")
+    _apply_suggestions(approved, config_path)
 
 
 def main():

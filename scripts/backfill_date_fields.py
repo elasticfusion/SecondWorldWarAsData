@@ -17,6 +17,49 @@ SPEC_DEFAULTS = {
 }
 
 
+_PRECISION_PREFIXES = (
+    "early",
+    "mid",
+    "late",
+    "spring",
+    "summer",
+    "fall",
+    "autumn",
+    "winter",
+)
+
+
+def _infer_precision(date_start: str) -> str:
+    """Infer date_precision from date_start format."""
+    for prefix in _PRECISION_PREFIXES:
+        if date_start.startswith(prefix):
+            return prefix
+    return "exact"
+
+
+def _backfill_one_file(data: dict) -> bool:
+    """Apply backfill changes to one date record. Returns True if changed."""
+    changed = False
+
+    # Rename date → date_start
+    if "date" in data and "date_start" not in data:
+        data["date_start"] = data.pop("date")
+        changed = True
+
+    # Add missing spec fields with defaults
+    for field, default in SPEC_DEFAULTS.items():
+        if field not in data:
+            data[field] = default
+            changed = True
+
+    # Infer date_precision from date_start format
+    if not data.get("date_precision") and data.get("date_start"):
+        data["date_precision"] = _infer_precision(data["date_start"])
+        changed = True
+
+    return changed
+
+
 def main():
     dry_run = "--dry-run" in sys.argv
     dates_dir = Path("output/dates")
@@ -29,41 +72,7 @@ def main():
         with open(date_file, encoding="utf-8") as f:
             data = json.load(f)
 
-        changed = False
-
-        # Rename date → date_start
-        if "date" in data and "date_start" not in data:
-            data["date_start"] = data.pop("date")
-            changed = True
-
-        # Add missing spec fields with defaults
-        for field, default in SPEC_DEFAULTS.items():
-            if field not in data:
-                data[field] = default
-                changed = True
-
-        # Infer date_precision from date_start format
-        if not data.get("date_precision") and data.get("date_start"):
-            ds = data["date_start"]
-            for prefix in (
-                "early",
-                "mid",
-                "late",
-                "spring",
-                "summer",
-                "fall",
-                "autumn",
-                "winter",
-            ):
-                if ds.startswith(prefix):
-                    data["date_precision"] = prefix
-                    changed = True
-                    break
-            else:
-                data["date_precision"] = "exact"
-                changed = True
-
-        if changed:
+        if _backfill_one_file(data):
             if dry_run:
                 print(f"  Would update: {date_file.name}")
             else:

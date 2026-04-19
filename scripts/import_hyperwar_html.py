@@ -25,8 +25,6 @@ import time
 from pathlib import Path
 from urllib.parse import urljoin
 
-# Add project root to path for imports
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from src.utils.logger import setup_logging
 
 logger = logging.getLogger(__name__)
@@ -34,7 +32,7 @@ logger = logging.getLogger(__name__)
 import html2text
 import requests
 import yaml
-from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4 import BeautifulSoup
 
 # Match existing content format: blockquoted paragraphs
 CONTENT_REPO = Path(__file__).resolve().parent.parent / "contentrepository"
@@ -48,14 +46,30 @@ def fetch_page(url: str, max_retries: int = 3) -> BeautifulSoup:
             resp.raise_for_status()
             return BeautifulSoup(resp.content, "html.parser")
         except requests.exceptions.HTTPError as e:
-            logger.warning("HTTP error fetching %s (attempt %d/%d): %s", url, attempt + 1, max_retries, e)
+            logger.warning(
+                "HTTP error fetching %s (attempt %d/%d): %s",
+                url,
+                attempt + 1,
+                max_retries,
+                e,
+            )
         except requests.exceptions.ConnectionError as e:
-            logger.warning("Connection error fetching %s (attempt %d/%d): %s", url, attempt + 1, max_retries, e)
+            logger.warning(
+                "Connection error fetching %s (attempt %d/%d): %s",
+                url,
+                attempt + 1,
+                max_retries,
+                e,
+            )
         except requests.exceptions.Timeout:
-            logger.warning("Timeout fetching %s (attempt %d/%d)", url, attempt + 1, max_retries)
+            logger.warning(
+                "Timeout fetching %s (attempt %d/%d)", url, attempt + 1, max_retries
+            )
         if attempt < max_retries - 1:
-            time.sleep(2 ** attempt)
-    raise requests.exceptions.RequestException(f"Failed to fetch {url} after {max_retries} attempts")
+            time.sleep(2**attempt)
+    raise requests.exceptions.RequestException(
+        f"Failed to fetch {url} after {max_retries} attempts"
+    )
 
 
 def parse_index(index_url: str) -> list[dict]:
@@ -143,7 +157,7 @@ def convert_html_to_markdown(soup: BeautifulSoup, source_url: str) -> str:
         # Footnote pattern: links to fn*.html with numeric text
         if "fn" in href and re.match(r"^\d+$", text):
             fn_url = urljoin(source_url, href)
-            link.replace_with(f'<sup>[{text}]({fn_url})</sup>')
+            link.replace_with(f"<sup>[{text}]({fn_url})</sup>")
 
     # Convert images to markdown
     for img in body.find_all("img"):
@@ -328,7 +342,9 @@ def create_chapter_meta(meta: dict, chapter_num: int, chapter_title: str) -> str
     }
     # Filter out empty values
     data = {k: v for k, v in data.items() if v}
-    return yaml.dump(data, default_flow_style=False, allow_unicode=True, sort_keys=False)
+    return yaml.dump(
+        data, default_flow_style=False, allow_unicode=True, sort_keys=False
+    )
 
 
 def process_book(index_url: str) -> None:
@@ -369,7 +385,9 @@ def process_book(index_url: str) -> None:
         try:
             soup = fetch_page(chapter_url)
         except requests.exceptions.RequestException as e:
-            logger.error("Failed to download chapter %d (%s): %s", chapter_num, chapter_url, e)
+            logger.error(
+                "Failed to download chapter %d (%s): %s", chapter_num, chapter_url, e
+            )
             failed += 1
             continue
 
@@ -383,7 +401,11 @@ def process_book(index_url: str) -> None:
             suffix = chr(ord("a") + i)
             label = heading if heading else "(intro)"
             sub_labels.append(f"{suffix}: {label}")
-        logger.info("  Split into %d sub-chapter(s): %s", len(subchapters), ", ".join(sub_labels))
+        logger.info(
+            "  Split into %d sub-chapter(s): %s",
+            len(subchapters),
+            ", ".join(sub_labels),
+        )
 
         # Create chapter directory and write files
         ch_dir = book_dir / f"chapter{chapter_num}"
@@ -402,7 +424,9 @@ def process_book(index_url: str) -> None:
                 content_file = ch_dir / f"chapter{chapter_num}{suffix}-content.md"
                 content_file.write_text(formatted + "\n", encoding="utf-8")
         except OSError as e:
-            logger.error("Failed to write chapter %d files to %s: %s", chapter_num, ch_dir, e)
+            logger.error(
+                "Failed to write chapter %d files to %s: %s", chapter_num, ch_dir, e
+            )
             failed += 1
             continue
 
@@ -413,7 +437,9 @@ def process_book(index_url: str) -> None:
     logger.info("Import complete: %d processed, %d failed", processed, failed)
     logger.info("Book: %s | Location: %s", meta["book"], book_dir)
     if failed:
-        logger.warning("%d chapter(s) failed to download — review logs and retry", failed)
+        logger.warning(
+            "%d chapter(s) failed to download — review logs and retry", failed
+        )
     logger.info("Next: python3 phase1_parse.py && python3 phase2_retry.py")
 
 

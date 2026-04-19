@@ -7,10 +7,6 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-# pylint: disable=wrong-import-position,import-error
 from src.utils.json_validator import validate_directory
 from src.utils.schema_registry import get_registry
 

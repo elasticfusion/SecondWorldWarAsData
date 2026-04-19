@@ -54,7 +54,9 @@ def main():
                 f.write_text(json.dumps(data, indent=2, ensure_ascii=False))
             fixed += 1
 
-    print(f"{'Would fix' if dry_run else 'Fixed'} map URLs/bounding boxes on {fixed} files")
+    print(
+        f"{'Would fix' if dry_run else 'Fixed'} map URLs/bounding boxes on {fixed} files"
+    )
 
 
 if __name__ == "__main__":
