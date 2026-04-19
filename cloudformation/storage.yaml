@@ -29,6 +29,8 @@ Resources:
             Transitions:
               - StorageClass: STANDARD_IA
                 TransitionInDays: 30
+              - StorageClass: GLACIER_IR
+                TransitionInDays: 90
       Tags:
         - Key: Environment
           Value: !Ref EnvironmentName

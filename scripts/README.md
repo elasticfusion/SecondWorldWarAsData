@@ -53,6 +53,7 @@ Utility scripts for data management, validation, and maintenance tasks. All scri
 
 ### Utilities
 - [benchmark_performance.py](#benchmark_performancepy)
+- [cleanup_book_cache.py](#cleanup_book_cachepy)
 - [render_mermaid_diagrams.py](#render_mermaid_diagramspy)
 - [review_cache.py](#review_cachepy)
 - [extract_url.py](#extract_urlpy)
@@ -667,6 +668,28 @@ python3 scripts/benchmark_performance.py
 **Output:** `docs/current/qa-reports/PERFORMANCE_BENCHMARK_<date>.md`
 
 **Requires:** `psutil`
+
+---
+
+### cleanup_book_cache.py
+
+Purge low-value cache entries for completed books, keeping only the expensive `events` cache.
+
+**Usage:**
+```bash
+python3 scripts/cleanup_book_cache.py BookName [--dry-run]
+python3 scripts/cleanup_book_cache.py --all [--dry-run]
+```
+
+**Options:**
+- `--dry-run` - Show what would be purged without deleting
+- `--all` - Clean cache for all books that have event files in output/
+
+**Keeps:** `events` cache (most expensive to regenerate, ~$2-5 per book in API costs)
+
+**Purges:** dates, places, people, peoplegroups, weather, equipment, logistics, casualties, supplemental, supplemental_narrative, supplemental_search, supplemental_advanced
+
+**Works with:** Local filesystem (diskcache) and AWS (DynamoDB) — uses the `CacheBackend` abstraction.
 
 ---
 
