@@ -150,6 +150,25 @@ external_maps:
       - occupation
       - political
 
+# AWS Configuration (set enabled: true to use S3/DynamoDB instead of local filesystem)
+aws:
+  enabled: false
+  region: "us-east-1"
+  s3_bucket: ""                      # S3 bucket for content and output
+  s3_prefix: ""                      # Optional key prefix
+  cache_table: "wwii-api-cache"      # DynamoDB table for API response cache
+  cache_ttl_days: 90                 # Cache entry TTL
+  secrets_id: ""                     # Secrets Manager secret ID for GROK_API_KEY
+  openserp:
+    cluster: "wwii-pipeline"
+    service: "openserp"
+    health_check_url: "/health"
+    startup_timeout: 120
+  database:
+    backend: "dynamodb"              # "dynamodb" or "mongodb"
+    dynamodb_table_prefix: "wwii-"
+    mongodb_uri: ""
+
 # Logging
 logging:
   level: "INFO"
