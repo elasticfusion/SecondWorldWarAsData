@@ -3,10 +3,64 @@
 import json
 import logging
 import platform
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Dict
 
 logger = logging.getLogger(__name__)
+
+
+@contextmanager
+def locked_json(filepath: Path):
+    """Context manager that holds an exclusive lock across read-modify-write.
+
+    Usage:
+        with locked_json(path) as (data, save):
+            data["events"].append(new_event)
+            save(data)
+
+    If the file doesn't exist, data is an empty dict.
+    The lock is held from entry until exit, preventing races.
+    """
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    system = platform.system()
+
+    if system in ("Linux", "Darwin"):
+        import fcntl
+
+        # Open in r+ if exists, else create
+        if filepath.exists():
+            f = open(filepath, "r+", encoding="utf-8")
+        else:
+            f = open(filepath, "w+", encoding="utf-8")
+
+        try:
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            f.seek(0)
+            content = f.read()
+            data = json.loads(content) if content.strip() else {}
+
+            def save(new_data):
+                f.seek(0)
+                f.truncate()
+                json.dump(new_data, f, indent=2, ensure_ascii=False)
+
+            yield data, save
+        finally:
+            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+            f.close()
+    else:
+        # Fallback: no locking
+        data = {}
+        if filepath.exists():
+            with open(filepath, encoding="utf-8") as f:
+                data = json.load(f)
+
+        def save(new_data):
+            with open(filepath, "w", encoding="utf-8") as f:
+                json.dump(new_data, f, indent=2, ensure_ascii=False)
+
+        yield data, save
 
 
 def write_json_with_lock(filepath: Path, data: Dict[str, Any]) -> None:

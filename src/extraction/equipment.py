@@ -1212,28 +1212,27 @@ def _merge_into_existing(
     logger.debug("Merging mention into existing equipment: %s", matched_name)
 
     # Load existing
-    with open(eq_file, encoding="utf-8") as f:
-        existing = json.load(f)
+    from src.utils.file_lock import locked_json
 
-    # Check if mention already exists (semantic dedup by event+sub-event)
-    existing_keys = {
-        (m.get("EventID"), m.get("Sub_eventID"))
-        for m in existing.get("event_mentions", [])
-    }
-    new_key = (new_mention.get("EventID"), new_mention.get("Sub_eventID"))
-    if new_key in existing_keys:
-        logger.debug("Mention for %s already exists, skipping", new_key)
-        return eq_file
+    with locked_json(eq_file) as (existing, save):
+        # Check if mention already exists (semantic dedup by event+sub-event)
+        existing_keys = {
+            (m.get("EventID"), m.get("Sub_eventID"))
+            for m in existing.get("event_mentions", [])
+        }
+        new_key = (new_mention.get("EventID"), new_mention.get("Sub_eventID"))
+        if new_key in existing_keys:
+            logger.debug("Mention for %s already exists, skipping", new_key)
+            return eq_file
 
-    # Append mention
-    existing["event_mentions"].append(new_mention)
+        # Append mention
+        existing["event_mentions"].append(new_mention)
 
-    # Update optional fields
-    _merge_equipment_fields(existing, equipment_data)
+        # Update optional fields
+        _merge_equipment_fields(existing, equipment_data)
 
-    # Save
-    with open(eq_file, "w") as f:
-        json.dump(existing, f, indent=2)
+        # Save
+        save(existing)
 
     return eq_file
 
