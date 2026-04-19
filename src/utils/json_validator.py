@@ -78,6 +78,15 @@ def parse_json_safe(json_str: str, max_retries: int = 3) -> Optional[Dict[str, A
     return None
 
 
+def _is_ulid_field(key: str, value: Any) -> bool:
+    """Check if a key/value pair is a ULID field with an invalid value."""
+    if not isinstance(value, str) or not value:
+        return False
+    if not (key.endswith("ID") or key.endswith("_id")):
+        return False
+    return not _ULID_PATTERN.match(value)
+
+
 def _fix_invalid_ulids(data: Any) -> Any:
     """
     Fix invalid ULIDs in data recursively.
@@ -86,17 +95,14 @@ def _fix_invalid_ulids(data: Any) -> Any:
     """
     if isinstance(data, dict):
         for key, value in data.items():
-            if key.endswith("ID") and isinstance(value, str):
-                # Check if it's supposed to be a ULID but is invalid
-                if not _ULID_PATTERN.match(value):
-                    # Generate a valid ULID
-                    import ulid
+            if _is_ulid_field(key, value):
+                import ulid
 
-                    new_ulid = str(ulid.new())
-                    data[key] = new_ulid
-                    logger.debug(
-                        f"Fixed invalid ULID in {key}: {value[:20]}... → {new_ulid}"
-                    )
+                new_ulid = str(ulid.new())
+                data[key] = new_ulid
+                logger.debug(
+                    f"Fixed invalid ULID in {key}: {value[:20]}... → {new_ulid}"
+                )
             elif isinstance(value, (dict, list)):
                 data[key] = _fix_invalid_ulids(value)
     elif isinstance(data, list):
@@ -249,9 +255,7 @@ def _validate_against_schema(
         return False
 
 
-def validate_json(
-    data: Any, schema: Dict[str, Any], context: str = ""
-) -> bool:
+def validate_json(data: Any, schema: Dict[str, Any], context: str = "") -> bool:
     """
     Validate JSON data against schema.
 
