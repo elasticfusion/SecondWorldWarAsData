@@ -43,6 +43,7 @@ Utility scripts for data management, validation, and maintenance tasks. All scri
 - [validate_supplemental_urls.py](#validate_supplemental_urlspy)
 - [validation_report.py](#validation_reportpy)
 - [fix_orphaned_person_refs.py](#fix_orphaned_person_refspy)
+- [fix_fake_place_ulids.py](#fix_fake_place_ulidspy)
 
 ### Data Backfill
 - [backfill_date_fields.py](#backfill_date_fieldspy)
@@ -536,6 +537,28 @@ python3 scripts/fix_orphaned_person_refs.py [--dry-run] [--verbose]
 - Removes references to PersonIDs that no longer have a matching file
 
 **Use Case:** After deduplication/merging, old PersonIDs may remain in event files. This script cleans them up.
+
+---
+
+### fix_fake_place_ulids.py
+
+Fix hand-crafted placeholder ULIDs in place `hierarchy.parent_place_id`.
+
+**Usage:**
+```bash
+python3 scripts/fix_fake_place_ulids.py [--dry-run]
+```
+
+**Options:**
+- `--dry-run` - Report fake ULIDs without modifying files
+
+**What it does:**
+- Scans all place files for `parent_place_id` values that don't match the ULID pattern
+- Extracts the embedded name (e.g., "england" from `01ENGLAND000...`)
+- Looks up the real PlaceID from the places index
+- Replaces with real PlaceID, or removes the field if no match
+
+**Use Case:** 4 place files have hand-crafted placeholder IDs like `01ENGLAND0000000000000000`.
 
 ---
 

@@ -180,6 +180,17 @@ Mock configuration dictionary.
 
 ## Coverage
 
+### Current Baseline (2026-04-19)
+
+```
+186 passed, 9 failed, 2 errors
+TOTAL: 8395 statements, 12% covered
+```
+
+Key covered modules: `schema_registry` (100%), `text_utils` (100%), `json_schemas` (100%), `config` (93%), `custom_validators` (86%), `schema_evolution` (83%).
+
+Most extraction modules are at 0% — they require API credentials and output data to test. Coverage will increase as integration tests are expanded.
+
 ### Generate Reports
 
 ```bash

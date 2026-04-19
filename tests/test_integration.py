@@ -352,10 +352,12 @@ class TestAllSchemas:
     def test_equipment_schema(self):
         """Test EQUIPMENT_SCHEMA validation."""
         data = {
-            "EquipmentID": ULID1,
-            "common_name": "M4 Sherman",
-            "equipment_type": "Tank",
-            "events": [],
+            "equipment": [
+                {
+                    "EquipmentID": ULID1,
+                    "name": "M4 Sherman",
+                }
+            ]
         }
         assert validate_json(data, EQUIPMENT_SCHEMA)
 
@@ -363,17 +365,27 @@ class TestAllSchemas:
         """Test MAP_SCHEMA validation."""
         data = {
             "MapID": ULID1,
-            "title": "Test Map",
-            "source": "Test Source",
+            "map_title": "Test Map",
+            "source_book": "Test Book",
+            "source_author": "Test Author",
+            "EventID": ULID2,
+            "Sub_eventID": ULID3,
+            "local_path": "output/maps/test.json",
+            "extracted_date": "2026-04-19T00:00:00Z",
         }
         assert validate_json(data, MAP_SCHEMA)
 
     def test_casualties_schema(self):
         """Test CASUALTIES_SCHEMA validation."""
         data = {
-            "CasualtyID": ULID1,
-            "type": "killed",
-            "EventID": ULID2,
-            "Sub-eventID": ULID3,
+            "casualties": [
+                {
+                    "CasualtyID": ULID1,
+                    "type": "killed",
+                    "description": "Test casualty",
+                    "event_context": {"EventID": ULID2},
+                    "source": {"book": "Test Book", "chapter": "1"},
+                }
+            ]
         }
         assert validate_json(data, CASUALTIES_SCHEMA)

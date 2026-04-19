@@ -23,6 +23,9 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
+# Install project in editable mode
+pip install -e .
+
 # Set API key (choose one method)
 
 # Option 1: .env file (recommended — auto-loaded by pipeline)
