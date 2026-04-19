@@ -2,6 +2,7 @@
 """Backfill spec-level fields on existing date files."""
 
 import json
+import sys
 from pathlib import Path
 
 SPEC_DEFAULTS = {
@@ -17,6 +18,7 @@ SPEC_DEFAULTS = {
 
 
 def main():
+    dry_run = "--dry-run" in sys.argv
     dates_dir = Path("output/dates")
     updated = 0
 
@@ -62,11 +64,14 @@ def main():
                 changed = True
 
         if changed:
-            with open(date_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
+            if dry_run:
+                print(f"  Would update: {date_file.name}")
+            else:
+                with open(date_file, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False)
             updated += 1
 
-    print(f"Updated {updated} date files")
+    print(f"{'Would update' if dry_run else 'Updated'} {updated} date files")
 
 
 if __name__ == "__main__":

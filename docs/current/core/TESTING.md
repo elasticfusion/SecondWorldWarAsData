@@ -1,7 +1,7 @@
 # Testing Documentation
 
 **Version:** 1.0.0  
-**Last Updated:** 2026-03-03  
+**Last Updated:** 2026-03-08  
 **Status:** Active
 
 ---
@@ -19,10 +19,10 @@ Comprehensive testing framework for the WWII data extraction pipeline using pyte
 pip install -r requirements-test.txt
 
 # Run all tests
-./run_tests.sh
+scripts/run_tests.sh
 
 # Run with coverage
-./run_tests.sh coverage
+scripts/run_tests.sh coverage
 ```
 
 ---
@@ -32,6 +32,15 @@ pip install -r requirements-test.txt
 ```
 tests/
 ├── conftest.py              # Shared fixtures
+├── test_schemas.py
+├── test_integration.py
+├── test_json_validator.py
+├── test_supplemental.py
+├── test_validation_performance.py
+├── test_people_deduplication.py
+├── test_custom_validators.py
+├── test_equipment_deduplication.py
+├── test_supplemental_complete.py
 ├── unit/                    # Fast, isolated tests
 │   ├── test_grok_client.py
 │   ├── test_duplicate_detection.py
@@ -89,11 +98,11 @@ grep "ERROR" logs/test.log
 ### Test Runner Script
 
 ```bash
-./run_tests.sh              # All tests
-./run_tests.sh unit         # Unit tests only
-./run_tests.sh integration  # Integration tests
-./run_tests.sh coverage     # With coverage report
-./run_tests.sh fast         # Quick run
+scripts/run_tests.sh              # All tests
+scripts/run_tests.sh unit         # Unit tests only
+scripts/run_tests.sh integration  # Integration tests
+scripts/run_tests.sh coverage     # With coverage report
+scripts/run_tests.sh fast         # Quick run
 ```
 
 ---
@@ -351,7 +360,7 @@ See: `docs/current/qa-reports/2026-03-03-testing-code.md`
 
 ## Next Steps
 
-1. Run tests: `./run_tests.sh`
-2. Review coverage: `./run_tests.sh coverage`
+1. Run tests: `scripts/run_tests.sh`
+2. Review coverage: `scripts/run_tests.sh coverage`
 3. Add tests for remaining modules
 4. Set up CI/CD automation

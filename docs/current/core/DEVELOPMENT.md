@@ -6,6 +6,8 @@
 - Python 3.13+
 - Grok API key
 - ~2GB disk space for cache
+- Chrome or Chromium (for PDF conversion and web scraping)
+- Go 1.21+ (for building OpenSERP search tool)
 
 ### Installation
 
@@ -29,22 +31,29 @@ Create `config.yaml`:
 ```yaml
 paths:
   content_root: contentrepository
-  output_dir: output
-  cache_dir: cache
+  output_root: output
+  cache_root: cache
 
-grok:
-  api_key: ${GROK_API_KEY}  # Or explicit key
-  model: grok-2-1212
+api:
+  grok:
+    api_key: ${GROK_API_KEY}  # Or explicit key
+    model: grok-beta
 
 logging:
   level: INFO
   console: true
-  file: null
+  file: "logs/pipeline.log"
 ```
 
 Set environment variable:
 ```bash
 export GROK_API_KEY="your-api-key"
+```
+
+Alternatively, create a `.env` file (auto-loaded by the pipeline via `python-dotenv`):
+```bash
+cp .env.example .env
+# Edit .env with your API key
 ```
 
 ---

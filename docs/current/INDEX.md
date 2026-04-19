@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated:** 2026-03-22
+**Last Updated:** 2026-04-19
 
 ---
 
@@ -147,7 +147,7 @@ Located in: `../archive/`
 
 ### Recent Archives
 
-- **2026-03-08/** - Today's implementation reports (supplemental, QA, group dedup)
+- **2026-03-08/** - Implementation reports (supplemental, QA, group dedup)
 - **changelogs/** - Historical changelogs (2026-03-02, 2026-03-04, reorganization)
 - **bug-fixes/** - Bug fix documentation (2026-03-05)
 - **migrations/** - Migration guides (httpx→requests)
@@ -172,5 +172,3 @@ Located in: `../archive/`
 - Feature docs → `features/{feature-name}/`
 - QA reports → `qa-reports/`
 - Dated docs → Archive after consolidation
-
-**Last Updated:** 2026-03-19

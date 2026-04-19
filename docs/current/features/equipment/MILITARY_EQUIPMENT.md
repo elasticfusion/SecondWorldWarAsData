@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0  
 **Date:** 2026-03-03  
-**Status:** Proposed
+**Status:** Experimental
 
 ---
 
@@ -380,6 +380,38 @@ python3 -m src.extraction.equipment
 ```python
 # Add external data from Grokipedia, Wikipedia, museums
 python3 scripts/enrich_equipment.py
+```
+
+---
+
+## Media & Enrichment
+
+Equipment records can be enriched with media and external data after extraction.
+
+### Equipment Media
+
+Images are sourced from Wikipedia and OpenSERP search results via the backfill script:
+
+```bash
+python3 scripts/backfill_equipment_media.py
+```
+
+Media files are stored locally at `/filestore/equipment/<EquipmentID>/`.
+
+Grok vision can optionally verify that downloaded images actually depict the expected equipment. Enable with:
+
+```yaml
+equipment:
+  verify_media_with_vision: true
+```
+
+### Wikipedia/Grokipedia Enrichment
+
+Equipment records can be enriched with structured data from Wikipedia and Grokipedia (specifications, production numbers, etc.). Enable with:
+
+```yaml
+equipment:
+  enable_enrichment: true
 ```
 
 ---

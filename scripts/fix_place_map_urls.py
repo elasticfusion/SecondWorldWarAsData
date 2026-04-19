@@ -2,6 +2,7 @@
 """Backfill missing map URLs and bounding boxes on place files."""
 
 import json
+import sys
 from pathlib import Path
 
 
@@ -23,6 +24,7 @@ def _calculate_bounding_box(lat, lon):
 
 def main():
     """Backfill map URLs and bounding boxes for places with coordinates."""
+    dry_run = "--dry-run" in sys.argv
     places_dir = Path("output/places")
     skip = {"index.json", "duplicate_report.json", ".processed_events.json"}
     fixed = 0
@@ -46,10 +48,13 @@ def main():
             changed = True
 
         if changed:
-            f.write_text(json.dumps(data, indent=2, ensure_ascii=False))
+            if dry_run:
+                print(f"  Would update: {f.name}")
+            else:
+                f.write_text(json.dumps(data, indent=2, ensure_ascii=False))
             fixed += 1
 
-    print(f"Fixed map URLs/bounding boxes on {fixed} files")
+    print(f"{'Would fix' if dry_run else 'Fixed'} map URLs/bounding boxes on {fixed} files")
 
 
 if __name__ == "__main__":

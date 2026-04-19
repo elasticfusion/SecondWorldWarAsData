@@ -12,19 +12,22 @@ from pathlib import Path
 
 client = GrokClient(
     cache_dir=Path("cache/api"),
-    api_key="your-api-key"  # Optional, reads from env
+    api_key="your-api-key",  # Optional, reads from env
+    batch_mode=False          # Optional, collect requests for batch submission
 )
 ```
 
 #### Methods
 
-##### `extract_structured(schema, prompt, temperature=0.1)`
+##### `extract_structured(prompt, schema, system_prompt=None, use_cache=True, cache_type="default")`
 Extract structured data using Pydantic schema.
 
 **Parameters:**
-- `schema` (Type[BaseModel]) - Pydantic model class
 - `prompt` (str) - Extraction prompt
-- `temperature` (float) - Sampling temperature (default: 0.1)
+- `schema` (Type[BaseModel]) - Pydantic model class defining the output structure
+- `system_prompt` (Optional[str]) - System prompt (default: None)
+- `use_cache` (bool) - Whether to use cache (default: True)
+- `cache_type` (str) - Cache type, e.g. "events", "dates", "places" (default: "default")
 
 **Returns:** Instance of schema class
 
@@ -33,40 +36,92 @@ Extract structured data using Pydantic schema.
 from src.schemas import EventOutput
 
 result = client.extract_structured(
-    EventOutput,
     "Extract events from: ...",
-    temperature=0.1
+    EventOutput,
+    system_prompt="You are a WWII historian.",
+    cache_type="events"
 )
 ```
 
-##### `extract_json(prompt, temperature=0.1)`
+##### `extract_json(prompt, system_prompt=None, temperature=0.1, use_cache=True, cache_type="default")`
 Extract JSON without schema validation.
 
 **Parameters:**
 - `prompt` (str) - Extraction prompt
-- `temperature` (float) - Sampling temperature
+- `system_prompt` (Optional[str]) - System prompt (default: None)
+- `temperature` (float) - Sampling temperature (default: 0.1)
+- `use_cache` (bool) - Whether to use cache (default: True)
+- `cache_type` (str) - Cache type (default: "default")
 
 **Returns:** Dict[str, Any]
 
-##### `chat_completion(messages, temperature=0.1)`
-Raw chat completion.
+##### `chat_completion(prompt, system_prompt=None, temperature=0.1, use_cache=True, cache_type="default")`
+Get chat completion from Grok API.
 
 **Parameters:**
-- `messages` (List[Dict]) - Chat messages
-- `temperature` (float) - Sampling temperature
+- `prompt` (str) - User prompt
+- `system_prompt` (Optional[str]) - System prompt (default: None)
+- `temperature` (float) - Sampling temperature (default: 0.1)
+- `use_cache` (bool) - Whether to use cache (default: True)
+- `cache_type` (str) - Cache type (default: "default")
 
-**Returns:** Dict[str, Any] - API response
+**Returns:** str - Response text from API
 
-##### `clear_cache(cache_type=None)`
-Clear API cache.
+##### `clear_cache_entry(prompt, cache_type="default", temperature=0.1)`
+Remove a single cache entry by prompt.
 
 **Parameters:**
-- `cache_type` (Optional[str]) - Specific cache to clear (events, dates, places, people, people_groups) or None for all
+- `prompt` (str) - The prompt used for the original request
+- `cache_type` (str) - Cache type (default: "default")
+- `temperature` (float) - Temperature used for the original request (default: 0.1)
+
+**Returns:** bool - True if entry was removed
 
 **Example:**
 ```python
-client.clear_cache("events")  # Clear events cache
-client.clear_cache()          # Clear all caches
+client.clear_cache_entry("Extract events from: ...", "events")
+```
+
+##### `extract_json_with_image_base64(prompt, image_base64, system_prompt=None, temperature=0.1, use_cache=True, cache_type="default")`
+Get JSON response from Grok API with base64 image input (vision).
+
+**Parameters:**
+- `prompt` (str) - User prompt
+- `image_base64` (str) - Base64-encoded image data
+- `system_prompt` (Optional[str]) - System prompt (default: None)
+- `temperature` (float) - Sampling temperature (default: 0.1)
+- `use_cache` (bool) - Whether to use cache (default: True)
+- `cache_type` (str) - Cache type (default: "default")
+
+**Returns:** Dict[str, Any] - Parsed JSON response
+
+##### `extract_json_with_image(prompt, image_url, system_prompt=None, temperature=0.1, use_cache=True, cache_type="default", image_timeout=30)`
+Get JSON response from Grok API with image URL input (vision). Downloads the image and sends as base64.
+
+**Parameters:**
+- `prompt` (str) - User prompt
+- `image_url` (str) - URL of image to analyze
+- `system_prompt` (Optional[str]) - System prompt (default: None)
+- `temperature` (float) - Sampling temperature (default: 0.1)
+- `use_cache` (bool) - Whether to use cache (default: True)
+- `cache_type` (str) - Cache type (default: "default")
+- `image_timeout` (int) - Timeout for image download in seconds (default: 30)
+
+**Returns:** Dict[str, Any] - Parsed JSON response
+
+##### `submit_batch(batch_name="pipeline")`
+Submit collected batch requests to xAI Batch API. Only useful when `batch_mode=True`.
+
+**Parameters:**
+- `batch_name` (str) - Name for the batch (default: "pipeline")
+
+**Returns:** Optional[str] - Batch ID, or None if no requests to submit
+
+**Example:**
+```python
+client = GrokClient(cache_dir, batch_mode=True)
+# ... run extraction (requests are queued, not sent) ...
+batch_id = client.submit_batch("my_batch")
 ```
 
 ---
@@ -249,10 +304,10 @@ from src.models import ChapterGroup
 
 documents = parse_chapter(
     ChapterGroup(
-        book_name="BreakoutAndPursuit",
-        chapter_name="chapter1",
-        content_files=[Path("chapter1a-content.md")],
-        meta_file=Path("chapter1-meta.yaml")
+        book="BreakoutAndPursuit",
+        chapter_number=1,
+        meta_file=Path("chapter1-meta.md"),
+        content_files={"chapter1a": Path("chapter1a-content.md")}
     )
 )
 ```
@@ -270,11 +325,11 @@ documents = parse_chapter(
 from src.parser import parse_metadata
 from pathlib import Path
 
-metadata = parse_metadata(Path("chapter1-meta.yaml"))
+metadata = parse_metadata(Path("chapter1-meta.md"))
 ```
 
 **Parameters:**
-- `meta_file` (Path) - Metadata file (.yaml or .md)
+- `meta_file` (Path) - Metadata file (.md or .yaml)
 
 **Returns:** Metadata object
 
@@ -282,11 +337,10 @@ metadata = parse_metadata(Path("chapter1-meta.yaml"))
 - `series` (str)
 - `book` (str)
 - `author` (str)
-- `chapter_number` (Optional[str])
-- `chapter_title` (Optional[str])
+- `chapter_title` (str)
 - `license` (str)
-- `copyright_date` (Optional[str])
-- `source_url` (Optional[str])
+- `copyright_date` (str)
+- `source_url` (str)
 
 ---
 
@@ -311,10 +365,10 @@ structure = discover_content_structure(Path("contentrepository"))
 {
     "BreakoutAndPursuit": [
         ChapterGroup(
-            book_name="BreakoutAndPursuit",
-            chapter_name="chapter1",
-            content_files=[...],
-            meta_file=Path(...)
+            book="BreakoutAndPursuit",
+            chapter_number=1,
+            meta_file=Path(...),
+            content_files={"chapter1a": Path(...), "chapter1b": Path(...)}
         ),
         ...
     ],
@@ -374,6 +428,8 @@ logger.info("Info message")
 
 ### Metadata
 
+Standalone dataclass for chapter metadata parsed from `-meta.md` files.
+
 ```python
 from src.models import Metadata
 
@@ -381,7 +437,6 @@ metadata = Metadata(
     series="United States Army in World War II",
     book="Breakout and Pursuit",
     author="Martin Blumenson",
-    chapter_number="I",
     chapter_title="The Period of Indecision",
     license="Public Domain",
     copyright_date="1961",
@@ -394,21 +449,23 @@ metadata = Metadata(
 ### MarkdownDocument
 
 ```python
-from src.models import MarkdownDocument, Paragraph
+from src.models import MarkdownDocument
 
 doc = MarkdownDocument(
-    metadata=metadata,
-    paragraphs=[
-        Paragraph(
-            paragraph_number=1,
-            text="Content...",
-            images=[],
-            maps=[],
-            footnotes=[],
-            page_markers=[]
-        )
-    ],
-    chapter_name="chapter1"
+    book="BreakoutAndPursuit",
+    chapter_number=1,
+    chapter_title="The Period of Indecision",
+    section_id="chapter1a",
+    author="Martin Blumenson",
+    series="United States Army in World War II",
+    license="Public Domain",
+    paragraphs=[...],       # List[Paragraph]
+    images=[...],           # List[Image]
+    maps=[...],             # List[Map]
+    footnotes=[...],        # List[Footnote]
+    page_markers=[...],     # List[PageMarker]
+    file_path=Path("..."),  # Optional[Path]
+    meta_path=Path("...")   # Optional[Path]
 )
 ```
 
@@ -541,7 +598,7 @@ ulid = generate_ulid()  # Returns: "01HXYZ..."
 from src.grok_client import GrokAPIError
 
 try:
-    result = client.extract_structured(schema, prompt)
+    result = client.extract_structured(prompt, schema)
 except GrokAPIError as e:
     print(f"API error: {e}")
 ```

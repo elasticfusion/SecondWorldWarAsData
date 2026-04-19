@@ -1,7 +1,7 @@
 # Configuration Guide
 
 **File:** `config.yaml`  
-**Last Updated:** 2026-02-26
+**Last Updated:** 2026-04-19
 
 Complete reference for all configuration options in the WWII data extraction pipeline.
 
@@ -111,15 +111,93 @@ Military equipment extraction from events (experimental).
 
 ```yaml
 equipment:
-  enabled: false                   # Enable equipment extraction (experimental)
+  enabled: true                    # Enable equipment extraction (experimental)
+  enable_enrichment: true          # Enrich with Wikipedia/Grokipedia data (slower, uses more API calls)
+  verify_media_with_vision: true   # Verify media relevance with Grok vision API (recommended)
 ```
 
 **Options:**
 - `enabled` - Enable/disable equipment extraction
+- `enable_enrichment` - Enrich equipment with external data (Wikipedia, Grokipedia)
+- `verify_media_with_vision` - Use Grok vision API to verify downloaded media is relevant
 
 **Output:** `output/equipment/{name}_{ulid}.json`
 
-**Documentation:** See `docs/current/features/MILITARY_EQUIPMENT.md`
+**Documentation:** See `docs/current/features/equipment/MILITARY_EQUIPMENT.md`
+
+---
+
+## Casualties Extraction
+
+Casualty tracking from events (experimental).
+
+```yaml
+casualties:
+  enabled: true                    # Enable casualties extraction (experimental)
+```
+
+**Options:**
+- `enabled` - Enable/disable casualties extraction
+
+**Output:** `output/casualties/{type}_{ulid}.json`
+
+---
+
+## Supplemental Material Extraction
+
+Citations, footnotes, endnotes, and bibliographic references.
+
+```yaml
+supplemental_material:
+  enabled: true                    # Enable supplemental material extraction (Phase 1: Core)
+  extract_citations: true          # Parse citations into structured format
+  enrich_with_searches: true       # Phase 2: Search integration
+  llm_search: true                 # Phase 2: Use LLM for search (first pass)
+  search_gutenberg: true           # Phase 2: Search Gutenberg.org for books/periodicals
+  search_archive_org: true         # Phase 2: Search Archive.org
+  use_openserp: true               # Phase 2: Use OpenSERP for web search
+  verify_archive_urls: true        # Phase 3: Verify archive URLs
+  extract_isbn: true               # Phase 3: Extract ISBN for books (post-1966)
+  determine_copyright: true        # Phase 3: Determine copyright status
+  max_materials_per_chapter: 1000  # Limit materials per chapter
+```
+
+**Phase 1 (Core):**
+- `extract_citations` - Parse footnotes/endnotes into structured citation format
+
+**Phase 2 (Search):**
+- `enrich_with_searches` - Master toggle for all search features
+- `llm_search` - Use Grok to search for online versions of cited works
+- `search_gutenberg` - Search Project Gutenberg
+- `search_archive_org` - Search Internet Archive
+- `use_openserp` - Use OpenSERP for broader web search
+
+**Phase 3 (Advanced):**
+- `verify_archive_urls` - Verify that discovered archive URLs are still accessible
+- `extract_isbn` - Extract ISBN numbers for books published after 1966
+- `determine_copyright` - Calculate copyright status based on publication date
+
+**Documentation:** See `docs/current/features/supplemental/SUPPLEMENTAL_COMPLETE.md`
+
+---
+
+## Concurrency
+
+Parallel processing settings.
+
+```yaml
+concurrency:
+  enabled: false                   # Enable concurrent processing (experimental)
+  max_event_files: 3               # Process N event files concurrently
+  max_extraction_group: 3          # Max parallel extractions per group
+```
+
+**Options:**
+- `enabled` - Enable/disable concurrent chapter processing
+- `max_event_files` - Number of event files to process in parallel
+- `max_extraction_group` - Max parallel extractions within a single group (dates, places, etc.)
+
+**Note:** Concurrent processing is experimental. See `docs/current/FUTURE_ENHANCEMENTS.md` for distributed processing options.
 
 ---
 
@@ -131,9 +209,10 @@ Extract maps from source documents during Phase 1 parsing.
 maps:
   enabled: true                    # Enable maps extraction
   extract_during_phase1: true      # Extract during document parsing
-  download_images: false           # Download actual map image files
+  download_images: true            # Download actual map image files
   storage_backend: "filesystem"    # filesystem or s3
   storage_path: "output/maps/"
+  image_storage_path: "filestore/maps/"  # Where to store downloaded map images
 ```
 
 **Options:**
@@ -141,7 +220,8 @@ maps:
 - `extract_during_phase1` - Extract during initial document parsing
 - `download_images` - Download map image files (not just metadata)
 - `storage_backend` - Where to store images: `filesystem` or `s3`
-- `storage_path` - Local path for map storage
+- `storage_path` - Local path for map metadata
+- `image_storage_path` - Local path for downloaded map images
 
 **Note:** This extracts maps that are already in your source documents, not external searches.
 
@@ -158,9 +238,9 @@ external_maps:
   openserp_url: "http://localhost:7001"  # OpenSERP service URL
   search_limit: 50                 # Max results per search
   verify_with_vision: true         # Use Grok vision API to verify maps
-  max_images_per_page: 3           # Max images to analyze per page
+  max_images_per_page: 5           # Max images to analyze per page
   image_download_timeout: 30       # Timeout for downloading images (seconds)
-  page_download_timeout: 10        # Timeout for downloading HTML pages (seconds)
+  page_download_timeout: 15        # Timeout for downloading HTML pages (seconds)
 ```
 
 ### Core Settings
@@ -185,10 +265,25 @@ external_maps:
 ### Storage (Not Yet Implemented)
 
 ```yaml
-  image_storage_path: "output/maps_images/"
+  image_storage_path: "filestore/external_maps/"
+  storage_path: "output/external_maps/"
   s3_bucket: ""                    # S3 bucket name (if using S3)
   s3_prefix: "maps/"               # S3 key prefix
   s3_region: "us-east-1"           # AWS region
+```
+
+### License Filtering
+
+```yaml
+  require_license: true            # Reject maps without license info
+  allowed_licenses:
+    - "Public Domain"
+    - "CC0"
+    - "CC-BY"
+    - "CC-BY-SA"
+    - "Unknown"
+  download_images: false           # Download map images if permitted
+  download_timeout: 30             # Image download timeout (seconds)
 ```
 
 ### Supported Formats
@@ -230,8 +325,8 @@ logging:
   level: "INFO"
   file: "logs/pipeline.log"
   console: true
-  debug_message_preview_chars: 500
-  debug_response_preview_chars: 500
+  debug_message_preview_chars: 15000
+  debug_response_preview_chars: 15000
 ```
 
 **Options:**

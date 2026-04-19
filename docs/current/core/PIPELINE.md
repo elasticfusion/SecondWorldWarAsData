@@ -11,7 +11,7 @@ Converts markdown source files into structured JSON with absolute paragraph numb
 Extracts entities and events using Grok AI.
 
 ### Phase 3: Enrichment
-Enriches people with biographical data from Wikipedia/Grokipedia.
+Enriches people, groups, places, and bibliography with external data.
 
 ## Phase 1: Parse
 
@@ -50,17 +50,18 @@ python3 phase2_extract.py --batch
 1. **Metadata Completion** - Auto-fills missing chapter titles/numbers
 2. **Parallel Core Extraction** - Processes all chapters concurrently (max 3):
    - Event extraction (if event file doesn't exist)
-2. **Core Entity Extraction** - Per chapter (parallel):
+3. **Core Entity Extraction** - Per chapter (parallel):
    - Dates, Places, People Groups, People (batched API calls, parallel per chapter)
-3. **Retry Missing Events** - Retries any chapters that failed event extraction (per-chapter cache clear)
-4. **Optional Entity Extraction** - Sequential per event file (batched per chapter — 1 API call per extractor):
+4. **Retry Missing Events** - Retries any chapters that failed event extraction (per-chapter cache clear)
+5. **Optional Entity Extraction** - Sequential per event file (batched per chapter — 1 API call per extractor):
    - Weather (if enabled)
    - Equipment (if enabled)
    - Logistics (if enabled)
    - Casualties (if enabled)
    - Supplemental material (if enabled)
-5. **Maps Extraction** - Source maps + external maps via OpenSERP (if enabled)
-6. **Analysis** - Duplicate people report + related groups report
+   - Images (if enabled, via `src/extraction/images.py`)
+6. **Maps Extraction** - Source maps + external maps via OpenSERP (if enabled)
+7. **Analysis** - Duplicate people report + related groups report
 
 **Auto-split on truncation:** If a Grok API response is truncated (>100K chars), the chapter is automatically split at section boundaries and each half is extracted separately, then merged.
 
@@ -136,6 +137,9 @@ python3 phase3_enrich_data.py --batch
 
 **What it does:**
 - Enriches people with biographical data from Wikipedia/Grokipedia
+- Enriches groups with organizational history and command structure
+- Enriches places with additional geographic and historical context
+- Enriches bibliography with full citation data and source verification
 - Searches for birth/death dates, service history, awards
 - Follows references for additional context
 - Caches all external lookups

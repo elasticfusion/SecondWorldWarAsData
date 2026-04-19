@@ -2,6 +2,7 @@
 """Apply place_aliases.yaml hierarchy and aliases to existing place files."""
 
 import json
+import sys
 from pathlib import Path
 
 import yaml
@@ -89,7 +90,7 @@ def _apply_historical_names(data, key, alias_map):
     return changed
 
 
-def consolidate(places_dir, config):
+def consolidate(places_dir, config, dry_run=False):
     """Apply hierarchy and aliases to place files."""
     hierarchy_map = _build_hierarchy_map(config)
     alias_map = _build_alias_map(config)
@@ -109,7 +110,10 @@ def consolidate(places_dir, config):
         c3 = _apply_historical_names(data, key, alias_map)
 
         if c1 or c2 or c3:
-            f.write_text(json.dumps(data, indent=2, ensure_ascii=False))
+            if dry_run:
+                print(f"  Would update: {f.name}")
+            else:
+                f.write_text(json.dumps(data, indent=2, ensure_ascii=False))
             updated += 1
 
     return updated
@@ -117,10 +121,12 @@ def consolidate(places_dir, config):
 
 def main():
     """Main entry point."""
+    dry_run = "--dry-run" in sys.argv
     config = load_config()
     places_dir = Path("output/places")
-    updated = consolidate(places_dir, config)
-    print(f"Updated {updated} place files from place_aliases.yaml")
+    updated = consolidate(places_dir, config, dry_run=dry_run)
+    prefix = "Would update" if dry_run else "Updated"
+    print(f"{prefix} {updated} place files from place_aliases.yaml")
 
 
 if __name__ == "__main__":
