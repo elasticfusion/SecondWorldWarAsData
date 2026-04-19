@@ -1,0 +1,258 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: WWII Pipeline - Compute (Lambda functions, ECS cluster/service, ALB)
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: dev
+  VpcId:
+    Type: String
+  PrivateSubnet1Id:
+    Type: String
+  PrivateSubnet2Id:
+    Type: String
+  LambdaSGId:
+    Type: String
+  OpenSerpSGId:
+    Type: String
+  AlbSGId:
+    Type: String
+  LambdaExecutionRoleArn:
+    Type: String
+  ECSTaskRoleArn:
+    Type: String
+  ECSTaskExecutionRoleArn:
+    Type: String
+  DataBucketName:
+    Type: String
+  CacheTableName:
+    Type: String
+  LambdaCodeBucket:
+    Type: String
+  LambdaCodeKey:
+    Type: String
+    Default: lambda/code.zip
+  OpenSerpImageUri:
+    Type: String
+    Description: ECR image URI for OpenSERP container
+
+Resources:
+  # --- Lambda Functions ---
+  Phase1Function:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-phase1-parse
+      Runtime: python3.12
+      Handler: lambda_handlers.phase1_handler.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      MemorySize: 512
+      Timeout: 300
+      Role: !Ref LambdaExecutionRoleArn
+      VpcConfig:
+        SubnetIds:
+          - !Ref PrivateSubnet1Id
+          - !Ref PrivateSubnet2Id
+        SecurityGroupIds:
+          - !Ref LambdaSGId
+      Environment:
+        Variables:
+          S3_BUCKET: !Ref DataBucketName
+          CACHE_TABLE: !Ref CacheTableName
+
+  Phase2Function:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-phase2-extract
+      Runtime: python3.12
+      Handler: lambda_handlers.phase2_handler.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      MemorySize: 2048
+      Timeout: 900
+      Role: !Ref LambdaExecutionRoleArn
+      VpcConfig:
+        SubnetIds:
+          - !Ref PrivateSubnet1Id
+          - !Ref PrivateSubnet2Id
+        SecurityGroupIds:
+          - !Ref LambdaSGId
+      Environment:
+        Variables:
+          S3_BUCKET: !Ref DataBucketName
+          CACHE_TABLE: !Ref CacheTableName
+
+  Phase3Function:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-phase3-enrich
+      Runtime: python3.12
+      Handler: lambda_handlers.phase3_handler.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      MemorySize: 1024
+      Timeout: 900
+      Role: !Ref LambdaExecutionRoleArn
+      VpcConfig:
+        SubnetIds:
+          - !Ref PrivateSubnet1Id
+          - !Ref PrivateSubnet2Id
+        SecurityGroupIds:
+          - !Ref LambdaSGId
+      Environment:
+        Variables:
+          S3_BUCKET: !Ref DataBucketName
+          CACHE_TABLE: !Ref CacheTableName
+
+  ImportFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-import
+      Runtime: python3.12
+      Handler: lambda_handlers.import_handler.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      MemorySize: 2048
+      Timeout: 900
+      Role: !Ref LambdaExecutionRoleArn
+      Environment:
+        Variables:
+          S3_BUCKET: !Ref DataBucketName
+
+  OpenSerpManagerFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-openserp-manager
+      Runtime: python3.12
+      Handler: lambda_handlers.openserp_manager.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      MemorySize: 256
+      Timeout: 120
+      Role: !Ref LambdaExecutionRoleArn
+
+  # --- ECS Cluster + OpenSERP Service ---
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub ${EnvironmentName}-wwii-pipeline
+
+  OpenSerpLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-openserp
+      RetentionInDays: 14
+
+  OpenSerpTaskDef:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${EnvironmentName}-wwii-openserp
+      Cpu: '512'
+      Memory: '1024'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !Ref ECSTaskRoleArn
+      ExecutionRoleArn: !Ref ECSTaskExecutionRoleArn
+      ContainerDefinitions:
+        - Name: openserp
+          Image: !Ref OpenSerpImageUri
+          PortMappings:
+            - ContainerPort: 7001
+              Protocol: tcp
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref OpenSerpLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: openserp
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - wget -q -O /dev/null http://localhost:7001/health || exit 1
+            Interval: 30
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 60
+
+  # --- Internal ALB for OpenSERP ---
+  OpenSerpALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub ${EnvironmentName}-openserp-alb
+      Scheme: internal
+      Type: application
+      Subnets:
+        - !Ref PrivateSubnet1Id
+        - !Ref PrivateSubnet2Id
+      SecurityGroups:
+        - !Ref AlbSGId
+
+  OpenSerpTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${EnvironmentName}-openserp-tg
+      Port: 7001
+      Protocol: HTTP
+      VpcId: !Ref VpcId
+      TargetType: ip
+      HealthCheckPath: /health
+      HealthCheckIntervalSeconds: 30
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 3
+
+  OpenSerpListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref OpenSerpALB
+      Port: 7001
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref OpenSerpTargetGroup
+
+  OpenSerpService:
+    Type: AWS::ECS::Service
+    DependsOn: OpenSerpListener
+    Properties:
+      ServiceName: !Sub ${EnvironmentName}-wwii-openserp
+      Cluster: !Ref ECSCluster
+      TaskDefinition: !Ref OpenSerpTaskDef
+      DesiredCount: 0
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets:
+            - !Ref PrivateSubnet1Id
+            - !Ref PrivateSubnet2Id
+          SecurityGroups:
+            - !Ref OpenSerpSGId
+      LoadBalancers:
+        - ContainerName: openserp
+          ContainerPort: 7001
+          TargetGroupArn: !Ref OpenSerpTargetGroup
+
+Outputs:
+  Phase1FunctionArn:
+    Value: !GetAtt Phase1Function.Arn
+  Phase2FunctionArn:
+    Value: !GetAtt Phase2Function.Arn
+  Phase3FunctionArn:
+    Value: !GetAtt Phase3Function.Arn
+  ImportFunctionArn:
+    Value: !GetAtt ImportFunction.Arn
+  OpenSerpManagerFunctionArn:
+    Value: !GetAtt OpenSerpManagerFunction.Arn
+  ECSClusterName:
+    Value: !Ref ECSCluster
+  OpenSerpServiceName:
+    Value: !GetAtt OpenSerpService.Name
+  OpenSerpALBDns:
+    Value: !GetAtt OpenSerpALB.DNSName
+  OpenSerpTargetGroupArn:
+    Value: !Ref OpenSerpTargetGroup
