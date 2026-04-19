@@ -81,8 +81,13 @@ class TestValidateJson:
         """Test validation with valid map data."""
         data = {
             "MapID": str(ulid.new()),
-            "title": "Test Map",
-            "source": "Test Source",
+            "map_title": "Test Map",
+            "source_book": "Test Book",
+            "source_author": "Test Author",
+            "EventID": str(ulid.new()),
+            "Sub_eventID": str(ulid.new()),
+            "local_path": "output/maps/test.json",
+            "extracted_date": "2026-04-19T00:00:00Z",
         }
         assert validate_json(data, MAP_SCHEMA) is True
 
@@ -93,27 +98,29 @@ class TestValidateJson:
                 {
                     "CasualtyID": str(ulid.new()),
                     "type": "killed",
-                    "EventID": str(ulid.new()),
-                    "Sub-eventID": str(ulid.new()),
+                    "description": "Test casualty",
+                    "event_context": {"EventID": str(ulid.new())},
+                    "source": {"book": "Test Book", "chapter": "1"},
                 }
             ]
         }
         assert validate_json(data, CASUALTIES_SCHEMA) is True
 
     def test_invalid_casualty_type(self):
-        """Test validation with casualty data (schema doesn't validate type enum)."""
+        """Test validation rejects invalid casualty type enum."""
         data = {
             "casualties": [
                 {
                     "CasualtyID": str(ulid.new()),
-                    "type": "invalid_type",  # Schema doesn't validate enum
-                    "EventID": str(ulid.new()),
-                    "Sub-eventID": str(ulid.new()),
+                    "type": "invalid_type",
+                    "description": "Test",
+                    "event_context": {"EventID": str(ulid.new())},
+                    "source": {"book": "Test", "chapter": "1"},
                 }
             ]
         }
-        # CASUALTIES_SCHEMA only validates structure, not type enum
-        assert validate_json(data, CASUALTIES_SCHEMA) is True
+        # Schema now validates type enum
+        assert validate_json(data, CASUALTIES_SCHEMA) is False
 
 
 class TestValidateAndWriteJson:

@@ -1,6 +1,6 @@
 # TODO
 
-**Last Updated:** 2026-03-28
+**Last Updated:** 2026-04-19
 
 ---
 
@@ -38,17 +38,17 @@ No formal spec exists for casualties. Known issues:
 - `source.EventID` not populated (event context is in `event_context` instead)
 - `count` field has mixed types (integer and string)
 
-### Event→People orphaned refs
+### ~~Event→People orphaned refs~~
 **Priority:** Medium
-**Status:** Not Started
+**Status:** ✅ Done (2026-04-19)
 
-277 unique PersonIDs referenced in event `Sub-events[].people[]` that have no matching file in `output/people/`. Likely from deduplication/merging — old IDs not updated in event files.
+`scripts/fix_orphaned_person_refs.py` scans event `Sub-events[].people[]` and removes PersonIDs with no matching file in `output/people/`. Supports `--dry-run` and `--verbose`.
 
-### Places parent_place_id fake ULIDs
+### ~~Places parent_place_id fake ULIDs~~
 **Priority:** Low
-**Status:** Not Started
+**Status:** ✅ Done (2026-04-19)
 
-4 place files (england, london, leningrad, berlin) have hand-crafted placeholder IDs like `01ENGLAND0000000000000000` in `hierarchy.parent_place_id`. Need real PlaceIDs or removal.
+`scripts/fix_fake_place_ulids.py` replaces hand-crafted placeholder IDs with real PlaceIDs from the index. Also fixed `_fix_invalid_ulids()` to catch lowercase `_id` fields (was only checking uppercase `ID`).
 
 ### Fix 5 people_groups with empty group_type
 **Priority:** Low

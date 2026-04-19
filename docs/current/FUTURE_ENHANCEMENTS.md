@@ -12,19 +12,15 @@ This document tracks potential improvements and enhancements for the WWII data e
 - File locking (fcntl) only works on same server
 
 **Race Conditions**
-```python
-# Current code has read-modify-write races:
-if person_file.exists():
-    existing = json.loads(person_file.read_text())  # No lock
-    existing["events"].extend(new_events)
-    validate_and_write_json(person_file, existing, use_lock=False)  # No lock
-```
 
-**Issues with Concurrent Execution:**
-1. **Data Loss** - Last write wins, earlier changes lost
-2. **File Corruption** - Simultaneous writes create invalid JSON
-3. **Inconsistent State** - Partial data from multiple servers mixed
-4. **Validation Corruption** - History and reports show incorrect data
+**Partially fixed (2026-04-19):** The three modules with read-modify-write races (`people.py`, `people_groups.py`, `equipment.py`) now use `locked_json()` from `src/utils/file_lock.py`, which holds an exclusive `fcntl.LOCK_EX` lock across the entire read-modify-write cycle. This prevents races on a single server. For multi-server (EFS) scenarios, see options below.
+
+**Files with Race Conditions:**
+- ~~`src/extraction/people.py` - No locking on read~~ ✅ Fixed
+- ~~`src/extraction/equipment.py` - No locking on read~~ ✅ Fixed
+- ~~`src/extraction/people_groups.py` - No locking on read~~ ✅ Fixed
+- `src/extraction/maps.py` - Write-only (no race)
+- `src/extraction/casualties.py` - Write-only (no race)
 
 ### AWS EFS Considerations
 
@@ -34,17 +30,8 @@ if person_file.exists():
 - ✅ Close-to-open consistency
 
 **What Doesn't Work:**
-- ❌ Read-modify-write still racy (no lock during read)
-- ❌ Lock contention serializes writes (no parallelism)
 - ❌ Higher latency (~1-3ms vs <0.1ms local)
-- ❌ Most extraction code uses `use_lock=False`
-
-**Files with Race Conditions:**
-- `src/extraction/people.py` - No locking on read
-- `src/extraction/equipment.py` - No locking on read
-- `src/extraction/people_groups.py` - No locking on read
-- `src/extraction/maps.py` - No locking on read
-- `src/extraction/casualties.py` - No locking on read
+- ❌ Lock contention serializes writes (no parallelism for same entity)
 
 ### Enhancement Options
 

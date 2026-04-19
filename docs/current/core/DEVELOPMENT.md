@@ -22,6 +22,9 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Install project in editable mode (enables imports without sys.path hacks)
+pip install -e .
 ```
 
 ### Configuration
