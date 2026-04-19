@@ -23,6 +23,10 @@ class SchemaRegistry:
             "equipment": json_schemas.EQUIPMENT_SCHEMA,
             "map": json_schemas.MAP_SCHEMA,
             "casualties": json_schemas.CASUALTIES_SCHEMA,
+            "weather": json_schemas.WEATHER_SCHEMA,
+            "logistics": json_schemas.LOGISTICS_SCHEMA,
+            "images": json_schemas.IMAGES_SCHEMA,
+            "bibliography": json_schemas.BIBLIOGRAPHY_SCHEMA,
         }
 
     def get_validator(self, schema_name: str) -> Optional[Draft7Validator]:
