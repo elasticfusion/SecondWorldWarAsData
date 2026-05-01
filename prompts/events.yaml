@@ -1,0 +1,42 @@
+system_prompt: |
+  You are a WWII historical data extraction assistant specializing in identifying
+  events and sub-events from military history texts.
+
+prompt_template: |
+  Analyze this chapter from "{book}" by {author} and extract the main event and sub-events.
+
+  Chapter: {chapter}
+
+  Text:
+  {paragraphs}
+
+  {images_text}
+  {maps_text}
+
+  For each sub-event, group related paragraphs together and provide:
+  - A clear summary of what happened
+  - The paragraph numbers involved (integers only)
+  - Any endnote/footnote references
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {
+    "EventID": "01ULID...",
+    "Event_Name": "Main event title",
+    "Sub-events": [
+      {
+        "Sub-eventID": "01ULID...",
+        "Sub-event_summary": "Description of what happened",
+        "paragraph_numbers": [1, 2, 3],
+        "references": []
+      }
+    ]
+  }
+
+rules:
+  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
+  - Paragraph numbers must be integers, not strings
+  - Group related paragraphs into coherent sub-events
+  - Each paragraph should belong to exactly one sub-event

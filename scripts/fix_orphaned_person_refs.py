@@ -122,7 +122,7 @@ def main():
     files_fixed = 0
 
     for event_file in event_files:
-        orphaned, changed = _fix_event_file(event_file, valid_ids, dry_run, verbose)
+        orphaned, _ = _fix_event_file(event_file, valid_ids, dry_run, verbose)
         if orphaned:
             total_orphaned += orphaned
             files_fixed += 1

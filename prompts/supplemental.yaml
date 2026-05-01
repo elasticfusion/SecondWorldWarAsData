@@ -1,0 +1,62 @@
+system_prompt: |
+  You are a WWII bibliography and citation extraction specialist.
+
+prompt_template: |
+  Classify and extract citation data from endnotes/footnotes in this WWII text.
+
+  Event: {event_title} (ID: {event_id})
+  Sub-event: {sub_event_summary} (ID: {sub_event_id})
+
+  Text:
+  {text}
+
+  Endnote references: {endnote_refs}
+  Footnote references: {footnote_refs}
+  Endnote content: {endnote_block}
+  Reference type: {ref_type_hint}
+
+  Classify each reference as: "document_reference", "factual_content", or "ambiguous".
+
+  For document references, extract full citation metadata.
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {
+    "Supplemental_Materials": [
+      {
+        "MaterialID": "01ULID...",
+        "classification": "document_reference",
+        "citation": {
+          "author": "Harrison, Gordon A.",
+          "title": "Cross-Channel Attack",
+          "alt_title": null,
+          "publisher": "Center of Military History",
+          "publication_date": "1951",
+          "first_edition_date": "1951",
+          "location": "Washington, D.C.",
+          "country": "USA",
+          "ISBN": null,
+          "pages": "pp. 120-125",
+          "volume": null,
+          "edition": null,
+          "document_type": "book",
+          "author_death_date": null
+        },
+        "availability": "online",
+        "resource_url": "https://...",
+        "archive_reference": null,
+        "license_status": "public_domain"
+      }
+    ]
+  }
+
+rules:
+  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
+  - Do NOT fabricate references — only extract what is explicitly cited
+  - Distinguish resource URLs (where to find the document) from source URLs (where the text came from)
+  - Country codes use ISO 3166-1 alpha-3
+  - License status values: public_domain, copyright, unknown
+  - Document type values: book, article, report, letter, memo, periodical, government_document, other
+  - Handle mixed entries by splitting into separate items

@@ -279,6 +279,13 @@ Return JSON object keyed by sub-event ID:
 Return empty logistics arrays for sub-events with no issues."""
 
     try:
+        from src.utils.prompt_loader import render_prompt as _rp
+
+        prompt = _rp("logistics", sub_event_block=sub_event_block)
+    except Exception:
+        pass
+
+    try:
         response = grok_client.extract_json(
             prompt=prompt,
             use_cache=True,

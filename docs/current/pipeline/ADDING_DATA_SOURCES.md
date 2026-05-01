@@ -73,6 +73,8 @@ python3 scripts/extract_url.py https://example.com/book
 
 ### 4. Run Pipeline
 
+**Local mode:**
+
 ```bash
 # Parse new content
 python3 phase1_parse.py
@@ -80,6 +82,20 @@ python3 phase1_parse.py
 # Extract entities
 python3 phase2_extract.py
 ```
+
+**AWS mode:**
+
+Upload content to S3 to trigger the pipeline automatically:
+
+```bash
+# Upload all content (or just the new book)
+aws s3 sync contentrepository/ s3://dev-wwii-data-pipeline/content/
+
+# Or upload a single book
+aws s3 sync contentrepository/NewBookName/ s3://dev-wwii-data-pipeline/content/NewBookName/
+```
+
+The S3 upload triggers Phase 1 → Phase 2 → dedup review gate → Phase 3 automatically. See [AWS Deployment Guide](../AWS_DEPLOYMENT.md) for monitoring and dedup review.
 
 The pipeline will:
 - Discover new book automatically

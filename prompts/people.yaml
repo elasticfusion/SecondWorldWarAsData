@@ -1,0 +1,101 @@
+system_prompt: |
+  You are a WWII historical data extraction assistant specializing in identifying
+  and profiling people mentioned in military history texts.
+
+prompt_template: |
+  Extract all people mentions from this WWII text with biographical details.
+  When a plural rank precedes multiple names joined by 'and'/'or' (e.g. 'Admirals Leahy and King'), extract each as a SEPARATE person with the singular rank.
+
+  Source: {book} by {author} ({series})
+  Event: {event_name} (ID: {event_id})
+  Sub-event: {sub_event_summary} (ID: {sub_event_id})
+
+  Text:
+  {text}
+
+  Return JSON matching this structure:
+  {schema}
+
+  Extract biographical data when mentioned:
+  - ranks: Military rank progression with dates
+  - units_served: Military units with service periods
+  - education: Educational institutions and degrees
+  - military_awards: Medals and decorations
+  - family: Spouse and children names
+  - aliases: Nicknames, alternative names, titles
+  - biography_sources: Track which fields came from this source
+
+  For biography_sources, include:
+  - source: Book title (use "{book}")
+  - page: Page number if mentioned
+  - confidence: 0.0-1.0 (how certain the extraction is)
+  - fields_sourced: List of field names extracted from this source
+
+schema: |
+  {
+    "People": [
+      {
+        "PersonID": "01H8XYZI1AB123CD456EF789GH",
+        "name": "Dwight D. Eisenhower",
+        "source_language": "English",
+        "biographical_profile": {
+          "birth_date": "1890-10-14",
+          "birth_place": "Denison, Texas, USA",
+          "death_date": "1969-03-28",
+          "death_place": "Washington, D.C., USA",
+          "nationality": "USA",
+          "role_type": "military_leader",
+          "ranks": [
+            {"rank": "General", "date": "1943", "branch": "US Army"},
+            {"rank": "General of the Army", "date": "1944-12-20", "branch": "US Army"}
+          ],
+          "units_served": [
+            {"unit": "Supreme Headquarters Allied Expeditionary Force", "from": "1943", "to": "1945"}
+          ],
+          "education": [
+            {"institution": "United States Military Academy", "degree": "Bachelor of Science", "year": "1915"}
+          ],
+          "military_awards": [
+            {"award": "Distinguished Service Medal", "class": null, "date_awarded": "1945-05-08"}
+          ],
+          "family": {"spouse": "Mamie Eisenhower", "children": ["Doud Dwight Eisenhower", "John Eisenhower"]},
+          "aliases": ["Ike"],
+          "biography_sources": [
+            {
+              "source": "Book Title",
+              "page": null,
+              "confidence": 0.9,
+              "fields_sourced": ["birth_date", "nationality", "ranks", "biographical_details"]
+            }
+          ],
+          "biographical_details": "Supreme Commander of Allied Forces in Europe"
+        },
+        "event_mentions": [
+          {
+            "MentionID": "01H8XYZJ2MN456PQ789RS012TU",
+            "Event_Name": "Event Name",
+            "EventID": "event_id",
+            "Sub-event_Name": "Sub-event summary",
+            "Sub-eventID": "sub_event_id",
+            "book": "Book Title",
+            "author": "Author Name",
+            "series": "Series Name",
+            "date": null,
+            "DateMentionID": null,
+            "position_at_event": "Supreme Commander",
+            "life_event": "Directed Allied operations",
+            "original_text": "General Eisenhower ordered the attack"
+          }
+        ]
+      }
+    ]
+  }
+
+rules:
+  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
+  - If no people found, return empty People array
+  - Do NOT extract military units, divisions, corps, armies, or organizations as people
+  - Entries beginning with numbers (1st, 2nd, 3rd), Roman numerals (I, II, III, IV, V, VI, VII), or number words (First, Second, Third) are military units and belong in people_groups, not people
+  - "Examples to EXCLUDE: 1st Infantry Division, VII Corps, Third Army, II SS Panzer Corps"
+  - When a title/position reference (e.g., "The Commanding General of the Third Army", "the battalion commander") clearly refers to a named person mentioned nearby in the text, do NOT create a separate entry. Instead, add the title as position_at_event on the named person's event_mention.
+  - Only create a separate entry for a title reference if the actual person cannot be determined from the surrounding text context.

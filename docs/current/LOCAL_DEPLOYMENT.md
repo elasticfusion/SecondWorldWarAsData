@@ -65,7 +65,22 @@ cp .env.example .env
 
 ### Configuration
 
-Edit `config.yaml` to enable/disable features:
+Edit `config.yaml` to enable/disable features. See [Configuration Guide](core/CONFIGURATION.md) for all options.
+
+### Prompt Templates
+
+Extraction prompts are in `prompts/*.yaml`. Edit these to customize what Grok extracts:
+
+```bash
+# Edit the people extraction prompt
+vim prompts/people.yaml
+
+# Changes take effect on next Phase 2 run (no rebuild needed locally)
+```
+
+See [Configuration Guide — Prompt Templates](core/CONFIGURATION.md#prompt-templates) for details.
+
+### Feature Toggles
 
 ```yaml
 equipment:
