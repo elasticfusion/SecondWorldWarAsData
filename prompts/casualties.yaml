@@ -1,0 +1,48 @@
+system_prompt: |
+  You are a WWII casualty data extraction specialist.
+
+prompt_template: |
+  Extract casualty information from these WWII sub-events.
+
+  Available entities for cross-referencing:
+  {entity_context}
+
+  Sub-events:
+  {sub_event_block}
+
+  Return JSON keyed by Sub-eventID matching this structure:
+  {schema}
+
+schema: |
+  {
+    "SUB_EVENT_ID": [
+      {
+        "CasualtyID": "01ULID...",
+        "type": "casualties",
+        "description": "Heavy losses during assault on Hill 192",
+        "count": {
+          "killed": 45,
+          "wounded": 120,
+          "missing": 10,
+          "captured": 0,
+          "total": 175
+        },
+        "date_string": "1944-07-11",
+        "impacted_organizations": [
+          {"name": "2nd Infantry Division", "nationality": "USA", "role": "attacker"}
+        ],
+        "impacted_people": [
+          {"name": "Colonel Smith", "casualty_type": "wounded"}
+        ],
+        "impacted_places": [{"name": "Hill 192"}]
+      }
+    ]
+  }
+
+rules:
+  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
+  - Type values: wounded, killed, casualties, pow, missing
+  - POW entries MUST include both "captured" (the prisoners) and "captor" (who captured them) organizations
+  - Country codes use ISO 3166-1 alpha-3
+  - Use available entity names for cross-referencing when possible
+  - If no casualties found for a sub-event, return empty array for that key

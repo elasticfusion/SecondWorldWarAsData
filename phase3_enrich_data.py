@@ -28,6 +28,7 @@ def enrich_people_data(
     grok_client: GrokClient,
     max_items: int = None,
     search_references: bool = True,
+    max_workers: int = 6,
 ) -> int:
     """Enrich people biographical data from Grokipedia and Wikipedia."""
     logger.info("\n" + "=" * 80)
@@ -57,6 +58,7 @@ def enrich_people_data(
         grok_client,
         max_people=max_items,
         search_references_flag=search_references,
+        max_workers=max_workers,
     )
 
     logger.info(f"✓ Enriched {enriched} people")
@@ -64,14 +66,19 @@ def enrich_people_data(
 
 
 def enrich_groups_data(
-    groups_dir: Path, grok_client: GrokClient, max_items: int = None
+    groups_dir: Path,
+    grok_client: GrokClient,
+    max_items: int = None,
+    max_workers: int = 6,
 ) -> int:
     """Enrich people groups with external data."""
     logger.info("\n" + "=" * 80)
     logger.info("ENRICHING PEOPLE GROUPS")
     logger.info("=" * 80)
 
-    enriched = enrich_all_groups(groups_dir, grok_client, max_groups=max_items)
+    enriched = enrich_all_groups(
+        groups_dir, grok_client, max_groups=max_items, max_workers=max_workers
+    )
     logger.info(f"✓ Enriched {enriched} groups")
     return enriched
 
@@ -152,6 +159,7 @@ def main():
         )
 
     total_enriched = 0
+    max_workers = config.get("concurrency", {}).get("max_enrichment_workers", 6)
 
     # Enrich people
     people_dir = args.output_dir / "people"
@@ -160,6 +168,7 @@ def main():
         grok_client,
         max_items=args.max_items,
         search_references=not args.no_references,
+        max_workers=max_workers,
     )
     total_enriched += people_enriched
 
@@ -167,7 +176,7 @@ def main():
     if not args.people_only:
         groups_dir = args.output_dir / "people_groups"
         groups_enriched = enrich_groups_data(
-            groups_dir, grok_client, max_items=args.max_items
+            groups_dir, grok_client, max_items=args.max_items, max_workers=max_workers
         )
         total_enriched += groups_enriched
 
@@ -175,7 +184,7 @@ def main():
     if not args.people_only:
         places_dir = args.output_dir / "places"
         places_enriched = enrich_all_places(
-            places_dir, grok_client, max_places=args.max_items
+            places_dir, grok_client, max_places=args.max_items, max_workers=max_workers
         )
         total_enriched += places_enriched
 
@@ -191,6 +200,7 @@ def main():
 
     logger.info("\n" + "=" * 80)
     logger.info(f"ENRICHMENT COMPLETE: {total_enriched} total items enriched")
+    grok_client.log_cache_stats()
     logger.info("=" * 80)
 
     # If batch mode, submit collected requests, wait, then re-run
@@ -203,7 +213,9 @@ def main():
             "Submitting %d requests to xAI Batch API (50%% off)...",
             len(grok_client._batch_collector),
         )
-        batch_id = grok_client.submit_batch(batch_name="phase3")
+        batch_id = grok_client.submit_batch(
+            batch_name=f"phase3-enrich-{len(grok_client._batch_collector)}reqs"
+        )
         if batch_id:
             logger.info("Batch complete! Re-running enrichment with cached results...")
             grok_client.batch_mode = False

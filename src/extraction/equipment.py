@@ -1404,6 +1404,13 @@ Example:
   }}
 ]"""
 
+    try:
+        from src.utils.prompt_loader import render_prompt
+
+        prompt = render_prompt("equipment", event_data=json.dumps(event_data, indent=2))
+    except Exception:
+        pass
+
     for attempt in range(max_retries):
         try:
             equipment_list = grok_client.extract_json(

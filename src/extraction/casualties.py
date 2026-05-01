@@ -185,6 +185,15 @@ Return JSON object keyed by sub-event ID:
 {{"<Sub-eventID>": [<casualty items>], ...}}
 Return empty arrays for sub-events with no casualties."""
 
+    try:
+        from src.utils.prompt_loader import render_prompt as _rp
+
+        prompt = _rp(
+            "casualties", entity_context=entity_context, sub_event_block=sub_event_block
+        )
+    except Exception:
+        pass
+
     return _call_and_parse_casualties(grok_client, prompt)
 
 

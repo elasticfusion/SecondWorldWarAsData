@@ -64,27 +64,35 @@ def import_collection(table, pattern: str, pk: str) -> int:
     return count
 
 
-def _sanitize_for_dynamo(data: dict) -> dict:
+def _sanitize_for_dynamo(data: dict) -> dict:  # type: ignore[type-arg]
     """Remove empty strings (DynamoDB doesn't allow them as attribute values)."""
-    cleaned = {}
+    cleaned: dict = {}  # type: ignore[type-arg]
     for k, v in data.items():
-        if isinstance(v, str) and v == "":
-            continue
-        if isinstance(v, dict):
-            sanitized = _sanitize_for_dynamo(v)
-            if sanitized:
-                cleaned[k] = sanitized
-        elif isinstance(v, list):
-            cleaned[k] = [
-                _sanitize_for_dynamo(item) if isinstance(item, dict) else item
-                for item in v
-                if not (isinstance(item, str) and item == "")
-            ]
-        elif isinstance(v, float):
-            cleaned[k] = Decimal(str(v))
-        else:
-            cleaned[k] = v
+        sanitized = _sanitize_value(v)
+        if sanitized is not _SKIP:
+            cleaned[k] = sanitized
     return cleaned
+
+
+_SKIP = object()
+
+
+def _sanitize_value(v):  # type: ignore[no-untyped-def]
+    """Sanitize a single value for DynamoDB."""
+    if isinstance(v, str) and v == "":
+        return _SKIP
+    if isinstance(v, dict):
+        result = _sanitize_for_dynamo(v)
+        return result if result else _SKIP
+    if isinstance(v, list):
+        return [
+            _sanitize_for_dynamo(item) if isinstance(item, dict) else item
+            for item in v
+            if not (isinstance(item, str) and item == "")
+        ]
+    if isinstance(v, float):
+        return Decimal(str(v))
+    return v
 
 
 def main():

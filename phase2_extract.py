@@ -620,6 +620,7 @@ def main():
     # -----------------------------------------------------------------------
     logger.info("\n%s", "=" * 60)
     logger.info("Phase 2 complete! Processed: %d, Failed: %d", processed, failed)
+    grok_client.log_cache_stats()
     logger.info("%s", "=" * 60)
     heartbeat.stop()
 
@@ -635,7 +636,12 @@ def main():
             len(grok_client._batch_collector),
         )
         logger.info("%s", "=" * 60)
-        batch_id = grok_client.submit_batch(batch_name="phase2")
+        # Build descriptive batch name from processed books
+        books = set()
+        for pf in parsed_files:
+            books.add(pf.parent.name)
+        batch_name = f"phase2-{'-'.join(sorted(books))}"[:128]
+        batch_id = grok_client.submit_batch(batch_name=batch_name)
         if batch_id:
             logger.info("Batch complete! Re-running pipeline with cached results...")
             grok_client.batch_mode = False

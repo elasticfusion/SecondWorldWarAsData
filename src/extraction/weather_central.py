@@ -550,6 +550,21 @@ IMPORTANT:
 - Only extract EXACT dates (YYYY-MM-DD). Skip "early June", "mid-summer", etc.
 - Generate 26-character ULIDs using: 0-9 A-H J-K M-N P-T V-Z"""
 
+    try:
+        from src.utils.prompt_loader import render_prompt
+
+        prompt = render_prompt(
+            "weather",
+            event_name=event_name,
+            event_id=event_id,
+            sub_event_summary=sub_event_summary,
+            sub_event_id=sub_event_id,
+            places_section=places_section,
+            dates_section=dates_section,
+            text=text,
+        )
+    except Exception:
+        pass
     return prompt
 
 

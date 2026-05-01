@@ -1,0 +1,44 @@
+system_prompt: |
+  You are a WWII historical weather data extraction specialist.
+
+prompt_template: |
+  Extract weather mentions from this WWII sub-event text.
+
+  Event: {event_name} (ID: {event_id})
+  Sub-event: {sub_event_summary} (ID: {sub_event_id})
+
+  Available places:
+  {places_section}
+
+  Available dates:
+  {dates_section}
+
+  Text:
+  {text}
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {
+    "Weather_Mentions": [
+      {
+        "WeatherMentionID": "01ULID...",
+        "place_name": "Normandy",
+        "PlaceMentionID": "01ULID...",
+        "date": "1944-06-06",
+        "DateMentionID": "01ULID...",
+        "weather_description": "Overcast skies with intermittent rain",
+        "temperature": {"value": 15, "unit": "celsius", "system": "metric"},
+        "notable_impact": "Poor visibility delayed air support",
+        "original_text": "overcast skies and rain hampered air operations"
+      }
+    ]
+  }
+
+rules:
+  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
+  - CRITICAL: Only extract exact dates (YYYY-MM-DD), skip approximate dates
+  - Link PlaceMentionID to available places when possible
+  - Link DateMentionID to available dates when possible
+  - If no weather mentions found, return empty Weather_Mentions array

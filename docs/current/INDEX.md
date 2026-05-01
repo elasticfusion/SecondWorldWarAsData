@@ -1,17 +1,19 @@
 # Documentation Index
 
-**Last Updated:** 2026-04-19
+**Last Updated:** 2026-04-26
 
 ---
 
 ## Quick Start
 
-- **[README.md](../../README.md)** - Project overview and deployment options
-- **[Local Deployment](LOCAL_DEPLOYMENT.md)** - Run locally with filesystem storage
-- **[AWS Deployment](AWS_DEPLOYMENT.md)** - Deploy with Lambda, ECS, S3, DynamoDB
-- **[core/DEVELOPMENT.md](core/DEVELOPMENT.md)** - Setup and development workflow
-- **[core/PIPELINE.md](core/PIPELINE.md)** - Complete pipeline documentation
-- **[pipeline/RETRY_WRAPPERS.md](pipeline/RETRY_WRAPPERS.md)** - Automatic retry for Phase 2 & 3
+- **[README.md](../../README.md)** — Project overview and deployment options
+- **[Content Contributor Guide](CONTENT_CONTRIBUTOR_GUIDE.md)** — Add content without coding
+- **[Local Deployment](LOCAL_DEPLOYMENT.md)** — Run locally with filesystem storage
+- **[AWS Deployment](AWS_DEPLOYMENT.md)** — Deploy with ECS Fargate, S3, DynamoDB
+- **[core/DEVELOPMENT.md](core/DEVELOPMENT.md)** — Setup and development workflow
+- **[core/PIPELINE.md](core/PIPELINE.md)** — Complete pipeline documentation (Phase 1, 2 & 3)
+- **[pipeline/RETRY_WRAPPERS.md](pipeline/RETRY_WRAPPERS.md)** — Automatic retry for Phase 2 & 3
+- **[KNOWN_ISSUES.md](KNOWN_ISSUES.md)** — Known issues and workarounds
 
 ---
 
@@ -21,21 +23,27 @@ Essential architecture, configuration, and API documentation.
 
 ### Architecture & Configuration
 
-- **[CODE_ARCHITECTURE.md](core/CODE_ARCHITECTURE.md)** - Code structure and design patterns
-- **[API_REFERENCE.md](core/API_REFERENCE.md)** - Complete API documentation
-- **[CONFIGURATION.md](core/CONFIGURATION.md)** - config.yaml reference guide
-- **[DEVELOPMENT.md](core/DEVELOPMENT.md)** - Setup and development workflow
-- **[PIPELINE.md](core/PIPELINE.md)** - Phase 1 & 2 pipeline overview
-- **[WORKFLOW_DIAGRAMS.md](core/WORKFLOW_DIAGRAMS.md)** - Visual workflow diagrams
-- **[error_handling.md](core/error_handling.md)** - Error handling patterns (25 patterns)
-- **[PROMPT_MANAGEMENT.md](core/PROMPT_MANAGEMENT.md)** - Grok prompt inventory, patterns, and modification guide
-- **[ULID_IMPLEMENTATION.md](core/ULID_IMPLEMENTATION.md)** - ULID identifier system
+- **[CODE_ARCHITECTURE.md](core/CODE_ARCHITECTURE.md)** — Code structure and design patterns
+- **[API_REFERENCE.md](core/API_REFERENCE.md)** — Complete API documentation
+- **[CONFIGURATION.md](core/CONFIGURATION.md)** — config.yaml reference guide
+- **[DEVELOPMENT.md](core/DEVELOPMENT.md)** — Setup and development workflow
+- **[PIPELINE.md](core/PIPELINE.md)** — Phase 1, 2 & 3 pipeline overview
+- **[WORKFLOW_DIAGRAMS.md](core/WORKFLOW_DIAGRAMS.md)** — Visual workflow diagrams
+- **[error_handling.md](core/error_handling.md)** — Error handling patterns (25 patterns)
+- **[PROMPT_MANAGEMENT.md](core/PROMPT_MANAGEMENT.md)** — Grok prompt inventory, patterns, and modification guide
+- **[ULID_IMPLEMENTATION.md](core/ULID_IMPLEMENTATION.md)** — ULID identifier system
+
+### Prompts & Extraction
+
+- **[Prompt Editing Guide](PROMPT_EDITING_GUIDE.md)** — How to customize extraction prompts (YAML templates, S3 override, variables)
+- **[prompts/](../../prompts/)** — YAML prompt templates (S3-overridable)
+- **[KNOWN_ISSUES.md](KNOWN_ISSUES.md)** — Entity misclassification, model quirks
 
 ### Standards
 
-- **[ISO_COUNTRY_CODES.md](core/ISO_COUNTRY_CODES.md)** - ISO 3166-1 alpha-3 country codes
-- **[JSON_REPAIR.md](core/JSON_REPAIR.md)** - Automatic JSON repair patterns
-- **[CACHE_AUTO_RECOVERY.md](core/CACHE_AUTO_RECOVERY.md)** - Cache corruption auto-recovery
+- **[ISO_COUNTRY_CODES.md](core/ISO_COUNTRY_CODES.md)** — ISO 3166-1 alpha-3 country codes
+- **[JSON_REPAIR.md](core/JSON_REPAIR.md)** — Automatic JSON repair patterns
+- **[CACHE_AUTO_RECOVERY.md](core/CACHE_AUTO_RECOVERY.md)** — Cache corruption auto-recovery
 
 ### Testing
 

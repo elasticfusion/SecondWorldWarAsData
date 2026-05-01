@@ -293,6 +293,23 @@ For commercial publishers, use license "copyright".
 If uncertain, use license "unknown".
 Use ISO 3166-1 alpha-3 country codes (USA, GBR, DEU, FRA, CAN, etc.).
 """
+        try:
+            from src.utils.prompt_loader import render_prompt
+
+            prompt = render_prompt(
+                "supplemental",
+                event_title=event_title,
+                event_id=event_id,
+                sub_event_summary=sub_event_summary,
+                sub_event_id=sub_event_id,
+                text=text,
+                endnote_refs=endnote_refs,
+                footnote_refs=footnote_refs,
+                endnote_block=endnote_block,
+                ref_type_hint=ref_type_hint,
+            )
+        except Exception:
+            pass
         prompts.append((event_id, sub_event_id, prompt))
 
     return prompts
@@ -790,6 +807,20 @@ def _write_notes_event(
     if not factual_items:
         return None
 
+    # Read metadata from source event file
+    source_meta = {}
+    try:
+        with open(event_file, "r", encoding="utf-8") as f:
+            source_data = json.load(f)
+        source_event = source_data.get("Event", source_data)
+        source_meta = {
+            "book": source_event.get("book", ""),
+            "author": source_event.get("author", ""),
+            "series": source_event.get("series", ""),
+        }
+    except Exception:
+        pass
+
     notes_file = event_file.with_name(
         event_file.name.replace("-event.json", "-notes-event.json")
     )
@@ -817,6 +848,9 @@ def _write_notes_event(
         "Event": {
             "EventID": str(ulid.new()),
             "Event_Name": f"Notes: {event_file.stem.replace('-event', '')}",
+            "book": source_meta.get("book", ""),
+            "author": source_meta.get("author", ""),
+            "series": source_meta.get("series", ""),
             "Sub-events": sub_events,
         }
     }

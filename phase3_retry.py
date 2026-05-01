@@ -24,24 +24,25 @@ def count_unenriched_people(people_dir: Path) -> int:
     """Count how many people files lack enrichment data."""
     if not people_dir.exists():
         return 0
-    
+
     people_files = [
-        f for f in people_dir.glob("*.json")
+        f
+        for f in people_dir.glob("*.json")
         if f.name not in ["index.json", "duplicate_report.json", "not_duplicates.json"]
     ]
-    
+
     unenriched = 0
     for person_file in people_files:
         try:
             with open(person_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            
+
             # Check if enrichment data exists
             if not data.get("enrichment_data"):
                 unenriched += 1
         except Exception:
             continue
-    
+
     return unenriched
 
 
@@ -93,7 +94,7 @@ def main():
 
     base_dir = Path(__file__).parent
     people_dir = args.output_dir / "people"
-    
+
     logger.info("=" * 70)
     logger.info("Phase 3 with Automatic Retry")
     logger.info("=" * 70)
@@ -107,7 +108,7 @@ def main():
 
         # Build command
         cmd = [sys.executable, "phase3_enrich_data.py"]
-        
+
         if args.output_dir != Path("output"):
             cmd.extend(["--output-dir", str(args.output_dir)])
         if args.cache_dir != Path("cache/grok_cache"):
@@ -127,11 +128,18 @@ def main():
         if result.returncode != 0:
             if result.returncode < 0:
                 import signal
+
                 sig = -result.returncode
-                sig_name = signal.Signals(sig).name if sig in signal.valid_signals() else str(sig)
+                sig_name = (
+                    signal.Signals(sig).name
+                    if sig in signal.valid_signals()
+                    else str(sig)
+                )
                 logger.error("Attempt %d killed by signal %s", attempt, sig_name)
             else:
-                logger.error("Attempt %d failed with exit code %d", attempt, result.returncode)
+                logger.error(
+                    "Attempt %d failed with exit code %d", attempt, result.returncode
+                )
             if attempt < args.max_attempts:
                 logger.info("Retrying...")
                 continue
@@ -139,7 +147,7 @@ def main():
                 logger.error("Maximum attempts reached, giving up")
                 return 1
         unenriched = count_unenriched_people(people_dir)
-        
+
         if unenriched == 0:
             logger.info(f"\n{'=' * 70}")
             logger.info(f"✓ Success! All people enriched on attempt {attempt}")
@@ -150,7 +158,9 @@ def main():
             if attempt < args.max_attempts:
                 logger.info("Retrying...")
             else:
-                logger.error(f"✗ Maximum attempts reached, {unenriched} people still unenriched")
+                logger.error(
+                    f"✗ Maximum attempts reached, {unenriched} people still unenriched"
+                )
                 return 1
 
     return 0

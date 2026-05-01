@@ -7,14 +7,19 @@ Parameters:
     Default: dev
   DataBucketArn:
     Type: String
-  Phase1FunctionArn:
+  DataBucketName:
     Type: String
-  Phase2FunctionArn:
-    Type: String
-  Phase3FunctionArn:
+  TriggerFunctionArn:
     Type: String
   OpenSerpManagerFunctionArn:
     Type: String
+  NotificationEmail:
+    Type: String
+    Default: ''
+    Description: Email address for pipeline notifications (leave empty to skip)
+
+Conditions:
+  HasNotificationEmail: !Not [!Equals [!Ref NotificationEmail, '']]
 
 Resources:
   # --- SNS Topics ---
@@ -32,6 +37,19 @@ Resources:
     Type: AWS::SNS::Topic
     Properties:
       TopicName: !Sub ${EnvironmentName}-wwii-entity-created
+
+  Phase2CompleteTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${EnvironmentName}-wwii-phase2-complete
+
+  Phase2CompleteEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasNotificationEmail
+    Properties:
+      TopicArn: !Ref Phase2CompleteTopic
+      Protocol: email
+      Endpoint: !Ref NotificationEmail
 
   # --- SNS Topic Policies (allow S3 to publish) ---
   ContentUploadedPolicy:
@@ -88,52 +106,86 @@ Resources:
               ArnLike:
                 aws:SourceArn: !Ref DataBucketArn
 
-  # --- SNS → Lambda Subscriptions ---
+  # --- SQS Queues (debounce S3 events before triggering ECS) ---
+  TriggerQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${EnvironmentName}-wwii-trigger-queue
+      VisibilityTimeout: 120
+      MessageRetentionPeriod: 3600
+
+  TriggerQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues: [!Ref TriggerQueue]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sns.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt TriggerQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn:
+                  - !Ref ContentUploadedTopic
+                  - !Ref ChapterParsedTopic
+                  - !Ref EntityCreatedTopic
+
+  # --- SNS → SQS Subscriptions (batched) ---
   Phase1Subscription:
     Type: AWS::SNS::Subscription
     Properties:
       TopicArn: !Ref ContentUploadedTopic
-      Protocol: lambda
-      Endpoint: !Ref Phase1FunctionArn
+      Protocol: sqs
+      Endpoint: !GetAtt TriggerQueue.Arn
 
   Phase2Subscription:
     Type: AWS::SNS::Subscription
     Properties:
       TopicArn: !Ref ChapterParsedTopic
-      Protocol: lambda
-      Endpoint: !Ref Phase2FunctionArn
+      Protocol: sqs
+      Endpoint: !GetAtt TriggerQueue.Arn
 
   Phase3Subscription:
     Type: AWS::SNS::Subscription
     Properties:
       TopicArn: !Ref EntityCreatedTopic
+      Protocol: sqs
+      Endpoint: !GetAtt TriggerQueue.Arn
+
+  # --- SQS → Lambda (batch window deduplicates events) ---
+  TriggerEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt TriggerQueue.Arn
+      FunctionName: !Ref TriggerFunctionArn
+      BatchSize: 100
+      MaximumBatchingWindowInSeconds: 60
+      Enabled: true
+
+  # --- Dedup Complete Topic (single event, stays direct SNS → Lambda) ---
+  DedupCompleteTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${EnvironmentName}-wwii-dedup-complete
+
+  DedupCompleteSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref DedupCompleteTopic
       Protocol: lambda
-      Endpoint: !Ref Phase3FunctionArn
+      Endpoint: !Ref TriggerFunctionArn
 
-  # --- Lambda Permissions (allow SNS to invoke) ---
-  Phase1InvokePermission:
+  # --- Lambda Permissions ---
+  TriggerDedupCompletePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref Phase1FunctionArn
+      FunctionName: !Ref TriggerFunctionArn
       Action: lambda:InvokeFunction
       Principal: sns.amazonaws.com
-      SourceArn: !Ref ContentUploadedTopic
-
-  Phase2InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref Phase2FunctionArn
-      Action: lambda:InvokeFunction
-      Principal: sns.amazonaws.com
-      SourceArn: !Ref ChapterParsedTopic
-
-  Phase3InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref Phase3FunctionArn
-      Action: lambda:InvokeFunction
-      Principal: sns.amazonaws.com
-      SourceArn: !Ref EntityCreatedTopic
+      SourceArn: !Ref DedupCompleteTopic
 
   # --- EventBridge Rule for OpenSERP Idle Monitor ---
   IdleMonitorRule:
@@ -322,6 +374,103 @@ Resources:
           ]
         }
 
+  # --- S3 Bucket Notification Configuration ---
+  # S3 NotificationConfiguration is a property of AWS::S3::Bucket, but the bucket
+  # is in storage.yaml and the SNS topics are here. Use a Custom Resource to wire
+  # them together without circular dependencies.
+  S3NotificationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-wwii-s3-notif-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: S3NotificationAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: s3:PutBucketNotification
+                Resource: !Ref DataBucketArn
+
+  S3NotificationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-s3-notif-setup
+      Runtime: python3.12
+      Handler: index.handler
+      Timeout: 30
+      Role: !GetAtt S3NotificationRole.Arn
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          def handler(event, context):
+              try:
+                  if event["RequestType"] == "Delete":
+                      # Clear notifications on stack delete
+                      boto3.client("s3").put_bucket_notification_configuration(
+                          Bucket=event["ResourceProperties"]["BucketName"],
+                          NotificationConfiguration={},
+                      )
+                      cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+                      return
+                  props = event["ResourceProperties"]
+                  boto3.client("s3").put_bucket_notification_configuration(
+                      Bucket=props["BucketName"],
+                      NotificationConfiguration={
+                          "TopicConfigurations": [
+                              {
+                                  "TopicArn": props["ContentUploadedTopicArn"],
+                                  "Events": ["s3:ObjectCreated:*"],
+                                  "Filter": {"Key": {"FilterRules": [
+                                      {"Name": "prefix", "Value": "content/"},
+                                      {"Name": "suffix", "Value": ".md"},
+                                  ]}},
+                              },
+                              {
+                                  "TopicArn": props["ChapterParsedTopicArn"],
+                                  "Events": ["s3:ObjectCreated:*"],
+                                  "Filter": {"Key": {"FilterRules": [
+                                      {"Name": "prefix", "Value": "output/"},
+                                      {"Name": "suffix", "Value": "-parsed.json"},
+                                  ]}},
+                              },
+                              {
+                                  "TopicArn": props["EntityCreatedTopicArn"],
+                                  "Events": ["s3:ObjectCreated:*"],
+                                  "Filter": {"Key": {"FilterRules": [
+                                      {"Name": "prefix", "Value": "output/"},
+                                      {"Name": "suffix", "Value": "-event.json"},
+                                  ]}},
+                              },
+                          ],
+                      },
+                  )
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+              except Exception as e:
+                  cfnresponse.send(event, context, cfnresponse.FAILED, {"Error": str(e)})
+
+  S3NotificationConfig:
+    Type: Custom::S3Notification
+    DependsOn:
+      - ContentUploadedPolicy
+      - ChapterParsedPolicy
+      - EntityCreatedPolicy
+    Properties:
+      ServiceToken: !GetAtt S3NotificationFunction.Arn
+      BucketName: !Ref DataBucketName
+      ContentUploadedTopicArn: !Ref ContentUploadedTopic
+      ChapterParsedTopicArn: !Ref ChapterParsedTopic
+      EntityCreatedTopicArn: !Ref EntityCreatedTopic
+
 Outputs:
   ContentUploadedTopicArn:
     Value: !Ref ContentUploadedTopic
@@ -329,3 +478,5 @@ Outputs:
     Value: !Ref ChapterParsedTopic
   EntityCreatedTopicArn:
     Value: !Ref EntityCreatedTopic
+  Phase2CompleteTopicArn:
+    Value: !Ref Phase2CompleteTopic

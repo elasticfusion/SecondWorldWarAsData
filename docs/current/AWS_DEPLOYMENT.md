@@ -1,28 +1,40 @@
 # AWS Deployment Guide
 
-Deploy the WWII Data Extraction Pipeline on AWS using Lambda, ECS, S3, and DynamoDB.
+Deploy the WWII Data Extraction Pipeline on AWS using ECS Fargate, S3, and DynamoDB.
 
-**Last Updated:** 2026-04-19
+**Last Updated:** 2026-04-30
 
 ---
 
 ## Architecture
 
 ```
-S3 (content upload) → SNS → Lambda Phase 1 (parse)
-                                ↓ writes parsed JSON to S3
-S3 (parsed JSON)    → SNS → Lambda Phase 2 (extract)
-                                ↓ calls Grok API + OpenSERP (ECS)
-S3 (entity files)   → SNS → Lambda Phase 3 (enrich)
-                                ↓ calls Grok/Wikipedia/Grokipedia
-DynamoDB (import)   ← Lambda Import (manual trigger)
+S3 (content upload) → SNS → SQS (60s batch) → Trigger Lambda → ECS Phase 1 (parse)
+                                                                  ↓ writes parsed JSON to S3
+S3 (parsed JSON)    → SNS → SQS (60s batch) → Trigger Lambda → ECS Phase 2 (extract --batch)
+                                                                  ↓ calls Grok API via xAI Batch API
+                                                                  ↓ runs dedup analysis
+S3 (entity files)   → SNS → SQS (60s batch) → Trigger Lambda → checks dedup/review_status.json
+                                                                  ↓ blocks Phase 3 until review complete
+                     Dedup Review UI (API Gateway + Lambda)
+                                                                  ↓ user merges/skips/reclassifies
+                                                                  ↓ clicks "Mark Complete"
+SNS (dedup-complete) → Trigger Lambda → ECS Phase 3 (enrich --batch)
+                                                                  ↓ calls Grok/Wikipedia/Grokipedia
+DynamoDB (import)   ← ECS Import (manual trigger)
 ```
 
-- **Compute:** Lambda functions (Phase 1/2/3, import, OpenSERP manager)
-- **OpenSERP:** ECS Fargate with internal ALB (headless Chrome, can't run on Lambda)
-- **Storage:** S3 for content and output, DynamoDB for API cache and entity tables
-- **Events:** S3 notifications → SNS → Lambda
-- **Monitoring:** CloudWatch alarms, dashboard, DLQs, idle monitor
+- **Pipeline compute:** ECS Fargate tasks (Phase 1/2/3, import) — no timeout limits, batch mode for Grok API
+- **Trigger:** Single lightweight Lambda receives SQS-batched events and launches ECS tasks (deduplicates multiple S3 events into one task)
+- **OpenSERP:** ECS Fargate service with internal ALB (headless Chrome)
+- **Storage:** S3 for content and output, DynamoDB for API cache, pipeline locks, manifests, and entity tables
+- **Events:** S3 notifications → SNS → SQS (60s batch window) → Trigger Lambda → ECS RunTask
+- **Dedup UI:** API Gateway with Basic Auth → Lambda serving HTML review interface (merge, skip, reclassify). UI actions append changed file keys to DynamoDB manifest for Phase 3.
+- **Incremental processing:** Phase 2 only downloads new parsed files (no matching event file). Phase 3 reads DynamoDB manifest to download only changed files.
+- **Pending content queue:** If pipeline is busy when new content arrives, trigger Lambda queues it in DynamoDB (`pending#content`) and sends email notification. Phase 2 re-triggers after completion.
+- **Metrics:** API Gateway → Lambda serving pipeline metrics from DynamoDB
+- **Monitoring:** CloudWatch alarms, dashboard, ECS task logs
+- **Prompts:** YAML templates in `prompts/`, overridable from S3 without container rebuild
 - **Cost control:** NAT Gateway + ALB + ECS auto-teardown after 30 min idle
 
 See [AWS Architecture Plan](AWS_DEPLOYMENT_PLAN.md) for detailed design decisions.
@@ -32,21 +44,50 @@ See [AWS Architecture Plan](AWS_DEPLOYMENT_PLAN.md) for detailed design decision
 ## Prerequisites
 
 - **AWS account** with admin access
-- **AWS CLI** configured (`aws configure`)
+- **AWS CLI v2** configured (`aws configure`)
 - **Python 3.12+** with boto3
-- **Docker** (for building OpenSERP container image)
-- **cfn-lint** (`pip install cfn-lint`)
+- **Docker** (for building container images)
+- **cfn-lint** (`pipx install cfn-lint`)
 
 ---
 
 ## Quick Start
 
-### 1. Store API Key in Secrets Manager
+### Quick Deploy (All-in-One)
+
+For subsequent deployments after initial setup, use the all-in-one script:
 
 ```bash
+bash scripts/deploy_all.sh
+```
+
+This stops running tasks, clears locks, runs QA, builds and pushes the container, deploys CloudFormation, updates Lambdas, and fixes auth.
+
+### Monitoring and Log Analysis
+
+```bash
+# Live monitoring
+aws logs tail /ecs/dev-wwii-pipeline --follow --region us-east-1 --since 2m
+
+# Analyze last 24h of logs
+bash scripts/analyze_logs.sh
+```
+
+---
+
+### 1. Store Secrets in Secrets Manager
+
+```bash
+# Grok API key
 aws secretsmanager create-secret \
   --name dev-wwii-pipeline/grok-api-key \
   --secret-string "your-grok-api-key" \
+  --region us-east-1
+
+# Dedup review UI password (username:password format)
+aws secretsmanager create-secret \
+  --name dev-wwii-pipeline/dedup-auth \
+  --secret-string "admin:your-review-password" \
   --region us-east-1
 ```
 
@@ -56,14 +97,31 @@ aws secretsmanager create-secret \
 python3 scripts/deploy_aws.py validate
 ```
 
-### 3. Build and Push OpenSERP Image
+### 3. Build and Push Container Images
+
+#### Pipeline Image
 
 ```bash
 # Create ECR repository
-aws ecr create-repository --repository-name wwii-openserp --region us-east-1
+aws ecr create-repository --repository-name wwii-pipeline --region us-east-1
 
 # Login to ECR
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com
+
+# Build and push
+docker build -t wwii-pipeline .
+docker tag wwii-pipeline:latest <account-id>.dkr.ecr.us-east-1.amazonaws.com/wwii-pipeline:latest
+docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/wwii-pipeline:latest
+```
+
+#### OpenSERP Image
+
+```bash
+# Clone OpenSERP (if not already done)
+git clone https://github.com/karust/openserp.git openserp
+
+# Create ECR repository
+aws ecr create-repository --repository-name wwii-openserp --region us-east-1
 
 # Build and push
 cd openserp
@@ -72,6 +130,10 @@ docker tag wwii-openserp:latest <account-id>.dkr.ecr.us-east-1.amazonaws.com/wwi
 docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/wwii-openserp:latest
 cd ..
 ```
+
+> **Note:** OpenSERP defaults to port 7000. The pipeline expects port 7001 (configured in
+> `config.yaml` under `openserp_url`). Set the `OPENSERP_SERVER_PORT=7001` environment variable
+> in the ECS task definition, or update `config.yaml` to use port 7000.
 
 ### 4. Upload Templates and Lambda Code
 
@@ -82,9 +144,8 @@ aws s3 mb s3://wwii-pipeline-deploy --region us-east-1
 # Upload CloudFormation templates
 aws s3 sync cloudformation/ s3://wwii-pipeline-deploy/cloudformation/
 
-# Package and upload Lambda code
-zip -r lambda-code.zip src/ lambda_handlers/ scripts/ config.yaml -x "*.pyc" "*__pycache__*"
-aws s3 cp lambda-code.zip s3://wwii-pipeline-deploy/lambda/code.zip
+# Package and upload Lambda code (dedup UI, auth, openserp manager only)
+bash scripts/update_lambdas.sh dev us-east-1 wwii-pipeline-deploy
 ```
 
 ### 5. Deploy Stack
@@ -94,6 +155,7 @@ python3 scripts/deploy_aws.py deploy \
   --env dev \
   --region us-east-1 \
   --template-bucket wwii-pipeline-deploy \
+  --pipeline-image <account-id>.dkr.ecr.us-east-1.amazonaws.com/wwii-pipeline:latest \
   --openserp-image <account-id>.dkr.ecr.us-east-1.amazonaws.com/wwii-openserp:latest
 ```
 
@@ -104,7 +166,23 @@ python3 scripts/deploy_aws.py deploy \
 aws s3 sync contentrepository/ s3://dev-wwii-data-pipeline/content/
 ```
 
-The pipeline runs automatically: S3 upload → SNS → Phase 1 → Phase 2 → Phase 3.
+The pipeline runs automatically: S3 upload → Phase 1 → Phase 2 (batch) → **dedup review gate** → Phase 3 (batch).
+
+Phase 3 is blocked until you review duplicates in the Dedup Review UI (see below).
+
+### What's Next?
+
+The pipeline phases, entity types, and output format are the same for local and AWS. See:
+
+- **[Adding Data Sources](pipeline/ADDING_DATA_SOURCES.md)** — How to prepare a book for the pipeline: directory structure, metadata YAML, markdown format, and content requirements
+- **[HyperWar HTML Import](pipeline/HYPERWAR_HTML_IMPORT.md)** — Import books from HyperWar web pages
+- **[PDF Conversion](pipeline/PDF_CONVERSION.md)** — Convert PDF source documents to markdown
+- **[Pipeline Overview](core/PIPELINE.md)** — Phase 1/2/3 workflow, what each phase does, expected inputs and outputs
+- **[Schema Reference](SCHEMA_REFERENCE.md)** — JSON output format for all 11 entity types, cross-referencing conventions
+- **[Feature Index](features/README.md)** — Detailed docs for each entity type (events, people, places, etc.)
+- **[Configuration](core/CONFIGURATION.md)** — All `config.yaml` options (shared between local and AWS)
+
+For AWS-specific operations after deployment, continue with the sections below (Configuration, Dedup Review UI, Monitoring, Import to DynamoDB).
 
 ---
 
@@ -140,9 +218,27 @@ aws:
 | `network.yaml` | VPC, subnets, NAT Gateway, security groups, VPC endpoints |
 | `storage.yaml` | S3 bucket, 11 DynamoDB tables, AWS Budget |
 | `iam.yaml` | Lambda and ECS IAM roles |
-| `compute.yaml` | 5 Lambda functions, ECS cluster, Fargate service, ALB, DLQs |
+| `compute.yaml` | ECS cluster, 4 pipeline task definitions, trigger Lambda, OpenSERP service, ALB, dedup UI/gate/auth Lambdas |
 | `events.yaml` | SNS topics, S3→SNS notifications, EventBridge idle monitor, CloudWatch alarms + dashboard |
 | `main.yaml` | Root stack (nests all above) |
+
+### Updating Pipeline Code
+
+After code changes, rebuild and push the pipeline container:
+
+```bash
+docker build -t wwii-pipeline .
+docker tag wwii-pipeline:latest <account-id>.dkr.ecr.us-east-1.amazonaws.com/wwii-pipeline:latest
+docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/wwii-pipeline:latest
+```
+
+ECS tasks pull the `:latest` tag on each run, so new tasks automatically use the updated image.
+
+For Lambda changes (dedup UI, openserp manager):
+
+```bash
+bash scripts/update_lambdas.sh dev us-east-1 wwii-pipeline-deploy
+```
 
 ### Management
 
@@ -150,14 +246,52 @@ aws:
 # Check status
 python3 scripts/deploy_aws.py status --env dev
 
-# Update after code changes
-zip -r lambda-code.zip src/ lambda_handlers/ scripts/ config.yaml -x "*.pyc" "*__pycache__*"
-aws s3 cp lambda-code.zip s3://wwii-pipeline-deploy/lambda/code.zip
-aws lambda update-function-code --function-name dev-wwii-phase2-extract \
-  --s3-bucket wwii-pipeline-deploy --s3-key lambda/code.zip
-
 # Destroy everything
 python3 scripts/deploy_aws.py destroy --env dev
+```
+
+---
+
+## Dedup Review UI
+
+After Phase 2 completes, Phase 3 is blocked until you review and merge duplicates. The review UI is a password-protected web page served by API Gateway + Lambda.
+
+### Access
+
+The URL is in the stack outputs:
+```bash
+python3 scripts/deploy_aws.py status --env dev
+# Look for: DedupReviewUrl
+```
+
+Open the URL in a browser. You'll be prompted for Basic Auth credentials (the `dedup-auth` secret you created in step 1).
+
+### Workflow
+
+1. **Review** — tabs for People, Places, and Groups. Each duplicate group shows confidence score, match reasons, and the records involved. Click **▶ Details** to view entity JSON including event mentions.
+2. **Merge Selected** — check entries to include, select the primary (radio button), click Merge. Unchecked entries with 2+ members are re-grouped for separate review.
+3. **Skip** — remove the group from review without merging.
+4. **Not Duplicates** — add to exclusion list so they won't appear in future reports.
+5. **Reclassify** — use the **↗ Move to...** dropdown to move a misclassified entity between categories (e.g., military unit from "places" to "groups"). The schema is automatically transformed.
+6. **Mark Complete** — click "Mark Review Complete & Start Phase 3" when done. This unblocks Phase 3, which then processes all entity files.
+
+### How the Gate Works
+
+```
+Phase 2 writes entity files → S3 event → SNS → Trigger Lambda
+  → Checks dedup/review_status.json
+  → If complete: false → event dropped (Phase 3 blocked)
+
+User clicks "Mark Complete" in UI → SNS (dedup-complete) → Trigger Lambda
+  → Launches ECS Phase 3 task for all entities
+```
+
+### Changing the Password
+
+```bash
+aws secretsmanager update-secret \
+  --secret-id dev-wwii-pipeline/dedup-auth \
+  --secret-string "admin:new-password"
 ```
 
 ---
@@ -171,18 +305,19 @@ The idle monitor Lambda (runs every 10 min) checks ALB request count. After 30 m
 - NAT Gateway + Elastic IP (~$32/month)
 - Internal ALB (~$16/month)
 
-VPC, subnets, S3, DynamoDB, and Lambda functions cost $0 when idle.
+VPC, subnets, S3, DynamoDB, and Lambda functions cost $0 when idle. Pipeline ECS tasks are one-shot — they stop when done and cost nothing between runs.
 
 ### Active Cost: ~$50-75/month
 
 | Service | Estimated Cost |
 |---------|---------------|
-| Lambda (pipeline) | ~$1-2 |
+| ECS Fargate (pipeline tasks) | ~$2-5 |
 | ECS Fargate (OpenSERP) | ~$5-10 |
 | S3 (10GB) | ~$1 |
 | DynamoDB (on-demand) | ~$2 |
 | NAT Gateway | ~$35 |
 | ALB | ~$16 |
+| Lambda (trigger + dedup UI) | ~$0.10 |
 | Budget alert at $75 | — |
 
 ### S3 Lifecycle
@@ -197,36 +332,78 @@ VPC, subnets, S3, DynamoDB, and Lambda functions cost $0 when idle.
 
 ## Monitoring
 
+### CloudWatch Logs
+
+Pipeline ECS tasks log to `/ecs/dev-wwii-pipeline`:
+
+```bash
+# Tail pipeline logs
+aws logs tail /ecs/dev-wwii-pipeline --follow --region us-east-1
+
+# Filter by phase
+aws logs tail /ecs/dev-wwii-pipeline --follow --region us-east-1 --filter-pattern "phase2"
+
+# Check incremental processing
+aws logs tail /ecs/dev-wwii-pipeline --region us-east-1 --since 10m --filter-pattern "incremental"
+
+# Check trigger Lambda
+aws logs tail /aws/lambda/dev-wwii-trigger --region us-east-1 --since 5m | tail -10
+
+# Verify no feedback loop (should be empty after Phase 2)
+aws logs tail /aws/lambda/dev-wwii-trigger --region us-east-1 --since 5m --filter-pattern "chapter-parsed"
+```
+
+### Pipeline State Checks
+
+```bash
+# Check dedup review status
+aws s3 cp s3://dev-wwii-data-pipeline/dedup/review_status.json - --region us-east-1
+
+# Check for pending content
+aws dynamodb get-item --table-name dev-wwii-api-cache --key '{"cache_key":{"S":"pending#content"}}' --region us-east-1
+
+# Check Phase 2 manifest
+aws dynamodb get-item --table-name dev-wwii-api-cache --key '{"cache_key":{"S":"manifest#phase2"}}' --region us-east-1 --query "Item.keys.L | length(@)"
+
+# Clear stale locks (emergency)
+aws s3 rm s3://dev-wwii-data-pipeline/locks/ --recursive --region us-east-1
+```
+
 ### CloudWatch Dashboard
 
-`dev-wwii-pipeline` dashboard shows:
-- Lambda invocations, errors, duration
-- DLQ message depth
+`dev-wwii-pipeline` dashboard shows Lambda invocations, errors, and duration.
 
 ### Alarms (→ SNS topic `dev-wwii-alarms`)
 
-- Phase 1/2/3 Lambda errors (≥1 in 5 min)
-- Phase 2 duration approaching limit (>14 min)
-- Any Lambda throttles
-- Any DLQ messages
+- Lambda errors (≥1 in 5 min)
+- Lambda throttles
+- Phase 2 duration warnings
 
-### Dead Letter Queues
+### Checking ECS Task Status
 
-Failed Lambda invocations go to SQS DLQs (14-day retention):
-- `dev-wwii-phase1-dlq`
-- `dev-wwii-phase2-dlq`
-- `dev-wwii-phase3-dlq`
-- `dev-wwii-import-dlq`
+```bash
+# List running tasks
+aws ecs list-tasks --cluster dev-wwii-pipeline --region us-east-1
+
+# Describe a task
+aws ecs describe-tasks --cluster dev-wwii-pipeline \
+  --tasks <task-id> --region us-east-1
+```
 
 ---
 
 ## Import to DynamoDB
 
 ```bash
-# From Lambda (manual trigger)
-aws lambda invoke --function-name dev-wwii-import /dev/stdout
+# Run as ECS task
+aws ecs run-task \
+  --cluster dev-wwii-pipeline \
+  --task-definition dev-wwii-import \
+  --launch-type FARGATE \
+  --network-configuration "awsvpcConfiguration={subnets=[<subnet-id>],securityGroups=[<sg-id>],assignPublicIp=DISABLED}" \
+  --region us-east-1
 
-# From local machine (reads output/ directory)
+# Or from local machine
 python3 import_to_dynamodb.py --region us-east-1 --prefix dev-wwii-
 ```
 
@@ -258,30 +435,37 @@ When `aws.enabled` is true:
 - Storage → S3
 - Cache → DynamoDB
 - OpenSERP → ECS Fargate (auto-started)
-- Pipeline triggered by S3 events
+- Pipeline triggered by S3 events → ECS tasks
 
 ---
 
 ## Troubleshooting
 
-### Lambda timeout
-Phase 2 has a 15-min limit. If chapters are too large, they'll timeout. Check CloudWatch logs and consider splitting large chapters with `scripts/split_chapters.py`.
+### ECS task not starting
+```bash
+# Check recent task failures
+aws ecs list-tasks --cluster dev-wwii-pipeline --desired-status STOPPED --region us-east-1
+
+# Describe the stopped task for error details
+aws ecs describe-tasks --cluster dev-wwii-pipeline --tasks <task-id> --region us-east-1
+```
 
 ### OpenSERP not starting
 ```bash
 # Check ECS service
-aws ecs describe-services --cluster dev-wwii-pipeline --services dev-wwii-openserp
+aws ecs describe-services --cluster dev-wwii-pipeline --services dev-wwii-openserp --region us-east-1
 
 # Check task logs
-aws logs tail /ecs/dev-wwii-openserp --follow
+aws logs tail /ecs/dev-wwii-openserp --follow --region us-east-1
 ```
 
-### DLQ messages
+### Pipeline not triggering
 ```bash
-# Check DLQ depth
-aws sqs get-queue-attributes \
-  --queue-url https://sqs.us-east-1.amazonaws.com/<account>/dev-wwii-phase2-dlq \
-  --attribute-names ApproximateNumberOfMessages
+# Verify S3 notifications are configured
+aws s3api get-bucket-notification-configuration --bucket dev-wwii-data-pipeline --region us-east-1
+
+# Check trigger Lambda logs
+aws logs tail /aws/lambda/dev-wwii-trigger --follow --region us-east-1
 ```
 
 ### NAT Gateway not re-created
