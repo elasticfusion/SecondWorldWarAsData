@@ -200,6 +200,7 @@ def enrich_all_places(
     places_dir: Path,
     grok_client: GrokClient,
     max_places: Optional[int] = None,
+    max_workers: int = 6,
 ) -> int:
     """Enrich all places. Returns count enriched."""
     if not places_dir.exists():
@@ -211,6 +212,18 @@ def enrich_all_places(
         files = files[:max_places]
 
     logger.info("Enriching %d places...", len(files))
-    enriched = sum(1 for f in files if enrich_place(f, grok_client))
+
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    enriched = 0
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        futures = {pool.submit(enrich_place, f, grok_client): f for f in files}
+        for future in as_completed(futures):
+            try:
+                if future.result():
+                    enriched += 1
+            except Exception as e:
+                logger.warning("Failed to enrich place %s: %s", futures[future].stem, e)
+
     logger.info("Place enrichment complete: %d/%d enriched", enriched, len(files))
     return enriched

@@ -215,7 +215,26 @@ Instructions:
 
 Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
 All places MUST have latitude/longitude coordinates.
-If no places found, return empty Place_Mentions array."""
+If no places found, return empty Place_Mentions array.
+
+IMPORTANT: Do NOT extract military units, divisions, corps, armies, or organizations as places.
+Entries beginning with numbers (1st, 2nd, 3rd), Roman numerals (I, II, III, IV, V, VI, VII),
+or number words (First, Second, Third) are military units and belong in people_groups, not places.
+Examples of what to EXCLUDE: "1st Infantry Division", "VII Corps", "Third Army", "12th Army Group headquarters"."""
+
+    try:
+        from src.utils.prompt_loader import render_prompt
+
+        prompt = render_prompt(
+            "places",
+            event_name=event_name,
+            event_id=event_id,
+            sub_event_summary=sub_event_summary,
+            sub_event_id=sub_event_id,
+            text=text,
+        )
+    except Exception:
+        pass
 
     return prompt
 

@@ -139,6 +139,7 @@ def enrich_all_groups(
     groups_dir: Path,
     grok_client: GrokClient,
     max_groups: Optional[int] = None,
+    max_workers: int = 6,
 ) -> int:
     """Enrich all people_groups in directory.
 
@@ -157,9 +158,17 @@ def enrich_all_groups(
     logger.info("=" * 60)
 
     enriched = 0
-    for group_file in group_files:
-        if enrich_group(group_file, grok_client):
-            enriched += 1
+
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        futures = {pool.submit(enrich_group, gf, grok_client): gf for gf in group_files}
+        for future in as_completed(futures):
+            try:
+                if future.result():
+                    enriched += 1
+            except Exception as e:
+                logger.warning("Failed to enrich group %s: %s", futures[future].stem, e)
 
     logger.info("=" * 60)
     logger.info("Group enrichment complete: %d/%d enriched", enriched, len(group_files))

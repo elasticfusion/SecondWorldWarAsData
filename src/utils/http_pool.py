@@ -29,13 +29,21 @@ def get_session() -> requests.Session:
         # allowed_methods was called method_whitelist in older urllib3
         try:
             retry_strategy = Retry(
-                allowed_methods=["HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS", "TRACE"],
-                **retry_kwargs,
+                allowed_methods=[
+                    "HEAD",
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "DELETE",
+                    "OPTIONS",
+                    "TRACE",
+                ],
+                **retry_kwargs,  # type: ignore[arg-type]
             )
         except TypeError:
             retry_strategy = Retry(
-                method_whitelist=["HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS", "TRACE"],
-                **retry_kwargs,
+                method_whitelist=["HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS", "TRACE"],  # type: ignore[call-arg]
+                **retry_kwargs,  # type: ignore[arg-type]
             )
 
         # Configure adapter with connection pooling

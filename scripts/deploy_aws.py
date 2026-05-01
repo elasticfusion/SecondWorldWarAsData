@@ -10,7 +10,6 @@ Usage:
 
 import argparse
 import subprocess
-import sys
 import time
 from pathlib import Path
 
@@ -41,7 +40,7 @@ def _get_cf_client(region: str, profile: str | None):
     return boto3.client("cloudformation", **kwargs)
 
 
-def cmd_validate(args):
+def cmd_validate(_args):
     """Validate all CloudFormation templates with cfn-lint."""
     print("Validating CloudFormation templates...\n")
     errors = 0
@@ -104,6 +103,14 @@ def cmd_deploy(args):
                 {
                     "ParameterKey": "OpenSerpImageUri",
                     "ParameterValue": args.openserp_image or "",
+                },
+                {
+                    "ParameterKey": "PipelineImageUri",
+                    "ParameterValue": args.pipeline_image or "",
+                },
+                {
+                    "ParameterKey": "NotificationEmail",
+                    "ParameterValue": args.notification_email or "",
                 },
             ],
             Capabilities=["CAPABILITY_NAMED_IAM"],
@@ -213,6 +220,12 @@ def main():
     )
     deploy_parser.add_argument(
         "--openserp-image", default=None, help="ECR image URI for OpenSERP"
+    )
+    deploy_parser.add_argument(
+        "--pipeline-image", default=None, help="ECR image URI for pipeline container"
+    )
+    deploy_parser.add_argument(
+        "--notification-email", default=None, help="Email for Phase 2 completion notifications"
     )
 
     args = parser.parse_args()

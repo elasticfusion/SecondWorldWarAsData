@@ -1,7 +1,7 @@
 # Configuration Guide
 
 **File:** `config.yaml`  
-**Last Updated:** 2026-04-19
+**Last Updated:** 2026-04-26
 
 Complete reference for all configuration options in the WWII data extraction pipeline.
 
@@ -43,18 +43,18 @@ Settings for external API services.
 api:
   grok:
     base_url: "https://api.x.ai/v1/chat/completions"
-    model: "grok-beta"
+    model: "grok-4-1-fast-non-reasoning"
     max_retries: 3
     timeout: 60
   calls_per_minute: 30            # Rate limit: max API calls per minute (across all threads)
 ```
 
 **Options:**
-- `base_url` - Grok API endpoint
-- `model` - Model to use (`grok-beta`, `grok-2`, etc.)
-- `max_retries` - Number of retry attempts on failure
-- `timeout` - Request timeout in seconds
-- `calls_per_minute` - Proactive rate limit across all threads (default 30). Increase if API allows more; decrease if still seeing 429s.
+- `base_url` — Grok API endpoint
+- `model` — Model to use. Available: `grok-4-1-fast-non-reasoning` (cheapest), `grok-4-fast-non-reasoning`, `grok-4.20-0309-non-reasoning` (flagship). Must support batch API.
+- `max_retries` — Number of retry attempts on failure
+- `timeout` — Request timeout in seconds
+- `calls_per_minute` — Proactive rate limit across all threads (default 30)
 
 **Environment Variables Required:**
 - `GROK_API_KEY` - Your Grok API key (set in `.env`)
@@ -190,12 +190,14 @@ concurrency:
   enabled: false                   # Enable concurrent processing (experimental)
   max_event_files: 3               # Process N event files concurrently
   max_extraction_group: 3          # Max parallel extractions per group
+  max_enrichment_workers: 6        # Phase 3: concurrent enrichment threads per entity type
 ```
 
 **Options:**
 - `enabled` - Enable/disable concurrent chapter processing
 - `max_event_files` - Number of event files to process in parallel
 - `max_extraction_group` - Max parallel extractions within a single group (dates, places, etc.)
+- `max_enrichment_workers` - Phase 3 concurrent threads per entity type (default 6). Grok API calls are rate-limited; extra threads keep search requests (Grokipedia/Wikipedia) running in parallel.
 
 **Note:** Concurrent processing is experimental. See `docs/current/FUTURE_ENHANCEMENTS.md` for distributed processing options.
 
@@ -316,6 +318,69 @@ See `domain_blacklist.yaml` for filtering unwanted domains.
 
 ---
 
+## AWS Configuration
+
+Settings for AWS deployment mode. Set `enabled: true` to use S3/DynamoDB instead of local filesystem.
+
+```yaml
+aws:
+  enabled: false                     # Set true for AWS mode
+  region: "us-east-1"
+  s3_bucket: "dev-wwii-data-pipeline"
+  s3_prefix: ""                      # Optional S3 key prefix
+  cache_table: "dev-wwii-api-cache"  # DynamoDB table for API response cache
+  cache_ttl_days: 90                 # Cache entry TTL
+  secrets_id: "dev-wwii-pipeline/grok-api-key"  # Secrets Manager secret for GROK_API_KEY
+  openserp:
+    cluster: "dev-wwii-pipeline"
+    service: "dev-wwii-openserp"
+    health_check_url: "/health"
+    startup_timeout: 120
+  database:
+    backend: "dynamodb"              # "dynamodb" or "mongodb"
+    dynamodb_table_prefix: "dev-wwii-"
+    mongodb_uri: ""
+```
+
+**Options:**
+- `enabled` — When true, storage uses S3, cache uses DynamoDB, OpenSERP uses ECS Fargate
+- `cache_table` — DynamoDB table for Grok API response caching (avoids re-calling for same prompts)
+- `cache_ttl_days` — How long cached responses are kept (default 90 days)
+- `secrets_id` — Secrets Manager secret name containing the Grok API key
+- `dynamodb_table_prefix` — Prefix for entity tables (people, places, groups, etc.)
+
+**Note:** In ECS containers, the `ecs_entrypoint.py` automatically patches `aws.enabled: true` at runtime.
+
+---
+
+## Prompt Templates
+
+Extraction prompts are loaded from YAML files in `prompts/`. These can be overridden from S3 without rebuilding the container.
+
+```
+prompts/
+├── people.yaml       # People extraction prompt
+├── places.yaml       # Places extraction prompt
+└── ...               # Other entity types
+```
+
+**Each YAML file contains:**
+- `system_prompt` — System message for the LLM
+- `prompt_template` — Main prompt with `{variable}` placeholders
+- `schema` — JSON schema example for the expected output
+- `rules` — List of extraction rules appended to the prompt
+
+**S3 override:** Upload to `s3://<bucket>/prompts/<name>.yaml` to override the local template at runtime. The `prompt_loader.py` checks S3 first, falls back to the container's local copy.
+
+**Variables available in templates:**
+- `{book}`, `{author}`, `{series}` — Book metadata
+- `{event_name}`, `{event_id}` — Event context
+- `{sub_event_summary}`, `{sub_event_id}` — Sub-event context
+- `{text}` — Chapter/section text to extract from
+- `{schema}` — Auto-injected from the `schema` field
+
+---
+
 ## Logging
 
 Control log output and verbosity.
@@ -393,6 +458,30 @@ Optional:
 GROK_API_BASE_URL=https://api.x.ai/v1/chat/completions
 GROK_MODEL=grok-beta
 ```
+
+### ECS Task Environment Variables (AWS mode)
+
+Set automatically by CloudFormation on ECS task definitions:
+
+| Variable | Task | Description |
+|----------|------|-------------|
+| `AWS_DEFAULT_REGION` | All | AWS region |
+| `S3_BUCKET` | All | S3 bucket for content and output |
+| `CACHE_TABLE` | All | DynamoDB table for API cache, locks, and manifests |
+| `SECRETS_ID` | Phase 2/3 | Secrets Manager secret name for Grok API key |
+| `NOTIFICATION_TOPIC_ARN` | All | SNS topic for completion notifications |
+| `CONTENT_TOPIC_ARN` | Phase 2 | SNS topic for content-uploaded events (used to re-trigger pipeline for pending content) |
+| `DEDUP_REVIEW_URL` | Phase 2 | URL of the dedup review UI (included in notification emails) |
+| `ENV_NAME` | All | Environment name prefix (e.g., `dev`) |
+
+### DynamoDB Keys Used by Pipeline
+
+| Key | Written by | Read by | Description |
+|-----|-----------|---------|-------------|
+| `lock#<family>` | Trigger Lambda | Trigger Lambda, entrypoint | Pipeline task locks (conditional put) |
+| `manifest#phase2` | Phase 2 final sync, dedup UI | Phase 3 download | List of S3 keys changed by Phase 2 and dedup review |
+| `pending#content` | Trigger Lambda | Phase 2 post-process | Queued content keys when pipeline is busy |
+| `metrics#<id>` | Phase 2/3 | Metrics API | Batch API metrics |
 
 ---
 

@@ -1,0 +1,44 @@
+system_prompt: |
+  You are a WWII military logistics analysis specialist.
+
+prompt_template: |
+  Extract logistics issues from these WWII sub-events.
+  Look for supply problems, transportation issues, and capacity constraints.
+
+  Sub-events:
+  {sub_event_block}
+
+  Return JSON keyed by Sub-eventID matching this structure:
+  {schema}
+
+schema: |
+  {
+    "SUB_EVENT_ID": [
+      {
+        "LogisticsID": "01ULID...",
+        "type": "supply_shortage",
+        "category": "ammunition",
+        "description": "Ammunition supplies critically low for VII Corps",
+        "severity": "critical",
+        "date_string": "1944-07-15",
+        "delivery_method": "truck convoy",
+        "status": "unresolved",
+        "quantity": {"amount": 500, "unit": "tons", "shortfall": 200},
+        "impacted_organizations": [{"name": "VII Corps", "nationality": "USA", "role": "recipient"}],
+        "impacted_people": [],
+        "impacted_places": [{"name": "St. Lô"}],
+        "weather_impact": "Rain delayed supply convoys",
+        "resolution": null,
+        "context": "Breakout operations stalled due to ammunition shortage",
+        "paragraph_numbers": [23, 24]
+      }
+    ]
+  }
+
+rules:
+  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
+  - Type values: supply_shortage, transportation_disruption, capacity_constraint, distribution_failure, production_delay
+  - Severity values: critical, high, medium, low
+  - Status values: resolved, unresolved, partially_resolved
+  - Country codes use ISO 3166-1 alpha-3
+  - If no logistics issues found for a sub-event, return empty array for that key

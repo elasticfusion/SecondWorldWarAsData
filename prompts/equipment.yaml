@@ -1,0 +1,41 @@
+system_prompt: |
+  You are a WWII military equipment identification specialist.
+
+prompt_template: |
+  Extract military equipment mentioned in this WWII event data.
+  Identify specific equipment by name/designation, not generic categories.
+
+  Event data:
+  {event_data}
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {
+    "Equipment": [
+      {
+        "EquipmentID": "01ULID...",
+        "common_name": "M4 Sherman",
+        "technical_identifier": "M4A1",
+        "category": "armor",
+        "subcategory": "medium_tank",
+        "country_of_origin": "USA",
+        "variants": [],
+        "specifications": {},
+        "using_unit_name": "2nd Armored Division",
+        "using_person_name": null,
+        "performance_notes": "Effective against infantry positions",
+        "context": "Used in breakout operations",
+        "original_text": "Sherman tanks of the 2nd Armored",
+        "paragraph_numbers": [15, 16]
+      }
+    ]
+  }
+
+rules:
+  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
+  - Category values: armor, aircraft, naval, artillery, infantry_weapons, vehicles, communications, engineering, other
+  - Country codes use ISO 3166-1 alpha-3 (USA, GBR, DEU, FRA, etc.)
+  - Only extract specifically named equipment, not generic references
+  - If no equipment found, return empty Equipment array

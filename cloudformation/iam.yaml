@@ -69,6 +69,14 @@ Resources:
                   - sqs:SendMessage
                 Resource:
                   - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-*-dlq
+              - Sid: SQSTriggerQueue
+                Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource:
+                  - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-trigger-queue
               - Sid: ECSManagement
                 Effect: Allow
                 Action:
@@ -78,6 +86,13 @@ Resources:
                   - ecs:DescribeTasks
                   - ecs:RunTask
                 Resource: '*'
+              - Sid: PassRole
+                Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource:
+                  - !GetAtt ECSTaskRole.Arn
+                  - !GetAtt ECSTaskExecutionRole.Arn
               - Sid: CloudWatch
                 Effect: Allow
                 Action:
@@ -122,15 +137,50 @@ Resources:
               Service: ecs-tasks.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: CloudWatchLogs
+        - PolicyName: PipelineTaskAccess
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
-              - Effect: Allow
+              - Sid: CloudWatchLogs
+                Effect: Allow
                 Action:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: '*'
+              - Sid: S3Access
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:ListBucket
+                  - s3:DeleteObject
+                Resource:
+                  - !Ref DataBucketArn
+                  - !Sub ${DataBucketArn}/*
+              - Sid: DynamoDBAccess
+                Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:BatchWriteItem
+                  - dynamodb:Scan
+                  - dynamodb:Query
+                Resource:
+                  - !Ref CacheTableArn
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${EnvironmentName}-wwii-*
+              - Sid: SecretsManager
+                Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${EnvironmentName}-wwii-*
+              - Sid: SNSPublish
+                Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource:
+                  - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-*
 
   ECSTaskExecutionRole:
     Type: AWS::IAM::Role

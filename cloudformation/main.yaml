@@ -18,6 +18,13 @@ Parameters:
   OpenSerpImageUri:
     Type: String
     Description: ECR image URI for OpenSERP container
+  PipelineImageUri:
+    Type: String
+    Description: ECR image URI for pipeline container
+  NotificationEmail:
+    Type: String
+    Default: ''
+    Description: Email for pipeline notifications (leave empty to skip)
 
 Resources:
   NetworkStack:
@@ -63,6 +70,7 @@ Resources:
         LambdaCodeBucket: !Ref LambdaCodeBucket
         LambdaCodeKey: !Ref LambdaCodeKey
         OpenSerpImageUri: !Ref OpenSerpImageUri
+        PipelineImageUri: !Ref PipelineImageUri
 
   EventsStack:
     Type: AWS::CloudFormation::Stack
@@ -71,10 +79,10 @@ Resources:
       Parameters:
         EnvironmentName: !Ref EnvironmentName
         DataBucketArn: !GetAtt StorageStack.Outputs.DataBucketArn
-        Phase1FunctionArn: !GetAtt ComputeStack.Outputs.Phase1FunctionArn
-        Phase2FunctionArn: !GetAtt ComputeStack.Outputs.Phase2FunctionArn
-        Phase3FunctionArn: !GetAtt ComputeStack.Outputs.Phase3FunctionArn
+        DataBucketName: !GetAtt StorageStack.Outputs.DataBucketName
+        TriggerFunctionArn: !GetAtt ComputeStack.Outputs.TriggerFunctionArn
         OpenSerpManagerFunctionArn: !GetAtt ComputeStack.Outputs.OpenSerpManagerFunctionArn
+        NotificationEmail: !Ref NotificationEmail
 
 Outputs:
   DataBucket:
@@ -85,3 +93,5 @@ Outputs:
     Value: !GetAtt ComputeStack.Outputs.OpenSerpALBDns
   VpcId:
     Value: !GetAtt NetworkStack.Outputs.VpcId
+  DedupReviewUrl:
+    Value: !GetAtt ComputeStack.Outputs.DedupApiUrl

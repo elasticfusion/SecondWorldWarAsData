@@ -7,7 +7,10 @@ import os
 import threading
 import time as _time
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.utils.cache_backend import CacheBackend
 
 import requests
 from dotenv import load_dotenv
@@ -70,6 +73,42 @@ class BatchModeCollecting(Exception):
     """Raised in batch mode when a request is queued instead of sent."""
 
 
+def _save_metrics(metrics: Any) -> None:
+    """Persist batch metrics to local JSON and optionally DynamoDB."""
+    import time as _t
+
+    # Save locally
+    metrics_dir = Path("output/metrics")
+    metrics_dir.mkdir(parents=True, exist_ok=True)
+    filename = f"batch_{metrics.batch_id}_{int(_t.time())}.json"
+    with open(metrics_dir / filename, "w", encoding="utf-8") as f:
+        json.dump(metrics.to_dict(), f, indent=2, default=str)
+    logger.info("Saved metrics to %s", metrics_dir / filename)
+
+    # Save to DynamoDB if available
+    try:
+        from src.utils.config import load_config
+
+        cfg = load_config()
+        if cfg.get("aws", {}).get("enabled"):
+            import boto3
+
+            table_name = cfg["aws"].get("cache_table", "wwii-api-cache")
+            region = cfg["aws"].get("region", "us-east-1")
+            table = boto3.resource("dynamodb", region_name=region).Table(table_name)
+            table.put_item(
+                Item={
+                    "cache_key": f"metrics#{metrics.batch_id}",
+                    "response": json.dumps(metrics.to_dict(), default=str),
+                    "created_at": int(_t.time()),
+                    "ttl": int(_t.time()) + 90 * 86400,
+                }
+            )
+            logger.info("Saved metrics to DynamoDB: metrics#%s", metrics.batch_id)
+    except Exception as e:
+        logger.warning("Failed to save metrics to DynamoDB: %s", e)
+
+
 class GrokClient:
     """Client for Grok API with caching and retry logic."""
 
@@ -86,23 +125,39 @@ class GrokClient:
             api_key: Grok API key (falls back to GROK_API_KEY env var).
             batch_mode: If True, collect requests for xAI Batch API.
         """
-        from src.utils.cache_backend import CacheBackend, DiskCacheBackend
+        from src.utils.cache_backend import CacheBackend as _CB, DiskCacheBackend
+
+        self.cache_dir: Optional[Path] = None
+        self._cache_backend: _CB
 
         if isinstance(cache_dir, Path):
-            self.cache_dir = cache_dir
-            self._cache_backend = DiskCacheBackend(cache_dir)
+            # Check if AWS mode is enabled — use DynamoDB cache instead of disk
+            from src.utils.config import load_config
+
+            cfg = load_config()
+            aws_cfg = cfg.get("aws", {})
+            if aws_cfg.get("enabled"):
+                from src.utils.cache_backend import DynamoCacheBackend
+
+                self.cache_dir = cache_dir  # keep for batch JSONL writes
+                self._cache_backend = DynamoCacheBackend(
+                    table_name=aws_cfg.get("cache_table", "wwii-api-cache"),
+                    region=aws_cfg.get("region", "us-east-1"),
+                    ttl_days=aws_cfg.get("cache_ttl_days", 90),
+                )
+            else:
+                self.cache_dir = cache_dir
+                self._cache_backend = DiskCacheBackend(cache_dir)
         else:
-            self.cache_dir = None
-            self._cache_backend = cache_dir
-        self.api_key = api_key or os.getenv("GROK_API_KEY")
+            self._cache_backend = cache_dir  # type: ignore[assignment]
+        self.api_key: str = api_key or os.getenv("GROK_API_KEY") or ""
         if not self.api_key:
             raise ValueError("GROK_API_KEY not found in environment")
 
         self.base_url = os.getenv(
             "GROK_API_BASE_URL", "https://api.x.ai/v1/chat/completions"
         )
-        self.model = os.getenv("GROK_MODEL", "grok-beta")
-        self.cache_dir = cache_dir
+        self.model = os.getenv("GROK_MODEL", "grok-4-1-fast-non-reasoning")
         self.caches: Dict[str, Any] = {}  # Cache per extraction type
         self.timeout = 600.0  # 10 minutes for large chapters
 
@@ -145,6 +200,10 @@ class GrokClient:
         calls_per_minute = config.get("api", {}).get("calls_per_minute", 30)
         self._rate_limiter = _RateLimiter(calls_per_minute)
 
+        # Cache stats
+        self._cache_hits = 0
+        self._cache_misses = 0
+
         # Batch mode — collect requests instead of sending them
         self.batch_mode = batch_mode
         self._batch_collector = None
@@ -170,6 +229,17 @@ class GrokClient:
             self.caches[cache_key] = self._cache_backend.get_sub_cache(cache_key)
         return self.caches[cache_key]
 
+    def log_cache_stats(self) -> None:
+        """Log cache hit/miss summary at INFO level."""
+        total = self._cache_hits + self._cache_misses
+        if total == 0:
+            return
+        rate = self._cache_hits / total * 100
+        logger.info(
+            "Cache stats: %d hits, %d misses, %.1f%% hit rate",
+            self._cache_hits, self._cache_misses, rate,
+        )
+
     def _make_cache_key(self, prompt: str, temperature: float) -> str:
         """Create cache key from prompt and parameters."""
         import hashlib
@@ -185,48 +255,86 @@ class GrokClient:
         key = self._make_cache_key(prompt, temperature)
         return cache.pop(key, None) is not None
 
-    def submit_batch(self, batch_name: str = "pipeline") -> Optional[str]:
+    def submit_batch(  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+        self, batch_name: str = "pipeline"
+    ) -> Optional[str]:
         """Submit collected batch requests to xAI Batch API.
 
-        Returns batch_id, or None if no requests to submit.
+        Validates each result (finish_reason, JSON parse) before caching.
+        Failed/truncated requests are retried via real-time API if under
+        the failure threshold (20%). Returns batch_id, or None if nothing to submit.
         """
         if not self._batch_collector or len(self._batch_collector) == 0:
             logger.info("No batch requests to submit (all cached)")
             return None
 
-        from src.utils.batch_api import submit_batch, poll_batch, retrieve_results
+        from src.utils.batch_api import (
+            BatchMetrics,
+            RequestDetail,
+            submit_batch,
+            poll_batch,
+            retrieve_results,
+        )
 
         # Write JSONL
+        if not self.cache_dir:
+            raise GrokAPIError("cache_dir required for batch mode")
         jsonl_path = self.cache_dir / "batch_requests.jsonl"
         count = self._batch_collector.write_jsonl(jsonl_path)
         logger.info("Wrote %d requests to %s", count, jsonl_path)
 
-        # Save request metadata for cache population later
+        # Index requests by id for retry lookup
+        requests_by_id = {r.request_id: r for r in self._batch_collector.requests}
         self._batch_meta = {
             r.request_id: r.cache_type for r in self._batch_collector.requests
         }
 
-        # Submit
+        # Submit and poll
         batch_id = submit_batch(self.api_key, jsonl_path, batch_name)
-
-        # Poll
         logger.info("Waiting for batch to complete (may take minutes to hours)...")
-        poll_batch(self.api_key, batch_id)
+        batch_state = poll_batch(self.api_key, batch_id)
 
-        # Retrieve and populate cache
+        # Retrieve rich results
         results = retrieve_results(self.api_key, batch_id)
-        populated = 0
-        for request_id, content in results.items():
-            cache_type = self._batch_meta.get(request_id, "default")
-            cache = self._get_cache(cache_type)
-            import re
 
-            content = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", content)
-            content = re.sub(r'\\(?!["\\/bfnrtu]|u[0-9a-fA-F]{4})', r"\\\\", content)
-            cache[request_id] = content
-            populated += 1
+        # Build metrics
+        metrics = BatchMetrics(
+            batch_id=batch_id,
+            total_requests=count,
+            poll_seconds=batch_state.get("_poll_seconds", 0.0),
+        )
+        state = batch_state.get("state", {})
+        metrics.api_successes = state.get("num_success", 0)
+        metrics.api_errors = state.get("num_error", 0)
 
-        logger.info("Populated %d cache entries from batch results", populated)
+        # Validate and classify results
+        failed_ids = self._classify_batch_results(
+            results, requests_by_id, metrics, RequestDetail
+        )
+
+        # Flag requests that were submitted but got no result
+        for request_id in requests_by_id:
+            if request_id not in results:
+                metrics.empty += 1
+                logger.warning("Batch result %s missing from response", request_id)
+                failed_ids.append(request_id)
+                metrics.add_detail(
+                    RequestDetail(
+                        request_id=request_id,
+                        cache_type=self._batch_meta.get(request_id, "default"),
+                        status="missing",
+                        prompt_preview=self._batch_prompt_preview(
+                            request_id, requests_by_id
+                        ),
+                    )
+                )
+
+        # Retry failed requests via real-time API
+        if failed_ids:
+            self._retry_failed_batch(failed_ids, requests_by_id, metrics, count)
+
+        metrics.log_summary()
+        _save_metrics(metrics)
 
         # Clean up
         jsonl_path.unlink(missing_ok=True)
@@ -234,6 +342,139 @@ class GrokClient:
         self.batch_mode = False
 
         return batch_id
+
+    @staticmethod
+    def _batch_prompt_preview(rid: str, requests_by_id: dict) -> str:
+        """Extract first 200 chars of user prompt for a batch request."""
+        req = requests_by_id.get(rid)
+        if not req:
+            return ""
+        for msg in reversed(req.messages):
+            if msg.get("role") == "user":
+                return str(msg.get("content", ""))[:200]
+        return ""
+
+    def _sanitize_content(self, content: str) -> str:
+        """Remove control chars and fix invalid JSON escapes."""
+        import re  # pylint: disable=import-outside-toplevel
+
+        content = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", content)
+        content = re.sub(r'\\(?!["\\/bfnrtu]|u[0-9a-fA-F]{4})', r"\\\\", content)
+        return content
+
+    def _classify_batch_results(
+        self, results, requests_by_id, metrics, RequestDetail
+    ) -> list:
+        """Validate each batch result, cache valid ones, return failed IDs."""
+        failed_ids: list = []
+        populated = 0
+
+        for request_id, br in results.items():
+            cache_type = self._batch_meta.get(request_id, "default")
+            status = br.status
+
+            # Cache valid results
+            if status == "valid":
+                metrics.valid += 1
+                cache = self._get_cache(cache_type)
+                cache[request_id] = self._sanitize_content(br.content)
+                populated += 1
+            else:
+                # Increment the appropriate counter
+                counter_map = {
+                    "truncated": "truncated",
+                    "error": "empty",
+                    "other_finish": "other_finish",
+                }
+                setattr(
+                    metrics,
+                    counter_map.get(status, "empty"),
+                    getattr(metrics, counter_map.get(status, "empty")) + 1,
+                )
+                logger.warning(
+                    "Batch result %s: %s (finish_reason=%s, %d chars)",
+                    request_id,
+                    status,
+                    br.finish_reason,
+                    len(br.content),
+                )
+                failed_ids.append(request_id)
+
+            metrics.add_detail(
+                RequestDetail(
+                    request_id=request_id,
+                    cache_type=cache_type,
+                    status=status,
+                    finish_reason=br.finish_reason,
+                    content_length=len(br.content),
+                    error=br.error if status == "error" else "",
+                    prompt_preview=self._batch_prompt_preview(
+                        request_id, requests_by_id
+                    ),
+                )
+            )
+
+        logger.info("Populated %d cache entries from batch results", populated)
+        return failed_ids
+
+    def _retry_failed_batch(
+        self, failed_ids: list, requests_by_id: dict, metrics, count: int
+    ) -> None:
+        """Retry failed batch requests via real-time API."""
+        failure_pct = len(failed_ids) / count * 100
+        metrics.retried = len(failed_ids)
+
+        if failure_pct > 20:
+            logger.error(
+                "Batch failure rate %.0f%% (%d/%d) exceeds 20%% threshold — "
+                "skipping real-time retry, likely systemic issue",
+                failure_pct,
+                len(failed_ids),
+                count,
+            )
+            metrics.retry_failed = len(failed_ids)
+            return
+
+        logger.info(
+            "Retrying %d failed batch requests via real-time API (%.0f%%)",
+            len(failed_ids),
+            failure_pct,
+        )
+        self.batch_mode = False
+        for rid in failed_ids:
+            req = requests_by_id.get(rid)
+            if not req:
+                metrics.retry_failed += 1
+                continue
+            try:
+                result = self._call_api(req.messages, req.temperature)
+                content = self._sanitize_content(
+                    result["choices"][0]["message"]["content"]
+                )
+                cache_type = self._batch_meta.get(rid, "default")
+                cache = self._get_cache(cache_type)
+                cache[rid] = content
+                metrics.retry_recovered += 1
+                self._update_detail(metrics, rid, "retry_ok", len(content))
+                logger.info("✓ Retry succeeded for %s", rid)
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                metrics.retry_failed += 1
+                self._update_detail(metrics, rid, "retry_fail", error=str(e)[:200])
+                logger.error("✗ Retry failed for %s: %s", rid, e)
+
+    @staticmethod
+    def _update_detail(
+        metrics, rid: str, status: str, content_length: int = 0, error: str = ""
+    ) -> None:
+        """Update an existing RequestDetail record after retry."""
+        for d in metrics.request_details:
+            if d.request_id == rid:
+                d.status = status
+                if content_length:
+                    d.content_length = content_length
+                if error:
+                    d.error = error
+                break
 
     @retry(
         stop=stop_after_attempt(5),
@@ -415,7 +656,10 @@ class GrokClient:
 
         if use_cache and cache_key in cache:
             logger.debug("[API] CACHE HIT | type=%s key=%s", cache_type, cache_key[:16])
+            self._cache_hits += 1
             return cache[cache_key]
+
+        self._cache_misses += 1
 
         # Batch mode: queue request instead of calling API
         if self.batch_mode:
@@ -425,7 +669,7 @@ class GrokClient:
             if system_prompt:
                 messages.append({"role": "system", "content": system_prompt})
             messages.append({"role": "user", "content": prompt})
-            self._batch_collector.add(
+            self._batch_collector.add(  # type: ignore[union-attr]
                 BatchRequest(
                     request_id=cache_key,
                     messages=messages,
@@ -537,7 +781,7 @@ class GrokClient:
 
         if use_cache and cache_key in cache:
             logger.info("Cache hit for image analysis")
-            return cache[cache_key]
+            return cache[cache_key]  # type: ignore[return-value]
 
         # Build image data URL
         content_type = self._detect_image_type(image_base64)
@@ -599,7 +843,7 @@ class GrokClient:
 
         if use_cache and cache_key in cache:
             logger.info(f"Cache hit for image analysis")
-            return cache[cache_key]
+            return cache[cache_key]  # type: ignore[return-value]
 
         # Download image and convert to base64
         import base64
@@ -755,9 +999,10 @@ class GrokClient:
         """Generate cache clearing command for specific entry."""
         cache = self._get_cache(cache_type)
         cache_key = self._make_cache_key(prompt, temperature)
+        cache_dir = getattr(cache, "directory", "unknown")
         return (
             f'python3 -c "from diskcache import Cache; '
-            f"c=Cache('{cache.directory}'); "
+            f"c=Cache('{cache_dir}'); "
             f"c.pop('{cache_key}', None); "
             f"print('Cache entry cleared')\""
         )
@@ -981,6 +1226,8 @@ class GrokClient:
         if use_cache and cache_key in cache:
             logger.info("Cache hit for %s", schema.__name__)
             cached_data = cache[cache_key]
+            if isinstance(cached_data, str):
+                cached_data = json.loads(cached_data)
             return schema.model_validate(cached_data)
 
         logger.info("Calling Grok API for %s", schema.__name__)
@@ -998,6 +1245,6 @@ class GrokClient:
         parsed = schema.model_validate(json_response)
 
         # Cache the result
-        cache[cache_key] = parsed.model_dump()
+        cache[cache_key] = json.dumps(parsed.model_dump())
 
         return parsed

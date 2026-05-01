@@ -431,7 +431,30 @@ For biography_sources, include:
 - fields_sourced: List of field names extracted from this source
 
 Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
-If no people found, return empty People array."""
+If no people found, return empty People array.
+
+IMPORTANT: Do NOT extract military units, divisions, corps, armies, or organizations as people.
+Entries beginning with numbers (1st, 2nd, 3rd), Roman numerals (I, II, III, IV, V, VI, VII),
+or number words (First, Second, Third) are military units and belong in people_groups, not people.
+Examples of what to EXCLUDE: "1st Infantry Division", "VII Corps", "Third Army", "II SS Panzer Corps"."""
+
+    # Use YAML template if available, fall back to hardcoded prompt
+    try:
+        from src.utils.prompt_loader import render_prompt
+
+        prompt = render_prompt(
+            "people",
+            book=book,
+            author=author,
+            series=series,
+            event_name=event_name,
+            event_id=event_id,
+            sub_event_summary=sub_event_summary,
+            sub_event_id=sub_event_id,
+            text=text,
+        )
+    except Exception:
+        pass  # keep hardcoded prompt as fallback
 
     return prompt
 

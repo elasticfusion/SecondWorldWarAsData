@@ -83,7 +83,7 @@ def _load_exclusions(equipment_dir: Path) -> Set[tuple]:
         return set()
     with open(exclusion_file, "r", encoding="utf-8") as f:
         data = json.load(f)
-    return {tuple(sorted([p["file1"], p["file2"]])) for p in data.get("exclusions", [])}
+    return {tuple(sorted([p.get("person1", p.get("file1", "")), p.get("person2", p.get("file2", ""))])) for p in data.get("exclusions", [])}
 
 
 def _score_pair(item1: Dict, item2: Dict) -> tuple:

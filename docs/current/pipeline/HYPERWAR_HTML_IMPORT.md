@@ -115,6 +115,8 @@ Markdown content is blockquoted to match the existing style:
 
 Run the standard pipeline:
 
+**Local mode:**
+
 ```bash
 # 1. Parse markdown to JSON
 python3 phase1_parse.py
@@ -122,6 +124,16 @@ python3 phase1_parse.py
 # 2. Extract entities
 python3 phase2_retry.py
 ```
+
+**AWS mode:**
+
+Upload the imported content to S3 to trigger the pipeline:
+
+```bash
+aws s3 sync contentrepository/<BookName>/ s3://dev-wwii-data-pipeline/content/<BookName>/
+```
+
+See [Adding Data Sources](ADDING_DATA_SOURCES.md) for details on both modes.
 
 ## Supported Sources
 

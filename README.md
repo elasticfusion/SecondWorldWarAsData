@@ -3,8 +3,8 @@
 Extract structured data from World War II historical documents using AI-powered entity extraction.
 
 **Status:** Production Ready  
-**Version:** 2.1  
-**Last Updated:** 2026-04-19
+**Version:** 2.2  
+**Last Updated:** 2026-04-26
 
 ---
 
@@ -13,7 +13,7 @@ Extract structured data from World War II historical documents using AI-powered 
 | Mode | Description | Guide |
 |------|-------------|-------|
 | **Local** | Run on your machine with filesystem storage | **[Local Deployment Guide](docs/current/LOCAL_DEPLOYMENT.md)** |
-| **AWS** | Lambda + ECS + S3 + DynamoDB | **[AWS Deployment Guide](docs/current/AWS_DEPLOYMENT.md)** |
+| **AWS** | ECS Fargate + S3 + DynamoDB | **[AWS Deployment Guide](docs/current/AWS_DEPLOYMENT.md)** |
 
 Both modes use the same codebase. Set `aws.enabled: true` in `config.yaml` to switch to AWS mode.
 
@@ -42,6 +42,7 @@ Extracts 11 entity types from WWII historical documents:
 ```
 Phase 1: Parse     — Markdown → JSON (seconds)
 Phase 2: Extract   — JSON → 11 entity types via Grok API (minutes per chapter)
+        Dedup     — Duplicate detection + human review gate
 Phase 3: Enrich    — People/groups/places/bibliography enrichment (seconds per entity)
 Phase 4: Import    — JSON → MongoDB or DynamoDB (seconds)
 ```
@@ -55,6 +56,8 @@ See [Pipeline Overview](docs/current/core/PIPELINE.md) | [Workflow Diagrams](doc
 ```
 SecondWorldWarAsData/
 ├── config.yaml                    # Configuration (local + AWS)
+├── Dockerfile                     # Pipeline container image
+├── ecs_entrypoint.py              # ECS task entrypoint (S3 sync, config patch)
 ├── phase1_parse.py                # Parse markdown → JSON
 ├── phase2_extract.py              # Extract entities
 ├── phase2_retry.py                # Retry wrapper
@@ -62,13 +65,14 @@ SecondWorldWarAsData/
 ├── phase3_retry.py                # Retry wrapper
 ├── import_to_mongodb.py           # Import to MongoDB
 ├── import_to_dynamodb.py          # Import to DynamoDB
+├── prompts/                       # YAML prompt templates (S3-overridable)
 ├── contentrepository/             # Source documents (markdown)
 ├── output/                        # Extracted data (JSON)
 ├── src/                           # Source code
 │   ├── extraction/                # Extraction modules (11 entity types)
-│   ├── utils/                     # Utilities (storage, cache, config)
+│   ├── utils/                     # Utilities (storage, cache, config, prompt_loader)
 │   └── grok_client.py             # Grok API client
-├── lambda_handlers/               # AWS Lambda entry points
+├── lambda_handlers/               # AWS Lambda (trigger, dedup UI, auth, metrics)
 ├── cloudformation/                # AWS infrastructure templates
 ├── scripts/                       # Utility scripts
 ├── tools/                         # Go tools (OpenSERP search)

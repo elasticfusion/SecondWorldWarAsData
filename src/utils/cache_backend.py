@@ -109,7 +109,7 @@ class DynamoCacheBackend:
 
     def clear(self) -> None:
         """Delete all items with this prefix. Use with caution."""
-        scan_kwargs = {}
+        scan_kwargs: dict = {}  # type: ignore[type-arg]
         if self.prefix:
             scan_kwargs["FilterExpression"] = "begins_with(cache_key, :prefix)"
             scan_kwargs["ExpressionAttributeValues"] = {":prefix": self.prefix}

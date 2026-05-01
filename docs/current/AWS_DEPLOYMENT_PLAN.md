@@ -139,20 +139,25 @@ Phase 1 writes *-parsed.json to S3
 
 **Shared entity handling:** Each Lambda writes entities with unique keys to S3. S3 PutObject is atomic — no file locking needed. The `locked_json` pattern becomes: read from S3, modify, put back with conditional write (ETag-based optimistic locking via `If-Match`).
 
-### 3. Entity Files → Phase 3 (Enrich)
+### 3. Entity Files → Dedup Gate → Phase 3 (Enrich)
 
 ```
 Phase 2 writes entity files to S3
   → S3 Event Notification (prefix: output/people/, output/places/, etc.)
     → SNS Topic (entity-created)
-      → Lambda: phase3-enrich
-        Reads: s3://{bucket}/output/people/{PersonID}.json
-        Calls: Grok API, Wikipedia, Grokipedia
-        Writes: s3://{bucket}/output/people/{PersonID}.json (enriched)
-        Cache: DynamoDB
+      → Lambda: dedup-gate
+        Reads: dedup/review_status.json
+        If NOT complete: event dropped (Phase 3 blocked)
+        If complete: forwards to Lambda: phase3-enrich
+
+User reviews duplicates in Dedup Review UI (API Gateway + Basic Auth)
+  → Clicks "Mark Complete"
+    → SNS Topic (dedup-complete)
+      → Lambda: dedup-gate
+        Invokes Phase 3 for ALL entity files in output/people/, places/, groups/, bibliography/
 ```
 
-Phase 3 is naturally per-entity — each person/group/place is independent.
+Phase 3 does not start until the human review is done.
 
 ### 4. Enriched Files → Import
 
@@ -227,7 +232,9 @@ lambda_handlers/
 ├── phase2_handler.py      # S3 event → extract entities → write to S3
 ├── phase3_handler.py      # S3 event → enrich entity → write to S3
 ├── import_handler.py      # Manual trigger → import to DynamoDB
-└── openserp_manager.py    # Start/stop/health-check ECS OpenSERP task
+├── openserp_manager.py    # Start/stop/health-check ECS OpenSERP task
+├── dedup_ui_handler.py    # API Gateway → HTML review UI + merge/skip/exclude API
+└── dedup_gate_handler.py  # SNS → check review status → conditionally invoke Phase 3
 ```
 
 Each handler:

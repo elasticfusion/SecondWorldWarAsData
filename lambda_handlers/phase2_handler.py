@@ -46,6 +46,7 @@ def handler(event, _context):
             logger.error("Failed to extract %s: %s", key, e)
             results["failed"] += 1
 
+    _notify_phase2_complete(results, config)
     return results
 
 
@@ -98,3 +99,35 @@ def _extract_chapter(key: str, storage, grok_client, config: dict) -> None:
             dest = f"output/{book_name}/{result.name}"
             storage.write_json(dest, json.loads(result.read_text(encoding="utf-8")))
             logger.info("Uploaded: %s", dest)
+
+
+def _notify_phase2_complete(results: dict, config: dict) -> None:
+    """Publish Phase 2 completion notification to SNS."""
+    topic_arn = os.getenv("PHASE2_COMPLETE_TOPIC_ARN", "")
+    if not topic_arn:
+        return
+
+    aws = config.get("aws", {})
+    if not aws.get("enabled"):
+        return
+
+    import boto3
+
+    sns = boto3.client("sns", region_name=aws.get("region", "us-east-1"))
+    dedup_url = os.getenv("DEDUP_REVIEW_URL", "")
+
+    message = (
+        f"Phase 2 extraction complete.\n\n"
+        f"Processed: {results['processed']}\n"
+        f"Failed: {results['failed']}\n\n"
+        f"Next step: Review duplicates before Phase 3 enrichment.\n"
+        f"Dedup Review UI: {dedup_url}\n\n"
+        f"Phase 3 is blocked until you complete the review."
+    )
+
+    sns.publish(
+        TopicArn=topic_arn,
+        Subject="WWII Pipeline: Phase 2 Complete — Review Duplicates",
+        Message=message,
+    )
+    logger.info("Phase 2 completion notification sent")

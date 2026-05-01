@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: WWII Pipeline - Compute (Lambda functions, ECS cluster/service, ALB)
+Description: WWII Pipeline - Compute (ECS tasks for pipeline, Lambda for trigger/dedup/openserp, ALB)
 
 Parameters:
   EnvironmentName:
@@ -35,127 +35,322 @@ Parameters:
   OpenSerpImageUri:
     Type: String
     Description: ECR image URI for OpenSERP container
+  PipelineImageUri:
+    Type: String
+    Description: ECR image URI for pipeline container
 
 Resources:
-  # --- Dead Letter Queues ---
-  Phase1DLQ:
-    Type: AWS::SQS::Queue
+  # --- ECS Cluster ---
+  ECSCluster:
+    Type: AWS::ECS::Cluster
     Properties:
-      QueueName: !Sub ${EnvironmentName}-wwii-phase1-dlq
-      MessageRetentionPeriod: 1209600
+      ClusterName: !Sub ${EnvironmentName}-wwii-pipeline
 
-  Phase2DLQ:
-    Type: AWS::SQS::Queue
+  # --- Pipeline ECS Log Group ---
+  PipelineLogGroup:
+    Type: AWS::Logs::LogGroup
     Properties:
-      QueueName: !Sub ${EnvironmentName}-wwii-phase2-dlq
-      MessageRetentionPeriod: 1209600
+      LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-pipeline
+      RetentionInDays: 14
 
-  Phase3DLQ:
-    Type: AWS::SQS::Queue
+  # --- Pipeline ECS Task Definitions ---
+  Phase1TaskDef:
+    Type: AWS::ECS::TaskDefinition
     Properties:
-      QueueName: !Sub ${EnvironmentName}-wwii-phase3-dlq
-      MessageRetentionPeriod: 1209600
+      Family: !Sub ${EnvironmentName}-wwii-phase1-parse
+      Cpu: '512'
+      Memory: '1024'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      TaskRoleArn: !Ref ECSTaskRoleArn
+      ExecutionRoleArn: !Ref ECSTaskExecutionRoleArn
+      ContainerDefinitions:
+        - Name: pipeline
+          Image: !Ref PipelineImageUri
+          Command: ['phase1_parse.py']
+          Environment:
+            - Name: AWS_DEFAULT_REGION
+              Value: !Ref AWS::Region
+            - Name: S3_BUCKET
+              Value: !Ref DataBucketName
+            - Name: NOTIFICATION_TOPIC_ARN
+              Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref PipelineLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: phase1
 
-  ImportDLQ:
-    Type: AWS::SQS::Queue
+  Phase2TaskDef:
+    Type: AWS::ECS::TaskDefinition
     Properties:
-      QueueName: !Sub ${EnvironmentName}-wwii-import-dlq
-      MessageRetentionPeriod: 1209600
+      Family: !Sub ${EnvironmentName}-wwii-phase2-extract
+      Cpu: '1024'
+      Memory: '2048'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      TaskRoleArn: !Ref ECSTaskRoleArn
+      ExecutionRoleArn: !Ref ECSTaskExecutionRoleArn
+      ContainerDefinitions:
+        - Name: pipeline
+          Image: !Ref PipelineImageUri
+          Command: ['phase2_extract.py', '--batch']
+          Environment:
+            - Name: AWS_DEFAULT_REGION
+              Value: !Ref AWS::Region
+            - Name: S3_BUCKET
+              Value: !Ref DataBucketName
+            - Name: CACHE_TABLE
+              Value: !Ref CacheTableName
+            - Name: SECRETS_ID
+              Value: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key
+            - Name: NOTIFICATION_TOPIC_ARN
+              Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+            - Name: DEDUP_REVIEW_URL
+              Value: !Sub https://${DedupApi}.execute-api.${AWS::Region}.amazonaws.com/app/dedup
+            - Name: CONTENT_TOPIC_ARN
+              Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-content-uploaded
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref PipelineLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: phase2
 
-  # --- Lambda Functions ---
-  Phase1Function:
+  Phase3TaskDef:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${EnvironmentName}-wwii-phase3-enrich
+      Cpu: '1024'
+      Memory: '2048'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      TaskRoleArn: !Ref ECSTaskRoleArn
+      ExecutionRoleArn: !Ref ECSTaskExecutionRoleArn
+      ContainerDefinitions:
+        - Name: pipeline
+          Image: !Ref PipelineImageUri
+          Command: ['phase3_enrich_data.py', '--batch']
+          Environment:
+            - Name: AWS_DEFAULT_REGION
+              Value: !Ref AWS::Region
+            - Name: S3_BUCKET
+              Value: !Ref DataBucketName
+            - Name: CACHE_TABLE
+              Value: !Ref CacheTableName
+            - Name: SECRETS_ID
+              Value: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key
+            - Name: NOTIFICATION_TOPIC_ARN
+              Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref PipelineLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: phase3
+
+  ImportTaskDef:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${EnvironmentName}-wwii-import
+      Cpu: '512'
+      Memory: '1024'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      TaskRoleArn: !Ref ECSTaskRoleArn
+      ExecutionRoleArn: !Ref ECSTaskExecutionRoleArn
+      ContainerDefinitions:
+        - Name: pipeline
+          Image: !Ref PipelineImageUri
+          Command: ['import_to_dynamodb.py', '--prefix', !Sub '${EnvironmentName}-wwii-']
+          Environment:
+            - Name: AWS_DEFAULT_REGION
+              Value: !Ref AWS::Region
+            - Name: S3_BUCKET
+              Value: !Ref DataBucketName
+            - Name: NOTIFICATION_TOPIC_ARN
+              Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref PipelineLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: import
+
+  # --- Trigger Lambda (SNS → ECS RunTask) ---
+  TriggerFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${EnvironmentName}-wwii-phase1-parse
+      FunctionName: !Sub ${EnvironmentName}-wwii-trigger
       Runtime: python3.12
-      Handler: lambda_handlers.phase1_handler.handler
-      Code:
-        S3Bucket: !Ref LambdaCodeBucket
-        S3Key: !Ref LambdaCodeKey
-      MemorySize: 512
-      Timeout: 300
+      Handler: index.handler
+      Timeout: 30
+      MemorySize: 128
       Role: !Ref LambdaExecutionRoleArn
-      DeadLetterConfig:
-        TargetArn: !GetAtt Phase1DLQ.Arn
-      VpcConfig:
-        SubnetIds:
-          - !Ref PrivateSubnet1Id
-          - !Ref PrivateSubnet2Id
-        SecurityGroupIds:
-          - !Ref LambdaSGId
-      Environment:
-        Variables:
-          S3_BUCKET: !Ref DataBucketName
-          CACHE_TABLE: !Ref CacheTableName
-
-  Phase2Function:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: !Sub ${EnvironmentName}-wwii-phase2-extract
-      Runtime: python3.12
-      Handler: lambda_handlers.phase2_handler.handler
       Code:
-        S3Bucket: !Ref LambdaCodeBucket
-        S3Key: !Ref LambdaCodeKey
-      MemorySize: 2048
-      Timeout: 900
-      Role: !Ref LambdaExecutionRoleArn
-      DeadLetterConfig:
-        TargetArn: !GetAtt Phase2DLQ.Arn
-      VpcConfig:
-        SubnetIds:
-          - !Ref PrivateSubnet1Id
-          - !Ref PrivateSubnet2Id
-        SecurityGroupIds:
-          - !Ref LambdaSGId
-      Environment:
-        Variables:
-          S3_BUCKET: !Ref DataBucketName
-          CACHE_TABLE: !Ref CacheTableName
+        ZipFile: !Sub |
+          import boto3, json, os, logging
+          logger = logging.getLogger()
+          logger.setLevel("INFO")
+          ecs = boto3.client("ecs")
+          s3 = boto3.client("s3")
+          dynamo = boto3.resource("dynamodb").Table("${CacheTableName}")
+          CLUSTER = "${ECSCluster}"
+          SUBNETS = ["${PrivateSubnet1Id}", "${PrivateSubnet2Id}"]
+          SG = "${LambdaSGId}"
+          BUCKET = "${DataBucketName}"
+          NOTIFY_TOPIC = "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete"
+          TOPIC_MAP = {
+              "${EnvironmentName}-wwii-content-uploaded": "${Phase1TaskDef}",
+              "${EnvironmentName}-wwii-chapter-parsed": "${Phase2TaskDef}",
+          }
+          DEDUP_COMPLETE_TOPIC = "${EnvironmentName}-wwii-dedup-complete"
+          ENTITY_TOPIC = "${EnvironmentName}-wwii-entity-created"
+          PHASE3_TASK = "${Phase3TaskDef}"
 
-  Phase3Function:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: !Sub ${EnvironmentName}-wwii-phase3-enrich
-      Runtime: python3.12
-      Handler: lambda_handlers.phase3_handler.handler
-      Code:
-        S3Bucket: !Ref LambdaCodeBucket
-        S3Key: !Ref LambdaCodeKey
-      MemorySize: 1024
-      Timeout: 900
-      Role: !Ref LambdaExecutionRoleArn
-      DeadLetterConfig:
-        TargetArn: !GetAtt Phase3DLQ.Arn
-      VpcConfig:
-        SubnetIds:
-          - !Ref PrivateSubnet1Id
-          - !Ref PrivateSubnet2Id
-        SecurityGroupIds:
-          - !Ref LambdaSGId
-      Environment:
-        Variables:
-          S3_BUCKET: !Ref DataBucketName
-          CACHE_TABLE: !Ref CacheTableName
+          def handler(event, context):
+              # Extract unique topic names and S3 keys from records (SQS or SNS format)
+              topics = set()
+              s3_keys = []
+              for record in event.get("Records", []):
+                  # SQS format: record.body contains SNS JSON
+                  if "body" in record:
+                      import json as _json
+                      try:
+                          sns_msg = _json.loads(record["body"])
+                          topic_arn = sns_msg.get("TopicArn", "")
+                          # Extract S3 keys from the SNS message
+                          msg = sns_msg.get("Message", "{}")
+                          if isinstance(msg, str):
+                              try:
+                                  s3_event = _json.loads(msg)
+                                  for s3_rec in s3_event.get("Records", []):
+                                      s3_keys.append(s3_rec["s3"]["object"]["key"])
+                              except Exception:
+                                  pass
+                      except Exception:
+                          topic_arn = ""
+                  else:
+                      # Direct SNS format (dedup-complete)
+                      topic_arn = record.get("Sns", {}).get("TopicArn", "")
+                  if topic_arn:
+                      topics.add(topic_arn.rsplit(":", 1)[-1])
 
-  ImportFunction:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: !Sub ${EnvironmentName}-wwii-import
-      Runtime: python3.12
-      Handler: lambda_handlers.import_handler.handler
-      Code:
-        S3Bucket: !Ref LambdaCodeBucket
-        S3Key: !Ref LambdaCodeKey
-      MemorySize: 2048
-      Timeout: 900
-      Role: !Ref LambdaExecutionRoleArn
-      DeadLetterConfig:
-        TargetArn: !GetAtt ImportDLQ.Arn
-      Environment:
-        Variables:
-          S3_BUCKET: !Ref DataBucketName
+              logger.info("Trigger topics: %s, keys: %d", topics, len(s3_keys))
 
+              # Write manifest of changed files for incremental processing
+              if s3_keys:
+                  import json as _json
+                  manifest_key = "manifests/pending.json"
+                  # Merge with existing manifest
+                  try:
+                      resp = s3.get_object(Bucket=BUCKET, Key=manifest_key)
+                      existing = _json.loads(resp["Body"].read())
+                  except Exception:
+                      existing = []
+                  merged = list(set(existing + s3_keys))
+                  s3.put_object(Bucket=BUCKET, Key=manifest_key, Body=_json.dumps(merged).encode())
+                  logger.info("Manifest: %d keys", len(merged))
+
+              for topic_name in topics:
+
+                  # Direct mapping: content-uploaded → phase1, chapter-parsed → phase2
+                  task_def = TOPIC_MAP.get(topic_name)
+                  if task_def:
+                      _run_task(task_def, topic_name, keys=s3_keys)
+                      continue
+
+                  # Dedup gate: entity-created → check review status before phase3
+                  if topic_name == ENTITY_TOPIC:
+                      if not _review_complete():
+                          logger.info("Dedup review not complete, skipping phase3")
+                          continue
+                      _stop_phase2_tasks()
+                      _run_task(PHASE3_TASK, topic_name)
+                      continue
+
+                  # Dedup complete signal → launch phase3
+                  if topic_name == DEDUP_COMPLETE_TOPIC:
+                      logger.info("Dedup complete, launching phase3")
+                      _stop_phase2_tasks()
+                      _run_task(PHASE3_TASK, topic_name)
+                      continue
+
+                  logger.warning("Unknown topic: %s", topic_name)
+
+          def _review_complete():
+              try:
+                  resp = s3.get_object(Bucket=BUCKET, Key="dedup/review_status.json")
+                  status = json.loads(resp["Body"].read())
+                  return status.get("complete", False)
+              except s3.exceptions.NoSuchKey:
+                  return False
+              except Exception as e:
+                  logger.error("Failed to check review status: %s", e)
+                  return False
+
+          TASK_FAMILIES = {
+              "${Phase1TaskDef}": "${EnvironmentName}-wwii-phase1-parse",
+              "${Phase2TaskDef}": "${EnvironmentName}-wwii-phase2-extract",
+              "${Phase3TaskDef}": "${EnvironmentName}-wwii-phase3-enrich",
+          }
+
+          def _stop_phase2_tasks():
+              try:
+                  tasks = ecs.list_tasks(cluster=CLUSTER, family="${EnvironmentName}-wwii-phase2-extract", desiredStatus="RUNNING")
+                  for arn in tasks.get("taskArns", []):
+                      ecs.stop_task(cluster=CLUSTER, task=arn, reason="Phase 3 starting")
+                      logger.info("Stopped phase2 task: %s", arn.split("/")[-1])
+              except Exception as e:
+                  logger.warning("Failed to stop phase2 tasks: %s", e)
+
+          def _run_task(task_def, source, keys=None):
+              # Atomic DynamoDB lock — conditional put fails if key exists
+              family = TASK_FAMILIES.get(task_def, "unknown")
+              lock_key = f"lock#{family}"
+              import time
+              try:
+                  dynamo.put_item(
+                      Item={"cache_key": lock_key, "response": str(int(time.time())), "ttl": int(time.time()) + 86400},
+                      ConditionExpression="attribute_not_exists(cache_key)",
+                  )
+              except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
+                  logger.info("Task %s already locked, skipping", family)
+                  if keys and "phase1" in family:
+                      _queue_pending(keys)
+                  return
+              logger.info("Launching ECS task %s from %s", family, source)
+              ecs.run_task(
+                  cluster=CLUSTER,
+                  taskDefinition=task_def,
+                  launchType="FARGATE",
+                  count=1,
+                  networkConfiguration={"awsvpcConfiguration": {
+                      "subnets": SUBNETS,
+                      "securityGroups": [SG],
+                      "assignPublicIp": "DISABLED",
+                  }},
+              )
+
+          def _queue_pending(keys):
+              """Queue new content keys in DynamoDB when pipeline is busy."""
+              try:
+                  resp = dynamo.get_item(Key={"cache_key": "pending#content"})
+                  existing = resp.get("Item", {}).get("keys", [])
+                  merged = list(set(existing + keys))
+                  dynamo.put_item(Item={"cache_key": "pending#content", "keys": merged})
+                  logger.info("Queued %d pending content keys (%d total)", len(keys), len(merged))
+                  sns = boto3.client("sns")
+                  sns.publish(
+                      TopicArn=NOTIFY_TOPIC,
+                      Subject="WWII Pipeline: Content queued",
+                      Message=f"Pipeline is busy. {len(keys)} new files queued for processing.\nTotal pending: {len(merged)}\nFiles: {', '.join(keys[:10])}{'...' if len(keys) > 10 else ''}",
+                  )
+              except Exception as e:
+                  logger.error("Failed to queue pending content: %s", e)
+
+  # --- Lambda Functions (kept) ---
   OpenSerpManagerFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -169,12 +364,286 @@ Resources:
       Timeout: 120
       Role: !Ref LambdaExecutionRoleArn
 
-  # --- ECS Cluster + OpenSERP Service ---
-  ECSCluster:
-    Type: AWS::ECS::Cluster
+  # --- Metrics API ---
+  MetricsFunction:
+    Type: AWS::Lambda::Function
     Properties:
-      ClusterName: !Sub ${EnvironmentName}-wwii-pipeline
+      FunctionName: !Sub ${EnvironmentName}-wwii-metrics
+      Runtime: python3.12
+      Handler: scripts.view_metrics.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      MemorySize: 256
+      Timeout: 30
+      Role: !Ref LambdaExecutionRoleArn
+      Environment:
+        Variables:
+          CACHE_TABLE: !Ref CacheTableName
 
+  MetricsApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-metrics-api
+
+  MetricsUnauthorizedResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      RestApiId: !Ref MetricsApi
+      ResponseType: UNAUTHORIZED
+      StatusCode: '401'
+      ResponseParameters:
+        gatewayresponse.header.WWW-Authenticate: "'Basic realm=\"Metrics\"'"
+
+  MetricsAccessDeniedResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      RestApiId: !Ref MetricsApi
+      ResponseType: ACCESS_DENIED
+      StatusCode: '401'
+      ResponseParameters:
+        gatewayresponse.header.WWW-Authenticate: "'Basic realm=\"Metrics\"'"
+
+  MetricsAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: BasicAuth
+      RestApiId: !Ref MetricsApi
+      Type: TOKEN
+      AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DedupAuthFunction.Arn}/invocations
+      IdentitySource: method.request.header.Authorization
+      AuthorizerResultTtlInSeconds: 0
+
+  MetricsAuthInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DedupAuthFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MetricsApi}/*
+
+  MetricsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MetricsApi
+      ParentId: !GetAtt MetricsApi.RootResourceId
+      PathPart: metrics
+
+  MetricsGetMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MetricsApi
+      ResourceId: !Ref MetricsResource
+      HttpMethod: GET
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref MetricsAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MetricsFunction.Arn}/invocations
+
+  MetricsInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref MetricsFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MetricsApi}/*
+
+  MetricsApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - MetricsGetMethod
+      - MetricsUnauthorizedResponse
+      - MetricsAccessDeniedResponse
+    Properties:
+      RestApiId: !Ref MetricsApi
+
+  MetricsApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref MetricsApi
+      DeploymentId: !Ref MetricsApiDeployment
+      StageName: app
+
+  # --- Dedup Review UI ---
+  DedupUIFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-dedup-ui
+      Runtime: python3.12
+      Handler: lambda_handlers.dedup_ui_handler.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      MemorySize: 512
+      Timeout: 30
+      Role: !Ref LambdaExecutionRoleArn
+      Environment:
+        Variables:
+          S3_BUCKET: !Ref DataBucketName
+          DEDUP_COMPLETE_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-dedup-complete
+
+  DedupGateFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-dedup-gate
+      Runtime: python3.12
+      Handler: lambda_handlers.dedup_gate_handler.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      MemorySize: 256
+      Timeout: 300
+      Role: !Ref LambdaExecutionRoleArn
+      Environment:
+        Variables:
+          S3_BUCKET: !Ref DataBucketName
+          PHASE3_FUNCTION_NAME: !Sub ${EnvironmentName}-wwii-phase3-enrich
+
+  DedupAuthFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-dedup-auth
+      Runtime: python3.12
+      Handler: index.handler
+      Code:
+        ZipFile: |
+          import base64
+          import os
+          def handler(event, context):
+              token = event.get('authorizationToken', '')
+              expected = os.environ.get('AUTH_TOKEN', '')
+              if token.startswith('Basic '):
+                  decoded = base64.b64decode(token[6:]).decode()
+                  if decoded == expected:
+                      return {'principalId': 'user', 'policyDocument': {
+                          'Version': '2012-10-17',
+                          'Statement': [{'Action': 'execute-api:Invoke', 'Effect': 'Allow',
+                                         'Resource': event['methodArn']}]}}
+              return {'principalId': 'user', 'policyDocument': {
+                  'Version': '2012-10-17',
+                  'Statement': [{'Action': 'execute-api:Invoke', 'Effect': 'Deny',
+                                 'Resource': event['methodArn']}]}}
+      MemorySize: 128
+      Timeout: 5
+      Role: !Ref LambdaExecutionRoleArn
+      Environment:
+        Variables:
+          AUTH_TOKEN: !Sub '{{resolve:secretsmanager:${EnvironmentName}-wwii-pipeline/dedup-auth}}'
+
+  # --- API Gateway for Dedup UI ---
+  DedupApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-dedup-api
+
+  DedupUnauthorizedResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      RestApiId: !Ref DedupApi
+      ResponseType: UNAUTHORIZED
+      StatusCode: '401'
+      ResponseParameters:
+        gatewayresponse.header.WWW-Authenticate: "'Basic realm=\"Dedup Review\"'"
+      ResponseTemplates:
+        application/json: '{"message":"Unauthorized"}'
+
+  DedupAccessDeniedResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      RestApiId: !Ref DedupApi
+      ResponseType: ACCESS_DENIED
+      StatusCode: '401'
+      ResponseParameters:
+        gatewayresponse.header.WWW-Authenticate: "'Basic realm=\"Dedup Review\"'"
+      ResponseTemplates:
+        application/json: '{"message":"Invalid credentials"}'
+
+  DedupAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: BasicAuth
+      RestApiId: !Ref DedupApi
+      Type: TOKEN
+      AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DedupAuthFunction.Arn}/invocations
+      IdentitySource: method.request.header.Authorization
+      AuthorizerResultTtlInSeconds: 0
+
+  DedupAuthInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DedupAuthFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${DedupApi}/*
+
+  DedupResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref DedupApi
+      ParentId: !GetAtt DedupApi.RootResourceId
+      PathPart: dedup
+
+  DedupProxyResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref DedupApi
+      ParentId: !Ref DedupResource
+      PathPart: '{proxy+}'
+
+  DedupGetMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref DedupApi
+      ResourceId: !Ref DedupResource
+      HttpMethod: GET
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref DedupAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DedupUIFunction.Arn}/invocations
+
+  DedupProxyMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref DedupApi
+      ResourceId: !Ref DedupProxyResource
+      HttpMethod: ANY
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref DedupAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DedupUIFunction.Arn}/invocations
+
+  DedupUIInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DedupUIFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${DedupApi}/*
+
+  DedupApiDeploymentV3:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - DedupGetMethod
+      - DedupProxyMethod
+      - DedupUnauthorizedResponse
+      - DedupAccessDeniedResponse
+    Properties:
+      RestApiId: !Ref DedupApi
+
+  DedupApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref DedupApi
+      DeploymentId: !Ref DedupApiDeploymentV3
+      StageName: app
+
+  # --- OpenSERP ECS Service ---
   OpenSerpLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -188,8 +657,7 @@ Resources:
       Cpu: '512'
       Memory: '1024'
       NetworkMode: awsvpc
-      RequiresCompatibilities:
-        - FARGATE
+      RequiresCompatibilities: [FARGATE]
       TaskRoleArn: !Ref ECSTaskRoleArn
       ExecutionRoleArn: !Ref ECSTaskExecutionRoleArn
       ContainerDefinitions:
@@ -271,21 +739,29 @@ Resources:
           TargetGroupArn: !Ref OpenSerpTargetGroup
 
 Outputs:
-  Phase1FunctionArn:
-    Value: !GetAtt Phase1Function.Arn
-  Phase2FunctionArn:
-    Value: !GetAtt Phase2Function.Arn
-  Phase3FunctionArn:
-    Value: !GetAtt Phase3Function.Arn
-  ImportFunctionArn:
-    Value: !GetAtt ImportFunction.Arn
+  TriggerFunctionArn:
+    Value: !GetAtt TriggerFunction.Arn
   OpenSerpManagerFunctionArn:
     Value: !GetAtt OpenSerpManagerFunction.Arn
+  DedupGateFunctionArn:
+    Value: !GetAtt DedupGateFunction.Arn
   ECSClusterName:
     Value: !Ref ECSCluster
+  Phase1TaskDefArn:
+    Value: !Ref Phase1TaskDef
+  Phase2TaskDefArn:
+    Value: !Ref Phase2TaskDef
+  Phase3TaskDefArn:
+    Value: !Ref Phase3TaskDef
+  ImportTaskDefArn:
+    Value: !Ref ImportTaskDef
   OpenSerpServiceName:
     Value: !GetAtt OpenSerpService.Name
   OpenSerpALBDns:
     Value: !GetAtt OpenSerpALB.DNSName
   OpenSerpTargetGroupArn:
     Value: !Ref OpenSerpTargetGroup
+  DedupApiUrl:
+    Value: !Sub https://${DedupApi}.execute-api.${AWS::Region}.amazonaws.com/app/dedup
+  MetricsApiUrl:
+    Value: !Sub https://${MetricsApi}.execute-api.${AWS::Region}.amazonaws.com/app/metrics
