@@ -106,17 +106,20 @@ def _parse_footnotes_from_html(html: str) -> Dict[int, str]:
 def _resolve_cross_references(
     footnotes: Dict[int, str],
 ) -> Dict[int, str]:
-    """Resolve cross-references like 'cited in n. 5, above'."""
+    """Resolve cross-references like 'cited in n. 5', 'cited n. 5', 'see n. 5'."""
     resolved = dict(footnotes)
-    pattern = re.compile(r"cited in n\.\s*(\d+),?\s*above", re.IGNORECASE)
+    # Matches: "cited in n. 5, above", "cited n. 24, above", "see n. 4", "See n. 4."
+    pattern = re.compile(
+        r"(?:cited(?:\s+in)?\s+n\.\s*(\d+)|[Ss]ee\s+n\.\s*(\d+))", re.IGNORECASE
+    )
 
     for num, text in list(resolved.items()):
-        match = pattern.search(text)
-        if match:
-            ref_num = int(match.group(1))
+        for match in pattern.finditer(text):
+            ref_num = int(match.group(1) or match.group(2))
             ref_text = resolved.get(ref_num)
-            if ref_text:
-                resolved[num] = pattern.sub(f"[see n. {ref_num}: {ref_text}]", text)
+            if ref_text and ref_num != num:
+                tag = f"[see n. {ref_num}: {ref_text}]"
+                resolved[num] = resolved[num].replace(match.group(0), tag, 1)
 
     return resolved
 
