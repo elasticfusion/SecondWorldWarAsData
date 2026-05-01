@@ -23,12 +23,14 @@ def count_missing_files(output_root: Path) -> int:
     """Count how many parsed files are missing their event files."""
     parsed_files = list(output_root.rglob("*-parsed.json"))
     missing = 0
-    
+
     for parsed_file in parsed_files:
-        event_file = parsed_file.parent / parsed_file.name.replace("-parsed.json", "-event.json")
+        event_file = parsed_file.parent / parsed_file.name.replace(
+            "-parsed.json", "-event.json"
+        )
         if not event_file.exists():
             missing += 1
-    
+
     return missing
 
 
@@ -53,7 +55,7 @@ def main():
 
     base_dir = Path(__file__).parent
     output_root = base_dir / "output"
-    
+
     logger.info("=" * 70)
     logger.info("Phase 2 with Automatic Retry")
     logger.info("=" * 70)
@@ -76,11 +78,18 @@ def main():
         if result.returncode != 0:
             if result.returncode < 0:
                 import signal
+
                 sig = -result.returncode
-                sig_name = signal.Signals(sig).name if sig in signal.valid_signals() else str(sig)
+                sig_name = (
+                    signal.Signals(sig).name
+                    if sig in signal.valid_signals()
+                    else str(sig)
+                )
                 logger.error("Attempt %d killed by signal %s", attempt, sig_name)
             else:
-                logger.error("Attempt %d failed with exit code %d", attempt, result.returncode)
+                logger.error(
+                    "Attempt %d failed with exit code %d", attempt, result.returncode
+                )
             if attempt < args.max_attempts:
                 logger.info("Retrying...")
                 continue
@@ -88,7 +97,7 @@ def main():
                 logger.error("Maximum attempts reached, giving up")
                 return 1
         missing = count_missing_files(output_root)
-        
+
         if missing == 0:
             logger.info(f"\n{'=' * 70}")
             logger.info(f"✓ Success! All files processed on attempt {attempt}")
@@ -99,7 +108,9 @@ def main():
             if attempt < args.max_attempts:
                 logger.info("Retrying...")
             else:
-                logger.error(f"✗ Maximum attempts reached, {missing} file(s) still incomplete")
+                logger.error(
+                    f"✗ Maximum attempts reached, {missing} file(s) still incomplete"
+                )
                 return 1
 
     return 0

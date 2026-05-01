@@ -32,62 +32,20 @@ ehthumbs.db
 Thumbs.db
 
 # Project specific
+openserp/
 .openserp.pid
+config.yaml
 logs/*.log
 cache/
 output/
 review/
-
-# Temporary files
-*.tmp
-*.bak
-*.orig
-
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-.venv/
-venv/
-ENV/
-env/
-.mypy_cache/
-.pytest_cache/
-*.egg-info/
-
-# Environment
-.env
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Project specific
-.openserp.pid
-logs/*.log
-cache/
-output/
-review/
-
-# Temporary files
-*.tmp
-*.bak
-*.orig
 filestore/equipment/
 filestore/maps/
+
+# Temporary files
+*.tmp
+*.bak
+*.orig
+
+# Tools
 .gitnexus

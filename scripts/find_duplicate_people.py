@@ -660,8 +660,17 @@ def generate_duplicate_report(
     """Generate a report of potential duplicates."""
     duplicates = find_potential_duplicates(people_dir_path, output_root=output_root)
 
-    # Sort by confidence
-    duplicates.sort(key=lambda x: x["confidence"], reverse=True)
+    # Sort alphabetically by the most complete name (longest) in each group
+    def _sort_key(group):
+        names = [p.get("name", "") for p in group.get("people", [])]
+        best = max(names, key=len) if names else ""
+        return best.lower()
+
+    # Within each group, put the most complete name first
+    for group in duplicates:
+        group["people"].sort(key=lambda p: len(p.get("name", "")), reverse=True)
+
+    duplicates.sort(key=_sort_key)
 
     report = {
         "total_people": len(list(people_dir_path.glob("*.json")))

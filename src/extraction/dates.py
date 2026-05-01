@@ -157,6 +157,19 @@ Instructions:
 Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
 If no dates found, return empty Date_Mentions array."""
 
+    try:
+        from src.utils.prompt_loader import render_prompt
+
+        prompt = render_prompt(
+            "dates",
+            event_name=event_name,
+            event_id=event_id,
+            sub_event_summary=sub_event_summary,
+            sub_event_id=sub_event_id,
+            text=text,
+        )
+    except Exception:
+        pass
     return prompt
 
 

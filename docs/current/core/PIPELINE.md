@@ -1,17 +1,29 @@
 # Pipeline Documentation
 
+**Last Updated:** 2026-04-30
+
 ## Overview
 
-The extraction pipeline consists of three main phases:
+The extraction pipeline consists of three main phases, with a dedup review gate between Phase 2 and Phase 3:
 
 ### Phase 1: Parsing
-Converts markdown source files into structured JSON with absolute paragraph numbering.
+Converts markdown source files into structured JSON with absolute paragraph numbering. On AWS, Phase 1 also:
+- Clears all DynamoDB pipeline locks
+- Resets dedup review status (`complete: false`)
+- Clears any stale DynamoDB manifest from previous runs
 
 ### Phase 2: Extraction
-Extracts entities and events using Grok AI.
+Extracts entities and events using Grok AI. Prompts are loaded from YAML templates in `prompts/` (overridable from S3). In AWS mode, Phase 2 uses **incremental processing** — only downloads and processes parsed files that don't have a corresponding event file in S3.
+
+### Dedup Review Gate
+After Phase 2, duplicate detection runs automatically. All four dedup scripts read exclusion files (`not_duplicates.json` / `not_related.json`) to skip previously reviewed pairs. In AWS mode, a web UI allows merging, skipping, and reclassifying entities before Phase 3 proceeds. UI actions (merge, reclassify, assign) append changed file keys to the DynamoDB manifest so Phase 3 downloads them.
 
 ### Phase 3: Enrichment
-Enriches people, groups, places, and bibliography with external data.
+Enriches people, groups, places, and bibliography with external data. In AWS mode, Phase 3 reads the DynamoDB manifest (`manifest#phase2`) to download only files changed by Phase 2 and dedup review, falling back to a full entity directory download if no manifest exists.
+
+### Caching
+- **Local mode:** diskcache (SQLite) in `cache/api/`
+- **AWS mode:** DynamoDB table (`dev-wwii-api-cache`). Cached responses persist across ECS task runs, so re-processing only calls Grok for new/changed chapters.
 
 ## Phase 1: Parse
 
@@ -97,6 +109,11 @@ All Grok API responses are cached in `cache/api/`:
 - Faster re-runs
 - Cost savings
 
+**Cache stats:** At the end of Phase 2 and Phase 3, a summary is logged:
+```
+Cache stats: 45 hits, 23 misses, 66.2% hit rate
+```
+
 **Clear cache (specific entry):**
 ```bash
 # Use the command from error log output — clears only the affected entry
@@ -125,6 +142,38 @@ Phase 2 intelligently skips already-processed files:
 ```bash
 rm output/{Book}/chapter*-{type}.json
 ```
+
+## Incremental Processing (AWS)
+
+In AWS mode, each phase downloads only what it needs:
+
+**Phase 1:** Downloads content files listed in the S3 manifest (from trigger Lambda). Falls back to full `content/` sync if no manifest.
+
+**Phase 2:** Compares `-parsed.json` files against `-event.json` files in S3. Only downloads parsed files that don't have a corresponding event file. Also downloads entity directories for cross-referencing.
+
+**Phase 3:** Reads the DynamoDB manifest (`manifest#phase2`) which contains S3 keys of files uploaded by Phase 2 and modified by the dedup UI. Downloads only those files. Falls back to full entity directory download if no manifest exists.
+
+### DynamoDB Manifest
+
+Phase 2's final sync writes all uploaded entity file keys to `manifest#phase2` in DynamoDB. The dedup UI appends keys for any files it modifies (merge, reclassify, assign actions). Phase 3 reads this manifest to download only changed files.
+
+Phase 1 clears the manifest at the start of each new pipeline run.
+
+### Pending Content Queue
+
+When new content is uploaded while the pipeline is already running:
+
+1. Trigger Lambda detects Phase 1 is locked
+2. Saves the new file keys to `pending#content` in DynamoDB
+3. Sends email notification: "Content queued — pipeline busy"
+4. When Phase 2 completes, it checks `pending#content`
+5. If pending files exist, clears the queue and re-triggers Phase 1 via SNS
+
+No content is lost and no concurrent processing occurs.
+
+### Feedback Loop Prevention
+
+Phase 2 and Phase 3 final syncs only upload entity subdirectories (people, places, groups, etc.), never book directories containing `-parsed.json` or `-event.json` files. This prevents S3 notifications from re-triggering the pipeline. Dedup report sync only uploads `duplicate_report.json` files, not the entire output directory.
 
 ## Phase 3: Enrich
 

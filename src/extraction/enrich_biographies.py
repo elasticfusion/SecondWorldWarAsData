@@ -674,6 +674,7 @@ def enrich_all_people(
     grok_client: GrokClient,
     max_people: Optional[int] = None,
     search_references_flag: bool = True,
+    max_workers: int = 6,
 ) -> int:
     """Enrich all people in directory from external sources.
 
@@ -709,10 +710,21 @@ def enrich_all_people(
 
     enriched = 0
 
-    for person_file in person_files:
-        if enrich_person_biography(person_file, grok_client, search_references_flag):
-            enriched += 1
-        heartbeat.ping(f"{person_file.stem} ({enriched} enriched)")
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    def _enrich_one(pf):
+        return enrich_person_biography(pf, grok_client, search_references_flag)
+
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        futures = {pool.submit(_enrich_one, pf): pf for pf in person_files}
+        for future in as_completed(futures):
+            pf = futures[future]
+            try:
+                if future.result():
+                    enriched += 1
+            except Exception as e:
+                logger.warning("Failed to enrich %s: %s", pf.stem, e)
+            heartbeat.ping(f"{pf.stem} ({enriched} enriched)")
 
     heartbeat.stop()
 

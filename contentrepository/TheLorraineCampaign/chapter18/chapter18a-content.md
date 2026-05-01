@@ -1,0 +1,45 @@
+> ![](https://www.ibiblio.org/hyperwar/USA/USA-E-Lorraine/img/USA-E-Lorraine.jpg)
+> 
+> ## Appendix C
+> Table of Equivalent Ranks
+> 
+> _U.S. Army_ | _German Army and Air Force_ | _German Waffen-SS_
+> ---|---|---
+> None | Reichsmarschall | None
+> General of the Army | Generalfeldmarschall | Reichsfuehrer-SS
+> General | Generaloberst | Oberstgruppenfuehrer
+> Lieutenant General | General der Infanterie
+> Artillerie
+> Gebirgstruppen
+> Kavallerie
+> Nachrichtentruppen
+> Panzertruppen
+> Pioniere
+> Luftwaffe
+> Flieger
+> Fallschirmtruppen
+> Flakartillerie
+> Luftnachrichtentruppen | Obergruppenfuehrer
+> Major General | Generalleutnant | Gruppenfuehrer
+> Brigadier General | Generalmajor | Brigadefuehrer
+> None | None | Oberfuehrer
+> Colonel | Oberst | Standartenfuehrer
+> Lieutenant Colonel | Oberstleutnant | Obersturmbannfuehrer
+> Major | Major | Sturmbannfuehrer
+> Captain | Hauptmann | Haupsturmfuehrer
+> Captain (Cavalry) | Rittmeister |
+> First Lieutenant | Oberleutnant | Obersturmfuehrer
+> Second Lieutenant | Leutnant | Untersturmfuehrer
+> 
+> _\--613--_
+> 
+* * *
+> 
+> [Table of Contents](<index.html#C>) ** [Previous Appendix](<USA-E-Lorraine-B.html>) (B) * [Next Appendix](<USA-E-Lorraine-Mapsym.html>) (Map Symbols)
+> 
+* * *
+> 
+* * *
+> 
+> Transcribed and formatted by Jerry Holden for the HyperWar Foundation
+> 

@@ -15,17 +15,18 @@ logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
 def handler(event, _context):
     """Process SNS → S3 event: parse uploaded markdown content."""
-    from src.utils.backends import create_cache_backend, create_storage
     from src.utils.config import load_config
+    from src.utils.storage import S3Storage
 
     config = load_config()
-    storage = create_storage(config, Path("."))
+    region = config.get("aws", {}).get("region", "us-east-1")
 
     records = _extract_s3_records(event)
     results = {"processed": 0, "failed": 0}
 
     for bucket, key in records:
         try:
+            storage = S3Storage(bucket=bucket, region=region)
             book_name = key.split("/")[1]  # content/{BookName}/...
             logger.info("Parsing: %s/%s", bucket, key)
 
@@ -68,16 +69,61 @@ def _download_book(storage, book_name: str, tmpdir: Path) -> None:
 
 def _run_parse(tmpdir: Path, book_name: str, storage) -> None:
     """Run Phase 1 parsing and upload results to storage."""
-    from src.parser import parse_book
+    from src.discovery import discover_content_structure
+    from src.parser import parse_chapter
 
-    content_dir = tmpdir / "content" / book_name
     output_dir = tmpdir / "output" / book_name
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    parse_book(content_dir, output_dir)
+    # Discover chapter structure within the downloaded book
+    structure = discover_content_structure(tmpdir / "content")
+    chapters = structure.get(book_name, [])
+    if not chapters:
+        logger.warning("No chapters found for %s", book_name)
+        return
 
-    # Upload parsed files to storage
-    for f in output_dir.glob("*.json"):
-        dest = f"output/{book_name}/{f.name}"
-        storage.write_json(dest, json.loads(f.read_text(encoding="utf-8")))
-        logger.info("Uploaded: %s", dest)
+    for chapter_group in chapters:
+        documents = parse_chapter(chapter_group)
+        for doc in documents:
+            section_suffix = doc.section_id if doc.section_id else "full"
+            filename = f"chapter{doc.chapter_number}{section_suffix}-parsed.json"
+            output_data = {
+                "book": doc.book,
+                "chapter_number": doc.chapter_number,
+                "chapter_title": doc.chapter_title,
+                "section_id": doc.section_id,
+                "author": doc.author,
+                "series": doc.series,
+                "license": doc.license,
+                "source_file": str(doc.file_path),
+                "paragraphs": [
+                    {
+                        "absolute_number": p.absolute_number,
+                        "text": p.text,
+                        "page_number": p.page_number,
+                        "section_id": p.section_id,
+                        "source_file": p.source_file,
+                    }
+                    for p in doc.paragraphs
+                ],
+                "images": [
+                    {
+                        "type": img.type,
+                        "resource_id": img.resource_id,
+                        "url": img.url,
+                        "alt_text": img.alt_text,
+                        "caption": img.caption,
+                    }
+                    for img in doc.images
+                ],
+                "maps": [
+                    {"url": m.url, "description": m.description, "map_id": m.map_id}
+                    for m in doc.maps
+                ],
+                "footnotes": [
+                    {"number": f.number, "url": f.url} for f in doc.footnotes
+                ],
+            }
+            dest = f"output/{book_name}/{filename}"
+            storage.write_json(dest, output_data)
+            logger.info("Uploaded: %s", dest)

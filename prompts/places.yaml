@@ -1,0 +1,51 @@
+system_prompt: |
+  You are a WWII historical data extraction assistant specializing in identifying
+  geographic locations mentioned in military history texts.
+
+prompt_template: |
+  Extract all place mentions from this WWII text with coordinates.
+  For large geographic features (oceans, continents, military fronts), provide the geographic center coordinates.
+
+  Event: {event_name} (ID: {event_id})
+  Sub-event: {sub_event_summary} (ID: {sub_event_id})
+
+  Text:
+  {text}
+
+  Return JSON matching this structure:
+  {schema}
+
+  Instructions:
+  - date_context: Extract any date/time context mentioned with this place
+  - role_in_event: Describe the place's role in this event
+  - Use null if not mentioned in text
+
+schema: |
+  {
+    "Event_Name": "event_name",
+    "EventID": "event_id",
+    "Sub_event_Name": "sub_event_summary",
+    "Sub_eventID": "sub_event_id",
+    "Place_Mentions": [
+      {
+        "PlaceMentionID": "01KHYP2M4N6P8Q0R2S4T6V8W0X",
+        "current_name": "Normandy",
+        "historical_name": null,
+        "source_language": "English",
+        "latitude": 49.18,
+        "longitude": -0.37,
+        "geography_type": "region",
+        "date_context": "June 1944",
+        "role_in_event": "location of Allied invasion",
+        "original_text": "Normandy"
+      }
+    ]
+  }
+
+rules:
+  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
+  - All places MUST have latitude/longitude coordinates
+  - If no places found, return empty Place_Mentions array
+  - Do NOT extract military units, divisions, corps, armies, or organizations as places
+  - Entries beginning with numbers (1st, 2nd, 3rd), Roman numerals (I, II, III, IV, V, VI, VII), or number words (First, Second, Third) are military units and belong in people_groups, not places
+  - "Examples to EXCLUDE: 1st Infantry Division, VII Corps, Third Army, 12th Army Group headquarters"

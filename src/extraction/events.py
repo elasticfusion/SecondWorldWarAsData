@@ -178,6 +178,20 @@ OTHER REQUIREMENTS:
 - Extract endnote numbers and footnote symbols from the text
 """
 
+    try:
+        from src.utils.prompt_loader import render_prompt
+
+        prompt = render_prompt(
+            "events",
+            book=book,
+            author=author,
+            chapter=chapter,
+            paragraphs=paragraphs,
+            images_text=images_text,
+            maps_text=maps_text,
+        )
+    except Exception:
+        pass
     return prompt
 
 
