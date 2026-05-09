@@ -5,6 +5,7 @@
 paths:
   content_root: "contentrepository"
   output_root: "output"
+  content_output: "output/content"    # Book-specific output (parsed/event files)
   cache_root: "cache"
   review_root: "review"
   
@@ -28,6 +29,7 @@ api:
     max_retries: 3
     timeout: 60
   calls_per_minute: 30            # Rate limit: max API calls per minute (across all threads)
+  nara_api_key: "Ykj8FU63tq142iLVSqAhm71oXknm6O1hO4D5VkI5U"               # NARA catalog API key (https://www.archives.gov/research/catalog/help/api)
 
 # Processing
 processing:
@@ -66,7 +68,7 @@ supplemental_material:
   llm_search: true                 # Phase 2: Use LLM for search (first pass)
   search_gutenberg: true          # Phase 2: Search Gutenberg.org for books/periodicals
   search_archive_org: true        # Phase 2: Search Archive.org
-  use_openserp: true              # Phase 2: Use OpenSERP for web search
+  use_openserp: true               # Phase 2/3: Use OpenSERP for web search (auto-configured in AWS mode)
   verify_archive_urls: true       # Phase 3: Verify archive URLs
   extract_isbn: true              # Phase 3: Extract ISBN for books (post-1966)
   determine_copyright: true       # Phase 3: Determine copyright status
@@ -160,6 +162,7 @@ aws:
   cache_table: "dev-wwii-api-cache"      # DynamoDB table for API response cache
   cache_ttl_days: 90                 # Cache entry TTL
   secrets_id: "dev-wwii-pipeline/grok-api-key"                     # Secrets Manager secret ID for GROK_API_KEY
+  notification_email: ""                                           # Email for pipeline completion notifications
   openserp:
     cluster: "dev-wwii-pipeline"
     service: "dev-wwii-openserp"

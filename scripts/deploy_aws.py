@@ -68,6 +68,18 @@ def cmd_deploy(args):
         print("\nFix validation errors before deploying.")
         return
 
+    # Read notification_email from config.yaml if not passed via CLI
+    if not args.notification_email:
+        import yaml
+
+        config_path = Path(__file__).resolve().parent.parent / "config.yaml"
+        if config_path.exists():
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = yaml.safe_load(f)
+            args.notification_email = config.get("aws", {}).get(
+                "notification_email", ""
+            )
+
     if args.dry_run:
         print("\n--dry-run: would deploy stack, exiting.")
         return
@@ -225,7 +237,9 @@ def main():
         "--pipeline-image", default=None, help="ECR image URI for pipeline container"
     )
     deploy_parser.add_argument(
-        "--notification-email", default=None, help="Email for Phase 2 completion notifications"
+        "--notification-email",
+        default=None,
+        help="Email for Phase 2 completion notifications",
     )
 
     args = parser.parse_args()

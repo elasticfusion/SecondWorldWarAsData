@@ -62,16 +62,10 @@ def find_duplicate_groups(groups_dir: Path) -> List[Dict]:
 
 
 def _load_group_exclusions(groups_dir: Path) -> set:
-    """Load excluded pairs from not_related.json."""
-    exclusion_file = groups_dir / "not_related.json"
-    if not exclusion_file.exists():
-        return set()
-    with open(exclusion_file, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    pairs: set = set()
-    for pair in data.get("exclusions", []):
-        pairs.add(tuple(sorted([pair.get("person1", ""), pair.get("person2", "")])))
-    return pairs
+    """Load excluded pairs from DynamoDB or local JSON."""
+    from src.dedup.exclusions import get_exclusion_store
+
+    return get_exclusion_store("groups", groups_dir).load()
 
 
 def _build_group(cluster: list, reasons: set) -> Dict[str, Any]:
@@ -117,11 +111,13 @@ def _filter_excluded(
 
 
 def _load_groups(groups_dir: Path) -> list:
-    """Load all group files."""
+    """Load group data from local files + index.json for non-local entries."""
     groups = []
+    seen_filenames: set = set()
     for f in sorted(groups_dir.glob("*.json")):
         if f.name in SKIP_FILES:
             continue
+        seen_filenames.add(f.name)
         try:
             data = json.loads(f.read_text(encoding="utf-8"))
             name = data.get("group_name", data.get("name", ""))
@@ -129,6 +125,17 @@ def _load_groups(groups_dir: Path) -> list:
                 groups.append({"name": name, "filename": f.name, "data": data})
         except (json.JSONDecodeError, OSError) as e:
             logger.warning("Skipping %s: %s", f.name, e)
+
+    index_file = groups_dir / "index.json"
+    if index_file.exists():
+        try:
+            raw = json.loads(index_file.read_text(encoding="utf-8"))
+            for name, filename in raw.items():
+                if filename not in seen_filenames and filename not in SKIP_FILES:
+                    groups.append({"name": name, "filename": filename, "data": {}})
+        except (json.JSONDecodeError, OSError):
+            pass
+
     return groups
 
 
@@ -242,6 +249,10 @@ def _find_group_cluster(i, g1, groups, seen):
 def generate_duplicate_report(groups_dir: Path, output_file: Path) -> None:
     """Generate duplicate groups report."""
     duplicates = find_duplicate_groups(groups_dir)
+
+    from src.dedup.validation import validate_report_groups
+
+    duplicates = validate_report_groups(duplicates, groups_dir)
 
     report = {
         "total_groups": len(

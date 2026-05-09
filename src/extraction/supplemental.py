@@ -16,66 +16,25 @@ logger = logging.getLogger(__name__)
 
 def _build_people_index(output_root: Path) -> Dict[str, str]:
     """Build people name -> PersonID index."""
-    people_dir = output_root / "people"
-    skip_files = [
-        "index.json",
-        "duplicate_report.json",
-        "not_duplicates.json",
-        ".processed_events.json",
-    ]
+    from src.utils.entity_index import build_name_index
 
-    index: Dict[str, str] = {}
-    if not people_dir.exists():
-        return index
-
-    for json_file in people_dir.glob("*.json"):
-        if json_file.name in skip_files:
-            continue
-        try:
-            with open(json_file, encoding="utf-8") as f:
-                person_data = json.load(f)
-                if "PersonID" in person_data and "name" in person_data:
-                    index[person_data["name"]] = person_data["PersonID"]
-        except (json.JSONDecodeError, KeyError) as e:
-            logger.warning("Failed to load %s: %s", json_file.name, e)
-
-    return index
+    return build_name_index(output_root / "people", "PersonID", "name")
 
 
 def _build_groups_index(output_root: Path) -> Dict[str, str]:
     """Build group name -> GroupID index (includes aliases)."""
-    groups_dir = output_root / "people_groups"
-    skip_files = ["index.json", ".processed_events.json", "related_groups_report.json"]
+    from src.utils.entity_index import build_name_index
 
-    index: Dict[str, str] = {}
-    if not groups_dir.exists():
-        return index
-
-    for json_file in groups_dir.glob("*.json"):
-        if json_file.name in skip_files:
-            continue
-        try:
-            with open(json_file, encoding="utf-8") as f:
-                group_data = json.load(f)
-                group_id = group_data.get("GroupID") or group_data.get("PeopleGroupID")
-                group_name = group_data.get("group_name") or group_data.get("name")
-
-                if group_id and group_name:
-                    index[group_name] = group_id
-                    # Also index aliases
-                    for alias in group_data.get("aliases", []):
-                        index[alias] = group_id
-        except (json.JSONDecodeError, KeyError) as e:
-            logger.warning("Failed to load %s: %s", json_file.name, e)
-
-    return index
+    return build_name_index(
+        output_root / "people_groups", "PeopleGroupID", "group_name"
+    )
 
 
 def _resolve_author_ids(
     authors: List[str], people_index: Dict[str, str]
 ) -> List[Optional[str]]:
     """Resolve author names to PersonIDs."""
-    return [people_index.get(name) for name in authors]
+    return [people_index.get(name.lower()) for name in authors]
 
 
 def _resolve_mentioned_people(
@@ -83,8 +42,9 @@ def _resolve_mentioned_people(
 ) -> List[Dict[str, str]]:
     """Extract people mentioned in citation text."""
     mentioned = []
+    text_lower = citation_text.lower()
     for name, person_id in people_index.items():
-        if name.lower() in citation_text.lower():
+        if name in text_lower:
             mentioned.append({"PersonID": person_id, "name": name})
     return mentioned
 
@@ -94,8 +54,9 @@ def _resolve_mentioned_organizations(
 ) -> List[Dict[str, str]]:
     """Extract organizations mentioned in citation text."""
     mentioned = []
+    text_lower = citation_text.lower()
     for name, group_id in groups_index.items():
-        if name.lower() in citation_text.lower():
+        if name in text_lower:
             mentioned.append({"PeopleGroupID": group_id, "name": name})
     return mentioned
 

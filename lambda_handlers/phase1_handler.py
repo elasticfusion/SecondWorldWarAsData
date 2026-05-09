@@ -124,6 +124,6 @@ def _run_parse(tmpdir: Path, book_name: str, storage) -> None:
                     {"number": f.number, "url": f.url} for f in doc.footnotes
                 ],
             }
-            dest = f"output/{book_name}/{filename}"
+            dest = f"output/content/{book_name}/{filename}"
             storage.write_json(dest, output_data)
             logger.info("Uploaded: %s", dest)

@@ -88,15 +88,15 @@ def _extract_chapter(key: str, storage, grok_client, config: dict) -> None:
         parsed_file.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
 
         # Extract events
-        book_name = key.split("/")[1]  # output/{BookName}/chapter*-parsed.json
-        output_dir = tmpdir / "output" / book_name
+        book_name = key.split("/")[2]  # output/content/{BookName}/chapter*-parsed.json
+        output_dir = tmpdir / "output" / "content" / book_name
         output_dir.mkdir(parents=True, exist_ok=True)
 
         result = extract_events(parsed_file, grok_client, output_dir)
 
         # Upload results to storage
         if result and result.exists():
-            dest = f"output/{book_name}/{result.name}"
+            dest = f"output/content/{book_name}/{result.name}"
             storage.write_json(dest, json.loads(result.read_text(encoding="utf-8")))
             logger.info("Uploaded: %s", dest)
 

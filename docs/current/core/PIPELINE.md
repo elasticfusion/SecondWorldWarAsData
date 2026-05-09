@@ -1,6 +1,6 @@
 # Pipeline Documentation
 
-**Last Updated:** 2026-04-30
+**Last Updated:** 2026-05-04
 
 ## Overview
 
@@ -16,7 +16,13 @@ Converts markdown source files into structured JSON with absolute paragraph numb
 Extracts entities and events using Grok AI. Prompts are loaded from YAML templates in `prompts/` (overridable from S3). In AWS mode, Phase 2 uses **incremental processing** — only downloads and processes parsed files that don't have a corresponding event file in S3.
 
 ### Dedup Review Gate
-After Phase 2, duplicate detection runs automatically. All four dedup scripts read exclusion files (`not_duplicates.json` / `not_related.json`) to skip previously reviewed pairs. In AWS mode, a web UI allows merging, skipping, and reclassifying entities before Phase 3 proceeds. UI actions (merge, reclassify, assign) append changed file keys to the DynamoDB manifest so Phase 3 downloads them.
+After Phase 2, duplicate detection runs automatically:
+1. Military units in `output/places/` are auto-reclassified to `output/people_groups/`
+2. Stale index entries are cleaned up
+3. Exclusion pairs are migrated from local JSON to DynamoDB (one-time)
+4. All four dedup scripts run, reading exclusions from DynamoDB (AWS) or local JSON (local mode)
+
+In AWS mode, a web UI allows merging, skipping, and reclassifying entities before Phase 3 proceeds. UI actions (merge, reclassify, assign) append changed file keys to the DynamoDB manifest so Phase 3 downloads them. "Not Duplicates" decisions are stored in DynamoDB and persist across pipeline runs.
 
 ### Phase 3: Enrichment
 Enriches people, groups, places, and bibliography with external data. In AWS mode, Phase 3 reads the DynamoDB manifest (`manifest#phase2`) to download only files changed by Phase 2 and dedup review, falling back to a full entity directory download if no manifest exists.
@@ -32,7 +38,7 @@ python3 phase1_parse.py
 ```
 
 **Input:** `contentrepository/{Book}/chapter*/chapter*-content.md`  
-**Output:** `output/{Book}/chapter*-parsed.json`
+**Output:** `output/content/{Book}/chapter*-parsed.json`
 
 **Features:**
 - Absolute paragraph numbering across entire book
@@ -69,8 +75,8 @@ python3 phase2_extract.py --batch
    - Weather (if enabled)
    - Equipment (if enabled)
    - Logistics (if enabled)
-   - Casualties (if enabled)
-   - Supplemental material (if enabled)
+   - Casualties (if enabled) — personnel only (killed, wounded, missing, POW); no equipment losses
+   - Supplemental material (if enabled) — fetches actual endnote text from ibiblio HTML pages, resolves cross-references ("cited in n. 5", "see n. 4"), passes real citation text to Grok
    - Images (if enabled, via `src/extraction/images.py`)
 6. **Maps Extraction** - Source maps + external maps via OpenSERP (if enabled)
 7. **Analysis** - Duplicate people report + related groups report
@@ -140,7 +146,7 @@ Phase 2 intelligently skips already-processed files:
 
 **Force reprocessing:**
 ```bash
-rm output/{Book}/chapter*-{type}.json
+rm output/content/{Book}/chapter*-{type}.json
 ```
 
 ## Incremental Processing (AWS)
@@ -173,7 +179,11 @@ No content is lost and no concurrent processing occurs.
 
 ### Feedback Loop Prevention
 
-Phase 2 and Phase 3 final syncs only upload entity subdirectories (people, places, groups, etc.), never book directories containing `-parsed.json` or `-event.json` files. This prevents S3 notifications from re-triggering the pipeline. Dedup report sync only uploads `duplicate_report.json` files, not the entire output directory.
+Phase 2 and Phase 3 final syncs only upload entity subdirectories (people, places, groups, etc.), never book directories containing `-parsed.json` or `-event.json` files. S3 notifications for parsed/event files are scoped to the `output/content/` prefix, so entity uploads to `output/people/` etc. cannot re-trigger the pipeline. Dedup report sync only uploads `duplicate_report.json` files, not the entire output directory.
+
+### Cross-Book Dedup Detection (AWS)
+
+After Phase 2 extraction, the ECS container downloads the full entity inventory from S3 (all books) plus all event files (`output/content/`) before running dedup scripts. This ensures duplicate detection works across books — e.g., "Eisenhower" in Lorraine is matched against "Dwight D. Eisenhower" from Cross-Channel Attack. The event files provide text proximity signals needed for high-frequency entities (>15 event mentions).
 
 ## Phase 3: Enrich
 
@@ -189,9 +199,30 @@ python3 phase3_enrich_data.py --batch
 - Enriches groups with organizational history and command structure
 - Enriches places with additional geographic and historical context
 - Enriches bibliography with full citation data and source verification
+- **Resolves bibliography sources** — routes by document type:
+  - Military records → Grok identifies NARA Record Group (RG 407, etc.) → NARA catalog API → LOC → OpenSERP for digitized copies (Fold3, HathiTrust, Archive.org)
+  - Books → Archive.org, Gutenberg, OpenSERP
+  - Articles → LOC
+  - All external search results cached (positive 30 days, negative 7 days) to prevent redundant API calls
 - Searches for birth/death dates, service history, awards
 - Follows references for additional context
 - Caches all external lookups
+
+**Enrichment Status Tracking:**
+
+Each entity file gets an `enrichment_status` field after processing:
+- `enriched` — external data found and added
+- `not_found` — searched all sources, nothing found (skipped on future runs)
+- No field — never searched yet
+
+All entities also record `last_enrichment_search` (YYYY-MM-DD) for periodic re-search of not_found entities. Bibliography entries use `search_status` with the same values.
+
+**OpenSERP Enrichment** (when `use_openserp: true`):
+- People: portrait images, academic papers, oral histories, video interviews
+- Equipment: photos, technical drawings
+- Events: primary sources, veteran interviews (multi-language search)
+- All results verified by Grok before acceptance
+- Tracked via `openserp_searched` flag to prevent duplicate searches
 
 **Options:**
 ```bash

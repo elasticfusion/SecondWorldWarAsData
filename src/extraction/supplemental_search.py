@@ -52,6 +52,24 @@ def search_archive_org(
     Returns:
         URL if found, None otherwise
     """
+    from src.utils.search_cache import cache_result, get_cached
+
+    query_key = f"{title}|{author or ''}|{periodical or ''}"
+    cached = get_cached("archive_org", query_key)
+    if cached == "NOT_FOUND":
+        return None
+    if cached:
+        return cached
+
+    result = _search_archive_org_api(title, author, periodical)
+    cache_result("archive_org", query_key, result)
+    return result
+
+
+def _search_archive_org_api(
+    title: str, author: Optional[str] = None, periodical: Optional[str] = None
+) -> Optional[str]:
+    """Execute archive.org API search."""
     try:
         # Build query
         query_parts = []

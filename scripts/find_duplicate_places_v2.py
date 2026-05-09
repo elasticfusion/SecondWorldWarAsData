@@ -91,16 +91,10 @@ def find_duplicate_places(places_dir: Path) -> List[Dict]:
 
 
 def _load_exclusions(places_dir: Path) -> set:
-    """Load excluded pairs from not_duplicates.json."""
-    exclusion_file = places_dir / "not_duplicates.json"
-    if not exclusion_file.exists():
-        return set()
-    with open(exclusion_file, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    pairs: set = set()
-    for pair in data.get("exclusions", []):
-        pairs.add(tuple(sorted([pair.get("person1", ""), pair.get("person2", "")])))
-    return pairs
+    """Load excluded pairs from DynamoDB or local JSON."""
+    from src.dedup.exclusions import get_exclusion_store
+
+    return get_exclusion_store("places", places_dir).load()
 
 
 def _build_group(cluster: list, reasons: set) -> Dict[str, Any]:
@@ -141,11 +135,13 @@ def _filter_excluded(
 
 
 def _load_places(places_dir: Path) -> list:
-    """Load all place files into a list of dicts."""
+    """Load place data from local files + index.json for non-local entries."""
     places = []
+    seen_filenames: set = set()
     for f in sorted(places_dir.glob("*.json")):
         if f.name in SKIP_FILES:
             continue
+        seen_filenames.add(f.name)
         try:
             data = json.loads(f.read_text(encoding="utf-8"))
             name = data.get(
@@ -164,6 +160,26 @@ def _load_places(places_dir: Path) -> list:
                 )
         except (json.JSONDecodeError, OSError) as e:
             logger.warning("Skipping %s: %s", f.name, e)
+
+    # Add entries from index.json that aren't local
+    index_file = places_dir / "index.json"
+    if index_file.exists():
+        try:
+            raw = json.loads(index_file.read_text(encoding="utf-8"))
+            for name, filename in raw.items():
+                if filename not in seen_filenames and filename not in SKIP_FILES:
+                    places.append(
+                        {
+                            "name": name.replace("_", " "),
+                            "filename": filename,
+                            "PlaceID": "",
+                            "lat": None,
+                            "lon": None,
+                        }
+                    )
+        except (json.JSONDecodeError, OSError):
+            pass
+
     return places
 
 
@@ -222,6 +238,11 @@ def _evaluate_match(sim: float, dist, near: bool):
 def generate_duplicate_report(places_dir: Path, output_file: Path) -> None:
     """Generate duplicate places report."""
     duplicates = find_duplicate_places(places_dir)
+
+    # Filter out entries whose files don't exist
+    from src.dedup.validation import validate_report_groups
+
+    duplicates = validate_report_groups(duplicates, places_dir)
 
     report = {
         "total_places": len(

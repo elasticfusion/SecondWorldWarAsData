@@ -1,11 +1,11 @@
-"""Lambda handler for OpenSERP idle monitoring and cost-saving teardown.
+"""Lambda handler for idle monitoring and cost-saving teardown.
 
 Triggered by EventBridge rule every 10 minutes.
-Checks ALB RequestCount metric — if zero for 30 minutes, tears down:
-  - ECS service (scale to 0)
-  - NAT Gateway + Elastic IP
-  - ALB
-Stores teardown config in SSM for re-creation by openserp_client.py.
+Checks for running ECS tasks — if none for 30 minutes, tears down:
+  - ECS OpenSERP service (scale to 0)
+  - NAT Gateway + release Elastic IP
+  - Internal ALB
+Resources are discovered dynamically by tag, not from config.
 """
 
 import logging
@@ -15,107 +15,117 @@ from datetime import datetime, timedelta, timezone
 logger = logging.getLogger(__name__)
 logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
-IDLE_THRESHOLD_MINUTES = 30
+ENV_NAME = os.getenv("ENV_NAME", "dev")
+IDLE_MINUTES = int(os.getenv("IDLE_MINUTES", "30"))
+SSM_PREFIX = f"/{ENV_NAME}-wwii-pipeline"
 
 
 def handler(event, _context):
-    """Check OpenSERP activity and tear down if idle."""
+    """Check cluster activity and tear down if idle."""
     import boto3
 
-    from src.utils.config import load_config
-
-    config = load_config()
-    aws = config.get("aws", {})
-    if not aws.get("enabled"):
-        return {"action": "skipped", "reason": "aws not enabled"}
-
-    region = aws.get("region", "us-east-1")
-    openserp_cfg = aws.get("openserp", {})
-    cluster = openserp_cfg["cluster"]
-    service = openserp_cfg["service"]
+    region = os.getenv("AWS_REGION", "us-east-1")
+    cluster = f"{ENV_NAME}-wwii-pipeline"
+    service = f"{ENV_NAME}-wwii-openserp"
 
     ecs = boto3.client("ecs", region_name=region)
 
-    # Check if already scaled to 0
+    # Check for any running tasks in the cluster
+    running = ecs.list_tasks(cluster=cluster, desiredStatus="RUNNING")
+    task_count = len(running.get("taskArns", []))
+
+    if task_count > 0:
+        logger.info("Active: %d running tasks — skipping teardown", task_count)
+        return {"action": "none", "tasks": task_count}
+
+    # Check if OpenSERP service is already at 0
     resp = ecs.describe_services(cluster=cluster, services=[service])
-    svc = resp["services"][0]
-    if svc.get("desiredCount", 0) == 0:
-        return {"action": "none", "reason": "already scaled to 0"}
+    services = resp.get("services", [])
+    if not services or services[0].get("desiredCount", 0) == 0:
+        # Check if NAT was recently created (task may be starting)
+        if _nat_recently_created():
+            logger.info(
+                "NAT created recently — task may be starting, skipping teardown"
+            )
+            return {"action": "none", "reason": "nat recently created"}
+        _teardown(ecs, cluster, service, region)
+        logger.info("Idle: no tasks, service at 0 — cleaned up NAT/ALB")
+        return {"action": "cleanup", "reason": "already idle, cleaned resources"}
 
-    # Check ALB request count
-    target_group_arn = openserp_cfg.get("target_group_arn", "")
-    if not target_group_arn:
-        return {"action": "skipped", "reason": "no target_group_arn configured"}
-
-    if _has_recent_activity(target_group_arn, region):
-        return {"action": "none", "reason": "active in last 30 minutes"}
-
-    # Idle — tear down
-    logger.info("OpenSERP idle for %d minutes — tearing down", IDLE_THRESHOLD_MINUTES)
-    _teardown(cluster, service, openserp_cfg, region)
-    return {
-        "action": "teardown",
-        "reason": f"idle for {IDLE_THRESHOLD_MINUTES}+ minutes",
-    }
-
-
-def _has_recent_activity(target_group_arn: str, region: str) -> bool:
-    """Check ALB RequestCount metric for the target group."""
-    import boto3
-
-    cw = boto3.client("cloudwatch", region_name=region)
-    # Extract TG dimension from ARN: arn:aws:...targetgroup/name/id → targetgroup/name/id
-    tg_dim = "/".join(target_group_arn.split(":")[-1].split("/")[1:])
+    # Service is up but no tasks — check if it's been idle long enough
+    # Use the last task stop time as the idle marker
+    stopped = ecs.list_tasks(cluster=cluster, desiredStatus="STOPPED")
+    last_active = _get_last_task_time(ecs, cluster, stopped.get("taskArns", []))
 
     now = datetime.now(timezone.utc)
-    resp = cw.get_metric_statistics(
-        Namespace="AWS/ApplicationELB",
-        MetricName="RequestCount",
-        Dimensions=[{"Name": "TargetGroup", "Value": f"targetgroup/{tg_dim}"}],
-        StartTime=now - timedelta(minutes=IDLE_THRESHOLD_MINUTES),
-        EndTime=now,
-        Period=IDLE_THRESHOLD_MINUTES * 60,
-        Statistics=["Sum"],
-    )
-    datapoints = resp.get("Datapoints", [])
-    total = sum(dp.get("Sum", 0) for dp in datapoints)
-    return total > 0
+    idle_since = now - timedelta(minutes=IDLE_MINUTES)
+
+    if last_active and last_active > idle_since:
+        minutes_ago = int((now - last_active).total_seconds() / 60)
+        logger.info(
+            "Last task stopped %d min ago — waiting for %d min threshold",
+            minutes_ago,
+            IDLE_MINUTES,
+        )
+        return {"action": "none", "last_active_min_ago": minutes_ago}
+
+    # Idle long enough — tear down
+    logger.info("Idle for %d+ minutes — tearing down", IDLE_MINUTES)
+    _teardown(ecs, cluster, service, region)
+    return {"action": "teardown", "reason": f"idle {IDLE_MINUTES}+ min"}
 
 
-def _teardown(cluster: str, service: str, openserp_cfg: dict, region: str) -> None:
-    """Scale ECS to 0 and delete NAT Gateway + ALB."""
+def _get_last_task_time(ecs, cluster, task_arns):
+    """Get the most recent task stop time."""
+    if not task_arns:
+        return None
+    # Check last 5 stopped tasks
+    resp = ecs.describe_tasks(cluster=cluster, tasks=task_arns[:5])
+    latest = None
+    for task in resp.get("tasks", []):
+        stopped = task.get("stoppedAt")
+        if stopped and (latest is None or stopped > latest):
+            latest = stopped
+    return latest
+
+
+def _nat_recently_created(minutes=5):
+    """Check if networking stack was created within the last N minutes."""
     import boto3
 
-    ecs = boto3.client("ecs", region_name=region)
-    ec2 = boto3.client("ec2", region_name=region)
-    elbv2 = boto3.client("elbv2", region_name=region)
-    ssm = boto3.client("ssm", region_name=region)
+    cf = boto3.client(
+        "cloudformation", region_name=os.getenv("AWS_REGION", "us-east-1")
+    )
+    try:
+        resp = cf.describe_stacks(StackName=f"{ENV_NAME}-wwii-networking")
+        stack = resp["Stacks"][0]
+        create_time = stack.get("CreationTime")
+        if create_time:
+            age = (datetime.now(timezone.utc) - create_time).total_seconds()
+            return age < minutes * 60
+    except Exception:
+        pass
+    return False
 
-    # 1. Scale ECS to 0
-    ecs.update_service(cluster=cluster, service=service, desiredCount=0)
-    logger.info("ECS service scaled to 0")
 
-    # 2. Delete NAT Gateway
-    nat_gw_id = openserp_cfg.get("nat_gateway_id", "")
-    if nat_gw_id:
-        try:
-            ec2.delete_nat_gateway(NatGatewayId=nat_gw_id)
-            logger.info("Deleted NAT Gateway: %s", nat_gw_id)
-            # Store for re-creation
-            ssm.put_parameter(
-                Name="/wwii-pipeline/nat-gateway-config",
-                Value=nat_gw_id,
-                Type="String",
-                Overwrite=True,
-            )
-        except Exception as e:
-            logger.warning("Failed to delete NAT Gateway: %s", e)
+def _teardown(ecs, cluster, service, region):
+    """Scale OpenSERP to 0 and delete dynamic networking stack."""
+    import boto3
 
-    # 3. Delete ALB
-    alb_arn = openserp_cfg.get("alb_arn", "")
-    if alb_arn:
-        try:
-            elbv2.delete_load_balancer(LoadBalancerArn=alb_arn)
-            logger.info("Deleted ALB: %s", alb_arn)
-        except Exception as e:
-            logger.warning("Failed to delete ALB: %s", e)
+    # 1. Scale OpenSERP to 0
+    try:
+        ecs.update_service(cluster=cluster, service=service, desiredCount=0)
+        logger.info("Scaled OpenSERP service to 0")
+    except Exception as e:
+        logger.warning("Failed to scale service: %s", e)
+
+    # 2. Delete networking stack (NAT, ALB, VPC endpoints)
+    try:
+        boto3.client("lambda", region_name=region).invoke(
+            FunctionName=f"{ENV_NAME}-wwii-nat-manager",
+            InvocationType="RequestResponse",
+            Payload=b'{"action": "delete"}',
+        )
+        logger.info("Networking stack delete invoked")
+    except Exception as e:
+        logger.warning("Failed to invoke networking delete: %s", e)

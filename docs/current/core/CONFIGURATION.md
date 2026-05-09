@@ -1,7 +1,7 @@
 # Configuration Guide
 
 **File:** `config.yaml`  
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-05-04
 
 Complete reference for all configuration options in the WWII data extraction pipeline.
 
@@ -14,7 +14,8 @@ Directory structure for the project.
 ```yaml
 paths:
   content_root: "contentrepository"  # Source documents
-  output_root: "output"              # Extracted data
+  output_root: "output"              # Extracted data (entity directories)
+  content_output: "output/content"   # Book-specific output (parsed/event files)
   cache_root: "cache"                # API and download caches
   review_root: "review"              # Manual review files
   
@@ -32,6 +33,7 @@ paths:
 **Notes:**
 - All paths are relative to project root
 - Directories are created automatically if they don't exist
+- `content_output` separates book-specific files (parsed/event) from entity directories. Backwards compatible: if `output/content/` doesn't exist, falls back to `output/` (old layout). Run `python3 scripts/migrate_output_content.py` to migrate.
 
 ---
 
@@ -55,6 +57,15 @@ api:
 - `max_retries` — Number of retry attempts on failure
 - `timeout` — Request timeout in seconds
 - `calls_per_minute` — Proactive rate limit across all threads (default 30)
+
+**NARA Catalog API:**
+- `nara_api_key` — API key for National Archives catalog search. Get from [archives.gov](https://www.archives.gov/research/catalog/help/api-getting-started). Used by bibliography resolver to find digitized military records and identify Record Groups. 10,000 requests/month limit. Leave empty to skip NARA search (Grok still identifies Record Groups without it).
+
+**External Search Cache:**
+All external search results (Wikipedia, Grokipedia, Archive.org, NARA, LOC, OpenSERP) are cached in DynamoDB (AWS) or local disk (local mode):
+- Positive results: cached 30 days
+- Negative results (not found): cached 7 days
+- Prevents redundant HTTP calls across pipeline runs
 
 **Environment Variables Required:**
 - `GROK_API_KEY` - Your Grok API key (set in `.env`)
@@ -129,7 +140,7 @@ equipment:
 
 ## Casualties Extraction
 
-Casualty tracking from events (experimental).
+Personnel casualty tracking from events (experimental). Tracks killed, wounded, missing, and POW. Equipment/materiel losses belong in the Equipment entity.
 
 ```yaml
 casualties:
@@ -140,6 +151,8 @@ casualties:
 - `enabled` - Enable/disable casualties extraction
 
 **Output:** `output/casualties/{type}_{ulid}.json`
+
+**Fields:** `type` (killed/wounded/casualties/pow/missing), `side` (allied/axis/civilian/unknown), `count` (with qualifiers), `impacted_organizations`, `impacted_people`, `impacted_places`. No equipment or weather fields.
 
 ---
 
@@ -170,7 +183,7 @@ supplemental_material:
 - `llm_search` - Use Grok to search for online versions of cited works
 - `search_gutenberg` - Search Project Gutenberg
 - `search_archive_org` - Search Internet Archive
-- `use_openserp` - Use OpenSERP for broader web search
+- `use_openserp` - Use OpenSERP for broader web search (Phase 2: supplemental search, Phase 3: images, academic sources, event content)
 
 **Phase 3 (Advanced):**
 - `verify_archive_urls` - Verify that discovered archive URLs are still accessible
@@ -331,6 +344,7 @@ aws:
   cache_table: "dev-wwii-api-cache"  # DynamoDB table for API response cache
   cache_ttl_days: 90                 # Cache entry TTL
   secrets_id: "dev-wwii-pipeline/grok-api-key"  # Secrets Manager secret for GROK_API_KEY
+  notification_email: ""             # Email for pipeline completion notifications
   openserp:
     cluster: "dev-wwii-pipeline"
     service: "dev-wwii-openserp"
@@ -348,6 +362,7 @@ aws:
 - `cache_ttl_days` — How long cached responses are kept (default 90 days)
 - `secrets_id` — Secrets Manager secret name containing the Grok API key
 - `dynamodb_table_prefix` — Prefix for entity tables (people, places, groups, etc.)
+- `notification_email` — Email address for pipeline completion notifications. Read by `deploy_aws.py` and passed to CloudFormation. Leave empty to skip. Requires SNS email confirmation after first deploy.
 
 **Note:** In ECS containers, the `ecs_entrypoint.py` automatically patches `aws.enabled: true` at runtime.
 

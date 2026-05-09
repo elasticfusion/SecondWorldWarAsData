@@ -42,8 +42,10 @@ PURGE_TYPES = {
 def _find_completed_books(config: dict) -> list[str]:
     """Find books that have event files in output/."""
     output_root = Path(config.get("paths", {}).get("output_root", "output"))
+    content_dir = output_root / "content"
+    search_dir = content_dir if content_dir.exists() else output_root
     books = []
-    for d in sorted(output_root.iterdir()):
+    for d in sorted(search_dir.iterdir()):
         if d.is_dir() and list(d.glob("*-event.json")):
             books.append(d.name)
     return books

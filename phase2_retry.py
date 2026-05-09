@@ -56,6 +56,12 @@ def main():
     base_dir = Path(__file__).parent
     output_root = base_dir / "output"
 
+    from src.utils.config import get_content_root, get_paths, load_config
+
+    config = load_config()
+    paths = get_paths(config, base_dir)
+    content_root = get_content_root(paths)
+
     logger.info("=" * 70)
     logger.info("Phase 2 with Automatic Retry")
     logger.info("=" * 70)
@@ -96,7 +102,7 @@ def main():
             else:
                 logger.error("Maximum attempts reached, giving up")
                 return 1
-        missing = count_missing_files(output_root)
+        missing = count_missing_files(content_root)
 
         if missing == 0:
             logger.info(f"\n{'=' * 70}")

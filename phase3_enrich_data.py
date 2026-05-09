@@ -198,6 +198,42 @@ def main():
         bib_enriched = enrich_bibliography(bib_dir, supplemental_config, grok_client)
         total_enriched += bib_enriched
 
+        # Resolve bibliography sources (NARA, Archive.org, LOC)
+        from src.enrichment.bibliography_resolver import resolve_bibliography_dir
+
+        resolve_config = {
+            "nara_api_key": config.get("api", {}).get("nara_api_key"),
+            "search_gutenberg": supplemental_config.get("search_gutenberg", True),
+            "search_archive_org": supplemental_config.get("search_archive_org", True),
+            "use_openserp": supplemental_config.get("use_openserp", False),
+            "openserp_url": config.get("external_maps", {}).get(
+                "openserp_url", "http://localhost:7001"
+            ),
+        }
+        resolve_stats = resolve_bibliography_dir(
+            bib_dir, grok_client, resolve_config, max_items=args.max_items
+        )
+        total_enriched += resolve_stats["resolved"]
+
+    # OpenSERP enrichment (images, academic sources) — requires OpenSERP running
+    if not args.people_only and config.get("supplemental_material", {}).get(
+        "use_openserp", False
+    ):
+        from src.enrichment.openserp_enrichment import (
+            enrich_equipment_with_openserp,
+            enrich_people_with_openserp,
+        )
+
+        openserp_url = config.get("external_maps", {}).get(
+            "openserp_url", "http://localhost:7001"
+        )
+        total_enriched += enrich_people_with_openserp(
+            args.output_dir / "people", openserp_url, grok_client, args.max_items
+        )
+        total_enriched += enrich_equipment_with_openserp(
+            args.output_dir / "equipment", openserp_url, grok_client, args.max_items
+        )
+
     logger.info("\n" + "=" * 80)
     logger.info(f"ENRICHMENT COMPLETE: {total_enriched} total items enriched")
     grok_client.log_cache_stats()
@@ -244,6 +280,29 @@ def main():
                 total_enriched += enrich_bibliography(
                     bib_dir, supplemental_config, grok_client
                 )
+
+                # Resolve bibliography sources (NARA, Archive.org, LOC)
+                from src.enrichment.bibliography_resolver import (
+                    resolve_bibliography_dir,
+                )
+
+                resolve_config = {
+                    "nara_api_key": config.get("api", {}).get("nara_api_key"),
+                    "search_gutenberg": supplemental_config.get(
+                        "search_gutenberg", True
+                    ),
+                    "search_archive_org": supplemental_config.get(
+                        "search_archive_org", True
+                    ),
+                    "use_openserp": supplemental_config.get("use_openserp", False),
+                    "openserp_url": config.get("external_maps", {}).get(
+                        "openserp_url", "http://localhost:7001"
+                    ),
+                }
+                resolve_stats = resolve_bibliography_dir(
+                    bib_dir, grok_client, resolve_config, max_items=args.max_items
+                )
+                total_enriched += resolve_stats["resolved"]
 
             logger.info("\n" + "=" * 80)
             logger.info(
