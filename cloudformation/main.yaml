@@ -59,6 +59,7 @@ Resources:
         VpcId: !GetAtt NetworkStack.Outputs.VpcId
         PrivateSubnet1Id: !GetAtt NetworkStack.Outputs.PrivateSubnet1Id
         PrivateSubnet2Id: !GetAtt NetworkStack.Outputs.PrivateSubnet2Id
+        PublicSubnet1Id: !GetAtt NetworkStack.Outputs.PublicSubnet1Id
         LambdaSGId: !GetAtt NetworkStack.Outputs.LambdaSGId
         OpenSerpSGId: !GetAtt NetworkStack.Outputs.OpenSerpSGId
         AlbSGId: !GetAtt NetworkStack.Outputs.AlbSGId
@@ -89,8 +90,6 @@ Outputs:
     Value: !GetAtt StorageStack.Outputs.DataBucketName
   ECSCluster:
     Value: !GetAtt ComputeStack.Outputs.ECSClusterName
-  OpenSerpALB:
-    Value: !GetAtt ComputeStack.Outputs.OpenSerpALBDns
   VpcId:
     Value: !GetAtt NetworkStack.Outputs.VpcId
   DedupReviewUrl:

@@ -1,8 +1,34 @@
 # TODO
 
-**Last Updated:** 2026-04-19
+**Last Updated:** 2026-05-04
 
 ---
+
+## Active
+
+### Batch mode for optional extractors (casualties, weather, equipment, logistics, supplemental)
+**Priority:** Medium
+**Status:** Not Started
+
+Optional entity extractors (step 5 of Phase 2) use real-time API calls even when `--batch` is passed. This includes casualties, weather, equipment, logistics, and supplemental/bibliography extraction. They run after the core batch completes because they depend on event data. Fix: add a second batch collect→submit→poll cycle for optional extractors. Requires separating request collection from result processing in each extractor.
+
+### ~~Idle monitor not tearing down NAT Gateway~~
+**Priority:** High
+**Status:** ✅ Done (2026-05-03)
+
+Rewritten to check ECS tasks instead of ALB. NAT manager Lambda handles create/delete lifecycle with DynamoDB lock. Idle monitor checks NAT age before teardown.
+
+### Move ALB to dynamic lifecycle management
+**Priority:** Medium
+**Status:** ✅ Done (2026-05-06)
+
+ALB removed entirely. Pipeline connects to OpenSERP via task private IP. NAT manager Lambda handles NAT + VPC endpoints only. Saves ~$16/month.
+
+### Batch mode for Phase 3 enrichment Grok calls
+**Priority:** Medium
+**Status:** Not Started
+
+Phase 3 biography, group, place, and bibliography enrichment make individual real-time Grok API calls per entity. These could be collected and submitted as a batch for 50% cost reduction. External search calls (Grokipedia, Wikipedia, OpenSERP) must remain real-time since they hit third-party APIs.
 
 ## Active
 
@@ -28,15 +54,11 @@ After cache clear, re-run pipeline with updated prompts that request:
 
 `enrich_bibliography()` reads from `output/bibliography/`, enriches ISBN/copyright/archive URLs. Wired into `phase3_enrich_data.py`. Controlled by `supplemental_material` config flags (`extract_isbn`, `determine_copyright`, `verify_archive_urls`).
 
-### Casualties spec review
+### ~~Casualties spec review~~
 **Priority:** Medium
-**Status:** Not Started
+**Status:** ✅ Done (2026-05-01)
 
-No formal spec exists for casualties. Known issues:
-- 77 `impacted_equipment.EquipmentID` are null (no match found during extraction)
-- 4 `event_context.EventID` broken refs
-- `source.EventID` not populated (event context is in `event_context` instead)
-- `count` field has mixed types (integer and string)
+Spec rewritten: people-only (removed equipment/weather), added `side` field, updated schema and prompt.
 
 ### ~~Event→People orphaned refs~~
 **Priority:** Medium
@@ -50,17 +72,21 @@ No formal spec exists for casualties. Known issues:
 
 `scripts/fix_fake_place_ulids.py` replaces hand-crafted placeholder IDs with real PlaceIDs from the index. Also fixed `_fix_invalid_ulids()` to catch lowercase `_id` fields (was only checking uppercase `ID`).
 
-### Fix 5 people_groups with empty group_type
+### ~~Fix 5 people_groups with empty group_type~~
+**Priority:** Low
+**Status:** ✅ Done (2026-05-01)
+
+Fixed by re-extraction with updated prompts.
+
+### Periodic re-search of not_found entities
 **Priority:** Low
 **Status:** Not Started
 
-Files: `u.s. assault division.json`, `eighteen divisions.json`, `363d infantry division.json`, `three assault divisions.json`, `77 parachute.json` — all have `group_type: ""`.
+Entities marked `enrichment_status: "not_found"` are skipped permanently. The `last_enrichment_search` date field is now recorded. Add a config option (e.g., `enrichment.re_search_after_days: 90`) that re-searches entities whose `last_enrichment_search` is older than the threshold. Grokipedia and Wikipedia content changes over time — new articles, corrections, and additions may provide data for previously unfindable people.
 
-### Fix 1 weather file with date range
+### ~~Fix 1 weather file with date range~~
 **Priority:** Low
-**Status:** Not Started
-
-`19440619 to 19440621_Channel_01KM4A04.json` has `date: "1944-06-19 to 1944-06-21"` instead of single YYYY-MM-DD.
+**Status:** ✅ Done (fixed by re-extraction)
 
 ---
 

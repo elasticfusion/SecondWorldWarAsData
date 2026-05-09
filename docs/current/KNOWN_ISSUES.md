@@ -1,6 +1,6 @@
 # Known Issues
 
-**Last Updated:** 2026-04-30
+**Last Updated:** 2026-05-04
 
 ## Open Issues
 
@@ -117,39 +117,137 @@ Use OpenSERP to find primary source material related to specific events — vete
 - Config option to enable/disable (`enrichment.event_content_search: true`)
 - OpenSERP service must be running
 
-## Reorganize output directory structure
-
-**Date:** 2026-04-28
-**Status:** Planned
-**Severity:** Low
-
-Move book output directories under `output/content/` to separate parsed/event files from entity directories:
-
-```
-output/
-├── content/                    # book-specific output
-│   ├── BreakoutAndPursuit/
-│   ├── CrossChannelAttack/
-│   └── TheLorraineCampaign/
-├── people/                     # entity directories (unchanged)
-├── places/
-├── people_groups/
-├── equipment/
-└── ...
-```
-
-**Requires:**
-- Update `paths.output_root` or add `paths.content_output` in config.yaml
-- Update phase1_parse.py, phase2_extract.py, phase3_enrich_data.py
-- Update all extraction modules referencing output_root for book dirs
-- Update S3 notification prefixes in CloudFormation
-- Update ecs_entrypoint.py sync logic
-- Migrate existing S3 data with a script
-- Update import scripts and dedup scripts
-
 ---
 
 ## Resolved Issues
+
+### Infinite retry loop for short Grok responses
+
+**Date:** 2026-05-04
+**Status:** Resolved
+**Severity:** High
+
+`extract_json` retried indefinitely when Grok returned short non-JSON responses (14 chars, typically "I don't know"). The `_retried` flag wasn't checked in the `JSONDecodeError` handler, causing hundreds of wasted API calls per unfindable person.
+
+**Fix:** Added `_retried` check to the `JSONDecodeError` path. Max 2 attempts in `extract_json`, plus 3 attempts in the enrichment caller = 6 total max per entity.
+
+### Enrichment re-searches entities every run
+
+**Date:** 2026-05-04
+**Status:** Resolved
+**Severity:** Medium
+
+People, groups, and places without external data were re-searched on every Phase 3 run, wasting API calls on entities Grok can't find.
+
+**Fix:** Added `enrichment_status` field (`enriched`/`not_found`) to people, groups, and places. Bibliography uses `search_status`. Entities marked `not_found` are skipped on future runs.
+
+### Dedup exclusions lost between AWS runs
+
+**Date:** 2026-05-02
+**Status:** Resolved
+**Severity:** High
+
+"Not Duplicates" decisions were stored in S3 JSON files that weren't consistently downloaded by ECS containers. Exclusions were lost or stale across runs.
+
+**Fix:** Moved exclusions to DynamoDB (`exclusion#{entity_type}#{file1}#{file2}`). Shared `src/dedup/exclusions.py` module used by both ECS and Lambda. One-time migration from local JSON on first run.
+
+### Dedup high-frequency gate suppressing valid matches
+
+**Date:** 2026-05-02
+**Status:** Resolved
+**Severity:** High
+
+People with >15 event mentions (Eisenhower, Bradley, Patton) were excluded from dedup matching unless they had bio/proximity evidence — which isn't available pre-enrichment.
+
+**Fix:** Removed the high-frequency gate entirely. All people scored identically regardless of mention count.
+
+### NAT Gateway race condition creating duplicates
+
+**Date:** 2026-05-03
+**Status:** Resolved
+**Severity:** Medium
+
+Multiple concurrent trigger Lambda invocations each created a NAT Gateway, resulting in 2-4 NATs and orphaned EIPs.
+
+**Fix:** Added DynamoDB lock (`lock#nat-manager`) to `nat_manager.py`. Second instance waits for NAT to appear instead of creating another.
+
+### Idle monitor deleting ALB managed by CloudFormation
+
+**Date:** 2026-05-03
+**Status:** Resolved
+**Severity:** High
+
+The idle monitor deleted the ALB to save costs, but CloudFormation expected it to exist. Subsequent deploys failed with "load balancer not found."
+
+**Fix:** Removed ALB deletion from idle monitor. ALB stays managed by CloudFormation (~$16/month idle). NAT is still torn down dynamically.
+
+### Phase 3 only downloading manifest files instead of full entity dirs
+
+**Date:** 2026-05-03
+**Status:** Resolved
+**Severity:** High
+
+Phase 3 used the DynamoDB manifest for incremental download, but the manifest only contained files from the current Phase 2 run. Groups, places, and bibliography directories were empty.
+
+**Fix:** Phase 3 now downloads all entity directories (using skip-existing optimization). Manifest-only download removed for Phase 3.
+
+### Output directory reorganization
+
+**Date:** 2026-05-01
+**Status:** Resolved
+**Severity:** Low
+
+Moved book output directories under `output/content/` to separate parsed/event files from entity directories. Backwards compatible — `get_content_root()` auto-detects old layout. Migration script: `python3 scripts/migrate_output_content.py`.
+
+### Casualties schema included equipment and weather
+
+**Date:** 2026-05-01
+**Status:** Resolved
+**Severity:** Medium
+
+Casualties spec, schema, prompt, and extraction code included `impacted_equipment` and `weather_conditions` fields. Casualties are about people — equipment losses belong in the Equipment entity.
+
+**Fix:** Removed `impacted_equipment`, `weather_conditions`, and related resolver functions. Added `side` field (allied/axis/civilian/unknown). Updated prompt to explicitly say "people only."
+
+### Endnote cross-reference resolution incomplete
+
+**Date:** 2026-05-01
+**Status:** Resolved
+**Severity:** Medium
+
+`fetch_endnotes.py` only resolved "cited in n. X, above" cross-references (4 matches across all books). Patterns "cited n. X" (47 matches) and "see n. X" (13 matches) were not resolved.
+
+**Fix:** Expanded regex to handle all three patterns. 64 cross-references now resolved vs 4 previously.
+
+### Cross-book dedup detection missing in AWS mode
+
+**Date:** 2026-05-01
+**Status:** Resolved
+**Severity:** High
+
+Dedup scripts in AWS mode only found duplicates within the current run, not across books. Two causes: (1) event files from previous books weren't downloaded, so text proximity signals couldn't fire; (2) the high-frequency gate suppressed name-based matches for entities with >15 event mentions (e.g., Eisenhower, Bradley) unless text proximity or bio data was present.
+
+**Fix:** ECS dedup detection now downloads `output/content/` (all event files) for text proximity. High-frequency gate now allows substring matches, unicode variants, and name similarity ≥0.85 through without requiring bio/proximity evidence.
+
+### Lambda cannot stop rogue ECS tasks
+
+**Date:** 2026-05-01
+**Status:** Resolved
+**Severity:** Medium
+
+When dedup-complete triggered Phase 3, the Lambda tried to stop any running Phase 2 task but failed with `AccessDeniedException: ecs:StopTask not allowed`.
+
+**Fix:** Added `ecs:StopTask` to the Lambda IAM role in `cloudformation/iam.yaml`.
+
+### S3 notification prefix too broad (feedback loop)
+
+**Date:** 2026-05-01
+**Status:** Resolved
+**Severity:** High
+
+S3 notifications for `-parsed.json` and `-event.json` used prefix `output/`, which matched entity file uploads and re-triggered the pipeline. This was a recurrence of the April 28 feedback loop fix — the CloudFormation template hadn't been updated.
+
+**Fix:** Changed S3 notification prefix to `output/content/` in `cloudformation/events.yaml`. Entity uploads to `output/people/` etc. no longer trigger pipeline re-runs.
 
 ### Feedback loop: Phase 2/3 re-triggering pipeline
 

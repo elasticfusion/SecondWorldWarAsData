@@ -11,6 +11,8 @@ Parameters:
     Type: String
   PrivateSubnet2Id:
     Type: String
+  PublicSubnet1Id:
+    Type: String
   LambdaSGId:
     Type: String
   OpenSerpSGId:
@@ -185,7 +187,7 @@ Resources:
       FunctionName: !Sub ${EnvironmentName}-wwii-trigger
       Runtime: python3.12
       Handler: index.handler
-      Timeout: 30
+      Timeout: 240
       MemorySize: 128
       Role: !Ref LambdaExecutionRoleArn
       Code:
@@ -306,6 +308,17 @@ Resources:
                   logger.warning("Failed to stop phase2 tasks: %s", e)
 
           def _run_task(task_def, source, keys=None):
+              # Ensure networking stack exists (async — fire and forget if already creating)
+              try:
+                  boto3.client("lambda").invoke(
+                      FunctionName="${EnvironmentName}-wwii-nat-manager",
+                      InvocationType="Event",
+                      Payload=json.dumps({"action": "create"}).encode(),
+                  )
+              except Exception as e:
+                  logger.warning("NAT create invoke failed: %s", e)
+              # Wait for networking stack to be ready (poll up to 3 min)
+              _wait_for_networking()
               # Atomic DynamoDB lock — conditional put fails if key exists
               family = TASK_FAMILIES.get(task_def, "unknown")
               lock_key = f"lock#{family}"
@@ -332,6 +345,26 @@ Resources:
                       "assignPublicIp": "DISABLED",
                   }},
               )
+
+          def _wait_for_networking():
+              """Poll for networking stack to be ready. Returns when ready or timeout."""
+              import time as _time
+              cf = boto3.client("cloudformation")
+              stack_name = "${EnvironmentName}-wwii-networking"
+              for _ in range(18):  # 3 min max (18 * 10s)
+                  try:
+                      resp = cf.describe_stacks(StackName=stack_name)
+                      status = resp["Stacks"][0]["StackStatus"]
+                      if status == "CREATE_COMPLETE" or status == "UPDATE_COMPLETE":
+                          logger.info("Networking stack ready")
+                          return
+                      if "FAILED" in status or "ROLLBACK" in status:
+                          logger.warning("Networking stack failed: %s", status)
+                          return
+                  except cf.exceptions.ClientError:
+                      pass  # Stack doesn't exist yet, nat_manager is creating it
+                  _time.sleep(10)
+              logger.warning("Networking stack not ready after 3 min — launching task anyway")
 
           def _queue_pending(keys):
               """Queue new content keys in DynamoDB when pipeline is busy."""
@@ -363,6 +396,31 @@ Resources:
       MemorySize: 256
       Timeout: 120
       Role: !Ref LambdaExecutionRoleArn
+
+  # --- NAT Gateway Manager ---
+  NatManagerFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-nat-manager
+      Runtime: python3.12
+      Handler: lambda_handlers.nat_manager.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      MemorySize: 128
+      Timeout: 300
+      Role: !Ref LambdaExecutionRoleArn
+      Environment:
+        Variables:
+          ENV_NAME: !Ref EnvironmentName
+          PUBLIC_SUBNET_ID: !Ref PublicSubnet1Id
+          PRIVATE_SUBNET_IDS: !Sub "${PrivateSubnet1Id},${PrivateSubnet2Id}"
+          VPC_ID: !Ref VpcId
+          SECURITY_GROUP_ID: !Ref LambdaSGId
+          OPENSERP_SG_ID: !Ref OpenSerpSGId
+          ALB_SG_ID: !Ref AlbSGId
+          CACHE_TABLE: !Ref CacheTableName
+          NOTIFICATION_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
 
   # --- Metrics API ---
   MetricsFunction:
@@ -482,6 +540,7 @@ Resources:
       Environment:
         Variables:
           S3_BUCKET: !Ref DataBucketName
+          CACHE_TABLE: !Ref CacheTableName
           DEDUP_COMPLETE_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-dedup-complete
 
   DedupGateFunction:
@@ -663,6 +722,7 @@ Resources:
       ContainerDefinitions:
         - Name: openserp
           Image: !Ref OpenSerpImageUri
+          Command: ['serve', '--host', '0.0.0.0', '--port', '7001', '--raw']
           PortMappings:
             - ContainerPort: 7001
               Protocol: tcp
@@ -682,44 +742,8 @@ Resources:
             StartPeriod: 60
 
   # --- Internal ALB for OpenSERP ---
-  OpenSerpALB:
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    Properties:
-      Name: !Sub ${EnvironmentName}-openserp-alb
-      Scheme: internal
-      Type: application
-      Subnets:
-        - !Ref PrivateSubnet1Id
-        - !Ref PrivateSubnet2Id
-      SecurityGroups:
-        - !Ref AlbSGId
-
-  OpenSerpTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Name: !Sub ${EnvironmentName}-openserp-tg
-      Port: 7001
-      Protocol: HTTP
-      VpcId: !Ref VpcId
-      TargetType: ip
-      HealthCheckPath: /health
-      HealthCheckIntervalSeconds: 30
-      HealthyThresholdCount: 2
-      UnhealthyThresholdCount: 3
-
-  OpenSerpListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties:
-      LoadBalancerArn: !Ref OpenSerpALB
-      Port: 7001
-      Protocol: HTTP
-      DefaultActions:
-        - Type: forward
-          TargetGroupArn: !Ref OpenSerpTargetGroup
-
   OpenSerpService:
     Type: AWS::ECS::Service
-    DependsOn: OpenSerpListener
     Properties:
       ServiceName: !Sub ${EnvironmentName}-wwii-openserp
       Cluster: !Ref ECSCluster
@@ -733,10 +757,6 @@ Resources:
             - !Ref PrivateSubnet2Id
           SecurityGroups:
             - !Ref OpenSerpSGId
-      LoadBalancers:
-        - ContainerName: openserp
-          ContainerPort: 7001
-          TargetGroupArn: !Ref OpenSerpTargetGroup
 
 Outputs:
   TriggerFunctionArn:
@@ -757,10 +777,6 @@ Outputs:
     Value: !Ref ImportTaskDef
   OpenSerpServiceName:
     Value: !GetAtt OpenSerpService.Name
-  OpenSerpALBDns:
-    Value: !GetAtt OpenSerpALB.DNSName
-  OpenSerpTargetGroupArn:
-    Value: !Ref OpenSerpTargetGroup
   DedupApiUrl:
     Value: !Sub https://${DedupApi}.execute-api.${AWS::Region}.amazonaws.com/app/dedup
   MetricsApiUrl:

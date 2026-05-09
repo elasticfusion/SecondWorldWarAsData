@@ -202,8 +202,13 @@ def main():
     output_root = paths["output_root"]
     output_root.mkdir(exist_ok=True)
 
+    from src.utils.config import get_content_root
+
+    content_root_out = get_content_root(paths)
+    content_root_out.mkdir(parents=True, exist_ok=True)
+
     for book_name, chapters in structure.items():
-        book_output = output_root / book_name
+        book_output = content_root_out / book_name
         book_output.mkdir(exist_ok=True)
 
         for chapter_group in chapters:

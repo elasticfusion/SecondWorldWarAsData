@@ -176,6 +176,11 @@ def validate_file(filepath: Path, schema: dict) -> list[str]:
 
 def find_event_files(output_root: Path) -> list[Path]:
     """Find all event files across book directories."""
+    # New layout: output/content/{Book}/*-event.json
+    content_dir = output_root / "content"
+    if content_dir.exists():
+        return sorted(content_dir.rglob("*-event.json"))
+    # Old layout: output/{Book}/*-event.json (exclude entity dirs)
     files = []
     for book_dir in output_root.iterdir():
         if book_dir.is_dir() and book_dir.name not in {
@@ -198,6 +203,9 @@ def find_event_files(output_root: Path) -> list[Path]:
 
 def find_supplemental_files(output_root: Path) -> list[Path]:
     """Find all supplemental files across book directories."""
+    content_dir = output_root / "content"
+    if content_dir.exists():
+        return sorted(content_dir.rglob("*-notes-event.json"))
     files = []
     for book_dir in output_root.iterdir():
         if book_dir.is_dir() and book_dir.name not in {

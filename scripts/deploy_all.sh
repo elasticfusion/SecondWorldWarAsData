@@ -12,10 +12,21 @@ ENV="dev"
 EMAIL="dchristian@cirrusnine.com"
 
 echo "=== 1. Stopping running tasks ==="
-for task in $(aws ecs list-tasks --cluster $CLUSTER --region $REGION --query "taskArns[]" --output text 2>/dev/null); do
-    aws ecs stop-task --cluster $CLUSTER --task $task --region $REGION --no-cli-pager > /dev/null
-    echo "  Stopped: ${task##*/}"
-done
+TASKS=$(aws ecs list-tasks --cluster $CLUSTER --region $REGION --query "taskArns[]" --output text 2>/dev/null)
+if [ -n "$TASKS" ] && [ "$TASKS" != "None" ]; then
+    echo "  WARNING: Running tasks detected!"
+    echo "  Stopping them will lose any in-progress batch results."
+    echo "  Tasks: $TASKS"
+    read -p "  Continue? (y/N) " -r confirm
+    if [ "$confirm" != "y" ]; then
+        echo "  Aborted. Wait for tasks to finish."
+        exit 1
+    fi
+    for task in $TASKS; do
+        aws ecs stop-task --cluster $CLUSTER --task $task --region $REGION --no-cli-pager > /dev/null
+        echo "  Stopped: ${task##*/}"
+    done
+fi
 echo "  Done"
 
 echo ""
@@ -37,7 +48,7 @@ python3 -m pytest tests/unit/ -q 2>&1 | tail -1
 echo ""
 echo "=== 4. Building and pushing container ==="
 aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR_REPO
-docker build -t wwii-pipeline .
+docker build --no-cache -t wwii-pipeline .
 docker tag wwii-pipeline:latest $PIPELINE_IMAGE
 docker push $PIPELINE_IMAGE
 echo "  Pushed: $(aws ecr describe-images --repository-name wwii-pipeline --region $REGION --image-ids imageTag=latest --query 'imageDetails[0].imagePushedAt' --output text)"
@@ -58,6 +69,11 @@ echo "  Auth updated"
 
 echo ""
 echo "=== 8. Verification ==="
+# Clear locks again (triggers may have re-acquired during deploy)
+for key in "lock#dev-wwii-phase1-parse" "lock#dev-wwii-phase2-extract" "lock#dev-wwii-phase3-enrich"; do
+    aws dynamodb delete-item --table-name dev-wwii-api-cache --key "{\"cache_key\":{\"S\":\"$key\"}}" --region $REGION 2>/dev/null || true
+done
+echo "  Locks cleared"
 echo "  Image: $(aws ecr describe-images --repository-name wwii-pipeline --region $REGION --image-ids imageTag=latest --query 'imageDetails[0].imagePushedAt' --output text)"
 echo "  Tasks: $(aws ecs list-tasks --cluster $CLUSTER --region $REGION --query 'taskArns' --output text)"
 echo "  Dedup: $(aws s3 cp s3://dev-wwii-data-pipeline/dedup/review_status.json - --region $REGION 2>/dev/null || echo 'not set')"

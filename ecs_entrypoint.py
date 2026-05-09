@@ -218,11 +218,97 @@ def _patch_config():
     logger.info("Patched config.yaml: aws.enabled=true, s3_bucket=%s", BUCKET)
 
 
+def _get_openserp_alb_dns() -> str:
+    """Find the OpenSERP task private IP. Returns empty string if not found."""
+    try:
+        env = os.environ.get("ENV_NAME", "dev")
+        cluster = f"{env}-wwii-pipeline"
+        ecs = boto3.client("ecs", region_name=REGION)
+        tasks = ecs.list_tasks(
+            cluster=cluster, serviceName=f"{env}-wwii-openserp", desiredStatus="RUNNING"
+        )
+        if not tasks.get("taskArns"):
+            return ""
+        resp = ecs.describe_tasks(cluster=cluster, tasks=tasks["taskArns"][:1])
+        for task in resp.get("tasks", []):
+            for attachment in task.get("attachments", []):
+                for detail in attachment.get("details", []):
+                    if detail.get("name") == "privateIPv4Address":
+                        return detail["value"]
+    except Exception:
+        pass
+    return ""
+
+
+def _start_openserp_if_needed(phase_script: str) -> None:
+    """Scale OpenSERP service to 1 for Phase 2/3 and discover its IP."""
+    if "phase1" in phase_script:
+        return
+    try:
+        env = os.environ.get("ENV_NAME", "dev")
+        cluster = f"{env}-wwii-pipeline"
+        service = f"{env}-wwii-openserp"
+        ecs = boto3.client("ecs", region_name=REGION)
+        resp = ecs.describe_services(cluster=cluster, services=[service])
+        svc = resp.get("services", [{}])[0]
+        if svc.get("runningCount", 0) > 0:
+            # Already running — just discover IP
+            ip = _get_openserp_alb_dns()
+            if ip:
+                _patch_openserp_url(ip)
+                logger.info("OpenSERP already running at %s:7001", ip)
+            return
+
+        if svc.get("desiredCount", 0) == 0:
+            # Ensure VPC endpoints exist (needed for ECR image pull)
+            try:
+                boto3.client("lambda", region_name=REGION).invoke(
+                    FunctionName=f"{env}-wwii-nat-manager",
+                    InvocationType="RequestResponse",
+                    Payload=b'{"action": "create"}',
+                )
+            except Exception as e:
+                logger.warning("nat_manager invoke failed: %s", e)
+
+            ecs.update_service(
+                cluster=cluster, service=service, desiredCount=1, forceNewDeployment=True
+            )
+            logger.info("Started OpenSERP service (scaling to 1, forced new deployment)")
+
+        # Wait for task to be running and get its IP
+        import time
+
+        for _ in range(30):  # 5 min max
+            ip = _get_openserp_alb_dns()
+            if ip:
+                _patch_openserp_url(ip)
+                logger.info("OpenSERP running at %s:7001", ip)
+                return
+            time.sleep(10)
+        logger.warning("OpenSERP service did not start in 5 min")
+    except Exception as e:
+        logger.warning("Failed to start OpenSERP: %s", e)
+
+
+def _patch_openserp_url(ip: str) -> None:
+    """Patch config.yaml with OpenSERP task IP."""
+    import yaml
+
+    config_path = Path("/app/config.yaml")
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = yaml.safe_load(f)
+    config.setdefault("external_maps", {})["openserp_url"] = f"http://{ip}:7001"
+    config.setdefault("supplemental_material", {})["use_openserp"] = True
+    with open(config_path, "w", encoding="utf-8") as f:
+        yaml.dump(config, f, default_flow_style=False)
+
+
 def run_phase(phase_script: str, extra_args: list) -> None:
     """Run a pipeline phase script with incremental S3 sync."""
     WORKDIR.mkdir(parents=True, exist_ok=True)
     _load_secrets()
     _patch_config()
+    _start_openserp_if_needed(phase_script)
 
     if "phase1" in phase_script:
         _clear_all_locks()
@@ -248,6 +334,11 @@ def run_phase(phase_script: str, extra_args: list) -> None:
             _remove_lock(phase_script)
         sys.exit(result.returncode)
 
+    # Clear manifest before Phase 1 upload so the trigger Lambda's new
+    # manifest entries (from S3 notifications) aren't wiped after the fact
+    if "phase1" in phase_script:
+        _clear_manifest()
+
     _final_sync(phase_script)
     _post_process(phase_script, env)
 
@@ -266,63 +357,71 @@ def _download_inputs(phase_script: str) -> None:
         n = _download_phase2_inputs()
         logger.info("Downloaded %d files for Phase 2", n)
     elif "phase3" in phase_script or "import" in phase_script:
-        manifest = _read_manifest()
-        if manifest:
-            s3 = _s3_client()
-            for key in manifest:
-                local = WORKDIR / key
-                local.parent.mkdir(parents=True, exist_ok=True)
-                s3.download_file(BUCKET, key, str(local))
-                _downloaded_keys.add(key)
-            logger.info(
-                "Downloaded %d files from manifest (incremental)", len(manifest)
-            )
-        else:
-            entity_dirs = [
-                "people",
-                "people_groups",
-                "places",
-                "dates",
-                "equipment",
-                "weather",
-                "logistics",
-                "casualties",
-                "maps",
-                "supplemental",
-            ]
-            total = 0
-            for subdir in entity_dirs:
-                n = s3_sync_down(f"output/{subdir}/", WORKDIR)
-                total += n
-            logger.info("Downloaded %d entity files from S3 (full, no manifest)", total)
+        # Phase 3 needs full entity directories for enrichment
+        entity_dirs = [
+            "people",
+            "people_groups",
+            "places",
+            "dates",
+            "equipment",
+            "weather",
+            "logistics",
+            "casualties",
+            "maps",
+            "supplemental",
+            "bibliography",
+        ]
+        s3 = _s3_client()
+        total = 0
+        for subdir in entity_dirs:
+            d, s = _download_s3_prefix_skip_existing(s3, f"output/{subdir}/")
+            total += d
+        logger.info("Downloaded %d entity files for Phase 3", total)
 
 
 def _download_phase2_inputs() -> int:
     """Download only unprocessed parsed files + entity dirs for cross-referencing."""
     s3 = _s3_client()
 
-    existing_events = _list_s3_keys_matching(s3, "output/", "-event.json")
-    new_parsed = _download_new_parsed(s3, existing_events)
+    # Try manifest first (fast — single DynamoDB read)
+    manifest_keys = _read_manifest()
+    parsed_keys = [k for k in manifest_keys if k.endswith("-parsed.json")]
 
-    entity_prefixes = [
-        "output/people/",
-        "output/people_groups/",
-        "output/places/",
-        "output/dates/",
-        "output/equipment/",
-        "output/weather/",
-        "output/supplemental/",
-        "output/bibliography/",
+    if parsed_keys:
+        for key in parsed_keys:
+            _download_s3_file(s3, key)
+        logger.info(
+            "Phase 2 incremental (manifest): %d parsed files from manifest",
+            len(parsed_keys),
+        )
+        new_parsed = len(parsed_keys)
+    else:
+        # Fallback: scan S3 for parsed files without event files
+        logger.info("No manifest found, falling back to S3 scan")
+        existing_events = _list_s3_keys_matching(s3, "output/content/", "-event.json")
+        new_parsed = _download_new_parsed(s3, existing_events)
+        logger.info(
+            "Phase 2 incremental (S3 scan): %d new parsed files, %d existing events skipped",
+            new_parsed,
+            len(existing_events),
+        )
+
+    # Download entity index files only (not full dirs — extraction uses filename-based indexes)
+    index_prefixes = [
+        "output/people/index.json",
+        "output/people_groups/index.json",
+        "output/places/index.json",
+        "output/equipment/index.json",
+        "output/dates/index.json",
     ]
-    entity_count = sum(_download_s3_prefix(s3, p) for p in entity_prefixes)
+    for key in index_prefixes:
+        _download_s3_file(s3, key)
 
-    total = new_parsed + entity_count
-    logger.info(
-        "Phase 2 incremental: %d new parsed files, %d existing events skipped",
-        new_parsed,
-        len(existing_events),
-    )
-    return total
+    # Download bibliography and supplemental dirs (needed for dedup/writing, not just indexing)
+    for p in ["output/bibliography/", "output/supplemental/"]:
+        _download_s3_prefix(s3, p)
+
+    return new_parsed
 
 
 def _list_s3_keys_matching(s3, prefix: str, suffix: str) -> set:
@@ -341,7 +440,7 @@ def _download_new_parsed(s3, existing_events: set) -> int:
     """Download parsed files without corresponding event files."""
     count = 0
     for page in s3.get_paginator("list_objects_v2").paginate(
-        Bucket=BUCKET, Prefix="output/"
+        Bucket=BUCKET, Prefix="output/content/"
     ):
         for obj in page.get("Contents", []):
             key = obj["Key"]
@@ -366,6 +465,26 @@ def _download_s3_prefix(s3, prefix: str) -> int:
     return count
 
 
+def _download_s3_prefix_skip_existing(s3, prefix: str) -> tuple:
+    """Download files under an S3 prefix, skipping those already local.
+
+    Returns (downloaded, skipped) counts.
+    """
+    downloaded = 0
+    skipped = 0
+    for page in s3.get_paginator("list_objects_v2").paginate(
+        Bucket=BUCKET, Prefix=prefix
+    ):
+        for obj in page.get("Contents", []):
+            local = WORKDIR / obj["Key"]
+            if local.exists():
+                skipped += 1
+                continue
+            _download_s3_file(s3, obj["Key"])
+            downloaded += 1
+    return downloaded, skipped
+
+
 def _download_s3_file(s3, key: str) -> None:
     """Download a single S3 file to the local workdir."""
     from botocore.exceptions import ClientError
@@ -384,13 +503,12 @@ def _download_s3_file(s3, key: str) -> None:
 
 def _post_process(phase_script: str, env: dict) -> None:
     """Run post-processing steps after a successful phase."""
-    if "phase1" in phase_script:
-        _clear_manifest()
     if "phase2" in phase_script:
         _run_dedup_detection(env)
         _check_pending_content()
     if "phase3" not in phase_script:
         _remove_lock(phase_script)
+    _stop_openserp_if_running(phase_script)
     _notify_complete(phase_script)
 
 
@@ -425,12 +543,73 @@ def _check_pending_content() -> None:
 
 def _run_dedup_detection(env: dict) -> None:
     """Run duplicate detection scripts after Phase 2."""
-    # Download ALL entity files from S3 so dedup sees the full inventory
+    # Reclassify military units from places to groups
+    try:
+        from scripts.reclassify_military_units import reclassify
+
+        reclassify(WORKDIR / "output")
+    except Exception as e:
+        logger.warning("Military unit reclassification failed: %s", e)
+
+    # Clean stale index entries before dedup
+    try:
+        from scripts.cleanup_indexes import cleanup_index
+
+        for entity, name_field in [
+            ("people", "name"),
+            ("people_groups", "group_name"),
+            ("places", "current_name"),
+            ("equipment", "common_name"),
+        ]:
+            entity_dir = WORKDIR / "output" / entity
+            if entity_dir.exists():
+                cleanup_index(entity_dir, name_field, dry_run=False)
+    except Exception as e:
+        logger.warning("Index cleanup failed: %s", e)
+
+    # Migrate local exclusion files to DynamoDB (one-time, idempotent)
+    try:
+        from src.dedup.exclusions import migrate_local_to_dynamo
+
+        s3_migrate = _s3_client()
+        migration_files = [
+            "output/people/not_duplicates.json",
+            "output/places/not_duplicates.json",
+            "output/people_groups/not_related.json",
+            "output/equipment/not_duplicates.json",
+        ]
+        for key in migration_files:
+            _download_s3_file(s3_migrate, key)
+        for entity, subdir in [
+            ("people", "people"),
+            ("places", "places"),
+            ("groups", "people_groups"),
+            ("equipment", "equipment"),
+        ]:
+            entity_dir = WORKDIR / "output" / subdir
+            if entity_dir.exists():
+                migrate_local_to_dynamo(entity, entity_dir)
+    except Exception as e:
+        logger.warning("Exclusion migration failed: %s", e)
+
+    # Download index.json files from S3 for cross-book name matching.
+    # Exclusions are now in DynamoDB — no file download needed.
     s3 = _s3_client()
-    entity_prefixes = ["output/people/", "output/people_groups/", "output/places/", "output/equipment/"]
-    for prefix in entity_prefixes:
-        _download_s3_prefix(s3, prefix)
-    logger.info("Downloaded full entity dirs for dedup detection")
+    dedup_files = [
+        "output/people/index.json",
+        "output/people_groups/index.json",
+        "output/places/index.json",
+        "output/equipment/index.json",
+    ]
+    for key in dedup_files:
+        _download_s3_file(s3, key)
+    # Download event files for cross-book text proximity matching
+    d, s = _download_s3_prefix_skip_existing(s3, "output/content/")
+    logger.info(
+        "Dedup: downloaded index/exclusion files + %d event files (%d skipped)",
+        d,
+        s,
+    )
 
     dedup_scripts = [
         "scripts/find_duplicate_people.py",
@@ -495,10 +674,10 @@ def _read_manifest() -> list:
 def _final_sync(phase_script: str = ""):
     """Final upload of new output to S3. Only uploads entity subdirs, not parsed/event files."""
     if "phase1" in phase_script:
-        # Phase 1: upload everything (parsed files trigger Phase 2)
-        d = WORKDIR / "output"
+        # Phase 1: upload book content (parsed files trigger Phase 2)
+        d = WORKDIR / "output" / "content"
         if d.exists():
-            n, _ = s3_sync_up(d, "output")
+            n, _ = s3_sync_up(d, "output/content")
             logger.info("Final sync: uploaded %d output files", n)
     elif "phase2" in phase_script or "phase3" in phase_script:
         # Phase 2/3: only upload entity subdirs, skip book dirs with parsed/event files
@@ -546,6 +725,22 @@ PHASE_SUFFIXES = {
     "phase3_enrich_data.py": "phase3-enrich",
     "import_to_dynamodb.py": "import",
 }
+
+
+
+def _stop_openserp_if_running(phase_script: str) -> None:
+    """Scale OpenSERP to 0 after Phase 2/3 completes."""
+    if "phase1" in phase_script:
+        return
+    try:
+        env = os.environ.get("ENV_NAME", "dev")
+        cluster = f"{env}-wwii-pipeline"
+        service = f"{env}-wwii-openserp"
+        ecs = boto3.client("ecs", region_name=REGION)
+        ecs.update_service(cluster=cluster, service=service, desiredCount=0)
+        logger.info("Scaled OpenSERP to 0")
+    except Exception as e:
+        logger.warning("Failed to scale OpenSERP to 0: %s", e)
 
 
 def _notify_complete(phase_script: str) -> None:

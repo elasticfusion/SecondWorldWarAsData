@@ -85,6 +85,9 @@ def handler(event, _context):
     if route_key == "POST /dedup/api/assign":
         return _assign_to_person(event, storage)
 
+    if route_key == "POST /dedup/api/rename":
+        return _rename_to_match_content(event, storage)
+
     return routes.get(route_key, lambda: _json_response(404, {"error": "not found"}))()
 
 
@@ -118,7 +121,9 @@ def _get_detail(storage, entity_type, filename):
             data["enrichment_data"] = f"[{len(data['enrichment_data'])} fields]"
         return _json_response(200, data)
     except Exception as e:
-        return _json_response(404, {"error": str(e)})
+        return _json_response(
+            200, {"_deleted": True, "error": f"File not found: {filename}"}
+        )
 
 
 def _get_groups(storage):
@@ -133,6 +138,7 @@ def _get_groups(storage):
         try:
             data = storage.read_json(report_path)
             items = data.get("duplicates", data.get("related", []))
+            items = _dedupe_groups(items)
             # Sort within each group: people by longest name first, others alphabetically
             for item in items:
                 people = item.get("people", item.get("groups", []))
@@ -158,9 +164,25 @@ def _handle_action(event, storage, config):
     body = json.loads(event.get("body", "{}"))
     action = body.get("action")  # merge, skip, exclude
     entity_type = body.get("entity_type")  # people, places, groups
-    group_index = body.get("group_index", 0)
+    group_filenames = set(body.get("group_filenames", []))
     primary_index = body.get("primary_index", 0)
     excluded_indices = set(body.get("excluded_indices", []))
+
+    # Find group index in the raw report by matching filenames
+    group_index = body.get("group_index", 0)  # fallback
+    try:
+        rpt = storage.read_json(_report_path(entity_type))
+        raw_groups = rpt.get("duplicates", rpt.get("related", []))
+        if group_filenames:
+            for i, g in enumerate(raw_groups):
+                g_files = {
+                    p.get("filename", "") for p in g.get("people", g.get("groups", []))
+                }
+                if group_filenames & g_files:
+                    group_index = i
+                    break
+    except Exception:
+        pass
 
     if action == "merge":
         return _do_merge(
@@ -169,7 +191,6 @@ def _handle_action(event, storage, config):
     elif action == "exclude":
         return _do_exclude(entity_type, group_index, storage)
     elif action == "skip":
-        # Read group content for matching
         try:
             rpt = storage.read_json(_report_path(entity_type))
             grps = rpt.get("duplicates", rpt.get("related", []))
@@ -181,6 +202,25 @@ def _handle_action(event, storage, config):
         _remove_group_from_report(entity_type, group_index, storage, grp_people)
         return _json_response(200, {"result": "skipped"})
     return _json_response(400, {"error": f"unknown action: {action}"})
+
+
+def _dedupe_groups(groups):
+    """Remove entries within groups that point to the same file."""
+    cleaned = []
+    for item in groups:
+        key = "people" if "people" in item else "groups"
+        people = item.get(key, [])
+        seen = set()
+        unique = []
+        for p in people:
+            fn = p.get("filename", "")
+            if fn and fn not in seen:
+                seen.add(fn)
+                unique.append(p)
+        if len(unique) >= 2:
+            item[key] = unique
+            cleaned.append(item)
+    return cleaned
 
 
 def _do_merge(
@@ -196,6 +236,13 @@ def _do_merge(
 
     group = groups[group_index]
     all_people = group.get("people", group.get("groups", []))
+    logger.info(
+        "Merge: entity=%s idx=%d people=%d excluded=%s",
+        entity_type,
+        group_index,
+        len(all_people),
+        excluded_indices,
+    )
     people, primary_index = _filter_and_remap(
         all_people, excluded_indices, primary_index
     )
@@ -256,7 +303,15 @@ def _merge_generic_files(entity_type, people, primary_index, storage):
         try:
             secondary = storage.read_json(f"{prefix}/{p['filename']}")
             secondary_mentions = secondary.get("event_mentions", [])
-            primary_mentions.extend(secondary_mentions)
+            seen = {
+                m.get("Sub_eventID") for m in primary_mentions if m.get("Sub_eventID")
+            }
+            for m in secondary_mentions:
+                sub_id = m.get("Sub_eventID")
+                if not sub_id or sub_id not in seen:
+                    primary_mentions.append(m)
+                    if sub_id:
+                        seen.add(sub_id)
             sec_name = secondary.get(
                 "name",
                 secondary.get(
@@ -274,6 +329,95 @@ def _merge_generic_files(entity_type, people, primary_index, storage):
     primary_data["aliases"] = aliases
     storage.write_json(f"{prefix}/{primary['filename']}", primary_data)
     _append_to_manifest([f"{prefix}/{primary['filename']}"])
+
+
+def _rename_to_match_content(event, storage):
+    """Rename an entity file to match the name field in its JSON content."""
+    body = json.loads(event.get("body", "{}"))
+    entity_type = body.get("entity_type", "people")
+    filename = body.get("filename", "")
+    prefix = ENTITY_PREFIXES.get(entity_type)
+    if not prefix or not filename:
+        return _json_response(400, {"error": "missing entity_type or filename"})
+
+    try:
+        data = storage.read_json(f"{prefix}/{filename}")
+        name = data.get(
+            "name",
+            data.get(
+                "current_name", data.get("group_name", data.get("common_name", ""))
+            ),
+        )
+        if not name:
+            return _json_response(400, {"error": "no name field in file"})
+
+        new_filename = name.lower().replace(" ", " ") + ".json"
+        if new_filename == filename:
+            # Filename matches content — but fix any stale index entries
+            try:
+                index = storage.read_json(f"{prefix}/index.json")
+                stale = [
+                    k for k, v in index.items() if v == filename and k != name.lower()
+                ]
+                for k in stale:
+                    del index[k]
+                if stale:
+                    index[name.lower()] = filename
+                    storage.write_json(f"{prefix}/index.json", index)
+                    _remove_entry_from_report(entity_type, filename, storage)
+                    return _json_response(
+                        200,
+                        {
+                            "result": "fixed_index",
+                            "old": filename,
+                            "new": filename,
+                            "removed_aliases": stale,
+                        },
+                    )
+            except Exception:
+                pass
+            return _json_response(200, {"result": "unchanged", "filename": filename})
+
+        # Copy to new key, delete old
+        storage.write_json(f"{prefix}/{new_filename}", data)
+        storage.delete(f"{prefix}/{filename}")
+        _append_to_manifest([f"{prefix}/{new_filename}"])
+
+        # Update index.json
+        try:
+            index = storage.read_json(f"{prefix}/index.json")
+            # Remove old entry, add new
+            for k, v in list(index.items()):
+                if v == filename:
+                    del index[k]
+            index[name.lower()] = new_filename
+            storage.write_json(f"{prefix}/index.json", index)
+        except Exception:
+            pass
+
+        # Update duplicate report references
+        _update_filename_in_report(entity_type, filename, new_filename, storage)
+
+        logger.info("Renamed %s → %s", filename, new_filename)
+        return _json_response(
+            200, {"result": "renamed", "old": filename, "new": new_filename}
+        )
+    except Exception as e:
+        return _json_response(500, {"error": str(e)})
+
+
+def _update_filename_in_report(entity_type, old_filename, new_filename, storage):
+    """Update filename references in the duplicate report."""
+    report_path = _report_path(entity_type)
+    try:
+        report = storage.read_json(report_path)
+        for group in report.get("duplicates", report.get("related", [])):
+            for person in group.get("people", group.get("groups", [])):
+                if person.get("filename") == old_filename:
+                    person["filename"] = new_filename
+        storage.write_json(report_path, report)
+    except Exception:
+        pass
 
 
 def _merge_people_files(people, primary_index, storage):
@@ -300,9 +444,15 @@ def _merge_people_files(people, primary_index, storage):
         )
         (tmpdir / "output").mkdir(exist_ok=True)
 
-        from scripts.merge_duplicate_people import _do_merge as do_merge_people
+        from src.dedup.merge import do_merge as do_merge_people
 
-        do_merge_people(people_dir, available, min(primary_index, len(available) - 1))
+        try:
+            do_merge_people(
+                people_dir, available, min(primary_index, len(available) - 1)
+            )
+        except Exception as e:
+            logger.error("Merge failed: %s", e)
+            return _json_response(500, {"error": f"Merge failed: {e}"})
         _upload_merged(people, primary_index, people_dir, storage)
     return None
 
@@ -339,7 +489,7 @@ def _upload_merged(people, primary_index, people_dir, storage):
 
 
 def _do_exclude(entity_type, group_index, storage):
-    """Add group to exclusion list."""
+    """Add group to exclusion list (DynamoDB in AWS, local JSON otherwise)."""
     report_path = _report_path(entity_type)
     report = storage.read_json(report_path)
     groups = report.get("duplicates", report.get("related", []))
@@ -350,22 +500,15 @@ def _do_exclude(entity_type, group_index, storage):
     group = groups[group_index]
     people = group.get("people", group.get("groups", []))
 
-    excl_path = _exclusion_path(entity_type)
-    try:
-        excl = storage.read_json(excl_path)
-    except Exception:
-        excl = {"exclusions": []}
+    from src.dedup.exclusions import ExclusionStore
 
-    # Add all pairs
-    for i, p1 in enumerate(people):
-        for p2 in people[i + 1 :]:
-            excl["exclusions"].append(
-                {
-                    "person1": p1.get("filename", p1.get("name", "")),
-                    "person2": p2.get("filename", p2.get("name", "")),
-                }
-            )
-    storage.write_json(excl_path, excl)
+    table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
+    region = os.environ.get("AWS_REGION", "us-east-1")
+    table = boto3.resource("dynamodb", region_name=region).Table(table_name)
+    store = ExclusionStore(entity_type, dynamo_table=table)
+    filenames = [p.get("filename", p.get("name", "")) for p in people]
+    store.add_group(filenames)
+
     _remove_group_from_report(entity_type, group_index, storage, people)
     return _json_response(200, {"result": "excluded"})
 
@@ -658,6 +801,7 @@ def _get_status(storage):
         try:
             data = storage.read_json(report_path)
             items = data.get("duplicates", data.get("related", []))
+            items = _dedupe_groups(items)
             totals[entity] = {
                 "total": len(items),
                 "reviewed": 0,
@@ -848,7 +992,7 @@ function renderGroups() {
       '<div class="person-row" style="font-size:11px;color:#9ca3af;padding:5px 20px"><div>Include &nbsp; Primary</div></div>'+
       people.map((p,j)=>'<div class="person-row"><div><input type="checkbox" class="include-cb" data-group="'+i+'" data-idx="'+j+'" checked title="Include in merge" onchange="syncInclude('+i+','+j+')"> <input type="radio" name="primary-'+i+'" value="'+j+'" class="radio-primary"'+(j===0?' checked':'')+' title="Merge target" onclick="ensureIncluded('+i+','+j+')">'+
         '<span class="person-name">'+p.name+'</span> <button class="btn-detail" onclick="toggleDetail('+i+','+j+',\\''+encodeURIComponent(p.filename||'')+'\\')">▶ Details</button></div><div class="person-file">'+
-        (p.filename||p.PersonID||p.GroupID||'')+' <select class="reclassify-sel" id="recl-'+i+'-'+j+'"><option value="">Move to...</option><option value="people">people</option><option value="places">places</option><option value="groups">groups</option><option value="equipment">equipment</option></select><button class="btn-detail" onclick="reclassify('+i+','+j+',\\''+encodeURIComponent(p.filename||'')+'\\')">↗</button> <input type="text" class="assign-input" id="assign-'+i+'-'+j+'" placeholder="Assign to..." style="width:120px;font-size:11px;padding:1px 4px;border:1px solid #d1d5db;border-radius:4px;margin-left:4px"><button class="btn-detail" onclick="searchAndAssign('+i+','+j+',\\''+encodeURIComponent(p.filename||'')+'\\')">→</button></div></div><div class="detail-panel" id="detail-'+i+'-'+j+'" style="display:none;padding:5px 20px 10px 50px;background:#f9fafb;font-size:12px;overflow-x:auto"><pre>Loading...</pre></div>').join('')+
+        (p.filename||p.PersonID||p.GroupID||'')+' <select class="reclassify-sel" id="recl-'+i+'-'+j+'"><option value="">Move to...</option><option value="people">people</option><option value="places">places</option><option value="groups">groups</option><option value="equipment">equipment</option></select><button class="btn-detail" onclick="reclassify('+i+','+j+',\\''+encodeURIComponent(p.filename||'')+'\\')">↗</button> <input type="text" class="assign-input" id="assign-'+i+'-'+j+'" placeholder="Assign to..." style="width:120px;font-size:11px;padding:1px 4px;border:1px solid #d1d5db;border-radius:4px;margin-left:4px"><button class="btn-detail" onclick="searchAndAssign('+i+','+j+',\\''+encodeURIComponent(p.filename||'')+'\\')">→</button><button class="btn-detail" onclick="renameFile('+i+','+j+',\\''+encodeURIComponent(p.filename||'')+'\\')">✎ Fix name</button></div></div><div class="detail-panel" id="detail-'+i+'-'+j+'" style="display:none;padding:5px 20px 10px 50px;background:#f9fafb;font-size:12px;overflow-x:auto"><pre>Loading...</pre></div>').join('')+
       '<div class="actions">'+
         (done?'<span style="color:#059669">✓ Reviewed</span>':
         (people.length>=2?'<button class="btn btn-merge" onclick="doAction('+i+',\\'merge\\')">Merge Selected</button>'+
@@ -871,8 +1015,10 @@ async function doAction(idx, action) {
     document.querySelectorAll('.include-cb[data-group="'+idx+'"]').forEach(cb => {
       if (!cb.checked) excluded.push(parseInt(cb.dataset.idx));
     });
-    const body = {action, entity_type:currentTab, group_index:idx, primary_index: primary?parseInt(primary.value):0, excluded_indices: excluded};
-    await fetch(API+'/action', {method:'POST', body:JSON.stringify(body), headers:{'Content-Type':'application/json'}, credentials:'include'});
+    const body = {action, entity_type:currentTab, group_filenames: (data[currentTab]||[])[idx]?.people?.map(p=>p.filename)||[], primary_index: primary?parseInt(primary.value):0, excluded_indices: excluded};
+    const resp = await fetch(API+'/action', {method:'POST', body:JSON.stringify(body), headers:{'Content-Type':'application/json'}, credentials:'include'});
+    const result = await resp.json();
+    if (result.error) { alert('Error: '+result.error); }
     await load();
   } finally {
     processing = false;
@@ -928,6 +1074,18 @@ async function reclassify(groupIdx, personIdx, filename) {
   } finally { processing = false; }
 }
 
+async function renameFile(groupIdx, personIdx, filename) {
+  if (processing) return;
+  if (!confirm('Rename file to match its JSON name field?')) return;
+  processing = true;
+  try {
+    const body = {entity_type: currentTab, filename: decodeURIComponent(filename)};
+    const resp = await fetch(API+'/rename', {method:'POST', body:JSON.stringify(body), headers:{'Content-Type':'application/json'}, credentials:'include'});
+    const data = await resp.json();
+    if (data.error) { alert(data.error); } else if (data.result === 'unchanged') { alert('Filename already matches content'); } else if (data.result === 'fixed_index') { alert('Fixed stale index entries for: '+(data['new']||'?')); await load(); } else { alert('Renamed: '+(data.old||'?')+' → '+(data['new']||'?')); await load(); }
+  } finally { processing = false; }
+}
+
 function syncInclude(groupIdx, personIdx) {
   const cb = document.querySelector('.include-cb[data-group="'+groupIdx+'"][data-idx="'+personIdx+'"]');
   if (!cb.checked) {
@@ -954,7 +1112,15 @@ async function toggleDetail(groupIdx, personIdx, filename) {
       try {
         const resp = await fetch(API+'/detail/'+currentTab+'/'+filename, {credentials:'include'});
         const data = await resp.json();
-        panel.querySelector('pre').textContent = JSON.stringify(data, null, 2);
+        if (data._deleted) {
+          panel.querySelector('pre').textContent = '⚠ File deleted (already merged)';
+          const cb = document.querySelector('.include-cb[data-group="'+groupIdx+'"][data-idx="'+personIdx+'"]');
+          if (cb) cb.checked = false;
+          const row = panel.previousElementSibling;
+          if (row) { row.style.opacity = '0.4'; row.style.textDecoration = 'line-through'; }
+        } else {
+          panel.querySelector('pre').textContent = JSON.stringify(data, null, 2);
+        }
       } catch(e) {
         panel.querySelector('pre').textContent = 'Error loading: '+e.message;
       }
