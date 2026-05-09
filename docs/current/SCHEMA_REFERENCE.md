@@ -139,6 +139,11 @@ Sub-event entity arrays contain top-level entity IDs (DateID, PlaceID, PersonID,
   "PersonID": "01ULID...",
   "name": "Omar N. Bradley",
   "source_language": "English",
+  "enrichment_status": "enriched|not_found",
+  "last_enrichment_search": "2026-05-04",
+  "openserp_searched": true,
+  "images": [{"url": "https://...", "title": "...", "source": "openserp"}],
+  "academic_references": [{"url": "https://...", "title": "...", "type": "oral_history|video|academic|archive", "source": "openserp"}],
   "biographical_profile": {
     "birth_date": "1893-02-12",
     "death_date": "1981-04-08",
@@ -321,12 +326,15 @@ Note: Logistics uses `EventMentionID` (not `MentionID`) in event_mentions.
 
 ---
 
-## Casualties — `output/casualties/*.json` (955 files)
+## Casualties — `output/casualties/*.json`
+
+Casualties track **personnel** losses only — killed, wounded, missing, and prisoners of war. Equipment and materiel losses belong in the Equipment entity.
 
 ```json
 {
   "CasualtyID": "01ULID...",
   "type": "casualties|killed|wounded|pow|missing",
+  "side": "allied|axis|civilian|unknown",
   "description": "...",
   "event_context": {
     "EventID": "01ULID...",
@@ -337,19 +345,31 @@ Note: Logistics uses `EventMentionID` (not `MentionID`) in event_mentions.
     "chapter": "The Breakthrough Idea",
     "paragraph_number": null
   },
-  "count": { "total": 500, "killed": 100, "wounded": 300, "missing": 50, "captured": 50 },
+  "count": {
+    "total": {"value": 500, "qualifier": "approximately"},
+    "killed": {"value": 100, "qualifier": "exact"},
+    "wounded": {"value": 300, "qualifier": "exact"},
+    "missing": {"value": 50, "qualifier": "exact"},
+    "captured": {"value": 50, "qualifier": "exact"}
+  },
   "impacted_organizations": [
-    { "name": "29th Infantry Division", "PeopleGroupID": "01ULID...", "nationality": "American", "role": "attacking" }
+    { "name": "29th Infantry Division", "PeopleGroupID": "01ULID...", "nationality": "USA", "role": "attacking_force" }
   ],
-  "impacted_people": [],
-  "impacted_places": [],
-  "impacted_equipment": [
-    { "common_name": "M4 Sherman", "EquipmentID": "01ULID...|null", "count_lost": 5 }
+  "impacted_people": [
+    { "name": "Captain Smith", "PersonID": "01ULID...", "casualty_type": "killed" }
+  ],
+  "impacted_places": [
+    { "name": "Omaha Beach", "PlaceID": "01ULID..." }
   ]
 }
 ```
 
-Note: Casualties use `event_context` (not `event_mentions`). `Sub-eventID` uses hyphen (not underscore). The `type` value `pow` means "prisoner of war".
+Notes:
+- `side` reflects who **suffered** the casualties (allied/axis/civilian/unknown)
+- `count` values use `{value, qualifier}` objects where qualifier is `exact`, `approximately`, `greater_than`, `less_than`, or `unknown`
+- `type` value `pow` means "prisoner of war"; POW entries include both `captured` and `captor` organizations
+- Uses `event_context` (not `event_mentions`); `Sub-eventID` uses hyphen
+- Organization `role`: `attacking_force`, `defending_force`, `captured`, `captor`, `suffered_casualties`
 
 ---
 

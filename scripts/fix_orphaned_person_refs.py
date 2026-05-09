@@ -58,6 +58,9 @@ def _load_valid_person_ids(people_dir: Path) -> set[str]:
 
 def _find_event_files(output_root: Path) -> list[Path]:
     """Find all event files across book directories."""
+    content_dir = output_root / "content"
+    if content_dir.exists():
+        return sorted(content_dir.rglob("*-event.json"))
     files = []
     for book_dir in sorted(output_root.iterdir()):
         if book_dir.is_dir() and book_dir.name not in ENTITY_DIRS:

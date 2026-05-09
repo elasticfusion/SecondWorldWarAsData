@@ -468,15 +468,18 @@ CASUALTIES_SCHEMA = {
                         "enum": ["wounded", "killed", "casualties", "pow", "missing"],
                     },
                     "description": {"type": "string"},
+                    "side": {
+                        "type": ["string", "null"],
+                        "enum": [
+                            "allied",
+                            "axis",
+                            "civilian",
+                            "unknown",
+                            None,
+                        ],
+                    },
                     "count": {
                         "type": ["object", "null"],
-                        "properties": {
-                            "killed": {"type": ["integer", "null"]},
-                            "wounded": {"type": ["integer", "null"]},
-                            "missing": {"type": ["integer", "null"]},
-                            "captured": {"type": ["integer", "null"]},
-                            "total": {"type": ["integer", "null"]},
-                        },
                     },
                     "date": {
                         "type": ["object", "null"],
@@ -506,8 +509,6 @@ CASUALTIES_SCHEMA = {
                     "impacted_organizations": {"type": ["array", "null"]},
                     "impacted_people": {"type": ["array", "null"]},
                     "impacted_places": {"type": ["array", "null"]},
-                    "impacted_equipment": {"type": ["array", "null"]},
-                    "weather_conditions": {"type": ["object", "null"]},
                 },
             },
         },
@@ -730,6 +731,10 @@ CASUALTY_ITEM_SCHEMA = {
             "enum": ["wounded", "killed", "casualties", "pow", "missing"],
         },
         "description": {"type": "string"},
+        "side": {
+            "type": "string",
+            "enum": ["allied", "axis", "civilian", "unknown"],
+        },
         "count": {"type": "object"},
     },
 }

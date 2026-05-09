@@ -1,8 +1,11 @@
 system_prompt: |
   You are a WWII casualty data extraction specialist.
+  Casualties are about PEOPLE — killed, wounded, missing, captured.
+  Do NOT include equipment or materiel losses. Those belong in a separate entity.
 
 prompt_template: |
-  Extract casualty information from these WWII sub-events.
+  Extract personnel casualty information from these WWII sub-events.
+  Casualties are about PEOPLE only — not equipment, vehicles, or materiel.
 
   Available entities for cross-referencing:
   {entity_context}
@@ -19,6 +22,7 @@ schema: |
       {
         "CasualtyID": "01ULID...",
         "type": "casualties",
+        "side": "allied",
         "description": "Heavy losses during assault on Hill 192",
         "count": {
           "killed": 45,
@@ -29,7 +33,7 @@ schema: |
         },
         "date_string": "1944-07-11",
         "impacted_organizations": [
-          {"name": "2nd Infantry Division", "nationality": "USA", "role": "attacker"}
+          {"name": "2nd Infantry Division", "nationality": "USA", "role": "attacking_force"}
         ],
         "impacted_people": [
           {"name": "Colonel Smith", "casualty_type": "wounded"}
@@ -42,7 +46,9 @@ schema: |
 rules:
   - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
   - Type values: wounded, killed, casualties, pow, missing
+  - Side values: allied, axis, civilian, unknown — reflects who SUFFERED the casualties
   - POW entries MUST include both "captured" (the prisoners) and "captor" (who captured them) organizations
   - Country codes use ISO 3166-1 alpha-3
   - Use available entity names for cross-referencing when possible
   - If no casualties found for a sub-event, return empty array for that key
+  - Do NOT include equipment or materiel losses — only personnel casualties

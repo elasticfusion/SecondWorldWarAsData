@@ -563,10 +563,18 @@ def _merge_person(
     existing: Dict[str, Any], new_person: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Merge new person data into existing person record."""
-    # Add new event mentions
+    # Add new event mentions (deduplicate by Sub_eventID)
     existing_mentions = existing.get("event_mentions", [])
     new_mentions = new_person.get("event_mentions", [])
-    existing_mentions.extend(new_mentions)
+    seen_sub_events = {
+        m.get("Sub_eventID") for m in existing_mentions if m.get("Sub_eventID")
+    }
+    for m in new_mentions:
+        sub_id = m.get("Sub_eventID")
+        if not sub_id or sub_id not in seen_sub_events:
+            existing_mentions.append(m)
+            if sub_id:
+                seen_sub_events.add(sub_id)
     existing["event_mentions"] = existing_mentions
 
     # Merge biographical profile if new data is more complete

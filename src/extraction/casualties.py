@@ -45,17 +45,13 @@ def extract_casualties(
         return []
 
     # Build entity indexes
-    dates_index = _build_entity_index(output_root, "dates", "DateID", "date_start")
-    places_index = _build_entity_index(output_root, "places", "PlaceID", "name")
-    people_index = _build_entity_index(output_root, "people", "PersonID", "name")
-    people_groups_index = _build_entity_index(
-        output_root, "people_groups", "PeopleGroupID", "group_name"
-    )
-    equipment_index = _build_entity_index(
-        output_root, "equipment", "EquipmentID", "common_name"
-    )
-    weather_index = _build_entity_index(
-        output_root, "weather", "WeatherID", "description"
+    from src.utils.entity_index import build_name_index
+
+    dates_index = build_name_index(output_root / "dates", "DateID", "date_start")
+    places_index = build_name_index(output_root / "places", "PlaceID", "name")
+    people_index = build_name_index(output_root / "people", "PersonID", "name")
+    people_groups_index = build_name_index(
+        output_root / "people_groups", "PeopleGroupID", "group_name"
     )
 
     casualties_dir = output_root / "casualties"
@@ -85,7 +81,6 @@ def extract_casualties(
         places_index,
         people_index,
         people_groups_index,
-        equipment_index,
     )
 
     # Process results for each sub-event
@@ -106,8 +101,6 @@ def extract_casualties(
                     places_index,
                     people_index,
                     people_groups_index,
-                    equipment_index,
-                    weather_index,
                 )
                 casualties.append(casualty)
             except Exception as e:
@@ -131,7 +124,6 @@ def _batch_extract_casualties(
     places_index: Dict[str, Any],
     people_index: Dict[str, Any],
     people_groups_index: Dict[str, Any],
-    equipment_index: Dict[str, Any],
 ) -> Dict[str, List[Dict[str, Any]]]:
     """Extract casualties from all sub-events in a single API call.
 
@@ -163,23 +155,25 @@ def _batch_extract_casualties(
         f"--- Sub-event [{seid}] ---\n{text}" for seid, text in relevant
     )
 
-    prompt = f"""Extract casualty information from these sub-events.
+    prompt = f"""Extract personnel casualty information from these sub-events.
+Casualties are about PEOPLE only — not equipment, vehicles, or materiel.
 
 {entity_context}
 
 {sub_event_block}
 
 For each casualty incident, provide:
-1. type: wounded|killed|casualties|pow
-2. description: Brief description
-3. count: {{killed, wounded, missing, captured, total}} (only if numbers mentioned)
-4. date_string: The date as mentioned in text (e.g. "18 July 1944")
-5. impacted_organizations: Array of {{"name": "...", "nationality": "USA", "role": "attacking_force"}}
+1. type: wounded|killed|casualties|pow|missing
+2. side: allied|axis|civilian|unknown (who SUFFERED the casualties)
+3. description: Brief description
+4. count: {{killed, wounded, missing, captured, total}} (only if numbers mentioned)
+5. date_string: The date as mentioned in text (e.g. "18 July 1944")
+6. impacted_organizations: Array of {{"name": "...", "nationality": "USA", "role": "attacking_force"}}
    - nationality: ISO 3166-1 alpha-3
    - role: one of attacking_force, defending_force, captured, captor, suffered_casualties
    - For POW: MUST include both "captured" and "captor" organizations
-6. impacted_people: Array of {{"name": "Captain Smith", "casualty_type": "killed"}}
-7. impacted_places: Array of {{"name": "Omaha Beach"}}
+7. impacted_people: Array of {{"name": "Captain Smith", "casualty_type": "killed"}}
+8. impacted_places: Array of {{"name": "Omaha Beach"}}
 
 Return JSON object keyed by sub-event ID:
 {{"<Sub-eventID>": [<casualty items>], ...}}
@@ -233,91 +227,6 @@ def _parse_casualty_response(response: str) -> Dict[str, List[Dict[str, Any]]]:
             items = _fix_invalid_ulids(items)
             result[seid] = _validate_items(items)
     return result
-
-
-def _extract_from_event(
-    event: Dict[str, Any],
-    event_id: str,
-    sub_event_id: Optional[str],
-    book: str,
-    chapter: str,
-    grok_client: GrokClient,
-    dates_index: Dict[str, Any],
-    places_index: Dict[str, Any],
-    people_index: Dict[str, Any],
-    people_groups_index: Dict[str, Any],
-    equipment_index: Dict[str, Any],
-    weather_index: Dict[str, Any],
-) -> List[Dict[str, Any]]:
-    """Extract casualties from a single event or sub-event."""
-    # Get text from either description or Sub-event_fulltext
-    description = event.get("description", "")
-    if not description and "Sub-event_fulltext" in event:
-        fulltext = event.get("Sub-event_fulltext", {})
-        description = " ".join(str(v) for v in fulltext.values())
-
-    paragraph_number = event.get("paragraph_number")
-
-    # Check if event mentions casualties
-    if not _has_casualty_mention(description):
-        return []
-
-    logger.info("Extracting casualties from event %s", event_id)
-
-    prompt = _build_extraction_prompt(
-        description,
-        dates_index,
-        places_index,
-        people_index,
-        people_groups_index,
-        equipment_index,
-    )
-
-    # Retry logic with exponential backoff
-    max_retries = 3
-    casualties_data = []
-
-    for attempt in range(max_retries):
-        try:
-            use_cache = attempt == 0  # First attempt uses cache
-            response = grok_client.chat_completion(
-                prompt, use_cache=use_cache, cache_type="casualties"
-            )
-            casualties_data = _parse_response(response)
-            casualties_data = _fix_invalid_ulids(casualties_data)
-            casualties_data = _validate_items(casualties_data)
-            break  # Success, exit retry loop
-        except Exception as e:
-            if attempt < max_retries - 1:
-                logger.warning("  ⚠ Attempt %d failed: %s", attempt + 1, e)
-                logger.info("  Retrying (%d/%d)...", attempt + 2, max_retries)
-            else:
-                logger.error("  ✗ All %d attempts failed: %s", max_retries, e)
-                return []  # Return empty list on failure
-
-    casualties = []
-    for casualty_data in casualties_data:
-        try:
-            casualty = _build_casualty(
-                casualty_data,
-                event_id,
-                sub_event_id,
-                book,
-                chapter,
-                paragraph_number,
-                dates_index,
-                places_index,
-                people_index,
-                people_groups_index,
-                equipment_index,
-                weather_index,
-            )
-            casualties.append(casualty)
-        except Exception as e:
-            logger.warning("Failed to build casualty from data: %s", e)
-            continue  # Skip this one, continue with next
-
-    return casualties
 
 
 def _book_name_from_path(event_file: Path) -> str:
@@ -401,68 +310,12 @@ def _has_casualty_mention(text: str) -> bool:
         "prison",
         "captured",
         "pow",
-        "losses",
         "kia",
         "wia",
+        "missing in action",
     ]
     text_lower = text.lower()
     return any(keyword in text_lower for keyword in keywords)
-
-
-def _build_extraction_prompt(
-    description: str,
-    dates_index: Dict[str, Any],
-    places_index: Dict[str, Any],
-    people_index: Dict[str, Any],
-    people_groups_index: Dict[str, Any],
-    equipment_index: Dict[str, Any],
-) -> str:
-    """Build prompt for casualty extraction."""
-    return f"""Extract casualty information from this event description.
-
-Event: {description}
-
-For each casualty incident, provide:
-1. type: wounded|killed|casualties|pow
-2. description: Brief description
-3. count: {{killed, wounded, missing, captured, total}} (only if numbers mentioned)
-4. date_string: The date as mentioned in text (e.g. "18 July 1944")
-5. impacted_organizations: Array of {{"name": "...", "nationality": "USA", "role": "attacking_force"}}
-   - nationality: ISO 3166-1 alpha-3
-   - role: one of attacking_force, defending_force, captured, captor, suffered_casualties
-   - For POW: MUST include both "captured" and "captor" organizations
-6. impacted_people: Array of {{"name": "Captain Smith", "casualty_type": "killed"}}
-7. impacted_places: Array of {{"name": "Omaha Beach"}}
-
-Available entities:
-- Dates: {list(dates_index.keys())[:10]}
-- Places: {list(places_index.keys())[:10]}
-- People: {list(people_index.keys())[:10]}
-- Organizations: {list(people_groups_index.keys())[:10]}
-
-Return JSON array of casualties. Return empty array [] if no casualties found.
-"""
-
-
-def _parse_response(response: str) -> List[Dict[str, Any]]:
-    """Parse Grok response into casualty data."""
-    try:
-        # Extract JSON from response
-        start = response.find("[")
-        end = response.rfind("]") + 1
-        if start == -1 or end == 0:
-            logger.debug("No JSON array found in response")
-            return []
-
-        json_str = response[start:end]
-        data = json.loads(json_str)
-        return data if isinstance(data, list) else []
-    except json.JSONDecodeError as e:
-        logger.warning("Failed to parse casualty response: %s", e)
-        return []
-    except Exception as e:
-        logger.error("Unexpected error parsing response: %s", e)
-        return []
 
 
 def _validate_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -497,8 +350,6 @@ def _resolve_impacted_entities(
     places_index: Dict[str, Any],
     people_index: Dict[str, Any],
     people_groups_index: Dict[str, Any],
-    equipment_index: Dict[str, Any],
-    weather_index: Dict[str, Any],
 ) -> None:
     """Resolve and attach all impacted entity arrays to casualty."""
     resolvers = {
@@ -511,16 +362,6 @@ def _resolve_impacted_entities(
     for field, resolver in resolvers.items():
         if field in casualty_data:
             casualty[field] = resolver(casualty_data[field])
-    if "weather" in casualty_data:
-        resolved = _resolve_weather(casualty_data["weather"], weather_index)
-        if resolved:
-            casualty["weather_conditions"] = resolved
-
-    # Auto-link weather by date match
-    if "weather_conditions" not in casualty:
-        weather_match = _match_weather_by_date(casualty, weather_index)
-        if weather_match:
-            casualty["weather_conditions"] = weather_match
 
 
 def _build_casualty(
@@ -534,13 +375,16 @@ def _build_casualty(
     places_index: Dict[str, Any],
     people_index: Dict[str, Any],
     people_groups_index: Dict[str, Any],
-    equipment_index: Dict[str, Any],
-    weather_index: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Build casualty JSON structure."""
     casualty = {
         "CasualtyID": str(ulid.new()),
         "type": casualty_data.get("type", "casualties"),
+        "side": (
+            casualty_data.get("side", "unknown")
+            if casualty_data.get("side", "unknown") in VALID_SIDES
+            else "unknown"
+        ),
         "description": casualty_data.get("description", ""),
         "event_context": {"EventID": event_id, "Sub-eventID": sub_event_id},
         "source": {
@@ -565,8 +409,6 @@ def _build_casualty(
         places_index,
         people_index,
         people_groups_index,
-        equipment_index,
-        weather_index,
     )
 
     return casualty
@@ -645,6 +487,8 @@ VALID_ROLES = {
     "captor",
     "suffered_casualties",
 }
+
+VALID_SIDES = {"allied", "axis", "civilian", "unknown"}
 
 # Map freeform LLM roles to controlled vocabulary
 _ROLE_MAP = {
@@ -751,87 +595,19 @@ def _resolve_places(
     return resolved
 
 
-def _resolve_equipment(
-    equipment: List[Any], equipment_index: Dict[str, Any]
-) -> List[Dict[str, Any]]:
-    """Resolve equipment references to EquipmentIDs."""
-    resolved = []
-    for equip in equipment:
-        if isinstance(equip, str):
-            equip = {"common_name": equip}
-        if isinstance(equip, dict):
-            # Handle LLM returning "name" instead of "common_name"
-            equip_name = equip.get("common_name") or equip.get("name", "")
-            if not equip_name:
-                continue
-            equip_id = _find_equipment_id(equip_name, equipment_index)
-            count_lost = equip.get("count_lost") or equip.get("count", 0)
-            resolved.append(
-                {
-                    "EquipmentID": equip_id,
-                    "common_name": equip_name,
-                    "count_lost": count_lost,
-                }
-            )
-    return resolved
-
-
-def _resolve_weather(
-    weather_ref: Any, weather_index: Dict[str, Any]
-) -> Optional[Dict[str, str]]:
-    """Resolve weather reference to WeatherID."""
-    if isinstance(weather_ref, dict) and "WeatherID" in weather_ref:
-        return weather_ref
-    if isinstance(weather_ref, str) and weather_ref in weather_index:
-        return {"WeatherID": weather_index[weather_ref].get("WeatherID")}
-    return None
-
-
-def _match_weather_by_date(
-    casualty: Dict[str, Any], weather_index: Dict[str, Any]
-) -> Optional[Dict[str, str]]:
-    """Match casualty to weather record by ISO date."""
-    date_info = casualty.get("date") or {}
-    # Try ISO date from DateID-linked date, or parse date_string
-    cas_date = date_info.get("iso_date") or date_info.get("date_string", "")
-    if not cas_date or len(cas_date) != 10:  # Only match YYYY-MM-DD
-        return None
-    for weather_data in weather_index.values():
-        if isinstance(weather_data, dict) and weather_data.get("date") == cas_date:
-            return {"WeatherID": weather_data.get("WeatherID")}
-    return None
-
-
-def _find_organization_id(name: str, index: Dict[str, Any]) -> Optional[str]:
+def _find_organization_id(name: str, index: Dict[str, str]) -> Optional[str]:
     """Find organization ID by name."""
-    for org_data in index.values():
-        if org_data.get("name", "").lower() == name.lower():
-            return org_data.get("PeopleGroupID")
-    return None
+    return index.get(name.lower())
 
 
-def _find_person_id(name: str, index: Dict[str, Any]) -> Optional[str]:
+def _find_person_id(name: str, index: Dict[str, str]) -> Optional[str]:
     """Find person ID by name."""
-    for person_data in index.values():
-        if person_data.get("name", "").lower() == name.lower():
-            return person_data.get("PersonID")
-    return None
+    return index.get(name.lower())
 
 
-def _find_place_id(name: str, index: Dict[str, Any]) -> Optional[str]:
+def _find_place_id(name: str, index: Dict[str, str]) -> Optional[str]:
     """Find place ID by name."""
-    for place_data in index.values():
-        if place_data.get("name", "").lower() == name.lower():
-            return place_data.get("PlaceID")
-    return None
-
-
-def _find_equipment_id(name: str, index: Dict[str, Any]) -> Optional[str]:
-    """Find equipment ID by name."""
-    for equip_data in index.values():
-        if equip_data.get("common_name", "").lower() == name.lower():
-            return equip_data.get("EquipmentID")
-    return None
+    return index.get(name.lower())
 
 
 def _save_casualty(casualty: Dict[str, Any], output_dir: Path) -> None:
@@ -845,45 +621,3 @@ def _save_casualty(casualty: Dict[str, Any], output_dir: Path) -> None:
         json.dump(casualty, f, indent=2, ensure_ascii=False)
 
     logger.info("Saved casualty: %s", filename)
-
-
-def _load_event_data(event_file: Path) -> Optional[Dict[str, Any]]:
-    """Load event data from JSON file."""
-    try:
-        with open(event_file, encoding="utf-8") as f:
-            return json.load(f)
-    except json.JSONDecodeError as e:
-        logger.error("Invalid JSON in %s: %s", event_file.name, e)
-        return None
-    except Exception as e:
-        logger.error("Failed to load %s: %s", event_file.name, e)
-        return None
-
-
-def _build_entity_index(
-    output_root: Path, entity_type: str, id_field: str, name_field: str
-) -> Dict[str, Any]:
-    """Build entity index from JSON files."""
-    index: Dict[str, Any] = {}
-    entity_dir = output_root / entity_type
-    if not entity_dir.exists():
-        return index
-
-    # Fallback field names for transition compatibility
-    fallbacks = {"date_start": "date", "group_name": "name"}
-    fallback = fallbacks.get(name_field)
-
-    for json_file in entity_dir.glob("*.json"):
-        try:
-            with open(json_file, encoding="utf-8") as f:
-                data = json.load(f)
-                entity_id = data.get(id_field)
-                name = data.get(name_field) or (
-                    data.get(fallback) if fallback else None
-                )
-                if entity_id and name:
-                    index[name] = data
-        except (json.JSONDecodeError, KeyError) as e:
-            logger.warning("Failed to load %s: %s", json_file.name, e)
-
-    return index

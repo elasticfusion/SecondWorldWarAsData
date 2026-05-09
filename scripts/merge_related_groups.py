@@ -296,7 +296,7 @@ def _replace_id_in_entity_files(output_root: Path, old_id: str, new_id: str):
 
 def _update_event_refs(output_root: Path, old_id: str, new_id: str, ref_key: str):
     """Replace old entity ID with new ID in all event and entity files."""
-    for f in sorted(output_root.glob("*/*-event.json")):
+    for f in sorted(output_root.rglob("*-event.json")):
         try:
             with open(f, "r", encoding="utf-8") as fh:
                 d = json.load(fh)

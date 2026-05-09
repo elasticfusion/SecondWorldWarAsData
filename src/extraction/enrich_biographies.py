@@ -8,6 +8,7 @@ Validates source URLs by fetching content and verifying relevance via Grok.
 
 import json
 import logging
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -26,6 +27,14 @@ def search_grokipedia(
     person_name: str, timeout: int = 30, max_retries: int = 2
 ) -> Optional[str]:
     """Search Grokipedia for person biographical data."""
+    from src.utils.search_cache import cache_result, get_cached
+
+    cached = get_cached("grokipedia", person_name)
+    if cached == "NOT_FOUND":
+        return None
+    if cached:
+        return cached
+
     for attempt in range(max_retries):
         try:
             search_url = f"https://grokipedia.com/search?q={person_name}"
@@ -38,11 +47,13 @@ def search_grokipedia(
             )
 
             if response.status_code == 200:
+                cache_result("grokipedia", person_name, response.text)
                 return response.text
 
             logger.debug(
                 "Grokipedia returned %d for %s", response.status_code, person_name
             )
+            cache_result("grokipedia", person_name, None)
             return None
 
         except requests.Timeout as e:
@@ -124,6 +135,14 @@ def search_wikipedia(
     person_name: str, timeout: int = 30, max_retries: int = 2
 ) -> Optional[str]:
     """Search Wikipedia for person biographical data."""
+    from src.utils.search_cache import cache_result, get_cached
+
+    cached = get_cached("wikipedia", person_name)
+    if cached == "NOT_FOUND":
+        return None
+    if cached:
+        return cached
+
     api_url, params, headers = _build_wikipedia_request(person_name)
 
     for attempt in range(max_retries):
@@ -133,7 +152,9 @@ def search_wikipedia(
             )
 
             if response.status_code == 200:
-                return _extract_page_content(response.json())
+                content = _extract_page_content(response.json())
+                cache_result("wikipedia", person_name, content)
+                return content
 
             if response.status_code == 403:
                 logger.warning(
@@ -153,6 +174,7 @@ def search_wikipedia(
             if not _handle_wikipedia_error(e, person_name, attempt, max_retries):
                 return None
 
+    cache_result("wikipedia", person_name, None)
     return None
 
 
@@ -422,6 +444,10 @@ def _load_person_for_enrichment(person_file: Path) -> Optional[tuple]:
         logger.debug("  Already enriched: %s, skipping", person_name)
         return None
 
+    if person_data.get("enrichment_status") == "not_found":
+        logger.debug("  Previously searched, not found: %s, skipping", person_name)
+        return None
+
     return person_data, person_name, bio_profile
 
 
@@ -464,9 +490,19 @@ def enrich_person_biography(
         person_name, bio_profile, grok_client, search_references_flag
     ):
         logger.info("  No new data found")
+        person_data["enrichment_status"] = "not_found"
+        person_data["last_enrichment_search"] = datetime.now(timezone.utc).strftime(
+            "%Y-%m-%d"
+        )
+        with open(person_file, "w", encoding="utf-8") as f:
+            json.dump(person_data, f, indent=2, ensure_ascii=False)
         return False
 
     person_data["biographical_profile"] = bio_profile
+    person_data["enrichment_status"] = "enriched"
+    person_data["last_enrichment_search"] = datetime.now(timezone.utc).strftime(
+        "%Y-%m-%d"
+    )
     try:
         from src.extraction.people import (
             Person,

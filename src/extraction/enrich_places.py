@@ -7,6 +7,13 @@ from typing import Optional
 
 import requests
 
+
+def _today():
+    from datetime import datetime, timezone
+
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+
 from src.grok_client import GrokClient
 from src.utils.file_lock import write_json_with_lock
 
@@ -176,24 +183,29 @@ def enrich_place(place_file: Path, grok_client: GrokClient) -> bool:
     if not name or not _needs_enrichment(data):
         return False
 
-    logger.info("Enriching place: %s", name)
+    if data.get("enrichment_status") == "not_found":
+        logger.debug("Previously searched, not found: %s", name)
+        return False
 
-    # Try Grok first
+    logger.info("Enriching place: %s", name)
+    changed = _enrich_place_data(data, name, grok_client)
+    data["enrichment_status"] = "enriched" if changed else "not_found"
+    data["last_enrichment_search"] = _today()
+    write_json_with_lock(place_file, data)
+    if changed:
+        logger.info("  ✓ Enriched %s", name)
+    return changed
+
+
+def _enrich_place_data(data, name, grok_client):
+    """Try Grok then Wikipedia to enrich place. Returns True if changed."""
     enrichment = _try_grok(name, grok_client)
     changed = _apply_enrichment(data, enrichment) if enrichment else False
-
-    # Wikipedia fallback if Grok didn't fill hierarchy
     if _needs_enrichment(data):
         wiki = _search_wikipedia(name)
         if wiki:
             changed = _apply_enrichment(data, wiki) or changed
-
-    if not changed:
-        return False
-
-    write_json_with_lock(place_file, data)
-    logger.info("  ✓ Enriched %s", name)
-    return True
+    return changed
 
 
 def enrich_all_places(
