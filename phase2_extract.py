@@ -441,6 +441,7 @@ def _run_core_extraction(
     max_parallel,
     heartbeat,
     logger,
+    skip_optional=False,
 ):
     """Run steps 1-3: parallel extraction, retry, optional entities. Returns (processed, failed)."""
     from src.extraction.batch_parallel import process_chapters_parallel
@@ -474,8 +475,11 @@ def _run_core_extraction(
         ]
     )
 
-    if any_optional:
-        event_files = sorted(output_root.rglob("*-event.json"))
+    if any_optional and not skip_optional:
+        from src.utils.config import get_content_root
+
+        content_root = get_content_root(paths)
+        event_files = sorted(content_root.rglob("*-event.json"))
         for event_file in event_files:
             current_book.set(event_file.parent.name)
             parsed_file = event_file.parent / event_file.name.replace(
@@ -557,10 +561,13 @@ def main():
 
     # Find parsed files
     output_root = paths["output_root"]
-    parsed_files = list(output_root.rglob("*-parsed.json"))
+    from src.utils.config import get_content_root
+
+    content_root = get_content_root(paths)
+    parsed_files = list(content_root.rglob("*-parsed.json"))
 
     if not parsed_files:
-        logger.error("No parsed files found in %s", output_root)
+        logger.error("No parsed files found in %s", content_root)
         logger.error("Please run phase1_parse.py first")
         sys.exit(1)
 
@@ -658,6 +665,7 @@ def main():
                 max_parallel,
                 heartbeat,
                 logger,
+                skip_optional=True,
             )
 
             heartbeat.stop()
@@ -668,6 +676,70 @@ def main():
                 failed,
             )
             logger.info("%s", "=" * 60)
+
+            # Second batch cycle: optional extractors
+            if any(
+                config.get(f, {}).get("enabled", False)
+                for f in [
+                    "weather",
+                    "equipment",
+                    "logistics",
+                    "casualties",
+                    "supplemental_material",
+                ]
+            ):
+                from src.utils.batch_api import BatchCollector
+
+                grok_client.batch_mode = True
+                grok_client._batch_collector = BatchCollector()
+                logger.info("\nCollecting optional extractor requests for batch...")
+
+                from src.utils.config import get_content_root
+
+                content_root = get_content_root(paths)
+                event_files = sorted(content_root.rglob("*-event.json"))
+                for event_file in event_files:
+                    current_book.set(event_file.parent.name)
+                    parsed_file = event_file.parent / event_file.name.replace(
+                        "-event.json", "-parsed.json"
+                    )
+                    if not parsed_file.exists():
+                        parsed_file = None
+                    _extract_optional_entities(
+                        event_file,
+                        parsed_file,
+                        grok_client,
+                        paths,
+                        config,
+                        logger,
+                    )
+
+                batch_id2 = grok_client.submit_batch(
+                    batch_name=f"{batch_name}-optional"
+                )
+                if batch_id2:
+                    logger.info(
+                        "Optional batch complete! Re-running with cached results..."
+                    )
+                    grok_client.batch_mode = False
+                    for event_file in event_files:
+                        current_book.set(event_file.parent.name)
+                        parsed_file = event_file.parent / event_file.name.replace(
+                            "-event.json", "-parsed.json"
+                        )
+                        if not parsed_file.exists():
+                            parsed_file = None
+                        _extract_optional_entities(
+                            event_file,
+                            parsed_file,
+                            grok_client,
+                            paths,
+                            config,
+                            logger,
+                        )
+                else:
+                    grok_client.batch_mode = False
+                    logger.info("No optional batch requests (all cached)")
 
     from src.utils.http_pool import close_session
 

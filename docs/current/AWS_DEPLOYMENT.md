@@ -2,7 +2,7 @@
 
 Deploy the WWII Data Extraction Pipeline on AWS using ECS Fargate, S3, and DynamoDB.
 
-**Last Updated:** 2026-04-30
+**Last Updated:** 2026-05-04
 
 ---
 
@@ -10,11 +10,12 @@ Deploy the WWII Data Extraction Pipeline on AWS using ECS Fargate, S3, and Dynam
 
 ```
 S3 (content upload) → SNS → SQS (60s batch) → Trigger Lambda → ECS Phase 1 (parse)
-                                                                  ↓ writes parsed JSON to S3
+                                                                  ↓ writes parsed JSON to S3 (output/content/{Book}/)
 S3 (parsed JSON)    → SNS → SQS (60s batch) → Trigger Lambda → ECS Phase 2 (extract --batch)
                                                                   ↓ calls Grok API via xAI Batch API
-                                                                  ↓ runs dedup analysis
-S3 (entity files)   → SNS → SQS (60s batch) → Trigger Lambda → checks dedup/review_status.json
+                                                                  ↓ downloads full S3 entity inventory + event files
+                                                                  ↓ runs cross-book dedup analysis
+S3 (dedup reports)  → SNS → SQS (60s batch) → Trigger Lambda → checks dedup/review_status.json
                                                                   ↓ blocks Phase 3 until review complete
                      Dedup Review UI (API Gateway + Lambda)
                                                                   ↓ user merges/skips/reclassifies
@@ -159,6 +160,8 @@ python3 scripts/deploy_aws.py deploy \
   --openserp-image <account-id>.dkr.ecr.us-east-1.amazonaws.com/wwii-openserp:latest
 ```
 
+The deploy script reads `notification_email` from `config.yaml` automatically. You can also pass `--notification-email you@example.com` to override. You'll receive a confirmation email from SNS that you must click to activate notifications.
+
 ### 6. Upload Content
 
 ```bash
@@ -197,6 +200,7 @@ aws:
   s3_bucket: "dev-wwii-data-pipeline"
   cache_table: "dev-wwii-api-cache"
   secrets_id: "dev-wwii-pipeline/grok-api-key"
+  notification_email: "you@example.com"    # Pipeline completion notifications
   openserp:
     cluster: "dev-wwii-pipeline"
     service: "dev-wwii-openserp"
@@ -327,6 +331,30 @@ VPC, subnets, S3, DynamoDB, and Lambda functions cost $0 when idle. Pipeline ECS
 | `tmp/` | Delete after 7 days |
 | `cache/` | Delete after 90 days |
 | `output/` | → Standard-IA at 30 days → Glacier IR at 90 days |
+
+### S3 Directory Structure
+
+```
+s3://dev-wwii-data-pipeline/
+├── content/                        # Source documents (markdown)
+│   └── {Book}/chapter*/
+├── output/
+│   ├── content/                    # Book-specific output (parsed/event files)
+│   │   └── {Book}/chapter*-parsed.json, chapter*-event.json
+│   ├── people/                     # Entity directories
+│   ├── places/
+│   ├── people_groups/
+│   ├── equipment/
+│   ├── casualties/
+│   ├── dates/
+│   ├── weather/
+│   ├── bibliography/
+│   └── dedup/review_status.json
+├── prompts/                        # S3-overridable prompt templates
+└── cache/                          # API response cache (DynamoDB primary)
+```
+
+S3 notifications for `-parsed.json` and `-event.json` files are scoped to the `output/content/` prefix. Entity uploads to `output/people/` etc. do not trigger pipeline re-runs.
 
 ---
 

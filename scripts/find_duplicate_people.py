@@ -70,7 +70,10 @@ def _extract_last_name(name: str) -> str:
         }
         suffixes = {"jr.", "jr", "sr.", "sr", "ii", "iii", "iv"}
         filtered = [
-            p for p in parts if p.lower() not in titles and p.lower() not in suffixes
+            p.strip(".,")
+            for p in parts
+            if p.lower().strip(".,") not in titles
+            and p.lower().strip(".,") not in suffixes
         ]
         if filtered:
             return filtered[-1].lower()
@@ -143,7 +146,6 @@ _WORD_SPLIT = re.compile(r"\s+")
 # People with more than this many event_mentions are considered high-frequency.
 # For these, name-similarity alone is not enough — proximity or biographical
 # evidence is required to flag a duplicate.
-HIGH_FREQUENCY_THRESHOLD = 15
 
 
 def _build_text_index(
@@ -342,6 +344,51 @@ def _check_unicode_variants(name1: str, name2: str) -> tuple[list[str], float]:
     return [], 0.0
 
 
+def _check_middle_name_variant(
+    name1: str, name2: str, last1: str, last2: str
+) -> tuple[list[str], float]:
+    """Check 7: Same first+last name, differing only by middle name/initial.
+
+    Matches: 'Omar N. Bradley' vs 'Omar Bradley',
+             'J. Lawton Collins' vs 'Lawton Collins',
+             'George S. Patton, Jr.' vs 'George Patton'.
+    """
+    if last1 != last2:
+        return [], 0.0
+
+    suffixes = {"jr.", "jr", "sr.", "sr", "ii", "iii", "iv"}
+
+    def _core_parts(name: str) -> list[str]:
+        return [
+            p.strip(".,").lower()
+            for p in name.split()
+            if p.strip(".,").lower() not in suffixes and len(p.strip(".,")) > 1
+        ]
+
+    parts1 = _core_parts(name1)
+    parts2 = _core_parts(name2)
+    if not parts1 or not parts2:
+        return [], 0.0
+
+    # Same first name and same last name — middle differs
+    if parts1[0] == parts2[0] and parts1[-1] == parts2[-1]:
+        return ["Middle name/initial variant"], 0.5
+
+    # One has initial that matches the other's first letter
+    # e.g., "J. Lawton Collins" vs "Lawton Collins"
+    shorter, longer = (
+        (parts1, parts2) if len(parts1) <= len(parts2) else (parts2, parts1)
+    )
+    if shorter[-1] == longer[-1]:  # same last name
+        # Check if shorter's non-last parts are a subset of longer's
+        short_firsts = set(shorter[:-1])
+        long_firsts = set(longer[:-1])
+        if short_firsts and short_firsts <= long_firsts:
+            return ["Middle name/initial variant"], 0.5
+
+    return [], 0.0
+
+
 def _check_text_proximity(
     p1: Dict,
     p2: Dict,
@@ -386,6 +433,7 @@ def _score_pair(
         _check_substring_match(name1, name2, last1, last2),
         _check_single_name(name1, name2, last1, last2, person1, person2),
         _check_unicode_variants(name1, name2),
+        _check_middle_name_variant(name1, name2, last1, last2),
     ]
 
     for reasons, conf in checks:
@@ -403,18 +451,6 @@ def _score_pair(
     )
     all_reasons.extend(r)
     total_confidence += c
-
-    # High-frequency gate
-    mentions1 = len(person1.get("event_mentions", []))
-    mentions2 = len(person2.get("event_mentions", []))
-    if mentions1 > HIGH_FREQUENCY_THRESHOLD or mentions2 > HIGH_FREQUENCY_THRESHOLD:
-        has_strong = any(
-            r
-            for r in all_reasons
-            if r.startswith(("Shared bio", "Shared pos", "Text prox"))
-        )
-        if not has_strong:
-            total_confidence = 0.0
 
     return all_reasons, total_confidence
 
@@ -440,13 +476,9 @@ def find_potential_duplicates(
         text_index = _build_text_index(output_root)
         logger.info("Indexed %d sub-events", len(text_index))
     # Load exclusion list
-    exclusion_file = people_dir_path / "not_duplicates.json"
-    excluded_pairs = set()
-    if exclusion_file.exists():
-        with open(exclusion_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            for pair in data.get("exclusions", []):
-                excluded_pairs.add(tuple(sorted([pair["person1"], pair["person2"]])))
+    from src.dedup.exclusions import get_exclusion_store
+
+    excluded_pairs = get_exclusion_store("people", people_dir_path).load()
 
     # Load all people files
     people_data = _load_people_data(people_dir_path)
@@ -456,16 +488,49 @@ def find_potential_duplicates(
 
 
 def _load_people_data(people_dir_path: Path) -> List[Dict[str, Any]]:
-    """Load all people JSON files."""
-    skip = {"index.json", "duplicate_report.json", "not_duplicates.json"}
+    """Load people data, preferring file contents when available, filenames otherwise.
+
+    For files that exist locally (current run), reads full JSON for richer
+    comparison signals (event_mentions, biographical_details).
+    For files known only by name (e.g., from index.json), builds minimal
+    records from the filename — sufficient for name-based dedup.
+    """
+    skip = {
+        "index.json",
+        "duplicate_report.json",
+        "not_duplicates.json",
+        "not_related.json",
+        ".processed_events.json",
+    }
     people_data = []
+    seen_filenames: set = set()
+
+    # Load full data from local files
     for person_file in people_dir_path.glob("*.json"):
         if person_file.name in skip:
             continue
-        with open(person_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            data["_filename"] = person_file.name
-            people_data.append(data)
+        seen_filenames.add(person_file.name)
+        try:
+            with open(person_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                data["_filename"] = person_file.name
+                people_data.append(data)
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    # Add entries from index.json that aren't local (previous runs on S3)
+    index_file = people_dir_path / "index.json"
+    if index_file.exists():
+        try:
+            raw = json.loads(index_file.read_text(encoding="utf-8"))
+            for name, filename in raw.items():
+                if filename not in seen_filenames and filename not in skip:
+                    people_data.append(
+                        {"name": name, "_filename": filename, "event_mentions": []}
+                    )
+        except (json.JSONDecodeError, OSError):
+            pass
+
     return people_data
 
 
@@ -527,10 +592,16 @@ def _build_pairwise_matches(
             if "name" not in person2:
                 continue
 
-            pair_key = tuple(
-                sorted([person1["_filename"], person2["_filename"]])
-            )
+            pair_key = tuple(sorted([person1["_filename"], person2["_filename"]]))
             if pair_key in excluded_pairs:
+                continue
+
+            # Skip if both entries point to the same file or same PersonID
+            if person1["_filename"] == person2["_filename"]:
+                continue
+            if person1.get("PersonID") and person1.get("PersonID") == person2.get(
+                "PersonID"
+            ):
                 continue
 
             reasons, confidence = _score_pair(person1, person2, text_index)
@@ -552,9 +623,22 @@ def _is_ambiguous_name(name: str) -> bool:
     Ambiguous = single word OR title/rank + single last name only.
     """
     titles = {
-        "general", "colonel", "major", "captain", "lieutenant", "field",
-        "marshal", "admiral", "commander", "sergeant", "gen", "col",
-        "maj", "lt", "brig", "sir",
+        "general",
+        "colonel",
+        "major",
+        "captain",
+        "lieutenant",
+        "field",
+        "marshal",
+        "admiral",
+        "commander",
+        "sergeant",
+        "gen",
+        "col",
+        "maj",
+        "lt",
+        "brig",
+        "sir",
     }
     parts = name.split()
     if len(parts) <= 1:
@@ -589,7 +673,8 @@ def _limit_single_name_matches(
     to its best non-ambiguous match. Ambiguous-to-ambiguous pairs are dropped.
     """
     ambiguous_indices = {
-        i for i, p in enumerate(people_data)
+        i
+        for i, p in enumerate(people_data)
         if "name" in p and _is_ambiguous_name(p["name"])
     }
 
@@ -600,7 +685,8 @@ def _limit_single_name_matches(
     best_pair_ids = {id(p) for p in best.values()}
 
     return [
-        pair for pair in pairs
+        pair
+        for pair in pairs
         if (pair[0] not in ambiguous_indices and pair[1] not in ambiguous_indices)
         or id(pair) in best_pair_ids
     ]
@@ -659,6 +745,11 @@ def generate_duplicate_report(
 ) -> None:
     """Generate a report of potential duplicates."""
     duplicates = find_potential_duplicates(people_dir_path, output_root=output_root)
+
+    # Filter out entries whose files don't exist
+    from src.dedup.validation import validate_report_groups
+
+    duplicates = validate_report_groups(duplicates, people_dir_path)
 
     # Sort alphabetically by the most complete name (longest) in each group
     def _sort_key(group):

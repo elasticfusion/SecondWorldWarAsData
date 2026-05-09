@@ -439,7 +439,7 @@ Resources:
                                   "TopicArn": props["ChapterParsedTopicArn"],
                                   "Events": ["s3:ObjectCreated:*"],
                                   "Filter": {"Key": {"FilterRules": [
-                                      {"Name": "prefix", "Value": "output/"},
+                                      {"Name": "prefix", "Value": "output/content/"},
                                       {"Name": "suffix", "Value": "-parsed.json"},
                                   ]}},
                               },
@@ -447,7 +447,7 @@ Resources:
                                   "TopicArn": props["EntityCreatedTopicArn"],
                                   "Events": ["s3:ObjectCreated:*"],
                                   "Filter": {"Key": {"FilterRules": [
-                                      {"Name": "prefix", "Value": "output/"},
+                                      {"Name": "prefix", "Value": "output/content/"},
                                       {"Name": "suffix", "Value": "-event.json"},
                                   ]}},
                               },

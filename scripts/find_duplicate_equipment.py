@@ -77,13 +77,10 @@ def _name_contained(equip1: Dict, equip2: Dict) -> bool:
 
 
 def _load_exclusions(equipment_dir: Path) -> Set[tuple]:
-    """Load excluded pairs from not_duplicates.json."""
-    exclusion_file = equipment_dir / "not_duplicates.json"
-    if not exclusion_file.exists():
-        return set()
-    with open(exclusion_file, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    return {tuple(sorted([p.get("person1", p.get("file1", "")), p.get("person2", p.get("file2", ""))])) for p in data.get("exclusions", [])}
+    """Load excluded pairs from DynamoDB or local JSON."""
+    from src.dedup.exclusions import get_exclusion_store
+
+    return get_exclusion_store("equipment", equipment_dir).load()
 
 
 def _score_pair(item1: Dict, item2: Dict) -> tuple:
@@ -137,12 +134,28 @@ def find_potential_duplicates(equipment_dir: Path) -> List[Dict[str, Any]]:
     equipment_files = [
         f for f in sorted(equipment_dir.glob("*.json")) if f.name not in SKIP_FILES
     ]
+    seen_filenames = {f.name for f in equipment_files}
     items = []
     for ef in equipment_files:
-        with open(ef, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            data["_filename"] = ef.name
-            items.append(data)
+        try:
+            with open(ef, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                data["_filename"] = ef.name
+                items.append(data)
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    index_file = equipment_dir / "index.json"
+    if index_file.exists():
+        try:
+            raw = json.loads(index_file.read_text(encoding="utf-8"))
+            for name, filename in raw.items():
+                if filename not in seen_filenames and filename not in SKIP_FILES:
+                    items.append(
+                        {"common_name": name, "name": name, "_filename": filename}
+                    )
+        except (json.JSONDecodeError, OSError):
+            pass
 
     logger.info("Analyzing %d equipment items for duplicates...", len(items))
 
@@ -174,6 +187,10 @@ def find_potential_duplicates(equipment_dir: Path) -> List[Dict[str, Any]]:
 def generate_duplicate_report(equipment_dir: Path, output_file: Path) -> None:
     """Generate duplicate report."""
     duplicates = find_potential_duplicates(equipment_dir)
+
+    from src.dedup.validation import validate_report_groups
+
+    duplicates = validate_report_groups(duplicates, equipment_dir)
     report = {
         "total_equipment": len(
             [f for f in equipment_dir.glob("*.json") if f.name not in SKIP_FILES]

@@ -10,43 +10,17 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from src.dedup.merge import (
+    do_merge as _do_merge,
+    load_person,
+    merge_people,
+    update_index,
+    update_event_refs as _update_event_refs,
+)
 from src.extraction.people import _merge_person
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-def load_duplicate_report(report_path: Path) -> List[Dict]:
-    """Load the duplicate report."""
-    with open(report_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    return data["duplicates"]
-
-
-def load_person(people_dir: Path, filename: str) -> Dict:
-    """Load a person file."""
-    with open(people_dir / filename, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def merge_people(primary: Dict, secondary: Dict) -> Dict:
-    """
-    Merge secondary person into primary using the standard merge logic.
-    """
-    return _merge_person(primary, secondary)
-
-
-def update_index(index_path: Path, old_name: str, new_filename: str):
-    """Update index.json to point old name to new file."""
-    with open(index_path, "r", encoding="utf-8") as f:
-        index = json.load(f)
-
-    # Normalize name for lookup
-    normalized = old_name.lower().strip()
-    index[normalized] = new_filename
-
-    with open(index_path, "w", encoding="utf-8") as f:
-        json.dump(index, f, indent=2, ensure_ascii=False)
 
 
 def _save_exclusion_pairs(people_dir: Path, pairs: List[tuple]):
@@ -200,76 +174,6 @@ def _handle_exclusions(people_dir: Path, people: List[Dict]) -> Optional[List[Di
     if input("\nMerge remaining people? (y/n): ").lower() != "y":
         return None
     return remaining_people
-
-
-def _update_event_refs(output_root: Path, old_id: str, new_id: str, ref_key: str):
-    """Replace old entity ID with new ID in all event and entity files."""
-    # Update event sub-event arrays
-    for f in sorted(output_root.glob("*/*-event.json")):
-        try:
-            with open(f, "r", encoding="utf-8") as fh:
-                d = json.load(fh)
-        except (OSError, json.JSONDecodeError):
-            continue
-        event = d.get("Event", d)
-        changed = False
-        for se in event.get("Sub-events", []):
-            refs = se.get(ref_key, [])
-            if old_id in refs:
-                refs[refs.index(old_id)] = new_id
-                changed = True
-        if changed:
-            with open(f, "w", encoding="utf-8") as fh:
-                json.dump(d, fh, indent=2, ensure_ascii=False)
-
-    # Update entity files (logistics, casualties) that reference the old ID
-    _replace_id_in_entity_files(output_root, old_id, new_id)
-
-
-def _replace_id_in_entity_files(output_root: Path, old_id: str, new_id: str):
-    """Replace old_id with new_id in logistics, casualties, and weather JSON files."""
-    for subdir in ("logistics", "casualties", "weather"):
-        entity_dir = output_root / subdir
-        if not entity_dir.exists():
-            continue
-        for f in entity_dir.glob("*.json"):
-            try:
-                text = f.read_text(encoding="utf-8")
-            except OSError:
-                continue
-            if old_id not in text:
-                continue
-            f.write_text(text.replace(old_id, new_id), encoding="utf-8")
-
-
-def _do_merge(people_dir: Path, people: List[Dict], primary_idx: int):
-    """Merge secondary people into primary."""
-    primary_person = people[primary_idx]
-    primary_data = load_person(people_dir, primary_person["filename"])
-    primary_id = primary_data.get("PersonID", "")
-    output_root = people_dir.parent
-    print(f"\nMerging into: {primary_person['name']}")
-
-    for i, person in enumerate(people):
-        if i == primary_idx:
-            continue
-        print(f"  Merging: {person['name']}")
-        secondary_data = load_person(people_dir, person["filename"])
-        secondary_id = secondary_data.get("PersonID", "")
-        primary_data = merge_people(primary_data, secondary_data)
-        update_index(
-            people_dir / "index.json", person["name"], primary_person["filename"]
-        )
-        (people_dir / person["filename"]).unlink()
-        print(f"    Deleted: {person['filename']}")
-        if secondary_id and primary_id:
-            _update_event_refs(output_root, secondary_id, primary_id, "people")
-            print(f"    Updated event refs: {secondary_id[:12]}→{primary_id[:12]}")
-
-    with open(people_dir / primary_person["filename"], "w", encoding="utf-8") as f:
-        json.dump(primary_data, f, indent=2, ensure_ascii=False)
-
-    print(f"✓ Merged {len(people)-1} duplicate(s) into {primary_person['name']}")
 
 
 def merge_duplicate_group(people_dir: Path, group: Dict, auto_confirm: bool = False):

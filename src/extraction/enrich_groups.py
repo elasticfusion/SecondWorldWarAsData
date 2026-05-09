@@ -6,6 +6,14 @@ from pathlib import Path
 from typing import Optional
 
 from src.grok_client import GrokClient
+
+
+def _today():
+    from datetime import datetime, timezone
+
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+
 from src.utils.file_lock import write_json_with_lock
 
 logger = logging.getLogger(__name__)
@@ -110,6 +118,10 @@ def enrich_group(group_file: Path, grok_client: GrokClient) -> bool:
         logger.debug("Already enriched: %s", name)
         return False
 
+    if data.get("enrichment_status") == "not_found":
+        logger.debug("Previously searched, not found: %s", name)
+        return False
+
     logger.info("Enriching: %s", name)
 
     try:
@@ -120,12 +132,20 @@ def enrich_group(group_file: Path, grok_client: GrokClient) -> bool:
         )
     except Exception as e:
         logger.warning("Failed to enrich %s: %s", name, e)
+        data["enrichment_status"] = "not_found"
+        data["last_enrichment_search"] = _today()
+        write_json_with_lock(group_file, data)
         return False
 
     if not isinstance(enrichment, dict):
+        data["enrichment_status"] = "not_found"
+        data["last_enrichment_search"] = _today()
+        write_json_with_lock(group_file, data)
         return False
 
     data["enrichment_data"] = enrichment
+    data["enrichment_status"] = "enriched"
+    data["last_enrichment_search"] = _today()
     # Ensure group_name exists per spec (alias of name)
     if not data.get("group_name") and data.get("name"):
         data["group_name"] = data["name"]

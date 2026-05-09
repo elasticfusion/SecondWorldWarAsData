@@ -2,31 +2,32 @@
 
 ## Overview
 
-Extract casualty information from historical events including wounded, killed, generic casualties, and prisoners of war.
+Extract personnel casualty information from historical events: killed, wounded, missing, and prisoners of war. Casualties are about **people** — individual soldiers, units, or civilian populations. Equipment and materiel losses belong in the Equipment entity.
 
 ## Requirements
 
-- Search events for casualty mentions
+- Extract casualty mentions from event text
 - Every entry has a ULID (CasualtyID)
-- Embed ULIDs for referenced people, organizations, places, equipment, weather
+- Link to referenced people, organizations, places, dates
 - Include description of the incident
-- Tie to specific dates
-- Note nationality of casualties
-- Link impacted organizations, people, places when appropriate
+- Note nationality and side (Allied/Axis/other)
+- Distinguish combatant vs civilian casualties when stated
+- Track both named individuals and aggregate unit counts
 
 ## JSON Schema
 
 ```json
 {
   "CasualtyID": "01JBQR8X9K2M3N4P5Q6R7S8T9V",
-  "type": "wounded|killed|casualties|pow",
+  "type": "killed|wounded|casualties|pow|missing",
   "description": "Brief description of the casualty incident",
+  "side": "allied|axis|civilian|unknown",
   "count": {
-    "killed": 150,
-    "wounded": 450,
-    "missing": 20,
-    "captured": 30,
-    "total": 650
+    "killed": {"value": 150, "qualifier": "exact"},
+    "wounded": {"value": 450, "qualifier": "approximately"},
+    "missing": {"value": 20, "qualifier": "exact"},
+    "captured": {"value": 30, "qualifier": "exact"},
+    "total": {"value": 650, "qualifier": "exact"}
   },
   "date": {
     "DateID": "01JBQR8X9K2M3N4P5Q6R7S8T9V",
@@ -48,7 +49,7 @@ Extract casualty information from historical events including wounded, killed, g
   "impacted_people": [
     {
       "PersonID": "01JBQR8X9K2M3N4P5Q6R7S8T9V",
-      "name": "John Doe",
+      "name": "Captain John Smith",
       "casualty_type": "killed"
     }
   ],
@@ -58,16 +59,6 @@ Extract casualty information from historical events including wounded, killed, g
       "name": "Omaha Beach"
     }
   ],
-  "impacted_equipment": [
-    {
-      "EquipmentID": "01JBQR8X9K2M3N4P5Q6R7S8T9V",
-      "common_name": "M4 Sherman",
-      "count_lost": 12
-    }
-  ],
-  "weather_conditions": {
-    "WeatherID": "01JBQR8X9K2M3N4P5Q6R7S8T9V"
-  },
   "source": {
     "book": "Cross-Channel Attack",
     "chapter": "chapter-6",
@@ -81,22 +72,36 @@ Extract casualty information from historical events including wounded, killed, g
 ### Required Fields
 
 - **CasualtyID**: ULID identifier
-- **type**: Enum - `wounded`, `killed`, `casualties`, `pow`
+- **type**: Enum — `killed`, `wounded`, `casualties` (generic), `pow`, `missing`
 - **description**: Text description of the casualty incident
 - **event_context**: Links to source event (EventID, Sub-eventID)
 - **source**: Book, chapter, paragraph traceability
 
 ### Optional Fields
 
-- **count**: Structured casualty counts (killed, wounded, missing, captured, total)
-  - All numeric fields are optional
-  - Use when specific numbers are mentioned
+- **side**: Which side suffered the casualties — `allied`, `axis`, `civilian`, `unknown`
+- **count**: Structured casualty counts with qualifiers
+  - Each field is `{value: int, qualifier: "exact"|"approximately"|"greater_than"|"less_than"|"unknown"}`
+  - Fields: `killed`, `wounded`, `missing`, `captured`, `total`
+  - Use only when specific numbers or estimates are mentioned in text
 - **date**: DateID reference with date string and precision
-- **impacted_organizations**: Array of PeopleGroupID references with nationality (ISO 3166-1 alpha-3)
-- **impacted_people**: Array of PersonID references with casualty_type
-- **impacted_places**: Array of PlaceID references
-- **impacted_equipment**: Array of EquipmentID references with count_lost
-- **weather_conditions**: WeatherID reference
+- **impacted_organizations**: Array of PeopleGroupID references with nationality (ISO 3166-1 alpha-3) and role
+- **impacted_people**: Array of PersonID references with casualty_type per individual
+- **impacted_places**: Array of PlaceID references (where casualties occurred)
+
+### Organization Roles
+
+- `attacking_force` — unit was attacking when casualties occurred
+- `defending_force` — unit was defending
+- `captured` — unit/personnel were taken prisoner (POW entries)
+- `captor` — unit that captured the prisoners (POW entries)
+- `suffered_casualties` — general, when attack/defense role unclear
+
+### POW Entries
+
+POW entries MUST include both organizations:
+- One with role `captured` (the prisoners)
+- One with role `captor` (who captured them)
 
 ## Storage
 
@@ -104,29 +109,25 @@ Extract casualty information from historical events including wounded, killed, g
 - **Filename**: `{type}_{ulid}.json`
 - **Example**: `killed_01JBQR8X9K2M3N4P5Q6R7S8T9V.json`
 
-## Integration
+## What Does NOT Belong Here
 
-Casualties are extracted during Phase 2 and linked to:
-- Events (source context)
-- Dates (temporal context)
-- Places (geographic context)
-- People (individual casualties)
-- People Groups (unit casualties)
-- Equipment (material losses)
-- Weather (environmental conditions)
+- **Equipment/materiel losses** — tracked in Equipment entity (`output/equipment/`)
+- **Weather conditions** — tracked in Weather entity and linked to events
+- **Infrastructure damage** — not a personnel casualty
 
 ## Examples
 
-### Example 1: Specific Casualties with Named Individuals
+### Named Individual Killed
 
 ```json
 {
   "CasualtyID": "01JBQR8X9K2M3N4P5Q6R7S8T9V",
   "type": "killed",
   "description": "Company commander killed during assault on German positions",
+  "side": "allied",
   "count": {
-    "killed": 1,
-    "total": 1
+    "killed": {"value": 1, "qualifier": "exact"},
+    "total": {"value": 1, "qualifier": "exact"}
   },
   "date": {
     "DateID": "01JBQR8X9K2M3N4P5Q6R7S8T9W",
@@ -166,18 +167,19 @@ Casualties are extracted during Phase 2 and linked to:
 }
 ```
 
-### Example 2: Mass Casualties (Generic)
+### Mass Casualties (Unit-Level)
 
 ```json
 {
   "CasualtyID": "01JBQR8X9K2M3N4P5Q6R7S8TB1",
   "type": "casualties",
   "description": "Heavy casualties sustained during beach landing operations",
+  "side": "allied",
   "count": {
-    "killed": 150,
-    "wounded": 450,
-    "missing": 20,
-    "total": 620
+    "killed": {"value": 150, "qualifier": "approximately"},
+    "wounded": {"value": 450, "qualifier": "approximately"},
+    "missing": {"value": 20, "qualifier": "exact"},
+    "total": {"value": 620, "qualifier": "approximately"}
   },
   "date": {
     "DateID": "01JBQR8X9K2M3N4P5Q6R7S8TB2",
@@ -202,9 +204,6 @@ Casualties are extracted during Phase 2 and linked to:
       "name": "Omaha Beach"
     }
   ],
-  "weather_conditions": {
-    "WeatherID": "01JBQR8X9K2M3N4P5Q6R7S8TB6"
-  },
   "source": {
     "book": "Cross-Channel Attack",
     "chapter": "chapter-6",
@@ -213,16 +212,17 @@ Casualties are extracted during Phase 2 and linked to:
 }
 ```
 
-### Example 3: Prisoners of War
+### Prisoners of War
 
 ```json
 {
   "CasualtyID": "01JBQR8X9K2M3N4P5Q6R7S8TC1",
   "type": "pow",
   "description": "German prisoners captured during counterattack",
+  "side": "axis",
   "count": {
-    "captured": 230,
-    "total": 230
+    "captured": {"value": 230, "qualifier": "exact"},
+    "total": {"value": 230, "qualifier": "exact"}
   },
   "date": {
     "DateID": "01JBQR8X9K2M3N4P5Q6R7S8TC2",
@@ -261,61 +261,11 @@ Casualties are extracted during Phase 2 and linked to:
 }
 ```
 
-### Example 4: Equipment Losses with Casualties
-
-```json
-{
-  "CasualtyID": "01JBQR8X9K2M3N4P5Q6R7S8TD1",
-  "type": "casualties",
-  "description": "Tank crews lost during armored engagement",
-  "count": {
-    "killed": 15,
-    "wounded": 8,
-    "total": 23
-  },
-  "date": {
-    "DateID": "01JBQR8X9K2M3N4P5Q6R7S8TD2",
-    "date_string": "10 June 1944",
-    "precision": "day"
-  },
-  "event_context": {
-    "EventID": "01JBQR8X9K2M3N4P5Q6R7S8TD3",
-    "Sub-eventID": "01JBQR8X9K2M3N4P5Q6R7S8TD4"
-  },
-  "impacted_organizations": [
-    {
-      "PeopleGroupID": "01JBQR8X9K2M3N4P5Q6R7S8TD5",
-      "name": "2nd Armored Division",
-      "nationality": "USA",
-      "role": "attacking_force"
-    }
-  ],
-  "impacted_equipment": [
-    {
-      "EquipmentID": "01JBQR8X9K2M3N4P5Q6R7S8TD6",
-      "common_name": "M4 Sherman",
-      "count_lost": 5
-    }
-  ],
-  "impacted_places": [
-    {
-      "PlaceID": "01JBQR8X9K2M3N4P5Q6R7S8TD7",
-      "name": "Caumont"
-    }
-  ],
-  "source": {
-    "book": "Cross-Channel Attack",
-    "chapter": "chapter-7",
-    "paragraph_number": 56
-  }
-}
-```
-
 ## Notes
 
-- Use ISO 3166-1 alpha-3 codes for nationality in impacted_organizations (consistent with existing schemas)
-- All impacted_* arrays are optional - only include when explicitly mentioned
-- count fields are all optional - use only when specific numbers are provided
-- Generic "casualties" type used when specific breakdown (killed/wounded) not specified
-- Equipment losses (count_lost) tracked when mentioned alongside personnel casualties
-- **POW entries must include both organizations**: one with role "captured" and one with role "captor"
+- Use ISO 3166-1 alpha-3 codes for nationality (USA, GBR, DEU, FRA, CAN, etc.)
+- All `impacted_*` arrays are optional — only include when explicitly mentioned
+- `count` fields are all optional — use only when specific numbers are provided
+- Generic `casualties` type used when specific breakdown (killed/wounded) not specified
+- `side` reflects who suffered the casualties, not who inflicted them
+- POW entries must include both `captured` and `captor` organizations

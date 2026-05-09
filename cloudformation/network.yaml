@@ -76,31 +76,13 @@ Resources:
       SubnetId: !Ref PublicSubnet1
       RouteTableId: !Ref PublicRouteTable
 
-  NatEIP:
-    Type: AWS::EC2::EIP
-    Properties:
-      Domain: vpc
-
-  NatGateway:
-    Type: AWS::EC2::NatGateway
-    Properties:
-      AllocationId: !GetAtt NatEIP.AllocationId
-      SubnetId: !Ref PublicSubnet1
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName}-nat
-
   PrivateRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref VPC
-
-  PrivateRoute:
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref PrivateRouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref NatGateway
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-private-rt
 
   PrivateSubnet1RTA:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -146,6 +128,16 @@ Resources:
       SecurityGroupEgress:
         - IpProtocol: -1
           CidrIp: 0.0.0.0/0
+
+  OpenSerpSGSelfIngress443:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref OpenSerpSG
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      SourceSecurityGroupId: !Ref OpenSerpSG
+      Description: Allow VPC endpoint access for ECR image pull
 
   AlbSG:
     Type: AWS::EC2::SecurityGroup
@@ -195,6 +187,50 @@ Resources:
         - !Ref LambdaSG
       PrivateDnsEnabled: true
 
+  # SSM Parameters for dynamic networking stack
+  SSMVpcId:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${EnvironmentName}-wwii-pipeline/VpcId
+      Type: String
+      Value: !Ref VPC
+  SSMPublicSubnet1:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${EnvironmentName}-wwii-pipeline/PublicSubnet1Id
+      Type: String
+      Value: !Ref PublicSubnet1
+  SSMPrivateSubnet1:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${EnvironmentName}-wwii-pipeline/PrivateSubnet1Id
+      Type: String
+      Value: !Ref PrivateSubnet1
+  SSMPrivateSubnet2:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${EnvironmentName}-wwii-pipeline/PrivateSubnet2Id
+      Type: String
+      Value: !Ref PrivateSubnet2
+  SSMPrivateRouteTable:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${EnvironmentName}-wwii-pipeline/PrivateRouteTableId
+      Type: String
+      Value: !Ref PrivateRouteTable
+  SSMLambdaSG:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${EnvironmentName}-wwii-pipeline/LambdaSGId
+      Type: String
+      Value: !Ref LambdaSG
+  SSMAlbSG:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${EnvironmentName}-wwii-pipeline/AlbSGId
+      Type: String
+      Value: !Ref AlbSG
+
 Outputs:
   VpcId:
     Value: !Ref VPC
@@ -210,7 +246,5 @@ Outputs:
     Value: !Ref OpenSerpSG
   AlbSGId:
     Value: !Ref AlbSG
-  NatGatewayId:
-    Value: !Ref NatGateway
   PrivateRouteTableId:
     Value: !Ref PrivateRouteTable

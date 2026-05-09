@@ -237,7 +237,9 @@ class GrokClient:
         rate = self._cache_hits / total * 100
         logger.info(
             "Cache stats: %d hits, %d misses, %.1f%% hit rate",
-            self._cache_hits, self._cache_misses, rate,
+            self._cache_hits,
+            self._cache_misses,
+            rate,
         )
 
     def _make_cache_key(self, prompt: str, temperature: float) -> str:
@@ -1168,7 +1170,7 @@ class GrokClient:
             error_msg = str(e)
 
             # Handle short responses (auto-clear cache)
-            if len(response) < 500:
+            if len(response) < 500 and not _retried:
                 self._handle_short_response_error(
                     response, error_msg, cache_type, prompt, temperature
                 )
