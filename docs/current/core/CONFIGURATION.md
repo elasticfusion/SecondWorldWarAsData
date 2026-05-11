@@ -1,7 +1,7 @@
 # Configuration Guide
 
 **File:** `config.yaml`  
-**Last Updated:** 2026-05-04
+**Last Updated:** 2026-05-11
 
 Complete reference for all configuration options in the WWII data extraction pipeline.
 
