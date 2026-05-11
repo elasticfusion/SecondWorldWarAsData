@@ -139,22 +139,6 @@ Resources:
       SourceSecurityGroupId: !Ref OpenSerpSG
       Description: Allow VPC endpoint access for ECR image pull
 
-  AlbSG:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Internal ALB for OpenSERP
-      VpcId: !Ref VPC
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 7001
-          ToPort: 7001
-          SourceSecurityGroupId: !Ref LambdaSG
-      SecurityGroupEgress:
-        - IpProtocol: tcp
-          FromPort: 7001
-          ToPort: 7001
-          DestinationSecurityGroupId: !Ref OpenSerpSG
-
   # VPC Endpoints (avoid NAT for AWS services)
   S3Endpoint:
     Type: AWS::EC2::VPCEndpoint
@@ -224,12 +208,6 @@ Resources:
       Name: !Sub /${EnvironmentName}-wwii-pipeline/LambdaSGId
       Type: String
       Value: !Ref LambdaSG
-  SSMAlbSG:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub /${EnvironmentName}-wwii-pipeline/AlbSGId
-      Type: String
-      Value: !Ref AlbSG
 
 Outputs:
   VpcId:
@@ -244,7 +222,5 @@ Outputs:
     Value: !Ref LambdaSG
   OpenSerpSGId:
     Value: !Ref OpenSerpSG
-  AlbSGId:
-    Value: !Ref AlbSG
   PrivateRouteTableId:
     Value: !Ref PrivateRouteTable

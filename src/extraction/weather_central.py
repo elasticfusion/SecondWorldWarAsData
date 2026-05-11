@@ -245,6 +245,7 @@ def _create_api_data_dict(api_response: dict) -> dict:
     daily_data = api_response.get("daily", {})
     return {
         "provider": "open-meteo",
+        "data_type": "reanalysis",
         "retrieved_at": datetime.utcnow().isoformat() + "Z",
         "temperature_max_c": daily_data.get("temperature_2m_max", [None])[0],
         "temperature_min_c": daily_data.get("temperature_2m_min", [None])[0],

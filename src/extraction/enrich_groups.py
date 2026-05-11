@@ -5,7 +5,7 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-from src.grok_client import GrokClient
+from src.grok_client import BatchModeCollecting, GrokClient
 
 
 def _today():
@@ -130,6 +130,8 @@ def enrich_group(group_file: Path, grok_client: GrokClient) -> bool:
             use_cache=True,
             cache_type="group_enrichment",
         )
+    except BatchModeCollecting:
+        return False
     except Exception as e:
         logger.warning("Failed to enrich %s: %s", name, e)
         data["enrichment_status"] = "not_found"
