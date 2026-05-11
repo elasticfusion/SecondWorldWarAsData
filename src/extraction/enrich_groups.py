@@ -14,6 +14,24 @@ def _today():
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 
+def _should_re_search(data: dict) -> bool:
+    """Check if a not_found entity should be re-searched based on age."""
+    from datetime import datetime
+
+    from src.utils.config import load_config
+
+    days = load_config().get("enrichment", {}).get("re_search_after_days", 90)
+    last_search = data.get("last_enrichment_search")
+    if not last_search:
+        return True
+    try:
+        return (
+            datetime.now() - datetime.strptime(last_search, "%Y-%m-%d")
+        ).days >= days
+    except (ValueError, TypeError):
+        return True
+
+
 from src.utils.file_lock import write_json_with_lock
 
 logger = logging.getLogger(__name__)
@@ -119,8 +137,10 @@ def enrich_group(group_file: Path, grok_client: GrokClient) -> bool:
         return False
 
     if data.get("enrichment_status") == "not_found":
-        logger.debug("Previously searched, not found: %s", name)
-        return False
+        if not _should_re_search(data):
+            logger.debug("Previously searched, not found: %s", name)
+            return False
+        logger.info("Re-searching (stale not_found): %s", name)
 
     logger.info("Enriching: %s", name)
 

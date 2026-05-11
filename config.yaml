@@ -83,6 +83,17 @@ concurrency:
   max_extraction_group: 3         # Max parallel extractions per group
   max_enrichment_workers: 6       # Phase 3: concurrent enrichment threads per entity type
 
+# Enrichment
+enrichment:
+  re_search_after_days: 90         # Re-search not_found entities after this many days
+
+# OpenSERP
+openserp:
+  results_per_query: 20            # Max results returned per search query
+  max_images_per_entity: 1         # Max images to keep per person/equipment
+  max_web_results_per_entity: 5    # Max web results (awards, bio links) per entity
+  rate_limit_seconds: 5            # Delay between searches to avoid blocking
+
 # Maps Extraction
 maps:
   enabled: true                    # Enable maps extraction

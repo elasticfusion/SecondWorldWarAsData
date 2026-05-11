@@ -72,7 +72,8 @@ Download digitized sources, OCR, feed back through pipeline. Spec: `docs/current
 ### UK National Archives (Discovery API)
 British military records integration.
 
-### Windows PowerShell scripts
+### ~~Windows PowerShell scripts~~
+**Status:** Won't Do
 
 ### Move find_duplicates scoring to src/dedup/scoring.py
 
