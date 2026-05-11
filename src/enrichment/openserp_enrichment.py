@@ -40,20 +40,21 @@ def _openserp_reachable(openserp_url: str) -> bool:
         return False
 
 
-def _search_openserp(
-    query: str, openserp_url: str
-) -> List[Dict]:
+def _search_openserp(query: str, openserp_url: str) -> List[Dict]:
     """Run an OpenSERP search. Returns list of {url, title, description}."""
     try:
         import time
 
-        time.sleep(5)  # Rate limit: 1 search per 5 seconds to avoid blocking
+        from src.utils.config import load_config
+
+        cfg = load_config().get("openserp", {})
+        time.sleep(cfg.get("rate_limit_seconds", 5))
         session = get_session()
         resp = session.get(
             f"{openserp_url}/mega/search",
             params={
                 "text": query,
-                "limit": "10",
+                "limit": str(cfg.get("results_per_query", 20)),
                 "mode": "any",
                 "engines": "google,bing,duckduckgo",
             },
@@ -317,6 +318,34 @@ def search_event_content(
 # --- Batch Enrichment ---
 
 
+def _verify_and_apply(
+    candidate: Dict, data: Dict, name: str, grok_client: Any, max_images: int, max_web: int
+) -> bool:
+    """Verify OpenSERP results with Grok and apply to entity data."""
+    changed = False
+    for r in candidate.get("image_results", []):
+        url = r.get("url", "")
+        title = r.get("title", "")
+        if url and _verify_result(title, f"Photo of {name} WWII", grok_client):
+            data.setdefault("images", []).append(
+                {"url": url, "title": title, "source": "openserp"}
+            )
+            changed = True
+            if len(data.get("images", [])) >= max_images:
+                break
+    for r in candidate.get("web_results", []):
+        url = r.get("url", "")
+        title = r.get("title", "")
+        if url and _verify_result(title, f"Military service of {name} in WWII", grok_client):
+            data.setdefault("military_awards", []).append(
+                {"url": url, "title": title, "source": "openserp"}
+            )
+            changed = True
+            if len(data.get("military_awards", [])) >= max_web:
+                break
+    return changed
+
+
 def enrich_people_with_openserp(
     people_dir: Path,
     openserp_url: str,
@@ -375,36 +404,17 @@ def enrich_people_with_openserp(
     )
 
     # Pass 2: Verify and write
+    from src.utils.config import load_config
+
+    cfg = load_config().get("openserp", {})
+    max_images = cfg.get("max_images_per_entity", 1)
+    max_web = cfg.get("max_web_results_per_entity", 5)
+
     enriched = 0
     for c in candidates:
         data = c["data"]
         name = c["name"]
-        changed = False
-
-        # Verify image results
-        for r in c.get("image_results", []):
-            url = r.get("url", "")
-            title = r.get("title", "")
-            if url and _verify_result(title, f"Photo of {name} WWII", grok_client):
-                data.setdefault("images", []).append(
-                    {"url": url, "title": title, "source": "openserp"}
-                )
-                changed = True
-                break  # One image is enough
-
-        # Verify web results
-        for r in c.get("web_results", []):
-            url = r.get("url", "")
-            title = r.get("title", "")
-            if url and _verify_result(
-                title, f"Military service of {name} in WWII", grok_client
-            ):
-                data.setdefault("military_awards", []).append(
-                    {"url": url, "title": title, "source": "openserp"}
-                )
-                changed = True
-                if len(data.get("military_awards", [])) >= 5:
-                    break
+        changed = _verify_and_apply(c, data, name, grok_client, max_images, max_web)
 
         data["openserp_searched"] = True
         inject_metadata(data)
