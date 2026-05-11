@@ -200,7 +200,7 @@ python3 phase3_enrich_data.py --batch
 - Enriches places with additional geographic and historical context
 - Enriches bibliography with full citation data and source verification
 - **Resolves bibliography sources** — routes by document type:
-  - Military records → Grok identifies NARA Record Group (RG 407, etc.) → NARA catalog API → LOC → OpenSERP for digitized copies (Fold3, HathiTrust, Archive.org)
+  - Military records → Grok identifies NARA Record Group (RG 407, etc.) → NARA catalog API → LOC → OpenSERP for digitized copies (HathiTrust, Archive.org, general web)
   - Books → Archive.org, Gutenberg, OpenSERP
   - Articles → LOC
   - All external search results cached (positive 30 days, negative 7 days) to prevent redundant API calls

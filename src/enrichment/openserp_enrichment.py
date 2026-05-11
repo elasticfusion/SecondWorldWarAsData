@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
+from src.schemas import inject_metadata
 from src.utils.http_pool import get_session
 
 logger = logging.getLogger(__name__)
@@ -40,29 +41,57 @@ def _openserp_reachable(openserp_url: str) -> bool:
 
 
 def _search_openserp(
-    query: str, openserp_url: str, engines: Optional[List[str]] = None
+    query: str, openserp_url: str
 ) -> List[Dict]:
     """Run an OpenSERP search. Returns list of {url, title, description}."""
     try:
+        import time
+
+        time.sleep(5)  # Rate limit: 1 search per 5 seconds to avoid blocking
         session = get_session()
-        resp = session.post(
-            f"{openserp_url}/search",
-            json={"query": query, "engines": engines or ["google"]},
+        resp = session.get(
+            f"{openserp_url}/mega/search",
+            params={
+                "text": query,
+                "limit": "10",
+                "mode": "any",
+                "engines": "google,bing,duckduckgo",
+            },
             timeout=30,
         )
         if resp.status_code == 200:
-            return resp.json().get("results", [])
+            data = resp.json()
+            results = data.get("results", [])
+            logger.info("OpenSERP [%s]: %d results", query[:60], len(results))
+            return [
+                {
+                    "url": r.get("url", ""),
+                    "title": r.get("title", ""),
+                    "description": r.get("snippet", ""),
+                }
+                for r in results
+            ]
+        logger.warning("OpenSERP [%s]: HTTP %d", query[:60], resp.status_code)
     except Exception as e:
-        logger.debug("OpenSERP search failed: %s", e)
+        logger.warning("OpenSERP [%s]: %s", query[:60], e)
     return []
 
 
 def _verify_result(
     candidate_title: str, expected_context: str, grok_client: Any
 ) -> bool:
-    """Use Grok to verify a search result is relevant."""
+    """Use Grok to verify a search result is relevant (cached, batch-friendly)."""
     if not grok_client:
         return True
+    from src.utils.search_cache import cache_result, get_cached
+
+    cache_key = f"{expected_context[:50]}|{candidate_title[:50]}"
+    cached = get_cached("openserp_verify", cache_key)
+    if cached == "YES":
+        return True
+    if cached == "NO" or cached == "NOT_FOUND":
+        return False
+
     try:
         response = grok_client.chat_completion(
             prompt=f'Is this search result relevant?\nContext: "{expected_context[:200]}"\nResult: "{candidate_title[:200]}"\nReturn ONLY "YES" or "NO".',
@@ -71,7 +100,15 @@ def _verify_result(
             use_cache=True,
             cache_type="openserp_verify",
         )
-        return response.strip().upper().startswith("YES")
+        answer = "YES" if response.strip().upper().startswith("YES") else "NO"
+        cache_result("openserp_verify", cache_key, answer)
+        logger.info(
+            "Grok verify [%s]: %s — '%s'",
+            answer,
+            expected_context[:40],
+            candidate_title[:50],
+        )
+        return answer == "YES"
     except Exception:
         return True
 
@@ -178,7 +215,61 @@ def _classify_source(url: str, title: str) -> str:
         return "academic"
     if "archive" in url_lower or "museum" in url_lower:
         return "archive"
+    if any(
+        s in url_lower for s in ("valor.militarytimes", "homeofheroes", "cmohs.org")
+    ):
+        return "military_award"
     return "other"
+
+
+_AWARD_SITES = {
+    "valor.militarytimes.com",
+    "homeofheroes.com",
+    "themedalofhonor.com",
+    "cmohs.org",
+    "militaryhallofhonor.com",
+}
+
+
+def search_military_awards(
+    person_name: str,
+    openserp_url: str,
+    grok_client: Any = None,
+) -> List[Dict[str, str]]:
+    """Search the web for military award citations and biographical data."""
+    from src.utils.search_cache import cache_result, get_cached
+
+    cached = get_cached("openserp_awards", person_name)
+    if cached == "NOT_FOUND":
+        return []
+    if cached:
+        import json as _json
+
+        return _json.loads(cached)
+
+    results = _search_openserp(f'"{person_name}" WWII', openserp_url)
+    awards = []
+    seen = set()
+    for r in results:
+        url = r.get("url", "")
+        title = r.get("title", "")
+        if not url or url in seen:
+            continue
+        if _verify_result(
+            title, f"Military service of {person_name} in WWII", grok_client
+        ):
+            awards.append({"url": url, "title": title, "source": "openserp"})
+            seen.add(url)
+            if len(awards) >= 5:
+                break
+
+    if awards:
+        import json as _json
+
+        cache_result("openserp_awards", person_name, _json.dumps(awards))
+    else:
+        cache_result("openserp_awards", person_name, None)
+    return awards
 
 
 # --- Event Content Search ---
@@ -232,17 +323,23 @@ def enrich_people_with_openserp(
     grok_client: Any = None,
     max_items: Optional[int] = None,
 ) -> int:
-    """Add images and academic sources to people files. Returns count enriched."""
-    # Verify OpenSERP is reachable before processing
+    """Add images and academic sources to people files. Returns count enriched.
+
+    Two-pass approach:
+    1. Search OpenSERP for all people, collect candidate results
+    2. Verify candidates with Grok (cached — repeat runs are free)
+    3. Write verified results to files
+    """
     if not _openserp_reachable(openserp_url):
         logger.warning("OpenSERP not reachable at %s — skipping", openserp_url)
         return 0
 
-    enriched = 0
+    # Pass 1: Collect candidates from OpenSERP
+    candidates: List[Dict] = []
     for f in sorted(people_dir.glob("*.json")):
         if f.name in SKIP_FILES:
             continue
-        if max_items and enriched >= max_items:
+        if max_items and len(candidates) >= max_items:
             break
         try:
             data = json.loads(f.read_text(encoding="utf-8"))
@@ -256,24 +353,64 @@ def enrich_people_with_openserp(
         if not name:
             continue
 
+        person_candidates: Dict = {"file": f, "name": name, "data": data}
+
+        # Search for images
+        if not data.get("images"):
+            person_candidates["image_results"] = _search_openserp(
+                f'"{name}" WWII portrait photo', openserp_url
+            )
+
+        # Search for web results (awards, bio, academic)
+        if not data.get("military_awards"):
+            person_candidates["web_results"] = _search_openserp(
+                f'"{name}" WWII', openserp_url
+            )
+
+        candidates.append(person_candidates)
+
+    logger.info(
+        "OpenSERP people: %d candidates collected, verifying with Grok...",
+        len(candidates),
+    )
+
+    # Pass 2: Verify and write
+    enriched = 0
+    for c in candidates:
+        data = c["data"]
+        name = c["name"]
         changed = False
 
-        # Images
-        if not data.get("images"):
-            images = search_person_images(name, openserp_url, grok_client)
-            if images:
-                data["images"] = images
+        # Verify image results
+        for r in c.get("image_results", []):
+            url = r.get("url", "")
+            title = r.get("title", "")
+            if url and _verify_result(title, f"Photo of {name} WWII", grok_client):
+                data.setdefault("images", []).append(
+                    {"url": url, "title": title, "source": "openserp"}
+                )
                 changed = True
+                break  # One image is enough
 
-        # Academic/media sources
-        if not data.get("academic_references"):
-            refs = search_academic_sources(name, openserp_url, grok_client)
-            if refs:
-                data["academic_references"] = refs
+        # Verify web results
+        for r in c.get("web_results", []):
+            url = r.get("url", "")
+            title = r.get("title", "")
+            if url and _verify_result(
+                title, f"Military service of {name} in WWII", grok_client
+            ):
+                data.setdefault("military_awards", []).append(
+                    {"url": url, "title": title, "source": "openserp"}
+                )
                 changed = True
+                if len(data.get("military_awards", [])) >= 5:
+                    break
 
         data["openserp_searched"] = True
-        f.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+        inject_metadata(data)
+        c["file"].write_text(
+            json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
         if changed:
             enriched += 1
             logger.info("  ✓ OpenSERP enriched: %s", name)
@@ -319,6 +456,7 @@ def enrich_equipment_with_openserp(
                 logger.info("  ✓ OpenSERP enriched: %s", name)
 
         data["openserp_searched"] = True
+        inject_metadata(data)
         f.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
 
     logger.info("OpenSERP equipment enrichment: %d enriched", enriched)

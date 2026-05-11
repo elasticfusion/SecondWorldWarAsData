@@ -16,6 +16,7 @@ import argparse
 import json
 import logging
 from pathlib import Path
+from typing import Optional
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)
@@ -41,7 +42,7 @@ def cleanup_index(entity_dir: Path, name_field: str, dry_run: bool) -> dict:
     removed_missing = 0
 
     # Build filename → actual name mapping
-    file_names: dict[str, str] = {}
+    file_names: dict[str, Optional[str]] = {}
     for filename in set(index.values()):
         f = entity_dir / filename
         if f.exists():

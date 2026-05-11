@@ -86,7 +86,11 @@ Resources:
                   - ecs:DescribeTasks
                   - ecs:RunTask
                   - ecs:StopTask
-                Resource: '*'
+                Resource:
+                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:service/${EnvironmentName}-wwii-*
+                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task/${EnvironmentName}-wwii-*
+                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${EnvironmentName}-wwii-*
+                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${EnvironmentName}-wwii-*
               - Sid: PassRole
                 Effect: Allow
                 Action:
@@ -117,24 +121,14 @@ Resources:
                   - ec2:DeleteVpcEndpoints
                   - ec2:DescribeVpcEndpoints
                 Resource: '*'
-              - Sid: ELBManagement
-                Effect: Allow
-                Action:
-                  - elasticloadbalancing:CreateLoadBalancer
-                  - elasticloadbalancing:DeleteLoadBalancer
-                  - elasticloadbalancing:DescribeLoadBalancers
-                  - elasticloadbalancing:CreateTargetGroup
-                  - elasticloadbalancing:DeleteTargetGroup
-                  - elasticloadbalancing:DescribeTargetGroups
-                  - elasticloadbalancing:CreateListener
-                  - elasticloadbalancing:DeleteListener
-                  - elasticloadbalancing:DescribeListeners
-                Resource: '*'
               - Sid: LambdaInvoke
                 Effect: Allow
                 Action:
                   - lambda:InvokeFunction
-                Resource: '*'
+                  - lambda:PutFunctionConcurrency
+                  - lambda:DeleteFunctionConcurrency
+                Resource:
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentName}-wwii-*
               - Sid: CloudFormationManagement
                 Effect: Allow
                 Action:
@@ -149,7 +143,7 @@ Resources:
                   - ssm:GetParameter
                   - ssm:PutParameter
                 Resource:
-                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/wwii-pipeline/*
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${EnvironmentName}-wwii-pipeline/*
 
   ECSTaskRole:
     Type: AWS::IAM::Role
@@ -172,7 +166,8 @@ Resources:
                 Action:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                Resource: '*'
+                Resource:
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/ecs/${EnvironmentName}-wwii-*
               - Sid: S3Access
                 Effect: Allow
                 Action:
@@ -214,8 +209,15 @@ Resources:
                   - ecs:UpdateService
                   - ecs:ListTasks
                   - ecs:DescribeTasks
-                  - lambda:InvokeFunction
                 Resource: '*'
+              - Sid: LambdaManagement
+                Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                  - lambda:PutFunctionConcurrency
+                  - lambda:DeleteFunctionConcurrency
+                Resource:
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentName}-wwii-*
 
   ECSTaskExecutionRole:
     Type: AWS::IAM::Role

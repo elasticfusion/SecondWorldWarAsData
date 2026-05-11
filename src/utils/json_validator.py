@@ -186,6 +186,9 @@ def validate_and_write_json(
     if use_lock:
         write_json_with_lock(filepath, data)
     else:
+        from src.schemas import inject_metadata
+
+        inject_metadata(data)
         try:
             filepath.parent.mkdir(parents=True, exist_ok=True)
             with open(filepath, "w", encoding="utf-8") as f:

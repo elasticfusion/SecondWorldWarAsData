@@ -227,16 +227,21 @@ def _get_openserp_alb_dns() -> str:
         tasks = ecs.list_tasks(
             cluster=cluster, serviceName=f"{env}-wwii-openserp", desiredStatus="RUNNING"
         )
-        if not tasks.get("taskArns"):
+        task_arns = tasks.get("taskArns", [])
+        if not task_arns:
+            logger.warning("OpenSERP IP discovery: no running tasks found")
             return ""
-        resp = ecs.describe_tasks(cluster=cluster, tasks=tasks["taskArns"][:1])
+        resp = ecs.describe_tasks(cluster=cluster, tasks=task_arns[:1])
         for task in resp.get("tasks", []):
             for attachment in task.get("attachments", []):
                 for detail in attachment.get("details", []):
                     if detail.get("name") == "privateIPv4Address":
                         return detail["value"]
-    except Exception:
-        pass
+        logger.debug(
+            "OpenSERP IP discovery: task found but no privateIPv4Address in attachments"
+        )
+    except Exception as e:
+        logger.warning("OpenSERP IP discovery failed: %s", e)
     return ""
 
 
@@ -270,22 +275,29 @@ def _start_openserp_if_needed(phase_script: str) -> None:
             except Exception as e:
                 logger.warning("nat_manager invoke failed: %s", e)
 
+            ecs.update_service(cluster=cluster, service=service, desiredCount=1)
+            logger.info("Started OpenSERP service (scaling from 0 to 1)")
+        else:
+            # Service already desired=1 but not running — force new deployment
             ecs.update_service(
-                cluster=cluster, service=service, desiredCount=1, forceNewDeployment=True
+                cluster=cluster,
+                service=service,
+                desiredCount=1,
+                forceNewDeployment=True,
             )
-            logger.info("Started OpenSERP service (scaling to 1, forced new deployment)")
+            logger.info("Forced new OpenSERP deployment (was stuck)")
 
         # Wait for task to be running and get its IP
         import time
 
-        for _ in range(30):  # 5 min max
+        for _ in range(72):  # 12 min max
             ip = _get_openserp_alb_dns()
             if ip:
                 _patch_openserp_url(ip)
                 logger.info("OpenSERP running at %s:7001", ip)
                 return
             time.sleep(10)
-        logger.warning("OpenSERP service did not start in 5 min")
+        logger.warning("OpenSERP service did not start in 12 min")
     except Exception as e:
         logger.warning("Failed to start OpenSERP: %s", e)
 
@@ -315,6 +327,10 @@ def run_phase(phase_script: str, extra_args: list) -> None:
 
     _download_inputs(phase_script)
     _setup_symlinks()
+
+    if "phase3" in phase_script:
+        _stamp_schema_versions()
+        _reset_openserp_searched()
 
     sync = BackgroundSync(SYNC_INTERVAL)
     if "phase2" in phase_script or "phase3" in phase_script:
@@ -697,10 +713,12 @@ def _final_sync(phase_script: str = ""):
         ]
         total = 0
         all_uploaded = []
+        # Phase 3 modifies existing files — don't skip any
+        skip = _downloaded_keys if "phase2" in phase_script else set()
         for subdir in entity_dirs:
             d = WORKDIR / "output" / subdir
             if d.exists():
-                n, keys = s3_sync_up(d, f"output/{subdir}", skip_keys=_downloaded_keys)
+                n, keys = s3_sync_up(d, f"output/{subdir}", skip_keys=skip)
                 total += n
                 all_uploaded.extend(keys)
         logger.info("Final sync: uploaded %d entity files", total)
@@ -726,6 +744,129 @@ PHASE_SUFFIXES = {
     "import_to_dynamodb.py": "import",
 }
 
+
+def _reset_openserp_searched() -> None:
+    """Reset openserp_searched on files that were searched but got no results."""
+    output = Path("/app/output")
+    skip = {"index.json", "duplicate_report.json", "not_duplicates.json"}
+    reset = 0
+    for d in [output / "people", output / "equipment"]:
+        if not d.exists():
+            continue
+        for f in d.glob("*.json"):
+            if f.name in skip:
+                continue
+            try:
+                data = json.loads(f.read_text(encoding="utf-8"))
+                if (
+                    data.get("openserp_searched")
+                    and not data.get("images")
+                    and not data.get("military_awards")
+                ):
+                    del data["openserp_searched"]
+                    f.write_text(
+                        json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
+                    )
+                    reset += 1
+            except Exception:
+                continue
+    if reset:
+        logger.info(
+            "Reset openserp_searched on %d files (no results from previous run)", reset
+        )
+
+
+def _stamp_schema_versions() -> None:
+    """Stamp _schema_version on all output files that need migration."""
+    from src.schemas import SCHEMA_VERSION, inject_metadata, needs_migration
+
+    # Quick check: if first file already has current version, skip entirely
+    output = Path("/app/output")
+    sample = next((output / "weather").glob("*.json"), None)
+    if sample and sample.name != "index.json":
+        try:
+            if not needs_migration(json.loads(sample.read_text(encoding="utf-8"))):
+                logger.info(
+                    "Schema migration: already at v%s, skipping", SCHEMA_VERSION
+                )
+                return
+        except Exception:
+            pass
+
+    env = os.environ.get("ENV_NAME", "dev")
+    trigger_fn = f"{env}-wwii-trigger"
+    lam = boto3.client("lambda", region_name=REGION)
+
+    # Disable trigger Lambda during stamping
+    try:
+        lam.put_function_concurrency(
+            FunctionName=trigger_fn, ReservedConcurrentExecutions=0
+        )
+        logger.info("Disabled trigger Lambda for schema migration")
+    except Exception as e:
+        logger.warning("Could not disable trigger Lambda: %s", e)
+
+    output = Path("/app/output")
+    dirs = [
+        "weather",
+        "people",
+        "people_groups",
+        "places",
+        "equipment",
+        "dates",
+        "casualties",
+        "logistics",
+        "maps",
+        "bibliography",
+    ]
+    skip = {
+        "index.json",
+        "duplicate_report.json",
+        "not_duplicates.json",
+        "not_related.json",
+        "review_queue.json",
+        ".processed_events.json",
+    }
+    updated = 0
+    for d in dirs:
+        p = output / d
+        if not p.exists():
+            continue
+        for f in p.glob("*.json"):
+            if f.name in skip:
+                continue
+            try:
+                data = json.loads(f.read_text(encoding="utf-8"))
+                if needs_migration(data):
+                    inject_metadata(data)
+                    f.write_text(
+                        json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
+                    )
+                    updated += 1
+            except Exception:
+                continue
+    # Event files
+    content = output / "content"
+    if content.exists():
+        for f in content.rglob("*-event.json"):
+            try:
+                data = json.loads(f.read_text(encoding="utf-8"))
+                if needs_migration(data):
+                    inject_metadata(data)
+                    f.write_text(
+                        json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
+                    )
+                    updated += 1
+            except Exception:
+                continue
+    logger.info("Schema migration: stamped %d files to v%s", updated, SCHEMA_VERSION)
+
+    # Re-enable trigger Lambda
+    try:
+        lam.delete_function_concurrency(FunctionName=trigger_fn)
+        logger.info("Re-enabled trigger Lambda")
+    except Exception as e:
+        logger.warning("Could not re-enable trigger Lambda: %s", e)
 
 
 def _stop_openserp_if_running(phase_script: str) -> None:

@@ -8,6 +8,7 @@ by searching external sources and merging additional data.
 
 import argparse
 from pathlib import Path
+from typing import Optional
 
 from src.extraction.enrich_biographies import enrich_all_people
 from src.extraction.enrich_groups import enrich_all_groups
@@ -26,7 +27,7 @@ logger = logging.getLogger(__name__)
 def enrich_people_data(
     people_dir: Path,
     grok_client: GrokClient,
-    max_items: int = None,
+    max_items: Optional[int] = None,
     search_references: bool = True,
     max_workers: int = 6,
 ) -> int:
@@ -68,7 +69,7 @@ def enrich_people_data(
 def enrich_groups_data(
     groups_dir: Path,
     grok_client: GrokClient,
-    max_items: int = None,
+    max_items: Optional[int] = None,
     max_workers: int = 6,
 ) -> int:
     """Enrich people groups with external data."""
@@ -233,6 +234,17 @@ def main():
         total_enriched += enrich_equipment_with_openserp(
             args.output_dir / "equipment", openserp_url, grok_client, args.max_items
         )
+
+    # NOAA weather enrichment (observed data to supplement Open-Meteo)
+    noaa_token = config.get("api", {}).get("noaa_api_token", "")
+    if not args.people_only and noaa_token:
+        from src.enrichment.noaa_weather import enrich_weather_with_noaa
+
+        weather_dir = args.output_dir / "weather"
+        if weather_dir.exists():
+            total_enriched += enrich_weather_with_noaa(
+                weather_dir, noaa_token, args.max_items or 0
+            )
 
     logger.info("\n" + "=" * 80)
     logger.info(f"ENRICHMENT COMPLETE: {total_enriched} total items enriched")

@@ -95,9 +95,12 @@ def _apply_result(entry: Dict, result: Optional[Tuple]) -> None:
 
 def _resolve_archive(entry, citation, grok_client, config):
     """Resolve military/government records."""
-    return _resolve_archive_record(
-        entry, entry.get("verbatim_reference", ""), grok_client, config
-    )
+    verbatim = entry.get("verbatim_reference", "")
+    if not verbatim:
+        mentions = entry.get("mentions") or []
+        if mentions:
+            verbatim = mentions[0].get("verbatim_reference", "")
+    return _resolve_archive_record(entry, verbatim, grok_client, config)
 
 
 def _resolve_book(entry, citation, grok_client, config):
@@ -252,7 +255,7 @@ def _search_online_sources(
         if url:
             return (url, "nara_catalog")
 
-    # 2. OpenSERP for digitized copies (Fold3, HathiTrust, university sites)
+    # 2. OpenSERP for digitized copies (HathiTrust, university sites, etc.)
     if config.get("use_openserp"):
         openserp_url = config.get("openserp_url", "http://localhost:7001")
         current_ref = entry.get("archive_reference_number") or ""
@@ -267,12 +270,6 @@ def _search_online_sources(
     url = search_archive_org(title)
     if url:
         return (url, "archive_org")
-
-    # 4. LOC (last resort, skip for military documents)
-    if not _is_nara_searchable(entry, verbatim):
-        url = _search_loc(search_text[:100], grok_client, search_text)
-        if url:
-            return (url, "loc")
 
     return None
 
@@ -295,20 +292,28 @@ def _search_openserp_archive(ref: str, openserp_url: str) -> Optional[str]:
         return cached
 
     try:
+        import time
+
+        time.sleep(5)
         session = get_session()
-        resp = session.post(
-            f"{openserp_url}/search",
-            json={"query": f"{ref} NARA digitized", "engines": ["google"]},
+        resp = session.get(
+            f"{openserp_url}/mega/search",
+            params={
+                "text": f"{ref} digitized document",
+                "limit": "5",
+                "mode": "any",
+                "engines": "google,bing,duckduckgo",
+            },
             timeout=15,
         )
         if resp.status_code == 200:
-            results = resp.json().get("results", [])
-            trusted = {"fold3.com", "hathitrust.org", "archive.org", "loc.gov"}
+            data = resp.json()
+            results = data.get("results", [])
             for r in results:
                 url = r.get("url", "")
-                if any(site in url.lower() for site in trusted):
+                if url:
                     cache_result("openserp_archive", ref, url)
-                    logger.info("Found digitized copy: %s", url)
+                    logger.info("Found online copy: %s", url)
                     return url
     except Exception as e:
         logger.warning("OpenSERP unreachable, disabling for this run: %s", e)
@@ -368,8 +373,8 @@ def _search_nara(
         session = get_session()
         logger.debug("NARA query: %s", query[:100])
         resp = session.get(
-            "https://catalog.archives.gov/proxy/records/search",
-            params={"q": query, "limit": 5},
+            "https://catalog.archives.gov/api/v2/records/search",
+            params={"q": query, "limit": "5"},
             headers={"x-api-key": api_key, "Content-Type": "application/json"},
             timeout=30,
         )
@@ -459,7 +464,7 @@ def _search_loc(
         session = get_session()
         resp = session.get(
             "https://www.loc.gov/search/",
-            params={"q": query, "fo": "json", "c": 5},
+            params={"q": query, "fo": "json", "c": "5"},
             timeout=30,
         )
         if resp.status_code != 200:
@@ -556,6 +561,9 @@ def resolve_bibliography_dir(
 
         try:
             resolve_bibliography_entry(data, grok_client, config)
+            from src.schemas import inject_metadata
+
+            inject_metadata(data)
             f.write_text(
                 json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
             )

@@ -128,3 +128,21 @@ Create PowerShell equivalents for bash scripts to support Windows users. See `sc
 - ✅ Batch weather/logistics/casualties extraction (1 API call per chapter)
 - ✅ Supplemental split architecture (bibliography + factual content)
 - ✅ ULID fixing, JSON schema validation, output validation script
+
+### True batch submission for OpenSERP verification
+**Priority:** Low
+**Status:** Not Started
+
+OpenSERP verification calls (Grok YES/NO for each search result) currently run synchronously. Results are cached so repeat runs are free, but the first run still makes ~1,000 individual API calls. Redesign to: (1) collect all candidate results in Pass 1, (2) submit all verification prompts as a single Grok batch job, (3) poll for completion, (4) apply results in Pass 2. Requires decoupling search and verify steps, possibly across separate ECS task invocations.
+
+### Unmatched combinable people files
+**Priority:** Medium
+**Status:** Not Started
+
+Dedup scoring missed these obvious matches — likely because one entry uses a title/role instead of a name, or the name variants are too different for fuzzy matching:
+
+- `hitler.json` / `adolf hitler.json`
+- `dwight d. eisenhower.json` / `eisenhower.json` / `supreme commander.json` / `supreme commander allied expeditionary force.json` / `supreme commander, allied expeditionary force.json` / `supreme command.json` / `supreme allied commander.json`
+- `george patton.json` / `george s. patton, jr..json`
+
+Fix: either improve dedup scoring to match titles/roles to people, or add a manual merge pass for known high-profile individuals.
