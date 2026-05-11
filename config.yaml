@@ -30,6 +30,7 @@ api:
     timeout: 60
   calls_per_minute: 30            # Rate limit: max API calls per minute (across all threads)
   nara_api_key: "Ykj8FU63tq142iLVSqAhm71oXknm6O1hO4D5VkI5U"               # NARA catalog API key (https://www.archives.gov/research/catalog/help/api)
+  noaa_api_token: "pOtHxWRSeNIhMxCPqVZNpsvZrSdqYBBy"
 
 # Processing
 processing:
@@ -45,6 +46,7 @@ weather:
   cache_responses: true            # Cache API responses
   only_precise_dates: true         # Skip approximate dates
   timeout: 30                      # API timeout (seconds)
+
 
 # Equipment Extraction
 equipment:

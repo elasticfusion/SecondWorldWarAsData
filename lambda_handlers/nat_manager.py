@@ -30,6 +30,19 @@ def handler(event, _context):
     """Manage dynamic networking lifecycle."""
     import boto3
 
+    # Handle SNS trigger (pipeline completion → teardown)
+    if "Records" in event:
+        for record in event.get("Records", []):
+            if record.get("EventSource") == "aws:sns":
+                message = record.get("Sns", {}).get("Message", "")
+                if "completed successfully" in message:
+                    logger.info("Pipeline completion — tearing down networking")
+                    region = os.getenv("AWS_REGION", "us-east-1")
+                    ec2 = boto3.client("ec2", region_name=region)
+                    return _delete_all(ec2, region)
+                logger.info("Ignoring SNS (not completion): %s", message[:80])
+                return {"action": "none", "reason": "not a completion message"}
+
     action = event.get("action", "status")
     region = os.getenv("AWS_REGION", "us-east-1")
     ec2 = boto3.client("ec2", region_name=region)

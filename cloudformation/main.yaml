@@ -62,7 +62,6 @@ Resources:
         PublicSubnet1Id: !GetAtt NetworkStack.Outputs.PublicSubnet1Id
         LambdaSGId: !GetAtt NetworkStack.Outputs.LambdaSGId
         OpenSerpSGId: !GetAtt NetworkStack.Outputs.OpenSerpSGId
-        AlbSGId: !GetAtt NetworkStack.Outputs.AlbSGId
         LambdaExecutionRoleArn: !GetAtt IAMStack.Outputs.LambdaExecutionRoleArn
         ECSTaskRoleArn: !GetAtt IAMStack.Outputs.ECSTaskRoleArn
         ECSTaskExecutionRoleArn: !GetAtt IAMStack.Outputs.ECSTaskExecutionRoleArn

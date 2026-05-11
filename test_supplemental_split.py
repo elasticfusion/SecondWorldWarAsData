@@ -14,7 +14,7 @@ from src.grok_client import GrokClient
 from src.extraction.supplemental import extract_supplemental
 
 # Chapter 7b has known mixed content (factual + document references)
-EVENT_FILE = Path("output/BreakoutAndPursuit/chapter7b-event.json")
+EVENT_FILE = Path("output/content/BreakoutAndPursuit/chapter7b-event.json")
 OUTPUT_ROOT = Path("output")
 
 if not EVENT_FILE.exists():

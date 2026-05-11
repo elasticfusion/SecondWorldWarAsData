@@ -14,7 +14,7 @@ from typing import Any, Dict, Optional
 
 import requests
 
-from src.grok_client import GrokClient
+from src.grok_client import BatchModeCollecting, GrokClient
 
 logger = logging.getLogger(__name__)
 
@@ -241,6 +241,8 @@ Only include fields with actual data. Return empty object if no data found."""
 
             return None
 
+        except BatchModeCollecting:
+            raise
         except Exception as e:
             if attempt < max_retries - 1:
                 logger.debug(
@@ -479,6 +481,7 @@ def enrich_person_biography(
     search_references_flag: bool = True,
 ) -> bool:
     """Enrich person biography from external sources."""
+
     loaded = _load_person_for_enrichment(person_file)
     if not loaded:
         return False
@@ -486,9 +489,15 @@ def enrich_person_biography(
     person_data, person_name, bio_profile = loaded
     logger.info("Enriching: %s", person_name)
 
-    if not _run_enrichment_steps(
-        person_name, bio_profile, grok_client, search_references_flag
-    ):
+    try:
+        enriched = _run_enrichment_steps(
+            person_name, bio_profile, grok_client, search_references_flag
+        )
+    except BatchModeCollecting:
+        # Batch mode — request collected, don't mark as not_found
+        return False
+
+    if not enriched:
         logger.info("  No new data found")
         person_data["enrichment_status"] = "not_found"
         person_data["last_enrichment_search"] = datetime.now(timezone.utc).strftime(

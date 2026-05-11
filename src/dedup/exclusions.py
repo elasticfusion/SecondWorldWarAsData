@@ -117,13 +117,15 @@ class ExclusionStore:
 
     # --- Local JSON ---
 
-    def _local_path(self) -> Path:
+    def _local_path(self) -> Optional[Path]:
+        if not self.entity_dir:
+            return None
         filename = _LOCAL_FILES.get(self.entity_type, "not_duplicates.json")
         return self.entity_dir / filename
 
     def _load_local(self) -> Set[Tuple[str, str]]:
         path = self._local_path()
-        if not path.exists():
+        if not path or not path.exists():
             return set()
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
@@ -140,6 +142,8 @@ class ExclusionStore:
 
     def _add_local(self, file1: str, file2: str) -> None:
         path = self._local_path()
+        if not path:
+            return
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError, FileNotFoundError):

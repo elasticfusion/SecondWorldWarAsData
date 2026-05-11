@@ -17,8 +17,6 @@ Parameters:
     Type: String
   OpenSerpSGId:
     Type: String
-  AlbSGId:
-    Type: String
   LambdaExecutionRoleArn:
     Type: String
   ECSTaskRoleArn:
@@ -124,8 +122,8 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: !Sub ${EnvironmentName}-wwii-phase3-enrich
-      Cpu: '1024'
-      Memory: '2048'
+      Cpu: '512'
+      Memory: '1024'
       NetworkMode: awsvpc
       RequiresCompatibilities: [FARGATE]
       TaskRoleArn: !Ref ECSTaskRoleArn
@@ -418,7 +416,6 @@ Resources:
           VPC_ID: !Ref VpcId
           SECURITY_GROUP_ID: !Ref LambdaSGId
           OPENSERP_SG_ID: !Ref OpenSerpSGId
-          ALB_SG_ID: !Ref AlbSGId
           CACHE_TABLE: !Ref CacheTableName
           NOTIFICATION_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
 

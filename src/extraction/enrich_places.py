@@ -14,7 +14,7 @@ def _today():
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 
-from src.grok_client import GrokClient
+from src.grok_client import BatchModeCollecting, GrokClient
 from src.utils.file_lock import write_json_with_lock
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ def _search_wikipedia(name: str, timeout: int = 15) -> Optional[dict]:
     try:
         resp = requests.get(
             _WIKI_API,
-            params={
+            params={  # type: ignore[arg-type]
                 "action": "query",
                 "format": "json",
                 "titles": name,
@@ -70,7 +70,7 @@ def _search_wikipedia(name: str, timeout: int = 15) -> Optional[dict]:
         if resp.status_code != 200:
             return None
         pages = resp.json().get("query", {}).get("pages", {})
-        page = next(iter(pages.values()), {})
+        page: dict = next(iter(pages.values()), {})
         if page.get("missing") is not None:
             return None
         return _parse_wiki_page(page)
@@ -85,7 +85,7 @@ def _parse_wiki_page(page: dict) -> dict:
     cat_text = " ".join(cats)
     combined = f"{extract} {cat_text}"
 
-    result = {}
+    result: dict = {}
 
     # Detect continent
     for continent, keywords in _CONTINENT_KEYWORDS.items():
@@ -166,6 +166,8 @@ def _try_grok(name, grok_client):
             use_cache=True,
             cache_type="place_enrichment",
         )
+    except BatchModeCollecting:
+        raise
     except Exception as exc:
         logger.debug("Grok failed for %s: %s", name, exc)
         return None
@@ -188,7 +190,10 @@ def enrich_place(place_file: Path, grok_client: GrokClient) -> bool:
         return False
 
     logger.info("Enriching place: %s", name)
-    changed = _enrich_place_data(data, name, grok_client)
+    try:
+        changed = _enrich_place_data(data, name, grok_client)
+    except BatchModeCollecting:
+        return False
     data["enrichment_status"] = "enriched" if changed else "not_found"
     data["last_enrichment_search"] = _today()
     write_json_with_lock(place_file, data)
