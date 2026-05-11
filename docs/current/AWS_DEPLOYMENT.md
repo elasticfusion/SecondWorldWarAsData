@@ -2,7 +2,7 @@
 
 Deploy the WWII Data Extraction Pipeline on AWS using ECS Fargate, S3, and DynamoDB.
 
-**Last Updated:** 2026-05-04
+**Last Updated:** 2026-05-11
 
 ---
 
