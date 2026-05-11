@@ -30,7 +30,7 @@ class DiskCacheBackend:
     """diskcache-backed cache (current default). Wraps diskcache.Cache with the CacheBackend interface."""
 
     def __init__(self, cache_dir: Path):
-        from diskcache import Cache
+        from diskcache import Cache  # type: ignore[import-untyped]
 
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)

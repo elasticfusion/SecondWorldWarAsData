@@ -51,6 +51,21 @@ Resources:
       Protocol: email
       Endpoint: !Ref NotificationEmail
 
+  Phase2CompleteNatTeardownSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref Phase2CompleteTopic
+      Protocol: lambda
+      Endpoint: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentName}-wwii-nat-manager
+
+  NatManagerSNSInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-nat-manager
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref Phase2CompleteTopic
+
   # --- SNS Topic Policies (allow S3 to publish) ---
   ContentUploadedPolicy:
     Type: AWS::SNS::TopicPolicy

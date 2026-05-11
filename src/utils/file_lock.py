@@ -65,6 +65,9 @@ def locked_json(filepath: Path):
 
 def write_json_with_lock(filepath: Path, data: Dict[str, Any]) -> None:
     """Write JSON file with file locking for concurrent access."""
+    from src.schemas import inject_metadata
+
+    inject_metadata(data)
     filepath.parent.mkdir(parents=True, exist_ok=True)
 
     # Platform-specific locking
