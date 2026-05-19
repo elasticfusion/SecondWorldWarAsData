@@ -458,14 +458,6 @@ Resources:
                                       {"Name": "suffix", "Value": "-parsed.json"},
                                   ]}},
                               },
-                              {
-                                  "TopicArn": props["EntityCreatedTopicArn"],
-                                  "Events": ["s3:ObjectCreated:*"],
-                                  "Filter": {"Key": {"FilterRules": [
-                                      {"Name": "prefix", "Value": "output/content/"},
-                                      {"Name": "suffix", "Value": "-event.json"},
-                                  ]}},
-                              },
                           ],
                       },
                   )

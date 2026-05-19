@@ -166,6 +166,25 @@ def main():
         for err in results["errors"][:3]:
             print(f"    {err}")
 
+    # Cross-file Sub-eventID uniqueness check
+    print(f"\n{'='*70}")
+    print("Checking Sub-eventID uniqueness across event files...")
+    dupes = _check_subevent_uniqueness()
+    if dupes:
+        total_fail += dupes
+        print(f"✗ {dupes} duplicate IDs in event files")
+    else:
+        print("✓ All EventIDs and Sub-eventIDs are unique")
+
+    # Entity ID uniqueness check
+    print("\nChecking entity ID uniqueness...")
+    entity_dupes = _check_entity_id_uniqueness()
+    if entity_dupes:
+        total_fail += entity_dupes
+        print(f"✗ {entity_dupes} duplicate entity IDs found")
+    else:
+        print("✓ All entity IDs are unique")
+
     print(f"\n{'='*70}")
     print(
         f"Total: {total_pass} passed, {total_fail} failed, {total_migrate} need migration"
@@ -175,5 +194,134 @@ def main():
         sys.exit(1)
 
 
+def _check_subevent_uniqueness() -> int:
+    """Check that no EventID or Sub-eventID appears in multiple event files. Returns count of duplicates."""
+    from collections import defaultdict
+
+    eid_to_files = defaultdict(set)
+    seid_to_files = defaultdict(set)
+    within_file_dupes = 0
+    for ef in Path("output/content").rglob("*-event.json"):
+        if "notes" in ef.name:
+            continue
+        try:
+            data = json.loads(ef.read_text(encoding="utf-8"))
+            event = data.get("Event", data)
+            eid = event.get("EventID")
+            if eid:
+                eid_to_files[eid].add(str(ef))
+            seen_in_file = set()
+            for se in event.get("Sub-events", []):
+                sid = se.get("Sub-eventID")
+                if sid:
+                    if sid in seen_in_file:
+                        within_file_dupes += 1
+                    else:
+                        seen_in_file.add(sid)
+                    seid_to_files[sid].add(str(ef))
+        except Exception:
+            continue
+
+    eid_dupes = {k: v for k, v in eid_to_files.items() if len(v) > 1}
+    seid_dupes = {k: v for k, v in seid_to_files.items() if len(v) > 1}
+
+    if within_file_dupes:
+        print(f"    {within_file_dupes} within-file duplicate Sub-eventIDs")
+    for sid, files in list(eid_dupes.items())[:3]:
+        print(f"    EventID {sid}: {len(files)} files")
+    for sid, files in list(seid_dupes.items())[:3]:
+        print(f"    Sub-eventID {sid}: {len(files)} files")
+    return len(eid_dupes) + len(seid_dupes) + within_file_dupes
+
+
 if __name__ == "__main__":
     main()
+
+
+def _check_entity_id_uniqueness() -> int:
+    """Check all entity primary IDs and MentionIDs for uniqueness."""
+    from collections import defaultdict
+
+    CHECKS = [
+        ("people", "PersonID"),
+        ("people_groups", "PeopleGroupID"),
+        ("people_groups", "GroupID"),
+        ("places", "PlaceID"),
+        ("equipment", "EquipmentID"),
+        ("dates", "DateID"),
+        ("bibliography", "BibliographyID"),
+        ("casualties", "CasualtyID"),
+        ("logistics", "LogisticsID"),
+        ("maps", "MapID"),
+    ]
+    SKIP = {
+        "index.json",
+        "duplicate_report.json",
+        "review_queue.json",
+        "not_duplicates.json",
+        "not_related.json",
+        ".processed_events.json",
+    }
+
+    total_dupes = 0
+
+    # Check primary IDs per entity type
+    for dirname, id_field in CHECKS:
+        d = Path(f"output/{dirname}")
+        if not d.exists():
+            continue
+        ids = defaultdict(list)
+        for f in d.glob("*.json"):
+            if f.name in SKIP:
+                continue
+            try:
+                data = json.loads(f.read_text(encoding="utf-8"))
+                eid = data.get(id_field)
+                if eid:
+                    ids[eid].append(f.name)
+            except Exception:
+                continue
+        dupes = {k: v for k, v in ids.items() if len(v) > 1}
+        if dupes:
+            print(f"    {dirname}/{id_field}: {len(dupes)} duplicates")
+            total_dupes += len(dupes)
+
+    # Check MentionID uniqueness (within each file)
+    mention_dupes = 0
+    entity_dirs = [
+        "people",
+        "people_groups",
+        "places",
+        "equipment",
+        "dates",
+        "weather",
+        "logistics",
+        "casualties",
+        "bibliography",
+    ]
+    for dirname in entity_dirs:
+        d = Path(f"output/{dirname}")
+        if not d.exists():
+            continue
+        for f in d.glob("*.json"):
+            if f.name in SKIP:
+                continue
+            try:
+                data = json.loads(f.read_text(encoding="utf-8"))
+                mentions = data.get("event_mentions", [])
+                seen = set()
+                for m in mentions:
+                    mid = m.get("MentionID")
+                    if mid and mid in seen:
+                        mention_dupes += 1
+                        break  # count file once
+                    if mid:
+                        seen.add(mid)
+            except Exception:
+                continue
+
+    if mention_dupes:
+        print(f"    MentionID: {mention_dupes} files with within-file duplicates")
+        total_dupes += mention_dupes
+
+    return total_dupes

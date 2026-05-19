@@ -105,7 +105,7 @@ Respond with JSON:
 }}"""
 
     try:
-        response = grok_client.chat(prompt, response_format={"type": "json_object"})
+        response = grok_client.chat_completion(prompt)
         return json.loads(response)
     except Exception as e:
         logger.warning(f"LLM verification failed: {e}")

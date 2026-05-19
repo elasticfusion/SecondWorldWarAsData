@@ -154,17 +154,23 @@ class GrokClient:
         if not self.api_key:
             raise ValueError("GROK_API_KEY not found in environment")
 
-        self.base_url = os.getenv(
-            "GROK_API_BASE_URL", "https://api.x.ai/v1/chat/completions"
-        )
-        self.model = os.getenv("GROK_MODEL", "grok-4-1-fast-non-reasoning")
-        self.caches: Dict[str, Any] = {}  # Cache per extraction type
-        self.timeout = 600.0  # 10 minutes for large chapters
-
-        # Load config for debug preview settings
+        # Load config
         from src.utils.config import load_config
 
         config = load_config()
+        self.base_url = os.getenv(
+            "GROK_API_BASE_URL",
+            config.get("api", {})
+            .get("grok", {})
+            .get("base_url", "https://api.x.ai/v1/chat/completions"),
+        )
+        self.model = os.getenv(
+            "GROK_MODEL",
+            config.get("api", {}).get("grok", {}).get("model", "grok-4.3"),
+        )
+        self.caches: Dict[str, Any] = {}  # Cache per extraction type
+        self.timeout = 600.0  # 10 minutes for large chapters
+        self._deprecation_alerted = False
         self.debug_msg_chars = config.get("logging", {}).get(
             "debug_message_preview_chars", 500
         )
@@ -545,11 +551,48 @@ class GrokClient:
                     )
                     logger.warning(f"Content: {content}")
 
+        # Check for model deprecation (redirect to different model)
+        served_model = result.get("model", "")
+        if (
+            served_model
+            and served_model != self.model
+            and not self._deprecation_alerted
+        ):
+            self._deprecation_alerted = True
+            logger.warning(
+                "MODEL DEPRECATED: requested '%s' but served by '%s'",
+                self.model,
+                served_model,
+            )
+            self._send_deprecation_alert(served_model)
+
             # Log preview
             preview = content[: self.debug_resp_chars]
             if len(content) > self.debug_resp_chars:
                 preview += "..."
             logger.debug(f"  {preview}")
+
+    def _send_deprecation_alert(self, served_model: str) -> None:
+        """Send SNS email alert when configured model is deprecated/redirected."""
+        try:
+            import boto3
+
+            topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
+            if not topic_arn:
+                return
+            boto3.client(
+                "sns", region_name=os.environ.get("AWS_REGION", "us-east-1")
+            ).publish(
+                TopicArn=topic_arn,
+                Subject="WWII Pipeline: Grok model deprecated",
+                Message=(
+                    f"The configured model '{self.model}' has been deprecated.\n"
+                    f"Requests are being redirected to '{served_model}'.\n\n"
+                    f"Update config.yaml api.grok.model to a current model."
+                ),
+            )
+        except Exception as e:
+            logger.debug("Failed to send deprecation alert: %s", e)
 
     def _handle_api_errors(self, response) -> None:
         """Handle API error responses."""

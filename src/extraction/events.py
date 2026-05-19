@@ -61,12 +61,22 @@ def _is_footnote_paragraph(para: Dict[str, Any], all_paragraphs: list) -> bool:
 
 def validate_event_json(data: Dict[str, Any]) -> None:
     """
-    Validate event JSON against schema.
+    Validate event JSON against schema and check ULID uniqueness.
 
     Raises:
-        ValidationError: If JSON doesn't match schema
+        ValidationError: If JSON doesn't match schema or has duplicate IDs
     """
     validate(instance=data, schema=EVENT_SCHEMA)
+
+    # Enforce unique Sub-eventIDs within this file
+    sub_events = data.get("Event", {}).get("Sub-events", [])
+    seen_ids = set()
+    for se in sub_events:
+        seid = se.get("Sub-eventID")
+        if seid and seid in seen_ids:
+            raise ValidationError(f"Duplicate Sub-eventID within file: {seid}")
+        if seid:
+            seen_ids.add(seid)
 
 
 def _reconstruct_fulltext(response: dict, parsed_data: dict) -> dict:

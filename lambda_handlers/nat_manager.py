@@ -35,13 +35,13 @@ def handler(event, _context):
         for record in event.get("Records", []):
             if record.get("EventSource") == "aws:sns":
                 message = record.get("Sns", {}).get("Message", "")
-                if "completed successfully" in message:
-                    logger.info("Pipeline completion — tearing down networking")
+                if "Phase 3" in message and "completed successfully" in message:
+                    logger.info("Phase 3 completion — tearing down networking")
                     region = os.getenv("AWS_REGION", "us-east-1")
                     ec2 = boto3.client("ec2", region_name=region)
                     return _delete_all(ec2, region)
-                logger.info("Ignoring SNS (not completion): %s", message[:80])
-                return {"action": "none", "reason": "not a completion message"}
+                logger.info("Ignoring SNS (not Phase 3 completion): %s", message[:80])
+                return {"action": "none", "reason": "not Phase 3 completion"}
 
     action = event.get("action", "status")
     region = os.getenv("AWS_REGION", "us-east-1")
@@ -111,11 +111,14 @@ def _create_all(ec2, region):
 
 def _delete_all(ec2, region):
     """Delete all dynamic networking components."""
+    deleted = False
+
     # 1. NAT Gateway
     nat_id = _find_nat(ec2)
     if nat_id:
         ec2.delete_nat_gateway(NatGatewayId=nat_id)
         logger.info("Deleted NAT: %s", nat_id)
+        deleted = True
 
     # 2. VPC Endpoints
     endpoints = _find_endpoints(ec2)
@@ -123,8 +126,12 @@ def _delete_all(ec2, region):
         ep_ids = [e["VpcEndpointId"] for e in endpoints]
         ec2.delete_vpc_endpoints(VpcEndpointIds=ep_ids)
         logger.info("Deleted %d endpoints", len(ep_ids))
+        deleted = True
 
-    _notify("Networking DOWN — NAT, VPC endpoints deleted")
+    if deleted:
+        _notify("Networking DOWN — NAT, VPC endpoints deleted")
+    else:
+        logger.info("Nothing to delete — networking already down")
     return {"status": "deleted"}
 
 
@@ -239,7 +246,10 @@ def _find_endpoints(ec2):
     resp = ec2.describe_vpc_endpoints(
         Filters=[
             {"Name": "tag:ManagedBy", "Values": [MANAGED_TAG]},
-            {"Name": "vpc-endpoint-state", "Values": ["available", "pending"]},
+            {
+                "Name": "vpc-endpoint-state",
+                "Values": ["available", "pending", "deleting"],
+            },
         ]
     )
     return resp.get("VpcEndpoints", [])
@@ -274,7 +284,10 @@ def _endpoint_exists_untagged(ec2, region, svc):
         Filters=[
             {"Name": "service-name", "Values": [service_name]},
             {"Name": "vpc-id", "Values": [VPC_ID]},
-            {"Name": "vpc-endpoint-state", "Values": ["available", "pending"]},
+            {
+                "Name": "vpc-endpoint-state",
+                "Values": ["available", "pending", "deleting"],
+            },
         ]
     )
     return len(resp.get("VpcEndpoints", [])) > 0

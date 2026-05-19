@@ -25,11 +25,11 @@ paths:
 api:
   grok:
     base_url: "https://api.x.ai/v1/chat/completions"
-    model: "grok-4-1-fast-non-reasoning"
+    model: "grok-4.3"
     max_retries: 3
     timeout: 60
   calls_per_minute: 30            # Rate limit: max API calls per minute (across all threads)
-  nara_api_key: "Ykj8FU63tq142iLVSqAhm71oXknm6O1hO4D5VkI5U"               # NARA catalog API key (https://www.archives.gov/research/catalog/help/api)
+  nara_api_key: "kj8FU63tq142iLVSqAhm71oXknm6O1hO4D5VkI5U"              # NARA catalog API key (https://www.archives.gov/research/catalog/help/api)
   noaa_api_token: "pOtHxWRSeNIhMxCPqVZNpsvZrSdqYBBy"
 
 # Processing
@@ -86,6 +86,11 @@ concurrency:
 # Enrichment
 enrichment:
   re_search_after_days: 90         # Re-search not_found entities after this many days
+
+# Batch Mode
+batch:
+  phase2: false                    # Use real-time Grok calls for Phase 2 (faster, no 24h wait)
+  phase3: true                     # Use batch API for Phase 3 (50% cost reduction)
 
 # OpenSERP
 openserp:
