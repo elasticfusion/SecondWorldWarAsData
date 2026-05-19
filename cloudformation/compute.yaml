@@ -210,6 +210,22 @@ Resources:
           PHASE3_TASK = "${Phase3TaskDef}"
 
           def handler(event, context):
+              # Scheduled stale lock check — only clear locks, don't launch tasks
+              if event.get("source") == "scheduled":
+                  logger.info("Scheduled lock check")
+                  for task_def, family in TASK_FAMILIES.items():
+                      lock_key = f"lock#{family}"
+                      try:
+                          existing = dynamo.get_item(Key={"cache_key": lock_key}).get("Item")
+                          if existing:
+                              running = ecs.list_tasks(cluster=CLUSTER, family=family, desiredStatus="RUNNING").get("taskArns", [])
+                              if not running:
+                                  dynamo.delete_item(Key={"cache_key": lock_key})
+                                  logger.info("Cleared stale lock: %s", family)
+                      except Exception as e:
+                          logger.warning("Lock check failed for %s: %s", family, e)
+                  return {"action": "lock_check_complete"}
+
               # Extract unique topic names and S3 keys from records (SQS or SNS format)
               topics = set()
               s3_keys = []
@@ -327,10 +343,24 @@ Resources:
                       ConditionExpression="attribute_not_exists(cache_key)",
                   )
               except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
-                  logger.info("Task %s already locked, skipping", family)
-                  if keys and "phase1" in family:
-                      _queue_pending(keys)
-                  return
+                  # Check if there's actually a running task — if not, lock is stale
+                  running = ecs.list_tasks(cluster=CLUSTER, family=family, desiredStatus="RUNNING").get("taskArns", [])
+                  if not running:
+                      logger.info("Stale lock for %s (no running task), clearing", family)
+                      dynamo.delete_item(Key={"cache_key": lock_key})
+                      try:
+                          dynamo.put_item(
+                              Item={"cache_key": lock_key, "response": str(int(time.time())), "ttl": int(time.time()) + 86400},
+                              ConditionExpression="attribute_not_exists(cache_key)",
+                          )
+                      except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
+                          logger.info("Another invocation claimed lock for %s, skipping", family)
+                          return
+                  else:
+                      logger.info("Task %s already locked and running, skipping", family)
+                      if keys and "phase1" in family:
+                          _queue_pending(keys)
+                      return
               logger.info("Launching ECS task %s from %s", family, source)
               ecs.run_task(
                   cluster=CLUSTER,
@@ -380,6 +410,26 @@ Resources:
                   )
               except Exception as e:
                   logger.error("Failed to queue pending content: %s", e)
+
+  # --- Hourly stale lock check ---
+  StaleLockCheckRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-stale-lock-check
+      ScheduleExpression: "rate(1 hour)"
+      State: ENABLED
+      Targets:
+        - Id: TriggerLambda
+          Arn: !GetAtt TriggerFunction.Arn
+          Input: '{"source": "scheduled", "action": "check_locks"}'
+
+  StaleLockCheckPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref TriggerFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt StaleLockCheckRule.Arn
 
   # --- Lambda Functions (kept) ---
   OpenSerpManagerFunction:
