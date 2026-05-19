@@ -150,7 +150,7 @@ _WORD_SPLIT = re.compile(r"\s+")
 
 def _build_text_index(
     output_root: Path,
-) -> Dict[str, List[str]]:
+) -> Dict[str, str]:
     """Build sub-event ID → concatenated fulltext mapping.
 
     Returns dict mapping Sub-eventID → full text string.
@@ -414,6 +414,113 @@ def _check_text_proximity(
     return [], 0.0
 
 
+def _check_event_overlap(p1: Dict, p2: Dict) -> tuple[list[str], float]:
+    """Check: High overlap in Sub-eventIDs suggests same entity with different name/title."""
+    mentions1 = p1.get("event_mentions", [])
+    mentions2 = p2.get("event_mentions", [])
+    if not mentions1 or not mentions2:
+        return [], 0.0
+
+    se_ids1 = {m.get("Sub-eventID") or m.get("Sub_eventID") for m in mentions1} - {None}
+    se_ids2 = {m.get("Sub-eventID") or m.get("Sub_eventID") for m in mentions2} - {None}
+
+    if not se_ids1 or not se_ids2:
+        return [], 0.0
+
+    overlap = se_ids1 & se_ids2
+    smaller = min(len(se_ids1), len(se_ids2))
+    if smaller == 0:
+        return [], 0.0
+
+    ratio = len(overlap) / smaller
+    if ratio >= 0.5 and len(overlap) >= 3:
+        return [
+            f"High event overlap ({len(overlap)} shared sub-events, {ratio:.0%})"
+        ], 1.5
+    if ratio >= 0.3 and len(overlap) >= 2:
+        return [f"Event overlap ({len(overlap)} shared sub-events, {ratio:.0%})"], 0.8
+    return [], 0.0
+
+
+# Known title/role → person name mappings for dedup
+# Format: alias → (target_name, earliest_date, latest_date)
+_TITLE_ALIASES = {
+    "supreme commander": ("eisenhower", "1943-12", "1945-12"),
+    "supreme allied commander": ("eisenhower", "1943-12", "1945-12"),
+    "supreme commander allied expeditionary force": (
+        "eisenhower",
+        "1944-01",
+        "1945-12",
+    ),
+    "supreme command": ("eisenhower", "1943-12", "1945-12"),
+    "hitler": ("adolf hitler", "1889-01", "1945-04"),
+    "patton": ("george patton", "1885-01", "1945-12"),
+    "george patton": ("george s. patton, jr.", "1885-01", "1945-12"),
+    "eisenhower": ("dwight d. eisenhower", "1890-01", "1969-03"),
+    "bradley": ("omar n. bradley", "1893-01", "1981-04"),
+    "montgomery": ("bernard l. montgomery", "1887-01", "1976-03"),
+    "rommel": ("erwin rommel", "1891-01", "1944-10"),
+    "churchill": ("winston s. churchill", "1874-01", "1965-01"),
+}
+
+_ALLIED = {"american", "british", "french", "canadian", "polish", "us", "uk"}
+_AXIS = {"german", "japanese", "italian"}
+
+
+def _nationality_mismatch(p1: Optional[Dict], p2: Optional[Dict]) -> bool:
+    """Return True if persons are on opposite sides (Allied vs Axis)."""
+    if not p1 or not p2:
+        return False
+    nat1 = (p1.get("nationality") or "").lower()
+    nat2 = (p2.get("nationality") or "").lower()
+    if not nat1 or not nat2:
+        return False
+    return (nat1 in _ALLIED and nat2 in _AXIS) or (nat1 in _AXIS and nat2 in _ALLIED)
+
+
+def _alias_matches_name(target: str, name: str) -> bool:
+    """Check if alias target matches a name (substring in either direction)."""
+    return target == name or target in name or name in target
+
+
+def _date_in_range(entry: Optional[tuple], person: Optional[Dict]) -> bool:
+    """Check if person's event mentions fall within the alias date range."""
+    if not entry or not person:
+        return True
+    _, earliest, latest = entry
+    mentions = person.get("event_mentions", [])
+    dates = [m.get("date_context") or m.get("date") or "" for m in mentions]
+    dates = [d for d in dates if d]
+    if not dates:
+        return True
+    return any(earliest <= d <= latest for d in dates)
+
+
+def _check_title_alias(
+    name1: str, name2: str, p1: Dict = None, p2: Dict = None
+) -> tuple[list[str], float]:
+    """Check: Known title/alias maps to a person name."""
+    n1 = name1.lower().strip()
+    n2 = name2.lower().strip()
+
+    if _nationality_mismatch(p1, p2):
+        return [], 0.0
+
+    entry1 = _TITLE_ALIASES.get(n1)
+    entry2 = _TITLE_ALIASES.get(n2)
+    target1 = entry1[0] if entry1 else ""
+    target2 = entry2[0] if entry2 else ""
+
+    if target1 and _alias_matches_name(target1, n2) and _date_in_range(entry1, p1):
+        return [f"Title/alias match: '{name1}' → '{name2}'"], 2.0
+    if target2 and _alias_matches_name(target2, n1) and _date_in_range(entry2, p2):
+        return [f"Title/alias match: '{name2}' → '{name1}'"], 2.0
+    if target1 and target2 and target1 == target2:
+        return [f"Both aliases of same person: '{target1}'"], 2.0
+
+    return [], 0.0
+
+
 def _score_pair(
     person1: Dict, person2: Dict, text_index: Dict[str, str]
 ) -> tuple[list[str], float]:
@@ -434,6 +541,8 @@ def _score_pair(
         _check_single_name(name1, name2, last1, last2, person1, person2),
         _check_unicode_variants(name1, name2),
         _check_middle_name_variant(name1, name2, last1, last2),
+        _check_event_overlap(person1, person2),
+        _check_title_alias(name1, name2, person1, person2),
     ]
 
     for reasons, conf in checks:
@@ -514,6 +623,10 @@ def _load_people_data(people_dir_path: Path) -> List[Dict[str, Any]]:
             with open(person_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 data["_filename"] = person_file.name
+                if "name" not in data:
+                    data["name"] = (
+                        person_file.stem.replace("_", " ").replace(".", " ").strip()
+                    )
                 people_data.append(data)
         except (json.JSONDecodeError, OSError):
             pass
@@ -581,6 +694,7 @@ def _build_pairwise_matches(
         "Single name match",
         "ASCII/Unicode variant",
         "German transliteration",
+        "Title/alias match",
     }
     raw_pairs: list[tuple[int, int, list[str], float]] = []
 

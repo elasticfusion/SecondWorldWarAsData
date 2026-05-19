@@ -79,6 +79,7 @@ echo "  Tasks: $(aws ecs list-tasks --cluster $CLUSTER --region $REGION --query 
 echo "  Dedup: $(aws s3 cp s3://dev-wwii-data-pipeline/dedup/review_status.json - --region $REGION 2>/dev/null || echo 'not set')"
 echo ""
 echo "=== Deploy complete ==="
+echo "  $(date)"
 echo ""
 echo "Monitor with:"
 echo "  aws logs tail /ecs/dev-wwii-pipeline --follow --region $REGION --since 2m"

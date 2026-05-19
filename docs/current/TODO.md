@@ -23,7 +23,51 @@ After cache clear, re-run with prompts requesting: places `original_text`/`role_
 
 ---
 
+## Phase 2 Stabilization
+
+### Prevent duplicate task launches
+**Priority:** High
+
+Race condition: two Lambda invocations both clear a stale lock and launch duplicate tasks/batch jobs. Fix: use DynamoDB conditional write with task ARN, or add random jitter before stale lock check.
+
+### Auto-delete poisoned cache entries
+**Priority:** Medium
+
+When a cached Grok response fails JSON validation, delete the cache entry and retry fresh instead of failing all attempts.
+
+### Ensure dedup always runs
+**Priority:** Medium
+
+Wrap `_run_dedup_detection` in retry with explicit error logging. If it fails, don't send completion notification.
+
+### SQS deduplication
+**Priority:** Medium
+
+Multiple S3 uploads generate multiple SQS messages causing duplicate Lambda invocations. Fix: content-based deduplication or batching window.
+
+### Detect cancelled/stuck batch jobs
+**Priority:** Medium
+
+If batch state is `cancelled` or progress is 0/0/0 after first poll, stop monitoring and exit.
+
+### Batch mode should retry empty event files
+**Priority:** Medium
+
+In batch mode, empty event files (0 sub-events) from previous failed runs are never retried. The retry step only works in real-time mode. Fix: after batch results are applied, check for remaining empty event files and submit them as a follow-up batch or real-time retry.
+
+### Proper progress counter for Phase 2
+**Priority:** Low
+
+Add per-entity-type heartbeat pings so progress is visible mid-chapter. Log "Chapter X: 6/10 entity types complete" and update heartbeat after each extractor finishes. Eliminates misleading "no progress for N minutes" warnings during long sequential extraction.
+
+---
+
 ## Known Issues
+
+### Spurious "short response" warnings for NOT_FOUND sentinel
+**Severity:** Low
+
+`_log_api_response` warns on any response under 200 chars that isn't valid JSON. This triggers on expected `NOT_FOUND` responses from `search_llm`. Fix: exclude known sentinel values (`NOT_FOUND`, `[]`, `{}`) from the short-response warning.
 
 ### Search engines block AWS datacenter IPs
 **Severity:** High
@@ -63,11 +107,49 @@ Collect candidates → submit as Grok batch → apply results.
 ### Configurable OpenSERP search depth
 Config: `results_per_query`, `max_images_per_entity`, `max_web_results_per_entity`, `rate_limit_seconds`.
 
+### Propagate source URL into notes-event files
+**Priority:** Medium
+
+`*-notes-event.json` factual items track back to the original event (`source_EventID`, `source_Sub-eventID`) but don't include the internet URL where the endnote text was fetched from (e.g., ibiblio). The URL exists in `*-endnotes.json` and is used during fetching but isn't carried through to the output. Fix: add `source_url` to `source_reference` stanza in `_write_notes_event`.
+
+### Grok verification of retrieved/generated supplemental URLs and references
+**Priority:** Medium
+
+**Phase 2:** The extraction prompt asks Grok to populate `resource_urls`, `archive_reference_number`, and `archive_physical_address` from its own knowledge — these are unverified and may be hallucinated. Fix: treat Grok-generated URLs/archive refs as candidates, validate in Phase 3.
+
+**Phase 3:** After finding a URL via search (Archive.org, Gutenberg, OpenSERP, or LLM), Grok should fetch the page content and verify it actually matches the citation before storing it. Currently:
+- `search_llm` — Grok generates URLs from memory (hallucination risk, no validation)
+- `search_archive_org` — matches by title string only, no content verification
+- `search_gutenberg_openserp` — returns first matching URL, no content check
+- `search_openserp` — returns first result, no relevance check
+- URL validation only checks HTTP 200, not content relevance
+
+Fix: after finding a URL, fetch first ~2000 chars of page content and ask Grok to confirm it matches the cited title/author/document. Reject mismatches.
+
 ### Unmatched combinable people files
-Dedup missed: `hitler.json`/`adolf hitler.json`, `eisenhower.json`/`supreme commander.json`, `george patton.json`/`george s. patton, jr..json`.
+Dedup now detects title/alias matches with nationality guard. Remaining: use Grok to verify ambiguous title-to-person matches, providing event date context (e.g., "Is 'Supreme Commander' in June 1944 Normandy the same as 'Dwight D. Eisenhower'?"). Titles change holders over time.
 
 ### Phase 4: Document Acquisition & Processing
 Download digitized sources, OCR, feed back through pipeline. Spec: `docs/current/PHASE4_SPEC.md`.
+
+### Auto-delete poisoned cache entries
+**Priority:** Medium
+
+When a cached Grok response fails JSON validation, delete the cache entry and retry fresh instead of failing all attempts against the same bad data.
+
+### Meaningful batch job names
+**Priority:** Low
+
+Batch names should include book, scope, and request count:
+- Single chapter: `phase2-TheLorraineCampaign-ch7-12reqs`
+- Multiple chapters: `phase2-TheLorraineCampaign-6chapters-156reqs`
+- Whole book: `phase2-TheLorraineCampaign-45files-892reqs`
+- Phase 3: `phase3-enrich-333reqs`
+
+### Detect cancelled/stuck batch jobs during polling
+**Priority:** Medium
+
+When polling batch status, if state is `cancelled` or progress is 0/0/0 (no pending) after first poll, stop monitoring and exit. Prevents tasks from waiting 24h on dead batches. Also fix the duplicate task race condition — two Lambda invocations can both clear a stale lock and launch duplicate tasks.
 
 ### UK National Archives (Discovery API)
 British military records integration.

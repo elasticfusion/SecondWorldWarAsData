@@ -337,6 +337,22 @@ def run_phase(phase_script: str, extra_args: list) -> None:
         sync.start()
 
     env = os.environ.copy()
+    # Check config for batch mode override
+    import yaml
+
+    try:
+        with open("/app/config.yaml") as f:
+            cfg = yaml.safe_load(f)
+        batch_cfg = cfg.get("batch", {})
+        if "phase2" in phase_script and not batch_cfg.get("phase2", True):
+            extra_args = [a for a in extra_args if a != "--batch"]
+            logger.info("Batch mode disabled for Phase 2 (config)")
+        if "phase3" in phase_script and not batch_cfg.get("phase3", True):
+            extra_args = [a for a in extra_args if a != "--batch"]
+            logger.info("Batch mode disabled for Phase 3 (config)")
+    except Exception:
+        pass
+
     cmd = [sys.executable, phase_script] + extra_args
     logger.info("Running: %s", " ".join(cmd))
     result = subprocess.run(cmd, cwd="/app", env=env, check=False)
@@ -619,10 +635,18 @@ def _run_dedup_detection(env: dict) -> None:
     ]
     for key in dedup_files:
         _download_s3_file(s3, key)
+    # Download ALL entity files for full cross-book dedup comparison
+    for prefix in [
+        "output/people/",
+        "output/people_groups/",
+        "output/places/",
+        "output/equipment/",
+    ]:
+        _download_s3_prefix_skip_existing(s3, prefix)
     # Download event files for cross-book text proximity matching
     d, s = _download_s3_prefix_skip_existing(s3, "output/content/")
     logger.info(
-        "Dedup: downloaded index/exclusion files + %d event files (%d skipped)",
+        "Dedup: downloaded entity + event files (%d event files, %d skipped)",
         d,
         s,
     )
@@ -633,11 +657,13 @@ def _run_dedup_detection(env: dict) -> None:
         "scripts/find_duplicate_groups.py",
         "scripts/find_duplicate_equipment.py",
     ]
+    dedup_env = os.environ.copy()
+    dedup_env["PYTHONPATH"] = "/app"
     for script in dedup_scripts:
         if Path(f"/app/{script}").exists():
             logger.info("Running dedup: %s", script)
             result = subprocess.run(
-                [sys.executable, script], cwd="/app", env=env, check=False
+                [sys.executable, script], cwd="/app", env=dedup_env, check=False
             )
             if result.returncode != 0:
                 logger.warning(

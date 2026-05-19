@@ -48,6 +48,8 @@ def handler(event, _context):
                 "NAT created recently — task may be starting, skipping teardown"
             )
             return {"action": "none", "reason": "nat recently created"}
+        if _networking_already_down():
+            return {"action": "none", "reason": "already down"}
         _teardown(ecs, cluster, service, region)
         logger.info("Idle: no tasks, service at 0 — cleaned up NAT/ALB")
         return {"action": "cleanup", "reason": "already idle, cleaned resources"}
@@ -106,6 +108,20 @@ def _nat_recently_created(minutes=5):
     except Exception:
         pass
     return False
+
+
+def _networking_already_down():
+    """Return True if networking stack doesn't exist (already torn down)."""
+    import boto3
+
+    cf = boto3.client(
+        "cloudformation", region_name=os.getenv("AWS_REGION", "us-east-1")
+    )
+    try:
+        cf.describe_stacks(StackName=f"{ENV_NAME}-wwii-networking")
+        return False
+    except Exception:
+        return True
 
 
 def _teardown(ecs, cluster, service, region):
