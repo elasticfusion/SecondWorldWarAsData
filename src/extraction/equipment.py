@@ -998,66 +998,126 @@ def _extract_media_from_wikipedia(
     category: str,
     grok_client: GrokClient,
 ) -> List[Dict[str, Any]]:
-    """Extract media URLs from Wikipedia/Grokipedia.
+    """Extract images from the actual Wikipedia article for this equipment.
 
-    Args:
-        common_name: Equipment common name
-        technical_identifier: Technical designation
-        category: Equipment category
-        grok_client: Grok API client
-
-    Returns:
-        List of media items with URLs
+    Finds the Wikipedia page, gets its images via the API, then returns
+    real download URLs. Grok vision validates relevance downstream.
     """
     identifier = technical_identifier or common_name
-
-    prompt = f"""Find media (photos, videos, documents) for this WWII military equipment: {identifier} ({common_name})
-Category: {category}
-
-Search Wikipedia and Wikimedia Commons for:
-1. Historical photos of the equipment
-2. Technical diagrams or schematics
-3. Period videos or newsreels (if available)
-4. Official documents or manuals
-
-For each media item, provide:
-- media_type: "photo", "video", "audio", or "document"
-- url: Direct URL to the media file
-- title: Brief title or caption
-- source: "wikipedia", "commons", "archive", etc.
-- license: License information (e.g., "Public Domain", "CC BY-SA")
-- description: Brief description
-
-Return as JSON array (limit to 5 most relevant items):
-[
-  {{
-    "media_type": "photo",
-    "url": "https://commons.wikimedia.org/...",
-    "title": "M4 Sherman in Normandy",
-    "source": "commons",
-    "license": "Public Domain",
-    "description": "Sherman tank during Operation Overlord"
-  }}
-]
-
-If no media found, return empty array []."""
+    session = get_session()
+    headers = {"User-Agent": "WWII-Research-Bot/1.0 (academic research)"}
 
     try:
-        response = grok_client.chat_completion(
-            prompt,
-            temperature=0.1,
-            use_cache=True,
-            cache_type="equipment_media",
+        # Step 1: Find the Wikipedia article
+        search_resp = session.get(
+            "https://en.wikipedia.org/w/api.php",
+            params={
+                "action": "query",
+                "format": "json",
+                "list": "search",
+                "srsearch": identifier,
+                "srlimit": "1",
+            },
+            timeout=15,
+            headers=headers,
         )
+        search_resp.raise_for_status()
+        results = search_resp.json().get("query", {}).get("search", [])
+        if not results:
+            logger.debug("No Wikipedia article for %s", identifier)
+            return []
 
-        media_list = json.loads(response)
-        if isinstance(media_list, dict) and "media" in media_list:
-            media_list = media_list["media"]
+        page_title = results[0]["title"]
 
-        logger.debug("Found %s media items for %s", len(media_list), common_name)
-        return media_list if isinstance(media_list, list) else []
+        # Step 2: Get images from that article
+        img_resp = session.get(
+            "https://en.wikipedia.org/w/api.php",
+            params={
+                "action": "query",
+                "format": "json",
+                "titles": page_title,
+                "prop": "images",
+                "imlimit": "20",
+            },
+            timeout=15,
+            headers=headers,
+        )
+        img_resp.raise_for_status()
+        pages = img_resp.json().get("query", {}).get("pages", {})
+        image_titles = []
+        for page in pages.values():
+            for img in page.get("images", []):
+                title = img.get("title", "")
+                # Skip icons/logos/commons junk
+                if any(
+                    skip in title.lower()
+                    for skip in [
+                        "icon",
+                        "logo",
+                        "flag",
+                        "symbol",
+                        "commons-",
+                        "edit-",
+                        "question_book",
+                        "wikiproject",
+                        "padlock",
+                        "ambox",
+                    ]
+                ):
+                    continue
+                if title.lower().endswith((".jpg", ".jpeg", ".png", ".svg")):
+                    image_titles.append(title)
+
+        if not image_titles:
+            logger.debug("No images on Wikipedia page for %s", identifier)
+            return []
+
+        # Step 3: Get actual file URLs from Commons (batch up to 5)
+        file_resp = session.get(
+            "https://commons.wikimedia.org/w/api.php",
+            params={
+                "action": "query",
+                "format": "json",
+                "titles": "|".join(image_titles[:5]),
+                "prop": "imageinfo",
+                "iiprop": "url|extmetadata|mime",
+                "iiurlwidth": "1280",
+            },
+            timeout=15,
+            headers=headers,
+        )
+        file_resp.raise_for_status()
+        file_pages = file_resp.json().get("query", {}).get("pages", {})
+
+        media_list = []
+        for fp in file_pages.values():
+            info = (fp.get("imageinfo") or [{}])[0]
+            mime = info.get("mime", "")
+            if not mime.startswith("image/"):
+                continue
+            url = info.get("thumburl") or info.get("url")
+            if not url:
+                continue
+            meta = info.get("extmetadata", {})
+            media_list.append(
+                {
+                    "media_type": "photo",
+                    "url": url,
+                    "title": fp.get("title", "").replace("File:", ""),
+                    "source": "commons",
+                    "license": meta.get("LicenseShortName", {}).get("value", "Unknown"),
+                    "description": (
+                        meta.get("ImageDescription", {}).get("value", "") or ""
+                    )[:200],
+                }
+            )
+
+        logger.debug(
+            "Found %s images from Wikipedia article '%s'", len(media_list), page_title
+        )
+        return media_list
     except Exception as e:
-        logger.warning("Failed to extract media for %s: %s", common_name, e)
+        logger.warning("Wikipedia media lookup failed for %s: %s", common_name, e)
         return []
 
 
@@ -1424,9 +1484,9 @@ Example:
                 equipment_list = equipment_list["equipment"]
 
             if isinstance(equipment_list, list):
-                equipment_list = _fix_invalid_ulids(equipment_list)
+                return _fix_invalid_ulids(equipment_list)
 
-            return equipment_list
+            return None
 
         except Exception as e:
             if attempt < max_retries - 1:

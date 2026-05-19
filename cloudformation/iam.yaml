@@ -86,11 +86,7 @@ Resources:
                   - ecs:DescribeTasks
                   - ecs:RunTask
                   - ecs:StopTask
-                Resource:
-                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:service/${EnvironmentName}-wwii-*
-                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task/${EnvironmentName}-wwii-*
-                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${EnvironmentName}-wwii-*
-                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${EnvironmentName}-wwii-*
+                Resource: '*'
               - Sid: PassRole
                 Effect: Allow
                 Action:

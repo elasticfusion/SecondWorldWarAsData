@@ -1,6 +1,6 @@
 # Pipeline Documentation
 
-**Last Updated:** 2026-05-11
+**Last Updated:** 2026-05-15
 
 ## Overview
 
@@ -200,10 +200,11 @@ python3 phase3_enrich_data.py --batch
 - Enriches places with additional geographic and historical context
 - Enriches bibliography with full citation data and source verification
 - **Resolves bibliography sources** — routes by document type:
-  - Military records → Grok identifies NARA Record Group (RG 407, etc.) → NARA catalog API → LOC → OpenSERP for digitized copies (HathiTrust, Archive.org, general web)
-  - Books → Archive.org, Gutenberg, OpenSERP
-  - Articles → LOC
+  - Military records → Grok identifies NARA Record Group (RG 407, etc.) → OpenSERP for digitized copies → Archive.org
+  - Books → Archive.org, Gutenberg
   - All external search results cached (positive 30 days, negative 7 days) to prevent redundant API calls
+- **NOAA weather enrichment** — fetches observed historical weather data from NOAA CDO API for weather entities with coordinates and dates. Supplements Open-Meteo reanalysis data with actual station measurements.
+- **Schema versioning** — stamps `_schema_version` and `_last_updated` on all files before enrichment. Skips if already current.
 - Searches for birth/death dates, service history, awards
 - Follows references for additional context
 - Caches all external lookups
@@ -215,7 +216,7 @@ Each entity file gets an `enrichment_status` field after processing:
 - `not_found` — searched all sources, nothing found (skipped on future runs)
 - No field — never searched yet
 
-All entities also record `last_enrichment_search` (YYYY-MM-DD) for periodic re-search of not_found entities. Bibliography entries use `search_status` with the same values.
+All entities also record `last_enrichment_search` (YYYY-MM-DD) for periodic re-search of not_found entities. Entities marked `not_found` are re-searched after `enrichment.re_search_after_days` (default: 90 days). Bibliography entries use `search_status` with the same values.
 
 **OpenSERP Enrichment** (when `use_openserp: true`):
 - People: portrait images, academic papers, oral histories, video interviews
@@ -250,3 +251,25 @@ python3 phase3_retry.py    # Retries until all people are enriched (default: 3 a
 - Configurable: `--max-attempts N`
 
 See [Retry Wrappers](../pipeline/RETRY_WRAPPERS.md) for details.
+
+## AWS Networking Lifecycle
+
+NAT Gateway and VPC endpoints are created/deleted dynamically to minimize costs:
+
+1. **Trigger Lambda** invokes `nat_manager(create)` before launching any ECS task
+2. NAT + VPC endpoints (ECR API, ECR DKR, CloudWatch Logs) created in private subnets
+3. Pipeline tasks run with internet access via NAT
+4. **Phase 3 completion** → SNS → `nat_manager(delete)` tears down immediately
+5. **Idle monitor** (every 10 min) tears down if no pipeline tasks running for 30 min
+
+Only Phase 3 completion triggers immediate teardown. Phase 1 and Phase 2 completions do NOT tear down (the next phase needs networking).
+
+## Stale Lock Detection
+
+If a task is killed mid-run, its DynamoDB lock persists. The trigger Lambda auto-detects stale locks:
+
+1. Lock exists for a phase → check if an ECS task is actually running for that family
+2. If no task running → lock is stale → clear it and proceed
+3. If task IS running → legitimately locked → skip
+
+An hourly EventBridge rule invokes the trigger Lambda to check for stale locks even when no new content is uploaded.
