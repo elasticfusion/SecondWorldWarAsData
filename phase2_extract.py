@@ -460,7 +460,11 @@ def _run_core_extraction(
     processed = results["processed"]
     failed = results["failed"]
 
-    retried, retry_failed = _retry_missing_events(parsed_files, grok_client, logger)
+    if os.environ.get("SKIP_RETRY"):
+        logger.info("SKIP_RETRY set — skipping retry of empty event files")
+        retried, retry_failed = 0, 0
+    else:
+        retried, retry_failed = _retry_missing_events(parsed_files, grok_client, logger)
     processed += retried
     failed += retry_failed
 

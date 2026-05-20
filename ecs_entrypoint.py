@@ -315,10 +315,48 @@ def _patch_openserp_url(ip: str) -> None:
         yaml.dump(config, f, default_flow_style=False)
 
 
+def _preflight_credit_check() -> None:
+    """Verify Grok API credits are available by making a minimal request."""
+    api_key = os.environ.get("GROK_API_KEY", "")
+    if not api_key:
+        return
+    try:
+        import requests as _req
+
+        resp = _req.post(
+            "https://api.x.ai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": "grok-3-mini-fast",
+                "messages": [{"role": "user", "content": "hi"}],
+                "max_tokens": 1,
+            },
+            timeout=15,
+        )
+        if resp.status_code == 402 or (
+            resp.status_code == 403 and "credit" in resp.text.lower()
+        ):
+            logger.error("PREFLIGHT FAILED: Grok API credits depleted. Aborting.")
+            sys.exit(1)
+        if resp.status_code == 401:
+            logger.error("PREFLIGHT FAILED: Invalid API key. Aborting.")
+            sys.exit(1)
+        resp.raise_for_status()
+        logger.info("Preflight OK: Grok API credits available")
+    except SystemExit:
+        raise
+    except Exception as e:
+        logger.warning("Preflight check failed (proceeding anyway): %s", e)
+
+
 def run_phase(phase_script: str, extra_args: list) -> None:
     """Run a pipeline phase script with incremental S3 sync."""
     WORKDIR.mkdir(parents=True, exist_ok=True)
     _load_secrets()
+    _preflight_credit_check()
     _patch_config()
     _start_openserp_if_needed(phase_script)
 
@@ -344,6 +382,16 @@ def run_phase(phase_script: str, extra_args: list) -> None:
         with open("/app/config.yaml") as f:
             cfg = yaml.safe_load(f)
         batch_cfg = cfg.get("batch", {})
+        if "phase2" in phase_script and batch_cfg.get("phase2", False):
+            logger.info("Batch mode enabled for Phase 2 — using submit-only flow")
+            sync.stop()
+            run_submit_only(phase_script, extra_args)
+            return
+        if "phase3" in phase_script and batch_cfg.get("phase3", False):
+            logger.info("Batch mode enabled for Phase 3 — using submit-only flow")
+            sync.stop()
+            run_submit_only(phase_script, extra_args)
+            return
         if "phase2" in phase_script and not batch_cfg.get("phase2", True):
             extra_args = [a for a in extra_args if a != "--batch"]
             logger.info("Batch mode disabled for Phase 2 (config)")
@@ -918,6 +966,13 @@ def _notify_complete(phase_script: str) -> None:
     phase_name = PHASE_NAMES.get(phase_script, phase_script)
     dedup_url = os.environ.get("DEDUP_REVIEW_URL", "")
     message = f"{phase_name} completed successfully.\nBucket: {BUCKET}"
+    if "phase1" in phase_script:
+        # List what was parsed
+        content_dir = WORKDIR / "output" / "content"
+        if content_dir.exists():
+            parsed = sorted(f.name for f in content_dir.rglob("*-parsed.json"))
+            if parsed:
+                message += f"\n\nParsed {len(parsed)} file(s):\n" + "\n".join(f"  {f}" for f in parsed)
     if "phase2" in phase_script and dedup_url:
         message += (
             f"\n\nPhase 3 is blocked until you review duplicates."
@@ -1015,8 +1070,215 @@ def _clear_all_locks() -> None:
         pass
 
 
+def _teardown_networking() -> None:
+    """Invoke nat_manager Lambda to delete NAT + VPC endpoints."""
+    try:
+        env = os.environ.get("ENV_NAME", "dev")
+        lam = boto3.client("lambda", region_name=REGION)
+        lam.invoke(
+            FunctionName=f"{env}-wwii-nat-manager",
+            InvocationType="RequestResponse",
+            Payload=json.dumps({"action": "delete"}).encode(),
+        )
+        logger.info("Networking torn down (NAT + VPC endpoints)")
+    except Exception as e:
+        logger.warning("Failed to tear down networking: %s", e)
+
+
+def run_submit_only(phase_script: str, extra_args: list) -> None:
+    """Run phase in batch mode, submit to Grok, enqueue job, then exit immediately."""
+    if "--batch" not in extra_args:
+        extra_args = ["--batch"] + extra_args
+
+    WORKDIR.mkdir(parents=True, exist_ok=True)
+    _load_secrets()
+    _preflight_credit_check()
+    _patch_config()
+    _start_openserp_if_needed(phase_script)
+
+    _download_inputs(phase_script)
+    _setup_symlinks()
+
+    if "phase3" in phase_script:
+        _stamp_schema_versions()
+        _reset_openserp_searched()
+
+    # Monkey-patch poll_batch/retrieve_results so submit_batch returns after upload
+    import src.utils.batch_api as _batch_mod
+
+    _orig_poll = _batch_mod.poll_batch
+    _orig_retrieve = _batch_mod.retrieve_results
+    _batch_mod.poll_batch = lambda *a, **kw: {"_submit_only": True, "state": {}}
+    _batch_mod.retrieve_results = lambda *a, **kw: {}
+
+    sync = BackgroundSync(SYNC_INTERVAL)
+    if "phase2" in phase_script or "phase3" in phase_script:
+        sync.start()
+
+    cmd = [sys.executable, phase_script] + extra_args
+    logger.info("Running (submit-only): %s", " ".join(cmd))
+    result = subprocess.run(cmd, cwd="/app", env=os.environ.copy(), check=False)
+
+    sync.stop()
+    _batch_mod.poll_batch = _orig_poll
+    _batch_mod.retrieve_results = _orig_retrieve
+
+    # Enqueue the batch job
+    _enqueue_from_metrics(phase_script)
+
+    _final_sync(phase_script)
+    _stop_openserp_if_running(phase_script)
+
+    if result.returncode != 0:
+        logger.error("Submit-only exited with code %d", result.returncode)
+        sys.exit(result.returncode)
+
+    # Tear down networking (NAT + VPC endpoints) — Lambda poller will recreate on completion
+    _teardown_networking()
+
+    logger.info("Submit-only complete — batch enqueued, infra torn down, exiting.")
+
+
+def _enqueue_from_metrics(phase_script: str) -> None:
+    """Find the latest batch metrics and enqueue the job."""
+    import time as _t
+
+    from src.utils.job_queue import BatchJob, enqueue_job
+
+    metrics_dir = WORKDIR / "output" / "metrics"
+    if not metrics_dir.exists():
+        logger.warning("No metrics dir — batch may not have submitted")
+        return
+
+    files = sorted(metrics_dir.glob("batch_*.json"), key=lambda f: f.stat().st_mtime)
+    if not files:
+        logger.warning("No batch metrics files found")
+        return
+
+    with open(files[-1]) as f:
+        metrics = json.load(f)
+
+    batch_id = metrics.get("batch_id", "")
+    if not batch_id:
+        logger.warning("No batch_id in %s", files[-1].name)
+        return
+
+    phase = "phase2" if "phase2" in phase_script else "phase3"
+    enqueue_job(
+        BatchJob(
+            batch_id=batch_id,
+            phase=phase,
+            book=os.environ.get("BOOK_NAME", "unknown"),
+            batch_name=metrics.get("batch_name", ""),
+            submitted_at=int(_t.time()),
+            status="pending",
+            request_count=metrics.get("total_requests", 0),
+        )
+    )
+
+
+def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> None:
+    """Retrieve completed batch results and re-run phase with cached data."""
+    import re as _re
+
+    from src.utils.batch_api import retrieve_results
+    from src.utils.job_queue import get_job, update_job_status
+
+    WORKDIR.mkdir(parents=True, exist_ok=True)
+    _load_secrets()
+    _patch_config()
+
+    job = get_job(batch_id)
+    if not job:
+        logger.error("Job %s not found in queue", batch_id)
+        sys.exit(1)
+
+    logger.info(
+        "Retrieving batch %s (%s/%s, %d reqs)",
+        batch_id,
+        job.phase,
+        job.book,
+        job.request_count,
+    )
+
+    _download_inputs(phase_script)
+    _setup_symlinks()
+
+    if "phase3" in phase_script:
+        _stamp_schema_versions()
+
+    # Retrieve and populate cache
+    api_key = os.environ.get("GROK_API_KEY", "")
+    results = retrieve_results(api_key, batch_id)
+    logger.info("Retrieved %d results", len(results))
+
+    # Load cache_type mapping from metrics
+    cache_type_map = {}
+    metrics_dir = WORKDIR / "output" / "metrics"
+    for mf in sorted(
+        metrics_dir.glob("batch_*.json"), key=lambda f: f.stat().st_mtime, reverse=True
+    ):
+        with open(mf) as f:
+            metrics = json.load(f)
+        if metrics.get("batch_id") == batch_id:
+            for d in metrics.get("request_details", []):
+                cache_type_map[d["request_id"]] = d.get("cache_type", "default")
+            break
+
+    # Populate cache
+    from src.grok_client import GrokClient
+
+    cache_dir = Path("/app/cache/api")
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    grok_client = GrokClient(cache_dir)
+
+    populated = 0
+    for request_id, br in results.items():
+        if br.finish_reason == "stop" and br.content:
+            cache_type = cache_type_map.get(request_id, "default")
+            cache = grok_client._get_cache(cache_type)
+            cache[request_id] = _re.sub(
+                r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", br.content
+            )
+            populated += 1
+    logger.info("Populated %d cache entries", populated)
+
+    # Re-run phase without --batch (hits cache, skip retry since batch results are authoritative)
+    clean_args = [a for a in extra_args if a != "--batch"]
+    sync = BackgroundSync(SYNC_INTERVAL)
+    sync.start()
+
+    env = os.environ.copy()
+    env["SKIP_RETRY"] = "1"
+    cmd = [sys.executable, phase_script] + clean_args
+    logger.info("Re-running with cached results: %s", " ".join(cmd))
+    result = subprocess.run(cmd, cwd="/app", env=env, check=False)
+
+    sync.stop()
+    _final_sync(phase_script)
+
+    if result.returncode != 0:
+        logger.error("Retrieve phase exited with code %d", result.returncode)
+        update_job_status(batch_id, "failed")
+        sys.exit(result.returncode)
+
+    update_job_status(batch_id, "retrieved")
+    _post_process(phase_script, os.environ.copy())
+    logger.info("Retrieve-only complete for batch %s", batch_id)
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: ecs_entrypoint.py <phase_script> [args...]")
+        print(
+            "Usage: ecs_entrypoint.py <phase_script> [args...]\n"
+            "       ecs_entrypoint.py --submit-only <phase_script> [args...]\n"
+            "       ecs_entrypoint.py --retrieve-only <batch_id> <phase_script> [args...]"
+        )
         sys.exit(1)
-    run_phase(sys.argv[1], sys.argv[2:])
+
+    if sys.argv[1] == "--submit-only":
+        run_submit_only(sys.argv[2], sys.argv[3:])
+    elif sys.argv[1] == "--retrieve-only":
+        run_retrieve_only(sys.argv[3], sys.argv[4:], batch_id=sys.argv[2])
+    else:
+        run_phase(sys.argv[1], sys.argv[2:])

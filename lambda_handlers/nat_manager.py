@@ -91,9 +91,11 @@ def _create_all(ec2, region):
         _ensure_endpoints(ec2, region)
 
         # 2. NAT Gateway (slowest — 1-2 min)
+        already_existed = bool(_find_nat(ec2))
         _ensure_nat(ec2)
 
-        _notify("Networking UP — NAT, VPC endpoints ready")
+        if not already_existed:
+            _notify("Networking UP — NAT, VPC endpoints ready")
         return {"status": "ready"}
     except Exception as e:
         _notify(f"Networking FAILED — {e}")

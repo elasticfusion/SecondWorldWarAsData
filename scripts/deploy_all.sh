@@ -48,7 +48,7 @@ python3 -m pytest tests/unit/ -q 2>&1 | tail -1
 echo ""
 echo "=== 4. Building and pushing container ==="
 aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR_REPO
-docker build --no-cache -t wwii-pipeline .
+docker build --no-cache --progress=plain -t wwii-pipeline .
 docker tag wwii-pipeline:latest $PIPELINE_IMAGE
 docker push $PIPELINE_IMAGE
 echo "  Pushed: $(aws ecr describe-images --repository-name wwii-pipeline --region $REGION --image-ids imageTag=latest --query 'imageDetails[0].imagePushedAt' --output text)"

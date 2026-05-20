@@ -37,6 +37,9 @@ processing:
   validate_ulids: true
   generate_jq_queries: true
   generate_download_scripts: true
+  force_reprocess: false             # WARNING: Reprocesses ALL content from scratch, ignoring cache.
+                                     # Clears event files and API cache. Use only when prompts have
+                                     # fundamentally changed or data is corrupted. Expensive.
 
 # Weather Extraction
 weather:
@@ -89,13 +92,13 @@ enrichment:
 
 # Batch Mode
 batch:
-  phase2: false                    # Use real-time Grok calls for Phase 2 (faster, no 24h wait)
+  phase2: true                     # Use real-time Grok calls for Phase 2 (faster, no 24h wait)
   phase3: true                     # Use batch API for Phase 3 (50% cost reduction)
 
 # OpenSERP
 openserp:
   results_per_query: 20            # Max results returned per search query
-  max_images_per_entity: 1         # Max images to keep per person/equipment
+  max_images_per_entity: 5        # Max images to keep per person/equipment
   max_web_results_per_entity: 5    # Max web results (awards, bio links) per entity
   rate_limit_seconds: 5            # Delay between searches to avoid blocking
 
