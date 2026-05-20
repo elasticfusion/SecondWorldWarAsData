@@ -210,6 +210,13 @@ class GrokClient:
         self._cache_hits = 0
         self._cache_misses = 0
 
+        # JSON quality stats
+        self._json_clean = 0  # parsed without any repair
+        self._json_markdown_stripped = 0  # had ```json wrapper
+        self._json_repaired = 0  # needed escape/backslash repair
+        self._json_truncated = 0  # response was truncated
+        self._json_failed = 0  # all repair attempts failed
+
         # Batch mode — collect requests instead of sending them
         self.batch_mode = batch_mode
         self._batch_collector = None
@@ -247,6 +254,21 @@ class GrokClient:
             self._cache_misses,
             rate,
         )
+        json_total = (
+            self._json_clean + self._json_markdown_stripped
+            + self._json_repaired + self._json_truncated + self._json_failed
+        )
+        if json_total > 0:
+            logger.info(
+                "JSON quality: %d clean (%.0f%%), %d markdown-stripped, "
+                "%d repaired, %d truncated, %d failed",
+                self._json_clean,
+                self._json_clean / json_total * 100,
+                self._json_markdown_stripped,
+                self._json_repaired,
+                self._json_truncated,
+                self._json_failed,
+            )
 
     def _make_cache_key(self, prompt: str, temperature: float) -> str:
         """Create cache key from prompt and parameters."""
@@ -1203,12 +1225,18 @@ class GrokClient:
                 )
 
         # Clean and sanitize response
+        had_markdown = response.startswith("```")
         response = self._strip_markdown_wrapper(response)
+        if had_markdown:
+            self._json_markdown_stripped += 1
         response = self._sanitize_json_response(response)
 
         # Try to parse
         try:
-            return json.loads(response)
+            result = json.loads(response)
+            if not had_markdown:
+                self._json_clean += 1
+            return result
         except json.JSONDecodeError as e:
             error_msg = str(e)
 
@@ -1220,6 +1248,7 @@ class GrokClient:
 
             # Handle truncated responses (auto-clear cache)
             if "Unterminated string" in error_msg or "Expecting" in error_msg:
+                self._json_truncated += 1
                 self._handle_truncation_error(
                     response, error_msg, cache_type, prompt, temperature
                 )
@@ -1227,9 +1256,11 @@ class GrokClient:
             # Try to repair JSON
             repaired = self._try_repair_json(response, error_msg)
             if repaired is not None:
+                self._json_repaired += 1
                 return repaired
 
             # All repair attempts failed — auto-clear so retry gets fresh response
+            self._json_failed += 1
             self.clear_cache_entry(prompt, cache_type, temperature)
             raise GrokAPIError(
                 f"Failed to parse JSON response: {e}\n"

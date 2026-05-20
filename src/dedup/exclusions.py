@@ -79,7 +79,7 @@ class ExclusionStore:
                 ProjectionExpression="cache_key",
             )
             for item in resp.get("Items", []):
-                parts = item["cache_key"].split("#", 2)
+                parts = item["cache_key"].split("#")
                 if len(parts) == 4:
                     pairs.add((parts[2], parts[3]))
             # Handle pagination
@@ -91,7 +91,7 @@ class ExclusionStore:
                     ExclusiveStartKey=resp["LastEvaluatedKey"],
                 )
                 for item in resp.get("Items", []):
-                    parts = item["cache_key"].split("#", 2)
+                    parts = item["cache_key"].split("#")
                     if len(parts) == 4:
                         pairs.add((parts[2], parts[3]))
         except Exception as e:
