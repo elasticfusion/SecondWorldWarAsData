@@ -57,6 +57,7 @@ rules:
   - Do NOT fabricate references — only extract what is explicitly cited
   - Distinguish resource URLs (where to find the document) from source URLs (where the text came from)
   - Country codes use ISO 3166-1 alpha-3
+  - Availability values: online, offline, archive, unknown
   - License status values: public_domain, copyright, unknown
   - Document type values: book, article, report, letter, memo, periodical, government_document, other
   - Handle mixed entries by splitting into separate items

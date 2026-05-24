@@ -30,12 +30,50 @@ ENTITY_DIRS = frozenset(
 
 
 def load_config(config_path: Optional[Path] = None) -> Dict[str, Any]:
-    """Load configuration from YAML file."""
+    """Load configuration from YAML file with validation."""
     if config_path is None:
         config_path = Path(__file__).parent.parent.parent / "config.yaml"
 
     with open(config_path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        config = yaml.safe_load(f)
+
+    _validate_config(config, config_path)
+    return config
+
+
+def _validate_config(config: Dict[str, Any], path: Path) -> None:
+    """Validate critical config sections. Raises ValueError on invalid config."""
+    if not isinstance(config, dict):
+        raise ValueError(f"Config at {path} is not a valid YAML mapping")
+
+    # Required top-level sections
+    required = ["paths", "api"]
+    for section in required:
+        if section not in config:
+            raise ValueError(f"Config missing required section: '{section}'")
+
+    # API config
+    api = config.get("api", {})
+    grok = api.get("grok", {})
+    if grok.get("model") and not isinstance(grok["model"], str):
+        raise ValueError("api.grok.model must be a string")
+
+    rpm = api.get("calls_per_minute", 30)
+    if not isinstance(rpm, int) or rpm < 1 or rpm > 200:
+        raise ValueError(f"api.calls_per_minute must be 1-200, got: {rpm}")
+
+    # Batch config
+    batch = config.get("batch", {})
+    for key in ("phase2", "phase3"):
+        if key in batch and not isinstance(batch[key], bool):
+            raise ValueError(f"batch.{key} must be true or false, got: {batch[key]}")
+
+    # Concurrency
+    conc = config.get("concurrency", {})
+    for key in ("max_event_files", "max_extraction_group", "max_enrichment_workers"):
+        val = conc.get(key)
+        if val is not None and (not isinstance(val, int) or val < 1):
+            raise ValueError(f"concurrency.{key} must be a positive integer, got: {val}")
 
 
 def get_paths(

@@ -1,4 +1,10 @@
-"""JSON schemas for validation."""
+"""JSON schemas for validation.
+
+Note: This SCHEMA_VERSION ("1.0.0") is the version of the validation schema definitions.
+The output data format version is in src/schemas/__init__.py (currently "2.3").
+They are independent — this version changes when validation rules change,
+the output version changes when the data format changes.
+"""
 
 SCHEMA_VERSION = "1.0.0"
 
