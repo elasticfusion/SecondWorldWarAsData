@@ -142,13 +142,16 @@ def _batch_extract_casualties(
     if not relevant:
         return {}
 
-    # Build batched prompt
+    # Build entity context with name:ID pairs for cross-referencing
+    def _format_index(index, limit=50):
+        items = [f"{name}: {eid}" for name, eid in list(index.items())[:limit]]
+        return "\n    ".join(items) if items else "(none)"
+
     entity_context = (
-        f"Available entities:\n"
-        f"- Dates: {list(dates_index.keys())[:10]}\n"
-        f"- Places: {list(places_index.keys())[:10]}\n"
-        f"- People: {list(people_index.keys())[:10]}\n"
-        f"- Organizations: {list(people_groups_index.keys())[:10]}\n"
+        f"Available entities (COPY these IDs exactly — do NOT generate new ones):\n"
+        f"  Organizations:\n    {_format_index(people_groups_index)}\n"
+        f"  People:\n    {_format_index(people_index)}\n"
+        f"  Places:\n    {_format_index(places_index)}\n"
     )
 
     sub_event_block = "\n\n".join(

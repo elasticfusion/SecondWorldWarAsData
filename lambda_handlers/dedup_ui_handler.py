@@ -40,8 +40,13 @@ def _append_to_manifest(keys: list) -> None:
         logger.warning("Failed to append to manifest: %s", e)
 
 
-def handler(event, _context):
+_lambda_context = None
+
+
+def handler(event, context):
     """API Gateway proxy handler."""
+    global _lambda_context
+    _lambda_context = context
     from src.utils.config import load_config
     from src.utils.storage import S3Storage
 
@@ -69,7 +74,10 @@ def handler(event, _context):
         decoded_path = unquote(path)
         parts = decoded_path.split("/")
         if len(parts) >= 6:
-            return _get_detail(storage, parts[4], "/".join(parts[5:]))
+            filename = parts[5]
+            if ".." in filename or "/" in filename:
+                return _json_response(400, {"error": "invalid filename"})
+            return _get_detail(storage, parts[4], filename)
 
     if path.startswith("/dedup/api/search/"):
         from urllib.parse import unquote
@@ -77,7 +85,10 @@ def handler(event, _context):
         decoded_path = unquote(path)
         parts = decoded_path.split("/")
         if len(parts) >= 6:
-            return _search_entities(storage, parts[4], parts[5])
+            query = parts[5]
+            if ".." in query:
+                return _json_response(400, {"error": "invalid query"})
+            return _search_entities(storage, parts[4], query)
 
     if route_key == "POST /dedup/api/reclassify":
         return _reclassify(event, storage)
@@ -300,6 +311,10 @@ def _merge_generic_files(entity_type, people, primary_index, storage):
     for i, p in enumerate(people):
         if i == primary_index:
             continue
+        # Bail if Lambda is about to timeout (leave 10s buffer)
+        if _lambda_context and _lambda_context.get_remaining_time_in_millis() < 10000:
+            logger.warning("Lambda timeout approaching — saving partial merge")
+            break
         try:
             secondary = storage.read_json(f"{prefix}/{p['filename']}")
             secondary_mentions = secondary.get("event_mentions", [])
