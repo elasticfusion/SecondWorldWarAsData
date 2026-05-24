@@ -102,7 +102,11 @@ Resources:
                   - ecs:DescribeTasks
                   - ecs:RunTask
                   - ecs:StopTask
-                Resource: '*'
+                Resource:
+                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${EnvironmentName}-wwii-*
+                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:service/${EnvironmentName}-wwii-*/*
+                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task/${EnvironmentName}-wwii-*/*
+                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${EnvironmentName}-wwii-*
               - Sid: PassRole
                 Effect: Allow
                 Action:
@@ -115,6 +119,9 @@ Resources:
                 Action:
                   - cloudwatch:GetMetricStatistics
                 Resource: '*'
+                Condition:
+                  StringEquals:
+                    aws:RequestedRegion: !Ref AWS::Region
               - Sid: EC2ForNatGateway
                 Effect: Allow
                 Action:
@@ -133,6 +140,9 @@ Resources:
                   - ec2:DeleteVpcEndpoints
                   - ec2:DescribeVpcEndpoints
                 Resource: '*'
+                Condition:
+                  StringEquals:
+                    aws:RequestedRegion: !Ref AWS::Region
               - Sid: LambdaInvoke
                 Effect: Allow
                 Action:
@@ -222,7 +232,10 @@ Resources:
                   - ecs:UpdateService
                   - ecs:ListTasks
                   - ecs:DescribeTasks
-                Resource: '*'
+                Resource:
+                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${EnvironmentName}-wwii-*
+                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:service/${EnvironmentName}-wwii-*/*
+                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task/${EnvironmentName}-wwii-*/*
               - Sid: LambdaManagement
                 Effect: Allow
                 Action:
@@ -280,6 +293,7 @@ Resources:
             Version: '2012-10-17'
             Statement:
               - Sid: ECRAuth
+                # ecr:GetAuthorizationToken requires Resource: '*' (AWS limitation)
                 Effect: Allow
                 Action:
                   - ecr:GetAuthorizationToken
@@ -378,7 +392,13 @@ Resources:
                   - lambda:CreateEventSourceMapping
                   - lambda:DeleteEventSourceMapping
                   - secretsmanager:GetSecretValue
-                Resource: '*'
+                Resource:
+                  - !Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/${EnvironmentName}-wwii-*
+                  - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-*
+                  - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-*
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentName}-wwii-*
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:event-source-mapping:*
+                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${EnvironmentName}-wwii-*
                 Condition:
                   StringEquals:
                     aws:RequestedRegion: !Ref AWS::Region

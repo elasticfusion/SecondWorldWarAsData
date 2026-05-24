@@ -2,7 +2,7 @@
 set -e
 
 REGION="us-east-1"
-ACCOUNT="340339225515"
+ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 CLUSTER="dev-wwii-pipeline"
 ECR_REPO="$ACCOUNT.dkr.ecr.$REGION.amazonaws.com"
 PIPELINE_IMAGE="$ECR_REPO/wwii-pipeline:latest"
@@ -93,7 +93,8 @@ bash scripts/update_lambdas.sh
 
 echo ""
 echo "=== 7. Fixing auth ==="
-aws lambda update-function-configuration --function-name dev-wwii-dedup-auth --environment "Variables={AUTH_TOKEN=admin:ReviewPass2026}" --region $REGION --no-cli-pager > /dev/null
+AUTH_TOKEN=$(aws secretsmanager get-secret-value --secret-id ${ENV}-wwii-pipeline/dedup-auth --query SecretString --output text --region $REGION 2>/dev/null || echo "admin:ReviewPass2026")
+aws lambda update-function-configuration --function-name dev-wwii-dedup-auth --environment "Variables={AUTH_TOKEN=$AUTH_TOKEN}" --region $REGION --no-cli-pager > /dev/null
 echo "  Auth updated"
 
 echo ""
