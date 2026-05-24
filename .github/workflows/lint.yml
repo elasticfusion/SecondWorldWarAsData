@@ -1,0 +1,57 @@
+name: Lint
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install black pylint mypy bandit radon vulture cfn-lint
+
+      - name: Black (formatting)
+        run: python -m black --check --diff src/ tests/ scripts/ lambda_handlers/ *.py
+
+      - name: Pylint
+        run: |
+          python -m pylint \
+            --disable=C0301,C0103,R0913,R0914,R0915,W0511,R0917,W0718,W0212,W1203,C0415 \
+            --fail-under=5.0 \
+            src/
+
+      - name: Mypy (type checking)
+        run: python -m mypy src/ --ignore-missing-imports --no-strict-optional
+
+      - name: Bandit (security)
+        run: python -m bandit -r src/ lambda_handlers/ -ll -q
+
+      - name: Radon (complexity)
+        run: python -m radon cc src/ --min C --show-complexity --total-average
+
+      - name: Vulture (dead code)
+        run: python -m vulture src/ .vulture_whitelist.py --min-confidence 80
+
+      - name: CloudFormation lint
+        run: cfn-lint cloudformation/*.yaml
+
+      - name: pip-audit (dependency vulnerabilities)
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt
+          pip-audit -r requirements-lambda.txt

@@ -2,7 +2,7 @@
 
 **Module:** `src/extraction/batch_parallel.py`  
 **Status:** Production  
-**Last Updated:** 2026-03-29
+**Last Updated:** 2026-05-23
 
 ---
 
@@ -454,7 +454,10 @@ python3 phase2_extract.py  # Without --concurrent
 ## xAI Batch API (50% Cost Reduction)
 
 **Module:** `src/utils/batch_api.py`  
-**Flag:** `--batch` on `phase2_extract.py` and `phase3_enrich_data.py`
+**Job Queue:** `src/utils/job_queue.py`  
+**Poller:** `lambda_handlers/batch_poller.py`  
+**Flag:** `--batch` on `phase2_extract.py` and `phase3_enrich_data.py`  
+**Last Updated:** 2026-05-23
 
 The xAI Batch API processes requests asynchronously at 50% of standard token pricing. Instead of real-time API calls, requests are queued and processed in the background (typically within 24 hours).
 
@@ -468,7 +471,7 @@ python3 phase2_extract.py --batch
 python3 phase3_enrich_data.py --batch
 ```
 
-### How It Works
+### How It Works (Local Mode)
 
 1. Pipeline runs normally — cached results return instantly
 2. Uncached requests are collected (not sent) via `BatchModeCollecting`
@@ -477,14 +480,60 @@ python3 phase3_enrich_data.py --batch
 5. Results written into local diskcache
 6. Pipeline re-runs — everything hits cache, processes normally
 
+### How It Works (AWS Mode — Submit/Retrieve Architecture)
+
+When `batch.phase2: true` or `batch.phase3: true` in `config.yaml`, the ECS entrypoint auto-delegates to submit-only mode. The full flow:
+
+1. **Submit-only task** (`ecs_entrypoint.py --submit-only`):
+   - Runs the phase — cached results return instantly, uncached requests collected
+   - Submits all collected requests as one xAI batch job
+   - Enqueues `batch_job#{batch_id}` in DynamoDB via `src/utils/job_queue.py`
+   - Tears down NAT Gateway + scales OpenSERP to 0
+   - Exits (no long-running ECS task)
+
+2. **Batch poller Lambda** (`dev-wwii-batch-poller`):
+   - EventBridge triggers every 15 minutes
+   - Scans DynamoDB for `batch_job#*` entries with status `pending`
+   - Polls Grok batch API for completion
+   - On completion: updates status, creates networking, launches ECS retrieve task
+   - **24h timeout:** Jobs pending >24 hours are marked `failed` (stuck batch protection)
+
+3. **Retrieve-only task** (`ecs_entrypoint.py --retrieve-only`):
+   - Downloads batch results from Grok API
+   - Populates DynamoDB cache with responses
+   - Re-runs the phase with `SKIP_RETRY=true` — everything hits cache
+   - Uploads results to S3
+   - Tears down networking
+   - Updates job status to `retrieved`
+
+### DynamoDB Job Queue Schema
+
+Entries stored in the cache table with key `batch_job#{batch_id}`:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `batch_id` | String | Grok batch API job ID |
+| `phase` | String | `phase2` or `phase3` |
+| `book` | String | Book being processed |
+| `batch_name` | String | Descriptive name for the batch |
+| `submitted_at` | String | ISO timestamp of submission |
+| `status` | String | `pending` / `complete` / `failed` / `retrieved` |
+| `completed_at` | String | ISO timestamp of completion (set by poller) |
+| `request_count` | Number | Number of requests in the batch |
+| `ttl` | Number | DynamoDB TTL (auto-cleanup) |
+
 ### Key Details
 
 - Output is identical to real-time mode
 - Previously cached results are reused (free)
 - Batch requests don't count against rate limits
 - `GrokClient(batch_mode=True)` intercepts `chat_completion()` after cache check
-- Results stored in same diskcache as real-time responses
+- Results stored in same cache as real-time responses
 - Subsequent runs (with or without `--batch`) reuse cached results
+- **Preflight credit check** verifies Grok API balance before submission
+- **Smart retry** skips footnotes-only sections that consistently fail
+- **Per-chapter heartbeat** logs progress every chapter to detect stalls
+- **JSON quality statistics** tracked per batch for monitoring extraction quality
 
 ---
 

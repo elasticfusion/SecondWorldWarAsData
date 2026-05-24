@@ -2,7 +2,7 @@
 
 Run the WWII Data Extraction Pipeline on your local machine with filesystem storage.
 
-**Last Updated:** 2026-04-19
+**Last Updated:** 2026-05-23
 
 ---
 
@@ -162,6 +162,12 @@ python3 scripts/fix_orphaned_person_refs.py --dry-run
 
 # Validate data
 python3 scripts/validate_output.py
+
+# JSON quality report (extraction quality metrics)
+python3 scripts/json_quality_report.py
+
+# Monitor pipeline logs (polling-based, color-coded)
+bash scripts/monitor_logs.sh
 
 # Clean up cache for completed books
 python3 scripts/cleanup_book_cache.py --all --dry-run

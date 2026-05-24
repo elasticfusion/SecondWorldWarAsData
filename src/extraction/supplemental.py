@@ -763,6 +763,7 @@ def _route_by_content_class(
 def _write_notes_event(
     event_file: Path,
     factual_items: List[Dict[str, Any]],
+    endnote_urls: Optional[Dict[int, str]] = None,
 ) -> Optional[Path]:
     """Write factual content as a notes-event file alongside the source event."""
     if not factual_items:
@@ -782,24 +783,30 @@ def _write_notes_event(
     except Exception:
         pass
 
+    urls = endnote_urls or {}
     notes_file = event_file.with_name(
         event_file.name.replace("-event.json", "-notes-event.json")
     )
 
     sub_events = []
     for item in factual_items:
+        ref_num = item.get("reference_number")
+        source_ref = {
+            "reference_type": item["reference_type"],
+            "reference_number": ref_num,
+            "source_EventID": item["source_EventID"],
+            "source_Sub-eventID": item["source_Sub-eventID"],
+            "BibliographyID": item.get("BibliographyID"),
+        }
+        # Add source URL if available
+        if ref_num and int(ref_num) in urls:
+            source_ref["source_url"] = urls[int(ref_num)]
         sub_events.append(
             {
                 "Sub-eventID": str(ulid.new()),
                 "Sub-event_summary": item["verbatim_reference"][:200],
                 "Sub-event_fulltext": {"paragraph_1": item["verbatim_reference"]},
-                "source_reference": {
-                    "reference_type": item["reference_type"],
-                    "reference_number": item["reference_number"],
-                    "source_EventID": item["source_EventID"],
-                    "source_Sub-eventID": item["source_Sub-eventID"],
-                    "BibliographyID": item.get("BibliographyID"),
-                },
+                "source_reference": source_ref,
                 "Endnote_References": [],
                 "Footnote_References": [],
             }
@@ -910,7 +917,20 @@ def extract_supplemental(
     )
 
     # Write factual content as notes-event file
-    notes_file = _write_notes_event(event_file, factual)
+    # Build URL mapping from parsed file's footnotes
+    endnote_urls = {}
+    try:
+        parsed_file = event_file.with_name(
+            event_file.name.replace("-event.json", "-parsed.json")
+        )
+        if parsed_file.exists():
+            parsed_data = json.loads(parsed_file.read_text(encoding="utf-8"))
+            for fn in parsed_data.get("footnotes", []):
+                if fn.get("number") and fn.get("url"):
+                    endnote_urls[fn["number"]] = fn["url"]
+    except Exception:
+        pass
+    notes_file = _write_notes_event(event_file, factual, endnote_urls)
 
     # Queue ambiguous items for human review
     _append_to_review_queue(bib_dir, ambiguous)

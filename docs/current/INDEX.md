@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated:** 2026-05-04
+**Last Updated:** 2026-05-23
 
 ---
 
@@ -43,7 +43,7 @@ Essential architecture, configuration, and API documentation.
 
 - **[ISO_COUNTRY_CODES.md](core/ISO_COUNTRY_CODES.md)** — ISO 3166-1 alpha-3 country codes
 - **[JSON_REPAIR.md](core/JSON_REPAIR.md)** — Automatic JSON repair patterns
-- **[CACHE_AUTO_RECOVERY.md](core/CACHE_AUTO_RECOVERY.md)** — Cache corruption auto-recovery
+- **[CACHE_AUTO_RECOVERY.md](core/CACHE_AUTO_RECOVERY.md)** — Cache corruption auto-recovery (includes poisoned cache auto-detection)
 
 ### Testing
 
@@ -52,6 +52,10 @@ Essential architecture, configuration, and API documentation.
 ### Scripts
 
 See [scripts/README.md](../../scripts/README.md) for the complete scripts reference.
+
+Key monitoring scripts:
+- **`scripts/monitor_logs.sh`** — Polling-based log monitor with color-coded output
+- **`scripts/json_quality_report.py`** — JSON extraction quality statistics (clean/markdown-stripped/repaired/truncated/failed)
 
 ---
 

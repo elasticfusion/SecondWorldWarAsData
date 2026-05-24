@@ -461,8 +461,40 @@ def _run_core_extraction(
     failed = results["failed"]
 
     if os.environ.get("SKIP_RETRY"):
-        logger.info("SKIP_RETRY set — skipping retry of empty event files")
-        retried, retry_failed = 0, 0
+        # In retrieve-only mode: only retry chapters with substantial content
+        # (skip footnotes-only sections that legitimately have 0 sub-events)
+        substantial = []
+        for parsed_file in sorted(parsed_files):
+            event_file = parsed_file.parent / parsed_file.name.replace(
+                "-parsed.json", "-event.json"
+            )
+            if not _event_file_needs_retry(event_file):
+                continue
+            # Check if parsed file has enough content to warrant retry
+            try:
+                with open(parsed_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                paragraphs = data.get("paragraphs", [])
+                if len(paragraphs) >= 3:
+                    substantial.append(parsed_file)
+                else:
+                    logger.info(
+                        "  Skipping %s (only %d paragraphs — likely footnotes)",
+                        parsed_file.name,
+                        len(paragraphs),
+                    )
+            except Exception:
+                substantial.append(parsed_file)
+        if substantial:
+            logger.info("Retrying %d substantial empty event files", len(substantial))
+            retried, retry_failed = _retry_missing_events(
+                substantial, grok_client, logger
+            )
+        else:
+            logger.info(
+                "SKIP_RETRY: all empty event files are footnotes-only, skipping"
+            )
+            retried, retry_failed = 0, 0
     else:
         retried, retry_failed = _retry_missing_events(parsed_files, grok_client, logger)
     processed += retried
@@ -651,7 +683,10 @@ def main():
         books = set()
         for pf in parsed_files:
             books.add(pf.parent.name)
-        batch_name = f"phase2-{'-'.join(sorted(books))}"[:128]
+        req_count = len(grok_client._batch_collector)
+        batch_name = f"phase2-{'-'.join(sorted(books))}-{len(parsed_files)}files-{req_count}reqs"[
+            :128
+        ]
         batch_id = grok_client.submit_batch(batch_name=batch_name)
         if batch_id:
             logger.info("Batch complete! Re-running pipeline with cached results...")

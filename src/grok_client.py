@@ -255,8 +255,11 @@ class GrokClient:
             rate,
         )
         json_total = (
-            self._json_clean + self._json_markdown_stripped
-            + self._json_repaired + self._json_truncated + self._json_failed
+            self._json_clean
+            + self._json_markdown_stripped
+            + self._json_repaired
+            + self._json_truncated
+            + self._json_failed
         )
         if json_total > 0:
             logger.info(
@@ -673,26 +676,26 @@ class GrokClient:
             "stream": False,
         }
 
-        with get_session() as session:
-            response = self._post_with_deadline(session, headers, payload)
-            logger.debug(f"API Response: {response.status_code}")
+        session = get_session()
+        response = self._post_with_deadline(session, headers, payload)
+        logger.debug(f"API Response: {response.status_code}")
 
-            self._handle_api_errors(response)
-            result = response.json()
+        self._handle_api_errors(response)
+        result = response.json()
 
-            # Validate response structure
-            if "choices" not in result or not result["choices"]:
-                raise GrokAPIError(f"Invalid API response structure: {result}")
+        # Validate response structure
+        if "choices" not in result or not result["choices"]:
+            raise GrokAPIError(f"Invalid API response structure: {result}")
 
-            content = result["choices"][0]["message"]["content"]
+        content = result["choices"][0]["message"]["content"]
 
-            # Reject truly empty responses, but allow valid short JSON ([], {})
-            if not content or not content.strip():
-                raise GrokAPIError("API returned empty response")
+        # Reject truly empty responses, but allow valid short JSON ([], {})
+        if not content or not content.strip():
+            raise GrokAPIError("API returned empty response")
 
-            self._log_api_response(result)
+        self._log_api_response(result)
 
-            return result
+        return result
 
     def chat_completion(
         self,
@@ -1207,6 +1210,22 @@ class GrokClient:
         response = self.chat_completion(
             prompt, system_prompt, temperature, use_cache, cache_type
         )
+
+        # Detect poisoned cache: if response is clearly not JSON, clear and retry
+        if use_cache and not _retried:
+            stripped = response.strip()
+            if stripped and not stripped[0] in '{["' and "```" not in stripped[:10]:
+                logger.warning(
+                    "Poisoned cache entry detected (%d chars, starts with '%s'), clearing",
+                    len(response),
+                    stripped[:20],
+                )
+                cache = self._get_cache(cache_type)
+                cache_key = self._make_cache_key(prompt, temperature)
+                cache.pop(cache_key, None)
+                return self.extract_json(
+                    prompt, system_prompt, temperature, False, cache_type, _retried=True
+                )
 
         # Auto-retry short responses, but accept valid short JSON ([], {}, "null")
         if not _retried and len(response) < 500:

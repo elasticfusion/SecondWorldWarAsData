@@ -1,6 +1,6 @@
 # People Deduplication
 
-**Last Updated:** 2026-04-19
+**Last Updated:** 2026-05-23
 
 ## Problem
 
@@ -51,6 +51,15 @@ Merging combines event mentions, updates `output/people/index.json`, and deletes
 | **Substring matching** | "Eisenhower" found within "Dwight D. Eisenhower" (>5 chars) |
 | **Shared biographical data** | Same birth date, nationality + birth year |
 | **Same last name** | "George Patton" vs "George S. Patton" (>3 char last names) |
+| **Grok verification** | Ambiguous single-name matches verified by Grok AI before flagging |
+
+### Name Normalization
+
+`normalize_name()` applies aggressive normalization before comparison:
+- Strips periods and commas
+- ASCII-folds Unicode characters (e.g., ö → o, é → e)
+- Lowercases
+- Collapses whitespace
 
 ## Duplicate Report Format
 
@@ -85,7 +94,21 @@ Merging combines event mentions, updates `output/people/index.json`, and deletes
 
 ## Exclusion List
 
-Pairs added via the `exclude` option during interactive merge are stored in `output/people/not_duplicates.json`. These pairs are skipped in future duplicate detection runs.
+Two types of exclusion prevent false positives from recurring:
+
+### Filename-based exclusions
+Pairs added via the `exclude` option during interactive merge are stored in `output/people/not_duplicates.json`. These pairs are skipped in future duplicate detection runs. Tied to specific file IDs — if a file is recreated with a new ID, the exclusion is lost.
+
+### Name-based exclusions (DynamoDB / persistent)
+Stored as `name_exclusion#{type}#{name1}#{name2}` entries in DynamoDB (AWS) or local JSON (local mode). These survive file recreation because they match on normalized names rather than file IDs.
+
+**Format:** `name_exclusion#people#eisenhower#eisenhower dwight d`
+
+The Dedup Review UI writes **both** filename-based and name-based exclusions when "Not Duplicates" is selected, ensuring persistence regardless of whether files are later regenerated.
+
+### Processed Events Registry
+
+The dedup scripts track which event files have been processed in `.processed_events.json`. This uses **basename** (not absolute path) to ensure portability between local and AWS environments.
 
 ## See Also
 

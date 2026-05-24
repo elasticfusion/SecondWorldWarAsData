@@ -1,6 +1,6 @@
 # Pipeline Documentation
 
-**Last Updated:** 2026-05-15
+**Last Updated:** 2026-05-23
 
 ## Overview
 
@@ -13,7 +13,7 @@ Converts markdown source files into structured JSON with absolute paragraph numb
 - Clears any stale DynamoDB manifest from previous runs
 
 ### Phase 2: Extraction
-Extracts entities and events using Grok AI. Prompts are loaded from YAML templates in `prompts/` (overridable from S3). In AWS mode, Phase 2 uses **incremental processing** — only downloads and processes parsed files that don't have a corresponding event file in S3.
+Extracts entities and events using Grok AI. Prompts are loaded from YAML templates in `prompts/` (overridable from S3). In AWS mode, Phase 2 uses **incremental processing** — only downloads and processes parsed files that don't have a corresponding event file in S3. When `batch.phase2: true`, the task auto-delegates to submit-only mode: submits the batch, enqueues the job, tears down infrastructure, and exits. The batch poller Lambda (`dev-wwii-batch-poller`) checks every 15 minutes and launches a retrieve task on completion.
 
 ### Dedup Review Gate
 After Phase 2, duplicate detection runs automatically:
@@ -45,6 +45,10 @@ python3 phase1_parse.py
 - Inline entity extraction (images, maps, footnotes, page markers)
 - Metadata from YAML files
 - Preserves source structure
+- **Source hash skip:** Computes content hash — unchanged files are not re-written or re-uploaded to S3
+- **Lock scoping:** Only clears its own Phase 1 lock (not Phase 2/3 locks)
+- **Full-sync scoped by `BOOK_NAME`** env var (AWS mode — avoids downloading all books)
+- **Atomic file writes:** Uses temp file + `os.replace()` via `write_json_with_lock()` to prevent corruption
 - **Auto-splitting:** Chapters >400K chars automatically split into ~50 paragraph chunks (e.g., `chapter20a`, `chapter20b`)
 
 **Large Chapter Handling:**
@@ -63,6 +67,8 @@ python3 phase2_extract.py
 # Or use Batch API for 50% cost reduction (async, may take hours)
 python3 phase2_extract.py --batch
 ```
+
+**AWS batch mode:** When `batch.phase2: true` in `config.yaml`, the ECS entrypoint auto-delegates to submit-only mode. The task submits the batch job, enqueues it in DynamoDB (`batch_job#{batch_id}`), tears down infrastructure, and exits. The batch poller Lambda handles retrieval. See [Batch Processing](../features/batch_processing/README.md).
 
 **Pipeline Stages:**
 1. **Metadata Completion** - Auto-fills missing chapter titles/numbers
@@ -83,7 +89,11 @@ python3 phase2_extract.py --batch
 
 **Auto-split on truncation:** If a Grok API response is truncated (>100K chars), the chapter is automatically split at section boundaries and each half is extracted separately, then merged.
 
-**Heartbeat monitor:** Both Phase 2 and Phase 3 log a warning if no progress is made for 5 minutes, showing the last item processed.
+**Heartbeat monitor:** Both Phase 2 and Phase 3 log progress per chapter. A warning is logged if no progress is made for 5 minutes, showing the last item processed.
+
+**Smart retry:** Retry logic skips footnotes-only sections that consistently fail extraction (no actionable content).
+
+**JSON quality statistics:** Extraction quality metrics (valid JSON rate, schema compliance) are tracked per batch and stored in DynamoDB for monitoring.
 
 **Output Files:**
 - `chapter*-event.json` - Events and sub-events
@@ -153,11 +163,13 @@ rm output/content/{Book}/chapter*-{type}.json
 
 In AWS mode, each phase downloads only what it needs:
 
-**Phase 1:** Downloads content files listed in the S3 manifest (from trigger Lambda). Falls back to full `content/` sync if no manifest.
+**Phase 1:** Downloads content files listed in the S3 manifest (from trigger Lambda). Falls back to full `content/` sync scoped by `BOOK_NAME` env var if no manifest.
 
-**Phase 2:** Compares `-parsed.json` files against `-event.json` files in S3. Only downloads parsed files that don't have a corresponding event file. Also downloads entity directories for cross-referencing.
+**Phase 2:** S3 scan scoped by `BOOK_NAME` — compares `-parsed.json` files against `-event.json` files in S3. Only downloads parsed files that don't have a corresponding event file. Also downloads entity directories for cross-referencing.
 
-**Phase 3:** Reads the DynamoDB manifest (`manifest#phase2`) which contains S3 keys of files uploaded by Phase 2 and modified by the dedup UI. Downloads only those files. Falls back to full entity directory download if no manifest exists.
+**Phase 3:** Reads the DynamoDB manifest (`manifest#phase2`) which contains S3 keys of files uploaded by Phase 2 and modified by the dedup UI. Downloads only those files. Falls back to full entity directory download if no manifest exists. Uses `book_manifest#{book}#{entity_type}` for scoped entity downloads.
+
+**Background sync mtime tracking:** S3 uploads track file modification times locally. Only files with changed mtime are uploaded, avoiding redundant S3 PutObject calls during final sync.
 
 ### DynamoDB Manifest
 
@@ -174,6 +186,10 @@ When new content is uploaded while the pipeline is already running:
 3. Sends email notification: "Content queued — pipeline busy"
 4. When Phase 2 completes, it checks `pending#content`
 5. If pending files exist, clears the queue and re-triggers Phase 1 via SNS
+
+Similarly, parsed files are queued as `pending#parsed` when Phase 2 is busy. The trigger Lambda only launches a phase if the pipeline is idle (no active lock for that phase family).
+
+**Publish-before-delete ordering:** When re-triggering pending content, the new SNS message is published *before* the DynamoDB pending entry is deleted. This ensures no content is lost if the Lambda crashes between the two operations.
 
 No content is lost and no concurrent processing occurs.
 
@@ -194,17 +210,20 @@ python3 phase3_enrich_data.py
 python3 phase3_enrich_data.py --batch
 ```
 
+**AWS batch mode:** When `batch.phase3: true` in `config.yaml`, the ECS entrypoint auto-delegates to submit-only mode (same flow as Phase 2). S3 downloads are scoped by `BOOK_NAME` env var to avoid downloading all books.
+
 **What it does:**
 - Enriches people with biographical data from Wikipedia/Grokipedia
 - Enriches groups with organizational history and command structure
 - Enriches places with additional geographic and historical context
 - Enriches bibliography with full citation data and source verification
+- **Grok URL content verification** — verifies that URLs found for bibliography entries actually contain the expected content before accepting them
 - **Resolves bibliography sources** — routes by document type:
   - Military records → Grok identifies NARA Record Group (RG 407, etc.) → OpenSERP for digitized copies → Archive.org
   - Books → Archive.org, Gutenberg
   - All external search results cached (positive 30 days, negative 7 days) to prevent redundant API calls
 - **NOAA weather enrichment** — fetches observed historical weather data from NOAA CDO API for weather entities with coordinates and dates. Supplements Open-Meteo reanalysis data with actual station measurements.
-- **Schema versioning** — stamps `_schema_version` and `_last_updated` on all files before enrichment. Skips if already current.
+- **Schema versioning** — stamps `_schema_version` and `_last_updated` on all files before enrichment. Skips if already current. Uses `try/finally` to re-enable the trigger Lambda even if the task crashes during stamping (crash safety).
 - Searches for birth/death dates, service history, awards
 - Follows references for additional context
 - Caches all external lookups
@@ -224,6 +243,12 @@ All entities also record `last_enrichment_search` (YYYY-MM-DD) for periodic re-s
 - Events: primary sources, veteran interviews (multi-language search)
 - All results verified by Grok before acceptance
 - Tracked via `openserp_searched` flag to prevent duplicate searches
+
+**Book Entity Manifest (AWS):**
+
+Phase 3 uses a book entity manifest (`book_manifest#{book}#{entity_type}` in DynamoDB) to scope S3 downloads. Instead of downloading all entities across all books, it downloads only entities relevant to the current book. The manifest is populated during Phase 2 extraction.
+
+**source_url propagation:** When enrichment discovers a source URL for a bibliography entry, it is propagated into the corresponding `notes-event` files that reference that bibliography entry.
 
 **Options:**
 ```bash
@@ -248,6 +273,7 @@ python3 phase3_retry.py    # Retries until all people are enriched (default: 3 a
 - Counts remaining work after each run
 - Stops early if everything is processed
 - Corrupted cache entries auto-cleared between retries
+- **Poisoned cache auto-detection:** Detects cache entries that cause repeated failures and automatically evicts them before retry
 - Configurable: `--max-attempts N`
 
 See [Retry Wrappers](../pipeline/RETRY_WRAPPERS.md) for details.
@@ -259,10 +285,11 @@ NAT Gateway and VPC endpoints are created/deleted dynamically to minimize costs:
 1. **Trigger Lambda** invokes `nat_manager(create)` before launching any ECS task
 2. NAT + VPC endpoints (ECR API, ECR DKR, CloudWatch Logs) created in private subnets
 3. Pipeline tasks run with internet access via NAT
-4. **Phase 3 completion** → SNS → `nat_manager(delete)` tears down immediately
-5. **Idle monitor** (every 10 min) tears down if no pipeline tasks running for 30 min
+4. **Submit-only task completion** → tears down NAT + scales OpenSERP to 0 immediately after batch submission
+5. **Batch poller Lambda** → on batch completion, invokes `nat_manager(create)` before launching retrieve task
+6. **Retrieve task completion** → tears down NAT + OpenSERP after results are processed
 
-Only Phase 3 completion triggers immediate teardown. Phase 1 and Phase 2 completions do NOT tear down (the next phase needs networking).
+Infrastructure lifecycle is deterministic — no idle timeout needed. NAT only exists during active pipeline execution.
 
 ## Stale Lock Detection
 
@@ -272,4 +299,34 @@ If a task is killed mid-run, its DynamoDB lock persists. The trigger Lambda auto
 2. If no task running → lock is stale → clear it and proceed
 3. If task IS running → legitimately locked → skip
 
-An hourly EventBridge rule invokes the trigger Lambda to check for stale locks even when no new content is uploaded.
+An hourly EventBridge rule invokes the trigger Lambda to check for stale locks even when no new content is uploaded. This also reconciles the dedup gate — if review is marked complete but Phase 3 never launched (e.g., due to a transient failure), the hourly check detects this and re-triggers Phase 3.
+
+## ECS Entrypoint Modes
+
+The `ecs_entrypoint.py` supports three execution modes:
+
+| Mode | Flag | Description |
+|------|------|-------------|
+| **Default** | (none) | Runs `run_phase` — full phase execution (parse, extract, or enrich) |
+| **Submit-only** | `--submit-only` | Submits batch to Grok API, enqueues job in DynamoDB, tears down infra, exits |
+| **Retrieve-only** | `--retrieve-only` | Downloads batch results, populates cache, re-runs phase with `SKIP_RETRY` |
+
+**Auto-delegation:** When `batch.phase2: true` or `batch.phase3: true` in `config.yaml`, the default mode automatically delegates to submit-only. The trigger Lambda doesn't need to know about batch mode.
+
+**Submit-only flow:**
+1. Syncs content from S3
+2. Runs the phase — cached results return instantly, uncached requests collected
+3. Submits collected requests as one xAI batch job
+4. Writes `batch_job#{batch_id}` to DynamoDB (status: `pending`)
+5. Invokes `nat_manager(delete)` to tear down NAT Gateway
+6. Scales OpenSERP service to 0
+7. Exits with success
+
+**Retrieve-only flow:**
+1. Downloads batch results from Grok API
+2. Writes results into DynamoDB cache
+3. Re-runs the phase with `SKIP_RETRY=true` — all requests hit cache
+4. Uploads results to S3
+5. Updates job status to `retrieved`
+6. Tears down networking
+7. Triggers next pipeline stage (dedup/Phase 3)

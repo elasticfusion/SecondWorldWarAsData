@@ -587,13 +587,17 @@ def find_potential_duplicates(
     # Load exclusion list
     from src.dedup.exclusions import get_exclusion_store
 
-    excluded_pairs = get_exclusion_store("people", people_dir_path).load()
+    store = get_exclusion_store("people", people_dir_path)
+    excluded_pairs = store.load()
+    excluded_names = store.load_name_exclusions()
 
     # Load all people files
     people_data = _load_people_data(people_dir_path)
     logger.info("Analyzing %d people for duplicates...", len(people_data))
 
-    return _find_duplicate_groups(people_data, excluded_pairs, text_index)
+    return _find_duplicate_groups(
+        people_data, excluded_pairs, text_index, excluded_names
+    )
 
 
 def _load_people_data(people_dir_path: Path) -> List[Dict[str, Any]]:
@@ -677,10 +681,28 @@ def _union_find_groups(
     return groups
 
 
+def _is_pair_excluded(p1: Dict, p2: Dict, excluded_pairs: Set, excluded_names) -> bool:
+    """Check if a pair is excluded by filename or name-based exclusions."""
+    pair_key = tuple(sorted([p1["_filename"], p2["_filename"]]))
+    if pair_key in excluded_pairs:
+        return True
+    if excluded_names:
+        from src.dedup.exclusions import _normalize_exclusion_name
+
+        name_pair = tuple(sorted([
+            _normalize_exclusion_name(p1["name"]),
+            _normalize_exclusion_name(p2["name"]),
+        ]))
+        if name_pair in excluded_names:
+            return True
+    return False
+
+
 def _build_pairwise_matches(
     people_data: List[Dict[str, Any]],
     excluded_pairs: Set[tuple],
     text_index: Dict[str, str],
+    excluded_names: Optional[Set[tuple]] = None,
 ) -> list[tuple[int, int, list[str], float]]:
     """Score all pairs and return those with name-based evidence above threshold.
 
@@ -706,8 +728,9 @@ def _build_pairwise_matches(
             if "name" not in person2:
                 continue
 
-            pair_key = tuple(sorted([person1["_filename"], person2["_filename"]]))
-            if pair_key in excluded_pairs:
+            if _is_pair_excluded(
+                person1, person2, excluded_pairs, excluded_names
+            ):
                 continue
 
             # Skip if both entries point to the same file or same PersonID
@@ -810,13 +833,16 @@ def _find_duplicate_groups(
     people_data: List[Dict[str, Any]],
     excluded_pairs: Set[tuple],
     text_index: Dict[str, str],
+    excluded_names: Optional[Set[tuple]] = None,
 ) -> List[Dict[str, Any]]:
     """Find duplicate groups from scored pairs using union-find.
 
     Only people with a direct pairwise match are grouped together.
     Requires name-based evidence for any pair.
     """
-    pairs = _build_pairwise_matches(people_data, excluded_pairs, text_index)
+    pairs = _build_pairwise_matches(
+        people_data, excluded_pairs, text_index, excluded_names
+    )
     groups = _union_find_groups(pairs)
 
     duplicates = []
@@ -852,10 +878,94 @@ def _find_duplicate_groups(
     return duplicates
 
 
+def _verify_ambiguous_matches(
+    duplicates: List[Dict], people_dir: Path, grok_client
+) -> List[Dict]:
+    """Use Grok to verify ambiguous single-name matches with event context."""
+    from src.dedup.exclusions import get_exclusion_store
+
+    store = get_exclusion_store("people", people_dir)
+    verified = []
+
+    for group in duplicates:
+        people = group.get("people", [])
+        if len(people) != 2:
+            verified.append(group)
+            continue
+
+        # Only verify single-name vs full-name pairs
+        names = [p.get("name", "") for p in people]
+        if not any(len(n.split()) == 1 for n in names):
+            verified.append(group)
+            continue
+
+        # Load event context from files
+        contexts = []
+        for p in people:
+            ctx = _get_person_context(people_dir / p["filename"])
+            contexts.append(f"{p['name']}: {ctx}")
+
+        prompt = (
+            f"Are these the same person?\n\n"
+            f"Person 1: {contexts[0]}\n"
+            f"Person 2: {contexts[1]}\n\n"
+            f"Return ONLY 'YES' or 'NO'."
+        )
+
+        try:
+            response = grok_client.chat_completion(
+                prompt=prompt,
+                system_prompt="You determine if two military personnel references are the same person based on context.",
+                temperature=0.0,
+                use_cache=True,
+                cache_type="people",
+            )
+            if response.strip().upper().startswith("NO"):
+                # Not the same person — auto-exclude
+                store.add(people[0]["filename"], people[1]["filename"])
+                logger.info(
+                    "Grok verified NOT same: %s ≠ %s",
+                    people[0]["name"],
+                    people[1]["name"],
+                )
+                continue
+        except Exception as e:
+            logger.debug("Grok verification failed: %s", e)
+
+        verified.append(group)
+
+    removed = len(duplicates) - len(verified)
+    if removed:
+        logger.info("Grok verification removed %d false-positive groups", removed)
+    return verified
+
+
+def _get_person_context(person_file: Path) -> str:
+    """Extract brief context from a person file for verification."""
+    try:
+        data = json.loads(person_file.read_text(encoding="utf-8"))
+        parts = []
+        if data.get("positions"):
+            parts.append(f"positions: {', '.join(data['positions'][:3])}")
+        mentions = data.get("event_mentions", [])
+        if mentions:
+            events = [
+                m.get("event_name", "") for m in mentions[:3] if m.get("event_name")
+            ]
+            if events:
+                parts.append(f"events: {', '.join(events)}")
+        if data.get("nationality"):
+            parts.append(f"nationality: {data['nationality']}")
+        return "; ".join(parts) if parts else "no context available"
+    except Exception:
+        return "no context available"
+
+
 def generate_duplicate_report(
     people_dir_path: Path,
     output_file_path: Path,
     output_root: Optional[Path] = None,
+    grok_client=None,
 ) -> None:
     """Generate a report of potential duplicates."""
     duplicates = find_potential_duplicates(people_dir_path, output_root=output_root)
@@ -864,6 +974,10 @@ def generate_duplicate_report(
     from src.dedup.validation import validate_report_groups
 
     duplicates = validate_report_groups(duplicates, people_dir_path)
+
+    # Verify ambiguous single-name matches with Grok
+    if grok_client:
+        duplicates = _verify_ambiguous_matches(duplicates, people_dir_path, grok_client)
 
     # Sort alphabetically by the most complete name (longest) in each group
     def _sort_key(group):

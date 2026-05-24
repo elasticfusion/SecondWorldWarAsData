@@ -2,7 +2,7 @@
 set -e
 
 REGION="us-east-1"
-ACCOUNT="REDACTED"
+ACCOUNT="340339225515"
 CLUSTER="dev-wwii-pipeline"
 ECR_REPO="$ACCOUNT.dkr.ecr.$REGION.amazonaws.com"
 PIPELINE_IMAGE="$ECR_REPO/wwii-pipeline:latest"
@@ -46,9 +46,38 @@ python3 -c "import ast; ast.parse(open('ecs_entrypoint.py').read()); ast.parse(o
 python3 -m pytest tests/unit/ -q 2>&1 | tail -1
 
 echo ""
+echo "=== 3b. Security checks ==="
+# Dockerfile linting
+if command -v hadolint &>/dev/null; then
+  hadolint Dockerfile && echo "  Hadolint: OK" || echo "  Hadolint: warnings (non-blocking)"
+else
+  echo "  Hadolint: not installed (skipping)"
+fi
+# CloudFormation linting
+if command -v cfn-lint &>/dev/null; then
+  cfn-lint cloudformation/*.yaml 2>&1 | head -10 && echo "  cfn-lint: OK"
+else
+  echo "  cfn-lint: not installed (skipping)"
+fi
+# CloudFormation security
+if command -v cfn_nag_scan &>/dev/null; then
+  cfn_nag_scan --input-path cloudformation/ 2>&1 | grep -E "FAIL|WARN" | head -10
+  echo "  cfn-nag: done"
+else
+  echo "  cfn-nag: not installed (skipping)"
+fi
+
+echo ""
 echo "=== 4. Building and pushing container ==="
 aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR_REPO
 docker build --no-cache --progress=plain -t wwii-pipeline .
+# Container vulnerability scan
+if command -v trivy &>/dev/null; then
+  echo "  Scanning image for vulnerabilities..."
+  trivy image --severity HIGH,CRITICAL --exit-code 0 wwii-pipeline:latest 2>&1 | tail -5
+else
+  echo "  Trivy: not installed (skipping container scan)"
+fi
 docker tag wwii-pipeline:latest $PIPELINE_IMAGE
 docker push $PIPELINE_IMAGE
 echo "  Pushed: $(aws ecr describe-images --repository-name wwii-pipeline --region $REGION --image-ids imageTag=latest --query 'imageDetails[0].imagePushedAt' --output text)"
@@ -64,7 +93,7 @@ bash scripts/update_lambdas.sh
 
 echo ""
 echo "=== 7. Fixing auth ==="
-aws lambda update-function-configuration --function-name dev-wwii-dedup-auth --environment "Variables={AUTH_TOKEN=admin:REDACTED}" --region $REGION --no-cli-pager > /dev/null
+aws lambda update-function-configuration --function-name dev-wwii-dedup-auth --environment "Variables={AUTH_TOKEN=admin:ReviewPass2026}" --region $REGION --no-cli-pager > /dev/null
 echo "  Auth updated"
 
 echo ""

@@ -129,6 +129,26 @@ python3 -m radon cc script.py -a
 python3 -m black script.py
 ```
 
+### Security Scanning (Deploy)
+
+The deployment pipeline runs additional security checks:
+
+```bash
+# Dockerfile linting
+hadolint Dockerfile
+
+# CloudFormation linting
+cfn-lint cloudformation/*.yaml
+
+# CloudFormation security analysis
+cfn-nag cloudformation/*.yaml
+
+# Container image vulnerability scanning
+trivy image wwii-pipeline:latest
+```
+
+These are run automatically by `scripts/deploy_all.sh` before pushing images.
+
 ### Standards
 
 - **Pylint**: 9.9-10/10 (disable only specific warnings)
