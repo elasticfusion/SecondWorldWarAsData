@@ -1,0 +1,5 @@
+3386ee67e285596d211c7bb35b1cd50884403f7c,MODIFY,regular-file,docs/current/DEVOPS_RECOMMENDATIONS.md,10397,27-28
+cd84d61b6be98cc8faf99bffcad9384fa9625cbe,MODIFY,regular-file,docs/current/GITHUB_ACTIONS_AWS_SETUP.md,8000,11;30;83;152;168;184;241
+8b468ae1c0c05742d6c98d75a3627a2c5b3de469,MODIFY,regular-file,docs/current/TODO.md,30445,12
+c29f2752bf463b91366ef8f455282560c09eee35,MODIFY,executable,scripts/deploy_all.sh,4817,5;96
+4ec4b206aeec5d50700205789b37896d7478853f,MODIFY,regular-file,scripts/trigger_phase3.sh,1785,5
