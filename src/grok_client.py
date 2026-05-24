@@ -654,7 +654,7 @@ class GrokClient:
     @retry(
         stop=stop_after_attempt(5),
         wait=wait_exponential(multiplier=2, min=4, max=60),
-        retry=retry_if_exception_type(requests.HTTPError),
+        retry=retry_if_exception_type((requests.HTTPError, requests.ConnectionError)),
         reraise=True,
     )
     def _call_api(self, messages: list, temperature: float = 0.1) -> Dict[str, Any]:

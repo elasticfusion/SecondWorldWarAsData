@@ -304,14 +304,22 @@ def _merge_generic_files(entity_type, people, primary_index, storage):
             secondary = storage.read_json(f"{prefix}/{p['filename']}")
             secondary_mentions = secondary.get("event_mentions", [])
             seen = {
-                m.get("Sub_eventID") for m in primary_mentions if m.get("Sub_eventID")
+                (
+                    m.get("Sub_eventID", ""),
+                    m.get("event_id", ""),
+                    m.get("Event_Name", ""),
+                )
+                for m in primary_mentions
             }
             for m in secondary_mentions:
-                sub_id = m.get("Sub_eventID")
-                if not sub_id or sub_id not in seen:
+                mention_key = (
+                    m.get("Sub_eventID", ""),
+                    m.get("event_id", ""),
+                    m.get("Event_Name", ""),
+                )
+                if mention_key not in seen:
                     primary_mentions.append(m)
-                    if sub_id:
-                        seen.add(sub_id)
+                    seen.add(mention_key)
             sec_name = secondary.get(
                 "name",
                 secondary.get(
