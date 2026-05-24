@@ -62,7 +62,7 @@ class TestPhase2Integration:
     def test_incremental_extraction(self, temp_output_dir, mock_grok_client, tmp_path):
         """Test that extraction accumulates across multiple chapters."""
         import json
-        
+
         people_dir = temp_output_dir / "people"
         people_dir.mkdir(exist_ok=True)
 
@@ -98,7 +98,7 @@ class TestPhase2Integration:
         mock_grok_client.extract_structured.return_value = Mock(
             model_dump=lambda: mock_response
         )
-        
+
         # Create dummy event file
         event_file = tmp_path / "test-event.json"
         event_data = {

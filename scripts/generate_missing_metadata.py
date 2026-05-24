@@ -61,11 +61,11 @@ def create_metadata_template(chapter_dir: Path, book_name: str):
 
     # Create metadata file (don't overwrite if exists)
     meta_file = chapter_dir / f"{chapter_name}-meta.yaml"
-    
+
     if meta_file.exists():
         print(f"  ⊘ Skipped: {meta_file.name} already exists")
         return None
-    
+
     with open(meta_file, "w", encoding="utf-8") as f:
         yaml.dump(metadata, f, default_flow_style=False, sort_keys=False)
 

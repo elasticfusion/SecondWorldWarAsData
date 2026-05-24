@@ -38,7 +38,7 @@ def extract_metadata_with_grok(
     """Use Grok to extract missing metadata from chapter content."""
     # Make a copy to avoid modifying the original
     metadata = existing_metadata.copy()
-    
+
     # Find content files
     content_files = list(chapter_dir.glob("*-content.md"))
 
@@ -81,15 +81,15 @@ If you cannot find a field, return null for that field."""
 
         # Update only if we found something and existing is placeholder
         if extracted.get("chapter_number"):
-            if not metadata.get(
-                "chapter_number"
-            ) or "[CHAPTER NUMBER]" in metadata.get("chapter_number", ""):
+            if not metadata.get("chapter_number") or "[CHAPTER NUMBER]" in metadata.get(
+                "chapter_number", ""
+            ):
                 metadata["chapter_number"] = extracted["chapter_number"]
 
         if extracted.get("chapter_title"):
-            if not metadata.get(
-                "chapter_title"
-            ) or "[CHAPTER TITLE]" in metadata.get("chapter_title", ""):
+            if not metadata.get("chapter_title") or "[CHAPTER TITLE]" in metadata.get(
+                "chapter_title", ""
+            ):
                 metadata["chapter_title"] = extracted["chapter_title"]
 
         return metadata

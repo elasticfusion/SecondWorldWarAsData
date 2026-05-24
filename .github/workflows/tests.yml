@@ -5,6 +5,7 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  workflow_call:
 
 jobs:
   test:
@@ -24,6 +25,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt -r requirements-test.txt
           pip install moto[dynamodb,s3,ecs,lambda]
+          cp config.yaml.example config.yaml
 
       - name: Run tests
         run: |

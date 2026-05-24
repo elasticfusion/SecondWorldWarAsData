@@ -12,7 +12,10 @@ from src.utils.config import load_config, get_paths
 def test_supplemental_extraction():
     """Test supplemental material extraction on a sample event file."""
     base_dir = Path(__file__).parent.parent
-    config = load_config(base_dir / "config.yaml")
+    config_path = base_dir / "config.yaml"
+    if not config_path.exists():
+        config_path = base_dir / "config.yaml.example"
+    config = load_config(config_path)
     paths = get_paths(config, base_dir)
 
     # Initialize Grok client

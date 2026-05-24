@@ -13,7 +13,13 @@ def validate_place_structure(data, filename):
 
     for idx, item in enumerate(data):
         # Check top-level fields
-        required = ["Event_Name", "EventID", "Sub_event_Name", "Sub_eventID", "Place_Mentions"]
+        required = [
+            "Event_Name",
+            "EventID",
+            "Sub_event_Name",
+            "Sub_eventID",
+            "Place_Mentions",
+        ]
         for field in required:
             if field not in item:
                 issues.append(f"Item {idx}: Missing '{field}'")
@@ -31,7 +37,9 @@ def validate_place_structure(data, filename):
                 if "route" in place:
                     # Route validation
                     if not isinstance(place["route"], list):
-                        issues.append(f"Item {idx}, Place {pidx}: 'route' should be array")
+                        issues.append(
+                            f"Item {idx}, Place {pidx}: 'route' should be array"
+                        )
                     else:
                         for ridx, stop in enumerate(place["route"]):
                             route_required = [
@@ -58,7 +66,9 @@ def validate_place_structure(data, filename):
                     ]
                     for field in regular_required:
                         if field not in place:
-                            issues.append(f"Item {idx}, Place {pidx}: Missing '{field}'")
+                            issues.append(
+                                f"Item {idx}, Place {pidx}: Missing '{field}'"
+                            )
 
                     # Validate bounding_box_100km
                     if "bounding_box_100km" in place:

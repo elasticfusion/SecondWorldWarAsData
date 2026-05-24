@@ -375,11 +375,7 @@ class TestValidationPerformanceSummary:
         print(f"   Throughput: {throughput:.0f} files/second")
 
         # 2. Hook overhead
-        data = {
-            "people": [
-                {"PersonID": str(ulid.new()), "name": "Test", "events": []}
-            ]
-        }
+        data = {"people": [{"PersonID": str(ulid.new()), "name": "Test", "events": []}]}
 
         start = time.perf_counter()
         for _ in range(100):

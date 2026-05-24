@@ -235,7 +235,9 @@ def poll_batch(
             consecutive_errors += 1
             if consecutive_errors >= 5:
                 raise
-            logger.warning("Poll error (%d/5), retrying in 60s: %s", consecutive_errors, e)
+            logger.warning(
+                "Poll error (%d/5), retrying in 60s: %s", consecutive_errors, e
+            )
             time.sleep(60)
             continue
         batch = resp.json()
@@ -263,7 +265,10 @@ def poll_batch(
         if elapsed_hours >= max_hours:
             logger.warning(
                 "Batch %s timed out after %.1fh (%d/%d complete)",
-                batch_id, elapsed_hours, success + error, total,
+                batch_id,
+                elapsed_hours,
+                success + error,
+                total,
             )
             batch["_poll_seconds"] = time.monotonic() - start
             batch["_timed_out"] = True

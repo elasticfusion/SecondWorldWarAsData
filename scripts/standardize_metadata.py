@@ -44,7 +44,7 @@ def parse_existing_meta(meta_file: Path) -> dict:
         # Extract license
         elif line.startswith("License:"):
             metadata["license"] = line.replace("License:", "").strip()
-        
+
         # Extract copyright date
         elif line.startswith("Copyright:") or "©" in line:
             # Extract year from copyright line
