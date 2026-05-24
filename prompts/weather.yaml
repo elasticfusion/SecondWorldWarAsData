@@ -7,10 +7,10 @@ prompt_template: |
   Event: {event_name} (ID: {event_id})
   Sub-event: {sub_event_summary} (ID: {sub_event_id})
 
-  Available places:
+  Available places (COPY these IDs exactly — do NOT generate new ones):
   {places_section}
 
-  Available dates:
+  Available dates (COPY these IDs exactly — do NOT generate new ones):
   {dates_section}
 
   Text:
@@ -20,25 +20,26 @@ prompt_template: |
   {schema}
 
 schema: |
-  {
+  {{
     "Weather_Mentions": [
-      {
+      {{
         "WeatherMentionID": "01ULID...",
         "place_name": "Normandy",
-        "PlaceMentionID": "01ULID...",
+        "PlaceMentionID": "<COPY from Available places above, or null if no match>",
         "date": "1944-06-06",
-        "DateMentionID": "01ULID...",
+        "DateMentionID": "<COPY from Available dates above, or null if no match>",
         "weather_description": "Overcast skies with intermittent rain",
-        "temperature": {"value": 15, "unit": "celsius", "system": "metric"},
+        "temperature": {{"value": 15, "unit": "celsius", "system": "metric"}},
         "notable_impact": "Poor visibility delayed air support",
         "original_text": "overcast skies and rain hampered air operations"
-      }
+      }}
     ]
-  }
+  }}
 
 rules:
-  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
+  - Generate 26-character ULIDs ONLY for WeatherMentionID
+  - CRITICAL: For PlaceMentionID, COPY the ID from "Available places" above that matches the place name. Do NOT generate a new ULID. If no match exists, use null.
+  - CRITICAL: For DateMentionID, COPY the ID from "Available dates" above that matches the date. Do NOT generate a new ULID. If no match exists, use null.
   - CRITICAL: Only extract exact dates (YYYY-MM-DD), skip approximate dates
-  - Link PlaceMentionID to available places when possible
-  - Link DateMentionID to available dates when possible
+  - If the same weather condition is described for the same date and location, extract it only ONCE
   - If no weather mentions found, return empty Weather_Mentions array

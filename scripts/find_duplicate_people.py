@@ -689,10 +689,14 @@ def _is_pair_excluded(p1: Dict, p2: Dict, excluded_pairs: Set, excluded_names) -
     if excluded_names:
         from src.dedup.exclusions import _normalize_exclusion_name
 
-        name_pair = tuple(sorted([
-            _normalize_exclusion_name(p1["name"]),
-            _normalize_exclusion_name(p2["name"]),
-        ]))
+        name_pair = tuple(
+            sorted(
+                [
+                    _normalize_exclusion_name(p1["name"]),
+                    _normalize_exclusion_name(p2["name"]),
+                ]
+            )
+        )
         if name_pair in excluded_names:
             return True
     return False
@@ -728,9 +732,7 @@ def _build_pairwise_matches(
             if "name" not in person2:
                 continue
 
-            if _is_pair_excluded(
-                person1, person2, excluded_pairs, excluded_names
-            ):
+            if _is_pair_excluded(person1, person2, excluded_pairs, excluded_names):
                 continue
 
             # Skip if both entries point to the same file or same PersonID

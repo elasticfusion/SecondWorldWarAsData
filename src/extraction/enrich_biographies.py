@@ -119,7 +119,11 @@ def _handle_wikipedia_error(
         logger.debug("Wikipedia timeout for %s: %s", person_name, e)
         return False
 
-    if isinstance(e, requests.HTTPError) and e.response.status_code == 403:
+    if (
+        isinstance(e, requests.HTTPError)
+        and getattr(e, "response", None) is not None
+        and e.response.status_code == 403
+    ):
         logger.warning(
             "Wikipedia API blocked request for %s (403 Forbidden). "
             "Wikipedia may be rate limiting or blocking automated requests.",

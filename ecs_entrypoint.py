@@ -1055,7 +1055,9 @@ def _stamp_schema_versions() -> None:
         if content.exists():
             for f in content.rglob("*-event.json"):
                 updated += _stamp_file(f, needs_migration, inject_metadata)
-        logger.info("Schema migration: stamped %d files to v%s", updated, SCHEMA_VERSION)
+        logger.info(
+            "Schema migration: stamped %d files to v%s", updated, SCHEMA_VERSION
+        )
 
     finally:
         # Re-enable trigger Lambda (always, even on crash)

@@ -422,7 +422,10 @@ nat_manager.py allocates EIPs but never releases them on NAT deletion. $3.60/mon
 ### Data
 
 #### Re-extract entities with updated prompts
-Add `processing.reprocess_types: [places, people, peoplegroups]` config option that clears cache for only the specified entity types and re-runs extraction. Leaves events and other types untouched.
+Add `processing.reprocess_types: [places, people, peoplegroups]` config option that clears cache for only the specified entity types and re-runs extraction.
+
+#### Create place entities for 248 unresolved weather locations
+Weather PlaceID reconciliation resolved 83% (1,292 files). Remaining 248 have place names (e.g., "Hill 310 area", "Canrobert line") with no matching place entity. Need new place entities created or manual mapping. Leaves events and other types untouched.
 
 #### Source-anchored names (`identified_as` field)
 Add `identified_as` as an optional Phase 3 enrichment field. Phase 2 keeps extracting names as-is from source text. Phase 3 asks Grok "who is this person/unit based on event context?" and stores the canonical name. Dedup uses `identified_as` as an additional matching signal without changing the index key.
