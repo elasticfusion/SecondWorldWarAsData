@@ -1,7 +1,7 @@
 # Configuration Guide
 
 **File:** `config.yaml`  
-**Last Updated:** 2026-05-11
+**Last Updated:** 2026-05-23
 
 Complete reference for all configuration options in the WWII data extraction pipeline.
 
@@ -81,12 +81,32 @@ processing:
   validate_ulids: true
   generate_jq_queries: true
   generate_download_scripts: true
+  force_reprocess: false             # WARNING: expensive — reprocesses all content regardless of cache
 ```
 
 **Options:**
 - `validate_ulids` - Verify ULID format for all IDs
 - `generate_jq_queries` - Create jq query files for data exploration
 - `generate_download_scripts` - Generate shell scripts for bulk downloads
+- `force_reprocess` - When true, ignores existing output files and reprocesses everything. **Use with caution** — this bypasses all skip logic and will re-call the Grok API for all chapters.
+
+---
+
+## Batch Mode
+
+Controls xAI Batch API usage for 50% cost reduction. When enabled, the ECS entrypoint auto-delegates to submit-only mode instead of running the phase inline.
+
+```yaml
+batch:
+  phase2: true                       # Use batch API for Phase 2 extraction
+  phase3: true                       # Use batch API for Phase 3 enrichment
+```
+
+**Options:**
+- `phase2` - When true, Phase 2 auto-delegates to `run_submit_only` (submits batch, enqueues job, exits). The batch poller Lambda handles retrieval.
+- `phase3` - When true, Phase 3 auto-delegates to `run_submit_only` (same flow as Phase 2).
+
+**Behavior:** When `batch.phase2: true`, calling `ecs_entrypoint.py` with `--phase phase2` automatically runs in submit-only mode. The entrypoint detects the batch config and delegates without needing `--submit-only` explicitly. This means the trigger Lambda doesn't need to know about batch mode — it launches Phase 2 normally and the entrypoint handles the rest.
 
 ---
 
@@ -487,6 +507,8 @@ Set automatically by CloudFormation on ECS task definitions:
 | `NOTIFICATION_TOPIC_ARN` | All | SNS topic for completion notifications |
 | `CONTENT_TOPIC_ARN` | Phase 2 | SNS topic for content-uploaded events (used to re-trigger pipeline for pending content) |
 | `DEDUP_REVIEW_URL` | Phase 2 | URL of the dedup review UI (included in notification emails) |
+| `BOOK_NAME` | Phase 3 | Scopes S3 downloads to a specific book (set by trigger Lambda) |
+| `SKIP_RETRY` | Retrieve task | When true, skips retry logic (results already in cache) |
 | `ENV_NAME` | All | Environment name prefix (e.g., `dev`) |
 
 ### DynamoDB Keys Used by Pipeline
@@ -496,6 +518,10 @@ Set automatically by CloudFormation on ECS task definitions:
 | `lock#<family>` | Trigger Lambda | Trigger Lambda, entrypoint | Pipeline task locks (conditional put) |
 | `manifest#phase2` | Phase 2 final sync, dedup UI | Phase 3 download | List of S3 keys changed by Phase 2 and dedup review |
 | `pending#content` | Trigger Lambda | Phase 2 post-process | Queued content keys when pipeline is busy |
+| `pending#parsed` | Trigger Lambda | Phase 2 launcher | Queued parsed file keys when Phase 2 is busy |
+| `batch_job#<batch_id>` | Submit-only task | Batch poller Lambda | Batch job tracking (status: pending/complete/failed/retrieved, 30-day TTL) |
+| `book_manifest#<book>#<entity_type>` | Phase 2 | Phase 3 | Entity files belonging to a specific book (scopes S3 downloads) |
+| `name_exclusion#<type>#<name1>#<name2>` | Dedup UI, merge script | Dedup scripts | Name-based exclusion pairs (survives file recreation) |
 | `metrics#<id>` | Phase 2/3 | Metrics API | Batch API metrics |
 
 ---

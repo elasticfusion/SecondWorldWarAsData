@@ -45,6 +45,19 @@ Resources:
     Type: AWS::ECS::Cluster
     Properties:
       ClusterName: !Sub ${EnvironmentName}-wwii-pipeline
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enhanced
+      CapacityProviders:
+        - FARGATE_SPOT
+        - FARGATE
+      DefaultCapacityProviderStrategy:
+        - CapacityProvider: FARGATE_SPOT
+          Weight: 4
+          Base: 0
+        - CapacityProvider: FARGATE
+          Weight: 1
+          Base: 0
 
   # --- Pipeline ECS Log Group ---
   PipelineLogGroup:
@@ -224,6 +237,19 @@ Resources:
                                   logger.info("Cleared stale lock: %s", family)
                       except Exception as e:
                           logger.warning("Lock check failed for %s: %s", family, e)
+                  # Reconcile: if dedup complete but Phase 3 never ran, trigger it
+                  try:
+                      phase3_family = "${EnvironmentName}-wwii-phase3-enrich"
+                      phase3_lock = dynamo.get_item(Key={"cache_key": f"lock#{phase3_family}"}).get("Item")
+                      phase3_running = ecs.list_tasks(cluster=CLUSTER, family=phase3_family, desiredStatus="RUNNING").get("taskArns", [])
+                      if not phase3_lock and not phase3_running:
+                          resp = s3.get_object(Bucket=BUCKET, Key="dedup/review_status.json")
+                          status = json.loads(resp["Body"].read())
+                          if status.get("complete"):
+                              logger.info("Dedup complete but Phase 3 never ran — triggering")
+                              _run_task(PHASE3_TASK, "reconciliation")
+                  except Exception as e:
+                      logger.debug("Dedup reconciliation check: %s", e)
                   return {"action": "lock_check_complete"}
 
               # Extract unique topic names and S3 keys from records (SQS or SNS format)
@@ -371,8 +397,11 @@ Resources:
               ecs.run_task(
                   cluster=CLUSTER,
                   taskDefinition=task_def,
-                  launchType="FARGATE",
                   count=1,
+                  capacityProviderStrategy=[
+                      {"capacityProvider": "FARGATE_SPOT", "weight": 4, "base": 0},
+                      {"capacityProvider": "FARGATE", "weight": 1, "base": 0},
+                  ],
                   networkConfiguration={"awsvpcConfiguration": {
                       "subnets": SUBNETS,
                       "securityGroups": [SG],
@@ -428,13 +457,27 @@ Resources:
               _run_task("${Phase1TaskDef}", "pending-queue")
 
           def _queue_parsed(keys):
-              """Queue parsed file keys for batch Phase 2 processing."""
+              """Queue parsed file keys for batch Phase 2 processing, skipping already-processed."""
+              # Filter out parsed files that already have event files
+              new_keys = []
+              for key in keys:
+                  if not key.endswith("-parsed.json"):
+                      continue
+                  event_key = key.replace("-parsed.json", "-event.json")
+                  try:
+                      s3.head_object(Bucket=BUCKET, Key=event_key)
+                      logger.info("Skipping %s (event file exists)", key.split("/")[-1])
+                  except Exception:
+                      new_keys.append(key)
+              if not new_keys:
+                  logger.info("All parsed files already processed, nothing to queue")
+                  return
               try:
                   resp = dynamo.get_item(Key={"cache_key": "pending#parsed"})
                   existing = resp.get("Item", {}).get("keys", [])
-                  merged = list(set(existing + keys))
+                  merged = list(set(existing + new_keys))
                   dynamo.put_item(Item={"cache_key": "pending#parsed", "keys": merged})
-                  logger.info("Queued %d parsed keys (%d total pending)", len(keys), len(merged))
+                  logger.info("Queued %d parsed keys (%d total pending)", len(new_keys), len(merged))
               except Exception as e:
                   logger.error("Failed to queue parsed keys: %s", e)
 
@@ -874,7 +917,13 @@ Resources:
       Cluster: !Ref ECSCluster
       TaskDefinition: !Ref OpenSerpTaskDef
       DesiredCount: 0
-      LaunchType: FARGATE
+      CapacityProviderStrategy:
+        - CapacityProvider: FARGATE_SPOT
+          Weight: 4
+          Base: 0
+        - CapacityProvider: FARGATE
+          Weight: 1
+          Base: 0
       NetworkConfiguration:
         AwsvpcConfiguration:
           Subnets:

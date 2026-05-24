@@ -15,6 +15,10 @@ echo "=== Building Lambda package ==="
 rm -rf lambda_package lambda-code.zip
 pip install -r requirements-lambda.txt -t lambda_package/ -q
 cp -r src/ lambda_handlers/ scripts/ config.yaml lambda_package/
+# Scan Lambda dependencies for vulnerabilities
+if command -v trivy &>/dev/null; then
+  trivy fs lambda_package/ --severity HIGH,CRITICAL --exit-code 0 2>&1 | tail -5
+fi
 cd lambda_package
 zip -r ../lambda-code.zip . -x "*.pyc" "*__pycache__*" > /dev/null
 cd "$PROJECT_DIR"

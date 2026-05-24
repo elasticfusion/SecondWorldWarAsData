@@ -126,7 +126,7 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Sub ${EnvironmentName}-wwii-trigger-queue
-      VisibilityTimeout: 120
+      VisibilityTimeout: 300
       MessageRetentionPeriod: 3600
 
   TriggerQueuePolicy:

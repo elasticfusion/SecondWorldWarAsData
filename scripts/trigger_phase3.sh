@@ -2,7 +2,7 @@
 REGION="us-east-1"
 TABLE="dev-wwii-api-cache"
 CLUSTER="dev-wwii-pipeline"
-TOPIC="arn:aws:sns:us-east-1:REDACTED:dev-wwii-dedup-complete"
+TOPIC="arn:aws:sns:us-east-1:340339225515:dev-wwii-dedup-complete"
 IDLE_RULE="dev-wwii-openserp-idle-monitor"
 
 echo "=== 1. Clearing all locks ==="

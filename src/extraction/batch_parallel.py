@@ -13,6 +13,19 @@ from src.grok_client import GrokClient, current_book
 from src.utils.file_lock import write_json_with_lock
 from src.utils.json_validator import _fix_invalid_ulids
 
+_book_manifest = None
+
+
+def _register_entity(book: str, entity_type: str, filename: str) -> None:
+    """Register entity file in book manifest (lazy init)."""
+    global _book_manifest
+    if _book_manifest is None:
+        from src.utils.book_manifest import get_book_manifest
+
+        _book_manifest = get_book_manifest()
+    _book_manifest.register(book, entity_type, filename)
+
+
 logger = logging.getLogger(__name__)
 
 _RANK_PREFIX = re.compile(
@@ -195,6 +208,10 @@ def _get_or_create_entity(  # pylint: disable=too-many-arguments,too-many-positi
         entity_file = entity_dir / filename
         write_json_with_lock(entity_file, record)
         index[key] = str(entity_file.name)
+        # Register in book manifest
+        book = current_book.get()
+        if book:
+            _register_entity(book, entity_dir.name, filename)
         return entity_file, entity_id, record
 
     entity_file = entity_dir / index[key]
@@ -507,7 +524,7 @@ def _get_cache_clear_command(book_name: str) -> str:
 
 
 def _process_batch_results(
-    tasks: List[tuple], batch_results: list, results: Dict[str, Any]
+    tasks: List[tuple], batch_results: list, results: Dict[str, Any], heartbeat=None
 ) -> None:
     """Process results from a batch of chapters."""
     for (book_name, name, _), result in zip(tasks, batch_results):
@@ -530,6 +547,10 @@ def _process_batch_results(
             )
             results["processed"] += 1
             results["chapters"].append(name)
+            if heartbeat:
+                heartbeat.ping(
+                    f"{name}: {results['processed']} done, {results['failed']} failed"
+                )
 
 
 async def process_chapters_parallel(
@@ -560,7 +581,7 @@ async def process_chapters_parallel(
         )
 
         # Process results
-        _process_batch_results(tasks, batch_results, results)
+        _process_batch_results(tasks, batch_results, results, heartbeat)
 
     return results
 
@@ -869,6 +890,8 @@ async def extract_places_batch_async(
     book_meta: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
     """Extract places from all sub-events in single API call."""
+    from src.utils.text_utils import normalize_name
+
     n = len(event_data.get("Event", {}).get("Sub-events", []))
     geo_types = "city|town|village|country|region|province|state|sea|ocean|river|lake|mountain|island|peninsula|continent|military_base|battlefield|fortification|bridge|port|airfield|other"
     return await _batch_extract(
@@ -880,7 +903,7 @@ async def extract_places_batch_async(
         prompt_header=f'Extract all places from these {n} sub-events. Return JSON:\n{{"places": [{{"sub_event_id": "ID", "places": [{{"name": "Name", "type": "{geo_types}", "coordinates": {{"latitude": 0, "longitude": 0}}, "date_context": "YYYY-MM-DD or null", "role_in_event": "role or null", "original_text": "exact quote"}}], "relationships": [{{"from": "Place A", "to": "Place B", "type": "part_of|near|contains|connected_by_route"}}]}}]}}\n\nSub-events:',
         response_key="places",
         inner_key="places",
-        make_key=lambda obj: obj.get("name", "").lower().replace(" ", "_"),
+        make_key=lambda obj: normalize_name(obj.get("name", "")),
         make_record=lambda obj: _make_place_record(obj),
         id_field="PlaceID",
         sub_event_key="places",

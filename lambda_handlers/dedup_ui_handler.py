@@ -509,6 +509,11 @@ def _do_exclude(entity_type, group_index, storage):
     filenames = [p.get("filename", p.get("name", "")) for p in people]
     store.add_group(filenames)
 
+    # Also store name-based exclusions (survives file recreation)
+    names = [p.get("name", "") for p in people if p.get("name")]
+    if names:
+        store.add_group_by_name(names)
+
     _remove_group_from_report(entity_type, group_index, storage, people)
     return _json_response(200, {"result": "excluded"})
 
