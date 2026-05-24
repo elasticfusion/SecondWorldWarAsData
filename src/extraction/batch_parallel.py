@@ -206,7 +206,11 @@ def _get_or_create_entity(  # pylint: disable=too-many-arguments,too-many-positi
             record["event_mentions"] = []
         filename = make_filename(key, entity_id) if make_filename else f"{key}.json"
         entity_file = entity_dir / filename
-        write_json_with_lock(entity_file, record)
+        try:
+            write_json_with_lock(entity_file, record)
+        except Exception as e:
+            logger.error("Failed to write entity file %s: %s", filename, e)
+            return None, None, None
         index[key] = str(entity_file.name)
         # Register in book manifest
         book = current_book.get()
@@ -575,9 +579,10 @@ async def process_chapters_parallel(
         # Create tasks for this batch
         tasks = _create_chapter_tasks(batch, grok_client, output_root, config)
 
-        # Run batch in parallel
+        # Run batch in parallel (5 min timeout per chapter)
         batch_results = await asyncio.gather(
-            *[t[2] for t in tasks], return_exceptions=True
+            *[asyncio.wait_for(t[2], timeout=300) for t in tasks],
+            return_exceptions=True,
         )
 
         # Process results
@@ -698,18 +703,30 @@ async def extract_all_async(
         "series": parsed_data.get("series", ""),
     }
 
-    # Run all extractions in parallel
+    # Run all extractions in parallel (3 min timeout per entity type)
     results = await asyncio.gather(
-        extract_dates_batch_async(
-            event_data, parsed_data, grok_client, output_root, book_meta
+        asyncio.wait_for(
+            extract_dates_batch_async(
+                event_data, parsed_data, grok_client, output_root, book_meta
+            ),
+            timeout=180,
         ),
-        extract_places_batch_async(
-            event_data, parsed_data, grok_client, output_root, book_meta
+        asyncio.wait_for(
+            extract_places_batch_async(
+                event_data, parsed_data, grok_client, output_root, book_meta
+            ),
+            timeout=180,
         ),
-        extract_people_groups_batch_async(
-            event_data, grok_client, output_root, book_meta
+        asyncio.wait_for(
+            extract_people_groups_batch_async(
+                event_data, grok_client, output_root, book_meta
+            ),
+            timeout=180,
         ),
-        extract_people_batch_async(event_data, grok_client, output_root, book_meta),
+        asyncio.wait_for(
+            extract_people_batch_async(event_data, grok_client, output_root, book_meta),
+            timeout=180,
+        ),
         return_exceptions=True,
     )
 

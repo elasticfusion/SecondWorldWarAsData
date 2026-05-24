@@ -80,6 +80,7 @@ Resources:
       ContainerDefinitions:
         - Name: pipeline
           Image: !Ref PipelineImageUri
+          StopTimeout: 30
           Command: ['phase1_parse.py']
           Environment:
             - Name: AWS_DEFAULT_REGION
@@ -510,6 +511,37 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: events.amazonaws.com
       SourceArn: !GetAtt StaleLockCheckRule.Arn
+
+  # --- Spot termination recovery (immediate lock clearing) ---
+  SpotTerminationRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-spot-recovery
+      State: ENABLED
+      EventPattern:
+        source:
+          - aws.ecs
+        detail-type:
+          - ECS Task State Change
+        detail:
+          clusterArn:
+            - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${EnvironmentName}-wwii-pipeline
+          lastStatus:
+            - STOPPED
+          stoppedReason:
+            - prefix: "Your Spot Task"
+      Targets:
+        - Id: TriggerLambda
+          Arn: !GetAtt TriggerFunction.Arn
+          Input: '{"source": "scheduled", "action": "check_locks"}'
+
+  SpotTerminationPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref TriggerFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt SpotTerminationRule.Arn
 
   # --- Lambda Functions (kept) ---
   OpenSerpManagerFunction:

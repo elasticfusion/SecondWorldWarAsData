@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import signal
 import subprocess
 import sys
 import threading
@@ -19,6 +20,24 @@ BUCKET = os.environ["S3_BUCKET"]
 REGION = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
 WORKDIR = Path("/tmp/pipeline")
 SYNC_INTERVAL = int(os.environ.get("SYNC_INTERVAL", "120"))  # seconds
+
+# Global state for SIGTERM handler
+_current_phase_script = ""
+
+
+def _handle_sigterm(signum, frame):
+    """Emergency sync on spot termination — 30 second window."""
+    logger.warning("SIGTERM received — performing emergency S3 sync")
+    try:
+        _final_sync(_current_phase_script)
+        _remove_lock(_current_phase_script)
+        logger.info("Emergency sync complete — exiting cleanly")
+    except Exception as e:
+        logger.error("Emergency sync failed: %s", e)
+    sys.exit(143)
+
+
+signal.signal(signal.SIGTERM, _handle_sigterm)
 
 
 def _read_s3_manifest(prefix_filter: str = "") -> list:
@@ -124,13 +143,17 @@ def s3_sync_up(
 
 
 class BackgroundSync:
-    """Periodically sync output and cache dirs to S3."""
+    """Periodically sync output and cache dirs to S3. Includes watchdog."""
+
+    # Max time with no uploads before self-terminating (4 hours)
+    WATCHDOG_TIMEOUT = int(os.environ.get("WATCHDOG_TIMEOUT", "14400"))
 
     def __init__(self, interval: int = 120):
         self._interval = interval
         self._stop = threading.Event()
         self._thread = None
         self._uploaded_mtimes: dict = {}  # key → mtime of last upload
+        self._last_upload_time = __import__("time").time()
 
     def start(self):
         """Start the background sync thread."""
@@ -155,14 +178,28 @@ class BackgroundSync:
                 if d.exists():
                     n = self._sync_changed(d, prefix)
                     if n:
+                        self._last_upload_time = __import__("time").time()
                         logger.info("Background sync: uploaded %d %s files", n, name)
+            # Watchdog: self-terminate if no uploads for too long
+            import time as _t
+
+            idle = _t.time() - self._last_upload_time
+            if idle > self.WATCHDOG_TIMEOUT:
+                logger.error(
+                    "WATCHDOG: No S3 uploads for %.0f minutes — task appears stuck. Terminating.",
+                    idle / 60,
+                )
+                _notify_failure(_current_phase_script, -1)
+                os.kill(os.getpid(), signal.SIGTERM)
         except Exception as e:
             logger.warning("Background sync error: %s", e)
 
     def _sync_changed(self, local_dir: Path, prefix: str) -> int:
         """Upload only files modified since last sync."""
         s3 = _s3_client()
-        exclude = ["-parsed.json", "-event.json"]
+        exclude = [
+            "-parsed.json"
+        ]  # Keep parsed excluded (triggers Phase 2 via S3 notification)
         count = 0
         for f in local_dir.rglob("*"):
             if not f.is_file():
@@ -371,6 +408,8 @@ def _preflight_credit_check() -> None:
 
 def run_phase(phase_script: str, extra_args: list) -> None:
     """Run a pipeline phase script with incremental S3 sync."""
+    global _current_phase_script
+    _current_phase_script = phase_script
     WORKDIR.mkdir(parents=True, exist_ok=True)
     _load_secrets()
     _preflight_credit_check()
@@ -1242,6 +1281,8 @@ def _teardown_networking() -> None:
 
 def run_submit_only(phase_script: str, extra_args: list) -> None:
     """Run phase in batch mode, submit to Grok, enqueue job, then exit immediately."""
+    global _current_phase_script
+    _current_phase_script = phase_script
     if "--batch" not in extra_args:
         extra_args = ["--batch"] + extra_args
 
