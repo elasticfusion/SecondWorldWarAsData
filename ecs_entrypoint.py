@@ -130,6 +130,7 @@ class BackgroundSync:
         self._interval = interval
         self._stop = threading.Event()
         self._thread = None
+        self._uploaded_mtimes: dict = {}  # key → mtime of last upload
 
     def start(self):
         """Start the background sync thread."""
@@ -152,16 +153,32 @@ class BackgroundSync:
             for name, prefix in [("output", "output")]:
                 d = WORKDIR / name
                 if d.exists():
-                    n, _ = s3_sync_up(
-                        d,
-                        prefix,
-                        exclude_patterns=["-parsed.json", "-event.json"],
-                        skip_keys=_downloaded_keys,
-                    )
+                    n = self._sync_changed(d, prefix)
                     if n:
                         logger.info("Background sync: uploaded %d %s files", n, name)
         except Exception as e:
             logger.warning("Background sync error: %s", e)
+
+    def _sync_changed(self, local_dir: Path, prefix: str) -> int:
+        """Upload only files modified since last sync."""
+        s3 = _s3_client()
+        exclude = ["-parsed.json", "-event.json"]
+        count = 0
+        for f in local_dir.rglob("*"):
+            if not f.is_file():
+                continue
+            if any(pat in f.name for pat in exclude):
+                continue
+            key = f"{prefix}/{f.relative_to(local_dir)}"
+            if key in _downloaded_keys:
+                continue
+            mtime = f.stat().st_mtime
+            if self._uploaded_mtimes.get(key) == mtime:
+                continue
+            s3.upload_file(str(f), BUCKET, key)
+            self._uploaded_mtimes[key] = mtime
+            count += 1
+        return count
 
 
 def _load_secrets():
@@ -361,7 +378,17 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     _start_openserp_if_needed(phase_script)
 
     if "phase1" in phase_script:
-        _clear_all_locks()
+        _remove_lock(phase_script)  # Only clear own lock, not Phase 2/3
+        # Reset dedup review (new content requires re-review)
+        try:
+            _s3_client().put_object(
+                Bucket=BUCKET,
+                Key="dedup/review_status.json",
+                Body=json.dumps({"complete": False, "reviewed": {}}).encode(),
+            )
+            logger.info("Reset dedup review status")
+        except Exception as e:
+            logger.warning("Failed to reset dedup status: %s", e)
 
     _download_inputs(phase_script)
     _setup_symlinks()
@@ -374,33 +401,27 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     if "phase2" in phase_script or "phase3" in phase_script:
         sync.start()
 
-    env = os.environ.copy()
-    # Check config for batch mode override
+    # Check config for batch mode — delegate to submit-only if enabled
     import yaml
 
     try:
         with open("/app/config.yaml") as f:
             cfg = yaml.safe_load(f)
         batch_cfg = cfg.get("batch", {})
-        if "phase2" in phase_script and batch_cfg.get("phase2", False):
-            logger.info("Batch mode enabled for Phase 2 — using submit-only flow")
+        phase_key = (
+            "phase2"
+            if "phase2" in phase_script
+            else "phase3" if "phase3" in phase_script else ""
+        )
+        if phase_key and batch_cfg.get(phase_key, False):
+            logger.info("Batch mode enabled for %s — using submit-only flow", phase_key)
             sync.stop()
             run_submit_only(phase_script, extra_args)
             return
-        if "phase3" in phase_script and batch_cfg.get("phase3", False):
-            logger.info("Batch mode enabled for Phase 3 — using submit-only flow")
-            sync.stop()
-            run_submit_only(phase_script, extra_args)
-            return
-        if "phase2" in phase_script and not batch_cfg.get("phase2", True):
-            extra_args = [a for a in extra_args if a != "--batch"]
-            logger.info("Batch mode disabled for Phase 2 (config)")
-        if "phase3" in phase_script and not batch_cfg.get("phase3", True):
-            extra_args = [a for a in extra_args if a != "--batch"]
-            logger.info("Batch mode disabled for Phase 3 (config)")
     except Exception:
         pass
 
+    env = os.environ.copy()
     cmd = [sys.executable, phase_script] + extra_args
     logger.info("Running: %s", " ".join(cmd))
     result = subprocess.run(cmd, cwd="/app", env=env, check=False)
@@ -409,6 +430,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
 
     if result.returncode != 0:
         logger.error("Phase script exited with code %d", result.returncode)
+        _notify_failure(phase_script, result.returncode)
         _final_sync(phase_script)
         if "phase3" not in phase_script:
             _remove_lock(phase_script)
@@ -423,6 +445,63 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     _post_process(phase_script, env)
 
 
+def _get_book_entity_files(s3, book_name: str) -> list:
+    """Get list of entity file S3 keys for a book using the book manifest."""
+    from src.utils.book_manifest import BookManifest
+
+    # Try DynamoDB manifest first (fast)
+    try:
+        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
+        table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
+        manifest = BookManifest(dynamo_table=table)
+        all_files = manifest.get_all_files(book_name)
+        if all_files:
+            keys = []
+            for entity_type, filenames in all_files.items():
+                for fn in filenames:
+                    keys.append(f"output/{entity_type}/{fn}")
+            logger.info("Book manifest: %d files for %s", len(keys), book_name)
+            return keys
+    except Exception as e:
+        logger.debug("Book manifest lookup failed: %s", e)
+
+    # Fallback: download all entity indexes (old behavior)
+    logger.info(
+        "No book manifest for %s, falling back to full index download", book_name
+    )
+    referenced = set()
+    paginator = s3.get_paginator("list_objects_v2")
+    for subdir in [
+        "people",
+        "people_groups",
+        "places",
+        "equipment",
+        "dates",
+        "weather",
+        "logistics",
+        "casualties",
+        "bibliography",
+    ]:
+        index_key = f"output/{subdir}/index.json"
+        _download_s3_file(s3, index_key)
+        index_path = WORKDIR / index_key
+        if index_path.exists():
+            try:
+                index = json.loads(index_path.read_text(encoding="utf-8"))
+                for name, filename in index.items():
+                    if isinstance(filename, str):
+                        referenced.add(f"output/{subdir}/{filename}")
+            except Exception:
+                pass
+
+    # Always include full bibliography
+    for page in paginator.paginate(Bucket=BUCKET, Prefix="output/bibliography/"):
+        for obj in page.get("Contents", []):
+            referenced.add(obj["Key"])
+
+    return list(referenced)
+
+
 def _download_inputs(phase_script: str) -> None:
     """Download the appropriate inputs from S3 for this phase."""
     if "phase1" in phase_script:
@@ -431,13 +510,18 @@ def _download_inputs(phase_script: str) -> None:
             n = _download_keys(keys, WORKDIR)
             logger.info("Downloaded %d content files (incremental)", n)
         else:
-            n = s3_sync_down("content/", WORKDIR)
-            logger.info("Downloaded %d content files (full)", n)
+            # Scope full sync to BOOK_NAME if set, otherwise download all
+            book_name = os.environ.get("BOOK_NAME", "")
+            prefix = f"content/{book_name}/" if book_name else "content/"
+            if not book_name:
+                logger.warning("No manifest and no BOOK_NAME — downloading ALL content")
+            n = s3_sync_down(prefix, WORKDIR)
+            logger.info("Downloaded %d content files (full, prefix=%s)", n, prefix)
     elif "phase2" in phase_script:
         n = _download_phase2_inputs()
         logger.info("Downloaded %d files for Phase 2", n)
     elif "phase3" in phase_script or "import" in phase_script:
-        # Phase 3 needs full entity directories for enrichment
+        # Phase 3: download only entities relevant to current book (or all if no BOOK_NAME)
         entity_dirs = [
             "people",
             "people_groups",
@@ -452,11 +536,32 @@ def _download_inputs(phase_script: str) -> None:
             "bibliography",
         ]
         s3 = _s3_client()
+        book_name = os.environ.get("BOOK_NAME", "")
         total = 0
-        for subdir in entity_dirs:
-            d, s = _download_s3_prefix_skip_existing(s3, f"output/{subdir}/")
-            total += d
-        logger.info("Downloaded %d entity files for Phase 3", total)
+
+        if book_name:
+            # Scoped download: index.json + files referenced by this book's events
+            logger.info("Scoped download for book: %s", book_name)
+            referenced = _get_book_entity_files(s3, book_name)
+            for subdir in entity_dirs:
+                local = WORKDIR / "output" / subdir
+                local.mkdir(parents=True, exist_ok=True)
+                # Always download index
+                _download_s3_file(s3, f"output/{subdir}/index.json")
+                # Download only referenced files for this subdir
+                subdir_files = [
+                    f for f in referenced if f.startswith(f"output/{subdir}/")
+                ]
+                for key in subdir_files:
+                    _download_s3_file(s3, key)
+                total += len(subdir_files)
+            logger.info("Downloaded %d entity files (scoped to %s)", total, book_name)
+        else:
+            # Full download (no book scope)
+            for subdir in entity_dirs:
+                d, s = _download_s3_prefix_skip_existing(s3, f"output/{subdir}/")
+                total += d
+            logger.info("Downloaded %d entity files for Phase 3 (full)", total)
 
 
 def _download_phase2_inputs() -> int:
@@ -477,9 +582,13 @@ def _download_phase2_inputs() -> int:
         new_parsed = len(parsed_keys)
     else:
         # Fallback: scan S3 for parsed files without event files
-        logger.info("No manifest found, falling back to S3 scan")
-        existing_events = _list_s3_keys_matching(s3, "output/content/", "-event.json")
-        new_parsed = _download_new_parsed(s3, existing_events)
+        book_name = os.environ.get("BOOK_NAME", "")
+        scan_prefix = f"output/content/{book_name}/" if book_name else "output/content/"
+        logger.info(
+            "No manifest found, falling back to S3 scan (prefix: %s)", scan_prefix
+        )
+        existing_events = _list_s3_keys_matching(s3, scan_prefix, "-event.json")
+        new_parsed = _download_new_parsed(s3, existing_events, prefix=scan_prefix)
         logger.info(
             "Phase 2 incremental (S3 scan): %d new parsed files, %d existing events skipped",
             new_parsed,
@@ -516,11 +625,13 @@ def _list_s3_keys_matching(s3, prefix: str, suffix: str) -> set:
     return keys
 
 
-def _download_new_parsed(s3, existing_events: set) -> int:
+def _download_new_parsed(
+    s3, existing_events: set, prefix: str = "output/content/"
+) -> int:
     """Download parsed files without corresponding event files."""
     count = 0
     for page in s3.get_paginator("list_objects_v2").paginate(
-        Bucket=BUCKET, Prefix="output/content/"
+        Bucket=BUCKET, Prefix=prefix
     ):
         for obj in page.get("Contents", []):
             key = obj["Key"]
@@ -584,7 +695,20 @@ def _download_s3_file(s3, key: str) -> None:
 def _post_process(phase_script: str, env: dict) -> None:
     """Run post-processing steps after a successful phase."""
     if "phase2" in phase_script:
-        _run_dedup_detection(env)
+        dedup_ok = False
+        for attempt in range(2):
+            try:
+                _run_dedup_detection(env)
+                dedup_ok = True
+                break
+            except Exception as e:
+                logger.error(
+                    "Dedup detection failed (attempt %d/2): %s", attempt + 1, e
+                )
+        if not dedup_ok:
+            logger.error(
+                "Dedup detection failed after 2 attempts — sending notification anyway"
+            )
         _check_pending_content()
     if "phase3" not in phase_script:
         _remove_lock(phase_script)
@@ -603,20 +727,20 @@ def _check_pending_content() -> None:
             return
         keys = item["keys"]
         logger.info("Found %d pending content files, re-triggering pipeline", len(keys))
-        # Clear pending before re-trigger
-        table.delete_item(Key={"cache_key": "pending#content"})
         # Write keys as S3 manifest for Phase 1
         _s3_client().put_object(
             Bucket=BUCKET,
             Key="manifests/pending.json",
             Body=json.dumps(list(keys)).encode(),
         )
-        # Trigger Phase 1 by publishing to content-uploaded topic
+        # Trigger Phase 1 — publish BEFORE deleting pending entry
         topic_arn = os.environ.get("CONTENT_TOPIC_ARN", "")
         if topic_arn:
             sns = boto3.client("sns", region_name=REGION)
             sns.publish(TopicArn=topic_arn, Message=json.dumps({"pending": True}))
             logger.info("Re-triggered pipeline for pending content")
+        # Only delete after successful publish
+        table.delete_item(Key={"cache_key": "pending#content"})
     except Exception as e:
         logger.warning("Failed to check pending content: %s", e)
 
@@ -850,6 +974,21 @@ def _reset_openserp_searched() -> None:
         )
 
 
+def _stamp_file(filepath: Path, needs_migration, inject_metadata) -> int:
+    """Stamp a single file if it needs migration. Returns 1 if stamped, 0 otherwise."""
+    try:
+        data = json.loads(filepath.read_text(encoding="utf-8"))
+        if needs_migration(data):
+            inject_metadata(data)
+            filepath.write_text(
+                json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
+            )
+            return 1
+    except Exception:
+        pass
+    return 0
+
+
 def _stamp_schema_versions() -> None:
     """Stamp _schema_version on all output files that need migration."""
     from src.schemas import SCHEMA_VERSION, inject_metadata, needs_migration
@@ -880,67 +1019,51 @@ def _stamp_schema_versions() -> None:
     except Exception as e:
         logger.warning("Could not disable trigger Lambda: %s", e)
 
-    output = Path("/app/output")
-    dirs = [
-        "weather",
-        "people",
-        "people_groups",
-        "places",
-        "equipment",
-        "dates",
-        "casualties",
-        "logistics",
-        "maps",
-        "bibliography",
-    ]
-    skip = {
-        "index.json",
-        "duplicate_report.json",
-        "not_duplicates.json",
-        "not_related.json",
-        "review_queue.json",
-        ".processed_events.json",
-    }
-    updated = 0
-    for d in dirs:
-        p = output / d
-        if not p.exists():
-            continue
-        for f in p.glob("*.json"):
-            if f.name in skip:
-                continue
-            try:
-                data = json.loads(f.read_text(encoding="utf-8"))
-                if needs_migration(data):
-                    inject_metadata(data)
-                    f.write_text(
-                        json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
-                    )
-                    updated += 1
-            except Exception:
-                continue
-    # Event files
-    content = output / "content"
-    if content.exists():
-        for f in content.rglob("*-event.json"):
-            try:
-                data = json.loads(f.read_text(encoding="utf-8"))
-                if needs_migration(data):
-                    inject_metadata(data)
-                    f.write_text(
-                        json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
-                    )
-                    updated += 1
-            except Exception:
-                continue
-    logger.info("Schema migration: stamped %d files to v%s", updated, SCHEMA_VERSION)
-
-    # Re-enable trigger Lambda
     try:
-        lam.delete_function_concurrency(FunctionName=trigger_fn)
-        logger.info("Re-enabled trigger Lambda")
-    except Exception as e:
-        logger.warning("Could not re-enable trigger Lambda: %s", e)
+        output = Path("/app/output")
+        dirs = [
+            "weather",
+            "people",
+            "people_groups",
+            "places",
+            "equipment",
+            "dates",
+            "casualties",
+            "logistics",
+            "maps",
+            "bibliography",
+        ]
+        skip = {
+            "index.json",
+            "duplicate_report.json",
+            "not_duplicates.json",
+            "not_related.json",
+            "review_queue.json",
+            ".processed_events.json",
+        }
+        updated = 0
+        for d in dirs:
+            p = output / d
+            if not p.exists():
+                continue
+            for f in p.glob("*.json"):
+                if f.name in skip:
+                    continue
+                updated += _stamp_file(f, needs_migration, inject_metadata)
+        # Event files
+        content = output / "content"
+        if content.exists():
+            for f in content.rglob("*-event.json"):
+                updated += _stamp_file(f, needs_migration, inject_metadata)
+        logger.info("Schema migration: stamped %d files to v%s", updated, SCHEMA_VERSION)
+
+    finally:
+        # Re-enable trigger Lambda (always, even on crash)
+        try:
+            lam.delete_function_concurrency(FunctionName=trigger_fn)
+            logger.info("Re-enabled trigger Lambda")
+        except Exception as e:
+            logger.warning("Could not re-enable trigger Lambda: %s", e)
 
 
 def _stop_openserp_if_running(phase_script: str) -> None:
@@ -958,6 +1081,23 @@ def _stop_openserp_if_running(phase_script: str) -> None:
         logger.warning("Failed to scale OpenSERP to 0: %s", e)
 
 
+def _notify_failure(phase_script: str, returncode: int) -> None:
+    """Publish failure notification to SNS."""
+    topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
+    if not topic_arn:
+        return
+    phase_name = PHASE_NAMES.get(phase_script, phase_script)
+    try:
+        sns = boto3.client("sns", region_name=REGION)
+        sns.publish(
+            TopicArn=topic_arn,
+            Subject=f"WWII Pipeline: {phase_name} FAILED",
+            Message=f"{phase_name} failed with exit code {returncode}.\nBucket: {BUCKET}\n\nCheck logs: aws logs tail /ecs/dev-wwii-pipeline --region us-east-1 --since 30m",
+        )
+    except Exception as e:
+        logger.warning("Failed to send failure notification: %s", e)
+
+
 def _notify_complete(phase_script: str) -> None:
     """Publish completion notification to SNS."""
     topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
@@ -972,7 +1112,9 @@ def _notify_complete(phase_script: str) -> None:
         if content_dir.exists():
             parsed = sorted(f.name for f in content_dir.rglob("*-parsed.json"))
             if parsed:
-                message += f"\n\nParsed {len(parsed)} file(s):\n" + "\n".join(f"  {f}" for f in parsed)
+                message += f"\n\nParsed {len(parsed)} file(s):\n" + "\n".join(
+                    f"  {f}" for f in parsed
+                )
     if "phase2" in phase_script and dedup_url:
         message += (
             f"\n\nPhase 3 is blocked until you review duplicates."
@@ -1071,7 +1213,18 @@ def _clear_all_locks() -> None:
 
 
 def _teardown_networking() -> None:
-    """Invoke nat_manager Lambda to delete NAT + VPC endpoints."""
+    """Scale down OpenSERP and invoke nat_manager to delete NAT + VPC endpoints."""
+    try:
+        env = os.environ.get("ENV_NAME", "dev")
+        ecs = boto3.client("ecs", region_name=REGION)
+        ecs.update_service(
+            cluster=f"{env}-wwii-pipeline",
+            service=f"{env}-wwii-openserp",
+            desiredCount=0,
+        )
+        logger.info("Scaled OpenSERP to 0")
+    except Exception as e:
+        logger.warning("Failed to scale OpenSERP: %s", e)
     try:
         env = os.environ.get("ENV_NAME", "dev")
         lam = boto3.client("lambda", region_name=REGION)
@@ -1201,6 +1354,9 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
         job.request_count,
     )
 
+    # Scope downloads to the book being retrieved (avoid processing entire backlog)
+    if job.book and job.book != "unknown":
+        os.environ["BOOK_NAME"] = job.book
     _download_inputs(phase_script)
     _setup_symlinks()
 

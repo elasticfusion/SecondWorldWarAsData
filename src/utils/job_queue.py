@@ -47,7 +47,7 @@ def enqueue_job(job: BatchJob) -> None:
             "status": job.status,
             "completed_at": job.completed_at,
             "request_count": job.request_count,
-            "ttl": job.submitted_at + 7 * 86400,
+            "ttl": job.submitted_at + 30 * 86400,
         }
     )
     logger.info("Enqueued batch job %s (%s/%s)", job.batch_id, job.phase, job.book)

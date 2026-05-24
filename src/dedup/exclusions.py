@@ -33,6 +33,24 @@ def _make_pair_key(entity_type: str, file1: str, file2: str) -> str:
     return f"exclusion#{entity_type}#{a}#{b}"
 
 
+def _normalize_exclusion_name(name: str) -> str:
+    """Normalize a name for exclusion matching (survives file recreation)."""
+    import re
+    import unicodedata
+
+    name = name.strip().lower()
+    name = name.replace(",", "").replace(".", "").replace("_", " ")
+    name = re.sub(r"\s+", " ", name)
+    name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
+    return name
+
+
+def _make_name_pair_key(entity_type: str, name1: str, name2: str) -> str:
+    """Create exclusion key from normalized names (stable across re-extraction)."""
+    a, b = sorted([_normalize_exclusion_name(name1), _normalize_exclusion_name(name2)])
+    return f"name_exclusion#{entity_type}#{a}#{b}"
+
+
 class ExclusionStore:
     """Read/write dedup exclusions from DynamoDB or local JSON."""
 
@@ -66,6 +84,83 @@ class ExclusionStore:
         for i, f1 in enumerate(filenames):
             for f2 in filenames[i + 1 :]:
                 self.add(f1, f2)
+
+    def add_by_name(self, name1: str, name2: str) -> None:
+        """Add a name-based exclusion (survives file recreation)."""
+        key = _make_name_pair_key(self.entity_type, name1, name2)
+        if self._table:
+            try:
+                self._table.put_item(
+                    Item={"cache_key": key, "entity_type": self.entity_type}
+                )
+            except Exception as e:
+                logger.warning("Failed to write name exclusion: %s", e)
+        elif self.entity_dir:
+            # Store in local file
+            path = self.entity_dir / ".name_exclusions.json"
+            existing = set()
+            if path.exists():
+                try:
+                    existing = set(
+                        tuple(p) for p in json.loads(path.read_text(encoding="utf-8"))
+                    )
+                except Exception:
+                    pass
+            pair = tuple(
+                sorted(
+                    [_normalize_exclusion_name(name1), _normalize_exclusion_name(name2)]
+                )
+            )
+            existing.add(pair)
+            path.write_text(json.dumps([list(p) for p in existing]), encoding="utf-8")
+
+    def add_group_by_name(self, names: list[str]) -> None:
+        """Add all pairwise name-based exclusions for a group."""
+        for i, n1 in enumerate(names):
+            for n2 in names[i + 1 :]:
+                self.add_by_name(n1, n2)
+
+    def load_name_exclusions(self) -> Set[Tuple[str, str]]:
+        """Load all name-based exclusions. Returns set of (norm_name1, norm_name2) tuples."""
+        if self._table:
+            return self._load_name_dynamo()
+        if self.entity_dir:
+            return self._load_name_local()
+        return set()
+
+    def _load_name_dynamo(self) -> Set[Tuple[str, str]]:
+        prefix = f"name_exclusion#{self.entity_type}#"
+        pairs: Set[Tuple[str, str]] = set()
+        kwargs = {
+            "FilterExpression": "begins_with(cache_key, :prefix)",
+            "ExpressionAttributeValues": {":prefix": prefix},
+            "ProjectionExpression": "cache_key",
+        }
+        try:
+            while True:
+                resp = self._table.scan(**kwargs)
+                for item in resp.get("Items", []):
+                    parts = item["cache_key"].split("#")
+                    if len(parts) == 4:
+                        pairs.add((parts[2], parts[3]))
+                if "LastEvaluatedKey" not in resp:
+                    break
+                kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
+        except Exception as e:
+            logger.warning("Failed to load name exclusions: %s", e)
+        return pairs
+
+    def _load_name_local(self) -> Set[Tuple[str, str]]:
+        if not self.entity_dir:
+            return set()
+        path = self.entity_dir / ".name_exclusions.json"
+        if not path.exists():
+            return set()
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            return set(tuple(p) for p in data)
+        except Exception:
+            return set()
 
     # --- DynamoDB ---
 

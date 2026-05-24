@@ -25,6 +25,10 @@ Parameters:
     Type: String
     Default: ''
     Description: Email for pipeline notifications (leave empty to skip)
+  GitHubOrg:
+    Type: String
+    Default: ''
+    Description: GitHub org/user for OIDC deploy role (leave empty to skip)
 
 Resources:
   NetworkStack:
@@ -49,6 +53,8 @@ Resources:
         EnvironmentName: !Ref EnvironmentName
         DataBucketArn: !GetAtt StorageStack.Outputs.DataBucketArn
         CacheTableArn: !GetAtt StorageStack.Outputs.CacheTableArn
+        GitHubOrg: !Ref GitHubOrg
+        DeployBucketName: !Ref TemplateBucket
 
   ComputeStack:
     Type: AWS::CloudFormation::Stack

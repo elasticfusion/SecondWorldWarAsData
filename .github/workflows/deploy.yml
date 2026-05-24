@@ -1,0 +1,176 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "scripts/**"
+      - "prompts/**"
+      - "lambda_handlers/**"
+      - "cloudformation/**"
+      - "Dockerfile"
+      - "config.yaml"
+      - "requirements.txt"
+      - "requirements-lambda.txt"
+      - "ecs_entrypoint.py"
+      - "phase*.py"
+      - "import_to_dynamodb.py"
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: "What to deploy"
+        required: true
+        type: choice
+        options:
+          - all
+          - container-only
+          - lambdas-only
+          - cloudformation-only
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPO: wwii-pipeline
+  ECS_CLUSTER: dev-wwii-pipeline
+  TEMPLATE_BUCKET: wwii-pipeline-deploy
+  ENV_NAME: dev
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  # ─── Gate: tests must pass before any deploy ───
+  test:
+    uses: ./.github/workflows/tests.yml
+
+  # ─── Build container image ───
+  build-container:
+    needs: test
+    if: >
+      github.event_name == 'push' ||
+      github.event.inputs.deploy_target == 'all' ||
+      github.event.inputs.deploy_target == 'container-only'
+    runs-on: ubuntu-latest
+    outputs:
+      image_uri: ${{ steps.push.outputs.image_uri }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build image
+        run: docker build --no-cache -t ${{ env.ECR_REPO }}:${{ github.sha }} .
+
+      - name: Scan image (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.ECR_REPO }}:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          format: table
+
+      - name: Push to ECR
+        id: push
+        env:
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        run: |
+          IMAGE_URI="$REGISTRY/${{ env.ECR_REPO }}:${{ github.sha }}"
+          docker tag ${{ env.ECR_REPO }}:${{ github.sha }} "$IMAGE_URI"
+          docker tag ${{ env.ECR_REPO }}:${{ github.sha }} "$REGISTRY/${{ env.ECR_REPO }}:latest"
+          docker push "$IMAGE_URI"
+          docker push "$REGISTRY/${{ env.ECR_REPO }}:latest"
+          echo "image_uri=$IMAGE_URI" >> "$GITHUB_OUTPUT"
+
+  # ─── Build and deploy Lambda code ───
+  deploy-lambdas:
+    needs: test
+    if: >
+      github.event_name == 'push' ||
+      github.event.inputs.deploy_target == 'all' ||
+      github.event.inputs.deploy_target == 'lambdas-only'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Build Lambda package
+        run: |
+          pip install -r requirements-lambda.txt -t lambda_package/ -q
+          cp -r src/ lambda_handlers/ scripts/ config.yaml lambda_package/
+          cd lambda_package && zip -r ../lambda-code.zip . -x "*.pyc" "*__pycache__*" > /dev/null
+
+      - name: Upload to S3
+        run: aws s3 cp lambda-code.zip "s3://${{ env.TEMPLATE_BUCKET }}/lambda/code.zip"
+
+      - name: Update Lambda functions
+        run: |
+          for fn in dedup-gate dedup-ui openserp-manager nat-manager metrics batch-poller; do
+            echo "Updating ${{ env.ENV_NAME }}-wwii-${fn}..."
+            aws lambda update-function-code \
+              --function-name "${{ env.ENV_NAME }}-wwii-${fn}" \
+              --s3-bucket "${{ env.TEMPLATE_BUCKET }}" \
+              --s3-key lambda/code.zip > /dev/null
+          done
+
+  # ─── Deploy CloudFormation ───
+  deploy-cloudformation:
+    needs: [build-container, deploy-lambdas]
+    if: >
+      always() &&
+      (github.event_name == 'push' ||
+       github.event.inputs.deploy_target == 'all' ||
+       github.event.inputs.deploy_target == 'cloudformation-only') &&
+      !contains(needs.*.result, 'failure')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Lint CloudFormation
+        run: |
+          pip install cfn-lint
+          cfn-lint cloudformation/*.yaml
+
+      - name: Upload templates to S3
+        run: aws s3 sync cloudformation/ "s3://${{ env.TEMPLATE_BUCKET }}/cloudformation/"
+
+      - name: Deploy stack
+        run: |
+          aws cloudformation deploy \
+            --stack-name "wwii-pipeline-${{ env.ENV_NAME }}" \
+            --template-file cloudformation/main.yaml \
+            --parameter-overrides \
+              EnvironmentName=${{ env.ENV_NAME }} \
+              TemplateBucket=${{ env.TEMPLATE_BUCKET }} \
+              LambdaCodeBucket=${{ env.TEMPLATE_BUCKET }} \
+              LambdaCodeKey=lambda/code.zip \
+              PipelineImageUri=${{ needs.build-container.outputs.image_uri || '' }} \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --no-fail-on-empty-changeset

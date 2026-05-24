@@ -165,6 +165,23 @@ def _process_document(doc, book_output, logger):
         book_output / f"chapter{doc.chapter_number}{section_suffix}-parsed.json"
     )
     output_data = _doc_to_dict(doc)
+
+    # Skip if source content hasn't changed (prevents S3 notification cascade)
+    import hashlib
+
+    source_hash = hashlib.md5(
+        "".join(p.text for p in doc.paragraphs).encode()
+    ).hexdigest()
+    output_data["_source_hash"] = source_hash
+    if output_file.exists():
+        try:
+            existing = json.loads(output_file.read_text(encoding="utf-8"))
+            if existing.get("_source_hash") == source_hash:
+                logger.info(f"  Skipped: {output_file.name} (unchanged)")
+                return
+        except Exception:
+            pass
+
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(output_data, f, indent=2, ensure_ascii=False)
     logger.info(f"  Saved: {output_file.name} ({len(doc.paragraphs)} paragraphs)")

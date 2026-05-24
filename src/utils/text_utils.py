@@ -9,7 +9,6 @@ import re
 import unicodedata
 from functools import lru_cache
 
-
 # European transliteration map for characters that unicodedata doesn't handle well
 _EUROPEAN_TRANSLITERATIONS = {
     # Germanic: German, Dutch, Scandinavian, Icelandic
@@ -174,8 +173,7 @@ _EUROPEAN_TRANSLITERATIONS = {
 # Build regex pattern for transliteration (longest match first)
 _TRANSLIT_PATTERN = re.compile(
     "|".join(
-        re.escape(k)
-        for k in sorted(_EUROPEAN_TRANSLITERATIONS, key=len, reverse=True)
+        re.escape(k) for k in sorted(_EUROPEAN_TRANSLITERATIONS, key=len, reverse=True)
     )
 )
 
@@ -204,18 +202,25 @@ def transliterate(text: str) -> str:
 
 @lru_cache(maxsize=1000)
 def normalize_name(name: str) -> str:
-    """Normalize person or group name for matching and comparison.
+    """Normalize person or group name for index matching.
 
-    Converts to lowercase and strips whitespace for consistent matching
-    across different extraction modules.
-
-    Args:
-        name: Person or group name to normalize
-
-    Returns:
-        Normalized name (lowercase, stripped)
+    Collapses common variations that should map to the same entity:
+    - Case folding
+    - Punctuation removal (commas, periods)
+    - Unicode → ASCII (handles accents, umlauts)
+    - Whitespace normalization
     """
-    return name.strip().lower()
+    import re
+    import unicodedata
+
+    name = name.strip().lower()
+    # ASCII-fold (Döllmann → dollmann, Côte → cote)
+    name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
+    # Remove punctuation that causes false splits
+    name = name.replace(",", "").replace(".", "").replace("'", "")
+    # Collapse whitespace
+    name = re.sub(r"\s+", " ", name).strip()
+    return name
 
 
 @lru_cache(maxsize=1000)
