@@ -35,7 +35,15 @@ schema: |
 
 rules:
   - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
-  - Category values: armor, aircraft, naval, artillery, infantry_weapons, vehicles, communications, engineering, other
+  - Category values (use EXACTLY one of these): armor, aircraft, naval, artillery, infantry_weapons, vehicles, communications, engineering, other
+  - Category is the BROAD type. Subcategory is the specific type within that category. Examples:
+    - M4 Sherman → category: "armor", subcategory: "medium_tank"
+    - P-47 Thunderbolt → category: "aircraft", subcategory: "fighter_bomber"
+    - 105mm Howitzer → category: "artillery", subcategory: "field_howitzer"
+    - Jeep → category: "vehicles", subcategory: "utility_vehicle"
+    - BAR → category: "infantry_weapons", subcategory: "automatic_rifle"
+    - 88mm gun → category: "artillery", subcategory: "anti_aircraft" (NOT "armor")
+  - Do NOT use equipment-specific names as category (e.g., "Medium Tank" is WRONG — use "armor")
   - Country codes use ISO 3166-1 alpha-3 (USA, GBR, DEU, FRA, etc.)
   - Only extract specifically named equipment, not generic references
   - If no equipment found, return empty Equipment array

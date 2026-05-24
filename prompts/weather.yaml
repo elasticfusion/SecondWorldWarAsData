@@ -23,7 +23,7 @@ schema: |
   {{
     "Weather_Mentions": [
       {{
-        "WeatherMentionID": "01ULID...",
+        "WeatherID": "01ULID...",
         "place_name": "Normandy",
         "PlaceMentionID": "<COPY from Available places above, or null if no match>",
         "date": "1944-06-06",
@@ -37,7 +37,7 @@ schema: |
   }}
 
 rules:
-  - Generate 26-character ULIDs ONLY for WeatherMentionID
+  - Generate 26-character ULIDs ONLY for WeatherID
   - CRITICAL: For PlaceMentionID, COPY the ID from "Available places" above that matches the place name. Do NOT generate a new ULID. If no match exists, use null.
   - CRITICAL: For DateMentionID, COPY the ID from "Available dates" above that matches the date. Do NOT generate a new ULID. If no match exists, use null.
   - CRITICAL: Only extract exact dates (YYYY-MM-DD), skip approximate dates

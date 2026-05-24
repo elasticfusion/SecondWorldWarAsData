@@ -6,72 +6,12 @@
 
 ## High Priority
 
-### Security & Infrastructure
-
-### Prompt & Data Quality
-
-### Reliability
-
-
+*All high-priority items completed.*
 ---
 
 ## Medium Priority
 
 ### CI/CD & DevOps
-
-#### DynamoDB point-in-time recovery and DeletionPolicy on all tables
-Only CacheTable has DeletionPolicy. Entity tables would be deleted on stack delete. Enable PITR for recovery.
-*Source: DEVOPS_RECOMMENDATIONS.md*
-
-#### API Gateway WAF and rate limiting
-No WAF, no rate limiting, authorizer TTL=0 (every request invokes auth Lambda). Add WAF rate-limit rule, set authorizer TTL to 300s.
-*Source: DEVOPS_RECOMMENDATIONS.md*
-
-#### Observability: ECS failure alarms and custom metrics
-No alarm on ECS task non-zero exit. No end-to-end latency metric. Add EventBridge rule for STOPPED tasks, emit custom metrics from entrypoint. Increase log retention to 30 days.
-*Source: DEVOPS_RECOMMENDATIONS.md*
-
-#### Pin dependency versions (pip-compile)
-`requirements.txt` uses open ranges (`>=`). Builds not reproducible. Use `pip-compile` for locked requirements. Trim Lambda package (includes unnecessary `scripts/`).
-*Source: DEVOPS_RECOMMENDATIONS.md*
-
-#### Remove `continue-on-error: true` from CI validation
-Failures never block merges. Add a final step that fails if any validation failed.
-*Source: QA_GAPS.md*
-
-#### Pin Python version to 3.12 in CI
-CI uses 3.11 while development uses 3.12.
-*Source: QA_GAPS.md*
-
-#### Pin CI dependencies with exact versions
-`pip install jsonschema pytest` installs latest with no pinning.
-*Source: QA_GAPS.md*
-
-#### Fix pre-commit hardcoded macOS path
-Has `/Users/dchristian/...` — won't work on Linux/CI.
-*Source: QA_GAPS.md*
-
-### Prompt & Schema
-
-#### Align logistics/supplemental enum values to actual output
-Logistics prompt defines `type` and `status` values that differ from actual output. Prompt defines: supply_shortage, transportation_disruption, capacity_constraint, distribution_failure, production_delay. Output contains: supply_shortage, supply_excess, delivery_delay, transport_disruption. Supplemental `availability` values differ. Align prompts to match desired output schema.
-*Source: PROMPT_REVIEW.md, DATA_SCIENCE_RECOMMENDATIONS.md*
-
-#### Enforce equipment category enum in prompt
-Output contains non-standard values like "Medium Tank" and "infantry". Add explicit category list with examples showing category vs subcategory distinction. Normalize existing non-standard values (e.g., "Medium Tank" → "armor", "infantry" → "infantry_weapons").
-*Source: PROMPT_REVIEW.md, DATA_SCIENCE_RECOMMENDATIONS.md*
-
-#### Standardize field naming across prompts
-Inconsistent: `Sub-eventID`/`Sub_eventID`, `Sub-event_summary`/`Sub_event_Name`, `event_mentions`/`mentions`. Pick one and align all prompts + output.
-*Source: PROMPT_REVIEW.md*
-
-#### Fix WeatherMentionID vs WeatherID field name mismatch
-Weather extraction uses `WeatherMentionID`, output uses `WeatherID`.
-*Source: QA_GAPS.md*
-
-#### Add config validation (Pydantic model or JSON Schema)
-Zero validation on config.yaml — typos silently ignored, invalid values only fail deep in pipeline. Fail fast with clear error messages at load time.
-*Source: QA_GAPS.md*
 
 #### Unify schema versioning
 `json_schemas.py` uses "1.0.0", output schemas use "2.3" — no clear relationship. Single version number across extraction and output.
@@ -447,6 +387,20 @@ Simple `run_pipeline.py` that sequences Phase 1 → Phase 2 → Phase 3 for unat
 - ✅ Fix watchdog false positives (activity-based, notify wrapped in try/except)
 - ✅ Fix _stamp_file atomic writes (temp+replace pattern)
 - ✅ Lambda timeout awareness in dedup UI (bail early on approaching timeout)
+- ✅ DynamoDB point-in-time recovery + DeletionPolicy on all 11 tables
+- ✅ API Gateway authorizer TTL set to 300s (was 0)
+- ✅ ECS task failure EventBridge rule (non-zero exit → lock check)
+- ✅ Log retention increased to 30 days
+- ✅ Pin CI dependencies (requirements-ci.txt)
+- ✅ Fix pre-commit hardcoded macOS path
+- ✅ Align logistics/supplemental enum values in prompts
+- ✅ Enforce equipment category enum (prompt + fix 5 existing files)
+- ✅ Fix WeatherMentionID → WeatherID field name mismatch in prompt
+- ✅ Add config validation (required sections, type checks, range checks)
+- ✅ Pin requirements.txt versions (exact versions)
+- ✅ Trim Lambda package (only needed scripts)
+- ✅ Remove continue-on-error from CI (already done by DevOps agent)
+- ✅ Pin Python 3.12 in CI (already done by DevOps agent)
 
 ### 2026-05-21 – 2026-05-23
 - ✅ Batch infrastructure optimization (submit-only/retrieve-only ECS modes, Lambda batch poller, DynamoDB job queue)
