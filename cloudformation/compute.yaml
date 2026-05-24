@@ -64,7 +64,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-pipeline
-      RetentionInDays: 14
+      RetentionInDays: 30
 
   # --- Pipeline ECS Task Definitions ---
   Phase1TaskDef:
@@ -260,6 +260,30 @@ Resources:
       Targets:
         - Id: TriggerLambda
           Arn: !GetAtt TriggerFunction.Arn
+
+  # --- ECS task failure detection (any non-zero exit) ---
+  TaskFailureRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-task-failure
+      State: ENABLED
+      EventPattern:
+        source:
+          - aws.ecs
+        detail-type:
+          - ECS Task State Change
+        detail:
+          clusterArn:
+            - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${EnvironmentName}-wwii-pipeline
+          lastStatus:
+            - STOPPED
+          containers:
+            exitCode:
+              - anything-but: 0
+      Targets:
+        - Id: TriggerLambda
+          Arn: !GetAtt TriggerFunction.Arn
+          Input: '{"source": "scheduled", "action": "check_locks"}'
           Input: '{"source": "scheduled", "action": "check_locks"}'
 
   SpotTerminationPermission:
@@ -397,7 +421,7 @@ Resources:
       Type: TOKEN
       AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DedupAuthFunction.Arn}/invocations
       IdentitySource: method.request.header.Authorization
-      AuthorizerResultTtlInSeconds: 0
+      AuthorizerResultTtlInSeconds: 300
 
   MetricsAuthInvokePermission:
     Type: AWS::Lambda::Permission
@@ -554,7 +578,7 @@ Resources:
       Type: TOKEN
       AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DedupAuthFunction.Arn}/invocations
       IdentitySource: method.request.header.Authorization
-      AuthorizerResultTtlInSeconds: 0
+      AuthorizerResultTtlInSeconds: 300
 
   DedupAuthInvokePermission:
     Type: AWS::Lambda::Permission
