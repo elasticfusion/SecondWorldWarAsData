@@ -47,7 +47,7 @@ def sample_parsed_chapter(tmp_path) -> Path:
     """Sample parsed chapter data as a file."""
     from pathlib import Path
     import json
-    
+
     data = {
         "book": "Breakout and Pursuit",
         "chapter": 1,
@@ -61,7 +61,7 @@ def sample_parsed_chapter(tmp_path) -> Path:
             }
         ],
     }
-    
+
     event_data = {
         "Chapter": "The Allies",
         "Event": {
@@ -70,22 +70,24 @@ def sample_parsed_chapter(tmp_path) -> Path:
                 {
                     "Sub-eventID": "01TESTSUB",
                     "Sub-event_summary": "Test event",
-                    "Sub-event_fulltext": {"1": "General Eisenhower commanded the Allied forces."},
+                    "Sub-event_fulltext": {
+                        "1": "General Eisenhower commanded the Allied forces."
+                    },
                 }
             ],
         },
     }
-    
+
     # Create parsed file
     parsed_file = tmp_path / "chapter1-parsed.json"
     with open(parsed_file, "w") as f:
         json.dump(data, f)
-    
+
     # Create event file
     event_file = tmp_path / "chapter1-event.json"
     with open(event_file, "w") as f:
         json.dump(event_data, f)
-    
+
     return event_file
 
 

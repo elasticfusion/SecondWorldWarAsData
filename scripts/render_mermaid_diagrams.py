@@ -63,9 +63,22 @@ def render_diagram(source: str, output_png: Path) -> bool:
         mmd_path = f.name
     try:
         result = subprocess.run(
-            ["npx", "--yes", "@mermaid-js/mermaid-cli", "-i", mmd_path, "-o", str(output_png),
-             "-b", "white", "-s", "2"],
-            capture_output=True, text=True, timeout=60,
+            [
+                "npx",
+                "--yes",
+                "@mermaid-js/mermaid-cli",
+                "-i",
+                mmd_path,
+                "-o",
+                str(output_png),
+                "-b",
+                "white",
+                "-s",
+                "2",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=60,
         )
         if result.returncode != 0:
             print(f"  ERROR: {result.stderr.strip()}", file=sys.stderr)
@@ -92,7 +105,9 @@ def main():
 
         # Load existing manifest
         manifest_path = images_dir / MANIFEST_NAME
-        manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+        manifest = (
+            json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+        )
 
         diagrams = extract_diagrams(md_path)
         print(f"{md_path.name}: {len(diagrams)} diagram(s)")

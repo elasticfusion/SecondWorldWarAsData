@@ -42,7 +42,9 @@ def show_cache(cache_dir: Path, cache_type: str, limit: int = 10):
         print(f"Error: Cache type '{cache_type}' not found")
         return
 
-    files = sorted(type_dir.glob("*.json"), key=lambda f: f.stat().st_mtime, reverse=True)
+    files = sorted(
+        type_dir.glob("*.json"), key=lambda f: f.stat().st_mtime, reverse=True
+    )
 
     if not files:
         print(f"No cache entries for type: {cache_type}")
@@ -134,7 +136,9 @@ Examples:
     parser.add_argument(
         "--limit", type=int, default=10, help="Number of entries to show (default: 10)"
     )
-    parser.add_argument("--all", action="store_true", help="Clear all caches (for clear command)")
+    parser.add_argument(
+        "--all", action="store_true", help="Clear all caches (for clear command)"
+    )
 
     args = parser.parse_args()
 

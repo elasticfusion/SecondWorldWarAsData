@@ -319,7 +319,12 @@ def search_event_content(
 
 
 def _verify_and_apply(
-    candidate: Dict, data: Dict, name: str, grok_client: Any, max_images: int, max_web: int
+    candidate: Dict,
+    data: Dict,
+    name: str,
+    grok_client: Any,
+    max_images: int,
+    max_web: int,
 ) -> bool:
     """Verify OpenSERP results with Grok and apply to entity data."""
     changed = False
@@ -336,7 +341,9 @@ def _verify_and_apply(
     for r in candidate.get("web_results", []):
         url = r.get("url", "")
         title = r.get("title", "")
-        if url and _verify_result(title, f"Military service of {name} in WWII", grok_client):
+        if url and _verify_result(
+            title, f"Military service of {name} in WWII", grok_client
+        ):
             data.setdefault("military_awards", []).append(
                 {"url": url, "title": title, "source": "openserp"}
             )

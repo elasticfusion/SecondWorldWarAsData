@@ -14,27 +14,27 @@ except ImportError:
 
 def pdf_to_markdown(pdf_path: Path, output_dir: Path, book_name: str) -> None:
     """Convert PDF to markdown structure for pipeline."""
-    
+
     # Create output structure
     chapter_dir = output_dir / book_name / "chapter1"
     chapter_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Create sourcedocument directory
     source_dir = output_dir / book_name / "sourcedocument"
     source_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Extract markdown from PDF with structure preservation
     print(f"Extracting structured markdown from {pdf_path.name}...")
     markdown_text = pymupdf4llm.to_markdown(str(pdf_path))
-    
+
     # Write content file
     content_file = chapter_dir / "chapter1-content.md"
-    with open(content_file, 'w', encoding='utf-8') as f:
+    with open(content_file, "w", encoding="utf-8") as f:
         f.write(markdown_text)
-    
+
     # Create metadata template
     meta_file = chapter_dir / "chapter1-meta.yaml"
-    with open(meta_file, 'w', encoding='utf-8') as f:
+    with open(meta_file, "w", encoding="utf-8") as f:
         f.write(f"""series: "TODO - Add series name"
 book: "{book_name}"
 author: "TODO - Add author name"
@@ -44,18 +44,20 @@ license: "TODO - Add license (e.g., Public Domain, CC-BY-4.0)"
 copyright_date: "TODO - Add year"
 source_url: "TODO - Add source URL or DOI"
 """)
-    
+
     # Move PDF to sourcedocument directory
     import shutil
+
     dest_pdf = source_dir / pdf_path.name
     shutil.move(str(pdf_path), str(dest_pdf))
-    
+
     # Count pages
     import fitz
+
     doc = fitz.open(str(dest_pdf))
     page_count = len(doc)
     doc.close()
-    
+
     print(f"\n✅ Converted {pdf_path.name}")
     print(f"   Pages extracted: {page_count}")
     print(f"   Output directory: {chapter_dir}")
@@ -74,20 +76,20 @@ def main():
         print("\nExample:")
         print("  python3 scripts/pdf_to_markdown.py paper.pdf 'SmithPaper2024'")
         sys.exit(1)
-    
+
     pdf_path = Path(sys.argv[1])
     book_name = sys.argv[2]
     output_dir = Path("contentrepository")
-    
+
     # Validate input
     if not pdf_path.exists():
         print(f"Error: PDF file not found: {pdf_path}")
         sys.exit(1)
-    
-    if not pdf_path.suffix.lower() == '.pdf':
+
+    if not pdf_path.suffix.lower() == ".pdf":
         print(f"Error: File must be a PDF: {pdf_path}")
         sys.exit(1)
-    
+
     # Convert
     try:
         pdf_to_markdown(pdf_path, output_dir, book_name)

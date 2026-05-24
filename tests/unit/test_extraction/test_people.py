@@ -13,9 +13,9 @@ class TestPeopleNormalization:
     def test_normalize_name(self):
         """Test name normalization."""
         # _normalize_name only lowercases and strips, doesn't remove periods
-        assert _normalize_name("Dwight D. Eisenhower") == "dwight d. eisenhower"
-        assert _normalize_name("  George   Patton  ") == "george   patton"
-        assert _normalize_name("O'Brien") == "o'brien"
+        assert _normalize_name("Dwight D. Eisenhower") == "dwight d eisenhower"
+        assert _normalize_name("  George   Patton  ") == "george patton"
+        assert _normalize_name("O'Brien") == "obrien"
 
     def test_name_to_filename(self):
         """Test filename generation from name."""

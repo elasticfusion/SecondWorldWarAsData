@@ -85,7 +85,7 @@ def _add_people_exclusion(name: str) -> None:
     """Add a name to the persistent exclusion list (logged for manual pattern creation)."""
     if not _people_exclusions_file:
         return
-    data = {"patterns": [], "auto_caught": []}
+    data: dict = {"patterns": [], "auto_caught": []}
     if _people_exclusions_file.exists():
         data = json.loads(_people_exclusions_file.read_text(encoding="utf-8"))
     caught = data.setdefault("auto_caught", [])

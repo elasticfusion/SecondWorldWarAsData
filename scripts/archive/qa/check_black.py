@@ -21,7 +21,7 @@ print("Checking code formatting with Black...\n")
 result = subprocess.run(
     ["python3", "-m", "black", "--check", "--diff"] + files,
     capture_output=True,
-    text=True
+    text=True,
 )
 
 if result.stdout:

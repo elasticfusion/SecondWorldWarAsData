@@ -5,11 +5,14 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 from src.extraction.supplemental import extract_supplemental
 from src.extraction.supplemental_advanced import enrich_with_advanced_features
 from src.grok_client import GrokClient
 
 
+@pytest.mark.requires_api
 def test_phase1():
     """Test Phase 1: Core extraction."""
     print("\n=== Phase 1: Core Extraction ===")
@@ -31,7 +34,7 @@ def test_phase1():
     supplemental_file = extract_supplemental(
         event_file=event_file,
         grok_client=grok_client,
-        output_dir=output_dir,
+        output_root=output_dir,
     )
 
     if not supplemental_file:
@@ -60,6 +63,7 @@ def test_phase1():
     return supplemental_file
 
 
+@pytest.mark.requires_api
 def test_phase2(supplemental_file):
     """Test Phase 2: Search integration."""
     print("\n=== Phase 2: Search Integration ===")
@@ -67,6 +71,7 @@ def test_phase2(supplemental_file):
     return
 
 
+@pytest.mark.requires_api
 def test_phase3(supplemental_file):
     """Test Phase 3: Advanced features."""
     print("\n=== Phase 3: Advanced Features ===")
