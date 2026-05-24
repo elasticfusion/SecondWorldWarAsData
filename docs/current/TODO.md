@@ -19,10 +19,6 @@
 
 ### CI/CD & DevOps
 
-#### Add staging environment gate
-Deploy workflow pushes directly to dev on main push. Add staging environment with required reviewers. Flow: build → deploy staging → manual approval → deploy prod.
-*Source: DEVOPS_RECOMMENDATIONS.md*
-
 #### DynamoDB point-in-time recovery and DeletionPolicy on all tables
 Only CacheTable has DeletionPolicy. Entity tables would be deleted on stack delete. Enable PITR for recovery.
 *Source: DEVOPS_RECOMMENDATIONS.md*
@@ -312,6 +308,10 @@ Run full pipeline locally with a single small chapter and mocked Grok API (canne
 #### AWS cost quick wins (trivial config changes)
 Parameterize Container Insights level (`enabled`/`enhanced`/`disabled` via CloudFormation parameter, default `enabled` — saves $5-10/mo). Add S3 noncurrent version expiration (30 days). Set Lambda log retention to 30 days. Reduce Lambda memory (dedup-ui 512→256, metrics/openserp-manager 256→128). Single DynamoDB read for cache hits (replace `__contains__` + `__getitem__` with single `get()`).
 *Source: COST_OPTIMIZATION.md*
+
+#### Add staging environment gate
+Add GitHub Environment with required reviewers before production deploy. Low priority — single developer, no external consumers.
+*Source: DEVOPS_RECOMMENDATIONS.md*
 
 #### Scripts cleanup and categorization
 `scripts/__pycache__/` committed, 60+ scripts with no categorization, duplicates (find_duplicate_places.py and v2). Consider deprecating deploy_all.sh in favor of `gh workflow run`.

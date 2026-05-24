@@ -14,7 +14,14 @@ cd "$PROJECT_DIR"
 echo "=== Building Lambda package ==="
 rm -rf lambda_package lambda-code.zip
 pip install -r requirements-lambda.txt -t lambda_package/ -q
-cp -r src/ lambda_handlers/ scripts/ config.yaml lambda_package/
+cp -r src/ lambda_handlers/ config.yaml lambda_package/
+# Only include scripts that Lambda handlers import
+mkdir -p lambda_package/scripts
+for s in find_duplicate_people.py find_duplicate_places_v2.py find_duplicate_groups.py \
+         find_duplicate_equipment.py find_related_groups.py reclassify_military_units.py \
+         cleanup_indexes.py; do
+  [ -f "scripts/$s" ] && cp "scripts/$s" lambda_package/scripts/
+done
 # Scan Lambda dependencies for vulnerabilities
 if command -v trivy &>/dev/null; then
   trivy fs lambda_package/ --severity HIGH,CRITICAL --exit-code 0 2>&1 | tail -5

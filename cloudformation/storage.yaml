@@ -59,10 +59,14 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: ttl
         Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
 
   # Entity tables
   PeopleTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       TableName: !Sub ${EnvironmentName}-wwii-people
       BillingMode: PAY_PER_REQUEST
@@ -75,6 +79,8 @@ Resources:
 
   GroupsTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       TableName: !Sub ${EnvironmentName}-wwii-groups
       BillingMode: PAY_PER_REQUEST
@@ -87,6 +93,8 @@ Resources:
 
   PlacesTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       TableName: !Sub ${EnvironmentName}-wwii-places
       BillingMode: PAY_PER_REQUEST
@@ -99,6 +107,8 @@ Resources:
 
   DatesTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       TableName: !Sub ${EnvironmentName}-wwii-dates
       BillingMode: PAY_PER_REQUEST
@@ -111,6 +121,8 @@ Resources:
 
   EquipmentTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       TableName: !Sub ${EnvironmentName}-wwii-equipment
       BillingMode: PAY_PER_REQUEST
@@ -123,6 +135,8 @@ Resources:
 
   WeatherTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       TableName: !Sub ${EnvironmentName}-wwii-weather
       BillingMode: PAY_PER_REQUEST
@@ -135,6 +149,8 @@ Resources:
 
   LogisticsTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       TableName: !Sub ${EnvironmentName}-wwii-logistics
       BillingMode: PAY_PER_REQUEST
@@ -147,6 +163,8 @@ Resources:
 
   CasualtiesTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       TableName: !Sub ${EnvironmentName}-wwii-casualties
       BillingMode: PAY_PER_REQUEST
@@ -159,6 +177,8 @@ Resources:
 
   MapsTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       TableName: !Sub ${EnvironmentName}-wwii-maps
       BillingMode: PAY_PER_REQUEST
@@ -171,6 +191,8 @@ Resources:
 
   BibliographyTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       TableName: !Sub ${EnvironmentName}-wwii-bibliography
       BillingMode: PAY_PER_REQUEST

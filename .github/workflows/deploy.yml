@@ -155,7 +155,7 @@ jobs:
 
       - name: Lint CloudFormation
         run: |
-          pip install cfn-lint
+          pip install cfn-lint==1.48.1
           cfn-lint cloudformation/*.yaml
 
       - name: Upload templates to S3
