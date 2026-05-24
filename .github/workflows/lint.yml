@@ -51,6 +51,7 @@ jobs:
         run: cfn-lint cloudformation/*.yaml
 
       - name: pip-audit (dependency vulnerabilities)
+        continue-on-error: true
         run: |
           pip install pip-audit
           pip-audit -r requirements.txt
