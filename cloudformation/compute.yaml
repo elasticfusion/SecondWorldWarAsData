@@ -284,7 +284,6 @@ Resources:
         - Id: TriggerLambda
           Arn: !GetAtt TriggerFunction.Arn
           Input: '{"source": "scheduled", "action": "check_locks"}'
-          Input: '{"source": "scheduled", "action": "check_locks"}'
 
   SpotTerminationPermission:
     Type: AWS::Lambda::Permission
