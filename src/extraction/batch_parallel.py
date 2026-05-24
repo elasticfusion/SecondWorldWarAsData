@@ -262,25 +262,30 @@ def _add_event_mention_batch(  # pylint: disable=too-many-arguments,too-many-pos
     source_obj: Optional[dict] = None,
     date_id_lookup: Optional[Dict[str, str]] = None,
 ) -> None:
-    """Add event_mention to entity record if not already present."""
-    mentions = record.get("event_mentions", [])
-    if any(m.get("Sub_eventID") == seid for m in mentions):
-        return
-    mention = {
-        "MentionID": str(ulid_mod.new()),
-        "Event_Name": event_name,
-        "EventID": event_id,
-        "Sub_event_Name": se_name,
-        "Sub_eventID": seid,
-        "book": meta.get("book", ""),
-        "author": meta.get("author", ""),
-        "series": meta.get("series", ""),
-    }
-    if source_obj:
-        _enrich_mention_from_source(mention, record, source_obj, date_id_lookup)
-    mentions.append(mention)
-    record["event_mentions"] = mentions
-    write_json_with_lock(entity_file, record)
+    """Add event_mention to entity record if not already present (thread-safe)."""
+    from src.utils.file_lock import locked_json
+
+    with locked_json(entity_file) as (data, save):
+        mentions = data.get("event_mentions", [])
+        if any(m.get("Sub_eventID") == seid for m in mentions):
+            return
+        mention = {
+            "MentionID": str(ulid_mod.new()),
+            "Event_Name": event_name,
+            "EventID": event_id,
+            "Sub_event_Name": se_name,
+            "Sub_eventID": seid,
+            "book": meta.get("book", ""),
+            "author": meta.get("author", ""),
+            "series": meta.get("series", ""),
+        }
+        if source_obj:
+            _enrich_mention_from_source(mention, data, source_obj, date_id_lookup)
+        mentions.append(mention)
+        data["event_mentions"] = mentions
+        save(data)
+    # Update the in-memory record to reflect the change
+    record["event_mentions"] = data.get("event_mentions", [])
 
 
 def _process_entity_obj(  # pylint: disable=too-many-arguments,too-many-positional-arguments

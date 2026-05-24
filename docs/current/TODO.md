@@ -8,93 +8,10 @@
 
 ### Security & Infrastructure
 
-#### Remove hardcoded secrets from deploy script
-`scripts/deploy_all.sh` has hardcoded auth token (`admin:ReviewPass2026`) and AWS account ID. Replace with Secrets Manager lookup and `aws sts get-caller-identity`. Consider purging git history with BFG.
-*Source: DEVOPS_RECOMMENDATIONS.md*
-
-#### Scope IAM permissions (remove Resource: '*')
-ECS, EC2/NAT, CloudWatch, and deploy role statements use `Resource: '*'`. Scope to cluster ARN, VPC tags, and specific resources. Deploy role's `NestedStackResources` is especially dangerous.
-*Source: DEVOPS_RECOMMENDATIONS.md*
-
-#### Container security hardening
-Run as non-root user, pin base image digest, add HEALTHCHECK, pin requirements.txt versions (currently uses `>=` ranges). Don't bake config.yaml with API keys into image.
-*Source: DEVOPS_RECOMMENDATIONS.md*
-
-#### Extract trigger Lambda from inline CloudFormation
-~200 lines of inline ZipFile in compute.yaml. Cannot be tested, versioned, or debugged independently. Move to `lambda_handlers/trigger_handler.py` with S3 code package.
-*Source: DEVOPS_RECOMMENDATIONS.md, CODE_REVIEW.md*
-
 ### Prompt & Data Quality
-
-#### Add "COPY ID" instructions and cross-reference fixes to weather, casualties, and people prompts
-Weather prompt generates new ULIDs for PlaceMentionID instead of copying from available places (81% broken cross-refs). Casualties prompt has 86% null PeopleGroupID. Fix: add explicit "COPY these IDs exactly — do NOT generate new ones" pattern with available entity lists. Fuzzy-match organization names against people_groups entities for casualties (expected 70-80% resolution).
-*Source: PROMPT_REVIEW.md, DATA_SCIENCE_RECOMMENDATIONS.md*
-
-#### Add severity calibration to logistics prompt
-79% of logistics entries are high/critical severity. Add calibration guidance (critical = operations halted, high = significant degradation, medium = noticeable constraint, low = minor). Most historical mentions should be medium.
-*Source: PROMPT_REVIEW.md*
-
-#### Require name + PersonID in people prompt
-193 people files missing name/PersonID. Add explicit instruction that every person MUST have name and PersonID. Clarify that minimal extraction (name + rank only) is acceptable.
-*Source: PROMPT_REVIEW.md*
-
-#### Clean up 193 people files missing name/PersonID
-18.6% of people files have no name or PersonID. Populate from filename where recognizable, merge ambiguous stubs into matching entities, delete unresolvable.
-*Source: DATA_SCIENCE_RECOMMENDATIONS.md*
-
-#### Resolve broken PlaceIDs in weather files
-81% of weather PlaceIDs don't resolve to actual place entities. Post-extraction reconciliation: fuzzy-match location.place_name against places, use coordinates as secondary signal.
-*Source: DATA_SCIENCE_RECOMMENDATIONS.md*
-
-#### Implement weather deduplication
-1,320 weather files where ~100-150 unique observations exist (up to 21 duplicates per date+location). Key on `(date, normalized_place_name)`, merge event_mentions, prefer hybrid source_type.
-*Source: DATA_SCIENCE_RECOMMENDATIONS.md*
-
-#### Fix _auto_split_and_extract saving partial results as complete
-Partial event data stored as valid when auto-split is used. Add completeness flag or validation before marking as done.
-*Source: CODE_REVIEW.md*
-
-#### Fix _handle_wikipedia_error accessing e.response which may be None
-Unhandled AttributeError in enrich_biographies.py when exception has no response attribute.
-*Source: CODE_REVIEW.md*
 
 ### Reliability
 
-#### Add SIGTERM handler to ecs_entrypoint.py
-ECS sends SIGTERM 30s before kill (spot termination). Perform emergency S3 sync + lock removal in handler. Eliminates all data loss on spot interruption.
-*Source: QA_GAPS.md, CODE_REVIEW.md, SPOT_RECOVERY.md*
-
-### Include event files in background sync
-Event files (`-event.json`) are excluded from background sync but safe to upload (S3 notification only fires for `-parsed.json`). Event extraction is the most expensive operation — losing it on spot termination wastes the most work. Remove from exclude list.
-*Source: SPOT_RECOVERY.md*
-
-### Add EventBridge rule for ECS task state change (spot recovery)
-Immediate lock clearing on spot termination instead of waiting up to 1 hour for stale lock check. EventPattern: `source=aws.ecs, detail-type=ECS Task State Change, lastStatus=STOPPED, stoppedReason prefix "Your Spot Task"`. Target: trigger Lambda. Reduces downtime from 1hr to ~3min.
-*Source: SPOT_RECOVERY.md*
-
-#### Add per-task timeouts in batch_parallel.py
-Hung async tasks block entire batch indefinitely. Use `asyncio.wait_for(task, timeout=300)`.
-*Source: QA_GAPS.md*
-
-#### Fix index/entity write ordering in batch_parallel.py
-Index updated before entity file write confirmed. If write fails, index points to non-existent file.
-*Source: QA_GAPS.md*
-
-#### Make dedup merges idempotent
-Lambda retry could duplicate event_mentions in dedup_ui_handler.py. Add idempotency check (e.g., check if mention already exists before appending).
-*Source: QA_GAPS.md*
-
-#### Add ConnectionError to grok_client retry filter
-tenacity only retries `HTTPError`, not `ConnectionError`. Network failures cause immediate failure instead of retry.
-*Source: QA_GAPS.md*
-
-#### ECS task timeout and watchdog
-No task-level timeout — stuck tasks run indefinitely. Add `stopTimeout` to task definitions. Add watchdog: self-terminate with notification if no S3 upload in N minutes.
-*Source: DEVOPS_RECOMMENDATIONS.md*
-
-#### Add Lambda timeout awareness to dedup_ui_handler
-Complex merges could exceed Lambda timeout with no graceful handling. Check remaining time and bail early if needed.
-*Source: QA_GAPS.md*
 
 ---
 
@@ -390,10 +307,6 @@ Only batch_poller has tests. Use moto for DynamoDB/S3/Lambda mocking.
 #### Local end-to-end simulation test
 Run full pipeline locally with a single small chapter and mocked Grok API (canned JSON responses). Validates all code paths: parse → submit-only → job queue → retrieve-only → dedup → Phase 3 submit → retrieve.
 
-#### Pipeline status CLI script
-Query DynamoDB and ECS to show current pipeline state: active phases, pending work, last notifications.
-*Source: DATA_FLOW_ANALYSIS.md*
-
 ### DevOps
 
 #### AWS cost quick wins (trivial config changes)
@@ -505,6 +418,35 @@ Simple `run_pipeline.py` that sequences Phase 1 → Phase 2 → Phase 3 for unat
 ---
 
 ## Completed
+
+### 2026-05-24
+- ✅ Remove hardcoded secrets from deploy script (dynamic account ID + Secrets Manager lookup)
+- ✅ Scope IAM permissions (Resource: '*' → scoped ARNs + region conditions)
+- ✅ Container security hardening (non-root user, pinned digest, HEALTHCHECK, pinned requirements)
+- ✅ Add SIGTERM handler (emergency S3 sync + lock removal on spot termination)
+- ✅ Include event files in background sync (only -parsed.json excluded now)
+- ✅ Add EventBridge spot termination rule (immediate lock clearing)
+- ✅ Add per-task timeouts (5 min/chapter, 3 min/entity type via asyncio.wait_for)
+- ✅ Fix index/entity write ordering (write confirmed before index update, returns None on failure)
+- ✅ Make dedup merges idempotent (composite key dedup on event_mentions)
+- ✅ Add ConnectionError to Grok retry filter
+- ✅ ECS task timeout and watchdog (stopTimeout + 4hr idle self-terminate)
+- ✅ Add COPY ID instructions to weather/casualties prompts
+- ✅ Add severity calibration to logistics prompt
+- ✅ Require name + PersonID in people prompt
+- ✅ Clean up 193 people files (name + PersonID populated from filename)
+- ✅ Resolve broken PlaceIDs in weather (83% resolved via fuzzy match, 248 remain)
+- ✅ Implement weather deduplication (1590 → 591 files, 999 duplicates merged)
+- ✅ Fix _auto_split_and_extract partial results (completeness validation + _partial flag)
+- ✅ Fix _handle_wikipedia_error (guard against None response)
+- ✅ Pipeline status script (scripts/pipeline_status.sh)
+- ✅ Extract trigger Lambda from inline CloudFormation (trigger_handler.py)
+- ✅ Link casualties to PeopleGroupIDs (entity_context passes name:ID pairs)
+- ✅ Use locked_json for event_mention append (thread-safe read-modify-write)
+- ✅ Sanitize dedup UI filename (path traversal blocked)
+- ✅ Fix watchdog false positives (activity-based, notify wrapped in try/except)
+- ✅ Fix _stamp_file atomic writes (temp+replace pattern)
+- ✅ Lambda timeout awareness in dedup UI (bail early on approaching timeout)
 
 ### 2026-05-21 – 2026-05-23
 - ✅ Batch infrastructure optimization (submit-only/retrieve-only ECS modes, Lambda batch poller, DynamoDB job queue)

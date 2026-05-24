@@ -153,7 +153,11 @@ class BackgroundSync:
         self._stop = threading.Event()
         self._thread = None
         self._uploaded_mtimes: dict = {}  # key → mtime of last upload
-        self._last_upload_time = __import__("time").time()
+        self._last_activity_time = __import__("time").time()
+
+    def ping(self):
+        """Signal activity to the watchdog (call from heartbeat or any progress)."""
+        self._last_activity_time = __import__("time").time()
 
     def start(self):
         """Start the background sync thread."""
@@ -178,18 +182,22 @@ class BackgroundSync:
                 if d.exists():
                     n = self._sync_changed(d, prefix)
                     if n:
-                        self._last_upload_time = __import__("time").time()
+                        self._last_activity_time = __import__("time").time()
                         logger.info("Background sync: uploaded %d %s files", n, name)
-            # Watchdog: self-terminate if no uploads for too long
+            # Watchdog: self-terminate if no activity for too long
             import time as _t
 
-            idle = _t.time() - self._last_upload_time
+            idle = _t.time() - self._last_activity_time
             if idle > self.WATCHDOG_TIMEOUT:
                 logger.error(
-                    "WATCHDOG: No S3 uploads for %.0f minutes — task appears stuck. Terminating.",
+                    "WATCHDOG: No activity for %.0f minutes — task appears stuck. Terminating.",
                     idle / 60,
                 )
-                _notify_failure(_current_phase_script, -1)
+                self._stop.set()
+                try:
+                    _notify_failure(_current_phase_script, -1)
+                except Exception:
+                    pass
                 os.kill(os.getpid(), signal.SIGTERM)
         except Exception as e:
             logger.warning("Background sync error: %s", e)
@@ -1019,9 +1027,17 @@ def _stamp_file(filepath: Path, needs_migration, inject_metadata) -> int:
         data = json.loads(filepath.read_text(encoding="utf-8"))
         if needs_migration(data):
             inject_metadata(data)
-            filepath.write_text(
-                json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
-            )
+            import tempfile
+
+            tmp_fd, tmp_path = tempfile.mkstemp(dir=filepath.parent, suffix=".tmp")
+            try:
+                os.fdopen(tmp_fd, "w", encoding="utf-8").write(
+                    json.dumps(data, indent=2, ensure_ascii=False)
+                )
+                os.replace(tmp_path, filepath)
+            except Exception:
+                Path(tmp_path).unlink(missing_ok=True)
+                raise
             return 1
     except Exception:
         pass

@@ -30,7 +30,7 @@ aws s3 cp lambda-code.zip "s3://${BUCKET}/lambda/code.zip" --region "$REGION"
 echo "=== Updating Lambda functions ==="
 # Only update Lambdas that use the S3 code package.
 # Skip: dedup-auth (inline ZipFile), trigger (inline ZipFile), pipeline phases (now ECS).
-for fn in dedup-gate dedup-ui openserp-manager nat-manager metrics batch-poller; do
+for fn in dedup-gate dedup-ui openserp-manager nat-manager metrics batch-poller trigger; do
   echo "  Updating ${ENV}-wwii-${fn}..."
   aws lambda update-function-code \
     --function-name "${ENV}-wwii-${fn}" \
