@@ -5,7 +5,7 @@ mypy==1.20.1
 bandit==1.9.4
 radon==6.0.1
 vulture==2.16
-cfn-lint==1.48.1
+cfn-lint==1.51.1
 moto[dynamodb,s3,ecs,lambda]==5.2.1
 types-requests==2.33.0.20260518
 types-PyYAML==6.0.12.20260518
