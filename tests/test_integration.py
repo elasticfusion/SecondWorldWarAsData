@@ -48,9 +48,12 @@ class TestEndToEndValidation:
     def test_write_and_validate_people(self, tmp_path):
         """Test writing and validating people data."""
         data = {
-            "PersonID": ULID1,
-            "name": "John Doe",
-            "events": [],
+            "people": [
+                {
+                    "PersonID": ULID1,
+                    "name": "John Doe",
+                }
+            ]
         }
 
         filepath = tmp_path / "person.json"
@@ -58,7 +61,7 @@ class TestEndToEndValidation:
 
         assert filepath.exists()
         loaded = json.loads(filepath.read_text())
-        assert loaded["PersonID"] == data["PersonID"]
+        assert loaded["people"][0]["PersonID"] == ULID1
         assert validate_json(loaded, PEOPLE_SCHEMA)
 
     def test_write_and_validate_event(self, tmp_path):
@@ -93,9 +96,12 @@ class TestBatchValidation:
         # Create test files
         for i in range(5):
             data = {
-                "PersonID": f"01HQXYZ12345678{i}ABCDEFGHJK",
-                "name": f"Person {i}",
-                "events": [],
+                "people": [
+                    {
+                        "PersonID": f"01HQXYZ12345678{i}ABCDEFGHJK",
+                        "name": f"Person {i}",
+                    }
+                ]
             }
             filepath = tmp_path / f"person_{i}.json"
             filepath.write_text(json.dumps(data))
@@ -111,9 +117,12 @@ class TestBatchValidation:
         """Test validating directory with some invalid files."""
         # Valid file
         valid_data = {
-            "PersonID": ULID1,
-            "name": "Valid Person",
-            "events": [],
+            "people": [
+                {
+                    "PersonID": ULID1,
+                    "name": "Valid Person",
+                }
+            ]
         }
         (tmp_path / "valid.json").write_text(json.dumps(valid_data))
 
@@ -168,9 +177,12 @@ class TestSchemaRegistry:
         schema = registry.get_schema("people")
 
         data = {
-            "PersonID": ULID1,
-            "name": "Test Person",
-            "events": [],
+            "people": [
+                {
+                    "PersonID": ULID1,
+                    "name": "Test Person",
+                }
+            ]
         }
 
         assert validate_json(data, schema)
@@ -188,11 +200,7 @@ class TestValidationHooks:
 
         register_pre_validation_hook(test_hook)
 
-        data = {
-            "PersonID": ULID1,
-            "name": "Test",
-            "events": [],
-        }
+        data = {"people": [{"PersonID": ULID1, "name": "Test"}]}
 
         validate_json(data, PEOPLE_SCHEMA)
         assert len(hook_called) > 0
@@ -207,11 +215,7 @@ class TestValidationHooks:
         register_post_validation_hook(test_hook)
 
         # Valid data
-        valid_data = {
-            "PersonID": ULID1,
-            "name": "Test",
-            "events": [],
-        }
+        valid_data = {"people": [{"PersonID": ULID1, "name": "Test"}]}
         validate_json(valid_data, PEOPLE_SCHEMA)
 
         # Invalid data
@@ -293,11 +297,7 @@ class TestPerformanceMetrics:
     def test_validation_stats_tracking(self, tmp_path):
         """Test validation statistics are tracked."""
         # Perform validation with write (which tracks stats)
-        data = {
-            "PersonID": ULID1,
-            "name": "Test",
-            "events": [],
-        }
+        data = {"people": [{"PersonID": ULID1, "name": "Test"}]}
         filepath = tmp_path / "test.json"
 
         # Get initial stats

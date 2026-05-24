@@ -105,7 +105,9 @@ def test_get_job_not_found(dynamodb_table):
 
 def test_ttl_is_set(dynamodb_table):
     enqueue_job(_make_job())
-    table = boto3.resource("dynamodb", region_name="us-east-1").Table("test-wwii-api-cache")
+    table = boto3.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
     resp = table.get_item(Key={"cache_key": "batch_job#batch-123"})
     item = resp["Item"]
     assert "ttl" in item

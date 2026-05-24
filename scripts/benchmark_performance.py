@@ -29,17 +29,17 @@ def benchmark_phase1() -> Dict[str, Any]:
     print("\n" + "=" * 60)
     print("PHASE 1: PARSING BENCHMARK")
     print("=" * 60)
-    
+
     parsed_dir = Path("output/parsed")
     if not parsed_dir.exists():
         return {"error": "No parsed files found. Run phase1_parse.py first."}
-    
+
     files = list(parsed_dir.glob("*.json"))
     if not files:
         return {"error": "No parsed JSON files found"}
-    
+
     total_size = sum(get_file_size(f) for f in files)
-    
+
     # Count paragraphs
     total_paragraphs = 0
     for file in files:
@@ -53,7 +53,7 @@ def benchmark_phase1() -> Dict[str, Any]:
                     total_paragraphs += len(data.get("content", []))
         except Exception:
             pass
-    
+
     return {
         "chapters": len(files),
         "total_size_kb": round(total_size, 2),
@@ -68,20 +68,20 @@ def benchmark_phase2() -> Dict[str, Any]:
     print("\n" + "=" * 60)
     print("PHASE 2: EXTRACTION BENCHMARK")
     print("=" * 60)
-    
+
     output_root = Path("output")
-    
+
     results = {}
-    
+
     # Count entities by type
     entity_types = ["events", "dates", "places", "people", "people_groups"]
-    
+
     for entity_type in entity_types:
         entity_dir = output_root / entity_type
         if entity_dir.exists():
             files = list(entity_dir.glob("*.json"))
             total_entities = 0
-            
+
             for file in files:
                 try:
                     with open(file) as f:
@@ -98,14 +98,14 @@ def benchmark_phase2() -> Dict[str, Any]:
                                 total_entities += 1
                 except Exception:
                     pass
-            
+
             results[entity_type] = {
                 "files": len(files),
                 "entities": total_entities,
             }
         else:
             results[entity_type] = {"files": 0, "entities": 0}
-    
+
     return results
 
 
@@ -114,15 +114,15 @@ def benchmark_cache() -> Dict[str, Any]:
     print("\n" + "=" * 60)
     print("CACHE PERFORMANCE")
     print("=" * 60)
-    
+
     cache_dir = Path("cache/api")
     if not cache_dir.exists():
         return {"error": "No cache directory found"}
-    
+
     cache_types = {}
     total_size = 0
     total_files = 0
-    
+
     for cache_type_dir in cache_dir.iterdir():
         if cache_type_dir.is_dir():
             files = list(cache_type_dir.glob("*"))
@@ -133,7 +133,7 @@ def benchmark_cache() -> Dict[str, Any]:
             }
             total_size += size
             total_files += len(files)
-    
+
     return {
         "cache_types": cache_types,
         "total_files": total_files,
@@ -146,10 +146,10 @@ def benchmark_memory() -> Dict[str, Any]:
     print("\n" + "=" * 60)
     print("MEMORY USAGE")
     print("=" * 60)
-    
+
     process = psutil.Process(os.getpid())
     mem_info = process.memory_info()
-    
+
     return {
         "rss_mb": round(mem_info.rss / 1024 / 1024, 2),
         "vms_mb": round(mem_info.vms / 1024 / 1024, 2),
@@ -211,10 +211,10 @@ def generate_report(results: Dict[str, Any]) -> str:
 | Cache Type | Files | Size (MB) |
 |------------|-------|-----------|
 """
-    
-    for cache_type, stats in results['cache'].get('cache_types', {}).items():
+
+    for cache_type, stats in results["cache"].get("cache_types", {}).items():
         report += f"| {cache_type} | {stats['files']} | {stats['size_mb']} |\n"
-    
+
     report += f"""| **Total** | **{results['cache'].get('total_files', 0)}** | **{results['cache'].get('total_size_mb', 0)}** |
 
 **Cache Efficiency:**
@@ -250,7 +250,7 @@ def generate_report(results: Dict[str, Any]) -> str:
 **Report Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  
 **Tool:** scripts/benchmark_performance.py
 """
-    
+
     return report
 
 
@@ -260,46 +260,50 @@ def main():
     print("WWII DATA EXTRACTION PIPELINE - PERFORMANCE BENCHMARK")
     print("=" * 60)
     print(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    
+
     results = {}
-    
+
     # Phase 1
-    results['phase1'] = benchmark_phase1()
+    results["phase1"] = benchmark_phase1()
     print(f"✓ Chapters: {results['phase1'].get('chapters', 0)}")
     print(f"✓ Paragraphs: {results['phase1'].get('total_paragraphs', 0):,}")
-    
+
     # Phase 2
-    results['phase2'] = benchmark_phase2()
-    total_entities = sum(e.get('entities', 0) for e in results['phase2'].values())
+    results["phase2"] = benchmark_phase2()
+    total_entities = sum(e.get("entities", 0) for e in results["phase2"].values())
     print(f"✓ Total Entities: {total_entities:,}")
-    
+
     # Cache
-    results['cache'] = benchmark_cache()
+    results["cache"] = benchmark_cache()
     print(f"✓ Cache Size: {results['cache'].get('total_size_mb', 0)} MB")
-    
+
     # Memory
-    results['memory'] = benchmark_memory()
+    results["memory"] = benchmark_memory()
     print(f"✓ Memory: {results['memory'].get('rss_mb', 0)} MB")
-    
+
     # Generate report
     report = generate_report(results)
-    
+
     # Save report
     report_dir = Path("docs/current/qa-reports")
     report_dir.mkdir(parents=True, exist_ok=True)
-    
-    report_file = report_dir / f"PERFORMANCE_BENCHMARK_{datetime.now().strftime('%Y-%m-%d')}.md"
+
+    report_file = (
+        report_dir / f"PERFORMANCE_BENCHMARK_{datetime.now().strftime('%Y-%m-%d')}.md"
+    )
     report_file.write_text(report)
-    
+
     print("\n" + "=" * 60)
     print(f"✅ Report saved: {report_file}")
     print("=" * 60)
-    
+
     # Print summary
     print("\n📊 SUMMARY:")
     print(f"  Chapters: {results['phase1'].get('chapters', 0)}")
     print(f"  Entities: {total_entities:,}")
-    print(f"  Cache: {results['cache'].get('total_files', 0):,} files ({results['cache'].get('total_size_mb', 0)} MB)")
+    print(
+        f"  Cache: {results['cache'].get('total_files', 0):,} files ({results['cache'].get('total_size_mb', 0)} MB)"
+    )
     print(f"  Memory: {results['memory'].get('rss_mb', 0)} MB")
     print()
 

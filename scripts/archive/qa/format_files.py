@@ -12,9 +12,7 @@ files = [
 print("Formatting files with Black...\n")
 
 result = subprocess.run(
-    ["python3", "-m", "black"] + files,
-    capture_output=True,
-    text=True
+    ["python3", "-m", "black"] + files, capture_output=True, text=True
 )
 
 print(result.stdout)

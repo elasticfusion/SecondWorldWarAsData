@@ -74,9 +74,7 @@ def import_collection(db, collection_name, pattern):
     files = list(OUTPUT_DIR.glob(pattern))
 
     # Skip index and processed files
-    files = [
-        f for f in files if f.name not in ["index.json", ".processed_events.json"]
-    ]
+    files = [f for f in files if f.name not in ["index.json", ".processed_events.json"]]
 
     if not files:
         return 0

@@ -37,17 +37,21 @@ def dynamodb_table():
 
 
 def _seed_job(batch_id="batch-abc", phase="phase3", book="TestBook"):
-    table = boto3.resource("dynamodb", region_name="us-east-1").Table("test-wwii-api-cache")
-    table.put_item(Item={
-        "cache_key": f"batch_job#{batch_id}",
-        "batch_id": batch_id,
-        "phase": phase,
-        "book": book,
-        "batch_name": f"{phase}-{book}",
-        "submitted_at": int(time.time()),
-        "status": "pending",
-        "request_count": 500,
-    })
+    table = boto3.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
+    table.put_item(
+        Item={
+            "cache_key": f"batch_job#{batch_id}",
+            "batch_id": batch_id,
+            "phase": phase,
+            "book": book,
+            "batch_name": f"{phase}-{book}",
+            "submitted_at": int(time.time()),
+            "status": "pending",
+            "request_count": 500,
+        }
+    )
 
 
 def test_poll_no_pending_jobs(dynamodb_table):
@@ -65,7 +69,9 @@ def test_poll_batch_complete(mock_trigger, mock_get, dynamodb_table):
     _seed_job()
     mock_get.return_value = MagicMock(
         status_code=200,
-        json=lambda: {"state": {"num_requests": 500, "num_success": 500, "num_error": 0}},
+        json=lambda: {
+            "state": {"num_requests": 500, "num_success": 500, "num_error": 0}
+        },
         raise_for_status=lambda: None,
     )
 
@@ -75,7 +81,9 @@ def test_poll_batch_complete(mock_trigger, mock_get, dynamodb_table):
     mock_trigger.assert_called_once()
 
     # Verify job marked complete in DynamoDB
-    table = boto3.resource("dynamodb", region_name="us-east-1").Table("test-wwii-api-cache")
+    table = boto3.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
     item = table.get_item(Key={"cache_key": "batch_job#batch-abc"})["Item"]
     assert item["status"] == "complete"
 
@@ -87,7 +95,9 @@ def test_poll_batch_still_pending(mock_get, dynamodb_table):
     _seed_job()
     mock_get.return_value = MagicMock(
         status_code=200,
-        json=lambda: {"state": {"num_requests": 500, "num_success": 200, "num_error": 0}},
+        json=lambda: {
+            "state": {"num_requests": 500, "num_success": 200, "num_error": 0}
+        },
         raise_for_status=lambda: None,
     )
 
@@ -104,7 +114,9 @@ def test_poll_batch_failed(mock_notify, mock_get, dynamodb_table):
     _seed_job()
     mock_get.return_value = MagicMock(
         status_code=200,
-        json=lambda: {"state": {"num_requests": 500, "num_success": 0, "num_error": 500}},
+        json=lambda: {
+            "state": {"num_requests": 500, "num_success": 0, "num_error": 500}
+        },
         raise_for_status=lambda: None,
     )
 
@@ -112,7 +124,9 @@ def test_poll_batch_failed(mock_notify, mock_get, dynamodb_table):
     assert result["failed"] == 1
     mock_notify.assert_called_once()
 
-    table = boto3.resource("dynamodb", region_name="us-east-1").Table("test-wwii-api-cache")
+    table = boto3.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
     item = table.get_item(Key={"cache_key": "batch_job#batch-abc"})["Item"]
     assert item["status"] == "failed"
 
@@ -127,18 +141,24 @@ def test_poll_api_error_stays_pending(mock_get, dynamodb_table):
     result = handler({}, None)
     assert result["pending"] == 1
 
-    table = boto3.resource("dynamodb", region_name="us-east-1").Table("test-wwii-api-cache")
+    table = boto3.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
     item = table.get_item(Key={"cache_key": "batch_job#batch-abc"})["Item"]
     assert item["status"] == "pending"
 
 
 @patch("lambda_handlers.batch_poller.boto3.client")
-def test_submit_action_creates_networking_and_launches_task(mock_boto_client, dynamodb_table):
+def test_submit_action_creates_networking_and_launches_task(
+    mock_boto_client, dynamodb_table
+):
     from lambda_handlers.batch_poller import handler
 
     mock_lambda = MagicMock()
     mock_ecs = MagicMock()
-    mock_ecs.run_task.return_value = {"tasks": [{"taskArn": "arn:aws:ecs:us-east-1:123:task/abc"}]}
+    mock_ecs.run_task.return_value = {
+        "tasks": [{"taskArn": "arn:aws:ecs:us-east-1:123:task/abc"}]
+    }
 
     def client_factory(service, **kwargs):
         if service == "lambda":
@@ -149,7 +169,9 @@ def test_submit_action_creates_networking_and_launches_task(mock_boto_client, dy
 
     mock_boto_client.side_effect = client_factory
 
-    result = handler({"action": "submit", "phase": "phase3", "book": "CrossChannelAttack"}, None)
+    result = handler(
+        {"action": "submit", "phase": "phase3", "book": "CrossChannelAttack"}, None
+    )
 
     # Verify nat_manager invoked
     mock_lambda.invoke.assert_called_once()
@@ -183,14 +205,18 @@ def test_poll_multiple_jobs(mock_trigger, mock_get, dynamodb_table):
             # First job complete
             return MagicMock(
                 status_code=200,
-                json=lambda: {"state": {"num_requests": 500, "num_success": 500, "num_error": 0}},
+                json=lambda: {
+                    "state": {"num_requests": 500, "num_success": 500, "num_error": 0}
+                },
                 raise_for_status=lambda: None,
             )
         else:
             # Second job pending
             return MagicMock(
                 status_code=200,
-                json=lambda: {"state": {"num_requests": 500, "num_success": 100, "num_error": 0}},
+                json=lambda: {
+                    "state": {"num_requests": 500, "num_success": 100, "num_error": 0}
+                },
                 raise_for_status=lambda: None,
             )
 

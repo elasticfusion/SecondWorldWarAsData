@@ -43,7 +43,9 @@ def test_scheduled_lock_check_clears_stale(dynamodb_table):
     from lambda_handlers.trigger_handler import handler
 
     # Seed a stale lock
-    table = boto3.resource("dynamodb", region_name="us-east-1").Table("test-wwii-api-cache")
+    table = boto3.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
     table.put_item(Item={"cache_key": "lock#test-wwii-phase1-parse", "response": "123"})
 
     with patch("lambda_handlers.trigger_handler.ecs") as mock_ecs:
@@ -62,14 +64,28 @@ def test_extract_records_from_sqs():
     from lambda_handlers.trigger_handler import _extract_records
 
     event = {
-        "Records": [{
-            "body": json.dumps({
-                "TopicArn": "arn:aws:sns:us-east-1:123:test-wwii-content-uploaded",
-                "Message": json.dumps({
-                    "Records": [{"s3": {"object": {"key": "content/Book/ch1/file.md"}}}]
-                }),
-            })
-        }]
+        "Records": [
+            {
+                "body": json.dumps(
+                    {
+                        "TopicArn": "arn:aws:sns:us-east-1:123:test-wwii-content-uploaded",
+                        "Message": json.dumps(
+                            {
+                                "Records": [
+                                    {
+                                        "s3": {
+                                            "object": {
+                                                "key": "content/Book/ch1/file.md"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        ),
+                    }
+                )
+            }
+        ]
     }
     topics, keys = _extract_records(event)
     assert "test-wwii-content-uploaded" in topics
@@ -81,6 +97,8 @@ def test_queue_pending(dynamodb_table):
 
     _queue_pending(["content/Book/ch1.md", "content/Book/ch2.md"])
 
-    table = boto3.resource("dynamodb", region_name="us-east-1").Table("test-wwii-api-cache")
+    table = boto3.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
     item = table.get_item(Key={"cache_key": "pending#content"})["Item"]
     assert len(item["keys"]) == 2

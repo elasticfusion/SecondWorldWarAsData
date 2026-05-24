@@ -23,14 +23,23 @@ def count_events(pattern, start_ms, end_ms):
     next_token = None
     while True:
         cmd = [
-            "aws", "logs", "filter-log-events",
-            "--log-group-name", LOG_GROUP,
-            "--region", REGION,
-            "--start-time", str(start_ms),
-            "--end-time", str(end_ms),
-            "--filter-pattern", pattern,
-            "--query", "events | length(@)",
-            "--output", "text",
+            "aws",
+            "logs",
+            "filter-log-events",
+            "--log-group-name",
+            LOG_GROUP,
+            "--region",
+            REGION,
+            "--start-time",
+            str(start_ms),
+            "--end-time",
+            str(end_ms),
+            "--filter-pattern",
+            pattern,
+            "--query",
+            "events | length(@)",
+            "--output",
+            "text",
         ]
         if next_token:
             cmd += ["--next-token", next_token]
@@ -46,7 +55,9 @@ def count_events(pattern, start_ms, end_ms):
 
 print(f"JSON Quality Report (last {DAYS} days)")
 print("=" * 60)
-print(f"{'Date':<12} {'Responses':>10} {'Repaired':>10} {'Truncated':>10} {'Markdown':>10}")
+print(
+    f"{'Date':<12} {'Responses':>10} {'Repaired':>10} {'Truncated':>10} {'Markdown':>10}"
+)
 print("-" * 60)
 
 for i in range(DAYS):
@@ -58,7 +69,9 @@ for i in range(DAYS):
     for name, pattern in PATTERNS.items():
         row[name] = count_events(pattern, start, end)
 
-    print(f"{row['Date']:<12} {row['Responses']:>10} {row['Repaired']:>10} {row['Truncated']:>10} {row['Markdown']:>10}")
+    print(
+        f"{row['Date']:<12} {row['Responses']:>10} {row['Repaired']:>10} {row['Truncated']:>10} {row['Markdown']:>10}"
+    )
 
 print()
 print("Responses = API calls with finish_reason: stop")

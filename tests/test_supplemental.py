@@ -8,7 +8,10 @@ from src.grok_client import GrokClient
 from src.extraction.supplemental import extract_supplemental
 from src.utils.config import load_config, get_paths
 
+import pytest
 
+
+@pytest.mark.requires_api
 def test_supplemental_extraction():
     """Test supplemental material extraction on a sample event file."""
     base_dir = Path(__file__).parent.parent
@@ -37,7 +40,7 @@ def test_supplemental_extraction():
     result = extract_supplemental(
         event_file=test_file,
         grok_client=grok_client,
-        output_dir=supplemental_dir,
+        output_root=supplemental_dir,
     )
 
     if result:
