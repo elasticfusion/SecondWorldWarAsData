@@ -359,8 +359,29 @@ def _auto_split_and_extract(
             results.append(result)
     if not results:
         return None
+
+    # Validate completeness — if less than half of chunks succeeded, mark as partial
+    if len(results) < len(chunks) // 2:
+        logger.warning(
+            "  Only %d/%d chunks extracted — skipping (too incomplete)",
+            len(results),
+            len(chunks),
+        )
+        return None
+
     merged = _merge_event_results(results)
-    logger.info("  Merged %d chunks into single event", len(results))
+    if len(results) < len(chunks):
+        merged["_partial"] = True
+        merged["_chunks_extracted"] = len(results)
+        merged["_chunks_total"] = len(chunks)
+        logger.warning(
+            "  Merged %d/%d chunks (partial — %d chunks failed)",
+            len(results),
+            len(chunks),
+            len(chunks) - len(results),
+        )
+    else:
+        logger.info("  Merged %d chunks into single event", len(results))
     return _save_event_output(merged, parsed_file, output_dir)
 
 
