@@ -1,7 +1,7 @@
 # JSON Schema Reference
 
-**Last Updated:** 2026-03-22
-**Schema Version:** 2.0
+**Last Updated:** 2026-05-23
+**Schema Version:** 2.1
 
 All entity files use 26-character ULIDs for cross-referencing. Cross-references always point to top-level entity IDs (e.g., `DateMentionID` → `DateID` in a date file, `PlaceMentionID` → `PlaceID` in a place file).
 
@@ -490,6 +490,80 @@ Note: Maps use `Sub_eventID` (underscore) — inconsistent with images/bibliogra
 | `mentions` vs `event_mentions` | Equipment uses `mentions`; most others use `event_mentions` | Equipment predates convention |
 | `EventMentionID` vs `MentionID` | Logistics uses `EventMentionID`; others use `MentionID` | Logistics predates convention |
 | `event_context` vs `event_mentions` | Casualties use `event_context` object; others use `event_mentions` array | Casualties are single-event |
+
+---
+
+## DynamoDB Keys (AWS Mode)
+
+Pipeline state and coordination entries stored in the cache table (`dev-wwii-api-cache`).
+
+### Job Queue — `batch_job#{batch_id}`
+
+```json
+{
+  "cache_key": "batch_job#batch_abc123",
+  "batch_id": "batch_abc123",
+  "phase": "phase2",
+  "book": "BreakoutAndPursuit",
+  "batch_name": "BreakoutAndPursuit-3files-45requests",
+  "submitted_at": "2026-05-20T14:30:00Z",
+  "status": "pending|complete|failed|retrieved",
+  "completed_at": "2026-05-20T16:45:00Z",
+  "request_count": 45,
+  "ttl": 1750000000
+}
+```
+
+TTL is set to 30 days after submission for automatic cleanup.
+
+### Name-Based Exclusions — `name_exclusion#{type}#{name1}#{name2}`
+
+```json
+{
+  "cache_key": "name_exclusion#people#eisenhower#eisenhower dwight d",
+  "type": "people",
+  "name1": "eisenhower",
+  "name2": "eisenhower dwight d",
+  "created_at": "2026-05-20T10:00:00Z",
+  "source": "dedup_ui|merge_script"
+}
+```
+
+Survives file recreation — matches on normalized names rather than file IDs.
+
+### Book Entity Manifest — `book_manifest#{book}#{entity_type}`
+
+```json
+{
+  "cache_key": "book_manifest#BreakoutAndPursuit#people",
+  "book": "BreakoutAndPursuit",
+  "entity_type": "people",
+  "keys": ["output/people/Eisenhower_01ABC.json", "output/people/Patton_01DEF.json"],
+  "updated_at": "2026-05-20T15:00:00Z"
+}
+```
+
+Used by Phase 3 to scope S3 downloads to only the entities relevant to the current book.
+
+### Pipeline Locks — `lock#{family}`
+
+```json
+{
+  "cache_key": "lock#phase2",
+  "task_arn": "arn:aws:ecs:...",
+  "started_at": "2026-05-20T14:00:00Z"
+}
+```
+
+### Pending Content — `pending#content` / `pending#parsed`
+
+```json
+{
+  "cache_key": "pending#content",
+  "keys": ["content/Book/chapter5/chapter5-content.md"],
+  "queued_at": "2026-05-20T14:30:00Z"
+}
+```
 
 ---
 

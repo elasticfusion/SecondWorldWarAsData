@@ -500,28 +500,86 @@ def _resolve_generic(
 
 
 def _verify_match(candidate_title: str, verbatim: str, grok_client: Any) -> bool:
-    """Use Grok to verify a search result matches the citation."""
+    """Use Grok to verify a search result matches the citation (title + content check).
+
+    Args:
+        candidate_title: The title of the cited work being searched for.
+        verbatim: The URL found by search, or the original citation text.
+        grok_client: Grok API client for verification.
+    """
     if not grok_client:
-        return True  # Accept without verification if no client
+        return True
 
-    prompt = f"""Does this search result match the citation?
+    # Determine if verbatim is a URL (from search) or citation text
+    url = verbatim if verbatim.startswith("http") else None
+    citation_text = candidate_title
 
-Citation: "{verbatim[:200]}"
-Result: "{candidate_title[:200]}"
+    # Quick title-based check (only if we don't have a URL to verify)
+    if not url:
+        prompt = f"""Does this search result match the citation?
+
+Citation: "{candidate_title[:200]}"
+Result: "{verbatim[:200]}"
 
 Return ONLY "YES" or "NO"."""
+        try:
+            response = grok_client.chat_completion(
+                prompt=prompt,
+                system_prompt="You verify whether search results match citations.",
+                temperature=0.0,
+                use_cache=True,
+                cache_type="bibliography_verify",
+            )
+            return response.strip().upper().startswith("YES")
+        except Exception:
+            return True
 
+    # URL found — verify page content matches the citation
+    return _verify_url_content(url, citation_text, grok_client)
+
+
+def _verify_url_content(url: str, citation: str, grok_client: Any) -> bool:
+    """Fetch first ~2000 chars of a URL and ask Grok if it matches the citation."""
     try:
+        session = get_session()
+        resp = session.get(url, timeout=10, headers={"User-Agent": "WWII-Pipeline/2.2"})
+        if resp.status_code != 200:
+            return False
+
+        # Extract text content (strip HTML if needed)
+        content = resp.text[:4000]
+        if "<html" in content.lower():
+            from html2text import html2text
+
+            content = html2text(content)[:2000]
+        else:
+            content = content[:2000]
+
+        prompt = f"""Does this web page content match the cited document?
+
+Citation: "{citation[:300]}"
+
+Page content (first 2000 chars):
+{content}
+
+Return ONLY "YES" or "NO". Answer "NO" if the page is unrelated, a generic search page, a paywall, or doesn't contain the cited document."""
+
         response = grok_client.chat_completion(
             prompt=prompt,
-            system_prompt="You verify whether search results match citations.",
+            system_prompt="You verify whether web page content matches a bibliography citation.",
             temperature=0.0,
             use_cache=True,
             cache_type="bibliography_verify",
         )
-        return response.strip().upper().startswith("YES")
-    except Exception:
-        return True  # Accept on verification failure
+        match = response.strip().upper().startswith("YES")
+        if not match:
+            logger.info(
+                "URL content mismatch: %s does not match '%s'", url[:80], citation[:60]
+            )
+        return match
+    except Exception as e:
+        logger.debug("URL content verification failed for %s: %s", url[:80], e)
+        return True  # Accept on failure to avoid blocking
 
 
 # --- Batch Processing ---

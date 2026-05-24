@@ -624,7 +624,7 @@ def _merge_person(
 def _check_if_processed(event_file: Path, people_dir: Path) -> bool:
     """Check if event file has already been processed. Returns True if processed."""
     processed_registry = people_dir / ".processed_events.json"
-    event_file_str = str(event_file.resolve())
+    event_file_str = event_file.name
 
     if processed_registry.exists():
         with open(processed_registry, "r", encoding="utf-8") as f:
@@ -771,7 +771,7 @@ def _mark_event_processed(
 ) -> None:
     """Mark event file as processed in registry."""
     processed_registry = people_dir / ".processed_events.json"
-    event_file_str = str(event_file.resolve())
+    event_file_str = event_file.name
 
     if processed_registry.exists():
         with open(processed_registry, "r", encoding="utf-8") as f:

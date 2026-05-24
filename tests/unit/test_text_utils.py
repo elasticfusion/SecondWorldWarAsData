@@ -75,13 +75,13 @@ class TestNormalizeName:
         assert normalize_name("\tPatton\n") == "patton"
 
     def test_preserves_internal_spaces(self):
-        """Test that internal spaces are preserved."""
-        assert normalize_name("Dwight D. Eisenhower") == "dwight d. eisenhower"
-        assert normalize_name("George S. Patton") == "george s. patton"
+        """Test that internal spaces are preserved (periods stripped)."""
+        assert normalize_name("Dwight D. Eisenhower") == "dwight d eisenhower"
+        assert normalize_name("George S. Patton") == "george s patton"
 
-    def test_preserves_periods(self):
-        """Test that periods are preserved."""
-        assert normalize_name("D. Eisenhower") == "d. eisenhower"
+    def test_strips_periods(self):
+        """Test that periods are stripped for consistent matching."""
+        assert normalize_name("D. Eisenhower") == "d eisenhower"
 
 
 class TestNormalizeNameAscii:

@@ -21,6 +21,9 @@ Discovers and parses markdown content into structured JSON.
 - Extracts inline entities (images, maps, footnotes, page markers)
 - Reads metadata from YAML files
 - Outputs to `output/{Book}/chapter*-parsed.json`
+- **Source hash skip:** Computes content hash and skips writing/uploading if unchanged
+- **Lock scoping:** Only clears its own Phase 1 lock (not Phase 2/3 locks)
+- **Full-sync scoped by `BOOK_NAME`** env var in AWS mode
 
 **Usage:**
 ```bash
@@ -577,19 +580,23 @@ def setup_logging(level: str = "INFO", log_file: Optional[str] = None, console: 
 
 ### Heartbeat (`src/utils/heartbeat.py`)
 
-Progress monitoring that warns if no pipeline activity is detected for a configurable interval.
+Progress monitoring that warns if no pipeline activity is detected for a configurable interval. Logs per-chapter heartbeat progress counter during Phase 2 and Phase 3.
 
 ### Batch API (`src/utils/batch_api.py`)
 
 Client for xAI Batch API supporting async batch submission and result retrieval for 50% cost reduction.
 
+### Job Queue (`src/utils/job_queue.py`)
+
+DynamoDB-backed job queue for tracking batch submissions. Manages `batch_job#{batch_id}` entries with status tracking (pending/complete/failed/retrieved) and 30-day TTL auto-cleanup.
+
 ### HTTP Pool (`src/utils/http_pool.py`)
 
-Connection pooling and retry logic for HTTP requests.
+Connection pooling and retry logic for HTTP requests. Maintains persistent sessions (connection pool fix — sessions are not destroyed per API call).
 
 ### File Lock (`src/utils/file_lock.py`)
 
-File-based locking for safe concurrent access to shared output files.
+File-based locking for safe concurrent access to shared output files. Uses **atomic file writes** — writes to a temp file then calls `os.replace()` via `write_json_with_lock()` to prevent corruption on crash or concurrent access.
 
 ### Schema Registry (`src/utils/schema_registry.py`)
 

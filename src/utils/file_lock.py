@@ -70,32 +70,24 @@ def write_json_with_lock(filepath: Path, data: Dict[str, Any]) -> None:
     inject_metadata(data)
     filepath.parent.mkdir(parents=True, exist_ok=True)
 
-    # Platform-specific locking
-    system = platform.system()
+    # Atomic write: write to temp file, then replace (crash-safe)
+    import tempfile
 
-    if system in ("Linux", "Darwin"):  # Unix-like
-        import fcntl
+    tmp_fd, tmp_path = tempfile.mkstemp(
+        dir=filepath.parent, suffix=".tmp", prefix=filepath.stem
+    )
+    try:
+        import os as _os
 
-        with open(filepath, "w", encoding="utf-8") as f:
-            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-            try:
-                json.dump(data, f, indent=2)
-            finally:
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-    elif system == "Windows":
-        import msvcrt  # type: ignore[import]
-
-        with open(filepath, "w", encoding="utf-8") as f:
-            msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)  # type: ignore[attr-defined]
-            try:
-                json.dump(data, f, indent=2)
-            finally:
-                msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)  # type: ignore[attr-defined]
-    else:
-        # Fallback: no locking
-        logger.warning("File locking not supported on %s, writing without lock", system)
-        with open(filepath, "w", encoding="utf-8") as f:
+        with _os.fdopen(tmp_fd, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
+        _os.replace(tmp_path, filepath)
+    except Exception:
+        try:
+            Path(tmp_path).unlink(missing_ok=True)
+        except Exception:
+            pass
+        raise
 
 
 def read_json_with_lock(filepath: Path) -> Dict[str, Any]:

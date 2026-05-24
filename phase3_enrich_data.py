@@ -261,8 +261,9 @@ def main():
             "Submitting %d requests to xAI Batch API (50%% off)...",
             len(grok_client._batch_collector),
         )
+        book = os.environ.get("BOOK_NAME", "all")
         batch_id = grok_client.submit_batch(
-            batch_name=f"phase3-enrich-{len(grok_client._batch_collector)}reqs"
+            batch_name=f"phase3-{book}-{len(grok_client._batch_collector)}reqs"[:128]
         )
         if batch_id:
             logger.info("Batch complete! Re-running enrichment with cached results...")

@@ -1,10 +1,12 @@
 ---
 # Project Configuration
+# Copy this file to config.yaml and fill in your API keys.
 
 # Paths
 paths:
   content_root: "contentrepository"
   output_root: "output"
+  content_output: "output/content"    # Book-specific output (parsed/event files)
   cache_root: "cache"
   review_root: "review"
   
@@ -24,16 +26,21 @@ paths:
 api:
   grok:
     base_url: "https://api.x.ai/v1/chat/completions"
-    model: "grok-4-1-fast-non-reasoning"
+    model: "grok-4.3"
     max_retries: 3
     timeout: 60
   calls_per_minute: 30            # Rate limit: max API calls per minute (across all threads)
+  nara_api_key: ""                # NARA catalog API key (https://www.archives.gov/research/catalog/help/api)
+  noaa_api_token: ""              # NOAA API token
 
 # Processing
 processing:
   validate_ulids: true
   generate_jq_queries: true
   generate_download_scripts: true
+  force_reprocess: false             # WARNING: Reprocesses ALL content from scratch, ignoring cache.
+                                     # Clears event files and API cache. Use only when prompts have
+                                     # fundamentally changed or data is corrupted. Expensive.
 
 # Weather Extraction
 weather:
@@ -66,7 +73,7 @@ supplemental_material:
   llm_search: true                 # Phase 2: Use LLM for search (first pass)
   search_gutenberg: true          # Phase 2: Search Gutenberg.org for books/periodicals
   search_archive_org: true        # Phase 2: Search Archive.org
-  use_openserp: true              # Phase 2: Use OpenSERP for web search
+  use_openserp: true               # Phase 2/3: Use OpenSERP for web search (auto-configured in AWS mode)
   verify_archive_urls: true       # Phase 3: Verify archive URLs
   extract_isbn: true              # Phase 3: Extract ISBN for books (post-1966)
   determine_copyright: true       # Phase 3: Determine copyright status
@@ -77,6 +84,23 @@ concurrency:
   enabled: false                   # Enable concurrent processing (experimental)
   max_event_files: 3              # Process N event files concurrently
   max_extraction_group: 3         # Max parallel extractions per group
+  max_enrichment_workers: 6       # Phase 3: concurrent enrichment threads per entity type
+
+# Enrichment
+enrichment:
+  re_search_after_days: 90         # Re-search not_found entities after this many days
+
+# Batch Mode
+batch:
+  phase2: true                     # Use batch API for Phase 2 (50% cost reduction)
+  phase3: true                     # Use batch API for Phase 3 (50% cost reduction)
+
+# OpenSERP
+openserp:
+  results_per_query: 20            # Max results returned per search query
+  max_images_per_entity: 5        # Max images to keep per person/equipment
+  max_web_results_per_entity: 5    # Max web results (awards, bio links) per entity
+  rate_limit_seconds: 5            # Delay between searches to avoid blocking
 
 # Maps Extraction
 maps:
@@ -159,6 +183,7 @@ aws:
   cache_table: "wwii-api-cache"      # DynamoDB table for API response cache
   cache_ttl_days: 90                 # Cache entry TTL
   secrets_id: ""                     # Secrets Manager secret ID for GROK_API_KEY
+  notification_email: ""             # Email for pipeline completion notifications
   openserp:
     cluster: "wwii-pipeline"
     service: "openserp"

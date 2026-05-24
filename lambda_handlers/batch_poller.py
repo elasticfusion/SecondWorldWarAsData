@@ -49,11 +49,15 @@ def handler(event, _context):
     results = {"checked": len(jobs), "complete": 0, "pending": 0, "failed": 0}
 
     for job in jobs:
-        status = _check_batch_status(api_key, job["batch_id"])
+        status = _check_batch_status(
+            api_key, job["batch_id"], int(job.get("submitted_at", 0))
+        )
         if status == "complete":
-            _mark_complete(job["batch_id"])
-            _trigger_retrieve(job)
-            results["complete"] += 1
+            if _mark_complete(job["batch_id"]):
+                _trigger_retrieve(job)
+                results["complete"] += 1
+            else:
+                results["pending"] += 1  # another invocation handling it
         elif status == "failed":
             _mark_failed(job["batch_id"])
             _notify(f"Batch {job['batch_id']} FAILED ({job.get('book', '?')})")
@@ -97,7 +101,10 @@ def _handle_submit(event: dict) -> dict:
             cluster=CLUSTER,
             taskDefinition=task_def,
             count=1,
-            launchType="FARGATE",
+            capacityProviderStrategy=[
+                {"capacityProvider": "FARGATE_SPOT", "weight": 4, "base": 0},
+                {"capacityProvider": "FARGATE", "weight": 1, "base": 0},
+            ],
             networkConfiguration=_get_network_config(),
             overrides={
                 "containerOverrides": [
@@ -149,8 +156,10 @@ def _get_pending_jobs() -> list:
     return items
 
 
-def _check_batch_status(api_key: str, batch_id: str) -> str:
+def _check_batch_status(api_key: str, batch_id: str, submitted_at: int = 0) -> str:
     """Check batch status via Grok API. Returns 'complete', 'pending', or 'failed'."""
+    import time
+
     try:
         resp = requests.get(
             f"{GROK_API_BASE}/batches/{batch_id}",
@@ -178,23 +187,47 @@ def _check_batch_status(api_key: str, batch_id: str) -> str:
             if error >= total:
                 return "failed"
             return "complete"
+
+        # Timeout: if >24h old and has some successes, treat as complete
+        if submitted_at and success > 0:
+            age_hours = (time.time() - submitted_at) / 3600
+            if age_hours > 24:
+                logger.warning(
+                    "Batch %s stuck for %.0fh (%d/%d), treating as complete",
+                    batch_id[:12],
+                    age_hours,
+                    success + error,
+                    total,
+                )
+                return "complete"
+
         return "pending"
     except Exception as e:
         logger.error("Failed to check batch %s: %s", batch_id, e)
         return "pending"  # don't mark failed on transient errors
 
 
-def _mark_complete(batch_id: str) -> None:
-    """Update job status to complete."""
+def _mark_complete(batch_id: str) -> bool:
+    """Atomically update job status to complete. Returns True if this invocation claimed it."""
     import time
 
     table = boto3.resource("dynamodb", region_name=REGION).Table(CACHE_TABLE)
-    table.update_item(
-        Key={"cache_key": f"batch_job#{batch_id}"},
-        UpdateExpression="SET #s = :status, completed_at = :ts",
-        ExpressionAttributeNames={"#s": "status"},
-        ExpressionAttributeValues={":status": "complete", ":ts": int(time.time())},
-    )
+    try:
+        table.update_item(
+            Key={"cache_key": f"batch_job#{batch_id}"},
+            UpdateExpression="SET #s = :new_status, completed_at = :ts",
+            ConditionExpression="#s = :expected",
+            ExpressionAttributeNames={"#s": "status"},
+            ExpressionAttributeValues={
+                ":new_status": "complete",
+                ":expected": "pending",
+                ":ts": int(time.time()),
+            },
+        )
+        return True
+    except table.meta.client.exceptions.ConditionalCheckFailedException:
+        logger.info("Job %s already claimed by another invocation", batch_id)
+        return False
 
 
 def _mark_failed(batch_id: str) -> None:
@@ -241,7 +274,10 @@ def _trigger_retrieve(job: dict) -> None:
             cluster=CLUSTER,
             taskDefinition=task_def,
             count=1,
-            launchType="FARGATE",
+            capacityProviderStrategy=[
+                {"capacityProvider": "FARGATE_SPOT", "weight": 4, "base": 0},
+                {"capacityProvider": "FARGATE", "weight": 1, "base": 0},
+            ],
             networkConfiguration=_get_network_config(),
             overrides={
                 "containerOverrides": [
@@ -268,6 +304,18 @@ def _trigger_retrieve(job: dict) -> None:
     except Exception as e:
         logger.error("Failed to start retrieve task for %s: %s", batch_id, e)
         _notify(f"Batch {batch_id} complete but FAILED to start retrieve: {e}")
+        # Reset to pending so poller retries on next cycle
+        try:
+            table = boto3.resource("dynamodb", region_name=REGION).Table(CACHE_TABLE)
+            table.update_item(
+                Key={"cache_key": f"batch_job#{batch_id}"},
+                UpdateExpression="SET #s = :s",
+                ExpressionAttributeNames={"#s": "status"},
+                ExpressionAttributeValues={":s": "pending"},
+            )
+            logger.info("Reset job %s to pending for retry", batch_id)
+        except Exception:
+            pass
 
 
 def _get_network_config() -> dict:
