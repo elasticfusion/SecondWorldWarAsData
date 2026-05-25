@@ -14,3 +14,4 @@ html2text==2025.4.15
 pymupdf==1.27.2.2
 pillow==12.2.0
 imagehash==4.3.2
+boto3==1.42.91

@@ -20,7 +20,7 @@ COPY --from=builder /deps /usr/local/lib/python3.12/site-packages/
 COPY src/ src/
 COPY scripts/ scripts/
 COPY prompts/ prompts/
-COPY config.yaml.example config.yaml
+COPY config.yaml .
 COPY ecs_entrypoint.py .
 COPY phase1_parse.py phase2_extract.py phase2_retry.py \
      phase3_enrich_data.py phase3_retry.py \

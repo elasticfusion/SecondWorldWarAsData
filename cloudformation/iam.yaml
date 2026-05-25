@@ -98,7 +98,6 @@ Resources:
                 Action:
                   - ecs:DescribeServices
                   - ecs:UpdateService
-                  - ecs:ListTasks
                   - ecs:DescribeTasks
                   - ecs:RunTask
                   - ecs:StopTask
@@ -107,6 +106,12 @@ Resources:
                   - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:service/${EnvironmentName}-wwii-*/*
                   - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task/${EnvironmentName}-wwii-*/*
                   - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${EnvironmentName}-wwii-*
+              - Sid: ECSListTasks
+                # ecs:ListTasks requires Resource: '*' (AWS limitation)
+                Effect: Allow
+                Action:
+                  - ecs:ListTasks
+                Resource: '*'
               - Sid: PassRole
                 Effect: Allow
                 Action:
