@@ -30,21 +30,9 @@ All dedup scripts load ALL files and score ALL pairs every run (O(n²)). Track `
 
 ### Pipeline Efficiency
 
-#### Parallel S3 downloads in ecs_entrypoint
-`s3_sync_down` downloads sequentially (~15 min for 7,600 files). Use ThreadPoolExecutor with 20 workers. Cuts to ~2 min.
-*Source: PERFORMANCE_ENHANCEMENTS.md*
-
 #### Phase 2 should read pending#parsed as input manifest
 Phase 2 always falls through to S3 scan. Read the DynamoDB queue directly instead.
 *Source: CODE_REVIEW agent analysis*
-
-#### Conditional S3 downloads (skip unchanged files)
-Use `head_object` to check size/ETag before downloading. Skips 80-90% of downloads on Phase 3 re-runs.
-*Source: PERFORMANCE_ENHANCEMENTS.md*
-
-#### Fix _get_book_entity_files scoping (downloads everything)
-Add `book`/`source_book` field to entity files during Phase 2, filter index by that field.
-*Source: PIPELINE_REVIEW.md, DATA_FLOW_ANALYSIS.md*
 
 #### Optional entity extraction: parallelize across event files
 Weather, equipment, logistics, casualties, supplemental extracted sequentially. Could run in parallel.
@@ -167,15 +155,6 @@ Move `boto3.client("scheduler")` before the try block.
 Add time-bounded check for status "complete" within last hour.
 *Source: code review*
 
-#### Extract shared patterns (retry, index, event_mention)
-Deduplicate across dates.py, places.py, people_groups.py, batch_parallel.py.
-
-#### Cache config.py load_config() result
-Reads YAML from disk on every call. Add module-level caching.
-
-#### Fix _build_date_id_lookup rebuilt 4x per chapter
-Build once and pass to all extractors.
-
 #### Fix prompt_loader str.format() breaking on JSON with braces
 *Source: CODE_REVIEW.md*
 
@@ -198,20 +177,6 @@ Write results JSON from phase scripts, read in `_post_process`.
 Image + base64 = ~4x memory. 80MB for a 20MB image.
 *Source: CODE_REVIEW.md*
 
-#### Fix _lookup_by_place_id O(n) iteration in weather_central.py
-Build a lookup dict instead.
-*Source: CODE_REVIEW.md*
-
-#### Implement circuit breaker for Grok API
-Fast-fail after N consecutive failures.
-*Source: QA_GAPS.md*
-
-#### Add unbounded cache size limit with LRU eviction
-*Source: QA_GAPS.md*
-
-#### Fix ThreadPoolExecutor leak in grok_client
-Creates new pool per API call. Use shared pool.
-
 ### Testing
 
 #### Add golden file tests for extraction
@@ -229,11 +194,12 @@ Use moto for DynamoDB/S3/Lambda mocking.
 #### Local end-to-end simulation test
 Full pipeline with mocked Grok API (canned JSON responses).
 
+#### Review local implementation end-to-end
+Verify local mode (non-AWS) still works correctly after all AWS-focused changes. Test: Phase 1 parse → Phase 2 extract → Phase 3 enrich using filesystem storage, local cache, and real-time Grok API. Confirm config.yaml with `aws.enabled: false` produces correct output without S3/DynamoDB dependencies.
+
 ### UI & UX
 
 #### Dedup UI: rename person (edit name field + rename file)
-
-#### Auto-merge equipment with case-insensitive exact name match
 
 ### DevOps
 
@@ -263,7 +229,7 @@ $3.60/month per leaked EIP.
 Search engines block AWS datacenter IPs. Route OpenSERP traffic through residential proxy service to enable image/web searches from ECS. Alternatives: paid SERP API (SerpAPI, ScaleSerp ~$50-100/mo) or restrict search to local-only runs.
 *Source: end-2-end-1 Phase 3 observation*
 
-#### Add disk space checks before writes
+#### Add disk space checks before writes (local mode only)
 *Source: QA_GAPS.md*
 
 #### Add backup before dedup merge operations
