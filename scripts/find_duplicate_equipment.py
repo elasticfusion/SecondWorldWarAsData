@@ -76,11 +76,12 @@ def _name_contained(equip1: Dict, equip2: Dict) -> bool:
     return False
 
 
-def _load_exclusions(equipment_dir: Path) -> Set[tuple]:
+def _load_exclusions(equipment_dir: Path) -> tuple:
     """Load excluded pairs from DynamoDB or local JSON."""
     from src.dedup.exclusions import get_exclusion_store
 
-    return get_exclusion_store("equipment", equipment_dir).load()
+    store = get_exclusion_store("equipment", equipment_dir)
+    return store.load(), store.load_name_exclusions()
 
 
 def _score_pair(item1: Dict, item2: Dict) -> tuple:
@@ -127,16 +128,14 @@ def _make_group(item1: Dict, item2: Dict, confidence: float, reasons: list) -> D
     }
 
 
-def find_potential_duplicates(equipment_dir: Path) -> List[Dict[str, Any]]:
-    """Find potential duplicate equipment based on name similarity and category."""
-    excluded_pairs = _load_exclusions(equipment_dir)
-
-    equipment_files = [
-        f for f in sorted(equipment_dir.glob("*.json")) if f.name not in SKIP_FILES
-    ]
-    seen_filenames = {f.name for f in equipment_files}
+def _load_equipment_items(equipment_dir: Path) -> list:
+    """Load equipment data from files and index."""
     items = []
-    for ef in equipment_files:
+    seen_filenames: Set[str] = set()
+    for ef in sorted(equipment_dir.glob("*.json")):
+        if ef.name in SKIP_FILES:
+            continue
+        seen_filenames.add(ef.name)
         try:
             with open(ef, "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -156,7 +155,33 @@ def find_potential_duplicates(equipment_dir: Path) -> List[Dict[str, Any]]:
                     )
         except (json.JSONDecodeError, OSError):
             pass
+    return items
 
+
+def _is_excluded(
+    item1: dict, item2: dict, excluded_pairs: set, excluded_names: set
+) -> bool:
+    """Check if a pair is excluded by filename or name."""
+    pair_key = tuple(sorted([item1["_filename"], item2["_filename"]]))
+    if pair_key in excluded_pairs:
+        return True
+    if excluded_names:
+        from src.dedup.exclusions import _normalize_exclusion_name
+
+        name1 = item1.get("common_name", item1.get("name", ""))
+        name2 = item2.get("common_name", item2.get("name", ""))
+        name_pair = tuple(
+            sorted([_normalize_exclusion_name(name1), _normalize_exclusion_name(name2)])
+        )
+        if name_pair in excluded_names:
+            return True
+    return False
+
+
+def find_potential_duplicates(equipment_dir: Path) -> List[Dict[str, Any]]:
+    """Find potential duplicate equipment based on name similarity and category."""
+    excluded_pairs, excluded_names = _load_exclusions(equipment_dir)
+    items = _load_equipment_items(equipment_dir)
     logger.info("Analyzing %d equipment items for duplicates...", len(items))
 
     # Score all pairs
@@ -164,8 +189,7 @@ def find_potential_duplicates(equipment_dir: Path) -> List[Dict[str, Any]]:
     for i, item1 in enumerate(items):
         for j in range(i + 1, len(items)):
             item2 = items[j]
-            pair_key = tuple(sorted([item1["_filename"], item2["_filename"]]))
-            if pair_key in excluded_pairs:
+            if _is_excluded(item1, item2, excluded_pairs, excluded_names):
                 continue
             confidence, reasons, best_match = _score_pair(item1, item2)
             if confidence > 0.5 and best_match >= 0.7:

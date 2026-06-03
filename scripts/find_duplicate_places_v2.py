@@ -73,7 +73,7 @@ MAX_DISTANCE_KM = 20  # Places farther apart than this are NOT duplicates
 def find_duplicate_places(places_dir: Path) -> List[Dict]:
     """Find potential duplicate places."""
     places = _load_places(places_dir)
-    excluded_pairs = _load_exclusions(places_dir)
+    excluded_pairs, excluded_names = _load_exclusions(places_dir)
 
     duplicates: List[Dict[str, Any]] = []
     seen: set = set()
@@ -87,14 +87,17 @@ def find_duplicate_places(places_dir: Path) -> List[Dict]:
             duplicates.append(_build_group(cluster, reasons))
 
     duplicates.sort(key=lambda x: float(x["confidence"]), reverse=True)
-    return _filter_excluded(duplicates, excluded_pairs)
+    return _filter_excluded(duplicates, excluded_pairs, excluded_names)
 
 
-def _load_exclusions(places_dir: Path) -> set:
+def _load_exclusions(places_dir: Path) -> tuple:
     """Load excluded pairs from DynamoDB or local JSON."""
     from src.dedup.exclusions import get_exclusion_store
 
-    return get_exclusion_store("places", places_dir).load()
+    store = get_exclusion_store("places", places_dir)
+    pairs = store.load()
+    name_pairs = store.load_name_exclusions()
+    return pairs, name_pairs
 
 
 def _build_group(cluster: list, reasons: set) -> Dict[str, Any]:
@@ -116,19 +119,31 @@ def _build_group(cluster: list, reasons: set) -> Dict[str, Any]:
 
 
 def _filter_excluded(
-    duplicates: List[Dict[str, Any]], excluded_pairs: set
+    duplicates: List[Dict[str, Any]], excluded_pairs: set, excluded_names: set
 ) -> List[Dict[str, Any]]:
-    """Remove groups where all pairs are excluded."""
-    if not excluded_pairs:
+    """Remove groups where all pairs are excluded (by filename or name)."""
+    if not excluded_pairs and not excluded_names:
         return duplicates
+    from src.dedup.exclusions import _normalize_exclusion_name
+
     filtered = []
     for dup in duplicates:
         filenames = [p["filename"] for p in dup["people"]]
-        all_excluded = all(
-            tuple(sorted([a, b])) in excluded_pairs
-            for i, a in enumerate(filenames)
-            for b in filenames[i + 1 :]
-        )
+        names = [p["name"] for p in dup["people"]]
+        all_excluded = True
+        for i, (a, na) in enumerate(zip(filenames, names)):
+            for b, nb in zip(filenames[i + 1 :], names[i + 1 :]):
+                file_pair = tuple(sorted([a, b]))
+                name_pair = tuple(
+                    sorted(
+                        [_normalize_exclusion_name(na), _normalize_exclusion_name(nb)]
+                    )
+                )
+                if file_pair not in excluded_pairs and name_pair not in excluded_names:
+                    all_excluded = False
+                    break
+            if not all_excluded:
+                break
         if not all_excluded:
             filtered.append(dup)
     return filtered
