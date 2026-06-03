@@ -998,8 +998,72 @@ def _auto_merge_entity_type(entity_dir: Path, id_field: str) -> int:
     return merged
 
 
+def _extract_coords_from_place(data: dict) -> tuple:
+    """Extract (lat, lon) from a place data dict. Returns (None, None) if missing."""
+    lat = data.get("latitude") or data.get("lat")
+    lon = data.get("longitude") or data.get("lon") or data.get("lng")
+    if lat is None:
+        c = data.get("coordinates", {})
+        if isinstance(c, dict):
+            lat = c.get("latitude") or c.get("lat")
+            lon = c.get("longitude") or c.get("lon")
+    if lat is not None and lon is not None:
+        try:
+            return float(lat), float(lon)
+        except (ValueError, TypeError):
+            pass
+    return None, None
+
+
+def _generate_places_coords() -> None:
+    """Generate coords.json for cross-book place dedup distance matching."""
+    places_dir = WORKDIR / "output" / "places"
+    if not places_dir.exists():
+        return
+    skip = {"index.json", "coords.json", "duplicate_report.json", "not_duplicates.json"}
+    coords: dict = {}
+    for f in places_dir.glob("*.json"):
+        if f.name in skip:
+            continue
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+            lat, lon = _extract_coords_from_place(data)
+            if lat is not None:
+                coords[f.name] = {
+                    "lat": lat,
+                    "lon": lon,
+                    "PlaceID": data.get("PlaceID", ""),
+                }
+        except (json.JSONDecodeError, OSError):
+            pass
+    coords_file = places_dir / "coords.json"
+    coords_file.write_text(json.dumps(coords), encoding="utf-8")
+    logger.info("Generated places coords.json (%d entries)", len(coords))
+
+    # Also store in DynamoDB for cross-run persistence (per-place items)
+    try:
+        table_name = os.environ.get("CACHE_TABLE", "")
+        if table_name:
+            table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
+            with table.batch_writer() as batch:
+                for filename, c in coords.items():
+                    batch.put_item(
+                        Item={
+                            "cache_key": f"place_coords#{filename}",
+                            "lat": str(c["lat"]),
+                            "lon": str(c["lon"]),
+                            "PlaceID": c["PlaceID"],
+                        }
+                    )
+    except Exception as e:
+        logger.debug("Failed to store coords in DynamoDB: %s", e)
+
+
 def _execute_dedup_scripts() -> None:
     """Run dedup detection scripts and upload reports."""
+    # Generate places coords cache for cross-book distance matching
+    _generate_places_coords()
+
     dedup_scripts = [
         "scripts/find_duplicate_people.py",
         "scripts/find_duplicate_places_v2.py",
