@@ -22,12 +22,6 @@ No email when ECS tasks launch. Add `_notify_launch()` at end of `_run_task()` i
 
 ## Medium Priority
 
-### Data Quality
-
-#### Clean up 105 legacy people files missing name/PersonID
-Script to populate from filename + generate missing PersonIDs.
-*Source: end-2-end-0-ds.md*
-
 ### Dedup & Normalization
 
 #### Auto-merge exact duplicates without human review
@@ -442,6 +436,7 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 - ✅ Fix weather _build_places_section (now uses places index with real PlaceIDs instead of nonexistent PlaceMentionIDs)
 - ✅ Add few-shot examples to logistics severity calibration (4 examples + "DEFAULT TO MEDIUM" instruction)
 - ✅ Add count qualifier pattern to casualties prompt (value+qualifier schema, enum in rules)
+- ✅ Clean up 102 legacy people files (populated name from filename + generated PersonID)
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)
