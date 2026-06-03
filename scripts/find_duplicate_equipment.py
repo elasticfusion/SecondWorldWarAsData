@@ -24,9 +24,15 @@ def _normalize(name: str) -> str:
     import re
 
     name = name.lower().strip()
-    # Normalize caliber formats: ".50-caliber" -> "50 caliber", "155-mm" -> "155mm"
+    # Strip leading dots: ".50-caliber" -> "50-caliber"
     name = re.sub(r"^\.(\d)", r"\1", name)
-    name = re.sub(r"(\d+)\s*-\s*mm", r"\1mm", name)
+    # Normalize "50-caliber" / "50 caliber" -> "50 cal"
+    name = re.sub(r"(\d+)\s*-?\s*caliber", r"\1 cal", name)
+    name = re.sub(r"(\d+)\s*-?\s*cal\b", r"\1 cal", name)
+    # Normalize mm formats: "155-mm" / "155 mm" -> "155mm"
+    name = re.sub(r"(\d+)\s*-?\s*mm\b", r"\1mm", name)
+    # Normalize cm: "7.5-cm" -> "7.5cm"
+    name = re.sub(r"(\d+\.?\d*)\s*-?\s*cm\b", r"\1cm", name)
     name = re.sub(r"[_\-]+", " ", name)
     return name
 

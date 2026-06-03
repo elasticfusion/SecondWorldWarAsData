@@ -28,10 +28,6 @@ No email when ECS tasks launch. Add `_notify_launch()` at end of `_run_task()` i
 All dedup scripts load ALL files and score ALL pairs every run (O(n²)). Track `last_dedup_run` timestamp per entity type in DynamoDB, only compare new files against existing. Add `dedup.mode: incremental|full` to config.yaml — `full` forces all-pairs comparison (useful after prompt changes or bulk re-extraction). Store file creation timestamps via S3 LastModified or entity metadata. Modify all 4 scripts to accept "newer than X" filter.
 *Source: DEDUP_ANALYSIS_ALL_ENTITIES.md, end-2-end-1*
 
-#### Normalize caliber formats in equipment extraction
-`.50-caliber` ≠ `50 caliber` ≠ `12.7mm`. Strip leading dots, normalize mm format.
-*Source: DEDUP_ANALYSIS_ALL_ENTITIES.md*
-
 #### Use technical_identifier as primary equipment index key
 More stable than common_name. Fall back to common_name only when no technical ID exists.
 *Source: DEDUP_ANALYSIS_ALL_ENTITIES.md*
@@ -413,6 +409,7 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 - ✅ Propagate coordinates to index-only place entries (coords.json + per-place DynamoDB items)
 - ✅ Build equipment alias table (config/equipment_aliases.yaml, ~60 mappings, resolved in dedup scoring)
 - ✅ Track "reviewed but no action" state in dedup UI (90-day TTL in DynamoDB, suppresses in all dedup scripts)
+- ✅ Normalize caliber formats in equipment dedup (.50-caliber = 50 cal, 155-mm = 155mm, 7.5-cm = 7.5cm)
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)
