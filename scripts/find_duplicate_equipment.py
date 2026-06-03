@@ -227,6 +227,11 @@ def find_potential_duplicates(equipment_dir: Path) -> List[Dict[str, Any]]:
     items = _load_equipment_items(equipment_dir)
     logger.info("Analyzing %d equipment items for duplicates...", len(items))
 
+    # Load recently-reviewed pairs to suppress
+    from src.dedup.exclusions import load_reviewed_pairs
+
+    reviewed = load_reviewed_pairs("equipment")
+
     # Score all pairs
     pairs = []
     for i, item1 in enumerate(items):
@@ -234,6 +239,10 @@ def find_potential_duplicates(equipment_dir: Path) -> List[Dict[str, Any]]:
             item2 = items[j]
             if _is_excluded(item1, item2, excluded_pairs, excluded_names):
                 continue
+            if reviewed:
+                pair_key = tuple(sorted([item1["_filename"], item2["_filename"]]))
+                if pair_key in reviewed:
+                    continue
             confidence, reasons, best_match = _score_pair(item1, item2)
             if confidence > 0.5 and best_match >= 0.7:
                 pairs.append((item1, item2, confidence, reasons))

@@ -210,6 +210,8 @@ def _handle_action(event, storage, config):
             )
         except Exception:
             grp_people = []
+        # Record "reviewed but no action" state so pair is suppressed on next run
+        _record_reviewed(entity_type, grp_people)
         _remove_group_from_report(entity_type, group_index, storage, grp_people)
         return _json_response(200, {"result": "skipped"})
     return _json_response(400, {"error": f"unknown action: {action}"})
@@ -784,6 +786,35 @@ def _sort_groups(groups):
         ).lower()
     )
     return groups
+
+
+def _record_reviewed(entity_type: str, people: list) -> None:
+    """Store reviewed_at timestamp for all pairs in a group (suppresses on next run)."""
+    import time
+
+    table_name = os.environ.get("CACHE_TABLE", "")
+    if not table_name or len(people) < 2:
+        return
+    try:
+        import boto3
+
+        region = os.environ.get("AWS_REGION", "us-east-1")
+        table = boto3.resource("dynamodb", region_name=region).Table(table_name)
+        now = int(time.time())
+        filenames = [p.get("filename", "") for p in people if p.get("filename")]
+        with table.batch_writer() as batch:
+            for i, f1 in enumerate(filenames):
+                for f2 in filenames[i + 1 :]:
+                    key = "#".join(sorted([f1, f2]))
+                    batch.put_item(
+                        Item={
+                            "cache_key": f"reviewed#{entity_type}#{key}",
+                            "reviewed_at": now,
+                            "ttl": now + 90 * 86400,
+                        }
+                    )
+    except Exception as e:
+        logger.warning("Failed to record reviewed state: %s", e)
 
 
 def _remove_group_from_report(entity_type, group_index, storage, group_people=None):

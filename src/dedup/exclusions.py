@@ -298,3 +298,42 @@ def migrate_local_to_dynamo(entity_type: str, entity_dir: Path) -> int:
 
     logger.info("Migrated %d %s exclusions to DynamoDB", len(pairs), entity_type)
     return len(pairs)
+
+
+def load_reviewed_pairs(entity_type: str) -> Set[Tuple[str, str]]:
+    """Load recently-reviewed pairs from DynamoDB. Returns set of (file1, file2) tuples."""
+    from src.utils.config import load_config
+
+    config = load_config()
+    aws = config.get("aws", {})
+    if not aws.get("enabled"):
+        return set()
+
+    import boto3
+
+    try:
+        region = aws.get("region", "us-east-1")
+        table_name = aws.get("cache_table", "dev-wwii-api-cache")
+        table = boto3.resource("dynamodb", region_name=region).Table(table_name)
+        prefix = f"reviewed#{entity_type}#"
+        pairs: Set[Tuple[str, str]] = set()
+        kwargs = {
+            "FilterExpression": "begins_with(cache_key, :prefix)",
+            "ExpressionAttributeValues": {":prefix": prefix},
+            "ProjectionExpression": "cache_key",
+        }
+        while True:
+            resp = table.scan(**kwargs)
+            for item in resp.get("Items", []):
+                # Key format: reviewed#{entity_type}#{file1}#{file2} (sorted)
+                remainder = item["cache_key"][len(prefix) :]
+                files = remainder.split("#", 1)
+                if len(files) == 2:
+                    pairs.add(tuple(files))
+            if "LastEvaluatedKey" not in resp:
+                break
+            kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
+        return pairs
+    except Exception as e:
+        logger.warning("Failed to load reviewed pairs: %s", e)
+        return set()
