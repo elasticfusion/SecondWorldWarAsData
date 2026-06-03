@@ -24,10 +24,6 @@ No email when ECS tasks launch. Add `_notify_launch()` at end of `_run_task()` i
 
 ### Dedup & Normalization
 
-#### Equipment dedup: require country of origin match
-Different nations' equipment with similar names are distinct entities.
-*Source: end-2-end-1 dedup review*
-
 #### Normalize group index keys more aggressively
 Strip "the/us/u.s.", remove branch names, collapse ordinals. Prevents "4th division" ≠ "4th infantry division" creating separate files.
 *Source: DEDUP_ANALYSIS_ALL_ENTITIES.md*
@@ -428,6 +424,7 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 - ✅ Auto-merge exact duplicates (identical normalized names merged automatically, fuzzy matches still go to human review)
 - ✅ Equipment dedup: reject matches when numeric prefix differs
 - ✅ Reduce false-positive place matches on common geographic prefixes/suffixes
+- ✅ Equipment dedup: require country of origin match (exception for captured equipment)
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)
