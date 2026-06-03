@@ -30,10 +30,6 @@ All dedup scripts load ALL files and score ALL pairs every run (O(n²)). Track `
 
 ### Pipeline Efficiency
 
-#### Add circuit breaker for OpenSERP image search
-After N consecutive failures (e.g., 5), skip remaining OpenSERP searches for the current run. Mark failed entities with `openserp_search_failed_at` timestamp. Only retry entities whose failure is older than 90 days.
-*Source: end-2-end-1 Phase 3 logs*
-
 #### Phase 3: separate search pass from Grok analysis pass for batching
 Restructure into: Pass 1 (search, collect raw data) → Pass 2 (batch all Grok prompts) → Pass 3 (retrieve, write files). Enables 50% cost savings and eliminates per-entity round-trips.
 *Source: end-2-end-1 observation*
@@ -407,6 +403,7 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 - ✅ Track "reviewed but no action" state in dedup UI (90-day TTL in DynamoDB, suppresses in all dedup scripts)
 - ✅ Normalize caliber formats in equipment dedup (.50-caliber = 50 cal, 155-mm = 155mm, 7.5-cm = 7.5cm)
 - ✅ Use technical_identifier as primary equipment index key (falls back to common_name)
+- ✅ Add OpenSERP circuit breaker (5 consecutive failures → skip remaining, 90-day retry via timestamp)
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)
