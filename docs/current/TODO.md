@@ -24,10 +24,6 @@ No email when ECS tasks launch. Add `_notify_launch()` at end of `_run_task()` i
 
 ### Dedup & Normalization
 
-#### Reduce false-positive place matches on common prefixes/suffixes
-Exclude common geographic prefixes/suffixes ("Bois de...", "...River", "Fort...", "Hill...") from fuzzy matching, or require coordinate proximity as a second signal.
-*Source: end-2-end-1 dedup review*
-
 #### Equipment dedup: require country of origin match
 Different nations' equipment with similar names are distinct entities.
 *Source: end-2-end-1 dedup review*
@@ -431,6 +427,7 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 - ✅ Clean up 102 legacy people files (populated name from filename + generated PersonID)
 - ✅ Auto-merge exact duplicates (identical normalized names merged automatically, fuzzy matches still go to human review)
 - ✅ Equipment dedup: reject matches when numeric prefix differs
+- ✅ Reduce false-positive place matches on common geographic prefixes/suffixes
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)
