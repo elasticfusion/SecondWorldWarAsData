@@ -3,11 +3,25 @@
 import json
 import logging
 import platform
+import threading
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Dict
 
 logger = logging.getLogger(__name__)
+
+# Per-file threading locks (prevents in-process races; flock handles cross-process)
+_file_locks: Dict[str, threading.Lock] = {}
+_file_locks_guard = threading.Lock()
+
+
+def _get_file_lock(filepath: Path) -> threading.Lock:
+    """Get or create a threading lock for a specific file path."""
+    key = str(filepath.resolve())
+    with _file_locks_guard:
+        if key not in _file_locks:
+            _file_locks[key] = threading.Lock()
+        return _file_locks[key]
 
 
 @contextmanager
@@ -20,47 +34,52 @@ def locked_json(filepath: Path):
             save(data)
 
     If the file doesn't exist, data is an empty dict.
-    The lock is held from entry until exit, preventing races.
+    Uses threading lock (in-process) + flock (cross-process) for full safety.
     """
     filepath.parent.mkdir(parents=True, exist_ok=True)
+    thread_lock = _get_file_lock(filepath)
     system = platform.system()
 
-    if system in ("Linux", "Darwin"):
-        import fcntl
+    thread_lock.acquire()
+    try:
+        if system in ("Linux", "Darwin"):
+            import fcntl
 
-        # Open in r+ if exists, else create
-        if filepath.exists():
-            f = open(filepath, "r+", encoding="utf-8")
+            # Open in r+ if exists, else create
+            if filepath.exists():
+                f = open(filepath, "r+", encoding="utf-8")
+            else:
+                f = open(filepath, "w+", encoding="utf-8")
+
+            try:
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                f.seek(0)
+                content = f.read()
+                data = json.loads(content) if content.strip() else {}
+
+                def save(new_data):
+                    f.seek(0)
+                    f.truncate()
+                    json.dump(new_data, f, indent=2, ensure_ascii=False)
+
+                yield data, save
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                f.close()
         else:
-            f = open(filepath, "w+", encoding="utf-8")
-
-        try:
-            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-            f.seek(0)
-            content = f.read()
-            data = json.loads(content) if content.strip() else {}
+            # Fallback: threading lock only (no cross-process safety)
+            data = {}
+            if filepath.exists():
+                with open(filepath, encoding="utf-8") as f:
+                    data = json.load(f)
 
             def save(new_data):
-                f.seek(0)
-                f.truncate()
-                json.dump(new_data, f, indent=2, ensure_ascii=False)
+                with open(filepath, "w", encoding="utf-8") as f:
+                    json.dump(new_data, f, indent=2, ensure_ascii=False)
 
             yield data, save
-        finally:
-            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-            f.close()
-    else:
-        # Fallback: no locking
-        data = {}
-        if filepath.exists():
-            with open(filepath, encoding="utf-8") as f:
-                data = json.load(f)
-
-        def save(new_data):
-            with open(filepath, "w", encoding="utf-8") as f:
-                json.dump(new_data, f, indent=2, ensure_ascii=False)
-
-        yield data, save
+    finally:
+        thread_lock.release()
 
 
 def write_json_with_lock(filepath: Path, data: Dict[str, Any]) -> None:
