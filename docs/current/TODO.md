@@ -29,8 +29,8 @@ Strip "the/us/u.s.", remove branch names, collapse ordinals. Prevents "4th divis
 *Source: DEDUP_ANALYSIS_ALL_ENTITIES.md*
 
 #### Incremental dedup (only score new files vs corpus)
-All dedup scripts load ALL files and score ALL pairs every run (O(n²)). Track `last_dedup_run` timestamp, only compare new files against existing.
-*Source: DEDUP_ANALYSIS_ALL_ENTITIES.md*
+All dedup scripts load ALL files and score ALL pairs every run (O(n²)). Track `last_dedup_run` timestamp per entity type in DynamoDB, only compare new files against existing. Add `dedup.mode: incremental|full` to config.yaml — `full` forces all-pairs comparison (useful after prompt changes or bulk re-extraction). Store file creation timestamps via S3 LastModified or entity metadata. Modify all 4 scripts to accept "newer than X" filter.
+*Source: DEDUP_ANALYSIS_ALL_ENTITIES.md, end-2-end-1*
 
 #### Propagate coordinates to index-only place entries
 Store coordinates in index so cross-book dedup can use distance matching.
