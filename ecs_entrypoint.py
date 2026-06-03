@@ -948,6 +948,56 @@ def _download_dedup_data() -> None:
     )
 
 
+def _auto_merge_exact_duplicates() -> None:
+    """Auto-merge entity pairs with identical normalized names (no human review needed)."""
+    entity_configs = [
+        ("people", "PersonID"),
+        ("people_groups", "PeopleGroupID"),
+        ("places", "PlaceID"),
+        ("equipment", "EquipmentID"),
+    ]
+    total = 0
+    for subdir, id_field in entity_configs:
+        total += _auto_merge_entity_type(WORKDIR / "output" / subdir, id_field)
+    if total:
+        logger.info("Auto-merged %d exact duplicate entities", total)
+
+
+def _auto_merge_entity_type(entity_dir: Path, id_field: str) -> int:
+    """Auto-merge exact duplicates for one entity type. Returns merge count."""
+    from src.dedup.merge import merge_generic
+    from src.utils.text_utils import normalize_name_ascii
+
+    report_file = entity_dir / "duplicate_report.json"
+    if not report_file.exists():
+        return 0
+    try:
+        report = json.loads(report_file.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return 0
+
+    groups_key = "duplicate_groups" if "duplicate_groups" in report else "groups"
+    groups = report.get(groups_key, [])
+    remaining = []
+    merged = 0
+
+    for group in groups:
+        people = group.get("people", [])
+        names = [p.get("name", "") for p in people]
+        normalized = {normalize_name_ascii(n) for n in names if n}
+        if len(normalized) == 1 and len(people) >= 2:
+            merge_generic(entity_dir, people, 0, id_field)
+            merged += len(people) - 1
+        else:
+            remaining.append(group)
+
+    report[groups_key] = remaining
+    report_file.write_text(
+        json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    return merged
+
+
 def _execute_dedup_scripts() -> None:
     """Run dedup detection scripts and upload reports."""
     dedup_scripts = [
@@ -968,6 +1018,9 @@ def _execute_dedup_scripts() -> None:
                 logger.warning(
                     "Dedup script %s exited with code %d", script, result.returncode
                 )
+    # Auto-merge exact duplicates (identical normalized names) without human review
+    _auto_merge_exact_duplicates()
+
     # Sync dedup reports to S3
     entity_dirs = ["people", "people_groups", "places", "equipment"]
     for subdir in entity_dirs:
