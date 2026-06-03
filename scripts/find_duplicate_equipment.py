@@ -86,6 +86,16 @@ def _load_exclusions(equipment_dir: Path) -> tuple:
 
 def _score_pair(item1: Dict, item2: Dict) -> tuple:
     """Score a pair of equipment items. Returns (confidence, reasons, best_match)."""
+    # Reject if leading numbers differ (e.g., "105 mm" vs "155 mm")
+    import re
+
+    name1 = item1.get("common_name", item1.get("name", ""))
+    name2 = item2.get("common_name", item2.get("name", ""))
+    num1 = re.match(r"(\d+)", name1)
+    num2 = re.match(r"(\d+)", name2)
+    if num1 and num2 and num1.group(1) != num2.group(1):
+        return 0.0, [], 0.0
+
     confidence = 0.0
     reasons = []
 
