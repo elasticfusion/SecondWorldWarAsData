@@ -127,7 +127,7 @@ Resources:
     Properties:
       QueueName: !Sub ${EnvironmentName}-wwii-trigger-queue
       VisibilityTimeout: 300
-      MessageRetentionPeriod: 3600
+      MessageRetentionPeriod: 1209600
 
   TriggerQueuePolicy:
     Type: AWS::SQS::QueuePolicy
@@ -230,16 +230,16 @@ Resources:
   Phase1ErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub ${EnvironmentName}-wwii-phase1-errors
+      AlarmName: !Sub ${EnvironmentName}-wwii-trigger-errors
       MetricName: Errors
       Namespace: AWS/Lambda
       Dimensions:
         - Name: FunctionName
-          Value: !Sub ${EnvironmentName}-wwii-phase1-parse
+          Value: !Sub ${EnvironmentName}-wwii-trigger
       Statistic: Sum
       Period: 300
       EvaluationPeriods: 1
-      Threshold: 1
+      Threshold: 3
       ComparisonOperator: GreaterThanOrEqualToThreshold
       AlarmActions:
         - !Ref AlarmSNSTopic
@@ -247,16 +247,16 @@ Resources:
   Phase2ErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub ${EnvironmentName}-wwii-phase2-errors
+      AlarmName: !Sub ${EnvironmentName}-wwii-batch-poller-errors
       MetricName: Errors
       Namespace: AWS/Lambda
       Dimensions:
         - Name: FunctionName
-          Value: !Sub ${EnvironmentName}-wwii-phase2-extract
+          Value: !Sub ${EnvironmentName}-wwii-batch-poller
       Statistic: Sum
       Period: 300
       EvaluationPeriods: 1
-      Threshold: 1
+      Threshold: 3
       ComparisonOperator: GreaterThanOrEqualToThreshold
       AlarmActions:
         - !Ref AlarmSNSTopic
@@ -264,16 +264,16 @@ Resources:
   Phase3ErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub ${EnvironmentName}-wwii-phase3-errors
+      AlarmName: !Sub ${EnvironmentName}-wwii-nat-manager-errors
       MetricName: Errors
       Namespace: AWS/Lambda
       Dimensions:
         - Name: FunctionName
-          Value: !Sub ${EnvironmentName}-wwii-phase3-enrich
+          Value: !Sub ${EnvironmentName}-wwii-nat-manager
       Statistic: Sum
       Period: 300
       EvaluationPeriods: 1
-      Threshold: 1
+      Threshold: 3
       ComparisonOperator: GreaterThanOrEqualToThreshold
       AlarmActions:
         - !Ref AlarmSNSTopic

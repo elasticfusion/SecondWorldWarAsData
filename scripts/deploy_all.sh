@@ -43,7 +43,7 @@ echo "=== 3. Running QA checks ==="
 cd "$(dirname "$0")/.."
 source .venv/bin/activate
 python3 -c "import ast; ast.parse(open('ecs_entrypoint.py').read()); ast.parse(open('src/utils/batch_api.py').read()); print('  Syntax OK')"
-python3 -m pytest tests/unit/ -q 2>&1 | tail -1
+python3 -m pytest tests/ -m "not slow and not requires_api" -q --tb=short || { echo "  ✗ Tests failed — aborting deploy"; exit 1; }
 
 echo ""
 echo "=== 3b. Security checks ==="

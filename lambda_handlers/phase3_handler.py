@@ -88,28 +88,32 @@ def _enrich_entity(
     key: str, entity_type: str, storage, grok_client, config: dict
 ) -> None:
     """Enrich a single entity file and write back to storage."""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tmpdir = Path(tmpdir)
+    with tempfile.TemporaryDirectory() as tmp:
+        tmpdir = Path(tmp)
         data = storage.read_json(key)
         entity_file = tmpdir / Path(key).name
         entity_file.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
 
         if entity_type == "people":
-            from src.extraction.enrich_biographies import enrich_person_file
+            from src.extraction.enrich_biographies import enrich_person_biography
 
-            enrich_person_file(entity_file, grok_client)
+            enrich_person_biography(entity_file, grok_client)
         elif entity_type == "people_groups":
-            from src.extraction.enrich_groups import enrich_group_file
+            from src.extraction.enrich_groups import enrich_group
 
-            enrich_group_file(entity_file, grok_client)
+            enrich_group(entity_file, grok_client)
         elif entity_type == "places":
-            from src.extraction.enrich_places import enrich_place_file
+            from src.extraction.enrich_places import enrich_place
 
-            enrich_place_file(entity_file, grok_client)
+            enrich_place(entity_file, grok_client)
         elif entity_type == "bibliography":
-            from src.extraction.supplemental_advanced import enrich_bibliography_entry
+            from src.extraction.supplemental_advanced import enrich_bibliography
 
-            enrich_bibliography_entry(entity_file, grok_client, config)
+            bib_dir = tmpdir / "bibliography"
+            bib_dir.mkdir(parents=True, exist_ok=True)
+            entity_file.rename(bib_dir / entity_file.name)
+            enrich_bibliography(bib_dir, config, grok_client)
+            entity_file = bib_dir / Path(key).name
 
         # Upload enriched file back
         enriched = json.loads(entity_file.read_text(encoding="utf-8"))

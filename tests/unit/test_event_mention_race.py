@@ -119,3 +119,34 @@ def test_locked_json_creates_file_if_missing(tmp_path):
     with open(new_file, encoding="utf-8") as f:
         result = json.load(f)
     assert result["event_mentions"] == [{"MentionID": "first"}]
+
+
+def test_validate_entity_warns_on_missing_fields(tmp_path, caplog):
+    """Validation logs warning when required fields are missing."""
+    import logging
+    from src.utils.file_lock import write_json_with_lock
+
+    people_dir = tmp_path / "people"
+    people_dir.mkdir()
+    filepath = people_dir / "test_person.json"
+
+    with caplog.at_level(logging.WARNING):
+        write_json_with_lock(filepath, {"name": "Test"})  # Missing PersonID
+
+    assert any("missing required fields" in r.message for r in caplog.records)
+    assert "PersonID" in caplog.text
+
+
+def test_validate_entity_passes_valid_data(tmp_path, caplog):
+    """Validation does not warn when all required fields present."""
+    import logging
+    from src.utils.file_lock import write_json_with_lock
+
+    people_dir = tmp_path / "people"
+    people_dir.mkdir()
+    filepath = people_dir / "test_person.json"
+
+    with caplog.at_level(logging.WARNING):
+        write_json_with_lock(filepath, {"PersonID": "01TEST", "name": "Test"})
+
+    assert not any("missing required fields" in r.message for r in caplog.records)
