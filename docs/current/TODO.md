@@ -24,10 +24,6 @@ No email when ECS tasks launch. Add `_notify_launch()` at end of `_run_task()` i
 
 ### Data Quality
 
-#### Add count qualifier pattern to casualties
-Output uses `{"value": 500, "qualifier": "approximately"}` but prompt schema shows raw integers. Align to output format.
-*Source: PROMPT_REVIEW.md*
-
 #### Clean up 105 legacy people files missing name/PersonID
 Script to populate from filename + generate missing PersonIDs.
 *Source: end-2-end-0-ds.md*
@@ -445,6 +441,7 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 - ✅ Align logistics enum values (added capacity_constraint + production_delay to _VALID_TYPES and hardcoded prompts)
 - ✅ Fix weather _build_places_section (now uses places index with real PlaceIDs instead of nonexistent PlaceMentionIDs)
 - ✅ Add few-shot examples to logistics severity calibration (4 examples + "DEFAULT TO MEDIUM" instruction)
+- ✅ Add count qualifier pattern to casualties prompt (value+qualifier schema, enum in rules)
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)
