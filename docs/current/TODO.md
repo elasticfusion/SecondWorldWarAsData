@@ -32,10 +32,6 @@ All dedup scripts load ALL files and score ALL pairs every run (O(n²)). Track `
 `.50-caliber` ≠ `50 caliber` ≠ `12.7mm`. Strip leading dots, normalize mm format.
 *Source: DEDUP_ANALYSIS_ALL_ENTITIES.md*
 
-#### Track "reviewed but no action" state in dedup UI
-Pairs reviewed without decision reappear next run. Add `reviewed_at` timestamp, suppress recently-reviewed pairs.
-*Source: DEDUP_ANALYSIS.md*
-
 #### Use technical_identifier as primary equipment index key
 More stable than common_name. Fall back to common_name only when no technical ID exists.
 *Source: DEDUP_ANALYSIS_ALL_ENTITIES.md*
@@ -416,6 +412,7 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 - ✅ Normalize group dedup keys (strip branch names + nationality guard)
 - ✅ Propagate coordinates to index-only place entries (coords.json + per-place DynamoDB items)
 - ✅ Build equipment alias table (config/equipment_aliases.yaml, ~60 mappings, resolved in dedup scoring)
+- ✅ Track "reviewed but no action" state in dedup UI (90-day TTL in DynamoDB, suppresses in all dedup scripts)
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)

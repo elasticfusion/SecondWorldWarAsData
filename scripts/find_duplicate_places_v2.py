@@ -142,7 +142,25 @@ def find_duplicate_places(places_dir: Path) -> List[Dict]:
             duplicates.append(_build_group(cluster, reasons))
 
     duplicates.sort(key=lambda x: float(x["confidence"]), reverse=True)
-    return _filter_excluded(duplicates, excluded_pairs, excluded_names)
+    filtered = _filter_excluded(duplicates, excluded_pairs, excluded_names)
+
+    # Suppress recently-reviewed pairs
+    from src.dedup.exclusions import load_reviewed_pairs
+
+    reviewed = load_reviewed_pairs("places")
+    if reviewed:
+        remaining = []
+        for g in filtered:
+            filenames = [p["filename"] for p in g["people"]]
+            all_reviewed = all(
+                tuple(sorted([filenames[i], filenames[j]])) in reviewed
+                for i in range(len(filenames))
+                for j in range(i + 1, len(filenames))
+            )
+            if not all_reviewed:
+                remaining.append(g)
+        filtered = remaining
+    return filtered
 
 
 def _load_exclusions(places_dir: Path) -> tuple:
