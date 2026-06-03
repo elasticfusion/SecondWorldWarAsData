@@ -14,10 +14,6 @@ Eliminates the 15-30 min S3 download phase, prevents data loss on spot terminati
 **Strategy: Dual-write (DynamoDB + S3).** DynamoDB is source of truth for operational reads/writes (fast, durable, queryable). S3 remains as archival/bulk export (browsable JSON, versioned, cheap). Write DynamoDB first (immediate durability), periodic S3 export on phase completion for human review and backup.
 *Source: end-2-end-1 spot termination data loss*
 
-#### Validate dedup exclusion lists are working (places, groups, equipment)
-Entities previously marked as not-duplicates may be reappearing in the dedup review queue. Verify that DynamoDB-backed exclusions are being loaded and checked correctly in `find_duplicate_places_v2.py`, `find_duplicate_groups.py`, and `find_duplicate_equipment.py`.
-*Source: end-2-end-1 dedup review*
-
 #### Add "Phase started" notifications
 No email when ECS tasks launch. Add `_notify_launch()` at end of `_run_task()` in trigger_handler.py. Currently only get notifications on completion/failure — operator blind to whether pipeline is running.
 *Source: end-2-end-0.md Issue 1*
@@ -462,6 +458,8 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 - ✅ Add concurrent event mention tests (test_event_mention_race.py)
 - ✅ Fix pending queue reconciliation (hourly check now triggers Phase 1/2 if queues have items and no tasks running)
 - ✅ Fix OpenSERP null response crash (null guard on resp.json() in _search_openserp)
+- ✅ Fix dedup exclusion lists not checking name-based exclusions (places, groups, equipment now check both filename + name pairs)
+- ✅ Refactor find_duplicate_equipment.py complexity (C21 → below C)
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)
