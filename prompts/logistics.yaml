@@ -39,11 +39,17 @@ rules:
   - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
   - Type values: supply_shortage, supply_excess, delivery_delay, transport_disruption, capacity_constraint, production_delay
   - Severity values: critical, high, medium, low
-  - Severity calibration (IMPORTANT — most historical mentions are medium):
+  - DEFAULT TO MEDIUM. Only use high/critical when text explicitly states operations were halted, postponed, or impossible.
+  - Severity calibration:
     - critical: Operations completely halted or impossible (e.g., army cannot advance due to zero fuel, entire division immobilized)
     - high: Significant degradation requiring workarounds (e.g., ammunition rationing, attack delayed by days, alternate routes needed)
     - medium: Noticeable constraint but operations continue (e.g., resupply delayed 1-2 days, substitutions needed, reduced tempo)
     - low: Minor inconvenience with minimal operational impact (e.g., comfort items unavailable, slight delay, administrative friction)
+  - "Severity examples:"
+  - "  'Ammunition supply was limited' = medium (constraint noted, operations continue)"
+  - "  'The division was forced to halt its advance due to complete lack of fuel' = critical (explicitly halted)"
+  - "  'Supply trucks were delayed by muddy roads, requiring an extra day' = medium (delay, operations continue)"
+  - "  'Artillery units rationed shells to 10 per gun per day instead of 25' = high (significant degradation, workaround in place)"
   - Status values: resolved, unresolved, in_progress, worsened
   - Country codes use ISO 3166-1 alpha-3
   - If no logistics issues found for a sub-event, return empty array for that key
