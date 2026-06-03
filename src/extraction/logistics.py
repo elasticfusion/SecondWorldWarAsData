@@ -124,6 +124,8 @@ _VALID_TYPES = {
     "supply_excess",
     "delivery_delay",
     "transport_disruption",
+    "capacity_constraint",
+    "production_delay",
 }
 _VALID_CATEGORIES = {
     "ammunition",
@@ -254,7 +256,7 @@ Look for:
 3. Capacity constraints: port limits, beach capacity, force level restrictions
 
 For each issue found, extract ALL of these fields:
-- type: supply_shortage, supply_excess, delivery_delay, transport_disruption
+- type: supply_shortage, supply_excess, delivery_delay, transport_disruption, capacity_constraint, production_delay
 - category: ammunition, fuel, food, medical, equipment, personnel, general
 - description: detailed description of the problem
 - severity: critical, high, medium, low
@@ -348,7 +350,7 @@ Look for:
 3. Capacity constraints: port limits, beach capacity, force level restrictions
 
 For each issue found, extract:
-- Type: supply_shortage, delivery_delay, transport_disruption, capacity_constraint
+- Type: supply_shortage, supply_excess, delivery_delay, transport_disruption, capacity_constraint, production_delay
 - Category: fuel, ammunition, food, equipment, personnel, general
 - Description: what the problem was
 - Severity: critical, high, medium, low

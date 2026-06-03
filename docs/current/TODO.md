@@ -24,25 +24,13 @@ No email when ECS tasks launch. Add `_notify_launch()` at end of `_run_task()` i
 
 ### Data Quality
 
-#### Fix casualties entity_context — pass full org name→GroupID mapping
-`casualties.py` line 146 passes only first 10 org names with no IDs. LLM has nothing to copy. Pass all `name: GroupID` pairs. Re-run casualties extraction after fix.
-*Source: end-2-end-0-ds.md*
-
 #### Fix weather _build_places_section() passing MentionIDs instead of PlaceIDs
 Weather extraction receives `PlaceMentionID` values (per-mention) instead of top-level `PlaceID` from consolidated place files. 31% of weather PlaceIDs don't resolve.
 *Source: end-2-end-0-ds.md*
 
-#### Add "COPY — do NOT generate" pattern to all cross-reference prompts
-All prompts passing available entity IDs should explicitly say "COPY these IDs exactly — do NOT generate new ones". Single highest-impact prompt change across all entity types.
-*Source: PROMPT_REVIEW.md*
-
 #### Add few-shot examples to logistics prompt for severity calibration
 Severity calibration text alone had no effect (still 78% high/critical). Add 3-4 examples or "Default to medium unless text explicitly says operations halted/postponed/impossible."
 *Source: end-2-end-0-ds.md*
-
-#### Align logistics enum values between prompt and output
-Prompt defines different type/status values than output. Standardize types and status enums.
-*Source: PROMPT_REVIEW.md*
 
 #### Add count qualifier pattern to casualties
 Output uses `{"value": 500, "qualifier": "approximately"}` but prompt schema shows raw integers. Align to output format.
@@ -460,6 +448,9 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 - ✅ Fix OpenSERP null response crash (null guard on resp.json() in _search_openserp)
 - ✅ Fix dedup exclusion lists not checking name-based exclusions (places, groups, equipment now check both filename + name pairs)
 - ✅ Refactor find_duplicate_equipment.py complexity (C21 → below C)
+- ✅ Verify casualties entity_context already fixed (passes name:ID pairs, limit 50)
+- ✅ Verify "COPY — do NOT generate" already in all prompts that inject IDs (casualties, weather)
+- ✅ Align logistics enum values (added capacity_constraint + production_delay to _VALID_TYPES and hardcoded prompts)
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)
