@@ -25,11 +25,11 @@ schema: |
         "side": "allied",
         "description": "Heavy losses during assault on Hill 192",
         "count": {{
-          "killed": 45,
-          "wounded": 120,
-          "missing": 10,
-          "captured": 0,
-          "total": 175
+          "killed": {{"value": 45, "qualifier": "exact"}},
+          "wounded": {{"value": 120, "qualifier": "approximately"}},
+          "missing": {{"value": 10, "qualifier": "exact"}},
+          "captured": {{"value": 0, "qualifier": "exact"}},
+          "total": {{"value": 175, "qualifier": "exact"}}
         }},
         "date_string": "1944-07-11",
         "impacted_organizations": [
@@ -54,3 +54,4 @@ rules:
   - Country codes use ISO 3166-1 alpha-3
   - If no casualties found for a sub-event, return empty array for that key
   - Do NOT include equipment or materiel losses — only personnel casualties
+  - Count qualifier values: exact, approximately, greater_than, less_than, unknown
