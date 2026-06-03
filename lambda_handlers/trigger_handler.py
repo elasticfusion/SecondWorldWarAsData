@@ -117,6 +117,37 @@ def _handle_scheduled_check():
     except Exception as e:
         logger.debug("Dedup reconciliation check: %s", e)
 
+    # Reconcile: if pending queues have items but no tasks are running, trigger
+    try:
+        any_running = any(
+            ecs.list_tasks(cluster=CLUSTER, family=fam, desiredStatus="RUNNING").get(
+                "taskArns", []
+            )
+            for fam in TASK_FAMILIES.values()
+        )
+        if not any_running:
+            pending_content = dynamo.get_item(Key={"cache_key": "pending#content"}).get(
+                "Item", {}
+            )
+            if pending_content.get("keys"):
+                logger.info(
+                    "Pending content queue has %d items, launching Phase 1",
+                    len(pending_content["keys"]),
+                )
+                _run_task(PHASE1_TASK_DEF, "pending-reconciliation")
+            else:
+                pending_parsed = dynamo.get_item(
+                    Key={"cache_key": "pending#parsed"}
+                ).get("Item", {})
+                if pending_parsed.get("keys"):
+                    logger.info(
+                        "Pending parsed queue has %d items, launching Phase 2",
+                        len(pending_parsed["keys"]),
+                    )
+                    _launch_phase2_if_idle()
+    except Exception as e:
+        logger.debug("Pending queue reconciliation: %s", e)
+
     return {"action": "lock_check_complete"}
 
 

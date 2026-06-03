@@ -596,7 +596,7 @@ Connection pooling and retry logic for HTTP requests. Maintains persistent sessi
 
 ### File Lock (`src/utils/file_lock.py`)
 
-File-based locking for safe concurrent access to shared output files. Uses **atomic file writes** — writes to a temp file then calls `os.replace()` via `write_json_with_lock()` to prevent corruption on crash or concurrent access.
+File-based locking for safe concurrent access to shared output files. Uses **dual-layer locking**: per-file `threading.Lock` (prevents in-process races from parallel chapter processing) + `fcntl.flock` (prevents cross-process races). The `locked_json()` context manager holds both locks across the full read-modify-write cycle. `write_json_with_lock()` provides atomic writes via temp file + `os.replace()` for crash safety.
 
 ### Schema Registry (`src/utils/schema_registry.py`)
 
