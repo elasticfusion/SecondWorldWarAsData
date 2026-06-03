@@ -1230,9 +1230,14 @@ def _fuzzy_match_equipment(
 
 
 def _find_matching_equipment(
-    common_name: str, equipment_index: Dict[str, Path]
+    common_name: str,
+    equipment_index: Dict[str, Path],
+    technical_id: str = "",
 ) -> Optional[str]:
     """Find matching equipment by exact or fuzzy match."""
+    # Check technical_identifier first (most stable)
+    if technical_id and technical_id in equipment_index:
+        return technical_id
     if common_name in equipment_index:
         return common_name
     return _fuzzy_match_equipment(common_name, equipment_index)
@@ -1334,8 +1339,12 @@ def _create_new_equipment(
     with open(eq_file, "w") as f:
         json.dump(equipment_data, f, indent=2)
 
-    # Update index
-    equipment_index[common_name] = eq_file
+    # Update index (prefer technical_identifier for stability)
+    index_key = equipment_data.get("technical_identifier") or common_name
+    equipment_index[index_key] = eq_file
+    # Also index by common_name for lookup compatibility
+    if index_key != common_name:
+        equipment_index[common_name] = eq_file
 
     return eq_file
 
@@ -1368,7 +1377,8 @@ def merge_or_create_equipment(
     common_name = equipment_data["common_name"]
 
     # Find matching equipment
-    matched_name = _find_matching_equipment(common_name, equipment_index)
+    technical_id = equipment_data.get("technical_identifier", "")
+    matched_name = _find_matching_equipment(common_name, equipment_index, technical_id)
 
     if matched_name:
         eq_file = equipment_index[matched_name]
