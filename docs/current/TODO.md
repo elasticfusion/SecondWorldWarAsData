@@ -24,10 +24,6 @@ No email when ECS tasks launch. Add `_notify_launch()` at end of `_run_task()` i
 
 ### Dedup & Normalization
 
-#### Auto-merge exact duplicates without human review
-When two entity files have identical normalized names (case-insensitive, after ASCII-folding and punctuation stripping), merge automatically. Only flag fuzzy/partial matches for human review.
-*Source: end-2-end-1 observation*
-
 #### Reduce false-positive place matches on common prefixes/suffixes
 Exclude common geographic prefixes/suffixes ("Bois de...", "...River", "Fort...", "Hill...") from fuzzy matching, or require coordinate proximity as a second signal.
 *Source: end-2-end-1 dedup review*
@@ -437,6 +433,7 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 - ✅ Add few-shot examples to logistics severity calibration (4 examples + "DEFAULT TO MEDIUM" instruction)
 - ✅ Add count qualifier pattern to casualties prompt (value+qualifier schema, enum in rules)
 - ✅ Clean up 102 legacy people files (populated name from filename + generated PersonID)
+- ✅ Auto-merge exact duplicates (identical normalized names merged automatically, fuzzy matches still go to human review)
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)
